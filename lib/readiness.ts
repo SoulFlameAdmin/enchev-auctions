@@ -18,7 +18,7 @@ export function calculateReadiness(stages: Stage[], definitions: Definition[], e
     const passed = required.filter(t => t?.status === 'PASS').length;
     const criticalFailure = required.some(t => t?.critical && t.status === 'FAIL');
     const allPass = required.length>0 && passed === required.length;
-    const green = stage.implemented && !stage.blocked && allPass;
+    const green = stage.implemented && stage.remaining.length===0 && !stage.blocked && allPass;
     const status = green ? 'green' : criticalFailure || (!stage.implemented && stage.done.length===0) ? 'red' : 'yellow';
     const percent = green ? 100 : Math.min(99,Math.floor(passed/Math.max(1,required.length)*100));
     return {...stage,status,percent,errors:required.filter(t=>t?.status==='FAIL').map(t=>`${t!.title}: ${t!.evidence?.error || 'Проверката е неуспешна.'}`)};

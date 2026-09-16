@@ -38,6 +38,11 @@ jobs:
           npm run smoke
         env:
           EXPECTED_COMMIT: ${{ github.sha }}
+      - name: Deployment feed
+        if: github.event_name != 'pull_request'
+        run: node scripts/deployment-feed.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
       - name: Record workflow result
         if: always()
         run: node scripts/publish-event.mjs ci-run "$RESULT"

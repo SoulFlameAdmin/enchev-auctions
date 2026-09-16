@@ -68,7 +68,8 @@
       "next": "Свързване на справочниците с UI",
       "blocked": null,
       "tests": [
-        "international"
+        "international",
+        "international-ui"
       ]
     },
     {
@@ -1204,6 +1205,15 @@
         28
       ],
       "scope": "security",
+      "critical": true
+    },
+    {
+      "id": "international-ui",
+      "title": "BG/EN UI и конфигурируеми пазари през API",
+      "stages": [
+        3
+      ],
+      "scope": "e2e",
       "critical": true
     }
   ]

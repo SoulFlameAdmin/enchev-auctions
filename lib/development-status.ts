@@ -38,6 +38,13 @@ export async function developmentStatus() {
     const unique=runs.filter((e,i)=>runs.findIndex(r=>r.run_id===e.run_id&&r.run_attempt===e.run_attempt)===i);
     github={connected:true,error:null,latestCommit:cloudEvents[0]?.commit_sha||null,runs:unique.map(e=>({id:Number(e.run_id),name:`GitHub CI · ${e.branch} · опит ${e.run_attempt}`,state:e.status==='RUNNING'&&Date.now()-Date.parse(e.started_at)>1800000?'FAIL':e.status,commit:e.commit_sha,url:`https://github.com/${repository}/actions/runs/${e.run_id}`,updatedAt:e.occurred_at}))};
   }
+  if(!vercel.connected){
+    const events=cloudEvents.filter(e=>e.test_id==='deployment');
+    if(events.length){
+      vercel.connected=true;vercel.error=null;
+      vercel.deployments=events.filter((e,i)=>events.findIndex(r=>r.run_id===e.run_id&&r.run_attempt===e.run_attempt)===i).map(e=>({id:`ci-${e.run_id}`,state:e.status==='PASS'?'READY':e.status==='FAIL'?'ERROR':'BUILDING',url:e.deployment_url?.replace('https://','')||'',created:Date.parse(e.occurred_at),commit:e.commit_sha}));
+    }
+  }
   const remoteEvidence:Evidence[]=cloudEvents.filter(e=>!['ci-run','deployment'].includes(e.test_id)).map(e=>({id:e.test_id,status:e.status,commit:e.commit_sha,startedAt:e.started_at,finishedAt:e.status==='RUNNING'?null:e.occurred_at,durationMs:e.duration_ms,result:e.status==='PASS'?'Проверката премина в GitHub CI.':e.status==='RUNNING'?'Изпълнява се в GitHub CI.':'CI проверката е неуспешна.',error:e.status==='FAIL'?'Виж защитените GitHub Actions логове.':null,source:`GitHub Actions #${e.run_id}`}));
   const readiness=calculateReadiness(plan.stages as Stage[],plan.tests as Definition[],[...remoteEvidence,...report.tests as Evidence[]],commit);
   const required=['NEXT_PUBLIC_SUPABASE_URL','NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY','SUPABASE_SECRET_KEY','STRIPE_SECRET_KEY','STRIPE_WEBHOOK_SECRET'];

@@ -23,6 +23,8 @@ const evidence=(status='PASS',sha=commit,date='2026-01-01T00:00:00Z')=>({id:'tes
 await check('tracker-rules',()=>{
  const calc=(stages=[stage],e=[evidence()],defs=[def])=>calculateReadiness(stages,defs,e,commit);
  assert.equal(calc().percent,100);assert.equal(calc().productionReady,true);
+ assert.equal(calc([{...stage,remaining:['unfinished capability']}]).productionReady,false);
+ assert.notEqual(calc([{...stage,remaining:['unfinished capability']}]).stages[0].status,'green');
  assert.equal(calc([stage],[]).stages[0].status,'yellow');assert.equal(calc([stage],[]).productionReady,false);
  assert.equal(calc([stage],[evidence('FAIL')]).stages[0].status,'red');
  assert.equal(calc([{...stage,implemented:false,done:[]}],[]).stages[0].status,'red');
