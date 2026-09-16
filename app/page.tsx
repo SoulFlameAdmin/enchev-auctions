@@ -1,9 +1,9 @@
-import SystemStageTracker from "./components/SystemStageTracker";
+import SystemTracker from "./components/SystemTracker";
 
 export default function Home() {
   return (
     <main className="page">
-      <SystemStageTracker />
+      <SystemTracker />
       <section className="card">
         <div className="badge">ENCHEV AUCTIONS</div>
         <h1>System online.</h1>
