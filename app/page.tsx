@@ -1,4 +1,4 @@
-import SystemTrackerClean from "./components/SystemTrackerClean";
+import MasterSystemPlanV1 from "./components/MasterSystemPlanV1";
 import "./home.css";
 
 const featuredCars = [
@@ -49,7 +49,7 @@ const chips = ["Всички", "BMW", "Mercedes", "Audi", "SUV", "Buy Now", "Д�
 export default function Home() {
   return (
     <main className="marketPage">
-      <SystemTrackerClean />
+      <MasterSystemPlanV1 />
 
       <div className="demoBar">
         <span className="livePulse" />
