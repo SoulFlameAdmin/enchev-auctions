@@ -1,5 +1,7 @@
 import "./globals.css";
 import "./home.css";
+import "./effects.css";
+import MouseAura from "./components/MouseAura";
 
 export const metadata = {
   title: "Enchev Auctions",
@@ -9,7 +11,10 @@ export const metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="bg">
-      <body>{children}</body>
+      <body>
+        <MouseAura />
+        {children}
+      </body>
     </html>
   );
 }
