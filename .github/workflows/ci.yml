@@ -1,0 +1,52 @@
+name: Enchev verification
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+  deployments: read
+concurrency:
+  group: verification-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Record workflow start
+        run: |
+          echo "RUN_STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_ENV"
+          node scripts/publish-event.mjs ci-run RUNNING
+      - run: npm ci
+      - name: Verify and build
+        run: npm run build
+      - name: Runtime smoke
+        run: |
+          npm run start -- --hostname 127.0.0.1 > /tmp/enchev-server.log 2>&1 &
+          for attempt in $(seq 1 30); do
+            if curl -fsS http://localhost:3000/api/health > /dev/null; then break; fi
+            sleep 1
+          done
+          npm run smoke
+        env:
+          EXPECTED_COMMIT: ${{ github.sha }}
+      - name: Record workflow result
+        if: always()
+        run: node scripts/publish-event.mjs ci-run "$RESULT"
+        env:
+          RESULT: ${{ job.status == 'success' && 'PASS' || 'FAIL' }}
+      - name: Archive test evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: enchev-evidence-${{ github.sha }}
+          path: reports/
+          retention-days: 30

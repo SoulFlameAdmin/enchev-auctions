@@ -1,0 +1,24 @@
+import {publishEvent} from './publish-event.mjs';
+import assert from 'node:assert/strict';
+import {mkdir,writeFile} from 'node:fs/promises';
+const base=process.env.SMOKE_URL||'http://localhost:3000';
+const expected=process.env.EXPECTED_COMMIT;
+const startedAt=new Date().toISOString();
+await publishEvent({id:'status-api',status:'RUNNING',startedAt});
+const response=await fetch(`${base}/api/development-status`,{signal:AbortSignal.timeout(15000)});
+assert.equal(response.status,200);assert.match(response.headers.get('cache-control'),/no-store/);
+const status=await response.json();
+if(expected)assert.equal(status.commit,expected);
+assert.equal(status.stages.length,28);assert.ok(status.tests.length>=55);assert.equal(status.productionReady,false);assert.ok(status.percent<100);
+assert.ok(status.tests.find(t=>t.id==='tracker-rules'&&t.status==='PASS'));
+assert.equal(status.tests.find(t=>t.id==='payment').status,'NOT RUN');
+assert.equal(status.tests.find(t=>t.id==='bmw-e2e').status,'NOT RUN');
+assert.equal((await fetch(`${base}/api/development-status`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({percent:100,productionReady:true})})).status,405);
+const again=await (await fetch(`${base}/api/development-status`)).json();assert.equal(again.productionReady,false);
+for(const item of status.environment)assert.deepEqual(Object.keys(item).sort(),['configured','name']);
+const health=await(await fetch(`${base}/api/health`)).json();assert.equal(health.status,'ok');assert.equal(health.auctionBackendReady,false);
+const home=await fetch(base);assert.equal(home.status,200);assert.equal(home.headers.get('x-frame-options'),'DENY');assert.match(await home.text(),/ENCHEV AUCTIONS/);
+const report={commit:status.commit,base,startedAt,finishedAt:new Date().toISOString(),status:'PASS',assertions:['status API 200 + no-store','28 stages','mandatory test registry','no false production readiness','commit matches expected when specified','server-generated evidence','critical unbuilt tests NOT RUN','POST rejected 405','no environment values','health web-only','homepage 200 + DENY']};
+await mkdir('reports',{recursive:true});await writeFile('reports/smoke.json',JSON.stringify(report,null,2)+'\n');console.log(JSON.stringify(report,null,2));
+
+await publishEvent({id:'status-api',status:'PASS',startedAt,durationMs:Date.now()-Date.parse(startedAt)});

@@ -1,0 +1,1210 @@
+{
+  "stages": [
+    {
+      "id": 1,
+      "title": "Проверка на проекта",
+      "implemented": true,
+      "done": [
+        "GitHub и Vercel са проверени",
+        "в началния код няма auction backend"
+      ],
+      "now": "Проверка на runtime конфигурацията",
+      "remaining": [
+        "База за Enchev",
+        "preview и production env",
+        "зависимости",
+        "protection rules"
+      ],
+      "next": "Свързване на изолирани среди",
+      "blocked": null,
+      "tests": [
+        "environment",
+        "staging-smoke",
+        "production-smoke"
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Техническа основа",
+      "implemented": true,
+      "done": [
+        "Next.js и TypeScript",
+        "фиксирани версии",
+        "lockfile",
+        "staging клон",
+        "CI конфигурация"
+      ],
+      "now": "Проверка на build и CI",
+      "remaining": [
+        "Branch protection",
+        "migration pipeline",
+        "общ error handling",
+        "staging база"
+      ],
+      "next": "Изпълнение на CI и staging smoke",
+      "blocked": null,
+      "tests": [
+        "typecheck",
+        "environment",
+        "dependency-audit",
+        "ci",
+        "staging-smoke"
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Международна архитектура",
+      "implemented": true,
+      "done": [
+        "Конфигурируеми държава, локали, валута, точност и часова зона"
+      ],
+      "now": "Проверка на EUR/USD/JPY и UTC",
+      "remaining": [
+        "BG/EN интерфейс",
+        "справочници в база",
+        "локализирани документи",
+        "преводи"
+      ],
+      "next": "Свързване на справочниците с UI",
+      "blocked": null,
+      "tests": [
+        "international"
+      ]
+    },
+    {
+      "id": 4,
+      "title": "База данни",
+      "implemented": false,
+      "done": [],
+      "now": "Чака изолирана база",
+      "remaining": [
+        "Users",
+        "Companies",
+        "Sellers",
+        "Buyers",
+        "Vehicles",
+        "Auctions",
+        "Bids",
+        "Max Bids",
+        "Offers",
+        "Deposits",
+        "Buying Power",
+        "Orders",
+        "Payments",
+        "Documents",
+        "Invoices",
+        "Notifications",
+        "Fees",
+        "Countries",
+        "Languages",
+        "Currencies",
+        "Audit Logs",
+        "Policies",
+        "constraints",
+        "indexes",
+        "migrations"
+      ],
+      "next": "Създаване и проверка на migrations",
+      "blocked": "Няма свързана изолирана Enchev база и Auth.",
+      "tests": [
+        "schema",
+        "database-failure"
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Профили и права",
+      "implemented": false,
+      "done": [],
+      "now": "Чака Auth и база",
+      "remaining": [
+        "Регистрация",
+        "login",
+        "recovery",
+        "Buyer",
+        "Seller",
+        "Dealer",
+        "Support",
+        "Finance",
+        "Admin",
+        "SuperAdmin",
+        "MFA",
+        "server-side permissions"
+      ],
+      "next": "Auth + permission matrix",
+      "blocked": "Няма свързана изолирана Enchev база и Auth.",
+      "tests": [
+        "register-login",
+        "roles"
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Продавачи",
+      "implemented": false,
+      "done": [],
+      "now": "Чака профили",
+      "remaining": [
+        "Регистрация",
+        "проверка",
+        "VIN",
+        "снимки",
+        "документи",
+        "admin review",
+        "publish"
+      ],
+      "next": "Seller workflow и API",
+      "blocked": "Няма свързана изолирана Enchev база и Auth.",
+      "tests": [
+        "seller-flow",
+        "vehicle-upload",
+        "admin-approval",
+        "malicious-upload"
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Автомобили",
+      "implemented": false,
+      "done": [],
+      "now": "Чака база",
+      "remaining": [
+        "Каталог",
+        "търсене",
+        "марка",
+        "модел",
+        "година",
+        "гориво",
+        "държава",
+        "цена",
+        "статус",
+        "favorites",
+        "pagination"
+      ],
+      "next": "Каталог и филтри",
+      "blocked": "Няма свързана изолирана Enchev база и Auth.",
+      "tests": [
+        "vehicle-upload",
+        "catalog"
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Страница на автомобил",
+      "implemented": false,
+      "done": [],
+      "now": "Чака каталог",
+      "remaining": [
+        "Снимки",
+        "VIN",
+        "описание",
+        "километри",
+        "щети",
+        "документи",
+        "продавач",
+        "местоположение",
+        "текуща цена",
+        "next bid",
+        "таймер",
+        "история"
+      ],
+      "next": "Vehicle detail API + UI",
+      "blocked": "Няма свързана изолирана Enchev база и Auth.",
+      "tests": [
+        "vehicle-page"
+      ]
+    },
+    {
+      "id": 9,
+      "title": "Аукционна система",
+      "implemented": false,
+      "done": [],
+      "now": "Чака transactional база",
+      "remaining": [
+        "Start/end",
+        "reserve",
+        "increment",
+        "server time",
+        "auction states",
+        "финализиращ worker",
+        "deterministic winner"
+      ],
+      "next": "State machine + транзакционен finalizer",
+      "blocked": "Няма свързана изолирана Enchev база и Auth.",
+      "tests": [
+        "auction-start-end",
+        "bid-at-end",
+        "winner",
+        "server-restart"
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Наддаване",
+      "implemented": false,
+      "done": [],
+      "now": "Чака аукционна система",
+      "remaining": [
+        "Само server-side",
+        "row lock",
+        "eligibility",
+        "idempotency",
+        "server clock",
+        "atomic ledger",
+        "2/10/100 едновременни заявки"
+      ],
+      "next": "Транзакционно place_bid API",
+      "blocked": "Няма свързана изолирана Enchev база и Auth.",
+      "tests": [
+        "minimum-bid",
+        "concurrent-2",
+        "concurrent-10",
+        "concurrent-100",
+        "duplicate-request",
+        "bid-at-end"
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Max Bid / автоматично наддаване",
+      "implemented": false,
+      "done": [],
+      "now": "Чака основно наддаване",
+      "remaining": [
+        "Private max",
+        "deterministic equal-max priority",
+        "proxy bids",
+        "price derivation",
+        "audit"
+      ],
+      "next": "Proxy bidding в същата транзакция",
+      "blocked": "Няма свързана изолирана Enchev база и Auth.",
+      "tests": [
+        "max-bid"
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Live Auction",
+      "implemented": false,
+      "done": [],
+      "now": "Чака bid engine",
+      "remaining": [
+        "Realtime events",
+        "sequence numbers",
+        "authoritative refetch",
+        "reconnect",
+        "no private max leak"
+      ],
+      "next": "Realtime + disconnect recovery",
+      "blocked": "Няма свързана изолирана Enchev база и Auth.",
+      "tests": [
+        "realtime",
+        "realtime-disconnect"
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Anti-sniping",
+      "implemented": false,
+      "done": [],
+      "now": "Чака bid engine",
+      "remaining": [
+        "Конфигурируем прозорец",
+        "удължаване",
+        "лимит",
+        "server clock",
+        "крайни гранични случаи"
+      ],
+      "next": "Атомарно удължаване на ends_at",
+      "blocked": "Няма свързана изолирана Enchev база и Auth.",
+      "tests": [
+        "anti-sniping"
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Buy Now",
+      "implemented": false,
+      "done": [],
+      "now": "Чака auction + orders",
+      "remaining": [
+        "Атомарно затваряне",
+        "едновременни покупки",
+        "idempotency",
+        "reserve на средства"
+      ],
+      "next": "Buy Now transaction",
+      "blocked": "Няма свързана изолирана Enchev база и Auth.",
+      "tests": [
+        "duplicate-request",
+        "buy-now-race"
+      ]
+    },
+    {
+      "id": 15,
+      "title": "Оферти и контраоферти",
+      "implemented": false,
+      "done": [],
+      "now": "Чака профили и vehicles",
+      "remaining": [
+        "Make Offer",
+        "Accept",
+        "Reject",
+        "Counter Offer",
+        "expiry",
+        "authorization",
+        "atomic acceptance"
+      ],
+      "next": "State machine за оферти",
+      "blocked": "Няма свързана изолирана Enchev база и Auth.",
+      "tests": [
+        "offers"
+      ]
+    },
+    {
+      "id": 16,
+      "title": "Депозит / Buying Power",
+      "implemented": false,
+      "done": [],
+      "now": "Чака payment provider",
+      "remaining": [
+        "Deposit ledger",
+        "currency",
+        "hold",
+        "release",
+        "multiplier",
+        "concurrent exposure",
+        "reconciliation"
+      ],
+      "next": "Ledger + buying power guard",
+      "blocked": "Няма свързана изолирана Enchev база и Auth.",
+      "tests": [
+        "deposit",
+        "buying-power"
+      ]
+    },
+    {
+      "id": 17,
+      "title": "Плащания",
+      "implemented": false,
+      "done": [],
+      "now": "Чака test account при provider",
+      "remaining": [
+        "Карти чрез лицензиран provider",
+        "банков превод",
+        "signed webhooks",
+        "idempotency",
+        "refunds",
+        "reconciliation"
+      ],
+      "next": "Sandbox integration и webhook replay tests",
+      "blocked": "Не са конфигурирани test provider и webhooks.",
+      "tests": [
+        "payment",
+        "duplicate-webhook",
+        "refund"
+      ]
+    },
+    {
+      "id": 18,
+      "title": "Победител и изпълнение",
+      "implemented": false,
+      "done": [],
+      "now": "Чака finalizer + payments",
+      "remaining": [
+        "Won",
+        "Payment",
+        "Documents",
+        "Transfer",
+        "Pickup/Delivery",
+        "Completed",
+        "reserve не е достигнат",
+        "unsold"
+      ],
+      "next": "Order lifecycle и задължителни преходи",
+      "blocked": "Няма свързана изолирана Enchev база и Auth.",
+      "tests": [
+        "winner",
+        "payment"
+      ]
+    },
+    {
+      "id": 19,
+      "title": "Документи",
+      "implemented": false,
+      "done": [],
+      "now": "Чака private storage и одобрени шаблони",
+      "remaining": [
+        "Договори",
+        "фактури",
+        "PDF",
+        "private storage",
+        "owner-only signed URLs",
+        "версии по държава"
+      ],
+      "next": "PDF и storage policies",
+      "blocked": "Няма свързана изолирана Enchev база и Auth.",
+      "tests": [
+        "documents",
+        "private-files"
+      ]
+    },
+    {
+      "id": 20,
+      "title": "Admin Panel",
+      "implemented": false,
+      "done": [],
+      "now": "Чака RBAC и MFA",
+      "remaining": [
+        "Коли",
+        "потребители",
+        "продавачи",
+        "аукциони",
+        "bids",
+        "плащания",
+        "документи",
+        "такси",
+        "държави",
+        "настройки",
+        "audit"
+      ],
+      "next": "Admin интерфейс с server-side authorization",
+      "blocked": "Няма свързана изолирана Enchev база и Auth.",
+      "tests": [
+        "roles",
+        "admin-approval"
+      ]
+    },
+    {
+      "id": 21,
+      "title": "Такси и бизнес модел",
+      "implemented": false,
+      "done": [],
+      "now": "Чака одобрени бизнес правила",
+      "remaining": [
+        "Buyer fee",
+        "Seller fee",
+        "процент",
+        "membership",
+        "listing fee",
+        "effective dates",
+        "immutable order fee snapshot"
+      ],
+      "next": "Версиониран fee engine",
+      "blocked": "Необходимо е решение за таксите и приложимите правила.",
+      "tests": [
+        "fees"
+      ]
+    },
+    {
+      "id": 22,
+      "title": "Известия",
+      "implemented": false,
+      "done": [],
+      "now": "Чака providers",
+      "remaining": [
+        "Email",
+        "SMS",
+        "push",
+        "outbid",
+        "winner",
+        "плащане",
+        "старт",
+        "край",
+        "outbox",
+        "retry",
+        "dead letter"
+      ],
+      "next": "Transactional outbox worker",
+      "blocked": "Няма свързана изолирана Enchev база и Auth.",
+      "tests": [
+        "notifications"
+      ]
+    },
+    {
+      "id": 23,
+      "title": "Policies / GDPR / Auction Rules",
+      "implemented": false,
+      "done": [],
+      "now": "Чака текстове и юрисдикции",
+      "remaining": [
+        "Версии",
+        "приемане",
+        "доказателство",
+        "retention",
+        "export",
+        "deletion",
+        "legal holds"
+      ],
+      "next": "Versioned consent API",
+      "blocked": "Необходимо е решение за таксите и приложимите правила.",
+      "tests": [
+        "policy-consent"
+      ]
+    },
+    {
+      "id": 24,
+      "title": "Security",
+      "implemented": false,
+      "done": [],
+      "now": "Проверки на tracker API",
+      "remaining": [
+        "RLS",
+        "RBAC",
+        "MFA",
+        "HTTPS",
+        "rate limiting",
+        "uploads",
+        "API authorization",
+        "secrets",
+        "webhook signatures",
+        "dependency audit"
+      ],
+      "next": "Проверка на всяка граница на достъп",
+      "blocked": null,
+      "tests": [
+        "dependency-audit",
+        "roles",
+        "duplicate-webhook",
+        "private-files",
+        "unauthorized-api",
+        "sql-injection",
+        "xss",
+        "malicious-upload",
+        "rate-limits",
+        "status-api",
+        "oidc-claims"
+      ]
+    },
+    {
+      "id": 25,
+      "title": "Audit Log",
+      "implemented": false,
+      "done": [],
+      "now": "Чака база",
+      "remaining": [
+        "Append-only actor/time/action",
+        "bids",
+        "payments",
+        "admin changes",
+        "correlation IDs",
+        "redaction",
+        "retention"
+      ],
+      "next": "Immutable audit + permissions",
+      "blocked": "Няма свързана изолирана Enchev база и Auth.",
+      "tests": [
+        "audit"
+      ]
+    },
+    {
+      "id": 26,
+      "title": "Backups и Recovery",
+      "implemented": false,
+      "done": [],
+      "now": "Чака изолирана база",
+      "remaining": [
+        "Backup schedule",
+        "encrypted copies",
+        "RPO/RTO",
+        "restore drill",
+        "checksums",
+        "restart",
+        "disaster runbook"
+      ],
+      "next": "Restore в disposable среда",
+      "blocked": "Няма свързана изолирана Enchev база и Auth.",
+      "tests": [
+        "server-restart",
+        "database-failure",
+        "backup-restore"
+      ]
+    },
+    {
+      "id": 27,
+      "title": "Monitoring",
+      "implemented": false,
+      "done": [],
+      "now": "Проверка на runtime health",
+      "remaining": [
+        "Errors",
+        "server",
+        "database",
+        "latency",
+        "realtime",
+        "payments",
+        "uptime",
+        "alerts",
+        "on-call",
+        "synthetic checks"
+      ],
+      "next": "Външен uptime и error tracking",
+      "blocked": null,
+      "tests": [
+        "monitoring"
+      ]
+    },
+    {
+      "id": 28,
+      "title": "Test Center и финално приемане",
+      "implemented": true,
+      "done": [
+        "Регистър с тестове",
+        "commit-scoped evidence",
+        "без ръчни зелени статуси",
+        "Cloud evidence с GitHub OIDC"
+      ],
+      "now": "Staging smoke и browser проверка",
+      "remaining": [
+        "пълен BMW UI/API сценарий",
+        "security",
+        "concurrency",
+        "load",
+        "backup/restore",
+        "production smoke"
+      ],
+      "next": "Поправка → повторен тест → публикуване",
+      "blocked": null,
+      "tests": [
+        "tracker-rules",
+        "evidence-freshness",
+        "plan-coverage",
+        "ci",
+        "tracker-ui",
+        "status-api",
+        "staging-smoke",
+        "production-smoke",
+        "bmw-e2e",
+        "oidc-claims"
+      ]
+    }
+  ],
+  "tests": [
+    {
+      "id": "tracker-rules",
+      "title": "Статуси, провален тест и защита от фалшиви 100%",
+      "stages": [
+        28
+      ],
+      "scope": "unit",
+      "critical": true
+    },
+    {
+      "id": "evidence-freshness",
+      "title": "Нов commit обезсилва стар PASS; timeout и непълни резултати",
+      "stages": [
+        28
+      ],
+      "scope": "unit",
+      "critical": true
+    },
+    {
+      "id": "plan-coverage",
+      "title": "Всички 28 етапа имат задължителни тестове",
+      "stages": [
+        28
+      ],
+      "scope": "unit",
+      "critical": true
+    },
+    {
+      "id": "typecheck",
+      "title": "TypeScript strict проверка",
+      "stages": [
+        2
+      ],
+      "scope": "static",
+      "critical": true
+    },
+    {
+      "id": "international",
+      "title": "Валути EUR/USD/JPY и часови зони",
+      "stages": [
+        3
+      ],
+      "scope": "unit",
+      "critical": true
+    },
+    {
+      "id": "environment",
+      "title": "Изолирани preview/production конфигурации",
+      "stages": [
+        1,
+        2
+      ],
+      "scope": "integration",
+      "critical": true
+    },
+    {
+      "id": "dependency-audit",
+      "title": "Проверка за уязвими зависимости",
+      "stages": [
+        2,
+        24
+      ],
+      "scope": "security",
+      "critical": true
+    },
+    {
+      "id": "ci",
+      "title": "CI gates и protected main",
+      "stages": [
+        2,
+        28
+      ],
+      "scope": "integration",
+      "critical": true
+    },
+    {
+      "id": "schema",
+      "title": "Migrations, ограничения, индекси и RLS",
+      "stages": [
+        4
+      ],
+      "scope": "integration",
+      "critical": true
+    },
+    {
+      "id": "register-login",
+      "title": "Регистрация и login",
+      "stages": [
+        5
+      ],
+      "scope": "e2e",
+      "critical": true
+    },
+    {
+      "id": "roles",
+      "title": "Роли и permissions; cross-account access",
+      "stages": [
+        5,
+        20,
+        24
+      ],
+      "scope": "security",
+      "critical": true
+    },
+    {
+      "id": "seller-flow",
+      "title": "Регистрация и проверка на продавач",
+      "stages": [
+        6
+      ],
+      "scope": "e2e",
+      "critical": true
+    },
+    {
+      "id": "vehicle-upload",
+      "title": "Качване на автомобил и снимки",
+      "stages": [
+        6,
+        7
+      ],
+      "scope": "e2e",
+      "critical": true
+    },
+    {
+      "id": "admin-approval",
+      "title": "Admin approval и публикуване",
+      "stages": [
+        6,
+        20
+      ],
+      "scope": "e2e",
+      "critical": true
+    },
+    {
+      "id": "catalog",
+      "title": "Каталог, филтри, favorites",
+      "stages": [
+        7
+      ],
+      "scope": "e2e",
+      "critical": true
+    },
+    {
+      "id": "vehicle-page",
+      "title": "Детайли, VIN, таймер и история",
+      "stages": [
+        8
+      ],
+      "scope": "e2e",
+      "critical": true
+    },
+    {
+      "id": "auction-start-end",
+      "title": "Начало/край, reserve и states",
+      "stages": [
+        9
+      ],
+      "scope": "integration",
+      "critical": true
+    },
+    {
+      "id": "minimum-bid",
+      "title": "Минимален bid и server validation",
+      "stages": [
+        10
+      ],
+      "scope": "integration",
+      "critical": true
+    },
+    {
+      "id": "max-bid",
+      "title": "Max Bid, equal-max и поверителност",
+      "stages": [
+        11
+      ],
+      "scope": "integration",
+      "critical": true
+    },
+    {
+      "id": "concurrent-2",
+      "title": "Два едновременни bid-а",
+      "stages": [
+        10
+      ],
+      "scope": "concurrency",
+      "critical": true
+    },
+    {
+      "id": "concurrent-10",
+      "title": "10 едновременни bid-а",
+      "stages": [
+        10
+      ],
+      "scope": "concurrency",
+      "critical": true
+    },
+    {
+      "id": "concurrent-100",
+      "title": "100 едновременни bid-а",
+      "stages": [
+        10
+      ],
+      "scope": "load",
+      "critical": true
+    },
+    {
+      "id": "duplicate-request",
+      "title": "Повторена заявка и idempotency",
+      "stages": [
+        10,
+        14
+      ],
+      "scope": "integration",
+      "critical": true
+    },
+    {
+      "id": "bid-at-end",
+      "title": "Bid точно при края",
+      "stages": [
+        9,
+        10
+      ],
+      "scope": "concurrency",
+      "critical": true
+    },
+    {
+      "id": "anti-sniping",
+      "title": "Late bid и удължаване",
+      "stages": [
+        13
+      ],
+      "scope": "integration",
+      "critical": true
+    },
+    {
+      "id": "buy-now-race",
+      "title": "Buy Now от двама едновременно",
+      "stages": [
+        14
+      ],
+      "scope": "concurrency",
+      "critical": true
+    },
+    {
+      "id": "offers",
+      "title": "Offer / accept / reject / counter",
+      "stages": [
+        15
+      ],
+      "scope": "integration",
+      "critical": true
+    },
+    {
+      "id": "deposit",
+      "title": "Депозит, задържане и освобождаване",
+      "stages": [
+        16
+      ],
+      "scope": "integration",
+      "critical": true
+    },
+    {
+      "id": "buying-power",
+      "title": "Buying Power при конкурентни оферти",
+      "stages": [
+        16
+      ],
+      "scope": "concurrency",
+      "critical": true
+    },
+    {
+      "id": "winner",
+      "title": "Правилен winner и една поръчка",
+      "stages": [
+        9,
+        18
+      ],
+      "scope": "integration",
+      "critical": true
+    },
+    {
+      "id": "payment",
+      "title": "Тестово плащане и банков превод",
+      "stages": [
+        17,
+        18
+      ],
+      "scope": "integration",
+      "critical": true
+    },
+    {
+      "id": "duplicate-webhook",
+      "title": "Signed webhook и duplicate replay",
+      "stages": [
+        17,
+        24
+      ],
+      "scope": "security",
+      "critical": true
+    },
+    {
+      "id": "refund",
+      "title": "Refund и ledger reconciliation",
+      "stages": [
+        17
+      ],
+      "scope": "integration",
+      "critical": true
+    },
+    {
+      "id": "documents",
+      "title": "PDF, версии и фактури",
+      "stages": [
+        19
+      ],
+      "scope": "integration",
+      "critical": true
+    },
+    {
+      "id": "private-files",
+      "title": "Чужди private files са недостъпни",
+      "stages": [
+        19,
+        24
+      ],
+      "scope": "security",
+      "critical": true
+    },
+    {
+      "id": "fees",
+      "title": "Версионирани такси и snapshot",
+      "stages": [
+        21
+      ],
+      "scope": "unit",
+      "critical": true
+    },
+    {
+      "id": "notifications",
+      "title": "Outbox и известия без дублиране",
+      "stages": [
+        22
+      ],
+      "scope": "integration",
+      "critical": true
+    },
+    {
+      "id": "policy-consent",
+      "title": "Версии на правила и приемане",
+      "stages": [
+        23
+      ],
+      "scope": "integration",
+      "critical": true
+    },
+    {
+      "id": "unauthorized-api",
+      "title": "Unauthorized API и липсващи роли",
+      "stages": [
+        24
+      ],
+      "scope": "security",
+      "critical": true
+    },
+    {
+      "id": "sql-injection",
+      "title": "SQL injection през API",
+      "stages": [
+        24
+      ],
+      "scope": "security",
+      "critical": true
+    },
+    {
+      "id": "xss",
+      "title": "Stored/reflected XSS",
+      "stages": [
+        24
+      ],
+      "scope": "security",
+      "critical": true
+    },
+    {
+      "id": "malicious-upload",
+      "title": "Malicious upload / MIME / size",
+      "stages": [
+        6,
+        24
+      ],
+      "scope": "security",
+      "critical": true
+    },
+    {
+      "id": "rate-limits",
+      "title": "Rate limits между server instances",
+      "stages": [
+        24
+      ],
+      "scope": "security",
+      "critical": true
+    },
+    {
+      "id": "realtime",
+      "title": "Два клиента виждат един authoritative state",
+      "stages": [
+        12
+      ],
+      "scope": "e2e",
+      "critical": true
+    },
+    {
+      "id": "realtime-disconnect",
+      "title": "Realtime disconnect и resync",
+      "stages": [
+        12
+      ],
+      "scope": "resilience",
+      "critical": true
+    },
+    {
+      "id": "server-restart",
+      "title": "Server restart без загубен bid/order",
+      "stages": [
+        9,
+        26
+      ],
+      "scope": "resilience",
+      "critical": true
+    },
+    {
+      "id": "database-failure",
+      "title": "Database failure и fail closed",
+      "stages": [
+        4,
+        26
+      ],
+      "scope": "resilience",
+      "critical": true
+    },
+    {
+      "id": "backup-restore",
+      "title": "Backup и restore с проверка на данните",
+      "stages": [
+        26
+      ],
+      "scope": "recovery",
+      "critical": true
+    },
+    {
+      "id": "audit",
+      "title": "Неизменим audit за bid/payment/admin",
+      "stages": [
+        25
+      ],
+      "scope": "security",
+      "critical": true
+    },
+    {
+      "id": "monitoring",
+      "title": "Uptime, errors и test alert",
+      "stages": [
+        27
+      ],
+      "scope": "integration",
+      "critical": true
+    },
+    {
+      "id": "tracker-ui",
+      "title": "Burger → Етапи → Test Center → X / Escape",
+      "stages": [
+        28
+      ],
+      "scope": "e2e",
+      "critical": true
+    },
+    {
+      "id": "status-api",
+      "title": "No-cache status API и забранени writes",
+      "stages": [
+        24,
+        28
+      ],
+      "scope": "integration",
+      "critical": true
+    },
+    {
+      "id": "staging-smoke",
+      "title": "Staging HTTP и API smoke",
+      "stages": [
+        1,
+        2,
+        28
+      ],
+      "scope": "smoke",
+      "critical": true
+    },
+    {
+      "id": "production-smoke",
+      "title": "Production smoke на същия commit",
+      "stages": [
+        1,
+        28
+      ],
+      "scope": "smoke",
+      "critical": true
+    },
+    {
+      "id": "bmw-e2e",
+      "title": "BMW: Seller → Admin → A/B → Max Bid → late bid → winner → payment → documents → transfer → pickup → completed",
+      "stages": [
+        28
+      ],
+      "scope": "e2e",
+      "critical": true
+    },
+    {
+      "id": "oidc-claims",
+      "title": "CI identity: repository / workflow / branch authorization",
+      "stages": [
+        24,
+        28
+      ],
+      "scope": "security",
+      "critical": true
+    }
+  ]
+}

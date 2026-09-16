@@ -1,78 +1,82 @@
-"use client";
+'use client';
 
-import { useEffect, useMemo, useState } from "react";
+import {useCallback,useEffect,useRef,useState} from 'react';
+import type {DevelopmentStatus} from '../../lib/development-status';
 
-type Status = "green" | "yellow" | "red";
-type Kind = "core" | "test" | "security" | "legal" | "global" | "ai";
-type Task = { id: string; label: string; defaultStatus: Status; kind: Kind };
-type Phase = { id: string; title: string; tasks: Task[] };
-type Notes = Record<string, { evidence?: string; blocker?: string; updatedAt?: string }>;
-
-type RawPhase = [string, string, string[]];
-const raw: RawPhase[] = [
-  ["01","Clean foundation",["Private GitHub repo enchev-auctions|green","Clean Next.js + TypeScript base|green","Vercel project enchev-auctions|green","GitHub → Vercel automatic deploy|green","Supabase project","Redis environment","Local / staging / production environments","Environment variable validation","CI lint / typecheck / test / build||test","Web / API / realtime / worker health endpoints||test"]],
-  ["02","Architecture & repository",["apps/web","apps/api","apps/realtime","apps/worker","packages/domain","packages/contracts","packages/config","packages/providers","Database migrations structure","Architecture decision records"]],
-  ["03","Database & data integrity",["PostgreSQL schema baseline","Migration runner","Staging seed data","UUID identifiers","UTC timestamps everywhere||global","Archival rules","Immutable critical event history","Idempotency keys for critical writes","Transactional outbox","Migration recovery test||test"]],
-  ["04","Identity & access",["Supabase Auth","Register / login / logout / recovery","Buyer / Seller / Support / Admin roles","RBAC permission matrix||security","Admin MFA||security","Session revocation||security","Active / restricted / suspended accounts","Privileged-action audit trail||security","Cross-account access tests||test"]],
-  ["05","KYC / KYB / eligibility",["KYC provider abstraction","KYB provider abstraction","Verification states","Manual review queue","Buyer eligibility engine","Seller verification workflow","Compliance holds","Verification audit history","Blocked-user enforcement tests||test"]],
-  ["06","Vehicle inventory",["Vehicle CRUD","VIN / make / model / trim / year","Engine / fuel / transmission / drivetrain","Odometer model","Condition / damage / run status","Title/document status","Country / region / city / yard||global","Secure image uploads||security","Secure document uploads||security","Data provenance labels","Vehicle version history","Seller submit → Admin review → Publish","Vehicle validation tests||test"]],
-  ["07","Marketplace & discovery",["Homepage","Vehicle listing grid","Vehicle detail page","Search by make / model / VIN / lot","Filters","Sorting","Pagination / infinite loading","Upcoming / live / ended views","Responsive mobile UX","SEO metadata / sitemap / canonical URLs","Accessibility baseline||test"]],
-  ["08","Auction configuration",["Auction state machine","No-reserve auction","Reserve auction","Seller-approval result path","Buy-now mode","Versioned auction rules","Bid increment table","Pre-bid / live / end timestamps","Immutable auction-start vehicle snapshot","Auction publish validation||test"]],
-  ["09","Pre-Bid & Max Bid engine",["Atomic Pre-Bid transaction","Private Max Bid storage||security","Proxy bidding algorithm","Deterministic equal-max priority","Increment boundary validation","Eligibility before bid acceptance","Duplicate-request protection","Private max never exposed||test","Proxy-bid scenario matrix||test"]],
-  ["10","Live realtime auction",["Persistent WebSocket service","Authenticated WebSocket handshake||security","Auction rooms","Realtime bid events","Current leader event","Outbid event","Server-authoritative timer","Late-bid extension","Reconnect after network drop","Sequence-gap detection","Authoritative state refetch","Browser-clock manipulation test||test","Two-browser synchronization test||test"]],
-  ["11","Finalization & winner",["Exactly-once logical close","Close worker","Single authoritative finalizer","Deterministic winner selection","Reserve result","Seller-approval pending result","Unsold result","Immutable final result event","Exceptional void/reversal with reason + audit","Restart during close test||test","Simultaneous final bids test||test"]],
-  ["12","Notifications",["Notification event model","Email provider abstraction","SMS provider abstraction","Outbid notification","Auction start notification","Auction result notification","Security alerts||security","Notification preferences","Retry / dead-letter handling||test"]],
-  ["13","Release, pickup & logistics",["Release state machine","Compliance/document release gates","Pickup authorization","Single-use pickup code||security","Pickup completed event","Transport provider abstraction","Transport request / quote flow","Shipment status events","Release abuse tests||test"]],
-  ["14","Admin & operations",["Admin dashboard","User search / review","Verification queue","Vehicle review queue","Auction create/edit/publish controls","Live auction monitor","Release / logistics queue","Support tickets","Complaints / disputes","Evidence freeze","Feature flags","High-risk admin confirmation||security"]],
-  ["15","Legal, privacy & transparency",["Terms version registry||legal","Buyer auction rules||legal","Seller terms||legal","Vehicle condition policy||legal","Privacy notice||legal","Cookie consent / preferences||legal","KYC identity notice||legal","Marketplace transparency||legal","AI transparency||legal","Seller-of-record / platform-role display||legal","Country legal launch gate||global","Policy ↔ behavior tests||test"]],
-  ["16","Security hardening",["Authorization abuse suite||security","Rate limiting||security","Bot / scripted abuse controls||security","Secure headers||security","CSRF protection where applicable||security","Signed upload URLs||security","Upload type/size validation||security","Secrets management||security","Key rotation procedure||security","Least-privilege provider credentials||security","Dependency vulnerability scanning||security","External penetration test||security"]],
-  ["17","Observability & recovery",["Structured logs","Metrics","Distributed traces","Error tracking","Uptime monitoring","Realtime connection metrics","Bid latency metrics","Auction close failure alert","Worker failure alert","Database backups","Restore drill||test","Disaster recovery runbook"]],
-  ["18","Load, concurrency & chaos",["10 concurrent bidders||test","50 concurrent bidders||test","100 concurrent bidders||test","500+ bidder stress test||test","Database contention test||test","WebSocket fanout test||test","Reconnect storm test||test","Duplicate-request storm||test","Realtime restart during auction||test","Worker restart during close||test","Redis interruption recovery||test","No winner corruption under load||test"]],
-  ["19","Closed pilot",["Create and verify seller||test","Create vehicle + media + documents||test","Admin review + publish||test","Create and verify Buyer A||test","Create and verify Buyer B||test","Pre-Bid scenario||test","Max Bid scenario||test","Live two-buyer auction||test","Late-bid extension||test","Correct winner||test","Release / pickup flow||test","Complaint reconstruction||test","Full audit reconstruction||test","Pilot sign-off: zero critical blockers||test"]],
-  ["20","Production providers",["Production KYC/KYB provider","Production email provider","Production SMS provider","VIN/history provider if used","Transport provider if used","Provider timeout/retry tests||test","Provider outage fallback||test"]],
-  ["21","International readiness",["CountryProfile configuration model||global","No country-specific hardcoding||global","Locale-aware dates||global","Timezone-aware display||global","BG locale||global","EN locale||global","Translation key architecture||global","Country-specific KYC profile||global","Country-specific legal profile||global","Country-specific document profile||global","Market activation gate||global","Country #2 without core rewrite||global","Regional CDN strategy||global","Regional data/residency review||global"]],
-  ["22","AI-assisted features",["AI isolated from authoritative auction path||ai","Natural-language vehicle search||ai","AI support assistant||ai","AI listing assistant||ai","AI vehicle summary||ai","AI translation assistance||ai","AI output provenance / labels||ai","AI hallucination / unsafe-action tests||test","Visual damage assistant with human review||ai"]],
-  ["23","Production launch & ongoing engineering",["Production domain","Production configuration review","Production secrets review||security","Production backup verified||test","Production health dashboard","Incident runbook","First controlled live auction||test","Post-launch error review||test","Regression suite before every release||test","Performance baseline tracked||test"]]
-];
-
-const phases: Phase[] = raw.map(([id,title,items]) => ({ id, title, tasks: items.map((entry,index) => {
-  const [label,statusRaw,kindRaw] = entry.split("|");
-  const defaultStatus: Status = statusRaw === "green" || statusRaw === "yellow" ? statusRaw : "red";
-  const validKinds: Kind[] = ["core","test","security","legal","global","ai"];
-  const kind: Kind = validKinds.includes(kindRaw as Kind) ? kindRaw as Kind : "core";
-  return { id: `${id}.${String(index+1).padStart(2,"0")}`, label, defaultStatus, kind };
-}) }));
-
-const SK="enchev-system-status-v5", NK="enchev-system-notes-v5", GK="enchev-system-gaps-v5", CK="enchev-system-realtime-v5";
-function defaults(){ const out:Record<string,Status>={}; phases.forEach(p=>p.tasks.forEach(t=>out[t.id]=t.defaultStatus)); return out; }
+const statusLabels={green:'🟢 Проверено',yellow:'🟡 Незавършено',red:'🔴 Липсва / критичен проблем'};
+function stamp(value:string|null|undefined){return value?new Date(value).toLocaleString('bg-BG',{timeZone:'Europe/Sofia'}):'Няма изпълнение';}
 
 export default function SystemTrackerClean(){
-  const [menu,setMenu]=useState(false), [open,setOpen]=useState(false), [statuses,setStatuses]=useState<Record<string,Status>>(defaults), [notes,setNotes]=useState<Notes>({}), [gaps,setGaps]=useState<Task[]>([]), [filter,setFilter]=useState<"all"|Status>("all"), [query,setQuery]=useState(""), [gapText,setGapText]=useState(""), [now,setNow]=useState(new Date());
-
-  useEffect(()=>{ try{ const s=localStorage.getItem(SK),n=localStorage.getItem(NK),g=localStorage.getItem(GK); if(s)setStatuses(c=>({...c,...JSON.parse(s)})); if(n)setNotes(JSON.parse(n)); if(g)setGaps(JSON.parse(g)); }catch{} },[]);
-  useEffect(()=>{ const x=window.setInterval(()=>setNow(new Date()),1000); return()=>window.clearInterval(x); },[]);
-  useEffect(()=>{ const c=new BroadcastChannel(CK); c.onmessage=e=>{ if(e.data?.type!=="state")return; if(e.data.statuses)setStatuses(x=>({...x,...e.data.statuses})); if(e.data.notes)setNotes(e.data.notes); if(e.data.gaps)setGaps(e.data.gaps); }; return()=>c.close(); },[]);
-
-  function persist(s:Record<string,Status>,n:Notes=notes,g:Task[]=gaps){ setStatuses(s);setNotes(n);setGaps(g); try{ localStorage.setItem(SK,JSON.stringify(s));localStorage.setItem(NK,JSON.stringify(n));localStorage.setItem(GK,JSON.stringify(g));const c=new BroadcastChannel(CK);c.postMessage({type:"state",statuses:s,notes:n,gaps:g});c.close(); }catch{} }
-  function setStatus(id:string,status:Status){ persist({...statuses,[id]:status},{...notes,[id]:{...notes[id],updatedAt:new Date().toISOString()}}); }
-  function setNote(id:string,field:"evidence"|"blocker",value:string){ persist(statuses,{...notes,[id]:{...notes[id],[field]:value,updatedAt:new Date().toISOString()}}); }
-  function addGap(){ const label=gapText.trim();if(!label)return;const id=`GAP.${Date.now()}`,g:Task={id,label,defaultStatus:"red",kind:"core"};setGapText("");persist({...statuses,[id]:"red"},notes,[...gaps,g]); }
-  function removeGap(id:string){ const s={...statuses},n={...notes};delete s[id];delete n[id];persist(s,n,gaps.filter(g=>g.id!==id)); }
-
-  const all=useMemo(()=>[...phases.flatMap(p=>p.tasks),...gaps],[gaps]);
-  const totals=useMemo(()=>{ const x:Record<Status,number>={green:0,yellow:0,red:0};all.forEach(t=>x[statuses[t.id]||t.defaultStatus]++);return x; },[all,statuses]);
-  const progress=all.length?Math.round(totals.green/all.length*100):0, next=all.find(t=>(statuses[t.id]||t.defaultStatus)!=="green");
-  const visible=useMemo(()=>{ const q=query.trim().toLowerCase(), src:Phase[]=gaps.length?[...phases,{id:"GAP",title:"Открити пропуски",tasks:gaps}]:phases; return src.map(p=>({...p,tasks:p.tasks.filter(t=>{const s=statuses[t.id]||t.defaultStatus;return(filter==="all"||s===filter)&&(!q||`${t.id} ${t.label} ${p.title}`.toLowerCase().includes(q));})})).filter(p=>p.tasks.length); },[gaps,query,filter,statuses]);
-
+  const [menu,setMenu]=useState(false),[open,setOpen]=useState(false);
+  const [data,setData]=useState<DevelopmentStatus|null>(null),[error,setError]=useState<string|null>(null);
+  const [query,setQuery]=useState(''),[filter,setFilter]=useState('all'),[testFilter,setTestFilter]=useState('all');
+  const [tab,setTab]=useState('plan');
+  const menuDialog=useRef<HTMLDialogElement>(null),trackerDialog=useRef<HTMLDialogElement>(null);
+  const busy=useRef(false);
+  const refresh=useCallback(async()=>{
+    if(busy.current)return;
+    busy.current=true;
+    try{
+      const response=await fetch('/api/development-status',{cache:'no-store',signal:AbortSignal.timeout(12000)});
+      if(!response.ok)throw new Error();
+      const next=await response.json();
+      if(!Array.isArray(next.stages)||!Array.isArray(next.tests))throw new Error();
+      setData(next);setError(null);
+    }catch{setError('Връзката е прекъсната. Показаните резултати може да са остарели. Повторен опит на всеки 15 секунди.');}
+    finally{busy.current=false;}
+  },[]);
+  useEffect(()=>{void refresh();},[refresh]);
+  useEffect(()=>{
+    if(!open)return;
+    const timer=setInterval(()=>{if(!document.hidden)void refresh();},15000);
+    const onVisible=()=>{if(!document.hidden)void refresh();};
+    document.addEventListener('visibilitychange',onVisible);
+    return()=>{clearInterval(timer);document.removeEventListener('visibilitychange',onVisible);};
+  },[open,refresh]);
+  useEffect(()=>{if(menu)menuDialog.current?.showModal();else menuDialog.current?.close();},[menu]);
+  useEffect(()=>{
+    if(open){trackerDialog.current?.showModal();void refresh();}else trackerDialog.current?.close();
+    document.body.style.overflow=open||menu?'hidden':'';
+    return()=>{document.body.style.overflow='';};
+  },[open,menu,refresh]);
+  const stages=data?.stages||[],tests=data?.tests||[];
+  const visible=stages.filter(s=>(filter==='all'||s.status===filter)&&`${s.title} ${s.remaining.join(' ')} ${s.id}`.toLocaleLowerCase('bg').includes(query.toLocaleLowerCase('bg')));
+  const completed=stages.filter(s=>s.status==='green');
+  const latest=tests.filter(t=>t.evidence).sort((a,b)=>Date.parse(b.evidence!.startedAt)-Date.parse(a.evidence!.startedAt));
   return <>
-    <button className="burgerButton" aria-label="Отвори меню" onClick={()=>setMenu(true)}><span/><span/><span/></button>{menu&&<div className="menuShade" onClick={()=>setMenu(false)}/>}<aside className={`sidePanel ${menu?"sideOpen":""}`}><div className="sidePanelTop"><div><div className="miniLabel">ENCHEV AUCTIONS</div><strong>System Command Center</strong></div><button className="iconButton" onClick={()=>setMenu(false)}>×</button></div><button className="sideMenuItem" onClick={()=>{setOpen(true);setMenu(false);}}><span className="sideMenuIcon">◫</span><span><b>Етапи</b><small>Истински системен план 0 → 100%</small></span><span>›</span></button><div className="sideStatusBox"><div className="liveLine"><i/> LOCAL REALTIME · CLOUD NEXT</div><span>Системен прогрес</span><b>{progress}%</b><div className="miniProgress"><i style={{width:`${progress}%`}}/></div><small>{totals.green} работят · {totals.yellow} тест/грешка · {totals.red} липсват</small></div></aside>
-    {open&&<section className="controlOverlay"><header className="controlHeader"><div><div className="eyebrow">SYSTEM SOURCE OF TRUTH · 0 → 100%</div><h1>Enchev Auctions — Етапи</h1><p>Само реалната система: архитектура, функции, тестове, грешки, пропуски, security, providers, international readiness и production.</p></div><button className="closeControl" onClick={()=>setOpen(false)}>×</button></header>
-      <div className="controlKpis"><div><span>ПРОГРЕС</span><b>{progress}%</b><small>{all.length} системни точки</small></div><div className="kGreen"><span>РАБОТИ</span><b>{totals.green}</b><small>доказано</small></div><div className="kYellow"><span>ТЕСТ / ГРЕШКА</span><b>{totals.yellow}</b><small>не е приключено</small></div><div className="kRed"><span>ЛИПСВА</span><b>{totals.red}</b><small>не е построено</small></div><div><span>LIVE</span><b className="clockText">{now.toLocaleTimeString("bg-BG")}</b><small>локален realtime</small></div></div>
-      <div className="nextGrid"><div className="nextCard"><span>NEXT SYSTEM BLOCKER</span><b>{next?`${next.id} · ${next.label}`:"Всичко е GREEN"}</b></div></div>
-      <div className="controlTools"><div className="filterGroup">{(["all","green","yellow","red"] as const).map(v=><button key={v} className={filter===v?"active":""} onClick={()=>setFilter(v)}>{v==="all"?"Всички":v==="green"?"Работи":v==="yellow"?"Тест/грешка":"Липсва"}</button>)}</div><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Търси функция, тест, етап..."/></div>
-      <div className="gapBox"><div><b>Открихме пропуск?</b><small>Добавяме го веднага. Нищо не остава само в чата.</small></div><div className="gapInput"><input value={gapText} onChange={e=>setGapText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addGap()} placeholder="Нова липсваща системна стъпка..."/><button onClick={addGap}>Добави пропуск</button></div></div>
-      <div className="phaseList">{visible.map(p=>{const g=p.tasks.filter(t=>(statuses[t.id]||t.defaultStatus)==="green").length,y=p.tasks.filter(t=>(statuses[t.id]||t.defaultStatus)==="yellow").length,r=p.tasks.length-g-y,pct=Math.round(g/p.tasks.length*100);return <details className={`phaseBlock ${p.id==="GAP"?"gapPhase":""}`} key={p.id} open={p.id==="01"||p.id==="GAP"}><summary className="phaseHead"><div><span>ЕТАП {p.id}</span><b>{p.title}</b></div><div className="phaseCounts"><i className="greenDot">{g}</i><i className="yellowDot">{y}</i><i className="redDot">{r}</i><strong>{pct}%</strong></div></summary><div className="phaseTasks">{p.tasks.map(t=>{const st=statuses[t.id]||t.defaultStatus,n=notes[t.id]||{};return <article key={t.id} className={`taskCard task-${st}`}><div className="taskTop"><div className="taskMain"><span className="taskId">{t.id}</span>{t.kind!=="core"&&<span className={`kind kind-${t.kind}`}>{t.kind.toUpperCase()}</span>}<b>{t.label}</b><small>{st==="green"?"Работи и е проверено":st==="yellow"?"Има тест, грешка или незавършена проверка":"Още не е построено"}</small></div><div className="statusButtons"><button className={st==="green"?"green":""} onClick={()=>setStatus(t.id,"green")}>РАБОТИ</button><button className={st==="yellow"?"yellow":""} onClick={()=>setStatus(t.id,"yellow")}>ТЕСТ/ГРЕШКА</button><button className={st==="red"?"red":""} onClick={()=>setStatus(t.id,"red")}>ЛИПСВА</button>{p.id==="GAP"&&<button className="removeGap" onClick={()=>removeGap(t.id)}>×</button>}</div></div><div className="taskDetails"><input value={n.evidence||""} onChange={e=>setNote(t.id,"evidence",e.target.value)} placeholder="Evidence: URL / commit / test result"/><input value={n.blocker||""} onChange={e=>setNote(t.id,"blocker",e.target.value)} placeholder="Грешка / blocker / какво остава"/><span>{n.updatedAt?`Update ${new Date(n.updatedAt).toLocaleString("bg-BG")}`:"No update yet"}</span></div></article>;})}</div></details>;})}</div>
-      <footer className="controlFooter"><b>Правило:</b> GREEN само когато функцията реално работи и има доказателство. YELLOW при тест, грешка, частично работещо или чакаща проверка. RED когато липсва. След Supabase този Command Center преминава от local realtime към cloud realtime между устройства.</footer>
-    </section>}
+    <button className="burgerButton" aria-label="Отвори меню" aria-expanded={menu} onClick={()=>setMenu(true)}><span/><span/><span/></button>
+    <dialog ref={menuDialog} className="navDialog" onCancel={()=>setMenu(false)} onClose={()=>setMenu(false)} aria-label="Главно меню">
+      <div className="sidePanelTop"><div><div className="miniLabel">ENCHEV AUCTIONS</div><strong>Контролен център</strong></div><button className="iconButton" aria-label="Затвори меню" onClick={()=>setMenu(false)}>×</button></div>
+      <button className="sideMenuItem" onClick={()=>{setMenu(false);setOpen(true);}}><span>◫</span><span><b>Етапи</b><small>План · тестове · реални резултати</small></span><span>→</span></button>
+      <p className="muted">Готовност: {data?`${data.percent}%`:'проверяваме…'}</p>
+      <p className="muted">Зелено само след всички задължителни проверки.</p>
+    </dialog>
+    <dialog ref={trackerDialog} className="trackerDialog" onCancel={()=>setOpen(false)} onClose={()=>setOpen(false)} aria-labelledby="tracker-title">
+      <header className="trackerHeader"><div><div className="eyebrow">ENCHEV AUCTIONS / DEVELOPMENT</div><h1 id="tracker-title">Етапи<span className="headerDot">.</span></h1><p className="muted">От основата до първия завършен търг. Всяка зелена отметка изисква доказателство.</p></div><button className="closeControl" aria-label="Затвори етапи" onClick={()=>setOpen(false)}>×</button></header>
+      <div className="trackerBody">
+      {error&&<div role="alert" className="warning">{error}</div>}
+      {!data?<p role="status">{error?'Няма потвърдено състояние.':'Зареждаме реалното състояние…'}</p>:<>
+        <section className="summaryGrid" aria-label="Обща готовност">
+          <div className="progressCard"><span className="eyebrow">ДОКАЗАНА ГОТОВНОСТ</span><strong>{data.percent}<small>%</small></strong><progress value={data.percent} max="100"/><p>{data.productionReady&&!error?'🟢 PRODUCTION READY':'НЕ Е ГОТОВО ЗА РЕАЛНИ ТЪРГОВЕ'}</p></div>
+          <div className="metric"><span>Проверени етапи</span><b className="greenText">{completed.length}<small> / 28</small></b><p>Всички тестове са минали</p></div>
+          <div className="metric"><span>Тестове PASS</span><b>{tests.filter(t=>t.status==='PASS').length}<small> / {tests.length}</small></b><p>{tests.filter(t=>t.status==='FAIL').length} FAIL · {tests.filter(t=>t.status==='NOT RUN').length} NOT RUN</p></div>
+          <div className="metric"><span>Обновяване</span><b className="smallMetric">{error?'Прекъснато':'На 15 секунди'}</b><p>{stamp(data.checkedAt)} · София</p><button className="textButton" onClick={()=>void refresh()}>Обнови сега ↗</button></div>
+        </section>
+        <section className="releaseBar"><span>СРЕДА <b>{data.environmentName}</b></span><span>КЛОН <b>{data.branch}</b></span><span>COMMIT <code>{data.commit.slice(0,12)}</code></span><span>DEPLOY <b>{data.deployment.state}</b></span>{data.deployment.url&&<a href={`https://${data.deployment.url}`} target="_blank" rel="noreferrer">Отвори deployment ↗</a>}</section>
+        <nav className="trackerTabs" aria-label="Раздели на етапите">{[['plan','План и етапи'],['tests',`Test Center · ${tests.length}`],['activity','Commit / Deploy / CI'],['decisions','Decision Log']].map(([id,label])=><button key={id} aria-current={tab===id?'page':undefined} className={tab===id?'active':''} onClick={()=>setTab(id)}>{label}</button>)}</nav>
+        {tab==='plan'&&<>
+          <div className="workGrid"><section className="workCard"><h2>РАБОТИМ СЕГА</h2><p>Техническа основа и доказуем Test Center</p><small>Build, TypeScript, правила за статуса, staging smoke. Неизпълнените интеграции остават червени.</small></section><section className="workCard"><h2>СЛЕДВАЩО</h2><p>Изолирани Supabase среди → migrations → Auth</p><small>После seller flow, каталог и атомарно наддаване.</small></section><section className="workCard blocked"><h2>БЛОКИРАНО</h2><p>{data.blockers.length} непокрити условия</p><details><summary>Покажи зависимостите</summary><ul>{data.blockers.map(b=><li key={b}>{b}</li>)}</ul></details></section><section className="workCard"><h2>ЗАВЪРШЕНО</h2><p>{completed.length?completed.map(s=>s.title).join(', '):'Няма напълно приет етап'}</p><small>Преминал отделен тест не означава завършен модул.</small></section></div>
+          <div className="controlTools"><div className="filterGroup">{[['all','Всички'],['green','🟢 Проверени'],['yellow','🟡 Частични'],['red','🔴 Липсват / проблем']].map(([id,label])=><button key={id} className={filter===id?'active':''} onClick={()=>setFilter(id)}>{label}</button>)}</div><input aria-label="Търси етап" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Търси етап или функция…"/></div>
+          <div className="phaseList">{visible.map(s=><details className={`phaseBlock status-${s.status}`} key={s.id}><summary className="phaseHead"><div><span>ЕТАП {String(s.id).padStart(2,'0')}</span><b>{s.title}</b></div><div className="stageSummary"><span>{statusLabels[s.status as keyof typeof statusLabels]}</span><strong>{s.percent}%</strong></div></summary><div className="phaseContent"><dl><dt>Какво е готово</dt><dd>{s.done.length?s.done.join(' · '):'Няма реализирана функционалност.'}</dd><dt>Какво се прави сега</dt><dd>{s.now}</dd><dt>Какво остава</dt><dd>{s.remaining.join(' · ')}</dd><dt>Тестове</dt><dd><div className="testChips">{s.tests.map(id=>{const t=tests.find(t=>t.id===id);return <span className={`testBadge test-${t?.status.replace(' ','-')}`} key={id}>{t?.title}: <b>{t?.status}</b></span>;})}</div></dd><dt>Грешки / блокиране</dt><dd>{s.errors.length?s.errors.join(' · '):s.blocked||'Няма регистриран FAIL. Непуснатите тестове не доказват липса на грешки.'}</dd><dt>Следваща стъпка</dt><dd>{s.next}</dd></dl></div></details>)}</div>
+          {!visible.length&&<p className="muted">Няма етапи за избрания филтър.</p>}
+          <section className="recentTests"><h2>ПОСЛЕДНИ ТЕСТОВЕ</h2>{latest.length?latest.slice(0,6).map(t=><div key={t.id}><span>{t.title}</span><b className={`testBadge test-${t.status.replace(' ','-')}`}>{t.status}</b><small>{stamp(t.evidence?.finishedAt)}</small></div>):<p>Няма резултати за текущия commit.</p>}</section>
+        </>}
+        {tab==='tests'&&<section><div className="sectionIntro"><h2>Test Center</h2><p>NOT RUN → RUNNING → PASS / FAIL. Само резултати за текущия commit. Тестовете се пускат от доверения build/CI runner; тук няма бутон за измислен PASS.</p></div><div className="filterGroup testFilters">{['all','NOT RUN','RUNNING','PASS','FAIL'].map(state=><button key={state} className={testFilter===state?'active':''} onClick={()=>setTestFilter(state)}>{state==='all'?'Всички':state}</button>)}</div><div className="testTableWrap"><table className="testTable"><thead><tr><th>Тест / обхват</th><th>Статус</th><th>Изпълнение · София</th><th>Резултат / грешка</th></tr></thead><tbody>{tests.filter(t=>testFilter==='all'||t.status===testFilter).map(t=><tr key={t.id}><td><b>{t.title}</b><small>{t.id} · {t.scope} · задължителен</small></td><td><span className={`testBadge test-${t.status.replace(' ','-')}`}>{t.status}</span></td><td>{stamp(t.evidence?.startedAt)}{t.evidence&&<small>Край: {stamp(t.evidence.finishedAt)} · {t.evidence.durationMs??'—'} ms<br/>Източник: {t.evidence.source}</small>}</td><td>{t.evidence?.result||'Предстои реално изпълнение.'}{t.evidence?.error&&<p className="redText">{t.evidence.error}</p>}</td></tr>)}</tbody></table></div><p className="muted">Процентът отчита задължителните проверки с равно тегло по етап. Той не е оценка на оставащото работно време.</p></section>}
+        {tab==='activity'&&<section className="activity"><h2>Real-Time Development Status</h2><p>{data.cloudConnected?'🟢 Cloud evidence endpoint е свързан':'🔴 Cloud evidence е недостъпен'}</p><p className="muted">Сървърно опресняване на всеки 15 секунди. Commit, deployment и тестовите доказателства са отделни проверки.</p><div className="workGrid"><article className="workCard"><h3>GitHub / CI</h3><p>{data.github.connected?'Свързано':'🟡 Няма live връзка'}</p><small>{data.github.error||`Последен commit: ${data.github.latestCommit?.slice(0,12)}`}</small>{data.github.runs.map(run=><p key={run.id}><a href={run.url} target="_blank" rel="noreferrer">{run.name}</a> · {run.state} · {run.commit.slice(0,8)} · {stamp(run.updatedAt)}</p>)}</article><article className="workCard"><h3>Vercel</h3><p>{data.vercel.connected?'Свързано':'🟡 Показан е текущият deployment'}</p><small>{data.vercel.error}</small>{data.vercel.deployments.map((d:{id:string;state:string;url:string;commit:string|null})=><p key={d.id}><a href={`https://${d.url}`} target="_blank" rel="noreferrer">{d.state}</a> · {d.commit?.slice(0,8)}</p>)}</article></div><h3>Конфигурация на обслужващата среда</h3><p className="muted">Показва се само наличие на настройки. Наличен ключ не доказва работеща интеграция.</p><ul className="envList">{data.environment.map(e=><li key={e.name}><code>{e.name}</code><span>{e.configured?'🟡 Зададено, интеграцията чака тест':'🔴 Липсва'}</span></li>)}</ul><p>Test report: {stamp(data.reportGeneratedAt)} · commit {data.reportCommit.slice(0,12)}</p></section>}
+        {tab==='decisions'&&<section><h2>Decision Log</h2>{data.decisions.map(d=><article className="decision" key={d.id}><code>{d.id}</code><p>{d.text}</p></article>)}</section>}
+        <footer className="controlFooter">🟢 Всички задължителни тестове са PASS · 🟡 Частично готово / непотвърдено · 🔴 Липсва / критичен FAIL.<br/><b>100% се отключва само при завършени етапи и всички задължителни тестове PASS, включително production smoke и пълния BMW сценарий.</b></footer>
+      </>}
+      </div>
+    </dialog>
   </>;
 }
