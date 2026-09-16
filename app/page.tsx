@@ -1,16 +1,16 @@
-import MasterControlCenter from "./components/MasterControlCenter";
+import SystemStageTracker from "./components/SystemStageTracker";
 
 export default function Home() {
   return (
     <main className="page">
-      <MasterControlCenter />
+      <SystemStageTracker />
       <section className="card">
         <div className="badge">ENCHEV AUCTIONS</div>
         <h1>System online.</h1>
-        <p>Всичко от 0 → 100% се управлява от Command Center → Етапи.</p>
+        <p>Само реалната система от 0 → 100% се управлява от Command Center → Етапи.</p>
         <div className="homeStatus">
           <span className="homeStatusDot" />
-          <span>GitHub → Vercel active · Следваща техническа стъпка: Supabase</span>
+          <span>GitHub → Vercel active · Следваща системна стъпка: Supabase</span>
         </div>
       </section>
     </main>
