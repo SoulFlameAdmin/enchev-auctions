@@ -23,7 +23,7 @@ function log(line) {
   if (!text) return;
   const row = `${new Date().toISOString()} ${text}`;
   logs.push(row);
-  if (logs.length > 30) logs = logs.slice(-30);
+  if (logs.length > 40) logs = logs.slice(-40);
   console.log(row);
 }
 
@@ -41,7 +41,7 @@ function markResumeOnce() {
 }
 
 function startWorker(forceResume = false) {
-  if (workerRunning()) return { ok: true, alreadyRunning: true };
+  if (workerRunning()) return { ok: true, alreadyRunning: true, pid: child.pid };
   if (forceResume) markResumeOnce();
 
   intentionalStop = false;
@@ -60,7 +60,7 @@ function startWorker(forceResume = false) {
   });
   startedAt = new Date().toISOString();
   lastExit = null;
-  log(`[CONTROL] Worker started pid=${child.pid}${forceResume ? " force-resume" : ""}`);
+  log(`[CONTROL] Real local DAVID worker started pid=${child.pid}${forceResume ? " force-resume" : ""}`);
 
   child.stdout.on("data", (d) => String(d).split(/\r?\n/).forEach(log));
   child.stderr.on("data", (d) => String(d).split(/\r?\n/).forEach((x) => log(`[stderr] ${x}`)));
@@ -76,7 +76,7 @@ function startWorker(forceResume = false) {
     }
   });
 
-  return { ok: true, pid: child.pid };
+  return { ok: true, pid: child.pid, mode: "local-pc-chatgpt-worker" };
 }
 
 function stopWorker() {
@@ -101,16 +101,23 @@ function status() {
   const state = readJson(STATE_FILE, { turnsSent: 0, stopped: false });
   return {
     online: true,
+    mode: "local-pc-chatgpt-worker",
     workerRunning: workerRunning(),
     pid: workerRunning() ? child.pid : null,
     startedAt,
     lastExit,
     turnsSent: Number(state.turnsSent || 0),
+    relayAttempts: Number(state.relayAttempts || 0),
+    recoveryAttempt: Number(state.recoveryAttempt || 0),
+    watchdog: state.watchdog || null,
+    pendingSince: state.pendingSince || null,
     stopped: Boolean(state.stopped),
     stopReason: state.stopReason || null,
     lastAssistantHash: state.lastAssistantHash || null,
+    lastAction: state.lastAction || null,
+    stateUpdatedAt: state.updatedAt || null,
     lastLog: logs.at(-1) || null,
-    recentLogs: logs.slice(-8)
+    recentLogs: logs.slice(-10)
   };
 }
 
