@@ -10,6 +10,7 @@ const MAX_TURNS = Number(process.env.DAVID_MAX_TURNS || 30);
 const POLL_MS = Number(process.env.DAVID_POLL_MS || 1800);
 const COOLDOWN_MS = Number(process.env.DAVID_COOLDOWN_MS || 3500);
 const STATE_FILE = process.env.DAVID_STATE_FILE || path.join(process.cwd(), ".david-enchev-state.json");
+const RESUME_ONCE_FILE = process.env.DAVID_RESUME_ONCE_FILE || path.join(process.cwd(), ".david-resume-once");
 const STOP_MARKER = "[[DAVID_STOP]]";
 
 const CONTINUE_PROMPT = `@GitHub @Vercel @Supabase
@@ -44,6 +45,16 @@ function loadState() {
 
 function saveState(state) {
   fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2), "utf8");
+}
+
+function consumeResumeOnce() {
+  try {
+    if (!fs.existsSync(RESUME_ONCE_FILE)) return false;
+    fs.unlinkSync(RESUME_ONCE_FILE);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function pageUsable(page) {
@@ -292,22 +303,36 @@ async function main() {
 
     const current = await latestAssistantText(page);
     if (current.includes(STOP_MARKER)) {
-      console.log("[DAVID] Existing last answer contains DAVID_STOP. No automatic send.");
-      return;
-    }
+      if (consumeResumeOnce()) {
+        console.log("[DAVID] Intentional resume requested from Enchev control panel.");
+        state.lastAssistantHash = hashText(current);
+        state.stopped = false;
+        delete state.stopReason;
+        saveState(state);
+        await sendContinue(page);
+        state.turnsSent += 1;
+        saveState(state);
+      } else {
+        state.stopped = true;
+        state.stopReason = current.slice(-1200);
+        saveState(state);
+        console.log("[DAVID] Existing last answer contains DAVID_STOP. No automatic send.");
+        return;
+      }
+    } else {
+      const block = await hasPlatformBlock(page);
+      if (block) {
+        console.log(`[DAVID] Stop: platform blocker detected: ${block}`);
+        return;
+      }
 
-    const block = await hasPlatformBlock(page);
-    if (block) {
-      console.log(`[DAVID] Stop: platform blocker detected: ${block}`);
-      return;
+      state.lastAssistantHash = hashText(current);
+      saveState(state);
+      console.log("[DAVID] First cycle -> sending continue instruction.");
+      await sendContinue(page);
+      state.turnsSent += 1;
+      saveState(state);
     }
-
-    state.lastAssistantHash = hashText(current);
-    saveState(state);
-    console.log("[DAVID] First cycle -> sending continue instruction.");
-    await sendContinue(page);
-    state.turnsSent += 1;
-    saveState(state);
   }
 
   while (state.turnsSent < MAX_TURNS) {
@@ -328,6 +353,20 @@ async function main() {
     if (!answer) continue;
 
     if (answer.includes(STOP_MARKER)) {
+      if (consumeResumeOnce()) {
+        console.log("[DAVID] Intentional resume requested from Enchev control panel.");
+        state.lastAssistantHash = hashText(answer);
+        state.stopped = false;
+        delete state.stopReason;
+        saveState(state);
+        await sleep(COOLDOWN_MS);
+        await sendContinue(page);
+        state.turnsSent += 1;
+        saveState(state);
+        console.log(`[DAVID] Resume sent as cycle ${state.turnsSent}/${MAX_TURNS}`);
+        continue;
+      }
+
       console.log("[DAVID] ChatGPT requested human action. DAVID_STOP detected.");
       state.stopped = true;
       state.stopReason = answer.slice(-1200);
