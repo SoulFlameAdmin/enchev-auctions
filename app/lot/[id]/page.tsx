@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import "../lot.css";
 
 const gallery=[
@@ -22,6 +22,7 @@ export default function LotPage(){
   const params=useParams<{id:string}>();
   const lot=String(params?.id||"EA-10539").toUpperCase();
   const [activeImage,setActiveImage]=useState(0);
+  const [viewerOpen,setViewerOpen]=useState(false);
   const [bid,setBid]=useState(21900);
   const [bidInput,setBidInput]=useState("22000");
   const title=useMemo(()=>lot==="EA-10482"?"2018 BMW M4 F82":lot==="EA-10511"?"2021 Mercedes-Benz GLC":"2022 Audi RS3 Sportback",[lot]);
@@ -30,6 +31,25 @@ export default function LotPage(){
     const value=Number(bidInput.replace(/[^0-9]/g,""));
     if(Number.isFinite(value)&&value>bid){setBid(value);setBidInput(String(value+100));}
   };
+
+  const showPreviousImage=()=>setActiveImage(index=>(index-1+gallery.length)%gallery.length);
+  const showNextImage=()=>setActiveImage(index=>(index+1)%gallery.length);
+
+  useEffect(()=>{
+    if(!viewerOpen)return;
+    const previousOverflow=document.body.style.overflow;
+    const onKeyDown=(event:KeyboardEvent)=>{
+      if(event.key==="Escape")setViewerOpen(false);
+      if(event.key==="ArrowLeft")setActiveImage(index=>(index-1+gallery.length)%gallery.length);
+      if(event.key==="ArrowRight")setActiveImage(index=>(index+1)%gallery.length);
+    };
+    document.body.style.overflow="hidden";
+    window.addEventListener("keydown",onKeyDown);
+    return()=>{
+      document.body.style.overflow=previousOverflow;
+      window.removeEventListener("keydown",onKeyDown);
+    };
+  },[viewerOpen]);
 
   return <main className="lotPage">
     <header className="lotHeader">
@@ -44,9 +64,13 @@ export default function LotPage(){
 
       <div className="lotGrid">
         <div>
-          <div className="lotGallery">
-            <div className="lotMainImage"><img src={gallery[activeImage]} alt={title}/><span className="lotImageBadge">RUN & DRIVE · 1/18</span></div>
-            <div className="lotThumbs">{gallery.map((src,index)=><button key={src} className={`lotThumb ${index===activeImage?"active":""}`} onClick={()=>setActiveImage(index)}><img src={src} alt={`${title} ${index+1}`}/></button>)}</div>
+          <div className="lotGallery" data-design-task="D19" aria-label={`Галерия за ${title}`}>
+            <button type="button" className="lotMainImage" onClick={()=>setViewerOpen(true)} aria-label={`Отвори изображение ${activeImage+1} от ${gallery.length} на цял екран`}>
+              <img src={gallery[activeImage]} alt={`${title} — изображение ${activeImage+1}`}/>
+              <span className="lotImageBadge">RUN & DRIVE · {activeImage+1}/{gallery.length}</span>
+              <span className="lotZoomHint" aria-hidden="true">⛶ Цял екран</span>
+            </button>
+            <div className="lotThumbs" role="list" aria-label="Миниатюри на автомобила">{gallery.map((src,index)=><button type="button" key={src} className={`lotThumb ${index===activeImage?"active":""}`} onClick={()=>setActiveImage(index)} aria-label={`Покажи изображение ${index+1} от ${gallery.length}`} aria-pressed={index===activeImage}><img src={src} alt=""/></button>)}</div>
           </div>
 
           <section className="lotSection"><div className="lotSectionHead"><div><h2>Основни характеристики</h2><span>Проверени данни за лота</span></div></div><div className="lotSpecs">
@@ -72,5 +96,23 @@ export default function LotPage(){
         </aside>
       </div>
     </div>
+
+    {viewerOpen&&<div className="lotViewer" role="dialog" aria-modal="true" aria-labelledby="lot-viewer-title" onMouseDown={event=>{if(event.target===event.currentTarget)setViewerOpen(false)}}>
+      <div className="lotViewerShell">
+        <div className="lotViewerTop">
+          <div><span>ENCHEV MEDIA VIEWER</span><strong id="lot-viewer-title">{title}</strong></div>
+          <button type="button" className="lotViewerClose" onClick={()=>setViewerOpen(false)} aria-label="Затвори галерията">✕</button>
+        </div>
+        <div className="lotViewerStage">
+          <button type="button" className="lotViewerNav lotViewerPrev" onClick={showPreviousImage} aria-label="Предишно изображение">‹</button>
+          <img src={gallery[activeImage]} alt={`${title} — изображение ${activeImage+1} на цял екран`}/>
+          <button type="button" className="lotViewerNav lotViewerNext" onClick={showNextImage} aria-label="Следващо изображение">›</button>
+        </div>
+        <div className="lotViewerBottom">
+          <span className="lotViewerCount" aria-live="polite">Изображение {activeImage+1} от {gallery.length}</span>
+          <div className="lotViewerThumbs" aria-label="Избери изображение">{gallery.map((src,index)=><button type="button" key={`viewer-${src}`} className={`lotViewerThumb ${index===activeImage?"active":""}`} onClick={()=>setActiveImage(index)} aria-label={`Покажи изображение ${index+1}`} aria-pressed={index===activeImage}><img src={src} alt=""/></button>)}</div>
+        </div>
+      </div>
+    </div>}
   </main>;
 }
