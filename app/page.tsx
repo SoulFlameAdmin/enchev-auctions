@@ -2,6 +2,7 @@ import MasterSystemPlanV1 from "./components/MasterSystemPlanV1";
 import SeedAuditGaps from "./components/SeedAuditGaps";
 import BulgarianStageLabels from "./components/BulgarianStageLabels";
 import DesignPlanExtension from "./components/DesignPlanExtension";
+import HomeLiveSpotlight from "./components/HomeLiveSpotlight";
 import { accountNavigation, primaryNavigation } from "./site-navigation";
 
 const featuredCars = [
@@ -45,11 +46,7 @@ export default function Home(){
           <div className="eaHeroStats"><div className="eaHeroStat"><b>10K+</b><span>активни лота</span></div><div className="eaHeroStat"><b>24/7</b><span>наблюдение на търгове</span></div><div className="eaHeroStat"><b>1 платформа</b><span>оферта → транспорт</span></div></div>
         </div>
 
-        <aside className="eaLiveCard">
-          <div className="eaLiveTop"><span className="eaLivePill"><i/>ПРОДАВА СЕ НА ЖИВО</span><small>LOT EA-10539</small></div>
-          <div className="eaLiveImage"><img src="https://images.unsplash.com/photo-1655283733642-f1d813b40616?auto=format&fit=crop&w=1200&q=86" alt="2022 Audi RS3 Sportback"/><div className="eaLiveOrb"><b>NEW<br/>BID</b><small>00:10</small></div></div>
-          <div className="eaLiveBody"><div className="eaLiveMeta"><span>LOT EA-10539</span><span>● VERIFIED</span></div><h3>2022 Audi RS3 Sportback</h3><p>41 280 км · Minor scratches · Crewe, UK</p><div className="eaLiveBid"><div><small>Текуща ставка</small><strong>€21 900</strong></div><a href="/live-auctions">Влез в търга →</a></div></div>
-        </aside>
+        <HomeLiveSpotlight />
       </div>
 
       <div className="eaHeroFoot"><strong>DRIVE A BETTER TOMORROW</strong><span>ENCHEV AUCTIONS · INTERNATIONAL MARKETPLACE</span></div>
