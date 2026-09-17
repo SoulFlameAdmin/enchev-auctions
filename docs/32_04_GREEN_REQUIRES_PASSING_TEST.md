@@ -1,6 +1,6 @@
 # Enchev Auctions — 32.04 GREEN requires passing test where applicable
 
-Status: YELLOW — implementation on main; verification pending
+Status: GREEN — test tasks require explicit passing-test evidence and the rule is verified
 MASTER SYSTEM PLAN v1.0 FROZEN task: `32.04`
 Execution wave: `WAVE 0 — Master plan governance`
 Depends on: `32.01`, `32.02`, `32.03`
@@ -63,19 +63,26 @@ Self-test cases include:
 - production prebuild integration: `6a04a7a271d1cea605a67b32684bd2c132e67534`
 - CI verifier: `3af7b729f8f12dfa0acf230088a93bdf74a6bdb2`
 - CI workflow integration: `512dcc7f198bd26da744f6a850420ab202d07bfc`
+- governance artifact: `e33d10a20f17910ff25c85fc8269dc9bbe97d197`
 
-## GREEN gate
+## Verified evidence
 
-`32.04` becomes GREEN only after a `main` commit or proven descendant has one successful verification path where:
+- exact artifact run `35183791933` executed registry generation, all governance guards, TypeScript and production build successfully; it was superseded during post-job cleanup by a newer `main` commit and is not used as the final overall-success proof;
+- verified descendant commit: `3df71f8d66d27d2eeed0602075951dc2ed640e93`, direct child of the governance artifact commit;
+- GitHub Actions descendant run `35183833517`: overall `SUCCESS`;
+- generated frozen test registry: `236` test task IDs;
+- frozen master task ID lock: PASS, `1054` tasks, SHA-256 `b0fd3479cfef3d88148b906568aa8c1c88eccf5fa98fe676f13a5fec70aa721e`;
+- delete/renumber/reuse rejection tests: PASS;
+- GREEN evidence invariant/self-test: PASS;
+- GREEN passing-test invariant: PASS for all `236` frozen test tasks;
+- GREEN passing-test self-test: PASS for `10` policy cases;
+- TypeScript check: PASS;
+- production build: PASS, Next.js `16.3.5`, compile success, TypeScript success, static generation `9/9`;
+- Vercel canonical production URL `https://enchev-auctions.vercel.app/`: HTTP `200`;
+- Vercel runtime error check for the recent production window: no runtime errors found.
 
-- frozen ID lock PASS;
-- delete/renumber rejection tests PASS;
-- GREEN evidence invariant/self-test PASS;
-- GREEN passing-test invariant PASS;
-- GREEN passing-test rejection/acceptance self-test PASS;
-- TypeScript PASS;
-- production build PASS;
-- production HTTP/runtime regression context is healthy;
-- exact evidence is recorded before Command Center sync marks `32.04` GREEN.
+## Acceptance result
+
+All `32.04` acceptance requirements are satisfied. A frozen `kind=test` task cannot remain GREEN unless its evidence contains an explicit passing test result and no failing/pending result marker.
 
 No pricing/payment/finance scope is added by this task.
