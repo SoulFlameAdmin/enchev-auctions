@@ -2,6 +2,7 @@ import MasterSystemPlanV1 from "./components/MasterSystemPlanV1";
 import SeedAuditGaps from "./components/SeedAuditGaps";
 import BulgarianStageLabels from "./components/BulgarianStageLabels";
 import DesignPlanExtension from "./components/DesignPlanExtension";
+import { accountNavigation, primaryNavigation } from "./site-navigation";
 
 const featuredCars = [
   { lot:"EA-10482", title:"2018 BMW M4 F82", spec:"3.0 бензин · Автоматик · 82 410 км", location:"София, България", time:"Търг след 2ч 18м", price:"€12 750", badge:"RUN & DRIVE", image:"https://images.unsplash.com/photo-1658558195433-1af533e3309c?auto=format&fit=crop&w=1200&q=82" },
@@ -20,19 +21,18 @@ export default function Home(){
     <section className="eaHero" id="top">
       <div className="eaTopbar">
         <div className="eaTopbarLeft"><span className="eaDot"/><strong>LIVE MARKET</strong><span>Европа · САЩ · Канада</span></div>
-        <div className="eaTopbarRight"><span>BG · EUR</span><span>Помощ</span><span>+359 000 000 000</span></div>
+        <div className="eaTopbarRight"><span>BG · EUR</span><a href="/support">Помощ</a><span>+359 000 000 000</span></div>
       </div>
 
       <header className="eaMainnav">
         <a href="#top" className="eaBrand"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
-        <nav className="eaNavlinks">
-          <a href="/inventory">АВТОМОБИЛИ</a>
-          <a href="/inventory">ТЪРГОВЕ НА ЖИВО</a>
-          <a href="#how">КАК ДА КУПЯ</a>
-          <a href="#transport">ТРАНСПОРТ</a>
-          <a href="#contact">ПОДДРЪЖКА</a>
+        <nav className="eaNavlinks" aria-label="Основна навигация">
+          {primaryNavigation.map(item=><a key={item.key} href={item.href}>{item.label}</a>)}
         </nav>
-        <div className="eaNavactions"><button className="eaBtnGhost">Вход</button><button className="eaBtnPrimary">Регистрация</button></div>
+        <div className="eaNavactions">
+          <form action={accountNavigation.profile}><button className="eaBtnGhost" type="submit">Вход</button></form>
+          <form action={accountNavigation.register}><button className="eaBtnPrimary" type="submit">Регистрация</button></form>
+        </div>
       </header>
 
       <div className="eaHeroInner">
@@ -48,7 +48,7 @@ export default function Home(){
         <aside className="eaLiveCard">
           <div className="eaLiveTop"><span className="eaLivePill"><i/>ПРОДАВА СЕ НА ЖИВО</span><small>LOT EA-10539</small></div>
           <div className="eaLiveImage"><img src="https://images.unsplash.com/photo-1655283733642-f1d813b40616?auto=format&fit=crop&w=1200&q=86" alt="2022 Audi RS3 Sportback"/><div className="eaLiveOrb"><b>NEW<br/>BID</b><small>00:10</small></div></div>
-          <div className="eaLiveBody"><div className="eaLiveMeta"><span>LOT EA-10539</span><span>● VERIFIED</span></div><h3>2022 Audi RS3 Sportback</h3><p>41 280 км · Minor scratches · Crewe, UK</p><div className="eaLiveBid"><div><small>Текуща ставка</small><strong>€21 900</strong></div><a href="/inventory">Влез в търга →</a></div></div>
+          <div className="eaLiveBody"><div className="eaLiveMeta"><span>LOT EA-10539</span><span>● VERIFIED</span></div><h3>2022 Audi RS3 Sportback</h3><p>41 280 км · Minor scratches · Crewe, UK</p><div className="eaLiveBid"><div><small>Текуща ставка</small><strong>€21 900</strong></div><a href="/live-auctions">Влез в търга →</a></div></div>
         </aside>
       </div>
 
@@ -57,15 +57,15 @@ export default function Home(){
 
     <section className="eaSection" id="inventory">
       <div className="eaSectionHead"><div><span>ПОДБРАНИ ЛОТОВЕ</span><h2>Автомобили в търг</h2><p>LIVE, Buy Now и предстоящи лотове в един изглед.</p></div><a href="/inventory">Виж целия инвентар →</a></div>
-      <div className="eaFeaturedGrid">{featuredCars.map(car=><article className="eaFeaturedCard" key={car.lot}><div className="eaFeaturedImage"><img src={car.image} alt={car.title}/><span className="eaFeaturedBadge">{car.badge}</span></div><div className="eaFeaturedBody"><div className="eaFeaturedLot"><span>LOT {car.lot}</span><b>● VERIFIED</b></div><h3>{car.title}</h3><p>{car.spec}</p><div className="eaFeaturedInfo"><span>⌖ {car.location}</span><span>◷ {car.time}</span></div><div className="eaFeaturedBid"><div><small>Текуща ставка</small><strong>{car.price}</strong></div><a href="/inventory">Оферирай →</a></div></div></article>)}</div>
+      <div className="eaFeaturedGrid">{featuredCars.map(car=><article className="eaFeaturedCard" key={car.lot}><div className="eaFeaturedImage"><img src={car.image} alt={car.title}/><span className="eaFeaturedBadge">{car.badge}</span></div><div className="eaFeaturedBody"><div className="eaFeaturedLot"><span>LOT {car.lot}</span><b>● VERIFIED</b></div><h3>{car.title}</h3><p>{car.spec}</p><div className="eaFeaturedInfo"><span>⌖ {car.location}</span><span>◷ {car.time}</span></div><div className="eaFeaturedBid"><div><small>Текуща ставка</small><strong>{car.price}</strong></div><a href={`/lot/${car.lot}`}>Виж лота →</a></div></div></article>)}</div>
     </section>
 
     <section className="eaProcess" id="how">
       <div className="eaSection"><div className="eaSectionHead"><div><span>КАК РАБОТИ</span><h2>От търсене до доставка</h2><p>Прост процес, ясни стъпки, пълна видимост.</p></div></div><div className="eaSteps"><div className="eaStep"><span>01</span><b>Намери автомобил</b><p>Филтрирай по марка, година, локация, цена и състояние.</p></div><div className="eaStep"><span>02</span><b>Влез в търга</b><p>Следи LIVE таймера, текущата оферта и следващия лот.</p></div><div className="eaStep"><span>03</span><b>Спечели лота</b><p>Потвърди покупката, документите и плащането.</p></div><div className="eaStep"><span>04</span><b>Организирай транспорт</b><p>Проследяване на доставката до избраната дестинация.</p></div></div></div>
     </section>
 
-    <section className="eaCta" id="transport"><div><h2>Готов ли си за следващия търг?</h2><p>Отвори целия инвентар и виж кой лот е LIVE в момента.</p></div><div className="eaCtaActions"><a href="/inventory">Отвори инвентара</a><a href="/inventory">LIVE търгове</a></div></section>
+    <section className="eaCta" id="transport"><div><h2>Готов ли си за следващия търг?</h2><p>Отвори целия инвентар и виж кой лот е LIVE в момента.</p></div><div className="eaCtaActions"><a href="/inventory">Отвори инвентара</a><a href="/live-auctions">LIVE търгове</a></div></section>
 
-    <footer className="eaFooter" id="contact"><div><b>ENCHEV AUCTIONS</b><div>International vehicle auction marketplace</div></div><div>© 2026 ENCHEV · BG / EUR</div></footer>
+    <footer className="eaFooter" id="contact"><div><b>ENCHEV AUCTIONS</b><div>International vehicle auction marketplace</div></div><div><a href="/support">Поддръжка</a> · <a href="/profile">Профил</a> · © 2026 ENCHEV · BG / EUR</div></footer>
   </main>
 }
