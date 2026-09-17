@@ -40,6 +40,7 @@ function loadState() {
       recoveryAttempt: 0,
       lastAssistantHash: null,
       pendingBaselineHash: null,
+      readyForRelay: false,
       stopped: false,
       watchdog: "boot"
     };
@@ -383,6 +384,7 @@ async function waitForResponseStart(context, page, baselineHash, state) {
 async function sendRelayWithRecovery(context, page, state) {
   const baselineHash = hashText(await latestAssistantText(page));
   state.pendingBaselineHash = baselineHash;
+  state.readyForRelay = false;
   saveState(state, "Preparing relay cycle");
 
   for (let attempt = 1; attempt <= MAX_RECOVERY_ATTEMPTS; attempt++) {
@@ -481,13 +483,15 @@ async function waitForNewAssistantCompletion(context, page, state, baselineHash)
         state.lastAssistantHash = finalHash;
 
         if (finalText.includes(STOP_MARKER)) {
+          state.readyForRelay = false;
           state.watchdog = "waiting-human";
           saveState(state, "New completed response contains DAVID_STOP");
           return { status: "stop-marker", page, text: finalText, hash: finalHash };
         }
 
+        state.readyForRelay = true;
         state.watchdog = "answer-complete";
-        saveState(state, "New assistant response completed");
+        saveState(state, "New assistant response completed and next relay is armed");
         return { status: "complete", page, text: finalText, hash: finalHash };
       }
     }
@@ -505,6 +509,7 @@ async function waitForNewAssistantCompletion(context, page, state, baselineHash)
 
 function stopForMarker(state, text, hash) {
   state.stopped = true;
+  state.readyForRelay = false;
   state.stopReason = String(text || "").slice(-1200);
   state.lastAssistantHash = hash || hashText(text || "");
   state.watchdog = "waiting-human";
@@ -552,16 +557,15 @@ async function main() {
   state.watchdog = "monitoring";
   saveState(state, "DAVID V4 connected to fixed ChatGPT session");
 
-  console.log(`[DAVID] V4 stale-stop protection: ON. max cycles: ${MAX_TURNS}.`);
+  console.log(`[DAVID] V4 stale-stop protection: ON. continuous relay: ON. max cycles: ${MAX_TURNS}.`);
   console.log(`[DAVID] start timeout=${RESPONSE_START_TIMEOUT_MS}ms stall timeout=${STALL_TIMEOUT_MS}ms recovery attempts=${MAX_RECOVERY_ATTEMPTS}`);
   console.log("[DAVID] Ctrl+C stops the worker.");
 
   while (state.turnsSent < MAX_TURNS) {
     page = await waitForSession(context, page);
 
-    // Critical V4 rule: never inspect DAVID_STOP while GPT is generating or
-    // while the newest turn is the relay/user turn. This prevents a stale STOP
-    // from the previous assistant answer from killing the new response.
+    // Never inspect DAVID_STOP while GPT is generating or while the newest
+    // turn is a user/relay turn. That text would belong to the old answer.
     if (await isGenerating(page)) {
       const baselineHash = state.pendingBaselineHash || hashText(await latestAssistantText(page));
       const result = await waitForNewAssistantCompletion(context, page, state, baselineHash);
@@ -608,6 +612,8 @@ async function main() {
       if (result.status === "stop") return;
       if (result.status === "stalled") {
         page = await refreshChat(context, page, state, 1);
+      } else {
+        await sleep(COOLDOWN_MS);
       }
       const cycle = await runOneCycle(context, page, state);
       page = cycle.page;
@@ -630,6 +636,7 @@ async function main() {
       }
       console.log("[DAVID] Intentional resume accepted for existing completed DAVID_STOP. Sending next relay now.");
       state.stopped = false;
+      state.readyForRelay = false;
       delete state.stopReason;
       state.lastAssistantHash = completed.hash;
       saveState(state, "Intentional resume accepted; stale STOP is now consumed");
@@ -640,9 +647,16 @@ async function main() {
       continue;
     }
 
-    // A completed answer without STOP is safe to advance. If it is already the
-    // last processed answer, stay idle instead of duplicating a relay on restart.
     if (completed.hash === state.lastAssistantHash) {
+      if (state.readyForRelay) {
+        state.readyForRelay = false;
+        saveState(state, "Completed answer already processed; executing armed next relay");
+        const cycle = await runOneCycle(context, page, state);
+        page = cycle.page;
+        if (!cycle.ok) return;
+        continue;
+      }
+
       state.watchdog = "monitoring";
       saveState(state, "Latest completed answer already processed; waiting");
       await sleep(POLL_MS);
@@ -650,6 +664,7 @@ async function main() {
     }
 
     state.lastAssistantHash = completed.hash;
+    state.readyForRelay = false;
     saveState(state, "Completed answer accepted; preparing relay");
     await sleep(COOLDOWN_MS);
     const cycle = await runOneCycle(context, page, state);
