@@ -29,6 +29,7 @@ const VERIFIED_WAVE_0: Record<string, string> = {
   "32.06": "docs/32_06_RED_NOT_IMPLEMENTED.md · verifier 3ee0bf9705f19726e0d298f94dc049652a4fbe78 · artifact f698956b8972469f9c2184f8a869728715a19a85 · GitHub Actions run 35213784067 PASS · production descendant fa9de16de39b09a5075ee2db2205b182900fa380 · Vercel dpl_41a1wTGhRPiBPPvYo4aAczszLJqx READY · production HTTP 200/runtime clean",
   "32.07": "docs/32_07_APPEND_ONLY_GAP_IDS.md · implementation fdd88ba2421ec5774d8cf7140d4c192d36a42873 · GitHub Actions run 35214678819 PASS · append-only invariant/self-tests PASS · production descendant fa9de16de39b09a5075ee2db2205b182900fa380 · Vercel dpl_41a1wTGhRPiBPPvYo4aAczszLJqx READY · production HTTP 200/runtime clean",
   "32.08": "docs/32_08_STATUS_HISTORY_AUDIT_TRAIL.md · implementation 82701485d2b1295e73389b4c37c4c468a849441b · verification fix 2ece07a407f466d388478fc30295913a992ae15b · GitHub Actions run 35244922187 PASS · audit invariant/self-tests PASS · Vercel dpl_G7453s1yPtnTL4p17vDKwHCkiXSy READY · production HTTP 200/runtime clean",
+  "32.09": "docs/32_09_CLOUD_REALTIME_STATUS_STORE.md · implementation cc2d21fbeaa2ab2fc77317821c134ac56c459bc4 · workflow 78bf6ce3eb197b73b489664421587ec2d43e1955 · GitHub Actions run 35246234986 PASS · cloud sync/read-back PASS rows=18 · Supabase enchev_plan_state RLS + OIDC Edge Function · Vercel dpl_5AAojnTphZbr5ZySixWUtQ4wRgyU READY · production HTTP 200/runtime clean",
 };
 
 export default function VerifiedPlanEvidenceSync() {
