@@ -2,7 +2,7 @@ import styles from "./HomeTrustSupport.module.css";
 
 export default function HomeTrustSupport(){
   return (
-    <section className={styles.section} aria-labelledby="trust-support-heading">
+    <section className={styles.section} aria-labelledby="trust-support-heading" data-design-task="D10" data-section="trust-support-coverage">
       <div className={styles.inner}>
         <header className={styles.heading}>
           <span>ДОВЕРИЕ · ПОДКРЕПА · ОБХВАТ</span>
