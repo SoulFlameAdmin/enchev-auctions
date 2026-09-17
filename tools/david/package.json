@@ -1,10 +1,10 @@
 {
   "name": "enchev-david-auto-continue",
-  "version": "1.3.1",
+  "version": "1.4.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node auto-continue-enchev-v4.mjs"
+    "start": "node auto-continue-enchev-v5.mjs"
   },
   "dependencies": {
     "playwright-core": "1.63.0"
