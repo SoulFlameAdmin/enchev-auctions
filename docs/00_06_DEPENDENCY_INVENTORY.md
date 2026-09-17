@@ -1,6 +1,6 @@
 # Enchev Auctions — 00.06 Dependency Inventory
 
-Status: YELLOW — dependency inventory committed; production verification pending
+Status: GREEN — dependency inventory implemented and verified with production evidence
 MASTER SYSTEM PLAN v1.0 FROZEN task: `00.06`
 Execution wave: `WAVE 0 — Definition & governance`
 Depends on: `00.01`–`00.05`
@@ -228,4 +228,19 @@ These are routed to their existing downstream FROZEN tasks. No new task IDs are 
 
 ## 13. Evidence
 
-Pending verification for the implementation commit. After successful build/typecheck/deployment/runtime validation, this document will be updated to `Status: GREEN` with exact evidence.
+Implementation commit: `7bda0dbc9603ca068deac37591c9034f9c535c9c`
+
+Production verification for that exact commit:
+
+- Vercel deployment: `dpl_GEQf6ucwQZ8C4ctMEf7TPRhjGQCx`
+- deployment state: `READY`
+- `next build`: PASS
+- Next.js 16.3.5 compile: PASS
+- TypeScript: PASS
+- static generation: 4/4 PASS
+- production `https://enchev-auctions.vercel.app/`: HTTP 200
+- Vercel runtime errors during verification window: 0
+- GitHub combined commit status: Vercel `success`
+- Supabase connected project: `soulflame-twins` (`frhletkiuupgksmgxoxc`) ACTIVE_HEALTHY; Enchev-specific runtime remains development evidence only (`enchev_development_events` / `enchev-development-status`), not auction authority
+
+This evidence proves completion of the `00.06` dependency-inventory/governance task. It does not prove that the planned production auction dependencies are already implemented.
