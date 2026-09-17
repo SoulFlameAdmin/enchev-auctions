@@ -8,6 +8,7 @@ import "./inventory-status.css";
 import "./enchev-theme.css";
 import "./home-v2.css";
 import "./inventory/inventory-v2.css";
+import "./responsive-grid.css";
 import MouseAura from "./components/MouseAura";
 import BackgroundSwitcher from "./components/BackgroundSwitcher";
 import AiWorkerControl from "./components/AiWorkerControl";
