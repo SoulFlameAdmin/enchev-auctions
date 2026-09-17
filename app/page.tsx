@@ -57,8 +57,17 @@ export default function Home(){
       <div className="eaFeaturedGrid">{featuredCars.map(car=><article className={`eaFeaturedCard eaFeaturedCard--${car.state}`} data-auction-state={car.state} aria-label={`${car.title} — ${car.stateLabel}`} key={car.lot}><div className="eaFeaturedImage"><img src={car.image} alt={car.title}/><span className={`eaFeaturedBadge eaFeaturedBadge--${car.state}`}>{car.stateLabel}</span></div><div className="eaFeaturedBody"><div className="eaFeaturedLot"><span>LOT {car.lot}</span><b>● VERIFIED</b></div><h3>{car.title}</h3><p>{car.spec}</p><div className="eaFeaturedInfo"><span>⌖ {car.location}</span><span className="eaFeaturedAuctionState">◷ {car.time}</span></div><div className="eaFeaturedBid"><div><small>{car.bidLabel}</small><strong>{car.price}</strong></div><a href={`/lot/${car.lot}`}>{car.state === "live" ? "Влез в LIVE →" : car.state === "buy-now" ? "Купи сега →" : car.state === "sold" ? "Виж резултата →" : "Виж лота →"}</a></div></div></article>)}</div>
     </section>
 
-    <section className="eaProcess" id="how">
-      <div className="eaSection"><div className="eaSectionHead"><div><span>КАК РАБОТИ</span><h2>От търсене до доставка</h2><p>Прост процес, ясни стъпки, пълна видимост.</p></div></div><div className="eaSteps"><div className="eaStep"><span>01</span><b>Намери автомобил</b><p>Филтрирай по марка, година, локация, цена и състояние.</p></div><div className="eaStep"><span>02</span><b>Влез в търга</b><p>Следи LIVE таймера, текущата оферта и следващия лот.</p></div><div className="eaStep"><span>03</span><b>Спечели лота</b><p>Потвърди покупката, документите и плащането.</p></div><div className="eaStep"><span>04</span><b>Организирай транспорт</b><p>Проследяване на доставката до избраната дестинация.</p></div></div></div>
+    <section className="eaProcess" id="how" aria-labelledby="buyer-journey-heading">
+      <div className="eaSection">
+        <div className="eaSectionHead"><div><span>КАК РАБОТИ</span><h2 id="buyer-journey-heading">От търсене до доставка</h2><p>Четири ясни стъпки с директен път към следващото действие.</p></div></div>
+        <ol className="eaSteps eaJourneySteps" aria-label="Стъпки за покупка през ENCHEV">
+          <li className="eaStep eaJourneyStep"><span aria-hidden="true">01</span><small>ТЪРСЕНЕ</small><b>Намери подходящия автомобил</b><p>Търси по марка, модел, VIN или LOT и сравни наличните автомобили в инвентара.</p><a className="eaJourneyLink" href="/inventory">Разгледай инвентара →</a></li>
+          <li className="eaStep eaJourneyStep"><span aria-hidden="true">02</span><small>ПРОВЕРКА</small><b>Прегледай лота и състоянието</b><p>Отвори детайлите на избрания автомобил и провери ключовите данни преди участие.</p><a className="eaJourneyLink" href="/inventory">Избери лот →</a></li>
+          <li className="eaStep eaJourneyStep"><span aria-hidden="true">03</span><small>ТЪРГ</small><b>Следи и участвай LIVE</b><p>Виж текущия лот, таймера и движението на офертите в търга на живо.</p><a className="eaJourneyLink" href="/live-auctions">Отвори LIVE търговете →</a></li>
+          <li className="eaStep eaJourneyStep"><span aria-hidden="true">04</span><small>ДОСТАВКА</small><b>Организирай транспорта</b><p>След приключване на търга премини към транспорт и проследяване до избраната дестинация.</p><a className="eaJourneyLink" href="/transport">Виж транспорта →</a></li>
+        </ol>
+        <div className="eaJourneyFooter"><span>Нов купувач? Прегледай помощта преди първото си участие.</span><a href="/support">Помощ за купувачи →</a></div>
+      </div>
     </section>
 
     <section className="eaCta" id="transport"><div><h2>Готов ли си за следващия търг?</h2><p>Отвори целия инвентар и виж кой лот е LIVE в момента.</p></div><div className="eaCtaActions"><a href="/inventory">Отвори инвентара</a><a href="/live-auctions">LIVE търгове</a></div></section>
