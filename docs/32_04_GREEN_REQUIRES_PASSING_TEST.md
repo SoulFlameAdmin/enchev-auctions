@@ -1,6 +1,6 @@
 # Enchev Auctions — 32.04 GREEN requires passing test where applicable
 
-Status: YELLOW — implementation and CI verified; production runtime deployment pending
+Status: GREEN — passing-test governance is implemented, CI-verified and production-deployed
 MASTER SYSTEM PLAN v1.0 FROZEN task: `32.04`
 Execution wave: `WAVE 0 — Master plan governance`
 Depends on: `32.01`, `32.02`, `32.03`
@@ -64,11 +64,12 @@ Self-test cases include:
 - CI verifier: `3af7b729f8f12dfa0acf230088a93bdf74a6bdb2`
 - CI workflow integration: `512dcc7f198bd26da744f6a850420ab202d07bfc`
 - governance artifact: `e33d10a20f17910ff25c85fc8269dc9bbe97d197`
+- evidence-sync integration: `4a0c3648445cf72c7c219d1c1d92d57c82491a72`
 
-## Verified implementation evidence
+## Verified evidence
 
-- verified descendant commit: `3df71f8d66d27d2eeed0602075951dc2ed640e93`, direct child of the governance artifact commit;
-- GitHub Actions descendant run `35183833517`: overall `SUCCESS`;
+- GitHub Actions run `35183833517`: overall `SUCCESS` on descendant `3df71f8d66d27d2eeed0602075951dc2ed640e93`;
+- final evidence-sync GitHub Actions run `35183951638`: overall `SUCCESS` on `4a0c3648445cf72c7c219d1c1d92d57c82491a72`;
 - generated frozen test registry: `236` test task IDs;
 - frozen master task ID lock: PASS, `1054` tasks, SHA-256 `b0fd3479cfef3d88148b906568aa8c1c88eccf5fa98fe676f13a5fec70aa721e`;
 - delete/renumber/reuse rejection tests: PASS;
@@ -76,15 +77,15 @@ Self-test cases include:
 - GREEN passing-test invariant: PASS for all `236` frozen test tasks;
 - GREEN passing-test self-test: PASS for `10` policy cases;
 - TypeScript check: PASS;
-- production build: PASS, Next.js `16.3.5`, compile success, TypeScript success, static generation `9/9`;
-- final evidence-sync commit `4a0c3648445cf72c7c219d1c1d92d57c82491a72` has GitHub Actions run `35183951638` overall `SUCCESS` with every governance guard, TypeScript and production build PASS.
+- GitHub production build: PASS, Next.js `16.3.5`, compile success, TypeScript success, static generation `9/9`;
+- verified Vercel production descendant: `149b4d57d6f3c66a07eb9c6275339acc7b8ff65b`, proven `22` commits ahead of `4a0c3648445cf72c7c219d1c1d92d57c82491a72` with no divergence;
+- Vercel deployment: `dpl_BGHLv7uyatsCXSiUcC1kV9g2ujaL`, target `production`, state `READY`;
+- Vercel build log: `MASTER_TEST_IDS generated 236 test task IDs`, compile PASS, TypeScript PASS, static generation `9/9`, deployment completed;
+- canonical production URL `https://enchev-auctions.vercel.app/`: HTTP `200`;
+- deployment-scoped Vercel runtime error/fatal log query: no matching logs found.
 
-## Remaining production verification blocker
+## Acceptance result
 
-The canonical production site is healthy (`HTTP 200`; no recent Vercel runtime errors), but the latest Vercel READY production deployment is still older than the `32.04` runtime guard. GitHub combined status for exact integration commit `4a0c3648445cf72c7c219d1c1d92d57c82491a72` reports Vercel `failure` with target `upgradeToPro=build-rate-limit`.
-
-A direct deployment fallback was attempted through the connected Vercel action, but its exposed connector schema accepts no deployment payload while the backend requires `target`, `name`, and `files`, so that path cannot safely deploy the project.
-
-Therefore production runtime enforcement is not yet proven. `32.04` must remain YELLOW and must not be synchronized as GREEN until a READY Vercel production deployment at `fa52e256...` or any proven descendant is verified with build and runtime evidence.
+All `32.04` acceptance requirements are now satisfied. The earlier Vercel build-rate-limit blocker is superseded by the verified READY production descendant above. A frozen `kind=test` task cannot remain GREEN unless its evidence contains an explicit passing test result and no failing/pending result marker.
 
 No pricing/payment/finance scope is added by this task.
