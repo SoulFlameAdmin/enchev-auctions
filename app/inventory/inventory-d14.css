@@ -34,3 +34,22 @@
 @media(max-width:640px){.inventoryCard:has(.buyBtn) .inventoryCardBody::before{min-height:28px;padding:0 9px;font-size:10px}.inventoryCard.liveCard .inventoryBadge.live::after,.inventoryCard.nextCard .inventoryBadge.next::after,.inventoryCard.soldCard .inventoryBadge.sold::after{font-size:8px}}
 @media(prefers-contrast:more){.inventoryCard.liveCard{outline-color:#4dff9b}.inventoryCard.nextCard{outline-color:#8ed7ff}.inventoryCard:has(.buyBtn) .inventoryCardBody::before{border-color:#ffd980;color:#fff1bf}}
 @media(prefers-reduced-motion:reduce){.inventoryCard.liveCard .liveBidText{text-shadow:none}}
+
+/* D17 — sold cards stay visibly muted without sacrificing text readability */
+.inventoryCard.soldCard{opacity:.84!important;filter:none!important;border-color:rgba(255,255,255,.09)!important;background:linear-gradient(180deg,#0a100d 0%,#080d0a 100%)!important;box-shadow:0 12px 32px rgba(0,0,0,.22)!important}
+.inventoryCard.soldCard:hover{opacity:.9!important;filter:none!important;border-color:rgba(255,255,255,.13)!important;transform:none!important}
+.inventoryCard.soldCard .inventoryImage img{filter:grayscale(.82) saturate(.22) brightness(.72);opacity:.74}
+.inventoryCard.soldCard .inventoryImage::before{background:linear-gradient(180deg,rgba(12,18,14,.12),rgba(6,10,8,.28))!important;backdrop-filter:none!important}
+.inventoryCard.soldCard .inventoryCardBody{color:#c8d2cc!important;background:linear-gradient(180deg,#0a100d,#080d0a)!important}
+.inventoryCard.soldCard .inventoryCardBody h2{color:#d8e0db!important}
+.inventoryCard.soldCard .inventoryLot{color:#8f9d95!important}
+.inventoryCard.soldCard .inventoryLot span{color:#9ba7a0!important}
+.inventoryCard.soldCard dl dt{color:#8f9c95!important}
+.inventoryCard.soldCard dl dd{color:#c4cec8!important}
+.inventoryCard.soldCard .detailsBtn{opacity:1!important;color:#c5d0c9!important;background:#0d1510!important;border-color:rgba(255,255,255,.1)!important}
+.inventoryCard.soldCard .saleEnded{color:#c2ccc6!important;font-weight:800}
+.inventoryCard.soldCard .soldStamp{color:rgba(255,151,151,.78)!important;border-color:rgba(255,118,118,.55)!important;background:rgba(58,20,20,.18)!important;text-shadow:none!important}
+.inventoryCard.soldCard .soldDetailsBtn{opacity:1!important;background:rgba(112,44,44,.72)!important;color:#fff!important;border:1px solid rgba(255,133,133,.22)!important}
+.inventoryCard.soldCard .soldDetailsBtn:focus-visible{outline:2px solid #ffb0b0;outline-offset:3px}
+@media(max-width:640px){.inventoryCard.soldCard{opacity:.88!important}.inventoryCard.soldCard .soldStamp{font-size:28px!important}.inventoryCard.soldCard .soldDetailsBtn{min-height:44px}}
+@media(prefers-contrast:more){.inventoryCard.soldCard{opacity:1!important;border-color:rgba(255,255,255,.22)!important}.inventoryCard.soldCard .inventoryCardBody h2,.inventoryCard.soldCard dl dd{color:#f1f6f3!important}}
