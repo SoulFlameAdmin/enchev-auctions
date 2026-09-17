@@ -79,9 +79,17 @@ export default function LotPage(){
             <div className="lotThumbs" role="list" aria-label="Миниатюри на автомобила">{gallery.map((src,index)=><button type="button" key={src} className={`lotThumb ${index===activeImage?"active":""}`} onClick={()=>setActiveImage(index)} aria-label={`Покажи изображение ${index+1} от ${gallery.length}`} aria-pressed={index===activeImage}><img src={src} alt=""/></button>)}</div>
           </div>
 
-          <section className="lotSection"><div className="lotSectionHead"><div><h2>Основни характеристики</h2><span>Проверени данни за лота</span></div></div><div className="lotSpecs">
-            <div className="lotSpec"><span>VIN</span><b>WAUZZZ8V5KA123456</b></div><div className="lotSpec"><span>Година</span><b>2022</b></div><div className="lotSpec"><span>Пробег</span><b>41 280 км</b></div><div className="lotSpec"><span>Двигател</span><b>2.5 TFSI · 400 hp</b></div><div className="lotSpec"><span>Скоростна кутия</span><b>Автоматик</b></div><div className="lotSpec"><span>Задвижване</span><b>Quattro AWD</b></div><div className="lotSpec"><span>Гориво</span><b>Бензин</b></div><div className="lotSpec"><span>Цвят</span><b>Daytona Grey</b></div>
-          </div></section>
+          <section className="lotSection" data-design-task="D20" aria-labelledby="lot-key-facts-title">
+            <div className="lotSectionHead"><div><h2 id="lot-key-facts-title">Ключови данни за лота</h2><span>Най-важната информация преди офериране</span></div></div>
+            <div className="lotSpecs" role="list" aria-label="Ключови данни за автомобила">
+              <div className="lotSpec" role="listitem"><span>VIN</span><b>WAUZZZ8V5KA123456</b></div>
+              <div className="lotSpec" role="listitem"><span>LOT</span><b>{lot}</b></div>
+              <div className="lotSpec" role="listitem"><span>Пробег</span><b>41 280 км</b></div>
+              <div className="lotSpec" role="listitem"><span>Основна повреда</span><b>Леки драскотини / козметични следи</b></div>
+              <div className="lotSpec" role="listitem"><span>Документ</span><b>Clean Title</b></div>
+              <div className="lotSpec" role="listitem"><span>Локация</span><b>Crewe, United Kingdom</b></div>
+            </div>
+          </section>
 
           <section className="lotSection"><div className="lotSectionHead"><div><h2>Състояние и щети</h2><span>Информация от аукционния лот</span></div></div><div className="lotDamageGrid"><div className="lotDamageCard"><span>Основна повреда</span><b>Леки драскотини / козметични следи</b></div><div className="lotDamageCard"><span>Статус на движение</span><b>Run & Drive</b></div><div className="lotDamageCard"><span>Документ</span><b>Clean Title</b></div><div className="lotDamageCard"><span>Локация</span><b>Crewe, United Kingdom</b></div></div></section>
 
