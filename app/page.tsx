@@ -1,6 +1,7 @@
 import MasterSystemPlanV1 from "./components/MasterSystemPlanV1";
 import SeedAuditGaps from "./components/SeedAuditGaps";
 import BulgarianStageLabels from "./components/BulgarianStageLabels";
+import DesignPlanExtension from "./components/DesignPlanExtension";
 
 const featuredCars = [
   { lot:"EA-10482", title:"2018 BMW M4 F82", spec:"3.0 бензин · Автоматик · 82 410 км", location:"София, България", time:"Търг след 2ч 18м", price:"€12 750", badge:"RUN & DRIVE", image:"https://images.unsplash.com/photo-1658558195433-1af533e3309c?auto=format&fit=crop&w=1200&q=82" },
@@ -14,6 +15,7 @@ export default function Home(){
     <MasterSystemPlanV1 />
     <SeedAuditGaps />
     <BulgarianStageLabels />
+    <DesignPlanExtension />
 
     <section className="eaHero" id="top">
       <div className="eaTopbar">
