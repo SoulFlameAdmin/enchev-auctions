@@ -1,6 +1,6 @@
 # Enchev Auctions — 32.05 YELLOW = partial/error/pending verification
 
-Status: YELLOW — governance enforcement implemented; verification pending
+Status: GREEN — YELLOW semantics are machine-enforced and verified
 MASTER SYSTEM PLAN v1.0 FROZEN task: `32.05`
 Execution wave: `WAVE 0 — Master plan governance`
 Depends on: `32.01`, `32.02`, `32.03`, `32.04`
@@ -35,7 +35,7 @@ YELLOW must never be interpreted as successful completion.
 
 ## CI enforcement
 
-New verifier: `scripts/verify-yellow-semantics.mjs`.
+Verifier: `scripts/verify-yellow-semantics.mjs`.
 
 Normal mode locks the runtime/source invariants:
 
@@ -62,17 +62,27 @@ CI runs both the invariant and self-test before TypeScript and production build.
 
 - YELLOW semantics verifier: `aa6d64dc54b0b5b1fbd6278a673433e86121197e`
 - CI integration: `7363c289db2939c80340964f3b1c1f3d89f0b806`
+- governance artifact: `5dc45583f4d5a48ad68f2d14371ec0891e4677ac`
 
-## GREEN gate
+## Verified evidence
 
-`32.05` becomes GREEN only after a `main` commit or proven descendant has a successful CI path where:
+- exact artifact run `35212020954` was cancelled by workflow concurrency and is not used as final success evidence;
+- verified descendant `ddb63f31c98869890bc70749c93e489575da39b3` contains the complete `32.05` implementation with no divergence from `5dc45583f4d5a48ad68f2d14371ec0891e4677ac`;
+- GitHub Actions run `35212105730`: overall `SUCCESS`;
+- frozen task ID lock: PASS;
+- delete/renumber/reuse rejection tests: PASS;
+- GREEN evidence invariant/self-test: PASS;
+- GREEN passing-test invariant/self-test: PASS;
+- YELLOW semantics invariant: PASS;
+- YELLOW semantics self-test: PASS for 6 state cases;
+- TypeScript check: PASS;
+- production build: PASS;
+- canonical production URL `https://enchev-auctions.vercel.app/`: HTTP `200` during regression verification;
+- Vercel project runtime error check for the recent two-hour production window: no runtime errors found;
+- YELLOW runtime semantics themselves were already production-deployed as part of the verified `32.04` runtime path, including exact production deployment `dpl_43Px76YFVDhAFBZ9qdEVMTbnk1Bu` for commit `7257222c8e70fa0900c860e05d57147f8063c356`.
 
-- all prior governance guards PASS;
-- YELLOW semantics invariant PASS;
-- YELLOW semantics self-tests PASS;
-- TypeScript PASS;
-- production build PASS;
-- production HTTP/runtime regression context is healthy;
-- exact evidence is recorded before Command Center sync marks `32.05` GREEN.
+## Acceptance result
+
+All `32.05` acceptance requirements are satisfied. YELLOW remains the machine-checked transitional state for partial/error/pending verification, RED remains not implemented, and GREEN remains verified completion.
 
 No pricing/payment/finance scope is added by this task.
