@@ -6,7 +6,7 @@ $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-$ChatUrl = "https://chatgpt.com/c/6aac1739-4ac0-83ed-92b9-4995d81fe124"
+$ChatUrl = "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4"
 $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Root = if (Test-Path "D:\ASI") { "D:\ASI" } else { Join-Path $env:LOCALAPPDATA "DAVID" }
 $ToolsRoot = Join-Path $Root "tools"
@@ -134,7 +134,7 @@ try {
 
   $env:DAVID_APP2_CDP_URL = "http://127.0.0.1:$Port"
   $env:DAVID_APP2_CHAT_URL = $ChatUrl
-  $env:DAVID_APP2_STATE_FILE = Join-Path $Here ".david-app2-state.json"
+  $env:DAVID_APP2_STATE_FILE = Join-Path $Here ".david-app2-state-6aac2dbb.json"
 
   $WorkerSource = Join-Path $Here "auto-complete-app2-v1.mjs"
   $RuntimeWorker = Join-Path $Here ".auto-complete-app2-runtime.mjs"
