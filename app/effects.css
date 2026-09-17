@@ -6,54 +6,37 @@
 .marketPage .siteHeader,.marketPage .heroAuction,.marketPage .valueStrip,.marketPage .contentSection,.marketPage .liveAuctionStrip,.marketPage .finalCta,.marketPage .siteFooter,.marketPage .demoBar{position:relative;z-index:6}
 
 .heroSearch,.heroVisualCard,.infoCard,.auctionCard,.liveAuctionStrip,.stepsGrid>div,.finalCta{position:relative;isolation:isolate}
-
 .heroSearch:after,.heroVisualCard:before,.infoCard:before,.auctionCard:before,.liveAuctionStrip:before,.stepsGrid>div:before,.finalCta:before{content:"";position:absolute;top:-1px;right:-1px;width:42px;height:42px;clip-path:polygon(100% 0,0 0,100% 100%);background:linear-gradient(135deg,transparent 0 48%,rgba(126,240,160,.72) 50% 100%);pointer-events:none;z-index:4;opacity:.62}
-
 .heroSearch:before,.heroVisualCard:after,.infoCard:after,.auctionCard:after,.liveAuctionStrip:after,.stepsGrid>div:after,.finalCta:after{content:"";position:absolute;left:0;bottom:0;width:28px;height:28px;clip-path:polygon(0 100%,0 0,100% 100%);border-left:1px solid var(--edge-line);border-bottom:1px solid var(--edge-line);pointer-events:none;z-index:4;opacity:.85}
-
 .liveAuctionStrip:before,.finalCta:before{width:64px;height:64px}.heroSearch:after{width:52px;height:52px}
-
 .heroSearch,.heroVisualCard,.infoCard,.auctionCard,.liveAuctionStrip,.stepsGrid>div,.finalCta{transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease}
 .heroSearch:hover,.heroVisualCard:hover,.infoCard:hover,.auctionCard:hover,.liveAuctionStrip:hover,.stepsGrid>div:hover,.finalCta:hover{border-color:rgba(126,240,160,.24)}
 .infoCard:hover,.stepsGrid>div:hover{transform:translateY(-2px)}
-
 .siteHeader:after{content:"";position:absolute;right:14px;bottom:-1px;width:72px;height:1px;background:linear-gradient(90deg,transparent,var(--edge-accent));opacity:.52;pointer-events:none}
-
 .brandMark{position:relative;overflow:hidden}.brandMark:after{content:"";position:absolute;right:0;top:0;width:15px;height:15px;clip-path:polygon(100% 0,0 0,100% 100%);background:rgba(255,255,255,.38)}
-
 .primaryBtn,.searchBtn,.bidRow button,.spotBidRow button,.lightBtn{position:relative;overflow:hidden}.primaryBtn:after,.searchBtn:after,.bidRow button:after,.spotBidRow button:after,.lightBtn:after{content:"";position:absolute;right:0;top:0;width:13px;height:13px;clip-path:polygon(100% 0,0 0,100% 100%);background:rgba(255,255,255,.28);pointer-events:none}
-
 .heroStats>div{position:relative;overflow:hidden}.heroStats>div:after{content:"";position:absolute;right:0;top:0;width:17px;height:17px;clip-path:polygon(100% 0,0 0,100% 100%);background:rgba(126,240,160,.72);opacity:.72}
-
 .filterChip{position:relative;overflow:hidden}.filterChip.active:after,.filterChip:hover:after{content:"";position:absolute;right:0;top:0;width:10px;height:10px;clip-path:polygon(100% 0,0 0,100% 100%);background:rgba(126,240,160,.72)}
 
-/* CINEMATIC LAMBORGHINI HOMEPAGE HERO */
-#top.heroAuction{
-  min-height:760px!important;
-  background:#030706 url('/images/enchev-lamborghini-hero.jpg') center 74% / 112% auto no-repeat!important;
-  border-color:rgba(71,255,139,.22)!important;
-  border-radius:28px!important;
-  box-shadow:0 42px 110px rgba(0,0,0,.5),0 0 70px rgba(34,197,94,.08)!important;
-}
-#top.heroAuction>img,
-#top.heroAuction>.heroAuctionShade,
-#top.heroAuction>.heroGlow,
-#top.heroAuction>.heroAuctionContent{display:none!important}
-#top.heroAuction:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(2,5,4,.2),transparent 32%,transparent 72%,rgba(3,8,5,.12)),radial-gradient(circle at 70% 52%,rgba(39,255,122,.07),transparent 34%);z-index:1}
-#top.heroAuction:after{content:"";position:absolute;inset:auto 0 0;height:22%;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(2,5,4,.2));z-index:1}
+/* CINEMATIC HOMEPAGE HERO */
+#top.heroAuction{min-height:760px!important;background:#030706 url('/images/enchev-lamborghini-hero.jpg') center center / cover no-repeat!important;border-color:rgba(71,255,139,.22)!important;border-radius:28px!important;box-shadow:0 42px 110px rgba(0,0,0,.5),0 0 70px rgba(34,197,94,.08)!important}
+.has-custom-hero-bg #top.heroAuction{background-image:var(--custom-hero-bg)!important;background-size:cover!important;background-position:center center!important;background-repeat:no-repeat!important}
+#top.heroAuction>img,#top.heroAuction>.heroAuctionShade,#top.heroAuction>.heroGlow,#top.heroAuction>.heroAuctionContent{display:none!important}
+#top.heroAuction:before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(2,5,4,.12),transparent 32%,transparent 72%,rgba(3,8,5,.08));z-index:1}
+#top.heroAuction:after{content:"";position:absolute;inset:auto 0 0;height:16%;pointer-events:none;background:linear-gradient(180deg,transparent,rgba(2,5,4,.16));z-index:1}
 
-@media(min-width:861px){
-  #top.heroAuction{aspect-ratio:16/8.55;min-height:0!important}
-}
+/* BACKGROUND SWITCHER */
+.backgroundSwitcher{position:fixed;right:20px;bottom:20px;z-index:120;font-family:inherit}
+.backgroundSwitcherToggle{height:44px;padding:0 15px;border:1px solid rgba(126,240,160,.26);border-radius:14px;background:rgba(7,11,9,.88);backdrop-filter:blur(14px);color:#eefbf2;font-weight:800;cursor:pointer;box-shadow:0 14px 40px rgba(0,0,0,.28);display:flex;align-items:center;gap:8px}
+.backgroundSwitcherToggle:hover{border-color:rgba(126,240,160,.55);background:rgba(10,18,13,.94)}
+.backgroundSwitcherPanel{position:absolute;right:0;bottom:54px;width:270px;padding:16px;border:1px solid rgba(126,240,160,.22);border-radius:18px;background:rgba(6,10,8,.96);backdrop-filter:blur(18px);box-shadow:0 24px 70px rgba(0,0,0,.46);display:grid;gap:10px;color:#fff}
+.backgroundSwitcherPanel:after{content:"";position:absolute;right:0;top:0;width:34px;height:34px;clip-path:polygon(100% 0,0 0,100% 100%);background:rgba(126,240,160,.65);opacity:.7}
+.backgroundSwitcherPanel b{font-size:15px}.backgroundSwitcherPanel small{color:#93a49a;line-height:1.45}
+.backgroundSwitcherPrimary,.backgroundSwitcherReset{height:40px;border-radius:11px;cursor:pointer;font-weight:800}
+.backgroundSwitcherPrimary{border:0;background:#75ef9b;color:#071009}.backgroundSwitcherReset{border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);color:#dbe7df}
+.backgroundSwitcherInput{display:none}
 
+@media(min-width:861px){#top.heroAuction{aspect-ratio:16/8.55;min-height:0!important}}
 @media(prefers-reduced-motion:reduce){.mouseAura{display:none}.heroSearch,.heroVisualCard,.infoCard,.auctionCard,.liveAuctionStrip,.stepsGrid>div,.finalCta{transition:none}}
-
-@media(max-width:860px){
-  .mouseAura{display:none}
-  .heroSearch:after,.heroVisualCard:before,.infoCard:before,.auctionCard:before,.liveAuctionStrip:before,.stepsGrid>div:before,.finalCta:before{width:34px;height:34px;opacity:.5}
-  #top.heroAuction{min-height:660px!important;background-size:auto 100%!important;background-position:68% center!important;border-radius:22px!important}
-}
-
-@media(max-width:560px){
-  #top.heroAuction{min-height:590px!important;background-size:auto 100%!important;background-position:70% center!important}
-}
+@media(max-width:860px){.mouseAura{display:none}.heroSearch:after,.heroVisualCard:before,.infoCard:before,.auctionCard:before,.liveAuctionStrip:before,.stepsGrid>div:before,.finalCta:before{width:34px;height:34px;opacity:.5}#top.heroAuction{min-height:660px!important;background-size:cover!important;background-position:center center!important;border-radius:22px!important}.backgroundSwitcher{right:12px;bottom:12px}.backgroundSwitcherToggle span{display:none}}
+@media(max-width:560px){#top.heroAuction{min-height:590px!important}.backgroundSwitcherPanel{width:min(270px,calc(100vw - 24px))}}
