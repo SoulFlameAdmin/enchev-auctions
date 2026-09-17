@@ -1,7 +1,3 @@
 # Enchev Auctions
 
-International vehicle auction platform.
-
-## Status
-
-Clean foundation initialized.
+Copart-style auction platform scaffolded for GitHub → Vercel deployment.
