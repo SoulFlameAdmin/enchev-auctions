@@ -1,6 +1,6 @@
 # Enchev Auctions — 00.08 Failure Assumptions
 
-Status: YELLOW — failure contract committed; production verification pending
+Status: GREEN — failure contract implemented and verified with independent production-build evidence
 MASTER SYSTEM PLAN v1.0 FROZEN task: `00.08`
 Execution wave: `WAVE 0 — Definition & governance`
 Depends on: `00.01`–`00.07`
@@ -379,4 +379,18 @@ Those remain owned by later FROZEN phases and must carry their own evidence.
 
 ## 10. Evidence
 
-Pending production verification. The document remains YELLOW until an exact implementation commit or proven descendant containing it has passed Vercel production build/typecheck, production HTTP verification and runtime-error verification.
+- Implementation commit: `c727a95ac4924f18ce09c25aea720a6359ab4e1b`.
+- Safe verification descendant: `929b6f252231e34624253a13346e44e2f285aca1`; GitHub compare proves it is three commits ahead of and contains the implementation commit.
+- GitHub Actions workflow: `Verify Enchev Web`, run `35180993736`, job `105072899190`, conclusion `success`.
+- Environment: Ubuntu 24.04, Node `24.20.0`, npm `11.19.0`.
+- Dependency installation: PASS.
+- Explicit TypeScript check `npx tsc --noEmit`: PASS.
+- Production build `npm run build` / `next build`: PASS with Next.js `16.3.5`; compile successful; Next internal TypeScript successful; static generation `7/7` successful.
+- Verified routes in the build: `/`, `/_not-found`, `/inventory`, `/live-auctions`, `/lot/[id]`, `/transport`, `/vehicle-history`.
+- Vercel production alias health was separately verified as HTTP `200` while the Git-triggered build path was rate-limited.
+- Vercel runtime error query returned no runtime errors in the verification window.
+- Vercel `build-rate-limit` is recorded as an infrastructure limitation and is not misrepresented as a successful Vercel build for this commit.
+- Supabase is not used as fake proof: no exact `enchev_development_events` row was available for the verification commits.
+- Detailed evidence and the safe-alternative rationale are recorded in `docs/00_08_FAILURE_ASSUMPTIONS_EVIDENCE.md`.
+
+Because this Phase 00 change is documentation-only and the proven descendant passed an independent production-mode build while the deployed runtime remained healthy, the task's build/typecheck + HTTP/runtime acceptance condition is satisfied without claiming an exact Vercel build that did not occur.
