@@ -11,12 +11,11 @@
 
 .heroSearch:before,.heroVisualCard:after,.infoCard:after,.auctionCard:after,.liveAuctionStrip:after,.stepsGrid>div:after,.finalCta:after{content:"";position:absolute;left:0;bottom:0;width:28px;height:28px;clip-path:polygon(0 100%,0 0,100% 100%);border-left:1px solid var(--edge-line);border-bottom:1px solid var(--edge-line);pointer-events:none;z-index:4;opacity:.85}
 
-.heroVisualCard:before{width:58px;height:58px;opacity:.78}.liveAuctionStrip:before,.finalCta:before{width:64px;height:64px}.heroSearch:after{width:52px;height:52px}
+.liveAuctionStrip:before,.finalCta:before{width:64px;height:64px}.heroSearch:after{width:52px;height:52px}
 
 .heroSearch,.heroVisualCard,.infoCard,.auctionCard,.liveAuctionStrip,.stepsGrid>div,.finalCta{transition:transform .22s ease,border-color .22s ease,box-shadow .22s ease}
 .heroSearch:hover,.heroVisualCard:hover,.infoCard:hover,.auctionCard:hover,.liveAuctionStrip:hover,.stepsGrid>div:hover,.finalCta:hover{border-color:rgba(126,240,160,.24)}
 .infoCard:hover,.stepsGrid>div:hover{transform:translateY(-2px)}
-.heroVisualCard:hover{transform:translateY(3px)}
 
 .siteHeader:after{content:"";position:absolute;right:14px;bottom:-1px;width:72px;height:1px;background:linear-gradient(90deg,transparent,var(--edge-accent));opacity:.52;pointer-events:none}
 
@@ -27,6 +26,26 @@
 .heroStats>div{position:relative;overflow:hidden}.heroStats>div:after{content:"";position:absolute;right:0;top:0;width:17px;height:17px;clip-path:polygon(100% 0,0 0,100% 100%);background:rgba(126,240,160,.72);opacity:.72}
 
 .filterChip{position:relative;overflow:hidden}.filterChip.active:after,.filterChip:hover:after{content:"";position:absolute;right:0;top:0;width:10px;height:10px;clip-path:polygon(100% 0,0 0,100% 100%);background:rgba(126,240,160,.72)}
+
+/* HERO SPOTLIGHT — LARGE TRIANGULAR WINDOW */
+@media(min-width:861px){
+  .heroSplit{grid-template-columns:minmax(0,1.18fr) 470px!important}
+  .heroVisualCard{padding:0 18px 12px!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;backdrop-filter:none!important;transform:none!important;overflow:visible!important;filter:drop-shadow(0 28px 55px rgba(0,0,0,.34))}
+  .heroVisualCard:hover{transform:translateY(-3px)!important}
+  .heroVisualCard:before,.heroVisualCard:after{display:none!important}
+  .spotImageWrap{height:440px!important;border-radius:0!important;clip-path:polygon(50% 0,100% 100%,0 100%);background:linear-gradient(180deg,rgba(16,23,30,.98),rgba(7,11,15,.98));position:relative;overflow:hidden;isolation:isolate}
+  .spotImageWrap:before{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(145deg,rgba(126,240,160,.28),transparent 26%,transparent 72%,rgba(126,240,160,.08));clip-path:polygon(50% 0,100% 100%,0 100%);mix-blend-mode:screen;opacity:.75}
+  .spotImageWrap:after{content:""!important;position:absolute!important;inset:3px!important;height:auto!important;border-radius:0!important;z-index:2;background:linear-gradient(180deg,rgba(3,6,9,.02) 20%,rgba(3,6,9,.18) 54%,rgba(3,6,9,.88) 100%)!important;clip-path:polygon(50% 0,100% 100%,0 100%)}
+  .spotImageWrap img{width:100%!important;height:100%!important;object-fit:cover!important;object-position:center 48%!important;border-radius:0!important;transform:scale(1.04)}
+  .floatingBadge{top:245px!important;left:50%!important;transform:translateX(-50%);white-space:nowrap;background:rgba(6,10,14,.82)!important;border-color:rgba(126,240,160,.34)!important;box-shadow:0 12px 30px rgba(0,0,0,.28)}
+  .spotCount{right:50%!important;bottom:24px!important;transform:translateX(50%);background:rgba(5,9,13,.76)!important;border-color:rgba(126,240,160,.18)!important}
+  .heroLotMeta{margin:-4px auto 0;max-width:390px;padding:18px 18px 14px!important;background:linear-gradient(180deg,rgba(9,14,19,.93),rgba(7,11,15,.84));border-left:1px solid rgba(126,240,160,.16);border-right:1px solid rgba(126,240,160,.16);border-bottom:1px solid rgba(126,240,160,.16);clip-path:polygon(8% 0,92% 0,100% 100%,0 100%);backdrop-filter:blur(14px)}
+  .heroLotMeta h3{text-align:center}
+  .heroLotMeta>p{text-align:center}
+  .heroLotMeta .lotLine{justify-content:center;gap:16px}
+  .heroLotMeta .miniMeta{justify-items:center;text-align:center}
+  .heroLotMeta .spotBidRow{padding:0 12px}
+}
 
 @media(prefers-reduced-motion:reduce){.mouseAura{display:none}.heroSearch,.heroVisualCard,.infoCard,.auctionCard,.liveAuctionStrip,.stepsGrid>div,.finalCta{transition:none}}
 @media(max-width:860px){.mouseAura{display:none}.heroSearch:after,.heroVisualCard:before,.infoCard:before,.auctionCard:before,.liveAuctionStrip:before,.stepsGrid>div:before,.finalCta:before{width:34px;height:34px;opacity:.5}}
