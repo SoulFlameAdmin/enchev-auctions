@@ -1,0 +1,49 @@
+{
+  "version": "1.0",
+  "reference": "https://www.autobidmaster.com/",
+  "referencePolicy": "Use AutoBidMaster only as UX/information-architecture inspiration. Keep ENCHEV branding, code, copy, assets and visual identity original.",
+  "tasks": [
+    {"id":"D01","group":"Основа","title":"Дизайн токени: цветове, типография, spacing, radius, shadows","status":"red","evidence":""},
+    {"id":"D02","group":"Основа","title":"Единен responsive grid и breakpoints за desktop/tablet/mobile","status":"red","evidence":""},
+    {"id":"D03","group":"Основа","title":"Оригинален ENCHEV header + utility bar + account actions","status":"red","evidence":""},
+    {"id":"D04","group":"Основа","title":"Навигационна архитектура за инвентар, live търгове, помощ и профил","status":"red","evidence":""},
+
+    {"id":"D05","group":"Начална страница","title":"Hero със силно търсене по марка, модел, VIN и lot","status":"red","evidence":""},
+    {"id":"D06","group":"Начална страница","title":"Quick filters / популярни категории под търсенето","status":"red","evidence":""},
+    {"id":"D07","group":"Начална страница","title":"Live auction spotlight card с timer, current bid и status","status":"red","evidence":""},
+    {"id":"D08","group":"Начална страница","title":"Featured inventory секция с реални auction card states","status":"red","evidence":""},
+    {"id":"D09","group":"Начална страница","title":"How it works / buyer journey секция","status":"red","evidence":""},
+    {"id":"D10","group":"Начална страница","title":"Trust, support и international coverage секции","status":"red","evidence":""},
+
+    {"id":"D11","group":"Инвентар","title":"Inventory page layout с sidebar filters + results grid/list","status":"red","evidence":""},
+    {"id":"D12","group":"Инвентар","title":"Филтри: make/model/year/location/damage/title/status","status":"red","evidence":""},
+    {"id":"D13","group":"Инвентар","title":"Active filter chips, clear-all и URL state","status":"red","evidence":""},
+    {"id":"D14","group":"Инвентар","title":"Sorting, pagination/infinite load и result count","status":"red","evidence":""},
+    {"id":"D15","group":"Инвентар","title":"Vehicle cards: image, lot, location, damage, title, bid, timer","status":"red","evidence":""},
+    {"id":"D16","group":"Инвентар","title":"Card states: NEW BID / LIVE / UPCOMING / SOLD / BUY NOW","status":"red","evidence":""},
+    {"id":"D17","group":"Инвентар","title":"Sold cards визуално приглушени без загуба на четимост","status":"red","evidence":""},
+    {"id":"D18","group":"Инвентар","title":"Loading skeletons, empty state и error state","status":"red","evidence":""},
+
+    {"id":"D19","group":"Lot details","title":"Vehicle gallery + thumbnails + fullscreen media viewer","status":"red","evidence":""},
+    {"id":"D20","group":"Lot details","title":"Key facts panel: VIN/lot/odometer/damage/title/location","status":"red","evidence":""},
+    {"id":"D21","group":"Lot details","title":"Auction panel: current bid, timer, bid CTA, max bid","status":"red","evidence":""},
+    {"id":"D22","group":"Lot details","title":"Condition / inspection / provenance presentation","status":"red","evidence":""},
+    {"id":"D23","group":"Lot details","title":"Sticky desktop/mobile action area без припокриване","status":"red","evidence":""},
+
+    {"id":"D24","group":"Live auction","title":"Dedicated live room layout с current lot + next lot","status":"red","evidence":""},
+    {"id":"D25","group":"Live auction","title":"10-second bid countdown визуално синхронизиран със server state","status":"red","evidence":""},
+    {"id":"D26","group":"Live auction","title":"Автоматично преминаване към следващ lot след SOLD","status":"red","evidence":""},
+    {"id":"D27","group":"Live auction","title":"Bid feedback states: accepted / rejected / outbid / leading","status":"red","evidence":""},
+    {"id":"D28","group":"Live auction","title":"Connection/reconnect/stale-state indicators","status":"red","evidence":""},
+
+    {"id":"D29","group":"Профил","title":"Watchlist / saved vehicles визуален модел","status":"red","evidence":""},
+    {"id":"D30","group":"Профил","title":"My Auctions: watching / bidding / leading / ended","status":"red","evidence":""},
+    {"id":"D31","group":"Профил","title":"Account navigation и responsive dashboard shell","status":"red","evidence":""},
+
+    {"id":"D32","group":"Качество","title":"Mobile-first проверка на ключовите страници","status":"red","evidence":""},
+    {"id":"D33","group":"Качество","title":"Keyboard/focus/contrast/accessibility visual pass","status":"red","evidence":""},
+    {"id":"D34","group":"Качество","title":"Cross-browser визуална проверка Edge/Chrome/mobile","status":"red","evidence":""},
+    {"id":"D35","group":"Качество","title":"Visual regression screenshots за основните маршрути","status":"red","evidence":""},
+    {"id":"D36","group":"Качество","title":"Final consistency pass: ENCHEV identity навсякъде, без копирани чужди assets/copy/code","status":"red","evidence":""}
+  ]
+}
