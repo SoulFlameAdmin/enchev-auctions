@@ -1,0 +1,115 @@
+/* ENCHEV AUCTIONS — D02 unified responsive grid
+   Canonical breakpoints: desktop >1200, tablet <=1200, compact <=900, mobile <=640. */
+:root{
+  --ea-grid-max:1500px;
+  --ea-grid-gutter:24px;
+  --ea-grid-gap:20px;
+  --ea-grid-cols:12;
+  --ea-bp-mobile:640px;
+  --ea-bp-compact:900px;
+  --ea-bp-tablet:1200px;
+}
+
+/* Shared content rail across all public product routes. */
+.eaHeroInner,
+.eaSection,
+.eaCta,
+.inv2Hero,
+.inv2Quickbar,
+.inventoryShell,
+.lotWrap,
+.liveHero,
+.liveStage,
+.liveQueue,
+.liveSold,
+.transportHero,
+.transportTrust,
+.transportCalculator,
+.transportFlow,
+.transportFaq,
+.historyHero,
+.historyDemoResult,
+.historyFeatures,
+.historyCta{
+  width:min(var(--ea-grid-max),calc(100% - (var(--ea-grid-gutter) * 2)))!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+  min-width:0;
+}
+
+/* Shared grid safety: children are allowed to shrink instead of creating horizontal overflow. */
+.eaHeroInner>*,
+.eaFeaturedGrid>*,
+.eaSteps>*,
+.inventoryShell>*,
+.inventoryGrid>*,
+.lotGrid>*,
+.lotGallery>*,
+.lotSpecs>*,
+.liveStage>*,
+.liveQueueGrid>*,
+.liveSoldGrid>*,
+.transportHero>*,
+.transportTrust>*,
+.transportCalculator>*,
+.transportFlowGrid>*,
+.historyHero>*,
+.historyScoreGrid>*,
+.historyFeatureGrid>*{min-width:0}
+
+.eaHome img,.inventoryPage img,.lotPage img,.livePage img,.transportPage img,.historyPage img{max-width:100%}
+
+/* Desktop baseline */
+.eaFeaturedGrid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.eaSteps{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.inventoryShell{grid-template-columns:292px minmax(0,1fr)!important;gap:var(--ea-grid-gap)!important}
+.inventoryGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.lotGrid{grid-template-columns:minmax(0,1.45fr) minmax(340px,.55fr)!important;gap:var(--ea-grid-gap)!important}
+.liveStage{grid-template-columns:minmax(0,1.65fr) minmax(340px,390px)!important;gap:var(--ea-grid-gap)!important}
+.liveQueueGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+.liveSoldGrid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.transportTrust,.transportFlowGrid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.historyScoreGrid{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+.historyFeatureGrid{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+
+@media(max-width:1200px){
+  :root{--ea-grid-gutter:20px;--ea-grid-gap:16px}
+  .eaHeroInner{grid-template-columns:minmax(0,1fr) minmax(320px,.78fr)!important;gap:32px!important}
+  .eaFeaturedGrid,.eaSteps{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .inventoryShell{grid-template-columns:250px minmax(0,1fr)!important}
+  .inventoryGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .lotGrid,.liveStage,.transportHero,.transportCalculator,.historyHero{grid-template-columns:1fr!important}
+  .lotBidPanel,.liveBidPanel{position:relative!important;top:auto!important}
+  .liveQueueGrid,.liveSoldGrid,.transportTrust,.transportFlowGrid,.historyScoreGrid,.historyFeatureGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .transportSteps{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+}
+
+@media(max-width:900px){
+  :root{--ea-grid-gutter:16px;--ea-grid-gap:14px}
+  .eaHeroInner{grid-template-columns:1fr!important}
+  .eaLiveCard{justify-self:stretch!important;width:100%!important}
+  .inventoryShell{grid-template-columns:1fr!important}
+  .inventoryFilters{position:relative!important;top:auto!important}
+  .inventoryGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .lotSpecs{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .liveHero{align-items:flex-start!important;flex-direction:column!important}
+  .liveHeroClock{width:100%!important;text-align:left!important}
+  .transportHero,.transportCalculator,.historyHero{grid-template-columns:1fr!important}
+}
+
+@media(max-width:640px){
+  :root{--ea-grid-gutter:12px;--ea-grid-gap:12px}
+  .eaFeaturedGrid,.eaSteps,.inventoryGrid,.liveQueueGrid,.liveSoldGrid,
+  .transportTrust,.transportFlowGrid,.transportSteps,.historyScoreGrid,.historyFeatureGrid{grid-template-columns:1fr!important}
+  .eaHeroStats{grid-template-columns:1fr!important}
+  .inventoryFilters{display:none!important}
+  .lotGallery{grid-template-columns:1fr!important}
+  .lotThumbs{grid-template-columns:repeat(4,minmax(0,1fr))!important}
+  .lotSpecs,.lotDamageGrid,.lotTransport,.lotRelated{grid-template-columns:1fr!important}
+  .liveQueueCard{grid-template-columns:110px minmax(0,1fr)!important}
+  .transportRouteCard{grid-template-columns:1fr!important}
+  .transportRouteCard i{justify-self:center!important;transform:rotate(90deg)!important}
+  .transportRouteCard div:nth-of-type(3),.transportRouteCard div:nth-of-type(4){grid-row:auto!important}
+  .historyResultHead,.historyCta{align-items:flex-start!important;flex-direction:column!important}
+  .historyCta a{width:100%!important}
+}
