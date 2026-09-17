@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import "../lot.css";
+import "../lot-d21.css";
 
 const gallery=[
   "https://images.unsplash.com/photo-1655283733642-f1d813b40616?auto=format&fit=crop&w=1600&q=88",
@@ -27,15 +28,36 @@ export default function LotPage(){
   const viewerCloseRef=useRef<HTMLButtonElement|null>(null);
   const [bid,setBid]=useState(21900);
   const [bidInput,setBidInput]=useState("22000");
+  const [countdown,setCountdown]=useState(10);
+  const [maxBidInput,setMaxBidInput]=useState("25000");
+  const [maxBid,setMaxBid]=useState<number|null>(null);
   const title=useMemo(()=>lot==="EA-10482"?"2018 BMW M4 F82":lot==="EA-10511"?"2021 Mercedes-Benz GLC":"2022 Audi RS3 Sportback",[lot]);
+  const minimumBid=bid+100;
 
   const placeBid=()=>{
     const value=Number(bidInput.replace(/[^0-9]/g,""));
-    if(Number.isFinite(value)&&value>bid){setBid(value);setBidInput(String(value+100));}
+    if(Number.isFinite(value)&&value>=minimumBid){
+      setBid(value);
+      setBidInput(String(value+100));
+      setCountdown(10);
+    }
+  };
+
+  const saveMaxBid=()=>{
+    const value=Number(maxBidInput.replace(/[^0-9]/g,""));
+    if(Number.isFinite(value)&&value>=minimumBid){
+      setMaxBid(value);
+      setMaxBidInput(String(value));
+    }
   };
 
   const showPreviousImage=()=>setActiveImage(index=>(index-1+gallery.length)%gallery.length);
   const showNextImage=()=>setActiveImage(index=>(index+1)%gallery.length);
+
+  useEffect(()=>{
+    const interval=window.setInterval(()=>setCountdown(value=>value<=1?10:value-1),1000);
+    return()=>window.clearInterval(interval);
+  },[]);
 
   useEffect(()=>{
     if(!viewerOpen)return;
@@ -100,10 +122,17 @@ export default function LotPage(){
           <section className="lotSection"><div className="lotSectionHead"><div><h2>Подобни автомобили</h2><span>Други активни лотове</span></div></div><div className="lotRelated"><a href="/lot/EA-10482"><img src="https://images.unsplash.com/photo-1658558195433-1af533e3309c?auto=format&fit=crop&w=900&q=82" alt="BMW M4"/><div><b>2018 BMW M4 F82</b><span>€12 750 · LOT EA-10482</span></div></a><a href="/lot/EA-10511"><img src="https://images.unsplash.com/photo-1612280782903-d34dcdc10107?auto=format&fit=crop&w=900&q=82" alt="Mercedes GLC"/><div><b>2021 Mercedes-Benz GLC</b><span>€18 400 · LOT EA-10511</span></div></a><a href="/lot/EA-10702"><img src="https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=900&q=82" alt="Porsche Macan"/><div><b>2023 Porsche Macan S</b><span>€28 750 · LOT EA-10702</span></div></a></div></section>
         </div>
 
-        <aside className="lotBidPanel">
-          <div className="lotLiveRow"><span className="lotLiveBadge"><i/> ПРОДАВА СЕ НА ЖИВО</span><span className="lotCountdown">00:10</span></div>
-          <h2>Текуща ставка</h2><div className="lotCurrentBid">€{bid.toLocaleString("bg-BG")}</div><div className="lotBidHint">Следваща минимална оферта: €{(bid+100).toLocaleString("bg-BG")}</div>
-          <div className="lotBidInputRow"><input className="lotBidInput" value={bidInput} onChange={e=>setBidInput(e.target.value)} inputMode="numeric"/><button className="lotBidBtn" onClick={placeBid}>Оферирай</button></div>
+        <aside className="lotBidPanel" data-design-task="D21" aria-labelledby="lot-auction-panel-title">
+          <div className="lotLiveRow"><span className="lotLiveBadge"><i/> ПРОДАВА СЕ НА ЖИВО</span><span className="lotCountdown" data-urgent={countdown<=3?"true":"false"} role="timer" aria-live="polite" aria-label={`Оставащо време ${countdown} секунди`}>00:{String(countdown).padStart(2,"0")}</span></div>
+          <h2 id="lot-auction-panel-title">Текуща ставка</h2><div className="lotCurrentBid" aria-live="polite">€{bid.toLocaleString("bg-BG")}</div><div className="lotBidHint" id="lot-bid-minimum">Следваща минимална оферта: €{minimumBid.toLocaleString("bg-BG")}</div>
+          <label className="lotBidLabel" htmlFor="lot-bid-input">Твоя оферта</label>
+          <div className="lotBidInputRow"><input id="lot-bid-input" className="lotBidInput" value={bidInput} onChange={e=>setBidInput(e.target.value)} inputMode="numeric" aria-describedby="lot-bid-minimum"/><button type="button" className="lotBidBtn" onClick={placeBid}>Оферирай</button></div>
+          <div className="lotMaxBid" aria-labelledby="lot-max-bid-title">
+            <div className="lotMaxBidHead"><div><strong id="lot-max-bid-title">Max bid</strong><span>Запази максимален лимит за тази сесия</span></div>{maxBid!==null&&<b aria-live="polite">€{maxBid.toLocaleString("bg-BG")}</b>}</div>
+            <label className="lotBidLabel" htmlFor="lot-max-bid-input">Максимална оферта</label>
+            <div className="lotMaxBidRow"><input id="lot-max-bid-input" className="lotMaxBidInput" value={maxBidInput} onChange={e=>setMaxBidInput(e.target.value)} inputMode="numeric" aria-describedby="lot-max-bid-help"/><button type="button" className="lotMaxBidBtn" onClick={saveMaxBid}>Задай max</button></div>
+            <small id="lot-max-bid-help">Минимум €{minimumBid.toLocaleString("bg-BG")} · стойността е локална демо настройка до backend свързването.</small>
+          </div>
           <button className="lotBuyNow">Купи сега · €29 900</button>
           <div className="lotFees"><div><span>Текуща ставка</span><b>€{bid.toLocaleString("bg-BG")}</b></div><div><span>Ориентировъчни такси</span><b>€980</b></div><div><span>Транспорт</span><b>от €1 480</b></div></div>
           <div className="lotNotice">Това е визуалният ENCHEV Lot Details flow. Реалните плащания, identity verification и server-side bid locking ще бъдат вързани към backend етапа.</div>

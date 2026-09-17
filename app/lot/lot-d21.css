@@ -1,0 +1,20 @@
+/* D21 — lot auction panel: current bid, countdown, bid CTA and max bid */
+.lotBidPanel[data-design-task="D21"]{border-color:rgba(39,245,138,.22);background:linear-gradient(180deg,rgba(13,23,16,.98),rgba(7,14,10,.99));box-shadow:0 24px 70px rgba(0,0,0,.34),inset 0 1px 0 rgba(126,255,173,.04)}
+.lotBidPanel[data-design-task="D21"] .lotLiveRow{padding-bottom:14px;border-bottom:1px solid rgba(255,255,255,.07)}
+.lotBidPanel[data-design-task="D21"] .lotCountdown{min-width:58px;text-align:center;font-variant-numeric:tabular-nums;font-weight:1000;color:#d9ffe7;border-color:rgba(39,245,138,.2)}
+.lotBidPanel[data-design-task="D21"] .lotCountdown[data-urgent="true"]{color:#ffe8bf;border-color:rgba(255,181,72,.38);background:rgba(255,181,72,.08)}
+.lotBidLabel{display:block;margin:16px 0 7px;color:#9aaba1;font-size:10px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
+.lotBidPanel[data-design-task="D21"] .lotBidInputRow{margin:0 0 14px}
+.lotBidPanel[data-design-task="D21"] .lotBidInput,.lotMaxBidInput{font:inherit;font-size:13px;font-weight:800;font-variant-numeric:tabular-nums}
+.lotBidPanel[data-design-task="D21"] .lotBidBtn,.lotMaxBidBtn{min-height:49px;padding:0 16px;border-radius:10px;font:inherit;font-size:11px;font-weight:1000;cursor:pointer}
+.lotBidPanel[data-design-task="D21"] .lotBidBtn{box-shadow:0 10px 24px rgba(39,245,138,.12)}
+.lotMaxBid{margin:2px 0 14px;padding:14px;border:1px solid rgba(126,247,171,.14);border-radius:13px;background:linear-gradient(180deg,rgba(39,245,138,.045),rgba(255,255,255,.018))}
+.lotMaxBidHead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}.lotMaxBidHead>div{display:flex;flex-direction:column;gap:4px;min-width:0}.lotMaxBidHead strong{color:#eafff1;font-size:13px}.lotMaxBidHead span{color:#819187;font-size:10px;line-height:1.45}.lotMaxBidHead>b{flex:none;color:#9dffc0;font-size:13px;font-variant-numeric:tabular-nums}
+.lotMaxBidRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px}.lotMaxBidInput{height:49px;min-width:0;border-radius:10px;border:1px solid rgba(255,255,255,.1);background:#08110c;color:#fff;padding:0 13px;outline:none}.lotMaxBidBtn{border:1px solid rgba(39,245,138,.32);background:rgba(39,245,138,.1);color:#b9ffd1}.lotMaxBid small{display:block;margin-top:8px;color:#738279;font-size:9px;line-height:1.5}
+.lotBidPanel[data-design-task="D21"] .lotBidInput:focus,.lotMaxBidInput:focus{border-color:rgba(39,245,138,.52);box-shadow:0 0 0 3px rgba(39,245,138,.07)}
+.lotBidPanel[data-design-task="D21"] .lotBidBtn:hover,.lotMaxBidBtn:hover{filter:brightness(1.06)}
+.lotBidPanel[data-design-task="D21"] .lotBidBtn:focus-visible,.lotMaxBidBtn:focus-visible,.lotBidPanel[data-design-task="D21"] .lotBuyNow:focus-visible{outline:2px solid #7effad;outline-offset:3px}
+@media(max-width:1050px){.lotBidPanel[data-design-task="D21"]{max-width:760px;width:100%;margin-inline:auto}}
+@media(max-width:560px){.lotBidPanel[data-design-task="D21"]{padding:15px;border-radius:16px}.lotBidPanel[data-design-task="D21"] .lotCurrentBid{font-size:36px}.lotBidPanel[data-design-task="D21"] .lotBidInputRow,.lotMaxBidRow{grid-template-columns:1fr}.lotBidPanel[data-design-task="D21"] .lotBidBtn,.lotMaxBidBtn,.lotBidPanel[data-design-task="D21"] .lotBuyNow{width:100%;min-height:48px}.lotMaxBidHead{align-items:flex-start}.lotLiveRow{align-items:flex-start}.lotLiveBadge{max-width:190px;line-height:1.4}}
+@media(prefers-contrast:more){.lotBidPanel[data-design-task="D21"],.lotMaxBid{border-color:rgba(255,255,255,.34)}.lotBidPanel[data-design-task="D21"] .lotBidHint,.lotMaxBidHead span,.lotMaxBid small{color:#c8d7ce}.lotMaxBidBtn{border-color:#7effad}}
+@media(prefers-reduced-motion:reduce){.lotBidPanel[data-design-task="D21"] .lotBidBtn,.lotMaxBidBtn{transition:none!important}}
