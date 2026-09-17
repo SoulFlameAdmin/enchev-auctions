@@ -1,0 +1,55 @@
+name: Build DAVID Monitor APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'monitor-android/**'
+      - '.github/workflows/build-david-monitor-apk.yml'
+
+permissions:
+  contents: read
+
+env:
+  JAVA_VERSION: '17'
+  GRADLE_VERSION: '8.9'
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android 35
+        run: sdkmanager 'platforms;android-35' 'build-tools;35.0.0'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: ${{ env.GRADLE_VERSION }}
+
+      - name: Build debug APK
+        run: gradle -p monitor-android :app:assembleDebug --stacktrace
+
+      - name: Verify APK exists
+        run: test -f monitor-android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Upload DAVID Monitor APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: DAVID-Monitor-v1-debug
+          path: monitor-android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 30
