@@ -1,6 +1,6 @@
 # Enchev Auctions — 01.06 Redis environment
 
-Status: YELLOW — Redis environment contract and live verifier are implemented; no provisioned/live Redis provider has been proven yet
+Status: YELLOW — Redis environment contract, CI guard and production runtime probe are implemented; no provisioned/live Redis provider has been proven yet
 MASTER SYSTEM PLAN v1.0 FROZEN task: `01.06`
 Execution wave: `WAVE 1 — Engineering foundation & cross-cutting design`
 Depends on: `01.05 Supabase project` GREEN and completed Wave 0 governance baseline
@@ -39,6 +39,17 @@ The provider remains `null` and binding status remains `pending-live-provider` u
 
 The verifier supports local `redis://localhost` for development and requires `rediss://` for non-local endpoints.
 
+## Production runtime probe
+`app/api/health/redis/route.ts` performs the same non-authoritative Redis health check from the deployed Vercel Node runtime.
+
+The endpoint returns only sanitized fields:
+- `configured`;
+- `ok`;
+- `status`;
+- TLS boolean and latency on a successful PING.
+
+It never returns Redis hostname, username, password, token or the `REDIS_URL` value. A missing runtime secret returns HTTP 503 with `configured=false`; a configured endpoint that cannot answer PING returns HTTP 503 with `configured=true` and `redis-ping-failed`.
+
 ## CI behavior
 The normal web verification workflow runs the Redis contract invariant and self-tests. It intentionally does **not** run `--live` yet because no authorized Redis secret/provider binding has been established in CI. Adding a fabricated URL or secret would violate the frozen evidence rules.
 
@@ -46,7 +57,8 @@ The normal web verification workflow runs the Redis contract invariant and self-
 At task start:
 - repository search found no Redis implementation and no `REDIS_URL` reference;
 - Vercel project `enchev-auctions` is healthy and deploying, but the available project metadata does not prove a Redis data store or expose a Redis binding;
-- Supabase is PostgreSQL-based and is not treated as a Redis substitute.
+- Supabase is PostgreSQL-based and is not treated as a Redis substitute;
+- Vercel documentation confirms Redis can be provisioned through a Marketplace integration such as Upstash, but the connected Vercel tool surface in this session does not expose Marketplace provisioning or environment-secret mutation actions.
 
 Absence from these surfaces is recorded as **not proven**, not as proof that no external Redis account exists.
 
@@ -55,7 +67,7 @@ Absence from these surfaces is recorded as **not proven**, not as proof that no 
 1. a real Redis/Valkey provider instance is provisioned for Enchev;
 2. staging/production secret injection is configured outside Git;
 3. `REDIS_URL` uses TLS for non-local environments;
-4. `node scripts/verify-redis-environment.mjs --live` returns `REDIS_ENV_LIVE PASS` against the bound instance;
+4. either `node scripts/verify-redis-environment.mjs --live` or the production `/api/health/redis` probe returns a successful PONG against the bound instance;
 5. contract invariant + self-tests PASS;
 6. TypeScript + production build PASS on the exact commit or a verified descendant;
 7. the exact evidence is recorded here and synced to the Command Center cloud state.
