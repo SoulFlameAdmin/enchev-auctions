@@ -3,6 +3,7 @@ import SeedAuditGaps from "./components/SeedAuditGaps";
 import BulgarianStageLabels from "./components/BulgarianStageLabels";
 import DesignPlanExtension from "./components/DesignPlanExtension";
 import HomeLiveSpotlight from "./components/HomeLiveSpotlight";
+import HomeTrustSupport from "./components/HomeTrustSupport";
 import { accountNavigation, primaryNavigation } from "./site-navigation";
 
 const featuredCars = [
@@ -69,6 +70,8 @@ export default function Home(){
         <div className="eaJourneyFooter"><span>Нов купувач? Прегледай помощта преди първото си участие.</span><a href="/support">Помощ за купувачи →</a></div>
       </div>
     </section>
+
+    <HomeTrustSupport />
 
     <section className="eaCta" id="transport"><div><h2>Готов ли си за следващия търг?</h2><p>Отвори целия инвентар и виж кой лот е LIVE в момента.</p></div><div className="eaCtaActions"><a href="/inventory">Отвори инвентара</a><a href="/live-auctions">LIVE търгове</a></div></section>
 
