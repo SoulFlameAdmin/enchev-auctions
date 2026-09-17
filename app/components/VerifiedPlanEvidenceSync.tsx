@@ -30,6 +30,7 @@ const VERIFIED_WAVE_0: Record<string, string> = {
   "32.07": "docs/32_07_APPEND_ONLY_GAP_IDS.md · implementation fdd88ba2421ec5774d8cf7140d4c192d36a42873 · GitHub Actions run 35214678819 PASS · append-only invariant/self-tests PASS · production descendant fa9de16de39b09a5075ee2db2205b182900fa380 · Vercel dpl_41a1wTGhRPiBPPvYo4aAczszLJqx READY · production HTTP 200/runtime clean",
   "32.08": "docs/32_08_STATUS_HISTORY_AUDIT_TRAIL.md · implementation 82701485d2b1295e73389b4c37c4c468a849441b · verification fix 2ece07a407f466d388478fc30295913a992ae15b · GitHub Actions run 35244922187 PASS · audit invariant/self-tests PASS · Vercel dpl_G7453s1yPtnTL4p17vDKwHCkiXSy READY · production HTTP 200/runtime clean",
   "32.09": "docs/32_09_CLOUD_REALTIME_STATUS_STORE.md · implementation cc2d21fbeaa2ab2fc77317821c134ac56c459bc4 · workflow 78bf6ce3eb197b73b489664421587ec2d43e1955 · GitHub Actions run 35246234986 PASS · cloud sync/read-back PASS rows=18 · Supabase enchev_plan_state RLS + OIDC Edge Function · Vercel dpl_5AAojnTphZbr5ZySixWUtQ4wRgyU READY · production HTTP 200/runtime clean",
+  "32.10": "docs/32_10_PLAN_VERSION_DISPLAYED_IN_UI.md · invariant 8c95cc9cf662fba7e91f724177e7f9829e8403c1 · CI integration c303fe51e4ad53c81a05642a7ffc99b825c62457 · GitHub Actions run 35247299741 PASS · plan-version invariant/self-tests PASS · production HTML 200 shows Master System Plan v1.0 FROZEN · runtime errors 0",
 };
 
 export default function VerifiedPlanEvidenceSync() {
