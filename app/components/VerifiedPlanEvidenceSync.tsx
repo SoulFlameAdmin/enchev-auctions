@@ -26,7 +26,6 @@ const VERIFIED_WAVE_0: Record<string, string> = {
   "32.03": "docs/32_03_GREEN_REQUIRES_EVIDENCE.md · guard 49f831a9c1fed32895b9a4e286e7f57d09aa0617 · CI integration f90b9a9da47ac579496c61acfdb1ba8d130052e4 · GREEN evidence 5f65fb63d4fc3b9f743145f161a9e1610d093cbe · GitHub Actions run 35183337380 PASS · GREEN evidence invariant/self-test PASS · production HTTP 200/runtime healthy",
   "32.04": "docs/32_04_GREEN_REQUIRES_PASSING_TEST.md · runtime guard fa52e2567bc45afabacf4472f00d4e4747e2fd42 · CI run 35183833517 PASS · final integration run 35183951638 PASS · production descendant 149b4d57d6f3c66a07eb9c6275339acc7b8ff65b · Vercel dpl_BGHLv7uyatsCXSiUcC1kV9g2ujaL READY · 236 test tasks governed · production HTTP 200/runtime clean",
   "32.05": "docs/32_05_YELLOW_PARTIAL_ERROR_PENDING.md · verifier aa6d64dc54b0b5b1fbd6278a673433e86121197e · CI integration 7363c289db2939c80340964f3b1c1f3d89f0b806 · GREEN evidence d124a9a6136a428865d094f57c7bbff2ecc346fd · verified descendant ddb63f31c98869890bc70749c93e489575da39b3 · GitHub Actions run 35212105730 PASS · YELLOW invariant/self-tests PASS · production HTTP 200/runtime healthy",
-  "32.06": "docs/32_06_RED_NOT_IMPLEMENTED.md · verifier 3ee0bf9705f19726e0d298f94dc049652a4fbe78 · CI integration 3c467c8a301661c0862b5d7647b0e63d32deba90 · GREEN evidence 79afb98bd00bdb4c3abff3693d1224093102a2df · GitHub Actions run 35213784067 PASS · RED invariant/self-tests PASS · production baseline dpl_FDjFFdjtAcmamNEJCDTYuftgJa35 READY · production HTTP 200/runtime healthy",
 };
 
 export default function VerifiedPlanEvidenceSync() {
@@ -57,7 +56,6 @@ export default function VerifiedPlanEvidenceSync() {
       localStorage.setItem(STATUS_KEY, JSON.stringify(statuses));
       localStorage.setItem(NOTES_KEY, JSON.stringify(notes));
 
-      // Delay the broadcast so the Command Center listener is mounted on the same load.
       timer = window.setTimeout(() => {
         try {
           const channel = new BroadcastChannel(CHANNEL_KEY);
