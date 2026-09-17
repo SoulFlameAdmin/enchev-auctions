@@ -102,6 +102,18 @@ Plugin Directory discovery found infrastructure connectors that could provide a 
 
 The Enchev runtime already accepts an external TLS `REDIS_URL`, so an authorized managed Redis/Valkey instance from one of these providers could satisfy 01.06 without Vercel Marketplace. Installing/connecting an external provider plugin requires explicit user authorization and therefore cannot be performed silently by the agent.
 
+## Attempt 4 evidence — 2026-09-17
+The provider state and production binding were re-checked after the relay recovered from a blank/stalled response.
+
+Evidence:
+- Railway plugin remains available but `installed=false`;
+- Render plugin remains available but `installed=false`;
+- canonical production `/api/health/redis` re-check returned HTTP 503 with `{"ok":false,"configured":false,"status":"missing-redis-binding"}`;
+- no newly authorized Redis/Valkey provider connection was discovered;
+- no alternative already-authorized infrastructure surface can provision a real Redis-compatible endpoint without a new provider connection or secret-bearing binding.
+
+This confirms the remaining blocker is external provider authorization/provisioning, not application code, CI, Supabase, or the health probe.
+
 ## GREEN gate
 01.06 may become GREEN only when all of the following are evidenced:
 1. a real Redis/Valkey provider instance is provisioned for Enchev;
