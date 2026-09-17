@@ -1,0 +1,12 @@
+/* D13 — active filters, clear-all and URL-backed filter state */
+.inv2ActiveFilters{width:min(1660px,calc(100% - 48px));margin:0 auto 14px;padding:10px 12px;display:flex;align-items:center;gap:10px;border:1px solid rgba(125,255,178,.12);border-radius:12px;background:rgba(7,16,11,.86)}
+.inv2ActiveFiltersLabel{flex:none;color:#7f9187;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
+.inv2ActiveFilterList{display:flex;flex:1;flex-wrap:wrap;gap:7px;min-width:0}
+.inv2ActiveFilterChip{min-height:34px;padding:0 10px 0 11px;display:inline-flex;align-items:center;gap:8px;border:1px solid rgba(39,245,138,.28);border-radius:999px;background:rgba(39,245,138,.08);color:#dffff0;font-size:11px;font-weight:800;cursor:pointer}
+.inv2ActiveFilterChip:hover{border-color:rgba(39,245,138,.5);background:rgba(39,245,138,.14)}
+.inv2ActiveFilterChip b{color:#7ef7ab;font-size:15px;line-height:1}
+.inv2ClearAll{flex:none;min-height:36px;padding:0 12px;border:1px solid rgba(255,255,255,.12);border-radius:9px;background:#08100c;color:#b8c5bd;font-size:10px;font-weight:900;cursor:pointer}
+.inv2ClearAll:hover{border-color:rgba(39,245,138,.32);color:#dffff0}
+@media(max-width:900px){.inv2ActiveFilters{width:calc(100% - 24px);align-items:flex-start;flex-wrap:wrap}.inv2ActiveFilterList{order:3;flex-basis:100%}}
+@media(max-width:640px){.inv2ActiveFilters{padding:10px}.inv2ActiveFiltersLabel{align-self:center}.inv2ClearAll{margin-left:auto;min-height:44px}.inv2ActiveFilterChip{min-height:44px;padding:0 12px;font-size:11px}.inv2ActiveFilterList{gap:6px}}
+@media(prefers-reduced-motion:reduce){.inv2ActiveFilterChip,.inv2ClearAll{transition:none!important}}

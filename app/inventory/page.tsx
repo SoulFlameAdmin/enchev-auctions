@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { accountNavigation, primaryNavigation } from "../site-navigation";
+import "./inventory-d13.css";
 
 const LOT_SECONDS = 10;
 const cars = [
@@ -15,9 +16,12 @@ const cars = [
   {lot:"EA-10702",vin:"WP1AB2A59PL10702",title:"2023 Porsche Macan S",year:2023,model:"Macan S",brand:"Porsche",location:"California, USA",region:"САЩ",damage:"Front end",titleStatus:"Salvage",mileage:"21 540 km",price:28750,buyNow:0,badge:"PREMIUM",image:"https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1200&q=82"},
 ];
 
+const brands=["BMW","Mercedes","Audi","Volkswagen","Porsche"];
+const regions=["САЩ","Европа"];
+const auctionStatuses=["LIVE","UPCOMING","SOLD","OPEN"] as const;
 type AuctionStatus = "sold" | "live" | "next" | "open";
 type ViewMode = "grid" | "list";
-type FilterStatus = "Всички" | "LIVE" | "UPCOMING" | "SOLD" | "OPEN";
+type FilterStatus = "Всички" | typeof auctionStatuses[number];
 
 export default function InventoryPage(){
   const [query,setQuery]=useState("");
@@ -35,14 +39,58 @@ export default function InventoryPage(){
   const [sort,setSort]=useState("recommended");
   const [viewMode,setViewMode]=useState<ViewMode>("grid");
   const [mobileFiltersOpen,setMobileFiltersOpen]=useState(false);
+  const [urlReady,setUrlReady]=useState(false);
   const [activeIndex,setActiveIndex]=useState(1);
   const [remaining,setRemaining]=useState(LOT_SECONDS);
   const [bidPrices,setBidPrices]=useState<Record<string,number>>(()=>Object.fromEntries(cars.map(car=>[car.lot,car.price])));
 
   useEffect(()=>{
-    const q=new URLSearchParams(window.location.search).get("q");
+    const params=new URLSearchParams(window.location.search);
+    const q=params.get("q");
+    const make=params.get("make");
+    const nextModel=params.get("model");
+    const nextRegion=params.get("region");
+    const nextLocation=params.get("location");
+    const nextDamage=params.get("damage");
+    const nextTitle=params.get("title");
+    const nextStatus=params.get("status") as FilterStatus|null;
+    const nextYearFrom=Number(params.get("yearFrom"));
+    const nextYearTo=Number(params.get("yearTo"));
     if(q)setQuery(q);
+    if(make&&brands.includes(make))setBrand(make);
+    if(nextModel)setModel(nextModel);
+    if(nextRegion&&regions.includes(nextRegion))setRegion(nextRegion);
+    if(nextLocation)setLocation(nextLocation);
+    if(nextDamage)setDamage(nextDamage);
+    if(nextTitle&&["Clean","Salvage"].includes(nextTitle))setTitleStatus(nextTitle);
+    if(nextStatus&&auctionStatuses.includes(nextStatus as typeof auctionStatuses[number]))setAuctionStatus(nextStatus);
+    if(nextYearFrom>=2010&&nextYearFrom<=2026)setYearFrom(nextYearFrom);
+    if(nextYearTo>=2010&&nextYearTo<=2026)setYearTo(nextYearTo);
+    setBuyNow(params.get("buyNow")==="1");
+    setLiveOnly(params.get("live")==="1");
+    setUrlReady(true);
   },[]);
+
+  useEffect(()=>{
+    if(!urlReady)return;
+    const params=new URLSearchParams();
+    const q=query.trim();
+    if(q)params.set("q",q);
+    if(brand!=="Всички")params.set("make",brand);
+    if(model!=="Всички")params.set("model",model);
+    if(region!=="Всички")params.set("region",region);
+    if(location!=="Всички")params.set("location",location);
+    if(damage!=="Всички")params.set("damage",damage);
+    if(titleStatus!=="Всички")params.set("title",titleStatus);
+    if(auctionStatus!=="Всички")params.set("status",auctionStatus);
+    if(yearFrom!==2010)params.set("yearFrom",String(yearFrom));
+    if(yearTo!==2026)params.set("yearTo",String(yearTo));
+    if(buyNow)params.set("buyNow","1");
+    if(liveOnly)params.set("live","1");
+    const search=params.toString();
+    const nextUrl=`${window.location.pathname}${search?`?${search}`:""}${window.location.hash}`;
+    window.history.replaceState(window.history.state,"",nextUrl);
+  },[urlReady,query,brand,model,region,location,damage,titleStatus,auctionStatus,yearFrom,yearTo,buyNow,liveOnly]);
 
   useEffect(()=>{
     const timer=window.setInterval(()=>{
@@ -109,10 +157,23 @@ export default function InventoryPage(){
     return list;
   },[auctionCars,query,brand,model,region,location,damage,titleStatus,auctionStatus,yearFrom,yearTo,buyNow,liveOnly,sort]);
 
+  const activeFilters:{key:string;label:string;clear:()=>void}[]=[];
+  if(query.trim())activeFilters.push({key:"q",label:`Търсене: ${query.trim()}`,clear:()=>setQuery("")});
+  if(brand!=="Всички")activeFilters.push({key:"make",label:`Марка: ${brand}`,clear:()=>{setBrand("Всички");setModel("Всички");}});
+  if(model!=="Всички")activeFilters.push({key:"model",label:`Модел: ${model}`,clear:()=>setModel("Всички")});
+  if(region!=="Всички")activeFilters.push({key:"region",label:`Регион: ${region}`,clear:()=>{setRegion("Всички");setLocation("Всички");}});
+  if(location!=="Всички")activeFilters.push({key:"location",label:`Локация: ${location}`,clear:()=>setLocation("Всички")});
+  if(damage!=="Всички")activeFilters.push({key:"damage",label:`Повреда: ${damage}`,clear:()=>setDamage("Всички")});
+  if(titleStatus!=="Всички")activeFilters.push({key:"title",label:`Талон: ${titleStatus==="Clean"?"Clean title":"Salvage title"}`,clear:()=>setTitleStatus("Всички")});
+  if(auctionStatus!=="Всички")activeFilters.push({key:"status",label:`Статус: ${auctionStatus}`,clear:()=>setAuctionStatus("Всички")});
+  if(yearFrom!==2010||yearTo!==2026)activeFilters.push({key:"year",label:`Година: ${Math.min(yearFrom,yearTo)}–${Math.max(yearFrom,yearTo)}`,clear:()=>{setYearFrom(2010);setYearTo(2026);}});
+  if(buyNow)activeFilters.push({key:"buyNow",label:"Buy Now",clear:()=>setBuyNow(false)});
+  if(liveOnly)activeFilters.push({key:"live",label:"Само LIVE",clear:()=>setLiveOnly(false)});
+
   const formatTime=(seconds:number)=>`00:${String(seconds).padStart(2,"0")}`;
   const liveCar=auctionCars.find(car=>car.status==="live");
 
-  return <main className="inventoryPage" data-design-task="D11" data-design-filter-task="D12">
+  return <main className="inventoryPage" data-design-task="D11" data-design-filter-task="D12" data-design-url-task="D13">
     <div className="inv2TopUtility"><div className="inv2UtilityLive"><i/> ENCHEV LIVE NETWORK <span>·</span> Обновяване в реално време</div><div className="inv2UtilityRight"><span>BG · EUR</span><a href="/support">Помощ</a><a href="/transport">Транспорт</a></div></div>
 
     <header className="inventoryHeader">
@@ -128,7 +189,13 @@ export default function InventoryPage(){
       <div className="inv2HeroStats"><div className="inv2HeroStat"><b>{cars.length}</b><span>активни лота</span></div><div className="inv2HeroStat"><b>{cars.filter(c=>c.buyNow>0).length}</b><span>buy now</span></div><div className="inv2HeroStat"><b>{formatTime(remaining)}</b><span>live таймер</span></div></div>
     </section>
 
-    <div className="inv2Quickbar"><div className="inv2Chips"><button className={`inv2Chip ${!liveOnly&&!buyNow&&brand==="Всички"?"active":""}`} onClick={resetFilters}>Всички</button><button className={`inv2Chip ${liveOnly?"active":""}`} onClick={()=>setLiveOnly(v=>!v)}>● LIVE</button><button className={`inv2Chip ${buyNow?"active":""}`} onClick={()=>setBuyNow(v=>!v)}>Buy Now</button><button className={`inv2Chip ${brand==="BMW"?"active":""}`} onClick={()=>setBrand(brand==="BMW"?"Всички":"BMW")}>BMW</button><button className={`inv2Chip ${brand==="Mercedes"?"active":""}`} onClick={()=>setBrand(brand==="Mercedes"?"Всички":"Mercedes")}>Mercedes</button><button className={`inv2Chip ${region==="САЩ"?"active":""}`} onClick={()=>setRegion(region==="САЩ"?"Всички":"САЩ")}>САЩ</button><button className={`inv2Chip ${region==="Европа"?"active":""}`} onClick={()=>setRegion(region==="Европа"?"Всички":"Европа")}>Европа</button></div><button className="inv2SaveSearch">♡ Запази търсенето</button></div>
+    <div className="inv2Quickbar"><div className="inv2Chips"><button className={`inv2Chip ${activeFilters.length===0?"active":""}`} onClick={resetFilters}>Всички</button><button className={`inv2Chip ${liveOnly?"active":""}`} onClick={()=>setLiveOnly(v=>!v)}>● LIVE</button><button className={`inv2Chip ${buyNow?"active":""}`} onClick={()=>setBuyNow(v=>!v)}>Buy Now</button><button className={`inv2Chip ${brand==="BMW"?"active":""}`} onClick={()=>setBrand(brand==="BMW"?"Всички":"BMW")}>BMW</button><button className={`inv2Chip ${brand==="Mercedes"?"active":""}`} onClick={()=>setBrand(brand==="Mercedes"?"Всички":"Mercedes")}>Mercedes</button><button className={`inv2Chip ${region==="САЩ"?"active":""}`} onClick={()=>setRegion(region==="САЩ"?"Всички":"САЩ")}>САЩ</button><button className={`inv2Chip ${region==="Европа"?"active":""}`} onClick={()=>setRegion(region==="Европа"?"Всички":"Европа")}>Европа</button></div><button className="inv2SaveSearch">♡ Запази търсенето</button></div>
+
+    {activeFilters.length>0&&<div className="inv2ActiveFilters" aria-label="Активни филтри" data-active-filter-count={activeFilters.length}>
+      <span className="inv2ActiveFiltersLabel">Активни филтри</span>
+      <div className="inv2ActiveFilterList">{activeFilters.map(filter=><button type="button" className="inv2ActiveFilterChip" key={filter.key} onClick={filter.clear} aria-label={`Премахни филтър ${filter.label}`}><span>{filter.label}</span><b aria-hidden="true">×</b></button>)}</div>
+      <button type="button" className="inv2ClearAll" onClick={resetFilters}>Изчисти всички</button>
+    </div>}
 
     <button className="inv2MobileFiltersToggle" type="button" aria-controls="inventory-filter-panel" aria-expanded={mobileFiltersOpen} onClick={()=>setMobileFiltersOpen(open=>!open)}>
       <span>⚙ Филтри</span><strong>{mobileFiltersOpen?"Затвори":"Отвори"}</strong>
@@ -136,17 +203,17 @@ export default function InventoryPage(){
 
     <div className="inventoryShell">
       <aside id="inventory-filter-panel" className={`inventoryFilters ${mobileFiltersOpen?"isMobileOpen":""}`} aria-label="Филтри за инвентара">
-        <div className="filterTitle"><b>Филтри за търсене</b><button onClick={resetFilters}>Изчисти</button></div>
+        <div className="filterTitle"><b>Филтри за търсене</b><button onClick={resetFilters}>Изчисти{activeFilters.length>0?` (${activeFilters.length})`:""}</button></div>
         <label className="filterSearchLabel">Търси в резултатите<input value={query} onChange={e=>setQuery(e.target.value)} placeholder="BMW, EA-10482, WBS3R9..."/></label>
         <div className="filterBlock"><div className="inv2FilterGroupTitle"><b>Бързи филтри</b><small>LIVE / BUY NOW</small></div><label><input type="checkbox" checked={liveOnly} onChange={e=>setLiveOnly(e.target.checked)}/> Само LIVE</label><label><input type="checkbox" checked={buyNow} onChange={e=>setBuyNow(e.target.checked)}/> Buy Now</label></div>
-        <div className="filterBlock filterBlock--select"><b>Марка</b><select className="inv2Select" value={brand} onChange={e=>setBrand(e.target.value)} aria-label="Филтър по марка">{["Всички","BMW","Mercedes","Audi","Volkswagen","Porsche"].map(x=><option key={x} value={x}>{x}</option>)}</select></div>
+        <div className="filterBlock filterBlock--select"><b>Марка</b><select className="inv2Select" value={brand} onChange={e=>setBrand(e.target.value)} aria-label="Филтър по марка">{["Всички",...brands].map(x=><option key={x} value={x}>{x}</option>)}</select></div>
         <div className="filterBlock filterBlock--select"><b>Модел</b><select className="inv2Select" value={model} onChange={e=>setModel(e.target.value)} aria-label="Филтър по модел">{models.map(x=><option key={x} value={x}>{x}</option>)}</select></div>
         <div className="filterBlock"><div className="inv2FilterGroupTitle"><b>Година</b><small>{Math.min(yearFrom,yearTo)}–{Math.max(yearFrom,yearTo)}</small></div><div className="inv2Range"><input type="number" min="2010" max="2026" value={yearFrom} onChange={e=>setYearFrom(Number(e.target.value)||2010)} aria-label="Година от"/><input type="number" min="2010" max="2026" value={yearTo} onChange={e=>setYearTo(Number(e.target.value)||2026)} aria-label="Година до"/></div></div>
-        <div className="filterBlock filterBlock--select"><b>Регион</b><select className="inv2Select" value={region} onChange={e=>setRegion(e.target.value)} aria-label="Филтър по регион">{["Всички","САЩ","Европа"].map(x=><option key={x} value={x}>{x}</option>)}</select></div>
+        <div className="filterBlock filterBlock--select"><b>Регион</b><select className="inv2Select" value={region} onChange={e=>setRegion(e.target.value)} aria-label="Филтър по регион">{["Всички",...regions].map(x=><option key={x} value={x}>{x}</option>)}</select></div>
         <div className="filterBlock filterBlock--select"><b>Локация</b><select className="inv2Select" value={location} onChange={e=>setLocation(e.target.value)} aria-label="Филтър по локация">{locations.map(x=><option key={x} value={x}>{x}</option>)}</select></div>
         <div className="filterBlock filterBlock--select"><b>Основна повреда</b><select className="inv2Select" value={damage} onChange={e=>setDamage(e.target.value)} aria-label="Филтър по повреда">{damages.map(x=><option key={x} value={x}>{x}</option>)}</select></div>
         <div className="filterBlock filterBlock--select"><b>Статус на талона</b><select className="inv2Select" value={titleStatus} onChange={e=>setTitleStatus(e.target.value)} aria-label="Филтър по статус на талона">{titleStatuses.map(x=><option key={x} value={x}>{x==="Всички"?x:x==="Clean"?"Clean title":"Salvage title"}</option>)}</select></div>
-        <div className="filterBlock filterBlock--select"><b>Статус на търга</b><select className="inv2Select" value={auctionStatus} onChange={e=>setAuctionStatus(e.target.value as FilterStatus)} aria-label="Филтър по статус на търга">{["Всички","LIVE","UPCOMING","SOLD","OPEN"].map(x=><option key={x} value={x}>{x}</option>)}</select></div>
+        <div className="filterBlock filterBlock--select"><b>Статус на търга</b><select className="inv2Select" value={auctionStatus} onChange={e=>setAuctionStatus(e.target.value as FilterStatus)} aria-label="Филтър по статус на търга">{["Всички",...auctionStatuses].map(x=><option key={x} value={x}>{x}</option>)}</select></div>
         <div className="filterBlock"><div className="inv2FilterGroupTitle"><b>Цена</b><small>EUR</small></div><div className="inv2Range"><input placeholder="От"/><input placeholder="До"/></div></div>
         <div className="filterBlock collapsed"><b>Тип превозно средство</b><span>+</span></div><div className="filterBlock collapsed"><b>Двигател</b><span>+</span></div><div className="filterBlock collapsed"><b>Скоростна кутия</b><span>+</span></div><div className="filterBlock collapsed"><b>Пробег</b><span>+</span></div><div className="filterBlock collapsed"><b>Дата на търга</b><span>+</span></div>
       </aside>
