@@ -4,28 +4,49 @@ param(
 
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
-[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
 $ChatUrl = "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4"
+$ChatHome = "https://chatgpt.com/"
 $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Root = if (Test-Path "D:\ASI") { "D:\ASI" } else { Join-Path $env:LOCALAPPDATA "DAVID" }
-$ToolsRoot = Join-Path $Root "tools"
-$ChromeRoot = Join-Path $ToolsRoot "chrome-app2"
-$ChromeExe = Join-Path $ChromeRoot "chrome-win64\chrome.exe"
-$ProfileDir = Join-Path $Root "DAVID_APP2_CHROME_PROFILE"
+$ProfileDir = Join-Path $Root "DAVID_APP2_EDGE_PROFILE_V3"
 
 $PortableGit = "D:\ASI\tools\PortableGit"
 $PortableNode = "D:\ASI\tools\node"
 if (Test-Path $PortableGit) { $env:Path = "$PortableGit\cmd;$PortableGit\bin;$env:Path" }
 if (Test-Path $PortableNode) { $env:Path = "$PortableNode;$env:Path" }
 
+function Get-EdgePath {
+  $candidates = New-Object System.Collections.Generic.List[string]
+  if (${env:ProgramFiles(x86)}) { $candidates.Add((Join-Path ${env:ProgramFiles(x86)} "Microsoft\Edge\Application\msedge.exe")) }
+  if ($env:ProgramFiles) { $candidates.Add((Join-Path $env:ProgramFiles "Microsoft\Edge\Application\msedge.exe")) }
+  if ($env:LOCALAPPDATA) { $candidates.Add((Join-Path $env:LOCALAPPDATA "Microsoft\Edge\Application\msedge.exe")) }
+  foreach ($name in @("msedge.exe", "msedge")) {
+    $cmd = Get-Command $name -ErrorAction SilentlyContinue
+    if ($cmd -and $cmd.Source) { $candidates.Add($cmd.Source) }
+  }
+  foreach ($regPath in @(
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\msedge.exe",
+    "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\App Paths\msedge.exe",
+    "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\msedge.exe"
+  )) {
+    try {
+      $value = (Get-ItemProperty -Path $regPath -ErrorAction Stop).'(default)'
+      if ($value) { $candidates.Add($value) }
+    } catch {}
+  }
+  foreach ($candidate in ($candidates | Select-Object -Unique)) {
+    if ($candidate -and (Test-Path $candidate)) { return $candidate }
+  }
+  return $null
+}
+
 function Test-Cdp {
   param([int]$P)
   try {
     $v = Invoke-RestMethod -Uri "http://127.0.0.1:$P/json/version" -TimeoutSec 3
     return [bool]$v.webSocketDebuggerUrl
-  }
-  catch { return $false }
+  } catch { return $false }
 }
 
 function Wait-CdpStable {
@@ -34,89 +55,82 @@ function Wait-CdpStable {
   for ($i = 0; $i -lt $MaxChecks; $i++) {
     if (Test-Cdp -P $P) {
       $stable++
-      if ($stable -ge 4) {
-        Start-Sleep -Seconds 2
-        return $true
-      }
-    }
-    else { $stable = 0 }
+      if ($stable -ge 4) { Start-Sleep -Seconds 2; return $true }
+    } else { $stable = 0 }
     Start-Sleep -Milliseconds 700
   }
   return $false
 }
 
-function Stop-App2Browser {
+function Stop-StaleApp2Browsers {
   try {
     Get-CimInstance Win32_Process |
       Where-Object {
-        ($_.Name -eq "chrome.exe" -or $_.Name -eq "msedge.exe" -or $_.Name -eq "brave.exe") -and
+        ($_.Name -eq "msedge.exe" -or $_.Name -eq "chrome.exe" -or $_.Name -eq "brave.exe") -and
         $_.CommandLine -and
-        $_.CommandLine -like "*$ProfileDir*"
+        ($_.CommandLine -like "*DAVID_APP2_EDGE_PROFILE*" -or $_.CommandLine -like "*DAVID_APP2_CHROME_PROFILE*")
       } |
       ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
-  }
-  catch {}
+  } catch {}
   Start-Sleep -Seconds 2
 }
 
-function Ensure-PortableChrome {
-  if (Test-Path $ChromeExe) { return $ChromeExe }
-
-  New-Item -ItemType Directory -Force -Path $ToolsRoot | Out-Null
-  Write-Host "[APP2] Downloading isolated Chrome for Testing..." -ForegroundColor Cyan
-
-  $metaUrl = "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json"
-  $meta = Invoke-RestMethod -Uri $metaUrl -TimeoutSec 45
-  $asset = $meta.channels.Stable.downloads.chrome | Where-Object { $_.platform -eq "win64" } | Select-Object -First 1
-  if (-not $asset -or -not $asset.url) { throw "Could not resolve Chrome for Testing win64 download." }
-
-  $zip = Join-Path $ToolsRoot "chrome-app2-win64.zip"
-  $temp = Join-Path $ToolsRoot "chrome-app2-temp"
-  if (Test-Path $temp) { Remove-Item $temp -Recurse -Force }
-  if (Test-Path $ChromeRoot) { Remove-Item $ChromeRoot -Recurse -Force }
-
-  Invoke-WebRequest -Uri $asset.url -OutFile $zip -TimeoutSec 180
-  Expand-Archive -Path $zip -DestinationPath $temp -Force
-  New-Item -ItemType Directory -Force -Path $ChromeRoot | Out-Null
-  Move-Item -Path (Join-Path $temp "chrome-win64") -Destination $ChromeRoot
-  Remove-Item $temp -Recurse -Force
-  Remove-Item $zip -Force
-
-  if (-not (Test-Path $ChromeExe)) { throw "Portable Chrome extraction failed: $ChromeExe not found." }
-  Write-Host "[APP2] Portable Chrome ready: $ChromeExe" -ForegroundColor Green
-  return $ChromeExe
+function Wait-ChatWindow {
+  param([int]$P, [int]$Seconds = 90)
+  $until = (Get-Date).AddSeconds($Seconds)
+  while ((Get-Date) -lt $until) {
+    try {
+      $pages = Invoke-RestMethod -Uri "http://127.0.0.1:$P/json/list" -TimeoutSec 3
+      $chat = $pages | Where-Object { $_.type -eq "page" -and $_.url -like "https://chatgpt.com/*" } | Select-Object -First 1
+      if ($chat) {
+        $title = [string]$chat.title
+        if ($title -and $title -notmatch "(?i)loading|зареждане") { return $true }
+      }
+    } catch {}
+    Start-Sleep -Seconds 1
+  }
+  return $false
 }
 
-$browser = Ensure-PortableChrome
+$edge = Get-EdgePath
+if (-not $edge) { throw "Microsoft Edge was not found." }
 
-if (-not (Test-Cdp -P $Port)) {
-  New-Item -ItemType Directory -Force -Path $ProfileDir | Out-Null
-  Write-Host "[APP2] Browser: $browser (portable Chrome for Testing)" -ForegroundColor DarkGray
-  Write-Host "[APP2] Starting isolated APP2 browser on CDP port $Port..." -ForegroundColor Cyan
+# Always remove only stale APP2 browser processes. Enchev on 9444 uses another profile and is untouched.
+Stop-StaleApp2Browsers
 
-  Start-Process -FilePath $browser -ArgumentList @(
-    "--remote-debugging-address=127.0.0.1",
-    "--remote-debugging-port=$Port",
-    "--remote-allow-origins=*",
-    "--user-data-dir=$ProfileDir",
-    "--no-first-run",
-    "--no-default-browser-check",
-    "--disable-background-mode",
-    "--disable-component-update",
-    "--new-window",
-    $ChatUrl
-  )
-}
-else {
-  Write-Host "[APP2] Existing dedicated APP2 browser found on port $Port." -ForegroundColor DarkGray
+if (Test-Cdp -P $Port) {
+  throw "Port $Port is still occupied after stopping APP2 browsers. Close only the old APP2 browser and run again."
 }
 
-Write-Host "[APP2] Waiting for CDP to become stable..." -ForegroundColor Cyan
+New-Item -ItemType Directory -Force -Path $ProfileDir | Out-Null
+Write-Host "[APP2] Browser: $edge (Microsoft Edge)" -ForegroundColor DarkGray
+Write-Host "[APP2] Starting clean isolated Edge profile on port $Port..." -ForegroundColor Cyan
+
+Start-Process -FilePath $edge -ArgumentList @(
+  "--remote-debugging-address=127.0.0.1",
+  "--remote-debugging-port=$Port",
+  "--remote-allow-origins=*",
+  "--user-data-dir=$ProfileDir",
+  "--no-first-run",
+  "--no-default-browser-check",
+  "--disable-background-mode",
+  "--new-window",
+  $ChatHome
+)
+
+Write-Host "[APP2] Waiting for Edge CDP..." -ForegroundColor Cyan
 if (-not (Wait-CdpStable -P $Port)) {
-  Stop-App2Browser
-  throw "APP2 portable Chrome/CDP did not become stable on port $Port. Run the launcher again."
+  Stop-StaleApp2Browsers
+  throw "APP2 Edge started but CDP did not become stable on port $Port."
 }
-Write-Host "[APP2] CDP stable on port $Port." -ForegroundColor Green
+Write-Host "[APP2] CDP stable." -ForegroundColor Green
+
+# Give ChatGPT home a chance to render before DAVID navigates to the conversation.
+if (Wait-ChatWindow -P $Port -Seconds 30) {
+  Write-Host "[APP2] ChatGPT UI detected." -ForegroundColor Green
+} else {
+  Write-Host "[APP2] ChatGPT is still loading. DAVID will keep recovering/retrying after startup." -ForegroundColor Yellow
+}
 
 $node = Get-Command node -ErrorAction SilentlyContinue
 $npm = Get-Command npm.cmd -ErrorAction SilentlyContinue
@@ -149,8 +163,9 @@ try {
   Write-Host ""
   Write-Host "[APP2] TARGET: $ChatUrl" -ForegroundColor Green
   Write-Host "[APP2] AUTOPILOT: plan -> implementation -> tests -> fixes -> production verification -> 100%." -ForegroundColor Green
-  Write-Host "[APP2] Browser isolation: portable Chrome + separate profile + port $Port." -ForegroundColor Green
+  Write-Host "[APP2] Edge isolation: separate profile + port $Port." -ForegroundColor Green
   Write-Host "[APP2] Enchev DAVID on 9444 is untouched." -ForegroundColor Green
+  Write-Host "[APP2] If ChatGPT asks for login in this Edge, log in once; this profile will keep it." -ForegroundColor Yellow
   Write-Host "[APP2] Ctrl+C stops only APP2 worker." -ForegroundColor Yellow
   Write-Host ""
 
@@ -164,10 +179,9 @@ try {
       Write-Host "[APP2] Worker finished normally." -ForegroundColor Green
       break
     }
-
-    Write-Host "[APP2] Worker exited with code $code. Keeping APP2 alive and reconnecting..." -ForegroundColor Yellow
+    Write-Host "[APP2] Worker exited with code $code. Retrying in 4s..." -ForegroundColor Yellow
     if (-not (Wait-CdpStable -P $Port -MaxChecks 25)) {
-      throw "APP2 portable Chrome/CDP disappeared. Run this launcher again."
+      throw "APP2 Edge/CDP disappeared. Run the launcher again."
     }
     Start-Sleep -Seconds 4
   }
