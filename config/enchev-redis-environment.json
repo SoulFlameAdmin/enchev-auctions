@@ -17,10 +17,27 @@
     "final-result-authority"
   ],
   "environment_variable": "REDIS_URL",
+  "binding_options": [
+    {
+      "kind": "tcp-url",
+      "url_env": "REDIS_URL"
+    },
+    {
+      "kind": "upstash-rest",
+      "url_env": "UPSTASH_REDIS_REST_URL",
+      "token_env": "UPSTASH_REDIS_REST_TOKEN"
+    },
+    {
+      "kind": "vercel-kv-rest",
+      "url_env": "KV_REST_API_URL",
+      "token_env": "KV_REST_API_TOKEN"
+    }
+  ],
   "allowed_schemes": ["redis:", "rediss:"],
   "tls_required_nonlocal": true,
+  "rest_tls_required": true,
   "key_prefix": "enchev:",
   "secret_values_in_repository": false,
   "live_ping_required_for_green": true,
-  "notes": "Redis is a non-authoritative support dependency. PostgreSQL remains authoritative for auction state, bids and results."
+  "notes": "Redis is a non-authoritative support dependency. PostgreSQL remains authoritative for auction state, bids and results. A live TCP or authenticated HTTPS REST PING may satisfy the provider binding gate."
 }
