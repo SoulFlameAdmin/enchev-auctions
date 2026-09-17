@@ -57,7 +57,7 @@ The normal web verification workflow runs the Redis contract invariant and self-
 - Vercel project `enchev-auctions` is healthy and deploying;
 - Supabase is PostgreSQL-based and is not treated as a Redis substitute;
 - Vercel documentation confirms Marketplace Redis/Upstash provisioning and project environment-variable APIs exist, but the connected Vercel tool surface in this session does not expose Marketplace mutation or environment-variable mutation actions;
-- Plugin Directory lookup did not expose an installable Upstash/Redis/Valkey connector for direct provisioning in this session.
+- no installed Upstash/Redis/Valkey plugin is available in this session.
 
 ## Attempt 1 blocker evidence — 2026-09-17
 A safe production probe was added and deployed to determine whether canonical `REDIS_URL` already existed but was hidden from project metadata.
@@ -95,6 +95,13 @@ This proves the production runtime receives none of the supported Redis binding 
 
 The direct Vercel deploy tool was also attempted but its current connector schema cannot supply backend-required deployment parameters. Vercel project metadata does not expose an environment-variable mutation or Marketplace resource provisioning action through the connected tool surface.
 
+## Attempt 2 external-provider fallback discovery — 2026-09-17
+Plugin Directory discovery found infrastructure connectors that could provide a valid external managed-provider route without changing Enchev's Redis contract:
+- Render connector: supports creating services and data stores, but is not installed/connected in this session;
+- Railway connector: available for project/infrastructure provisioning and was surfaced as an installable fallback, but it is not installed/connected yet.
+
+The Enchev runtime already accepts an external TLS `REDIS_URL`, so an authorized managed Redis/Valkey instance from one of these providers could satisfy 01.06 without Vercel Marketplace. Installing/connecting an external provider plugin requires explicit user authorization and therefore cannot be performed silently by the agent.
+
 ## GREEN gate
 01.06 may become GREEN only when all of the following are evidenced:
 1. a real Redis/Valkey provider instance is provisioned for Enchev;
@@ -106,6 +113,6 @@ The direct Vercel deploy tool was also attempted but its current connector schem
 7. exact evidence is recorded here and synced to Command Center cloud state.
 
 ## Current blocker
-Production evidence now proves that no supported Redis/Valkey binding exists in Vercel. The connected GitHub/Vercel/Supabase tools still cannot provision a Marketplace Redis resource or create the required project environment variables/secrets. Therefore 01.06 remains YELLOW and dependent work must not treat Redis as production-ready.
+Production evidence proves that no supported Redis/Valkey binding exists in Vercel. The connected GitHub/Vercel/Supabase tools cannot provision a Marketplace Redis resource or create the required project environment variables/secrets. A valid external managed-provider fallback exists, but the relevant infrastructure plugin must first be explicitly installed/connected by the user before the agent can provision the resource. Therefore 01.06 remains YELLOW and dependent work must not treat Redis as production-ready.
 
 No pricing/payment/finance scope is added.
