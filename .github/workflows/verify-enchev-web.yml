@@ -37,6 +37,12 @@ jobs:
       - name: Frozen delete/renumber rejection tests
         run: node scripts/verify-master-task-ids.mjs --self-test
 
+      - name: GREEN evidence invariant
+        run: node scripts/verify-green-requires-evidence.mjs
+
+      - name: GREEN evidence rejection tests
+        run: node scripts/verify-green-requires-evidence.mjs --self-test
+
       - name: TypeScript check
         run: npx tsc --noEmit
 
