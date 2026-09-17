@@ -1,6 +1,6 @@
 # Enchev Auctions — 32.02 No silent delete / renumber
 
-Status: YELLOW — implementation on main; verification pending
+Status: GREEN — silent delete, renumber and ID reuse are machine-rejected and verified
 MASTER SYSTEM PLAN v1.0 FROZEN task: `32.02`
 Execution wave: `WAVE 0 — Master plan governance`
 Depends on: `32.01 Master task IDs immutable`
@@ -36,17 +36,28 @@ Canonical identity remains:
 - frozen task count: `1054`
 - SHA-256: `b0fd3479cfef3d88148b906568aa8c1c88eccf5fa98fe676f13a5fec70aa721e`
 
-## Acceptance evidence required
+## Verified evidence
 
-`32.02` may become GREEN only when a `main` commit or proven descendant demonstrates all of the following in one CI verification path:
+Implementation:
 
-1. canonical frozen ID lock PASS;
-2. silent delete rejected by self-test;
-3. silent renumber rejected by self-test;
-4. ID reuse/duplicate rejected by self-test;
-5. TypeScript PASS;
-6. production build PASS;
-7. production HTTP/runtime regression context remains healthy;
-8. exact evidence is recorded before Command Center sync marks `32.02` GREEN.
+- self-test guard commit: `a28c9b5a168d42d211850c16b18b7c391ad61a56`
+- CI self-test integration commit: `43e8cd3573f0acd39f6b38aef85c85ed20fea270`
+- governance artifact commit: `1cbae4307417031f2f3e6b6830d1ad1124caf8ec`
+
+Verification:
+
+- exact artifact run `35182978435` executed canonical ID lock PASS, delete/renumber/reuse self-test PASS, TypeScript PASS and production build PASS; overall run was later marked cancelled only because a newer `main` descendant superseded it after all verification steps had completed successfully;
+- verified descendant commit: `b816f760fffb7b81b8f9f69e823e6892c244c010` (direct child of `1cbae4307417031f2f3e6b6830d1ad1124caf8ec`);
+- GitHub Actions descendant run `35183021075`: overall `SUCCESS`;
+- `Frozen master task ID lock`: PASS;
+- `Frozen delete/renumber rejection tests`: PASS, proving silent delete, silent renumber and ID reuse/duplicate are rejected;
+- TypeScript check: PASS;
+- production build: PASS;
+- Vercel canonical production URL `https://enchev-auctions.vercel.app/`: HTTP `200`;
+- Vercel runtime error check for the recent production window: no runtime errors found.
+
+## Acceptance result
+
+All `32.02` acceptance requirements are satisfied. The frozen plan can no longer silently delete, renumber or reuse an existing task identity without CI rejection.
 
 No pricing/payment/finance scope is added by this task.
