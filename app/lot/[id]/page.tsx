@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import "../lot.css";
 import "../lot-d21.css";
+import "../lot-d22.css";
 
 const gallery=[
   "https://images.unsplash.com/photo-1655283733642-f1d813b40616?auto=format&fit=crop&w=1600&q=88",
@@ -113,7 +114,27 @@ export default function LotPage(){
             </div>
           </section>
 
-          <section className="lotSection"><div className="lotSectionHead"><div><h2>Състояние и щети</h2><span>Информация от аукционния лот</span></div></div><div className="lotDamageGrid"><div className="lotDamageCard"><span>Основна повреда</span><b>Леки драскотини / козметични следи</b></div><div className="lotDamageCard"><span>Статус на движение</span><b>Run & Drive</b></div><div className="lotDamageCard"><span>Документ</span><b>Clean Title</b></div><div className="lotDamageCard"><span>Локация</span><b>Crewe, United Kingdom</b></div></div></section>
+          <section className="lotSection lotConditionSection" data-design-task="D22" aria-labelledby="lot-condition-title" aria-describedby="lot-condition-description">
+            <div className="lotSectionHead lotConditionHead"><div><h2 id="lot-condition-title">Състояние, инспекция и произход</h2><span id="lot-condition-description">Подреден преглед на наличните данни и на това какво още не е потвърдено.</span></div><span className="lotPill green">LOT DATA SNAPSHOT</span></div>
+            <div className="lotConditionGrid">
+              <article className="lotConditionCard" aria-labelledby="lot-condition-summary-title">
+                <div className="lotConditionCardHead"><span className="lotConditionIcon" aria-hidden="true">01</span><div><strong id="lot-condition-summary-title">Състояние</strong><small>Данни от аукционния лот</small></div></div>
+                <dl className="lotConditionList"><div><dt>Статус на движение</dt><dd><span className="lotConditionStatus positive">Run &amp; Drive</span></dd></div><div><dt>Основна повреда</dt><dd>Леки драскотини / козметични следи</dd></div><div><dt>Вторична повреда</dt><dd>Не е посочена</dd></div></dl>
+              </article>
+
+              <article className="lotConditionCard" aria-labelledby="lot-inspection-title">
+                <div className="lotConditionCardHead"><span className="lotConditionIcon" aria-hidden="true">02</span><div><strong id="lot-inspection-title">Инспекция</strong><small>Ясно разграничение на провереното</small></div></div>
+                <ul className="lotInspectionList"><li><span>Визуални щети</span><b className="lotConditionStatus positive">Описани</b></li><li><span>Механична инспекция</span><b className="lotConditionStatus neutral">Няма свързан доклад</b></li><li><span>Диагностика</span><b className="lotConditionStatus neutral">Няма свързан доклад</b></li></ul>
+              </article>
+
+              <article className="lotConditionCard" aria-labelledby="lot-provenance-title">
+                <div className="lotConditionCardHead"><span className="lotConditionIcon" aria-hidden="true">03</span><div><strong id="lot-provenance-title">Произход и документи</strong><small>Идентификация и история</small></div></div>
+                <dl className="lotConditionList"><div><dt>Документ</dt><dd>Clean Title</dd></div><div><dt>VIN</dt><dd className="lotConditionVin">WAUZZZ8V5KA123456</dd></div><div><dt>Локация</dt><dd>Crewe, United Kingdom</dd></div></dl>
+                <a className="lotHistoryLink" href="/vehicle-history" aria-label={`Провери историята на ${title}`}>Провери история на автомобила →</a>
+              </article>
+            </div>
+            <p className="lotConditionDisclosure" role="note">Това е ENCHEV демо представяне на lot данни. Липсващите външни инспекционни или provenance доклади са означени като непотвърдени, вместо да се показват като факт.</p>
+          </section>
 
           <section className="lotSection"><div className="lotSectionHead"><div><h2>История на офертите</h2><span>Последни bid събития</span></div></div><div className="lotHistory">{history.map(row=><div className="lotHistoryRow" key={row.join("-")}><b>{row[0]}</b><b>{row[1]}</b><span>{row[2]}</span></div>)}</div></section>
 
