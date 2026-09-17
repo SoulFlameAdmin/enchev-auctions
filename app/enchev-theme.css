@@ -1,0 +1,102 @@
+:root{
+  --ea-bg:#040806;
+  --ea-bg-2:#07100b;
+  --ea-surface:#0b120e;
+  --ea-surface-2:#101a14;
+  --ea-surface-3:#142219;
+  --ea-line:rgba(125,255,178,.14);
+  --ea-line-strong:rgba(58,255,140,.34);
+  --ea-text:#f5fbf7;
+  --ea-muted:#8ea097;
+  --ea-green:#27f58a;
+  --ea-green-2:#10c96b;
+  --ea-green-deep:#078d4a;
+  --ea-danger:#ef6464;
+  --ea-radius-sm:10px;
+  --ea-radius:16px;
+  --ea-radius-lg:24px;
+  --ea-shadow:0 22px 70px rgba(0,0,0,.34);
+}
+
+html{background:var(--ea-bg);scroll-behavior:smooth}
+body{background:linear-gradient(180deg,#030705 0%,#07100b 42%,#040806 100%);color:var(--ea-text);font-family:Inter,Arial,Helvetica,sans-serif}
+button,a,input,select{font-family:inherit}
+::selection{background:rgba(39,245,138,.22);color:#fff}
+
+/* Shared ENCHEV shell */
+.referenceHeader,.inventoryHeader{backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+.referenceLogo,.inventoryLogo{filter:drop-shadow(0 8px 24px rgba(0,0,0,.3))}
+.referenceHeader nav a,.inventoryNav a{transition:color .18s ease,opacity .18s ease}
+.referenceHeader nav a:hover,.inventoryNav a:hover,.inventoryNav a.active{color:var(--ea-green)}
+.referenceLogin,.inventoryAccount button{border-color:var(--ea-line-strong)!important;background:rgba(4,12,8,.66)!important}
+.referenceLogin:hover,.inventoryAccount button:hover{border-color:var(--ea-green)!important;background:rgba(16,201,107,.10)!important}
+.inventoryAccount .registerBtn{background:linear-gradient(135deg,var(--ea-green),var(--ea-green-2))!important;color:#041008!important;border:0!important;box-shadow:0 10px 28px rgba(16,201,107,.2)}
+
+/* Home visual hierarchy */
+.referenceHero{box-shadow:inset 0 -120px 120px rgba(0,0,0,.2)}
+.referenceHeroCopy h1{letter-spacing:-.045em;text-wrap:balance}
+.referenceLead{color:#dfe8e2!important}
+.referenceSearch{border-color:rgba(255,255,255,.16)!important;background:rgba(2,9,5,.74)!important;box-shadow:0 16px 50px rgba(0,0,0,.28),0 0 0 1px rgba(39,245,138,.035) inset}
+.referenceSearch:focus-within{border-color:rgba(39,245,138,.46)!important;box-shadow:0 18px 56px rgba(0,0,0,.34),0 0 0 3px rgba(39,245,138,.08)}
+.referenceSearch button{background:linear-gradient(135deg,var(--ea-green),#20d779)!important}
+.referenceBenefits>div{padding:14px 16px;border:1px solid rgba(125,255,178,.10);border-radius:14px;background:rgba(4,12,8,.36);backdrop-filter:blur(10px)}
+.referenceLive{background:linear-gradient(180deg,rgba(4,15,9,.72),rgba(2,9,5,.52))!important;border-color:rgba(39,245,138,.68)!important;box-shadow:0 0 45px rgba(39,245,138,.12),inset 0 0 30px rgba(39,245,138,.05)!important}
+
+/* Inventory shell */
+.inventoryPage{background:linear-gradient(180deg,#050907 0%,#07110c 100%)!important;color:var(--ea-text)!important;min-height:100vh}
+.inventoryHeader{background:rgba(4,9,6,.90)!important;border-bottom:1px solid var(--ea-line)!important;box-shadow:0 12px 34px rgba(0,0,0,.18)}
+.inventoryNav{background:#07100b!important;border-bottom:1px solid rgba(125,255,178,.08)!important}
+.inventoryIntro{background:radial-gradient(circle at 15% 0%,rgba(39,245,138,.10),transparent 38%),linear-gradient(180deg,#07110c,#050a07)!important;border-bottom:1px solid rgba(125,255,178,.08)!important}
+.inventoryIntro h1{letter-spacing:-.035em}
+.inventoryCounter{border:1px solid var(--ea-line)!important;background:rgba(8,19,12,.82)!important;border-radius:16px!important}
+.inventoryCounter b{color:var(--ea-green)!important}
+.inventoryShell{background:#050907!important}
+.inventoryFilters{background:#08110c!important;border-right:1px solid var(--ea-line)!important}
+.filterTitle,.filterBlock,.filterSearchLabel{border-color:rgba(255,255,255,.07)!important}
+.filterBlock button.selected{background:rgba(39,245,138,.10)!important;border-color:rgba(39,245,138,.24)!important;color:#dffff0!important}
+.filterBlock button:hover{background:rgba(255,255,255,.035)!important}
+.filterSearchLabel input,.inventorySearch input,.inventoryToolbar select{background:#0a130e!important;border-color:rgba(255,255,255,.09)!important;color:var(--ea-text)!important}
+.filterSearchLabel input:focus,.inventorySearch input:focus,.inventoryToolbar select:focus{border-color:rgba(39,245,138,.44)!important;box-shadow:0 0 0 3px rgba(39,245,138,.07)!important;outline:none!important}
+.inventoryResults{background:#050907!important}
+.inventoryToolbar{border-color:rgba(255,255,255,.07)!important;background:#08100c!important}
+
+/* Auction cards */
+.inventoryGrid{align-items:start}
+.inventoryCard{background:linear-gradient(180deg,#0c160f 0%,#09110c 100%)!important;border:1px solid rgba(125,255,178,.12)!important;border-radius:18px!important;overflow:hidden;box-shadow:0 16px 44px rgba(0,0,0,.20)!important}
+.inventoryCard:hover{border-color:rgba(39,245,138,.32)!important;box-shadow:0 22px 60px rgba(0,0,0,.30),0 0 0 1px rgba(39,245,138,.04)!important;transform:translateY(-2px)}
+.inventoryImage{background:#0a0f0c!important}
+.inventoryImage img{transition:transform .38s ease,filter .38s ease}
+.inventoryCard:not(.soldCard):hover .inventoryImage img{transform:scale(1.018)}
+.inventoryCardBody{background:linear-gradient(180deg,#0c160f,#09110c)!important}
+.inventoryLot{color:#7f9187!important;letter-spacing:.11em}
+.inventoryLot span{color:var(--ea-green)!important}
+.inventoryCard h2{color:#eefbf3!important;letter-spacing:-.025em}
+.inventoryCard dl dt{color:#83958b!important}.inventoryCard dl dd{color:#e4eee8!important}
+.detailsBtn{background:#101a14!important;border:1px solid rgba(255,255,255,.08)!important;color:#dce7e0!important}
+.detailsBtn:hover{border-color:rgba(39,245,138,.28)!important;background:#132119!important}
+.inventoryPrice{border-top:1px solid rgba(255,255,255,.07)!important}
+.inventoryPrice span{color:#c3d1c8!important}.inventoryPrice b{color:#fff!important}
+.buyBtn{background:transparent!important;border:1px solid rgba(39,245,138,.36)!important;color:#dfffea!important}
+.buyBtn:hover{background:rgba(39,245,138,.08)!important}
+.bidBtn{background:linear-gradient(135deg,#0ba65a,#078d4a)!important;color:#fff!important;border:0!important;box-shadow:0 10px 26px rgba(7,141,74,.20)!important}
+.bidBtn:hover{background:linear-gradient(135deg,#12bd68,#0a9b51)!important}
+.inventoryBadge{border-radius:999px!important;box-shadow:0 8px 22px rgba(0,0,0,.18)}
+.inventoryTimer{border-radius:999px!important;background:rgba(2,8,5,.78)!important;border:1px solid rgba(255,255,255,.12)!important}
+.inventoryHeart{background:rgba(255,255,255,.92)!important;color:#0d7d47!important;border:0!important;box-shadow:0 8px 20px rgba(0,0,0,.18)}
+
+/* System/admin controls stay visually separate but consistent */
+.burgerButton{border-color:rgba(125,255,178,.16)!important;background:rgba(7,14,10,.92)!important;backdrop-filter:blur(12px)}
+.burgerButton:hover{border-color:rgba(39,245,138,.36)!important;background:#0d1811!important}
+.backgroundSwitcherToggle{border-color:rgba(39,245,138,.28)!important;background:rgba(7,14,10,.90)!important}
+
+@media(max-width:900px){
+  .referenceBenefits>div{padding:10px 12px}
+  .inventoryHeader{gap:10px}
+}
+
+@media(max-width:640px){
+  .referenceHeroCopy h1{letter-spacing:-.055em}
+  .referenceBenefits{gap:10px!important}
+  .referenceBenefits>div{padding:9px 10px}
+  .inventoryCard{border-radius:16px!important}
+}
