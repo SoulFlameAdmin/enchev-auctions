@@ -10,9 +10,11 @@ export default function LotNavigationBridge(){
         const text=normalize(anchor.textContent||"");
         if(text.includes("търгове на живо")||text==="live търгове")anchor.href="/live-auctions";
         if(text==="транспорт")anchor.href="/transport";
+        if(text.includes("история на мпс")||text.includes("история на превозното средство"))anchor.href="/vehicle-history";
       });
       document.querySelectorAll<HTMLElement>(".inv2UtilityRight span").forEach(item=>{
-        if(normalize(item.textContent||"")==="транспорт"){
+        const text=normalize(item.textContent||"");
+        if(text==="транспорт"||text.includes("история на мпс")){
           item.style.cursor="pointer";
           item.setAttribute("role","link");
           item.setAttribute("tabindex","0");
@@ -35,17 +37,30 @@ export default function LotNavigationBridge(){
         }
       }
       const utility=target?.closest?.(".inv2UtilityRight span") as HTMLElement|null;
-      if(utility&&normalize(utility.textContent||"")==="транспорт"){
-        event.preventDefault();
-        window.location.href="/transport";
+      if(utility){
+        const text=normalize(utility.textContent||"");
+        if(text==="транспорт"){
+          event.preventDefault();
+          window.location.href="/transport";
+          return;
+        }
+        if(text.includes("история на мпс")){
+          event.preventDefault();
+          window.location.href="/vehicle-history";
+        }
       }
     };
     const onKey=(event:KeyboardEvent)=>{
       if(event.key!=="Enter"&&event.key!==" ")return;
       const target=event.target as HTMLElement|null;
-      if(target?.matches?.(".inv2UtilityRight span")&&normalize(target.textContent||"")==="транспорт"){
+      if(!target?.matches?.(".inv2UtilityRight span"))return;
+      const text=normalize(target.textContent||"");
+      if(text==="транспорт"){
         event.preventDefault();
         window.location.href="/transport";
+      }else if(text.includes("история на мпс")){
+        event.preventDefault();
+        window.location.href="/vehicle-history";
       }
     };
     document.addEventListener("click",onClick);
