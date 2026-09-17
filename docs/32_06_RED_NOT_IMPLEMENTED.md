@@ -1,6 +1,6 @@
 # Enchev Auctions — 32.06 RED = not implemented
 
-Status: YELLOW — governance enforcement implemented; verification pending
+Status: GREEN — RED semantics are machine-enforced and verified
 MASTER SYSTEM PLAN v1.0 FROZEN task: `32.06`
 Execution wave: `WAVE 0 — Master plan governance`
 Depends on: `32.01`, `32.02`, `32.03`, `32.04`, `32.05`
@@ -21,7 +21,7 @@ Those conditions are YELLOW. Implemented and verified work with required evidenc
 
 ## Runtime/source behavior locked by 32.06
 
-`app/components/MasterSystemPlanV1.tsx` already implements the intended RED behavior:
+`app/components/MasterSystemPlanV1.tsx` implements the intended RED behavior:
 
 - frozen tasks with no explicit legacy status default to `red`;
 - runtime defaults preserve each task's `defaultStatus`;
@@ -58,17 +58,27 @@ Self-test mode proves the semantic state machine:
 
 - RED semantics verifier: `3ee0bf9705f19726e0d298f94dc049652a4fbe78`
 - CI integration: `3c467c8a301661c0862b5d7647b0e63d32deba90`
+- governance artifact: `f698956b8972469f9c2184f8a869728715a19a85`
 
-## GREEN gate
+## Verified evidence
 
-`32.06` becomes GREEN only after a `main` commit or proven descendant has a successful CI path where:
+- GitHub Actions run `35213784067`: overall `SUCCESS` on exact artifact commit `f698956b8972469f9c2184f8a869728715a19a85`;
+- frozen task ID lock: PASS;
+- delete/renumber/reuse rejection tests: PASS;
+- GREEN evidence invariant/self-test: PASS;
+- GREEN passing-test invariant/self-test: PASS;
+- YELLOW semantics invariant/self-test: PASS;
+- RED semantics invariant: PASS;
+- RED semantics self-tests: PASS for 7 state cases;
+- TypeScript check: PASS;
+- production build: PASS;
+- production regression baseline `20a0e261468c158cb3dabadbf0e283c4e7e3b2e0` is deployed as Vercel `dpl_FDjFFdjtAcmamNEJCDTYuftgJa35` READY;
+- that Vercel build compiled successfully, completed TypeScript, and generated static pages `9/9`;
+- canonical production URL `https://enchev-auctions.vercel.app/`: HTTP `200`;
+- Vercel runtime error check for the recent one-hour window: no runtime errors found.
 
-- all prior governance guards PASS;
-- RED semantics invariant PASS;
-- RED semantics self-tests PASS;
-- TypeScript PASS;
-- production build PASS;
-- production HTTP/runtime regression context is healthy;
-- exact evidence is recorded before Command Center sync marks `32.06` GREEN.
+## Acceptance result
+
+All `32.06` acceptance requirements are satisfied. RED remains machine-checked as not implemented/missing, YELLOW remains partial/error/pending verification, and GREEN remains verified completion.
 
 No pricing/payment/finance scope is added by this task.
