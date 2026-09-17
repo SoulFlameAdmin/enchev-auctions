@@ -5,14 +5,19 @@ import { useCallback, useEffect, useState } from "react";
 type WorkerStatus = {
   online?: boolean;
   mode?: string;
+  workerVersion?: string | null;
+  workerScript?: string | null;
   workerRunning?: boolean;
   pid?: number | null;
   startedAt?: string | null;
+  lastGitSync?: { ok?: boolean; skipped?: boolean; reason?: string; at?: string } | null;
   turnsSent?: number;
   relayAttempts?: number;
   recoveryAttempt?: number;
   watchdog?: string | null;
   pendingSince?: string | null;
+  platformBlocker?: string | null;
+  platformRetryAt?: string | null;
   stopped?: boolean;
   stopReason?: string | null;
   lastAction?: string | null;
@@ -37,6 +42,8 @@ const watchdogLabel = (value?: string | null) => {
     case "unknown-ui": return "Неясно състояние — watchdog следи";
     case "response-started": return "GPT тръгна успешно";
     case "human-action": return "Чака човешко действие";
+    case "human-blocked": return "Нужна е човешка проверка";
+    case "platform-backoff": return "Изчаква платформен лимит и ще опита пак";
     case "blocked": return "Спрян от реален blocker";
     case "recovery-exhausted": return "Recovery опитите са изчерпани";
     default: return value || "Готов";
@@ -135,6 +142,14 @@ export default function AiWorkerControl() {
     ? "Натисни бутона — ще се стартира локалният DAVID controller."
     : "Готов за старт");
 
+  const syncText = status?.lastGitSync
+    ? status.lastGitSync.ok
+      ? "кодът е синхронизиран"
+      : status.lastGitSync.skipped
+        ? `sync пропуснат: ${status.lastGitSync.reason || "неизвестно"}`
+        : "sync грешка — използва локалната версия"
+    : "sync при следващ старт";
+
   return (
     <div style={{
       position: "fixed",
@@ -142,7 +157,7 @@ export default function AiWorkerControl() {
       left: "50%",
       transform: "translateX(-50%)",
       zIndex: 20050,
-      width: "min(820px, calc(100vw - 220px))",
+      width: "min(860px, calc(100vw - 220px))",
       background: "rgba(7,11,15,.97)",
       border: "1px solid rgba(65,210,126,.38)",
       borderRadius: 16,
@@ -164,7 +179,7 @@ export default function AiWorkerControl() {
           }} />
           <div style={{ minWidth: 0 }}>
             <div style={{ fontSize: 11, letterSpacing: ".09em", color: running ? "#53e68d" : "#a9b1ba", fontWeight: 800 }}>
-              DAVID AI WORKER · {stateText}
+              DAVID AI WORKER · {stateText}{status?.workerVersion ? ` · v${status.workerVersion}` : ""}
             </div>
             <div style={{ fontSize: 13, fontWeight: 800, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
               {nextTask}
@@ -218,7 +233,7 @@ export default function AiWorkerControl() {
         paddingTop: 6,
         borderTop: "1px solid rgba(255,255,255,.07)",
         display: "grid",
-        gridTemplateColumns: "auto 1fr",
+        gridTemplateColumns: "auto 1fr auto",
         gap: 8,
         alignItems: "center",
         fontSize: 11
@@ -227,7 +242,15 @@ export default function AiWorkerControl() {
         <span style={{ color: "#d3d9df", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
           {actionText}
         </span>
+        <span style={{ color: status?.lastGitSync?.ok ? "#64e99a" : "#86929e", whiteSpace: "nowrap" }}>{syncText}</span>
       </div>
+
+      {status?.platformBlocker ? (
+        <div style={{ marginTop: 7, color: "#ffca59", fontSize: 11 }}>
+          Платформен blocker: {status.platformBlocker}
+          {status.platformRetryAt ? ` · автоматичен нов опит: ${new Date(status.platformRetryAt).toLocaleTimeString("bg-BG")}` : ""}
+        </div>
+      ) : null}
 
       {status?.stopped && status.stopReason ? (
         <div style={{ marginTop: 7, color: "#ffca59", fontSize: 11, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
