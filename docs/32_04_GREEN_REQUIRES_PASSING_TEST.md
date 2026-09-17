@@ -1,6 +1,6 @@
 # Enchev Auctions — 32.04 GREEN requires passing test where applicable
 
-Status: GREEN — test tasks require explicit passing-test evidence and the rule is verified
+Status: YELLOW — implementation and CI verified; production runtime deployment pending
 MASTER SYSTEM PLAN v1.0 FROZEN task: `32.04`
 Execution wave: `WAVE 0 — Master plan governance`
 Depends on: `32.01`, `32.02`, `32.03`
@@ -65,9 +65,8 @@ Self-test cases include:
 - CI workflow integration: `512dcc7f198bd26da744f6a850420ab202d07bfc`
 - governance artifact: `e33d10a20f17910ff25c85fc8269dc9bbe97d197`
 
-## Verified evidence
+## Verified implementation evidence
 
-- exact artifact run `35183791933` executed registry generation, all governance guards, TypeScript and production build successfully; it was superseded during post-job cleanup by a newer `main` commit and is not used as the final overall-success proof;
 - verified descendant commit: `3df71f8d66d27d2eeed0602075951dc2ed640e93`, direct child of the governance artifact commit;
 - GitHub Actions descendant run `35183833517`: overall `SUCCESS`;
 - generated frozen test registry: `236` test task IDs;
@@ -78,11 +77,14 @@ Self-test cases include:
 - GREEN passing-test self-test: PASS for `10` policy cases;
 - TypeScript check: PASS;
 - production build: PASS, Next.js `16.3.5`, compile success, TypeScript success, static generation `9/9`;
-- Vercel canonical production URL `https://enchev-auctions.vercel.app/`: HTTP `200`;
-- Vercel runtime error check for the recent production window: no runtime errors found.
+- final evidence-sync commit `4a0c3648445cf72c7c219d1c1d92d57c82491a72` has GitHub Actions run `35183951638` overall `SUCCESS` with every governance guard, TypeScript and production build PASS.
 
-## Acceptance result
+## Remaining production verification blocker
 
-All `32.04` acceptance requirements are satisfied. A frozen `kind=test` task cannot remain GREEN unless its evidence contains an explicit passing test result and no failing/pending result marker.
+The canonical production site is healthy (`HTTP 200`; no recent Vercel runtime errors), but the latest Vercel READY production deployment is still older than the `32.04` runtime guard. GitHub combined status for exact integration commit `4a0c3648445cf72c7c219d1c1d92d57c82491a72` reports Vercel `failure` with target `upgradeToPro=build-rate-limit`.
+
+A direct deployment fallback was attempted through the connected Vercel action, but its exposed connector schema accepts no deployment payload while the backend requires `target`, `name`, and `files`, so that path cannot safely deploy the project.
+
+Therefore production runtime enforcement is not yet proven. `32.04` must remain YELLOW and must not be synchronized as GREEN until a READY Vercel production deployment at `fa52e256...` or any proven descendant is verified with build and runtime evidence.
 
 No pricing/payment/finance scope is added by this task.
