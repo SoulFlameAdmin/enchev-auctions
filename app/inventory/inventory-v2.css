@@ -11,3 +11,35 @@
 @media(max-width:1320px){.inventoryGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}.inv2HeroStats{grid-template-columns:repeat(3,96px)}}
 @media(max-width:900px){.inv2TopUtility{display:none}.inventoryNav{top:106px!important}.inv2Hero,.inv2Quickbar,.inventoryShell{width:calc(100% - 24px)!important}.inv2Hero{grid-template-columns:1fr}.inv2HeroStats{grid-template-columns:repeat(3,1fr)}.inventoryShell{grid-template-columns:1fr!important}.inventoryFilters{position:relative!important;top:auto!important}.inventoryGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:640px){.inventoryHeader{padding:12px!important}.inventoryNav{top:126px!important}.inv2Hero{padding:17px}.inv2Hero .inventoryIntro h1{font-size:28px!important}.inv2HeroStats{grid-template-columns:1fr 1fr 1fr}.inv2HeroStat{padding:9px}.inv2HeroStat b{font-size:15px}.inv2Quickbar{align-items:flex-start;flex-direction:column}.inv2SaveSearch{width:100%}.inventoryFilters{display:none!important}.inventoryGrid{grid-template-columns:1fr!important}.inventoryImage{height:238px!important}.inventoryToolbar{align-items:flex-start!important;flex-direction:column}.inventoryToolbar>div{align-items:flex-start!important;flex-direction:column!important;gap:3px!important}.inv2ViewSwitch{display:none}}
+
+/* D11 — sidebar + functional grid/list inventory layout */
+.inv2MobileFiltersToggle{display:none}
+.inventoryToolbarControls{justify-content:flex-end}
+.inv2ViewSwitch button[aria-pressed="true"]{border-color:rgba(39,245,138,.42);background:rgba(39,245,138,.11);color:#baffd2;box-shadow:inset 0 0 0 1px rgba(39,245,138,.06)}
+.inventoryGrid.inventoryGrid--list{grid-template-columns:1fr!important}
+.inventoryGrid--list .inventoryCard{display:grid;grid-template-columns:minmax(250px,34%) minmax(0,1fr);align-items:stretch;min-height:252px;overflow:hidden}
+.inventoryGrid--list .inventoryImage{height:100%!important;min-height:252px}
+.inventoryGrid--list .inventoryCardBody{display:flex;flex-direction:column;min-width:0;padding:18px 20px!important}
+.inventoryGrid--list .inventoryCardBody h2{font-size:20px!important;margin:8px 0 12px!important}
+.inventoryGrid--list .inventoryCardBody dl{grid-template-columns:repeat(3,minmax(0,1fr));gap:8px!important;display:grid}
+.inventoryGrid--list .inventoryCardBody dl>div{grid-template-columns:1fr!important;gap:3px;padding:9px 10px;border:1px solid rgba(255,255,255,.055);border-radius:9px;background:rgba(255,255,255,.018)}
+.inventoryGrid--list .detailsBtn{width:max-content;min-width:170px}
+.inventoryGrid--list .inventoryPrice{margin-top:auto}
+.inventoryGrid--list .inventoryActions{max-width:520px}
+@media(max-width:900px){
+  .inventoryGrid--list .inventoryCard{grid-template-columns:minmax(220px,40%) minmax(0,1fr)}
+  .inventoryGrid--list .inventoryCardBody dl{grid-template-columns:1fr 1fr 1fr}
+}
+@media(max-width:640px){
+  .inv2MobileFiltersToggle{width:calc(100% - 24px);min-height:44px;margin:0 auto 12px;padding:0 14px;display:flex;align-items:center;justify-content:space-between;border:1px solid rgba(39,245,138,.22);border-radius:11px;background:#08110c;color:#dff7e8;font-size:12px;font-weight:900;cursor:pointer}
+  .inv2MobileFiltersToggle strong{color:#7ef7ab;font-size:10px;letter-spacing:.04em}
+  .inventoryFilters.isMobileOpen{display:block!important;margin-bottom:12px}
+  .inventoryToolbarControls{width:100%;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:8px!important}
+  .inv2ViewSwitch{display:flex}
+  .inv2ViewSwitch button{width:40px;height:40px}
+  .inventoryToolbar select{min-height:40px;flex:1}
+  .inventoryGrid--list .inventoryCard{grid-template-columns:1fr}
+  .inventoryGrid--list .inventoryImage{height:220px!important;min-height:220px}
+  .inventoryGrid--list .inventoryCardBody dl{grid-template-columns:1fr}
+  .inventoryGrid--list .detailsBtn{width:100%}
+}

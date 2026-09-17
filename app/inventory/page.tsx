@@ -16,6 +16,7 @@ const cars = [
 ];
 
 type AuctionStatus = "sold" | "live" | "next" | "open";
+type ViewMode = "grid" | "list";
 
 export default function InventoryPage(){
   const [query,setQuery]=useState("");
@@ -24,6 +25,8 @@ export default function InventoryPage(){
   const [buyNow,setBuyNow]=useState(false);
   const [liveOnly,setLiveOnly]=useState(false);
   const [sort,setSort]=useState("recommended");
+  const [viewMode,setViewMode]=useState<ViewMode>("grid");
+  const [mobileFiltersOpen,setMobileFiltersOpen]=useState(false);
   const [activeIndex,setActiveIndex]=useState(1);
   const [remaining,setRemaining]=useState(LOT_SECONDS);
   const [bidPrices,setBidPrices]=useState<Record<string,number>>(()=>Object.fromEntries(cars.map(car=>[car.lot,car.price])));
@@ -79,7 +82,7 @@ export default function InventoryPage(){
   const formatTime=(seconds:number)=>`00:${String(seconds).padStart(2,"0")}`;
   const liveCar=auctionCars.find(car=>car.status==="live");
 
-  return <main className="inventoryPage">
+  return <main className="inventoryPage" data-design-task="D11">
     <div className="inv2TopUtility"><div className="inv2UtilityLive"><i/> ENCHEV LIVE NETWORK <span>·</span> Обновяване в реално време</div><div className="inv2UtilityRight"><span>BG · EUR</span><a href="/support">Помощ</a><a href="/transport">Транспорт</a></div></div>
 
     <header className="inventoryHeader">
@@ -97,8 +100,12 @@ export default function InventoryPage(){
 
     <div className="inv2Quickbar"><div className="inv2Chips"><button className={`inv2Chip ${!liveOnly&&!buyNow&&brand==="Всички"?"active":""}`} onClick={resetFilters}>Всички</button><button className={`inv2Chip ${liveOnly?"active":""}`} onClick={()=>setLiveOnly(v=>!v)}>● LIVE</button><button className={`inv2Chip ${buyNow?"active":""}`} onClick={()=>setBuyNow(v=>!v)}>Buy Now</button><button className={`inv2Chip ${brand==="BMW"?"active":""}`} onClick={()=>setBrand(brand==="BMW"?"Всички":"BMW")}>BMW</button><button className={`inv2Chip ${brand==="Mercedes"?"active":""}`} onClick={()=>setBrand(brand==="Mercedes"?"Всички":"Mercedes")}>Mercedes</button><button className={`inv2Chip ${region==="САЩ"?"active":""}`} onClick={()=>setRegion(region==="САЩ"?"Всички":"САЩ")}>САЩ</button><button className={`inv2Chip ${region==="Европа"?"active":""}`} onClick={()=>setRegion(region==="Европа"?"Всички":"Европа")}>Европа</button></div><button className="inv2SaveSearch">♡ Запази търсенето</button></div>
 
+    <button className="inv2MobileFiltersToggle" type="button" aria-controls="inventory-filter-panel" aria-expanded={mobileFiltersOpen} onClick={()=>setMobileFiltersOpen(open=>!open)}>
+      <span>⚙ Филтри</span><strong>{mobileFiltersOpen?"Затвори":"Отвори"}</strong>
+    </button>
+
     <div className="inventoryShell">
-      <aside className="inventoryFilters">
+      <aside id="inventory-filter-panel" className={`inventoryFilters ${mobileFiltersOpen?"isMobileOpen":""}`} aria-label="Филтри за инвентара">
         <div className="filterTitle"><b>Филтри за търсене</b><button onClick={resetFilters}>Изчисти</button></div>
         <label className="filterSearchLabel">Търси в резултатите<input value={query} onChange={e=>setQuery(e.target.value)} placeholder="BMW, EA-10482, WBS3R9..."/></label>
         <div className="filterBlock"><div className="inv2FilterGroupTitle"><b>Бързи филтри</b><small>LIVE / BUY NOW</small></div><label><input type="checkbox" checked={liveOnly} onChange={e=>setLiveOnly(e.target.checked)}/> Само LIVE</label><label><input type="checkbox" checked={buyNow} onChange={e=>setBuyNow(e.target.checked)}/> Buy Now</label></div>
@@ -110,10 +117,19 @@ export default function InventoryPage(){
         <div className="filterBlock collapsed"><b>Тип на талона</b><span>+</span></div><div className="filterBlock collapsed"><b>Тип превозно средство</b><span>+</span></div><div className="filterBlock collapsed"><b>Двигател</b><span>+</span></div><div className="filterBlock collapsed"><b>Скоростна кутия</b><span>+</span></div><div className="filterBlock collapsed"><b>Пробег</b><span>+</span></div><div className="filterBlock collapsed"><b>Дата на търга</b><span>+</span></div>
       </aside>
 
-      <section className="inventoryResults">
-        <div className="inventoryToolbar"><div><b>{filtered.length} резултата</b><span>{liveCar?`LIVE: ${liveCar.title} · ${formatTime(remaining)}`:"Няма активен LIVE лот"}</span></div><div className="inv2ViewSwitch"><button className="active">▦</button><button>☰</button></div><select value={sort} onChange={e=>setSort(e.target.value)}><option value="recommended">Препоръчани</option><option value="priceLow">Цена: ниска → висока</option><option value="priceHigh">Цена: висока → ниска</option></select></div>
+      <section className="inventoryResults" aria-label="Резултати от инвентара">
+        <div className="inventoryToolbar">
+          <div><b>{filtered.length} резултата</b><span>{liveCar?`LIVE: ${liveCar.title} · ${formatTime(remaining)}`:"Няма активен LIVE лот"}</span></div>
+          <div className="inventoryToolbarControls">
+            <div className="inv2ViewSwitch" role="group" aria-label="Изглед на резултатите">
+              <button type="button" className={viewMode==="grid"?"active":""} onClick={()=>setViewMode("grid")} aria-pressed={viewMode==="grid"} aria-label="Покажи като мрежа">▦</button>
+              <button type="button" className={viewMode==="list"?"active":""} onClick={()=>setViewMode("list")} aria-pressed={viewMode==="list"} aria-label="Покажи като списък">☰</button>
+            </div>
+            <select value={sort} onChange={e=>setSort(e.target.value)} aria-label="Сортиране на резултатите"><option value="recommended">Препоръчани</option><option value="priceLow">Цена: ниска → висока</option><option value="priceHigh">Цена: висока → ниска</option></select>
+          </div>
+        </div>
 
-        <div className="inventoryGrid">{filtered.map(car=><article className={`inventoryCard ${car.status==="sold"?"soldCard":""} ${car.status==="live"?"liveCard":""} ${car.status==="next"?"nextCard":""}`} key={car.lot}>
+        <div className={`inventoryGrid ${viewMode==="list"?"inventoryGrid--list":""}`} data-view={viewMode}>{filtered.map(car=><article className={`inventoryCard ${car.status==="sold"?"soldCard":""} ${car.status==="live"?"liveCard":""} ${car.status==="next"?"nextCard":""}`} key={car.lot}>
           <div className="inventoryImage">
             <img src={car.image} alt={car.title}/>
             <span className={`inventoryBadge ${car.status}`}>{car.stateBadge}</span>
