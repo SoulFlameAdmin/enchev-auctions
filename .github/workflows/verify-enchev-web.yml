@@ -1,18 +1,14 @@
 name: Verify Enchev Web
-
 on:
   push:
     branches: [main]
   pull_request:
     branches: [main]
-
 permissions:
   contents: read
-
 concurrency:
   group: verify-enchev-web-${{ github.ref }}
   cancel-in-progress: true
-
 jobs:
   verify-web:
     runs-on: ubuntu-latest
@@ -20,58 +16,45 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
       - name: Setup Node 24
         uses: actions/setup-node@v4
         with:
           node-version: '24'
           cache: npm
           cache-dependency-path: package.json
-
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-
       - name: Generate frozen test task registry
         run: node scripts/generate-master-test-task-ids.mjs
-
       - name: Frozen master task ID lock
         run: node scripts/verify-master-task-ids.mjs
-
       - name: Frozen delete/renumber rejection tests
         run: node scripts/verify-master-task-ids.mjs --self-test
-
       - name: GREEN evidence invariant
         run: node scripts/verify-green-requires-evidence.mjs
-
       - name: GREEN evidence rejection tests
         run: node scripts/verify-green-requires-evidence.mjs --self-test
-
       - name: GREEN passing-test invariant
         run: node scripts/verify-green-requires-passing-test.mjs
-
       - name: GREEN passing-test rejection tests
         run: node scripts/verify-green-requires-passing-test.mjs --self-test
-
       - name: YELLOW semantics invariant
         run: node scripts/verify-yellow-semantics.mjs
-
       - name: YELLOW semantics self-tests
         run: node scripts/verify-yellow-semantics.mjs --self-test
-
       - name: RED semantics invariant
         run: node scripts/verify-red-semantics.mjs
-
       - name: RED semantics self-tests
         run: node scripts/verify-red-semantics.mjs --self-test
-
       - name: Append-only GAP ID invariant
         run: node scripts/verify-gap-append-only.mjs
-
       - name: Append-only GAP ID self-tests
         run: node scripts/verify-gap-append-only.mjs --self-test
-
+      - name: Status audit trail invariant
+        run: node scripts/verify-status-audit-trail.mjs
+      - name: Status audit trail self-tests
+        run: node scripts/verify-status-audit-trail.mjs --self-test
       - name: TypeScript check
         run: npx tsc --noEmit
-
       - name: Production build
         run: npm run build
