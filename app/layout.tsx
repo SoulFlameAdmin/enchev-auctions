@@ -12,6 +12,7 @@ import MouseAura from "./components/MouseAura";
 import BackgroundSwitcher from "./components/BackgroundSwitcher";
 import AiWorkerControl from "./components/AiWorkerControl";
 import VerifiedPlanEvidenceSync from "./components/VerifiedPlanEvidenceSync";
+import LotNavigationBridge from "./components/LotNavigationBridge";
 
 export const metadata = {
   title: "Enchev Auctions",
@@ -26,6 +27,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <BackgroundSwitcher />
         <AiWorkerControl />
         <VerifiedPlanEvidenceSync />
+        <LotNavigationBridge />
         {children}
       </body>
     </html>
