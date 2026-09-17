@@ -1,15 +1,33 @@
 @echo off
-setlocal
+setlocal EnableExtensions
 set "REPO=D:\ASI\enchev-auctions"
 
+where winget >nul 2>nul || (
+  echo [DAVID] Winget ne e nameren. Instalirai App Installer ot Microsoft Store i pusni otnovo.
+  pause
+  exit /b 1
+)
+
 where git >nul 2>nul || (
-  echo [DAVID] Git ne e nameren. Instalirai Git for Windows i pusni otnovo.
+  echo [DAVID] Instaliram Git for Windows...
+  winget install --id Git.Git -e --source winget --accept-source-agreements --accept-package-agreements || goto :fail
+  set "PATH=%PATH%;C:\Program Files\Git\cmd"
+)
+
+where node >nul 2>nul || (
+  echo [DAVID] Instaliram Node.js LTS...
+  winget install --id OpenJS.NodeJS.LTS -e --source winget --accept-source-agreements --accept-package-agreements || goto :fail
+  set "PATH=%PATH%;C:\Program Files\nodejs"
+)
+
+where git >nul 2>nul || (
+  echo [DAVID] Git e instaliran, no PATH oshte ne e opresnen. Zatvori prozoreca i pusni START_DAVID_ENCHEV.cmd pak.
   pause
   exit /b 1
 )
 
 where node >nul 2>nul || (
-  echo [DAVID] Node.js ne e nameren. Instalirai Node.js LTS i pusni otnovo.
+  echo [DAVID] Node e instaliran, no PATH oshte ne e opresnen. Zatvori prozoreca i pusni START_DAVID_ENCHEV.cmd pak.
   pause
   exit /b 1
 )
@@ -29,6 +47,6 @@ exit /b %ERRORLEVEL%
 
 :fail
 echo.
-echo [DAVID] Startut spirа zaradi greshka. Proveri Git login/dostup i opitai pak.
+echo [DAVID] Startut spira zaradi greshka. Ako GitHub iska login, vlezi v prozoreca na Git Credential Manager i opitai pak.
 pause
 exit /b 1
