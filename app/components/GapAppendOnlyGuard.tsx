@@ -14,6 +14,7 @@ const CHANNEL_KEY = "enchev-system-realtime-v5";
 const GAP_SEQUENCE_KEY = "enchev-system-gap-seq-v5";
 const AUDIT_MAX_GAP = 94;
 const GAP_ID_RE = /^GAP-(\d{3,})$/;
+// 32.07 production-verification retrigger only; allocator behavior is unchanged.
 
 function readJson<T>(key: string, fallback: T): T {
   try {
