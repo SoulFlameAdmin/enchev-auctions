@@ -4,6 +4,15 @@ import { ChangeEvent, useEffect, useRef, useState } from "react";
 
 const STORAGE_KEY = "enchev-custom-hero-background";
 
+function applyBackground(value: string) {
+  const hero = document.getElementById("top");
+  if (!hero) return;
+  hero.style.setProperty("background-image", `url(${JSON.stringify(value)})`, "important");
+  hero.style.setProperty("background-size", "cover", "important");
+  hero.style.setProperty("background-position", "center center", "important");
+  hero.style.setProperty("background-repeat", "no-repeat", "important");
+}
+
 export default function BackgroundSwitcher() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
@@ -13,8 +22,7 @@ export default function BackgroundSwitcher() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        document.documentElement.style.setProperty("--custom-hero-bg", `url(${JSON.stringify(saved)})`);
-        document.documentElement.classList.add("has-custom-hero-bg");
+        applyBackground(saved);
         setHasCustom(true);
       }
     } catch {}
@@ -28,9 +36,10 @@ export default function BackgroundSwitcher() {
     reader.onload = () => {
       const result = typeof reader.result === "string" ? reader.result : "";
       if (!result) return;
+
+      // Apply immediately even when a very large 4K file cannot fit in localStorage.
+      applyBackground(result);
       try { localStorage.setItem(STORAGE_KEY, result); } catch {}
-      document.documentElement.style.setProperty("--custom-hero-bg", `url(${JSON.stringify(result)})`);
-      document.documentElement.classList.add("has-custom-hero-bg");
       setHasCustom(true);
       setOpen(false);
     };
@@ -40,8 +49,13 @@ export default function BackgroundSwitcher() {
 
   const reset = () => {
     try { localStorage.removeItem(STORAGE_KEY); } catch {}
-    document.documentElement.style.removeProperty("--custom-hero-bg");
-    document.documentElement.classList.remove("has-custom-hero-bg");
+    const hero = document.getElementById("top");
+    if (hero) {
+      hero.style.removeProperty("background-image");
+      hero.style.removeProperty("background-size");
+      hero.style.removeProperty("background-position");
+      hero.style.removeProperty("background-repeat");
+    }
     setHasCustom(false);
   };
 
@@ -52,13 +66,13 @@ export default function BackgroundSwitcher() {
       </button>
       {open && (
         <div className="backgroundSwitcherPanel">
-          <b>Hero background</b>
-          <small>Избери снимка от компютъра. Запазва се само в този браузър.</small>
-          <button className="backgroundSwitcherPrimary" onClick={() => inputRef.current?.click()}>Избери снимка</button>
+          <b>Смяна на фона</b>
+          <small>Качи PNG/JPG/WebP и снимката веднага ще стане фон на голямата hero секция.</small>
+          <button className="backgroundSwitcherPrimary" onClick={() => inputRef.current?.click()}>Качи снимка</button>
           {hasCustom && <button className="backgroundSwitcherReset" onClick={reset}>Върни оригиналния фон</button>}
         </div>
       )}
-      <input ref={inputRef} className="backgroundSwitcherInput" type="file" accept="image/png,image/jpeg,image/webp,image/avif" onChange={chooseImage} />
+      <input ref={inputRef} style={{ display: "none" }} type="file" accept="image/png,image/jpeg,image/webp,image/avif" onChange={chooseImage} />
     </div>
   );
 }
