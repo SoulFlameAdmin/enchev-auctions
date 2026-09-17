@@ -46,19 +46,54 @@ function saveState(state) {
   fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2), "utf8");
 }
 
-async function findTargetPage(context) {
-  let page = context.pages().find((p) => p.url().startsWith(CHAT_URL));
+function pageUsable(page) {
+  return Boolean(page && !page.isClosed());
+}
+
+async function safeUrl(page) {
+  try {
+    return pageUsable(page) ? page.url() : "";
+  } catch {
+    return "";
+  }
+}
+
+async function ensureTargetPage(context, currentPage = null) {
+  if (pageUsable(currentPage)) {
+    const url = await safeUrl(currentPage);
+    if (url.startsWith(CHAT_URL)) return currentPage;
+  }
+
+  const pages = context.pages().filter((p) => !p.isClosed());
+  let page = pages.find((p) => p.url().startsWith(CHAT_URL));
+
   if (!page) {
-    page = context.pages().find((p) => p.url().includes("chatgpt.com/c/"));
+    page = pages.find((p) => p.url().includes("chatgpt.com/c/"));
   }
-  if (!page) page = await context.newPage();
-  if (!page.url().startsWith(CHAT_URL)) {
-    await page.goto(CHAT_URL, { waitUntil: "domcontentloaded", timeout: 60000 });
+
+  if (!page) {
+    page = pages.find((p) => p.url().includes("chatgpt.com"));
   }
+
+  if (!page) {
+    page = await context.newPage();
+  }
+
+  const url = await safeUrl(page);
+  if (!url.startsWith(CHAT_URL) && !url.includes("/auth/") && !url.includes("/login")) {
+    try {
+      await page.goto(CHAT_URL, { waitUntil: "domcontentloaded", timeout: 60000 });
+    } catch (error) {
+      if (!pageUsable(page)) return ensureTargetPage(context, null);
+      throw error;
+    }
+  }
+
   return page;
 }
 
 async function getComposer(page) {
+  if (!pageUsable(page)) return null;
   const selectors = [
     "#prompt-textarea",
     '[data-testid="prompt-textarea"]',
@@ -66,35 +101,46 @@ async function getComposer(page) {
     'div[contenteditable="true"]'
   ];
   for (const selector of selectors) {
-    const loc = page.locator(selector).last();
-    if ((await loc.count()) > 0 && await loc.isVisible().catch(() => false)) return loc;
+    try {
+      const loc = page.locator(selector).last();
+      if ((await loc.count()) > 0 && await loc.isVisible().catch(() => false)) return loc;
+    } catch {
+      return null;
+    }
   }
   return null;
 }
 
 async function latestAssistantText(page) {
-  const primary = page.locator('[data-message-author-role="assistant"]');
-  if (await primary.count()) {
-    return (await primary.last().innerText().catch(() => "")).trim();
-  }
+  if (!pageUsable(page)) return "";
+  try {
+    const primary = page.locator('[data-message-author-role="assistant"]');
+    if (await primary.count()) {
+      return (await primary.last().innerText().catch(() => "")).trim();
+    }
 
-  const turns = page.locator('article[data-testid^="conversation-turn-"]');
-  const count = await turns.count();
-  for (let i = count - 1; i >= 0; i--) {
-    const turn = turns.nth(i);
-    const role = await turn.locator('[data-message-author-role="assistant"]').count();
-    if (role) return (await turn.innerText().catch(() => "")).trim();
-  }
+    const turns = page.locator('article[data-testid^="conversation-turn-"]');
+    const count = await turns.count();
+    for (let i = count - 1; i >= 0; i--) {
+      const turn = turns.nth(i);
+      const role = await turn.locator('[data-message-author-role="assistant"]').count();
+      if (role) return (await turn.innerText().catch(() => "")).trim();
+    }
+  } catch {}
   return "";
 }
 
 async function latestUserText(page) {
-  const user = page.locator('[data-message-author-role="user"]');
-  if (await user.count()) return (await user.last().innerText().catch(() => "")).trim();
+  if (!pageUsable(page)) return "";
+  try {
+    const user = page.locator('[data-message-author-role="user"]');
+    if (await user.count()) return (await user.last().innerText().catch(() => "")).trim();
+  } catch {}
   return "";
 }
 
 async function isGenerating(page) {
+  if (!pageUsable(page)) return false;
   const selectors = [
     'button[aria-label*="Stop"]',
     'button[aria-label*="stop"]',
@@ -103,23 +149,30 @@ async function isGenerating(page) {
     '[data-testid="stop-button"]'
   ];
   for (const selector of selectors) {
-    const loc = page.locator(selector).last();
-    if ((await loc.count()) > 0 && await loc.isVisible().catch(() => false)) return true;
+    try {
+      const loc = page.locator(selector).last();
+      if ((await loc.count()) > 0 && await loc.isVisible().catch(() => false)) return true;
+    } catch {
+      return false;
+    }
   }
   return false;
 }
 
 async function responseIsStable(page) {
+  if (!pageUsable(page)) return false;
   if (await isGenerating(page)) return false;
   const a = await latestAssistantText(page);
   if (!a) return false;
   await sleep(1800);
+  if (!pageUsable(page)) return false;
   if (await isGenerating(page)) return false;
   const b = await latestAssistantText(page);
   return a === b && b.length > 0;
 }
 
 async function hasPlatformBlock(page) {
+  if (!pageUsable(page)) return null;
   const body = (await page.locator("body").innerText().catch(() => "")).toLowerCase();
   const patterns = [
     "you've reached your limit",
@@ -156,8 +209,9 @@ async function fillComposer(composer, text) {
 }
 
 async function sendContinue(page) {
+  if (!pageUsable(page)) throw new Error("Target ChatGPT page is not available.");
   const composer = await getComposer(page);
-  if (!composer) throw new Error("Не намирам ChatGPT полето за писане. Провери дали си логнат и дали сесията е отворена.");
+  if (!composer) throw new Error("ChatGPT composer was not found. Make sure the fixed session is open and logged in.");
 
   await fillComposer(composer, CONTINUE_PROMPT);
   await sleep(500);
@@ -178,42 +232,79 @@ async function sendContinue(page) {
   await composer.press("Enter");
 }
 
+async function waitForLoggedInTarget(context, currentPage) {
+  let page = currentPage;
+  let announcedLogin = false;
+
+  while (true) {
+    page = await ensureTargetPage(context, page);
+    const url = await safeUrl(page);
+
+    if (url.includes("/auth/") || url.includes("/login")) {
+      if (!announcedLogin) {
+        console.log("[DAVID] Waiting for ChatGPT login to finish. Do not close the dedicated browser window.");
+        announcedLogin = true;
+      }
+      await sleep(POLL_MS);
+      continue;
+    }
+
+    if (!url.startsWith(CHAT_URL)) {
+      if (pageUsable(page)) {
+        await page.goto(CHAT_URL, { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+      }
+      await sleep(POLL_MS);
+      continue;
+    }
+
+    const composer = await getComposer(page);
+    const assistant = await latestAssistantText(page);
+    if (composer || assistant) return page;
+
+    await sleep(POLL_MS);
+  }
+}
+
 async function main() {
-  console.log(`[DAVID] Свързване към Edge CDP: ${CDP_URL}`);
+  console.log(`[DAVID] Connecting to browser CDP: ${CDP_URL}`);
   const browser = await chromium.connectOverCDP(CDP_URL);
   const contexts = browser.contexts();
   const context = contexts[0];
-  if (!context) throw new Error("Няма активен Edge/Chromium context на CDP порта.");
+  if (!context) throw new Error("No active Chromium context exists on the CDP port.");
 
-  const page = await findTargetPage(context);
-  console.log(`[DAVID] Сесия: ${page.url()}`);
-
-  if (page.url().includes("/auth/") || page.url().includes("/login")) {
-    console.log("[DAVID] ChatGPT не е логнат. Влез ръчно в този Edge профил, после стартирай скрипта отново.");
-    process.exit(2);
-  }
+  let page = await ensureTargetPage(context, null);
+  page = await waitForLoggedInTarget(context, page);
+  console.log(`[DAVID] Session ready: ${await safeUrl(page)}`);
 
   let state = loadState();
   const firstRun = !fs.existsSync(STATE_FILE) || !state.lastAssistantHash;
 
-  console.log(`[DAVID] max цикли: ${MAX_TURNS}. Stop marker: ${STOP_MARKER}`);
-  console.log("[DAVID] Ctrl+C спира worker-а.");
+  console.log(`[DAVID] max cycles: ${MAX_TURNS}. Stop marker: ${STOP_MARKER}`);
+  console.log("[DAVID] Ctrl+C stops the worker.");
 
   if (firstRun) {
-    while (!(await responseIsStable(page))) await sleep(POLL_MS);
+    while (true) {
+      page = await ensureTargetPage(context, page);
+      page = await waitForLoggedInTarget(context, page);
+      if (await responseIsStable(page)) break;
+      await sleep(POLL_MS);
+    }
+
     const current = await latestAssistantText(page);
     if (current.includes(STOP_MARKER)) {
-      console.log("[DAVID] Последният отговор вече съдържа DAVID_STOP. Няма да изпращам автоматично.");
+      console.log("[DAVID] Existing last answer contains DAVID_STOP. No automatic send.");
       return;
     }
+
     const block = await hasPlatformBlock(page);
     if (block) {
-      console.log(`[DAVID] Спирам: открит platform blocker: ${block}`);
+      console.log(`[DAVID] Stop: platform blocker detected: ${block}`);
       return;
     }
+
     state.lastAssistantHash = hashText(current);
     saveState(state);
-    console.log("[DAVID] Първи цикъл → изпращам инструкцията за продължаване.");
+    console.log("[DAVID] First cycle -> sending continue instruction.");
     await sendContinue(page);
     state.turnsSent += 1;
     saveState(state);
@@ -222,15 +313,12 @@ async function main() {
   while (state.turnsSent < MAX_TURNS) {
     await sleep(POLL_MS);
 
-    if (!page.url().startsWith(CHAT_URL)) {
-      console.log("[DAVID] Върщам се към фиксираната Enchev ChatGPT сесия.");
-      await page.goto(CHAT_URL, { waitUntil: "domcontentloaded", timeout: 60000 });
-      await sleep(1500);
-    }
+    page = await ensureTargetPage(context, page);
+    page = await waitForLoggedInTarget(context, page);
 
     const block = await hasPlatformBlock(page);
     if (block) {
-      console.log(`[DAVID] Спирам: открит platform blocker: ${block}`);
+      console.log(`[DAVID] Stop: platform blocker detected: ${block}`);
       break;
     }
 
@@ -240,7 +328,7 @@ async function main() {
     if (!answer) continue;
 
     if (answer.includes(STOP_MARKER)) {
-      console.log("[DAVID] ChatGPT поиска човешко действие. STOP marker е открит.");
+      console.log("[DAVID] ChatGPT requested human action. DAVID_STOP detected.");
       state.stopped = true;
       state.stopReason = answer.slice(-1200);
       saveState(state);
@@ -256,12 +344,15 @@ async function main() {
     state.lastAssistantHash = answerHash;
     saveState(state);
 
-    console.log(`[DAVID] Завършен нов отговор. Изчаквам ${COOLDOWN_MS} ms и продължавам.`);
+    console.log(`[DAVID] New completed answer. Waiting ${COOLDOWN_MS} ms before next cycle.`);
     await sleep(COOLDOWN_MS);
+
+    page = await ensureTargetPage(context, page);
+    page = await waitForLoggedInTarget(context, page);
 
     const blockAfterWait = await hasPlatformBlock(page);
     if (blockAfterWait) {
-      console.log(`[DAVID] Спирам: открит platform blocker: ${blockAfterWait}`);
+      console.log(`[DAVID] Stop: platform blocker detected: ${blockAfterWait}`);
       break;
     }
 
@@ -269,11 +360,11 @@ async function main() {
     state.turnsSent += 1;
     state.stopped = false;
     saveState(state);
-    console.log(`[DAVID] Изпратен цикъл ${state.turnsSent}/${MAX_TURNS}`);
+    console.log(`[DAVID] Sent cycle ${state.turnsSent}/${MAX_TURNS}`);
   }
 
   if (state.turnsSent >= MAX_TURNS) {
-    console.log(`[DAVID] Достигнат безопасният лимит ${MAX_TURNS}. Стартирай отново след преглед, ако искаш още.`);
+    console.log(`[DAVID] Reached cycle limit ${MAX_TURNS}.`);
   }
 }
 
