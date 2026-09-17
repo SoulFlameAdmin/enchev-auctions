@@ -16,3 +16,19 @@
 @media(max-width:640px){.inventoryPage[data-design-pagination-task="D14"] .inventoryToolbar{gap:12px}.inventoryPage[data-design-pagination-task="D14"] .inv2ResultMeta{width:100%}.inventoryPage[data-design-pagination-task="D14"] .inv2ResultLive{max-width:100%;white-space:normal}.inventoryPage[data-design-pagination-task="D14"] .inv2SortSelect{min-height:44px}.inventoryPage[data-design-pagination-task="D14"] .inv2Pagination{gap:6px;margin-top:18px}.inventoryPage[data-design-pagination-task="D14"] .inv2Pagination button{min-width:44px;min-height:44px}.inventoryPage[data-design-pagination-task="D14"] .inv2PaginationStatus{order:3;flex-basis:100%}}
 @media(prefers-reduced-motion:reduce){.inventoryPage[data-design-pagination-task="D14"] .inv2Pagination button{transition:none!important}}
 /* Production retrigger: this descendant includes the D14 page implementation. */
+
+/* D16 — explicit card-state hierarchy: NEW BID / LIVE / UPCOMING / SOLD / BUY NOW */
+.inventoryCard.liveCard .inventoryBadge.live{border-color:rgba(83,255,158,.62)!important;background:#087d47!important;color:#effff5!important;box-shadow:0 0 0 1px rgba(45,255,142,.08),0 8px 24px rgba(7,141,74,.28)!important}
+.inventoryCard.liveCard .inventoryBadge.live::after{content:" · LIVE";letter-spacing:.08em;color:#9effc1}
+.inventoryCard.liveCard .liveBidText{letter-spacing:.04em;text-shadow:0 0 18px rgba(39,245,138,.34)}
+.inventoryCard.nextCard .inventoryBadge.next{border-color:rgba(78,182,255,.34)!important;background:rgba(14,57,86,.94)!important;color:#d9f1ff!important}
+.inventoryCard.nextCard .inventoryBadge.next::after{content:" · UPCOMING";letter-spacing:.07em;color:#8ed7ff}
+.inventoryCard.soldCard .inventoryBadge.sold::after{content:" · SOLD";letter-spacing:.07em;color:#aeb9b2}
+.inventoryCard:has(.buyBtn) .inventoryCardBody{position:relative}
+.inventoryCard:has(.buyBtn) .inventoryCardBody::before{content:"BUY NOW";display:inline-flex;align-items:center;width:max-content;min-height:24px;margin:0 0 9px;padding:0 8px;border:1px solid rgba(242,184,75,.34);border-radius:999px;background:rgba(242,184,75,.08);color:#ffd980;font-size:9px;font-weight:1000;letter-spacing:.08em}
+.inventoryCard.liveCard:has(.buyBtn) .inventoryCardBody::before{border-color:rgba(39,245,138,.3);background:rgba(39,245,138,.07);color:#a7ffc8}
+.inventoryCard.nextCard:has(.buyBtn) .inventoryCardBody::before,.inventoryCard.soldCard:has(.buyBtn) .inventoryCardBody::before{display:none}
+.inventoryCard.liveCard{outline:1px solid rgba(39,245,138,.09);outline-offset:-1px}
+.inventoryCard.nextCard{outline:1px solid rgba(78,182,255,.06);outline-offset:-1px}
+@media(max-width:640px){.inventoryCard:has(.buyBtn) .inventoryCardBody::before{min-height:28px;padding:0 9px;font-size:10px}.inventoryCard.liveCard .inventoryBadge.live::after,.inventoryCard.nextCard .inventoryBadge.next::after,.inventoryCard.soldCard .inventoryBadge.sold::after{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.inventoryCard.liveCard .liveBidText{text-shadow:none}}
