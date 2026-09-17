@@ -1,6 +1,6 @@
 # Enchev Auctions — 32.03 GREEN requires evidence
 
-Status: YELLOW — implementation on main; verification pending
+Status: GREEN — GREEN without evidence is machine-rejected and verified
 MASTER SYSTEM PLAN v1.0 FROZEN task: `32.03`
 Execution wave: `WAVE 0 — Master plan governance`
 Depends on: `32.01`, `32.02`
@@ -20,9 +20,9 @@ This applies to:
 
 ## Existing runtime behavior verified and locked
 
-`app/components/MasterSystemPlanV1.tsx` already contains the runtime GREEN gate:
+`app/components/MasterSystemPlanV1.tsx` contains the runtime GREEN gate:
 
-- GREEN reads evidence from the task note or the small built-in `VERIFIED_EVIDENCE` registry;
+- GREEN reads evidence from the task note or the built-in `VERIFIED_EVIDENCE` registry;
 - missing/blank evidence prevents GREEN;
 - the attempted status is downgraded to YELLOW;
 - a visible blocker explains that evidence is required.
@@ -55,22 +55,28 @@ Self-test mode proves the transition rule with synthetic cases:
 
 CI runs both normal verification and the negative/positive self-test before TypeScript and production build.
 
-## Implementation commits
+## Verified evidence
 
-- GREEN evidence guard script: `49f831a9c1fed32895b9a4e286e7f57d09aa0617`
-- CI integration: `f90b9a9da47ac579496c61acfdb1ba8d130052e4`
+Implementation:
 
-## GREEN gate
+- GREEN evidence guard script commit: `49f831a9c1fed32895b9a4e286e7f57d09aa0617`
+- CI integration commit: `f90b9a9da47ac579496c61acfdb1ba8d130052e4`
+- governance artifact implementation commit: `ec148a5ada1f393cbc4f6620718bb8c55c79b2fa`
 
-`32.03` becomes GREEN only after a `main` commit or proven descendant has one successful CI path where:
+Verification:
 
-- frozen ID lock PASS;
-- delete/renumber rejection tests PASS;
-- GREEN evidence invariant PASS;
-- GREEN evidence rejection tests PASS;
-- TypeScript PASS;
-- production build PASS;
-- production HTTP/runtime regression context is healthy;
-- exact evidence is recorded before Command Center sync marks `32.03` GREEN.
+- GitHub Actions run `35183337380` on exact artifact commit `ec148a5ada1f393cbc4f6620718bb8c55c79b2fa`: overall `SUCCESS`;
+- `Frozen master task ID lock`: PASS;
+- `Frozen delete/renumber rejection tests`: PASS;
+- `GREEN evidence invariant`: PASS;
+- `GREEN evidence rejection tests`: PASS;
+- TypeScript check: PASS;
+- production build: PASS;
+- Vercel canonical production URL `https://enchev-auctions.vercel.app/`: HTTP `200`;
+- Vercel runtime error check for the recent production window: no runtime errors found.
+
+## Acceptance result
+
+All `32.03` acceptance requirements are satisfied. A governed GREEN state now has both runtime enforcement and CI regression protection requiring non-empty evidence.
 
 No pricing/payment/finance scope is added by this task.
