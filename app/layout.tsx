@@ -14,7 +14,6 @@ import "./navigation.css";
 import "./command-center-responsive.css";
 import MouseAura from "./components/MouseAura";
 import BackgroundSwitcher from "./components/BackgroundSwitcher";
-import AiWorkerControl from "./components/AiWorkerControl";
 import VerifiedPlanEvidenceSync from "./components/VerifiedPlanEvidenceSync";
 import TestPassGreenGuard from "./components/TestPassGreenGuard";
 import GapAppendOnlyGuard from "./components/GapAppendOnlyGuard";
@@ -31,7 +30,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <MouseAura />
         <BackgroundSwitcher />
-        <AiWorkerControl />
         <VerifiedPlanEvidenceSync />
         <TestPassGreenGuard />
         <GapAppendOnlyGuard />
