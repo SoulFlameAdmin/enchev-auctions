@@ -7,6 +7,7 @@ import "./inventory/inventory.css";
 import "./inventory-status.css";
 import "./enchev-theme.css";
 import "./home-v2.css";
+import "./home-featured-states.css";
 import "./inventory/inventory-v2.css";
 import "./responsive-grid.css";
 import "./navigation.css";
