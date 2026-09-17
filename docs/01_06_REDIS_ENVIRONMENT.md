@@ -114,6 +114,20 @@ Evidence:
 
 This confirms the remaining blocker is external provider authorization/provisioning, not application code, CI, Supabase, or the health probe.
 
+## Attempt 5 evidence — 2026-09-17
+A broader provider search and a fresh production probe were executed to test whether another already-available infrastructure path could satisfy the live Redis gate without changing the frozen acceptance criteria.
+
+Evidence:
+- Railway remains available but `installed=false`;
+- Render remains available but `installed=false`;
+- DigitalOcean was discovered as an additional self-hosted Valkey/Redis fallback, but it is also `installed=false` and requires user authorization before any droplet/resource can be provisioned;
+- canonical production `/api/health/redis` returned HTTP 503 with sanitized body `{"ok":false,"configured":false,"status":"missing-redis-binding"}` at the time of this attempt;
+- no existing authorized Redis/Valkey-compatible provider connection or secret-bearing binding was discovered;
+- no Supabase-backed substitute was accepted because it would not be a real Redis/Valkey environment and would weaken the frozen GREEN gate;
+- no ephemeral GitHub Actions Redis, public unauthenticated Redis, or serverless in-memory substitute was accepted because none is a valid production managed Redis/Valkey dependency.
+
+This attempt confirms that the remaining blocker is authorization/provisioning of a real external Redis/Valkey provider, not repository code or runtime probing.
+
 ## GREEN gate
 01.06 may become GREEN only when all of the following are evidenced:
 1. a real Redis/Valkey provider instance is provisioned for Enchev;
@@ -125,6 +139,6 @@ This confirms the remaining blocker is external provider authorization/provision
 7. exact evidence is recorded here and synced to Command Center cloud state.
 
 ## Current blocker
-Production evidence proves that no supported Redis/Valkey binding exists in Vercel. The connected GitHub/Vercel/Supabase tools cannot provision a Marketplace Redis resource or create the required project environment variables/secrets. A valid external managed-provider fallback exists, but the relevant infrastructure plugin must first be explicitly installed/connected by the user before the agent can provision the resource. Therefore 01.06 remains YELLOW and dependent work must not treat Redis as production-ready.
+Production evidence proves that no supported Redis/Valkey binding exists in Vercel. The connected GitHub/Vercel/Supabase tools cannot provision a Marketplace Redis resource or create the required project environment variables/secrets. Valid external managed-provider fallbacks exist (Railway, Render, DigitalOcean), but each relevant infrastructure plugin must first be explicitly installed/connected by the user before the agent can provision the resource. Therefore 01.06 remains YELLOW and dependent work must not treat Redis as production-ready.
 
 No pricing/payment/finance scope is added.
