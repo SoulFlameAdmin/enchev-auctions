@@ -1,28 +1,44 @@
 param(
-  [int]$Port = 9555
+  [int]$Port = 9444
 )
 
 $ErrorActionPreference = "Stop"
-$ProgressPreference = "SilentlyContinue"
 
+# APP2 now reuses the already-stable DAVID Edge profile/session used by Enchev.
+# This avoids the blank/loading second-browser problem and keeps the logged-in ChatGPT session.
+$SharedPort = 9444
 $ChatUrl = "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4"
-$ChatHome = "https://chatgpt.com/"
 $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Root = if (Test-Path "D:\ASI") { "D:\ASI" } else { Join-Path $env:LOCALAPPDATA "DAVID" }
-$ProfileDir = Join-Path $Root "DAVID_APP2_EDGE_PROFILE_V3"
+$ProfileDir = Join-Path $Root "DAVID_CHATGPT_PROFILE"
 
 $PortableGit = "D:\ASI\tools\PortableGit"
 $PortableNode = "D:\ASI\tools\node"
 if (Test-Path $PortableGit) { $env:Path = "$PortableGit\cmd;$PortableGit\bin;$env:Path" }
 if (Test-Path $PortableNode) { $env:Path = "$PortableNode;$env:Path" }
 
-function Get-EdgePath {
+function Test-Cdp {
+  param([int]$P)
+  try {
+    $null = Invoke-RestMethod -Uri "http://127.0.0.1:$P/json/version" -TimeoutSec 2
+    return $true
+  }
+  catch { return $false }
+}
+
+function Get-BrowserPath {
   $candidates = New-Object System.Collections.Generic.List[string]
-  if (${env:ProgramFiles(x86)}) { $candidates.Add((Join-Path ${env:ProgramFiles(x86)} "Microsoft\Edge\Application\msedge.exe")) }
-  if ($env:ProgramFiles) { $candidates.Add((Join-Path $env:ProgramFiles "Microsoft\Edge\Application\msedge.exe")) }
-  if ($env:LOCALAPPDATA) { $candidates.Add((Join-Path $env:LOCALAPPDATA "Microsoft\Edge\Application\msedge.exe")) }
-  foreach ($name in @("msedge.exe", "msedge")) {
-    $cmd = Get-Command $name -ErrorAction SilentlyContinue
+  if (${env:ProgramFiles(x86)}) {
+    $candidates.Add((Join-Path ${env:ProgramFiles(x86)} "Microsoft\Edge\Application\msedge.exe"))
+  }
+  if ($env:ProgramFiles) {
+    $candidates.Add((Join-Path $env:ProgramFiles "Microsoft\Edge\Application\msedge.exe"))
+  }
+  if ($env:LOCALAPPDATA) {
+    $candidates.Add((Join-Path $env:LOCALAPPDATA "Microsoft\Edge\Application\msedge.exe"))
+  }
+  foreach ($cmdName in @("msedge.exe", "msedge")) {
+    $cmd = Get-Command $cmdName -ErrorAction SilentlyContinue
     if ($cmd -and $cmd.Source) { $candidates.Add($cmd.Source) }
   }
   foreach ($regPath in @(
@@ -33,7 +49,8 @@ function Get-EdgePath {
     try {
       $value = (Get-ItemProperty -Path $regPath -ErrorAction Stop).'(default)'
       if ($value) { $candidates.Add($value) }
-    } catch {}
+    }
+    catch {}
   }
   foreach ($candidate in ($candidates | Select-Object -Unique)) {
     if ($candidate -and (Test-Path $candidate)) { return $candidate }
@@ -41,93 +58,33 @@ function Get-EdgePath {
   return $null
 }
 
-function Test-Cdp {
-  param([int]$P)
-  try {
-    $v = Invoke-RestMethod -Uri "http://127.0.0.1:$P/json/version" -TimeoutSec 3
-    return [bool]$v.webSocketDebuggerUrl
-  } catch { return $false }
+if ($Port -ne $SharedPort) {
+  Write-Host "[APP2] Ignoring old port $Port. Stable shared DAVID Edge uses port $SharedPort." -ForegroundColor Yellow
 }
+$Port = $SharedPort
 
-function Wait-CdpStable {
-  param([int]$P, [int]$MaxChecks = 100)
-  $stable = 0
-  for ($i = 0; $i -lt $MaxChecks; $i++) {
-    if (Test-Cdp -P $P) {
-      $stable++
-      if ($stable -ge 4) { Start-Sleep -Seconds 2; return $true }
-    } else { $stable = 0 }
-    Start-Sleep -Milliseconds 700
+if (-not (Test-Cdp -P $Port)) {
+  $browser = Get-BrowserPath
+  if (-not $browser) { throw "Microsoft Edge was not found." }
+  New-Item -ItemType Directory -Force -Path $ProfileDir | Out-Null
+  Write-Host "[APP2] Enchev DAVID Edge is not running. Starting the SAME stable profile on port $Port..." -ForegroundColor Cyan
+  Start-Process -FilePath $browser -ArgumentList @(
+    "--remote-debugging-address=127.0.0.1",
+    "--remote-debugging-port=$Port",
+    "--user-data-dir=$ProfileDir",
+    "--no-first-run",
+    "--no-default-browser-check",
+    $ChatUrl
+  )
+  $ok = $false
+  for ($i = 0; $i -lt 60; $i++) {
+    Start-Sleep -Milliseconds 750
+    if (Test-Cdp -P $Port) { $ok = $true; break }
   }
-  return $false
+  if (-not $ok) { throw "Shared DAVID Edge started, but CDP port 9444 did not become available." }
 }
-
-function Stop-StaleApp2Browsers {
-  try {
-    Get-CimInstance Win32_Process |
-      Where-Object {
-        ($_.Name -eq "msedge.exe" -or $_.Name -eq "chrome.exe" -or $_.Name -eq "brave.exe") -and
-        $_.CommandLine -and
-        ($_.CommandLine -like "*DAVID_APP2_EDGE_PROFILE*" -or $_.CommandLine -like "*DAVID_APP2_CHROME_PROFILE*")
-      } |
-      ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
-  } catch {}
-  Start-Sleep -Seconds 2
-}
-
-function Wait-ChatWindow {
-  param([int]$P, [int]$Seconds = 90)
-  $until = (Get-Date).AddSeconds($Seconds)
-  while ((Get-Date) -lt $until) {
-    try {
-      $pages = Invoke-RestMethod -Uri "http://127.0.0.1:$P/json/list" -TimeoutSec 3
-      $chat = $pages | Where-Object { $_.type -eq "page" -and $_.url -like "https://chatgpt.com/*" } | Select-Object -First 1
-      if ($chat) {
-        $title = [string]$chat.title
-        if ($title -and $title -notmatch "(?i)loading|зареждане") { return $true }
-      }
-    } catch {}
-    Start-Sleep -Seconds 1
-  }
-  return $false
-}
-
-$edge = Get-EdgePath
-if (-not $edge) { throw "Microsoft Edge was not found." }
-
-Stop-StaleApp2Browsers
-
-if (Test-Cdp -P $Port) {
-  throw "Port $Port is still occupied after stopping APP2 browsers. Close only the old APP2 browser and run again."
-}
-
-New-Item -ItemType Directory -Force -Path $ProfileDir | Out-Null
-Write-Host "[APP2] Browser: $edge (Microsoft Edge)" -ForegroundColor DarkGray
-Write-Host "[APP2] Starting clean isolated Edge profile on port $Port..." -ForegroundColor Cyan
-
-Start-Process -FilePath $edge -ArgumentList @(
-  "--remote-debugging-address=127.0.0.1",
-  "--remote-debugging-port=$Port",
-  "--remote-allow-origins=*",
-  "--user-data-dir=$ProfileDir",
-  "--no-first-run",
-  "--no-default-browser-check",
-  "--disable-background-mode",
-  "--new-window",
-  $ChatHome
-)
-
-Write-Host "[APP2] Waiting for Edge CDP..." -ForegroundColor Cyan
-if (-not (Wait-CdpStable -P $Port)) {
-  Stop-StaleApp2Browsers
-  throw "APP2 Edge started but CDP did not become stable on port $Port."
-}
-Write-Host "[APP2] CDP stable." -ForegroundColor Green
-
-if (Wait-ChatWindow -P $Port -Seconds 30) {
-  Write-Host "[APP2] ChatGPT UI detected." -ForegroundColor Green
-} else {
-  Write-Host "[APP2] ChatGPT is still loading." -ForegroundColor Yellow
+else {
+  Write-Host "[APP2] Reusing working Enchev DAVID Edge on port 9444." -ForegroundColor Green
 }
 
 $node = Get-Command node -ErrorAction SilentlyContinue
@@ -148,10 +105,6 @@ try {
   $env:DAVID_APP2_CHAT_URL = $ChatUrl
   $env:DAVID_APP2_STATE_FILE = Join-Path $Here ".david-app2-state-6aac2dbb.json"
 
-  Write-Host "[APP2] Checking ChatGPT authentication before opening the target conversation..." -ForegroundColor Cyan
-  & $node.Source (Join-Path $Here "wait-app2-chatgpt-login.mjs")
-  if ($LASTEXITCODE -ne 0) { throw "APP2 ChatGPT login/target preflight failed with code $LASTEXITCODE." }
-
   $WorkerSource = Join-Path $Here "auto-complete-app2-v1.mjs"
   $RuntimeWorker = Join-Path $Here ".auto-complete-app2-runtime.mjs"
   $source = [System.IO.File]::ReadAllText($WorkerSource)
@@ -164,10 +117,10 @@ try {
 
   Write-Host ""
   Write-Host "[APP2] TARGET: $ChatUrl" -ForegroundColor Green
-  Write-Host "[APP2] AUTOPILOT: plan -> implementation -> tests -> fixes -> production verification -> 100%." -ForegroundColor Green
-  Write-Host "[APP2] Edge isolation: separate profile + port $Port." -ForegroundColor Green
-  Write-Host "[APP2] Enchev DAVID on 9444 is untouched." -ForegroundColor Green
-  Write-Host "[APP2] Ctrl+C stops only APP2 worker." -ForegroundColor Yellow
+  Write-Host "[APP2] MODE: shared stable Enchev Edge / separate ChatGPT tab / separate APP2 state." -ForegroundColor Green
+  Write-Host "[APP2] AUTOPILOT: plan -> build -> test -> fix -> verify -> 100%." -ForegroundColor Green
+  Write-Host "[APP2] Enchev SYSTEM/DESIGN workers remain running; APP2 uses only its own target tab." -ForegroundColor Green
+  Write-Host "[APP2] Ctrl+C stops only APP2 worker, not the browser and not Enchev DAVID." -ForegroundColor Yellow
   Write-Host ""
 
   $attempt = 0
@@ -180,10 +133,8 @@ try {
       Write-Host "[APP2] Worker finished normally." -ForegroundColor Green
       break
     }
-    Write-Host "[APP2] Worker exited with code $code. Retrying in 4s..." -ForegroundColor Yellow
-    if (-not (Wait-CdpStable -P $Port -MaxChecks 25)) {
-      throw "APP2 Edge/CDP disappeared. Run the launcher again."
-    }
+    Write-Host "[APP2] Worker exited with code $code. Retrying in 4s on the same Edge session..." -ForegroundColor Yellow
+    if (-not (Test-Cdp -P $Port)) { throw "Shared DAVID Edge on port 9444 is no longer available." }
     Start-Sleep -Seconds 4
   }
 }
