@@ -1,6 +1,7 @@
 import "./globals.css";
 import "./home.css";
 import "./effects.css";
+import "./admin-layout-fix.css";
 import MouseAura from "./components/MouseAura";
 import BackgroundSwitcher from "./components/BackgroundSwitcher";
 
