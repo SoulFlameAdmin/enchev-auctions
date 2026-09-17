@@ -62,6 +62,12 @@ jobs:
         run: node scripts/verify-plan-version-ui.mjs
       - name: Plan version UI self-tests
         run: node scripts/verify-plan-version-ui.mjs --self-test
+      - name: Supabase project binding invariant
+        run: node scripts/verify-supabase-project-binding.mjs
+      - name: Supabase project binding self-tests
+        run: node scripts/verify-supabase-project-binding.mjs --self-test
+      - name: Supabase project live endpoint
+        run: node scripts/verify-supabase-project-binding.mjs --live
       - name: TypeScript check
         run: npx tsc --noEmit
       - name: Production build
