@@ -15,6 +15,7 @@ const VERIFIED_WAVE_0: Record<string, string> = {
   "00.03": "docs/00_03_AUTHORITATIVE_COMPONENTS_DEFINED.md · implementation 2e5a17cb10fef4ca52a4fd52feba3b37449088e8 · GREEN evidence a3c9165c0aae6b0089feaa7ec783f5f79c521833 · Vercel production READY",
   "00.04": "docs/00_04_CRITICAL_SYSTEM_INVARIANTS.md · implementation e566fe6de2c9b668142cb671026e89282ece2e44 · GREEN evidence 7a8e2c2ed556a3c464d046802e2b59641e6d3e11 · Vercel dpl_4gawek1QQZDXmchB3fgsyC2R261d READY",
   "00.05": "docs/00_05_NON_FUNCTIONAL_REQUIREMENTS.md · implementation 520891b7e54b285551c11af38936b714a3665795 · GREEN evidence 01cdce178f8cf8f1876e6c1449822b2d942a39aa · Vercel dpl_EDhvaagA8dLXnqMD3a6rPPwn6mgy READY",
+  "00.06": "docs/00_06_DEPENDENCY_INVENTORY.md · implementation 7bda0dbc9603ca068deac37591c9034f9c535c9c · GREEN evidence 151ea2a898f63a1d68f688e7de56f53634630583 · Vercel dpl_GEQf6ucwQZ8C4ctMEf7TPRhjGQCx READY",
 };
 
 export default function VerifiedPlanEvidenceSync() {
