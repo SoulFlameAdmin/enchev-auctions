@@ -41,7 +41,7 @@ export default function Home(){
           <h1><span>НАМЕРИ.</span><span>НАДДАВАЙ.</span><em>СПЕЧЕЛИ.</em></h1>
           <p className="eaHeroLead">Търси автомобили от международни търгове, следи LIVE наддаванията и управлявай целия процес от една ENCHEV платформа.</p>
           <form className="eaSearch" action="/inventory" role="search"><input type="search" name="q" aria-label="Търси по марка, модел, VIN или LOT номер" autoComplete="off" spellCheck={false} enterKeyHint="search" placeholder="Марка, модел, VIN или LOT номер..."/><button type="submit" aria-label="Търси автомобили">→</button></form>
-          <div className="eaHeroQuick"><a href="/inventory">BMW</a><a href="/inventory">Mercedes</a><a href="/inventory">Audi</a><a href="/inventory">SUV</a><a href="/inventory">Buy Now</a><a href="/inventory">До €20 000</a></div>
+          <nav className="eaHeroQuick" aria-label="Популярни категории"><a href="/inventory?q=BMW">BMW</a><a href="/inventory?q=Mercedes">Mercedes</a><a href="/inventory?q=Audi">Audi</a><a href="/inventory?q=Porsche">Porsche</a><a href="/inventory?q=USA">САЩ</a><a href="/inventory?q=Front%20end">Front end</a></nav>
           <div className="eaHeroStats"><div className="eaHeroStat"><b>10K+</b><span>активни лота</span></div><div className="eaHeroStat"><b>24/7</b><span>наблюдение на търгове</span></div><div className="eaHeroStat"><b>1 платформа</b><span>оферта → транспорт</span></div></div>
         </div>
 
