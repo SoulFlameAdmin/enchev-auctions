@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import "../lot.css";
 
 const gallery=[
@@ -23,6 +23,8 @@ export default function LotPage(){
   const lot=String(params?.id||"EA-10539").toUpperCase();
   const [activeImage,setActiveImage]=useState(0);
   const [viewerOpen,setViewerOpen]=useState(false);
+  const viewerTriggerRef=useRef<HTMLButtonElement|null>(null);
+  const viewerCloseRef=useRef<HTMLButtonElement|null>(null);
   const [bid,setBid]=useState(21900);
   const [bidInput,setBidInput]=useState("22000");
   const title=useMemo(()=>lot==="EA-10482"?"2018 BMW M4 F82":lot==="EA-10511"?"2021 Mercedes-Benz GLC":"2022 Audi RS3 Sportback",[lot]);
@@ -38,6 +40,8 @@ export default function LotPage(){
   useEffect(()=>{
     if(!viewerOpen)return;
     const previousOverflow=document.body.style.overflow;
+    const trigger=viewerTriggerRef.current;
+    const focusFrame=window.requestAnimationFrame(()=>viewerCloseRef.current?.focus());
     const onKeyDown=(event:KeyboardEvent)=>{
       if(event.key==="Escape")setViewerOpen(false);
       if(event.key==="ArrowLeft")setActiveImage(index=>(index-1+gallery.length)%gallery.length);
@@ -46,8 +50,10 @@ export default function LotPage(){
     document.body.style.overflow="hidden";
     window.addEventListener("keydown",onKeyDown);
     return()=>{
+      window.cancelAnimationFrame(focusFrame);
       document.body.style.overflow=previousOverflow;
       window.removeEventListener("keydown",onKeyDown);
+      if(trigger?.isConnected)trigger.focus({preventScroll:true});
     };
   },[viewerOpen]);
 
@@ -65,7 +71,7 @@ export default function LotPage(){
       <div className="lotGrid">
         <div>
           <div className="lotGallery" data-design-task="D19" aria-label={`Галерия за ${title}`}>
-            <button type="button" className="lotMainImage" onClick={()=>setViewerOpen(true)} aria-label={`Отвори изображение ${activeImage+1} от ${gallery.length} на цял екран`}>
+            <button ref={viewerTriggerRef} type="button" className="lotMainImage" onClick={()=>setViewerOpen(true)} aria-label={`Отвори изображение ${activeImage+1} от ${gallery.length} на цял екран`}>
               <img src={gallery[activeImage]} alt={`${title} — изображение ${activeImage+1}`}/>
               <span className="lotImageBadge">RUN & DRIVE · {activeImage+1}/{gallery.length}</span>
               <span className="lotZoomHint" aria-hidden="true">⛶ Цял екран</span>
@@ -101,7 +107,7 @@ export default function LotPage(){
       <div className="lotViewerShell">
         <div className="lotViewerTop">
           <div><span>ENCHEV MEDIA VIEWER</span><strong id="lot-viewer-title">{title}</strong></div>
-          <button type="button" className="lotViewerClose" onClick={()=>setViewerOpen(false)} aria-label="Затвори галерията">✕</button>
+          <button ref={viewerCloseRef} type="button" className="lotViewerClose" onClick={()=>setViewerOpen(false)} aria-label="Затвори галерията">✕</button>
         </div>
         <div className="lotViewerStage">
           <button type="button" className="lotViewerNav lotViewerPrev" onClick={showPreviousImage} aria-label="Предишно изображение">‹</button>
