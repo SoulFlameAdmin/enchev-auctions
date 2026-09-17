@@ -1,6 +1,6 @@
 # Enchev Auctions — 00.05 Non-functional Requirements Documented
 
-Status: YELLOW — NFR contract committed; production verification pending
+Status: GREEN — NFR contract implemented and verified with production evidence
 MASTER SYSTEM PLAN v1.0 FROZEN task: `00.05`
 Execution wave: `WAVE 0 — Definition & governance`
 Depends on: `00.01 System scope and boundaries`, `00.02 Actors and permission map`, `00.03 Authoritative components defined`, `00.04 Critical system invariants documented`
@@ -223,4 +223,20 @@ Therefore `00.05` documents the required quality contract only. Runtime achievem
 
 ## 16. Evidence
 
-Pending production verification for the implementation commit. After successful build/typecheck/deploy/runtime validation, this document will be updated to GREEN with exact evidence.
+Implementation commit: `520891b7e54b285551c11af38936b714a3665795`
+
+Production verification for that exact commit:
+
+- Vercel deployment: `dpl_EDhvaagA8dLXnqMD3a6rPPwn6mgy`
+- deployment state: `READY`
+- production alias includes `enchev-auctions.vercel.app`
+- `next build`: PASS
+- Next.js compile: PASS
+- TypeScript: PASS
+- static generation: 4/4 PASS
+- production `/`: HTTP 200
+- Vercel runtime errors during verification window: 0
+- GitHub combined commit status: Vercel `success`
+- Supabase inspection: Enchev customer auction/bid/final-result/RBAC tables are not present; `enchev_development_events` remains engineering evidence only
+
+This evidence proves completion of the `00.05` documentation/governance task. It does not prove the future runtime system already satisfies every NFR; those properties remain gated by their downstream implementation and test tasks.
