@@ -1,0 +1,20 @@
+{
+  "project_ref": "frhletkiuupgksmgxoxc",
+  "project_url": "https://frhletkiuupgksmgxoxc.supabase.co",
+  "project_name": "soulflame-twins",
+  "region": "eu-west-1",
+  "expected_status": "ACTIVE_HEALTHY",
+  "shared_project": true,
+  "scope": "development-governance",
+  "auction_authority": false,
+  "enchev_resources": {
+    "tables": [
+      "public.enchev_development_events",
+      "public.enchev_plan_state"
+    ],
+    "edge_functions": [
+      "enchev-development-status",
+      "enchev-plan-state"
+    ]
+  }
+}
