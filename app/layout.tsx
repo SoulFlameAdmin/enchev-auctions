@@ -4,6 +4,7 @@ import "./effects.css";
 import "./admin-layout-fix.css";
 import "./premium.css";
 import "./inventory/inventory.css";
+import "./inventory-status.css";
 import MouseAura from "./components/MouseAura";
 import BackgroundSwitcher from "./components/BackgroundSwitcher";
 
