@@ -64,6 +64,12 @@ jobs:
       - name: RED semantics self-tests
         run: node scripts/verify-red-semantics.mjs --self-test
 
+      - name: Append-only GAP ID invariant
+        run: node scripts/verify-gap-append-only.mjs
+
+      - name: Append-only GAP ID self-tests
+        run: node scripts/verify-gap-append-only.mjs --self-test
+
       - name: TypeScript check
         run: npx tsc --noEmit
 

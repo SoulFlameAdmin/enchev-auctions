@@ -17,6 +17,7 @@ import BackgroundSwitcher from "./components/BackgroundSwitcher";
 import AiWorkerControl from "./components/AiWorkerControl";
 import VerifiedPlanEvidenceSync from "./components/VerifiedPlanEvidenceSync";
 import TestPassGreenGuard from "./components/TestPassGreenGuard";
+import GapAppendOnlyGuard from "./components/GapAppendOnlyGuard";
 import LotNavigationBridge from "./components/LotNavigationBridge";
 
 export const metadata = {
@@ -33,6 +34,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <AiWorkerControl />
         <VerifiedPlanEvidenceSync />
         <TestPassGreenGuard />
+        <GapAppendOnlyGuard />
         <LotNavigationBridge />
         {children}
       </body>
