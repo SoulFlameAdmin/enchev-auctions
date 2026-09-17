@@ -33,16 +33,7 @@ const hashText = (text) => createHash("sha256").update(String(text || "")).diges
 
 function loadState() {
   try { return JSON.parse(fs.readFileSync(STATE_FILE, "utf8")); }
-  catch {
-    return {
-      turnsSent: 0,
-      relayAttempts: 0,
-      recoveryAttempt: 0,
-      lastAssistantHash: null,
-      stopped: false,
-      watchdog: "boot"
-    };
-  }
+  catch { return { turnsSent: 0, relayAttempts: 0, recoveryAttempt: 0, lastAssistantHash: null, stopped: false, watchdog: "boot" }; }
 }
 
 function saveState(state, action = null) {
@@ -64,13 +55,11 @@ async function safeUrl(page) { try { return usable(page) ? page.url() : ""; } ca
 
 async function ensureTargetPage(context, current = null) {
   if (usable(current) && (await safeUrl(current)).startsWith(CHAT_URL)) return current;
-
   const pages = context.pages().filter((p) => !p.isClosed());
   let page = pages.find((p) => p.url().startsWith(CHAT_URL))
     || pages.find((p) => p.url().includes("chatgpt.com/c/"))
     || pages.find((p) => p.url().includes("chatgpt.com"))
     || await context.newPage();
-
   const url = await safeUrl(page);
   if (!url.startsWith(CHAT_URL) && !url.includes("/auth/") && !url.includes("/login")) {
     await page.goto(CHAT_URL, { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
@@ -80,12 +69,7 @@ async function ensureTargetPage(context, current = null) {
 
 async function getComposer(page) {
   if (!usable(page)) return null;
-  for (const selector of [
-    "#prompt-textarea",
-    '[data-testid="prompt-textarea"]',
-    'div[contenteditable="true"][role="textbox"]',
-    'div[contenteditable="true"]'
-  ]) {
+  for (const selector of ["#prompt-textarea", '[data-testid="prompt-textarea"]', 'div[contenteditable="true"][role="textbox"]', 'div[contenteditable="true"]']) {
     try {
       const loc = page.locator(selector).last();
       if (await loc.count() && await loc.isVisible().catch(() => false)) return loc;
@@ -101,13 +85,8 @@ async function latestTurnInfo(page) {
     const count = await nodes.count();
     if (!count) return { role: null, text: "" };
     const node = nodes.nth(count - 1);
-    return {
-      role: await node.getAttribute("data-message-author-role"),
-      text: (await node.innerText().catch(() => "")).trim()
-    };
-  } catch {
-    return { role: null, text: "" };
-  }
+    return { role: await node.getAttribute("data-message-author-role"), text: (await node.innerText().catch(() => "")).trim() };
+  } catch { return { role: null, text: "" }; }
 }
 
 async function latestAssistantText(page) {
@@ -133,13 +112,7 @@ async function latestAssistantTurn(page) {
 
 async function isGenerating(page) {
   if (!usable(page)) return false;
-  for (const selector of [
-    '[data-testid="stop-button"]',
-    'button[aria-label*="Stop"]',
-    'button[aria-label*="stop"]',
-    'button:has-text("Stop generating")',
-    'button:has-text("Спри генерирането")'
-  ]) {
+  for (const selector of ['[data-testid="stop-button"]', 'button[aria-label*="Stop"]', 'button[aria-label*="stop"]', 'button:has-text("Stop generating")', 'button:has-text("Спри генерирането")']) {
     try {
       const loc = page.locator(selector).last();
       if (await loc.count() && await loc.isVisible().catch(() => false)) return true;
@@ -152,32 +125,23 @@ async function hasFinalActionBar(page) {
   if (!usable(page) || await isGenerating(page)) return false;
   const turn = await latestAssistantTurn(page);
   if (!turn) return false;
-
   const selectors = [
-    'button[aria-label*="Copy"]', 'button[aria-label*="copy"]',
-    'button[aria-label*="Good"]', 'button[aria-label*="Bad"]',
-    'button[aria-label*="Like"]', 'button[aria-label*="Dislike"]',
-    'button[aria-label*="Share"]', 'button[aria-label*="share"]',
-    'button[aria-label*="Regenerate"]', 'button[aria-label*="Retry"]',
-    'button[title*="Copy"]', 'button[title*="Share"]', 'button[title*="Regenerate"]',
-    'button[data-testid*="copy"]', 'button[data-testid*="thumb"]',
+    'button[aria-label*="Copy"]', 'button[aria-label*="copy"]', 'button[aria-label*="Good"]', 'button[aria-label*="Bad"]',
+    'button[aria-label*="Like"]', 'button[aria-label*="Dislike"]', 'button[aria-label*="Share"]', 'button[aria-label*="share"]',
+    'button[aria-label*="Regenerate"]', 'button[aria-label*="Retry"]', 'button[title*="Copy"]', 'button[title*="Share"]',
+    'button[title*="Regenerate"]', 'button[data-testid*="copy"]', 'button[data-testid*="thumb"]',
     'button[data-testid*="share"]', 'button[data-testid*="regenerate"]'
   ];
-
   let matched = 0;
   for (const selector of selectors) {
     try {
       const items = turn.locator(selector);
       for (let i = 0; i < await items.count(); i++) {
-        if (await items.nth(i).isVisible().catch(() => false)) {
-          matched += 1;
-          break;
-        }
+        if (await items.nth(i).isVisible().catch(() => false)) { matched += 1; break; }
       }
     } catch {}
   }
   if (matched >= 2) return true;
-
   try {
     const buttons = turn.locator("button");
     let visible = 0;
@@ -197,7 +161,6 @@ async function responseComplete(page) {
   const text = await latestAssistantText(page);
   if (!text) return false;
   if (await hasFinalActionBar(page)) return true;
-
   const a = text;
   await sleep(1800);
   if (!usable(page) || await isGenerating(page)) return false;
@@ -207,30 +170,18 @@ async function responseComplete(page) {
 
 async function visiblePlatformBlock(page) {
   if (!usable(page)) return null;
-
-  // Only inspect global UI alerts/toasts. Never scan conversation text, because
-  // an assistant answer may legitimately contain phrases like "Vercel rate limit".
   try {
     const result = await page.evaluate(() => {
-      const candidates = Array.from(document.querySelectorAll([
-        '[role="alert"]',
-        '[aria-live="assertive"]',
-        '[data-testid*="toast" i]',
-        '[data-testid*="error" i]',
-        '[data-testid*="banner" i]'
-      ].join(',')));
-
+      const candidates = Array.from(document.querySelectorAll('[role="alert"],[aria-live="assertive"],[data-testid*="toast" i],[data-testid*="error" i],[data-testid*="banner" i]'));
       const visible = (el) => {
         const s = getComputedStyle(el);
         const r = el.getBoundingClientRect();
         return s.display !== 'none' && s.visibility !== 'hidden' && Number(s.opacity || 1) > 0 && r.width > 0 && r.height > 0;
       };
-
       for (const el of candidates) {
         if (!visible(el)) continue;
         if (el.closest('[data-message-author-role], article[data-testid^="conversation-turn-"]')) continue;
         const text = (el.textContent || '').trim().toLowerCase();
-        if (!text) continue;
         if (/verify you are human|потвърдете, че сте човек/.test(text)) return 'human verification';
         if (/too many requests|rate limit|твърде много заявки/.test(text)) return 'rate limit';
         if (/you(?:'ve| have) reached your limit|достигнахте лимита/.test(text)) return 'limit';
@@ -240,7 +191,6 @@ async function visiblePlatformBlock(page) {
     });
     if (result) return result;
   } catch {}
-
   for (const selector of ['iframe[src*="captcha" i]', 'iframe[src*="challenge" i]', '[data-sitekey]']) {
     try {
       const loc = page.locator(selector).last();
@@ -254,11 +204,7 @@ async function waitForSession(context, page) {
   while (true) {
     page = await ensureTargetPage(context, page);
     const url = await safeUrl(page);
-
-    if (url.includes("/auth/") || url.includes("/login")) {
-      await sleep(POLL_MS);
-      continue;
-    }
+    if (url.includes("/auth/") || url.includes("/login")) { await sleep(POLL_MS); continue; }
     if (!url.startsWith(CHAT_URL)) {
       await page.goto(CHAT_URL, { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
       await sleep(POLL_MS);
@@ -285,7 +231,6 @@ async function sendRelay(page) {
   if (!composer) throw new Error("ChatGPT composer not found.");
   await fillComposer(composer, CONTINUE_PROMPT);
   await sleep(500);
-
   for (const selector of ['button[data-testid="send-button"]', 'button[aria-label*="Send"]', 'button[aria-label*="Изпрати"]']) {
     try {
       const btn = page.locator(selector).last();
@@ -296,7 +241,6 @@ async function sendRelay(page) {
       }
     } catch {}
   }
-
   await composer.press("Enter");
   console.log("[DAVID] Relay sent via Enter.");
 }
@@ -306,7 +250,6 @@ async function refreshChat(context, page, state, attempt) {
   state.recoveryAttempt = attempt;
   saveState(state, `Refreshing ChatGPT recovery ${attempt}`);
   console.log(`[DAVID] Refreshing ChatGPT (recovery ${attempt}/${MAX_RECOVERY_ATTEMPTS}).`);
-
   page = await waitForSession(context, page);
   if (usable(page)) await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
   await sleep(REFRESH_SETTLE_MS);
@@ -322,7 +265,6 @@ async function handlePlatformBlock(context, page, state, blocker) {
     console.log(`[DAVID] Human action required: ${blocker}.`);
     return { stop: true, page };
   }
-
   const waitMs = blocker === "network error" ? 15000 : PLATFORM_BACKOFF_MS;
   state.watchdog = "platform-backoff";
   state.platformBlocker = blocker;
@@ -341,35 +283,28 @@ async function waitForResponseStart(context, page, baselineHash, state) {
   const until = Date.now() + RESPONSE_START_TIMEOUT_MS;
   while (Date.now() < until) {
     page = await waitForSession(context, page);
-
     const blocker = await visiblePlatformBlock(page);
     if (blocker) return { started: false, blocker, page };
-
     if (await isGenerating(page)) {
       state.watchdog = "gpt-thinking";
       saveState(state, "GPT started thinking/generating");
       return { started: true, blocker: null, page };
     }
-
     const text = await latestAssistantText(page);
     if (text && hashText(text) !== baselineHash) {
       state.watchdog = "gpt-writing";
       saveState(state, "GPT started a new response");
       return { started: true, blocker: null, page };
     }
-
     await sleep(POLL_MS);
   }
   return { started: false, blocker: null, page };
 }
 
 async function sendRelayWithRecovery(context, page, state) {
-  const baselineText = await latestAssistantText(page);
-  const baselineHash = hashText(baselineText);
-
+  const baselineHash = hashText(await latestAssistantText(page));
   for (let attempt = 1; attempt <= MAX_RECOVERY_ATTEMPTS; attempt++) {
     page = await waitForSession(context, page);
-
     const blocker = await visiblePlatformBlock(page);
     if (blocker) {
       const handled = await handlePlatformBlock(context, page, state, blocker);
@@ -378,26 +313,21 @@ async function sendRelayWithRecovery(context, page, state) {
       attempt -= 1;
       continue;
     }
-
     if (attempt >= 3) page = await refreshChat(context, page, state, attempt);
-
     state.watchdog = attempt === 1 ? "sending-relay" : "retrying-relay";
     state.recoveryAttempt = attempt - 1;
     state.relayAttempts = Number(state.relayAttempts || 0) + 1;
     saveState(state, attempt === 1 ? "Sending relay" : `Retrying relay attempt ${attempt}`);
     console.log(`[DAVID] Sending relay attempt ${attempt}/${MAX_RECOVERY_ATTEMPTS}.`);
-
     await sendRelay(page);
     const started = await waitForResponseStart(context, page, baselineHash, state);
     page = started.page;
-
     if (started.blocker) {
       const handled = await handlePlatformBlock(context, page, state, started.blocker);
       page = handled.page;
       if (handled.stop) return { ok: false, page };
       continue;
     }
-
     if (started.started) {
       state.turnsSent = Number(state.turnsSent || 0) + 1;
       state.recoveryAttempt = 0;
@@ -406,10 +336,8 @@ async function sendRelayWithRecovery(context, page, state) {
       console.log(`[DAVID] GPT response started. Logical cycle ${state.turnsSent}/${MAX_TURNS}`);
       return { ok: true, page };
     }
-
     console.log("[DAVID] GPT did not start. Watchdog will retry.");
   }
-
   state.stopped = true;
   state.stopReason = "GPT did not start after watchdog recovery attempts";
   state.watchdog = "recovery-exhausted";
@@ -422,10 +350,8 @@ async function waitForCompletedAnswerOrStall(context, page, state) {
   let lastText = await latestAssistantText(page);
   let lastHash = hashText(lastText);
   let lastActivityAt = Date.now();
-
   while (true) {
     page = await waitForSession(context, page);
-
     const blocker = await visiblePlatformBlock(page);
     if (blocker) {
       const handled = await handlePlatformBlock(context, page, state, blocker);
@@ -434,11 +360,9 @@ async function waitForCompletedAnswerOrStall(context, page, state) {
       lastActivityAt = Date.now();
       continue;
     }
-
     const text = await latestAssistantText(page);
     const currentHash = hashText(text);
     const generating = await isGenerating(page);
-
     if (text && currentHash !== lastHash) {
       lastText = text;
       lastHash = currentHash;
@@ -450,15 +374,8 @@ async function waitForCompletedAnswerOrStall(context, page, state) {
       state.watchdog = "gpt-thinking";
       saveState(state, "GPT is thinking/generating");
     }
-
-    if (text && text.includes(STOP_MARKER)) {
-      return { status: "stop-marker", page, text };
-    }
-
-    if (text && await responseComplete(page)) {
-      return { status: "complete", page, text };
-    }
-
+    if (text && text.includes(STOP_MARKER)) return { status: "stop-marker", page, text };
+    if (text && await responseComplete(page)) return { status: "complete", page, text };
     const turn = await latestTurnInfo(page);
     if (!generating && Date.now() - lastActivityAt >= STALL_TIMEOUT_MS) {
       state.watchdog = "stalled";
@@ -466,9 +383,20 @@ async function waitForCompletedAnswerOrStall(context, page, state) {
       console.log("[DAVID] GPT appears stalled/blank. Starting recovery.");
       return { status: "stalled", page, text: lastText };
     }
-
     await sleep(POLL_MS);
   }
+}
+
+async function resumePastStop(context, page, state, text, where) {
+  const h = hashText(text);
+  state.stopped = false;
+  delete state.stopReason;
+  state.lastAssistantHash = h;
+  state.watchdog = "intentional-resume";
+  saveState(state, `Intentional resume accepted ${where}`);
+  console.log(`[DAVID] Intentional resume accepted ${where}. Sending next relay now.`);
+  await sleep(COOLDOWN_MS);
+  return sendRelayWithRecovery(context, page, state);
 }
 
 async function main() {
@@ -476,7 +404,6 @@ async function main() {
   const browser = await chromium.connectOverCDP(CDP_URL);
   const context = browser.contexts()[0];
   if (!context) throw new Error("No active Chromium context on CDP port.");
-
   let page = await waitForSession(context, await ensureTargetPage(context));
   console.log(`[DAVID] Session ready: ${await safeUrl(page)}`);
 
@@ -484,7 +411,6 @@ async function main() {
   state.stopped = false;
   state.watchdog = "monitoring";
   saveState(state, "DAVID connected to fixed ChatGPT session");
-
   console.log(`[DAVID] max cycles: ${MAX_TURNS}. Final-buttons relay mode: ON. Watchdog recovery: ON.`);
   console.log(`[DAVID] start timeout=${RESPONSE_START_TIMEOUT_MS}ms stall timeout=${STALL_TIMEOUT_MS}ms recovery attempts=${MAX_RECOVERY_ATTEMPTS}`);
   console.log("[DAVID] Ctrl+C stops the worker.");
@@ -503,11 +429,10 @@ async function main() {
         console.log("[DAVID] DAVID_STOP detected. No automatic relay will be sent.");
         return;
       }
-      console.log("[DAVID] Intentional resume requested from control panel.");
-      state.stopped = false;
-      delete state.stopReason;
-      state.lastAssistantHash = hashText(current);
-      saveState(state, "Intentional resume accepted");
+      const resumed = await resumePastStop(context, page, state, current, "for existing DAVID_STOP");
+      page = resumed.page;
+      if (!resumed.ok) return;
+      continue;
     }
 
     const blocker = await visiblePlatformBlock(page);
@@ -528,20 +453,21 @@ async function main() {
       saveState(state, "Completed answer detected; preparing next relay");
       console.log(`[DAVID] Completed answer detected. Relay in ${COOLDOWN_MS} ms...`);
       await sleep(COOLDOWN_MS);
-
       const sent = await sendRelayWithRecovery(context, page, state);
       page = sent.page;
       if (!sent.ok) return;
-    } else {
-      const turn = await latestTurnInfo(page);
-      if (turn.role === "user" && turn.text.includes(RELAY_MARKER) && !await isGenerating(page)) {
-        state.watchdog = "relay-visible-no-response";
-        saveState(state, "Relay visible but GPT has not started; watchdog recovery");
-        console.log("[DAVID] Relay is visible but GPT did not start. Starting recovery.");
-        const sent = await sendRelayWithRecovery(context, page, state);
-        page = sent.page;
-        if (!sent.ok) return;
-      }
+      continue;
+    }
+
+    const turn = await latestTurnInfo(page);
+    if (turn.role === "user" && turn.text.includes(RELAY_MARKER) && !await isGenerating(page)) {
+      state.watchdog = "relay-visible-no-response";
+      saveState(state, "Relay visible but GPT has not started; watchdog recovery");
+      console.log("[DAVID] Relay is visible but GPT did not start. Starting recovery.");
+      const sent = await sendRelayWithRecovery(context, page, state);
+      page = sent.page;
+      if (!sent.ok) return;
+      continue;
     }
 
     const activeTurn = await latestTurnInfo(page);
@@ -559,8 +485,10 @@ async function main() {
           console.log("[DAVID] DAVID_STOP detected. No automatic relay will be sent.");
           return;
         }
-        state.lastAssistantHash = hashText(result.text);
-        saveState(state, "Intentional resume accepted after DAVID_STOP");
+        const resumed = await resumePastStop(context, page, state, result.text, "after new DAVID_STOP");
+        page = resumed.page;
+        if (!resumed.ok) return;
+        continue;
       }
 
       if (result.status === "stalled") {
@@ -568,6 +496,7 @@ async function main() {
         const sent = await sendRelayWithRecovery(context, page, state);
         page = sent.page;
         if (!sent.ok) return;
+        continue;
       }
 
       if (result.status === "complete" && result.text) {
@@ -581,6 +510,7 @@ async function main() {
           const sent = await sendRelayWithRecovery(context, page, state);
           page = sent.page;
           if (!sent.ok) return;
+          continue;
         }
       }
     }
