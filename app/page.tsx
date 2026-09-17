@@ -1,5 +1,6 @@
 import MasterSystemPlanV1 from "./components/MasterSystemPlanV1";
 import SeedAuditGaps from "./components/SeedAuditGaps";
+import BulgarianStageLabels from "./components/BulgarianStageLabels";
 import "./home.css";
 
 const featuredCars = [
@@ -13,6 +14,7 @@ const chips=["Всички","BMW","Mercedes","Audi","SUV","Buy Now","До €20 
 export default function Home(){return <main className="marketPage referenceMarket">
   <MasterSystemPlanV1 />
   <SeedAuditGaps />
+  <BulgarianStageLabels />
   <section id="top" className="referenceHero">
     <div className="referenceShade" />
     <header className="referenceHeader">
