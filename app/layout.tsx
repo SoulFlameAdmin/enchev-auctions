@@ -7,6 +7,7 @@ import "./inventory/inventory.css";
 import "./inventory-status.css";
 import MouseAura from "./components/MouseAura";
 import BackgroundSwitcher from "./components/BackgroundSwitcher";
+import AiWorkerControl from "./components/AiWorkerControl";
 
 export const metadata = {
   title: "Enchev Auctions",
@@ -19,6 +20,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body>
         <MouseAura />
         <BackgroundSwitcher />
+        <AiWorkerControl />
         {children}
       </body>
     </html>
