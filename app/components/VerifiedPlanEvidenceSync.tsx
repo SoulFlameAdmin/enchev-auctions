@@ -21,6 +21,7 @@ const VERIFIED_WAVE_0: Record<string, string> = {
   "00.09": "docs/00_09_DEFINITION_OF_GREEN_ACCEPTANCE.md · implementation b0b6cc2585a610ad4fb443c729f7100bac727b77 · GREEN evidence 6100ef6b47dfa4efd74cfa8d255c0f6a70a0597c · verified descendant 22fd06835fb9f45e55600ab0e0fff976671efa2d · GitHub Actions run 35181246608 PASS · production HTTP 200/runtime healthy",
   "00.10": "docs/00_10_FINAL_PRODUCTION_ACCEPTANCE_CRITERIA.md · implementation d8fde92c648c666ace1a4d32b2dbef756d304f7c · GREEN evidence 3d09f1b0dfe35963fd5a1bcf10a3ccbeb1969910 · verified descendant aa9ce246bdb2ba0ea7c48f99e19d2127f613e373 · GitHub Actions run 35182138386 PASS · production HTTP 200/runtime healthy",
   "32.01": "docs/32_01_MASTER_TASK_IDS_IMMUTABLE.md · script 19298b8165922fae0e18f5d971104a474aa7877a · CI integration d05c2e6a0da4fab2e637eb0632a38fc845d45ea4 · GREEN evidence 1d9d92c9ae3c9d856eb6062e179ce55441047285 · GitHub Actions main run 35182701243 PASS · negative guard run 35182487279 FAIL-as-designed · production HTTP 200/runtime healthy",
+  "32.02": "docs/32_02_NO_SILENT_DELETE_RENUMBER.md · guard a28c9b5a168d42d211850c16b18b7c391ad61a56 · CI integration 43e8cd3573f0acd39f6b38aef85c85ed20fea270 · GREEN evidence 1f5eb5f075fa1c492dccc8d0f43ac75311a6eebb · verified descendant b816f760fffb7b81b8f9f69e823e6892c244c010 · GitHub Actions run 35183021075 PASS · delete/renumber/reuse self-test PASS · production HTTP 200/runtime healthy",
 };
 
 export default function VerifiedPlanEvidenceSync() {
