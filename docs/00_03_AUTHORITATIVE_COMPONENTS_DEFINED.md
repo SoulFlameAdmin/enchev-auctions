@@ -1,6 +1,6 @@
 # Enchev Auctions — 00.03 Authoritative Components Defined
 
-Status: YELLOW — implementation artifact committed; production verification pending
+Status: GREEN — implemented, verified and backed by production evidence
 MASTER SYSTEM PLAN v1.0 FROZEN task: `00.03`
 Execution wave: `WAVE 0 — Definition & governance`
 Depends on: `00.01 System scope and boundaries`, `00.02 Actors and permission map`
@@ -116,7 +116,7 @@ Frontend rendering, localStorage, BroadcastChannel and any automatic visual lot 
 
 ## 9. Acceptance criteria for 00.03
 
-`00.03` may be GREEN when all of the following are true:
+`00.03` is GREEN because all of the following were verified:
 
 1. this authority map exists in the repository without changing frozen IDs;
 2. it is consistent with the FROZEN non-negotiable invariants;
@@ -125,9 +125,28 @@ Frontend rendering, localStorage, BroadcastChannel and any automatic visual lot 
 5. bid acceptance and finalization have one defined authoritative server-side path;
 6. server time is authoritative;
 7. current implementation gaps are stated rather than falsely marked complete;
-8. the exact commit builds/typechecks and reaches production successfully;
-9. production runtime check shows no new runtime errors caused by this change.
+8. the implementation commit built/typechecked and reached production successfully;
+9. production runtime check showed no new runtime errors caused by the change.
 
 ## 10. Evidence
 
-Pending production verification for the commit that introduced this file. After successful Vercel build/typecheck/deployment/runtime checks, this document will be updated to `Status: GREEN` with the exact commit/deployment evidence.
+Implementation commit: `2e5a17cb10fef4ca52a4fd52feba3b37449088e8` (`docs: define 00.03 authoritative components`).
+
+Verified production deployment: `dpl_9Dy2VGZfvPz25pxxRK5AouthiqHZ`.
+
+Verification results:
+
+- Vercel production state: `READY`;
+- GitHub commit status / Vercel context: `success`;
+- Next.js 16.3.5 production build: compiled successfully;
+- TypeScript check: finished successfully;
+- static generation: 4/4 pages generated successfully;
+- deployment alias includes `enchev-auctions.vercel.app`;
+- production root request: HTTP `200 OK`;
+- Vercel runtime errors in the verification window: none found.
+
+Supabase inspection evidence used for the boundary statement:
+
+- `public.enchev_development_events`: present, RLS enabled;
+- `enchev-development-status`: active Edge Function;
+- no Enchev authoritative auction/bid/finalization tables or Edge Functions observed in the connected project at verification time.
