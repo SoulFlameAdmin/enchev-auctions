@@ -1,6 +1,6 @@
 # Enchev Auctions — 32.01 Master task IDs immutable
 
-Status: YELLOW — implementation on main; final main verification pending
+Status: GREEN — immutable frozen task identity is machine-enforced and verified
 MASTER SYSTEM PLAN v1.0 FROZEN task: `32.01`
 Execution wave: `WAVE 0 — Master plan governance`
 Depends on: Phase 00 governance baseline
@@ -9,7 +9,7 @@ Depends on: Phase 00 governance baseline
 
 The semantic identity of every frozen master task is immutable. A frozen task ID may not silently change meaning because another task was inserted, deleted, reordered or reused.
 
-The tracker currently derives task IDs from phase ID plus ordinal position. That means position alone is not a sufficient immutability guarantee. This task adds a machine-enforced identity lock over the complete canonical mapping:
+The tracker currently derives task IDs from phase ID plus ordinal position. Position alone was therefore not a sufficient immutability guarantee. `32.01` adds a machine-enforced identity lock over the complete canonical mapping:
 
 `task ID → phase title → task label`
 
@@ -32,33 +32,53 @@ Canonical baseline:
 - task count: `1054`
 - SHA-256: `b0fd3479cfef3d88148b906568aa8c1c88eccf5fa98fe676f13a5fec70aa721e`
 
-## Verification already performed on isolated PR path
+## Negative verification
 
-Negative test:
+GitHub Actions run `35182487279` deliberately used an unmatched placeholder baseline.
 
-- GitHub Actions run `35182487279`
-- placeholder baseline intentionally mismatched
-- observed actual count `1054`
-- observed actual SHA-256 `b0fd3479cfef3d88148b906568aa8c1c88eccf5fa98fe676f13a5fec70aa721e`
-- `Frozen master task ID lock` failed as designed
-- later TypeScript/build steps were skipped after the governance guard rejected the mismatch
+Observed evidence:
 
-Positive test:
+- actual count: `1054`
+- actual SHA-256: `b0fd3479cfef3d88148b906568aa8c1c88eccf5fa98fe676f13a5fec70aa721e`
+- `Frozen master task ID lock`: FAIL as designed
+- later TypeScript/build steps: skipped after the governance guard rejected the mismatch
 
-- GitHub Actions run `35182541562`
-- canonical baseline locked
-- `Frozen master task ID lock` PASS
-- TypeScript PASS
-- production build PASS
-- overall workflow conclusion SUCCESS
+This proves the guard does not silently accept a changed identity map.
 
-## Main implementation commits
+## Positive isolated verification
+
+GitHub Actions run `35182541562` used the locked canonical baseline:
+
+- `Frozen master task ID lock`: PASS
+- TypeScript: PASS
+- production build: PASS
+- workflow: SUCCESS
+
+## Main implementation and verification
+
+Main implementation commits:
 
 - ID lock script: `19298b8165922fae0e18f5d971104a474aa7877a`
 - CI integration: `d05c2e6a0da4fab2e637eb0632a38fc845d45ea4`
+- task artifact: `c99c91c92705265db3a14695154e4d3864504d22`
 
-## GREEN gate
+GitHub Actions main run `35182701243` verified the integrated state:
 
-`32.01` becomes GREEN only after a main/descendant CI run proves the ID lock + TypeScript + production build PASS, production HTTP/runtime regression context is healthy, and exact evidence is recorded.
+- `Frozen master task ID lock`: PASS
+- TypeScript: PASS
+- production build: PASS
+- workflow: SUCCESS
 
-No pricing/payment/finance scope is added by this task.
+Production regression context at verification:
+
+- canonical Vercel site: HTTP `200`
+- Vercel runtime errors in the selected last-hour window: `0`
+- Vercel exact-build proof is not used for this governance task; the repository CI build plus live production health proof is used under the Phase 00/32 governance evidence rule.
+
+Supabase is not an authority or implementation dependency for `32.01`; no database/schema/data mutation was made for this task.
+
+## Result
+
+`32.01` is GREEN because the frozen master ID→meaning mapping is now locked by CI, the failure path was demonstrated, the canonical path passed on main, and production regression context remained healthy.
+
+No pricing/payment/finance scope was added by this task.
