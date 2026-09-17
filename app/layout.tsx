@@ -2,6 +2,7 @@ import "./globals.css";
 import "./home.css";
 import "./effects.css";
 import MouseAura from "./components/MouseAura";
+import BackgroundSwitcher from "./components/BackgroundSwitcher";
 
 export const metadata = {
   title: "Enchev Auctions",
@@ -13,6 +14,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="bg">
       <body>
         <MouseAura />
+        <BackgroundSwitcher />
         {children}
       </body>
     </html>
