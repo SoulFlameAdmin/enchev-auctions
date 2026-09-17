@@ -1,6 +1,6 @@
 # Enchev Auctions — 00.04 Critical System Invariants Documented
 
-Status: YELLOW — invariant contract committed; production verification pending
+Status: GREEN — invariant contract implemented and verified with production evidence
 MASTER SYSTEM PLAN v1.0 FROZEN task: `00.04`
 Execution wave: `WAVE 0 — Definition & governance`
 Depends on: `00.01 System scope and boundaries`, `00.02 Actors and permission map`, `00.03 Authoritative components defined`
@@ -164,4 +164,19 @@ A downstream task that violates an invariant cannot be GREEN even if its isolate
 
 ## 12. Evidence
 
-Pending production verification for the implementation commit. After successful build/typecheck/deploy/runtime validation, this document will be updated to GREEN with exact evidence.
+Implementation commit: `e566fe6de2c9b668142cb671026e89282ece2e44`
+
+Production verification for that exact commit:
+
+- Vercel deployment: `dpl_4gawek1QQZDXmchB3fgsyC2R261d`;
+- target: production;
+- deployment state: `READY`;
+- production alias includes `enchev-auctions.vercel.app`;
+- Next.js optimized production build: PASS;
+- TypeScript: PASS;
+- static generation: 4/4 PASS;
+- GitHub combined status / Vercel: `success`;
+- production `https://enchev-auctions.vercel.app/`: HTTP 200;
+- Vercel runtime errors in the verification window: none.
+
+Supabase verification during the task confirmed only `public.enchev_development_events` exists under the `enchev_%` namespace; this is intentionally treated as development evidence only and not as auction runtime authority.
