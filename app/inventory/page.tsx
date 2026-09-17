@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 
-const LOT_SECONDS = 20;
+const LOT_SECONDS = 10;
 const cars = [
   {lot:"EA-10482",title:"2018 BMW M4 F82",brand:"BMW",location:"Sofia, BG",damage:"Minor dents",mileage:"82 410 km",price:12750,buyNow:18900,badge:"RUN & DRIVE",image:"https://images.unsplash.com/photo-1658558195433-1af533e3309c?auto=format&fit=crop&w=1200&q=82"},
   {lot:"EA-10511",title:"2021 Mercedes-Benz GLC",brand:"Mercedes",location:"Munich, DE",damage:"Front end",mileage:"64 900 km",price:18400,buyNow:24900,badge:"BUY NOW",image:"https://images.unsplash.com/photo-1612280782903-d34dcdc10107?auto=format&fit=crop&w=1200&q=82"},
@@ -24,6 +24,7 @@ export default function InventoryPage(){
   const [sort,setSort]=useState("recommended");
   const [activeIndex,setActiveIndex]=useState(1);
   const [remaining,setRemaining]=useState(LOT_SECONDS);
+  const [bidPrices,setBidPrices]=useState<Record<string,number>>(()=>Object.fromEntries(cars.map(car=>[car.lot,car.price])));
 
   useEffect(()=>{
     const q=new URLSearchParams(window.location.search).get("q");
@@ -41,14 +42,20 @@ export default function InventoryPage(){
     return()=>window.clearInterval(timer);
   },[]);
 
+  const nextIndex=(activeIndex+1)%cars.length;
   const auctionCars=useMemo(()=>cars.map((car,index)=>{
     let status:AuctionStatus="open";
-    if(index<activeIndex)status="sold";
-    else if(index===activeIndex)status="live";
-    else if(index===activeIndex+1)status="next";
+    if(index===activeIndex)status="live";
+    else if(index===nextIndex)status="next";
+    else if(activeIndex>0 && index<activeIndex)status="sold";
     const stateBadge=status==="sold"?"ПРОДАДЕНО":status==="live"?"ПРОДАВА СЕ НА ЖИВО":status==="next"?"ТОЗИ ЛОТ Е СЛЕДВАЩИЯТ":car.badge;
-    return {...car,index,status,stateBadge};
-  }),[activeIndex]);
+    return {...car,index,status,stateBadge,price:bidPrices[car.lot]??car.price};
+  }),[activeIndex,nextIndex,bidPrices]);
+
+  const placeBid=(lot:string)=>{
+    setBidPrices(current=>({...current,[lot]:(current[lot]??cars.find(car=>car.lot===lot)?.price??0)+100}));
+    setRemaining(LOT_SECONDS);
+  };
 
   const filtered=useMemo(()=>{
     let list=auctionCars.filter(car=>{
@@ -74,7 +81,7 @@ export default function InventoryPage(){
     </header>
     <nav className="inventoryNav"><a href="/">Начало</a><a className="active" href="/inventory">Инвентар</a><a href="/#how">Как работи</a><a href="/#contact">Транспорт</a><a href="/#contact">Помощ</a></nav>
 
-    <section className="inventoryIntro"><div><span>ENCHEV MARKETPLACE</span><h1>Инвентар от автомобилни търгове</h1><p>Когато live таймерът изтече, лотът става SOLD и следващият започва автоматично.</p></div><div className="inventoryCounter"><b>{filtered.length}</b><span>показани лота</span></div></section>
+    <section className="inventoryIntro"><div><span>ENCHEV MARKETPLACE</span><h1>Инвентар от автомобилни търгове</h1><p>Всеки LIVE лот има 10 секунди. Нова оферта връща брояча на 10; при 00:00 лотът става SOLD и стартира следващият.</p></div><div className="inventoryCounter"><b>{filtered.length}</b><span>показани лота</span></div></section>
 
     <div className="inventoryShell">
       <aside className="inventoryFilters">
@@ -87,7 +94,7 @@ export default function InventoryPage(){
       </aside>
 
       <section className="inventoryResults">
-        <div className="inventoryToolbar"><div><b>{filtered.length} резултата</b><span>Live demo: {formatTime(remaining)} до следващия лот</span></div><select value={sort} onChange={e=>setSort(e.target.value)}><option value="recommended">Препоръчани</option><option value="priceLow">Цена: ниска → висока</option><option value="priceHigh">Цена: висока → ниска</option></select></div>
+        <div className="inventoryToolbar"><div><b>{filtered.length} резултата</b><span>LIVE брояч: {formatTime(remaining)} · нов bid рестартира 10 сек.</span></div><select value={sort} onChange={e=>setSort(e.target.value)}><option value="recommended">Препоръчани</option><option value="priceLow">Цена: ниска → висока</option><option value="priceHigh">Цена: висока → ниска</option></select></div>
         <div className="inventoryGrid">{filtered.map(car=><article className={`inventoryCard ${car.status==="sold"?"soldCard":""} ${car.status==="live"?"liveCard":""} ${car.status==="next"?"nextCard":""}`} key={car.lot}>
           <div className="inventoryImage">
             <img src={car.image} alt={car.title}/>
@@ -95,13 +102,13 @@ export default function InventoryPage(){
             {car.status!=="sold"&&<span className="inventoryTimer">◷ {car.status==="live"?formatTime(remaining):car.status==="next"?"СЛЕДВАЩ":"ОЧАКВА"}</span>}
             <button className="inventoryHeart">♡</button>
             {car.status==="sold"&&<div className="soldStamp">SOLD</div>}
-            {car.status==="live"&&<div className="liveBidOrb"><span className="liveBidText">NEW BID</span><span className="liveSaleText">ПРОДАВА СЕ<br/>НА ЖИВО</span><i>◉</i><small>{formatTime(remaining)}</small></div>}
+            {car.status==="live"&&<div className="liveBidOrb"><span className="liveBidText">NEW BID</span><span className="liveSaleText">ПРОДАВА СЕ<br/>НА ЖИВО</span><i>◉</i><strong className="liveCountdown">{remaining}</strong><small>СЕК</small></div>}
           </div>
           <div className="inventoryCardBody">
             <div className="inventoryLot">LOT {car.lot}<span>● VERIFIED</span></div><h2>{car.title}</h2>
             <dl><div><dt>Пробег</dt><dd>{car.mileage}</dd></div><div><dt>Повреда</dt><dd>{car.damage}</dd></div><div><dt>Локация</dt><dd>{car.location}</dd></div></dl>
             <button className="detailsBtn">Повече детайли <span>⌄</span></button>
-            {car.status==="sold"?<><div className="saleEnded">Продажбата приключи</div><div className="inventoryActions soldActions"><button className="soldDetailsBtn">Виж детайлите</button></div></>:<><div className="inventoryPrice"><span>{car.status==="next"?"Начална ставка":"Текуща ставка"}</span><b>€{car.price.toLocaleString("bg-BG")}</b></div><div className="inventoryActions">{car.buyNow>0&&car.status!=="next"&&<button className="buyBtn">Купи €{car.buyNow.toLocaleString("bg-BG")}</button>}<button className={`bidBtn ${car.status==="next"?"nextBidBtn":""}`} disabled={car.status==="next"}>{car.status==="live"?"Присъедини се към живия търг":car.status==="next"?"Следващ лот":"Оферирай"} <span>→</span></button></div></>}
+            {car.status==="sold"?<><div className="saleEnded">Продажбата приключи</div><div className="inventoryActions soldActions"><button className="soldDetailsBtn">Виж детайлите</button></div></>:<><div className="inventoryPrice"><span>{car.status==="next"?"Начална ставка":"Текуща ставка"}</span><b>€{car.price.toLocaleString("bg-BG")}</b></div><div className="inventoryActions">{car.buyNow>0&&car.status!=="next"&&<button className="buyBtn">Купи €{car.buyNow.toLocaleString("bg-BG")}</button>}<button className={`bidBtn ${car.status==="next"?"nextBidBtn":""}`} disabled={car.status==="next"} onClick={()=>car.status==="live"&&placeBid(car.lot)}>{car.status==="live"?"Оферирай +€100":car.status==="next"?"Следващ лот":"Оферирай"} <span>→</span></button></div></>}
           </div>
         </article>)}</div>
         {filtered.length===0&&<div className="emptyInventory"><b>Няма намерени автомобили</b><span>Промени филтрите или търсенето.</span></div>}
