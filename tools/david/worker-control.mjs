@@ -10,6 +10,7 @@ const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "
 const REPO_ROOT = path.resolve(HERE, "..", "..");
 const STARTER = path.join(HERE, "start-auto-continue.ps1");
 const STATE_FILE = path.join(HERE, ".david-enchev-state.json");
+const DESIGN_STATE_FILE = path.join(HERE, ".david-enchev-design-state.json");
 const PACKAGE_FILE = path.join(HERE, "package.json");
 const POWERSHELL = path.join(process.env.SystemRoot || "C:\\Windows", "System32", "WindowsPowerShell", "v1.0", "powershell.exe");
 const PORTABLE_GIT = "D:\\ASI\\tools\\PortableGit\\cmd\\git.exe";
@@ -26,7 +27,7 @@ function log(line) {
   if (!text) return;
   const row = `${new Date().toISOString()} ${text}`;
   logs.push(row);
-  if (logs.length > 50) logs = logs.slice(-50);
+  if (logs.length > 80) logs = logs.slice(-80);
   console.log(row);
 }
 
@@ -72,9 +73,9 @@ function syncRepoBeforeStart() {
     timeout: 120000
   });
   const out = `${pull.stdout || ""}\n${pull.stderr || ""}`.trim();
-  if (out) out.split(/\r?\n/).slice(-10).forEach((line) => log(`[GIT] ${line}`));
+  if (out) out.split(/\r?\n/).slice(-12).forEach((line) => log(`[GIT] ${line}`));
   lastGitSync = { ok: pull.status === 0, skipped: false, code: pull.status, at: new Date().toISOString() };
-  if (pull.status === 0) log("[CONTROL] Git sync complete. Starting latest DAVID worker.");
+  if (pull.status === 0) log("[CONTROL] Git sync complete. Starting latest DAVID dual worker.");
   else log(`[CONTROL] Git sync failed (code ${pull.status}); starting existing local version.`);
   return lastGitSync;
 }
@@ -98,7 +99,7 @@ function startWorker() {
 
   startedAt = new Date().toISOString();
   lastExit = null;
-  log(`[CONTROL] Real local DAVID worker started pid=${child.pid}`);
+  log(`[CONTROL] Real local DAVID dual worker started pid=${child.pid}`);
   child.stdout.on("data", (d) => String(d).split(/\r?\n/).forEach(log));
   child.stderr.on("data", (d) => String(d).split(/\r?\n/).forEach((x) => log(`[stderr] ${x}`)));
   child.on("exit", (code, signal) => {
@@ -111,7 +112,7 @@ function startWorker() {
     }
   });
 
-  return { ok: true, pid: child.pid, mode: "local-pc-chatgpt-worker-v5", gitSync: lastGitSync };
+  return { ok: true, pid: child.pid, mode: "local-pc-chatgpt-dual-worker", gitSync: lastGitSync };
 }
 
 function stopWorker() {
@@ -130,12 +131,29 @@ async function restartWorker() {
   return startWorker();
 }
 
+function compactState(state) {
+  return {
+    turnsSent: Number(state.turnsSent || 0),
+    relayAttempts: Number(state.relayAttempts || 0),
+    recoveryAttempt: Number(state.recoveryAttempt || 0),
+    watchdog: state.watchdog || null,
+    problem: state.problem || null,
+    problemAttempts: Number(state.problemAttempts || 0),
+    problemRetryAt: state.problemRetryAt || null,
+    lastResult: state.lastResult || null,
+    lastAction: state.lastAction || null,
+    updatedAt: state.updatedAt || null,
+    lastAssistantHash: state.lastAssistantHash || null
+  };
+}
+
 function status() {
-  const state = readJson(STATE_FILE, { turnsSent: 0, stopped: false });
+  const state = readJson(STATE_FILE, { turnsSent: 0 });
+  const designState = readJson(DESIGN_STATE_FILE, { turnsSent: 0 });
   const pkg = readJson(PACKAGE_FILE, {});
   return {
     online: true,
-    mode: "local-pc-chatgpt-worker-v5",
+    mode: "local-pc-chatgpt-dual-worker",
     workerVersion: pkg.version || null,
     workerScript: pkg?.scripts?.start || null,
     workerRunning: workerRunning(),
@@ -157,8 +175,9 @@ function status() {
     lastAssistantHash: state.lastAssistantHash || null,
     lastAction: state.lastAction || null,
     stateUpdatedAt: state.updatedAt || null,
+    design: compactState(designState),
     lastLog: logs.at(-1) || null,
-    recentLogs: logs.slice(-12)
+    recentLogs: logs.slice(-18)
   };
 }
 
