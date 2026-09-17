@@ -53,8 +53,8 @@ const actualCount = records.length;
 
 // MASTER SYSTEM PLAN v1.0 FROZEN identity lock.
 // Changing this baseline is a governance event, never a routine edit.
-const EXPECTED_TASK_COUNT = 0;
-const EXPECTED_SHA256 = "PENDING_BASELINE";
+const EXPECTED_TASK_COUNT = 1054;
+const EXPECTED_SHA256 = "b0fd3479cfef3d88148b906568aa8c1c88eccf5fa98fe676f13a5fec70aa721e";
 
 console.log(`MASTER_ID_LOCK count=${actualCount}`);
 console.log(`MASTER_ID_LOCK sha256=${actualHash}`);
