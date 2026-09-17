@@ -5,6 +5,7 @@ import "./admin-layout-fix.css";
 import "./premium.css";
 import "./inventory/inventory.css";
 import "./inventory-status.css";
+import "./enchev-theme.css";
 import MouseAura from "./components/MouseAura";
 import BackgroundSwitcher from "./components/BackgroundSwitcher";
 import AiWorkerControl from "./components/AiWorkerControl";
