@@ -1,0 +1,6 @@
+.marketPage > .burgerButton{position:fixed!important;left:22px!important;top:22px!important;z-index:70!important;margin:0!important}
+.marketPage > .menuShade{position:fixed!important;inset:0!important;z-index:79!important;margin:0!important}
+.marketPage > .sidePanel{position:fixed!important;left:0!important;top:0!important;bottom:0!important;z-index:80!important;margin:0!important;height:100vh!important}
+.marketPage > .controlOverlay{position:fixed!important;inset:0!important;z-index:100!important;margin:0!important}
+.marketPage > .referenceHero{position:relative!important;margin:0!important;top:0!important}
+@media(max-width:680px){.marketPage > .burgerButton{left:14px!important;top:14px!important}}
