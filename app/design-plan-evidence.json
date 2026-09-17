@@ -3,7 +3,7 @@
   "reference": "https://www.autobidmaster.com/",
   "referencePolicy": "Use AutoBidMaster only as UX/information-architecture inspiration. Keep ENCHEV branding, code, copy, assets and visual identity original.",
   "tasks": [
-    {"id":"D01","group":"Основа","title":"Дизайн токени: цветове, типография, spacing, radius, shadows","status":"red","evidence":""},
+    {"id":"D01","group":"Основа","title":"Дизайн токени: цветове, типография, spacing, radius, shadows","status":"yellow","evidence":"Implemented in app/enchev-theme.css at commit 7c4eeb82262088985a84e31726c35e8dfcea7eba: semantic ENCHEV color palette, typography scale/line-height/weights/tracking, spacing scale/page gutters, radius scale, shadows/focus ring, motion tokens and reduced-motion fallback. app/layout.tsx imports enchev-theme.css globally. Awaiting production deployment/visual verification before GREEN."},
     {"id":"D02","group":"Основа","title":"Единен responsive grid и breakpoints за desktop/tablet/mobile","status":"red","evidence":""},
     {"id":"D03","group":"Основа","title":"Оригинален ENCHEV header + utility bar + account actions","status":"red","evidence":""},
     {"id":"D04","group":"Основа","title":"Навигационна архитектура за инвентар, live търгове, помощ и профил","status":"red","evidence":""},
