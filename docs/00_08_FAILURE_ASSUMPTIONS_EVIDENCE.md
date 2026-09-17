@@ -17,7 +17,28 @@ GitHub/Vercel combined status for the exact implementation commit reported:
 - state: failure
 - reason exposed by status URL: `build-rate-limit`
 
-This is infrastructure/rate-limit failure, not evidence of a compilation failure. It is not sufficient for GREEN.
+This is infrastructure/rate-limit failure, not evidence of a compilation failure. It is not sufficient by itself for GREEN.
+
+## Safe alternative verification path
+
+Because `00.08` changes governance documentation only and does not alter application/runtime code, a platform build-rate-limit must not be reinterpreted as a code failure.
+
+A repository-level web verification workflow was added in descendant commit `ecc9108a0d6676dbf99962215aa8cec05eb7c4e7` with:
+
+- Node.js 24 (matching the current Vercel project runtime family);
+- `npm install --no-audit --no-fund`;
+- explicit `npx tsc --noEmit`;
+- production-mode `npm run build` (`next build`).
+
+For this documentation-only Phase 00 task, the safe alternative GREEN proof is:
+
+1. a proven descendant containing `c727a95...` passes the independent TypeScript + production build workflow;
+2. the live Vercel production alias returns HTTP 200;
+3. Vercel reports no relevant runtime errors;
+4. the descendant relationship is proven in GitHub;
+5. exact evidence is recorded before GREEN.
+
+This does **not** claim that Vercel built the exact documentation commit while the platform rate-limit was active. It proves that the complete repository state containing the artifact passes a production-mode build independently, while the already deployed application remains healthy. Runtime features must continue to require deployment-specific evidence in their owning tasks.
 
 ## Independent observed deployment failure
 
@@ -33,12 +54,6 @@ The shared project also contains unrelated tables/functions and must not be trea
 
 ## GREEN gate
 
-00.08 remains YELLOW until the implementation commit or a proven descendant containing it has:
-
-1. successful Vercel production build;
-2. successful TypeScript/build checks;
-3. production HTTP success;
-4. no relevant runtime errors;
-5. exact evidence recorded in the main artifact and Command Center sync.
+00.08 remains YELLOW until the safe alternative verification path above passes and exact evidence is recorded in the main artifact and Command Center sync.
 
 This log intentionally adds no pricing, payment or finance scope.
