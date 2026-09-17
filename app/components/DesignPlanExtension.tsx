@@ -13,6 +13,8 @@ export default function DesignPlanExtension() {
   const [sidePanel, setSidePanel] = useState<HTMLElement | null>(null);
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | DesignStatus>("all");
+  const [systemProgress, setSystemProgress] = useState<number | null>(null);
+  const [systemNext, setSystemNext] = useState("зарежда се...");
 
   useEffect(() => {
     const patch = () => {
@@ -27,6 +29,17 @@ export default function DesignPlanExtension() {
         live.appendChild(document.createTextNode(" SYSTEM"));
         live.dataset.enchevSystemLabel = "1";
       }
+
+      const systemBox = document.querySelector<HTMLElement>(".sidePanel > .sideStatusBox:not(.designStatusBox)");
+      if (systemBox) {
+        systemBox.dataset.enchevSystemStatus = "1";
+        const value = systemBox.querySelector<HTMLElement>("b")?.innerText?.trim() || "";
+        const parsed = Number.parseInt(value.replace("%", ""), 10);
+        if (Number.isFinite(parsed)) setSystemProgress(parsed);
+      }
+
+      const blocker = document.querySelector<HTMLElement>(".controlOverlay .nextGrid .nextCard b");
+      if (blocker?.innerText) setSystemNext(blocker.innerText.trim());
     };
 
     patch();
@@ -45,6 +58,10 @@ export default function DesignPlanExtension() {
     return x;
   }, []);
   const progress = tasks.length ? Math.round((totals.green / tasks.length) * 100) : 0;
+  const nextDesignTask = tasks.find((t) => t.status !== "green");
+  const designNext = nextDesignTask ? `${nextDesignTask.id} · ${nextDesignTask.title}` : "Всички дизайн точки са GREEN";
+  const summarySentence = `Системата е ${systemProgress ?? "—"}% готова, дизайнът е ${progress}%; следва System: ${systemNext}, а Design: ${designNext}.`;
+
   const groups = useMemo(() => {
     const map = new Map<string, DesignTask[]>();
     tasks.filter((t) => filter === "all" || t.status === filter).forEach((t) => {
@@ -60,7 +77,7 @@ export default function DesignPlanExtension() {
     setOpen(true);
   };
 
-  const menuCard = sidePanel ? createPortal(
+  const menuContent = sidePanel ? createPortal(<>
     <button
       onClick={openDesign}
       className="sideMenuItem"
@@ -72,12 +89,26 @@ export default function DesignPlanExtension() {
         <small>AutoBidMaster UX reference · ENCHEV identity · {progress}%</small>
       </span>
       <span>›</span>
-    </button>,
-    sidePanel
-  ) : null;
+    </button>
+
+    <div className="sideStatusBox designStatusBox" style={{ marginTop: 12 }}>
+      <div className="liveLine"><i/> DESIGN</div>
+      <span>Дизайн прогрес</span>
+      <b>{progress}%</b>
+      <div className="miniProgress"><i style={{ width: `${progress}%` }}/></div>
+      <small>{totals.green} готово · {totals.yellow} работи се · {totals.red} остава</small>
+    </div>
+
+    <div className="sideStatusBox conciseStatusBox" style={{ marginTop: 12 }}>
+      <div className="liveLine" style={{ color: "#cfd6dd" }}>НАКРАТКО</div>
+      <p style={{ margin: "8px 0 0", color: "#d7dde3", fontSize: 12, lineHeight: 1.55 }}>
+        {summarySentence}
+      </p>
+    </div>
+  </>, sidePanel) : null;
 
   return <>
-    {menuCard}
+    {menuContent}
     {open ? <section className="controlOverlay" style={{ zIndex: 21000 }}>
       <header className="controlHeader">
         <div>
@@ -97,7 +128,7 @@ export default function DesignPlanExtension() {
       </div>
 
       <div className="nextGrid">
-        <div className="nextCard"><span>NEXT DESIGN TASK</span><b>{tasks.find((t) => t.status !== "green")?.id || "DONE"} · {tasks.find((t) => t.status !== "green")?.title || "Всички дизайн точки са GREEN"}</b></div>
+        <div className="nextCard"><span>NEXT DESIGN TASK</span><b>{designNext}</b></div>
         <div className="nextCard"><span>DESIGN CHAT SESSION</span><b>6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7</b></div>
         <div className="nextCard"><span>REFERENCE SITE</span><b><a href="https://www.autobidmaster.com/" target="_blank" rel="noreferrer" style={{ color: "inherit" }}>autobidmaster.com ↗</a></b></div>
       </div>
