@@ -1,6 +1,6 @@
 # Enchev Auctions — 00.09 Definition of GREEN Acceptance
 
-Status: YELLOW — acceptance contract committed; verification pending
+Status: GREEN — acceptance contract implemented and verified
 MASTER SYSTEM PLAN v1.0 FROZEN task: `00.09`
 Execution wave: `WAVE 0 — Definition & governance`
 Depends on: `00.01`–`00.08`
@@ -255,4 +255,16 @@ Revocation must preserve evidence/history; it must not erase the previous GREEN 
 
 ## 19. Evidence
 
-Pending verification. This document remains YELLOW until the acceptance criteria above are proven.
+- Implementation commit: `b0b6cc2585a610ad4fb443c729f7100bac727b77`.
+- The direct CI run for the implementation commit was superseded/cancelled by the configured concurrency policy after a newer `main` commit arrived; this is not treated as a test failure.
+- Verified descendant: `22fd06835fb9f45e55600ab0e0fff976671efa2d`; GitHub history proves it is one commit ahead of and directly descends from the implementation commit.
+- GitHub Actions workflow: `Verify Enchev Web`, run `35181246608`, job `105073644768`, conclusion `success`.
+- Dependency installation: PASS.
+- Explicit TypeScript check `npx tsc --noEmit`: PASS.
+- Production-mode `npm run build` / `next build`: PASS.
+- Vercel canonical production alias `https://enchev-auctions.vercel.app/`: HTTP `200` during verification.
+- Vercel runtime errors: none in the selected verification window.
+- Vercel was still affected by build-rate-limit for Git-triggered exact builds; this evidence does not claim an exact Vercel build of `b0b6cc2...`.
+- Supabase is not used as fake proof for this documentation task.
+
+The implementation is a governance/documentation-only change and satisfies the documentation GREEN rule defined above: a proven descendant passed TypeScript + production-mode build regression checks while the deployed production application remained healthy.
