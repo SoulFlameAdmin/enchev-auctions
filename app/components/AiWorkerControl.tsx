@@ -4,16 +4,44 @@ import { useCallback, useEffect, useState } from "react";
 
 type WorkerStatus = {
   online?: boolean;
+  mode?: string;
   workerRunning?: boolean;
   pid?: number | null;
   startedAt?: string | null;
   turnsSent?: number;
+  relayAttempts?: number;
+  recoveryAttempt?: number;
+  watchdog?: string | null;
+  pendingSince?: string | null;
   stopped?: boolean;
   stopReason?: string | null;
+  lastAction?: string | null;
+  stateUpdatedAt?: string | null;
   lastLog?: string | null;
 };
 
 const BRIDGE = "http://127.0.0.1:9445";
+
+const watchdogLabel = (value?: string | null) => {
+  switch (value) {
+    case "monitoring": return "Следи ChatGPT";
+    case "gpt-thinking": return "GPT мисли / генерира";
+    case "gpt-writing": return "GPT започна нов отговор";
+    case "waiting-for-gpt": return "Чака GPT да започне";
+    case "waiting-for-complete-answer": return "Чака края на отговора";
+    case "answer-complete": return "Отговорът е завършен";
+    case "sending-relay": return "Праща relay за следващия етап";
+    case "recovering-relay": return "Повтаря relay — GPT не тръгна";
+    case "refreshing-chat": return "Refresh на ChatGPT и нов опит";
+    case "blank-response-wait": return "Празен отговор — watchdog чака";
+    case "unknown-ui": return "Неясно състояние — watchdog следи";
+    case "response-started": return "GPT тръгна успешно";
+    case "human-action": return "Чака човешко действие";
+    case "blocked": return "Спрян от реален blocker";
+    case "recovery-exhausted": return "Recovery опитите са изчерпани";
+    default: return value || "Готов";
+  }
+};
 
 export default function AiWorkerControl() {
   const [visible, setVisible] = useState(false);
@@ -52,7 +80,7 @@ export default function AiWorkerControl() {
     syncVisibility();
     const observer = new MutationObserver(syncVisibility);
     observer.observe(document.body, { childList: true, subtree: true, characterData: true });
-    const timer = window.setInterval(refresh, 1600);
+    const timer = window.setInterval(refresh, 1200);
     refresh();
     return () => {
       observer.disconnect();
@@ -65,13 +93,20 @@ export default function AiWorkerControl() {
     try {
       if (!status?.online) {
         window.location.href = "david-enchev://start";
-        window.setTimeout(refresh, 2200);
+        window.setTimeout(refresh, 1800);
+        window.setTimeout(refresh, 4200);
         return;
       }
 
       const endpoint = status.workerRunning ? "restart" : "start";
-      await fetch(`${BRIDGE}/${endpoint}`, { method: "POST", mode: "cors" });
-      window.setTimeout(refresh, 700);
+      const response = await fetch(`${BRIDGE}/${endpoint}`, { method: "POST", mode: "cors" });
+      if (!response.ok) throw new Error(`DAVID ${endpoint} failed: ${response.status}`);
+      window.setTimeout(refresh, 500);
+      window.setTimeout(refresh, 1600);
+    } catch {
+      setBridgeError(true);
+      window.location.href = "david-enchev://start";
+      window.setTimeout(refresh, 2500);
     } finally {
       window.setTimeout(() => setBusy(false), 900);
     }
@@ -81,20 +116,24 @@ export default function AiWorkerControl() {
 
   const running = Boolean(status?.workerRunning);
   const label = busy
-    ? "РАБОТЯ..."
+    ? "СТАРТИРАМ DAVID..."
     : running
-      ? "РЕСТАРТИРАЙ AI WORKER"
+      ? "РЕСТАРТИРАЙ DAVID"
       : bridgeError
-        ? "ВКЛЮЧИ AI WORKER"
-        : "СТАРТИРАЙ AI WORKER";
+        ? "ВКЛЮЧИ DAVID НА КОМПЮТЪРА"
+        : "СТАРТИРАЙ DAVID НА КОМПЮТЪРА";
 
   const stateText = running
-    ? "РАБОТИ"
+    ? "РАБОТИ НА ТОЗИ КОМПЮТЪР"
     : status?.stopped
       ? "СПРЯН ЗА ЧОВЕШКО ДЕЙСТВИЕ"
       : bridgeError
-        ? "ЛОКАЛНИЯТ КОНТРОЛЕР Е OFFLINE"
+        ? "ЛОКАЛНИЯТ DAVID Е OFFLINE"
         : "СПРЯН";
+
+  const actionText = status?.lastAction || status?.lastLog || (bridgeError
+    ? "Натисни бутона — ще се стартира локалният DAVID controller."
+    : "Готов за старт");
 
   return (
     <div style={{
@@ -103,11 +142,11 @@ export default function AiWorkerControl() {
       left: "50%",
       transform: "translateX(-50%)",
       zIndex: 20050,
-      width: "min(720px, calc(100vw - 220px))",
-      background: "rgba(7,11,15,.96)",
-      border: "1px solid rgba(65,210,126,.35)",
+      width: "min(820px, calc(100vw - 220px))",
+      background: "rgba(7,11,15,.97)",
+      border: "1px solid rgba(65,210,126,.38)",
       borderRadius: 16,
-      boxShadow: "0 18px 60px rgba(0,0,0,.45)",
+      boxShadow: "0 18px 60px rgba(0,0,0,.48)",
       padding: "10px 14px 11px",
       backdropFilter: "blur(14px)",
       color: "#f6f8fa",
@@ -165,11 +204,29 @@ export default function AiWorkerControl() {
         <div style={{ minWidth: 0 }}>
           <span style={{ color: "#cfd6dd", fontWeight: 700 }}>{wave}</span>
           <span> · цикли: {status?.turnsSent ?? 0}</span>
+          <span> · relay опити: {status?.relayAttempts ?? 0}</span>
           {status?.pid ? <span> · PID {status.pid}</span> : null}
         </div>
-        <div style={{ maxWidth: 310, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", textAlign: "right" }}>
-          {status?.lastLog || (bridgeError ? "Натисни бутона; при първи път браузърът може да поиска Open DAVID." : "Готов за старт")}
+        <div style={{ color: running ? "#5ee994" : "#a9b1ba", fontWeight: 800, whiteSpace: "nowrap" }}>
+          WATCHDOG: {watchdogLabel(status?.watchdog)}
+          {(status?.recoveryAttempt ?? 0) > 0 ? ` · recovery ${status?.recoveryAttempt}` : ""}
         </div>
+      </div>
+
+      <div style={{
+        marginTop: 6,
+        paddingTop: 6,
+        borderTop: "1px solid rgba(255,255,255,.07)",
+        display: "grid",
+        gridTemplateColumns: "auto 1fr",
+        gap: 8,
+        alignItems: "center",
+        fontSize: 11
+      }}>
+        <b style={{ color: "#7f8b96", letterSpacing: ".05em" }}>КАКВО ПРАВИ:</b>
+        <span style={{ color: "#d3d9df", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+          {actionText}
+        </span>
       </div>
 
       {status?.stopped && status.stopReason ? (
