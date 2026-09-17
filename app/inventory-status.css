@@ -12,10 +12,12 @@
 .liveBidOrb{position:absolute;z-index:7;left:50%;top:51%;transform:translate(-50%,-50%);width:144px;height:144px;border-radius:50%;display:grid;place-items:center;text-align:center;background:radial-gradient(circle at 42% 35%,rgba(54,66,60,.72),rgba(8,14,11,.94) 68%);border:1px solid rgba(255,255,255,.20);box-shadow:0 18px 44px rgba(0,0,0,.42),0 0 0 9px rgba(39,239,130,.08),0 0 0 17px rgba(39,239,130,.035),inset 0 0 24px rgba(255,255,255,.03)}
 .liveBidOrb:before{content:"";position:absolute;inset:-13px;border-radius:50%;border:7px solid rgba(39,239,130,.18);border-top-color:#25ed80;border-right-color:#25ed80;border-bottom-color:rgba(39,239,130,.65);transform:rotate(16deg);animation:liveRing 3s linear infinite}
 .liveBidOrb:after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1px solid rgba(255,255,255,.10)}
-.liveBidOrb>span{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:112px;font-weight:1000;text-shadow:0 2px 14px rgba(0,0,0,.55)}
+.liveBidOrb>span{position:absolute;left:50%;top:47%;transform:translate(-50%,-50%);width:112px;font-weight:1000;text-shadow:0 2px 14px rgba(0,0,0,.55)}
 .liveBidText{font-size:24px;color:#fff;animation:liveBidSwap 4s ease-in-out infinite}.liveSaleText{font-size:15px;line-height:1.12;color:#fff;animation:liveSaleSwap 4s ease-in-out infinite}
-.liveBidOrb i{position:absolute;top:18px;font-style:normal;color:#fff;font-size:16px;opacity:.9}.liveBidOrb small{position:absolute;bottom:15px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:1000;letter-spacing:.12em;color:#8dffb5;background:rgba(0,0,0,.26);padding:3px 7px;border-radius:999px}
-.inventoryBadge.live{font-size:11px!important;padding:8px 11px!important;background:#078d4a!important;box-shadow:0 8px 24px rgba(7,141,74,.28),0 0 18px rgba(39,239,130,.08)!important}.liveCard .inventoryTimer{background:#078d4a!important;color:#fff!important;border-color:rgba(45,255,142,.28)!important}
+.liveBidOrb i{position:absolute;top:14px;font-style:normal;color:#fff;font-size:15px;opacity:.9}
+.liveCountdown{position:absolute;left:50%;bottom:10px;transform:translateX(-72%);font-size:22px;line-height:1;font-weight:1000;color:#8dffb5;text-shadow:0 0 16px rgba(39,239,130,.35)}
+.liveBidOrb small{position:absolute;left:58%;bottom:10px;font-size:9px;line-height:1;font-weight:1000;letter-spacing:.08em;color:#8dffb5}
+.inventoryBadge.live{font-size:11px!important;padding:8px 11px!important;background:#078d4a!important;box-shadow:0 8px 24px rgba(7,141,74,.28),0 0 18px rgba(39,239,130,.08)!important}.liveCard .inventoryTimer{background:#078d4a!important;color:#fff!important;border-color:rgba(45,255,142,.28)!important;font-variant-numeric:tabular-nums}
 .liveCard .bidBtn{background:#078d4a!important;color:#fff!important;box-shadow:0 10px 28px rgba(7,141,74,.23)!important}.liveCard .bidBtn:hover{background:#0aa456!important}
 
 .inventoryCard.nextCard{border-color:rgba(39,239,130,.30)!important;box-shadow:0 15px 44px rgba(0,0,0,.22),0 0 0 1px rgba(39,239,130,.035)!important}.inventoryBadge.next{font-size:11px!important;padding:8px 11px!important;background:#087b44!important;color:#fff!important;border-color:rgba(39,239,130,.25)!important}.nextCard .inventoryTimer{background:rgba(8,123,68,.84)!important;color:#dffff0!important;border-color:rgba(39,239,130,.18)!important}.nextBidBtn{background:rgba(39,239,130,.10)!important;color:#77d99d!important;border:1px solid rgba(39,239,130,.18)!important;box-shadow:none!important;cursor:not-allowed!important;opacity:.82}
@@ -27,4 +29,4 @@
 @keyframes soldVeil{from{opacity:0}to{opacity:1}}
 @keyframes soldStampIn{from{opacity:0;transform:translate(-50%,-50%) rotate(-7deg) scale(1.45)}to{opacity:1;transform:translate(-50%,-50%) rotate(-7deg) scale(1)}}
 @keyframes liveEnter{from{transform:scale(.985);box-shadow:none}to{transform:scale(1)}}
-@media(max-width:620px){.liveBidOrb{width:124px;height:124px}.liveBidText{font-size:20px}.liveSaleText{font-size:13px}.soldStamp{font-size:30px}}
+@media(max-width:620px){.liveBidOrb{width:124px;height:124px}.liveBidText{font-size:20px}.liveSaleText{font-size:13px}.liveCountdown{font-size:20px}.soldStamp{font-size:30px}}
