@@ -16,10 +16,27 @@ if (Test-Path $PortableNode) { $env:Path = "$PortableNode;$env:Path" }
 function Test-Cdp {
   param([int]$P)
   try {
-    $null = Invoke-RestMethod -Uri "http://127.0.0.1:$P/json/version" -TimeoutSec 2
-    return $true
+    $v = Invoke-RestMethod -Uri "http://127.0.0.1:$P/json/version" -TimeoutSec 3
+    return [bool]$v.webSocketDebuggerUrl
   }
   catch { return $false }
+}
+
+function Wait-CdpStable {
+  param([int]$P, [int]$MaxChecks = 80)
+  $stable = 0
+  for ($i = 0; $i -lt $MaxChecks; $i++) {
+    if (Test-Cdp -P $P) {
+      $stable++
+      if ($stable -ge 3) {
+        Start-Sleep -Seconds 3
+        return $true
+      }
+    }
+    else { $stable = 0 }
+    Start-Sleep -Milliseconds 750
+  }
+  return $false
 }
 
 function Get-BrowserPath {
@@ -57,18 +74,22 @@ if (-not (Test-Cdp -P $Port)) {
   Start-Process -FilePath $browser -ArgumentList @(
     "--remote-debugging-address=127.0.0.1",
     "--remote-debugging-port=$Port",
+    "--remote-allow-origins=*",
     "--user-data-dir=$ProfileDir",
     "--no-first-run",
     "--no-default-browser-check",
     $ChatUrl
   )
-  $ok = $false
-  for ($i = 0; $i -lt 40; $i++) {
-    Start-Sleep -Milliseconds 750
-    if (Test-Cdp -P $Port) { $ok = $true; break }
-  }
-  if (-not $ok) { throw "APP2 browser started but CDP port did not become available." }
 }
+else {
+  Write-Host "[APP2] Existing dedicated browser found on port $Port." -ForegroundColor DarkGray
+}
+
+Write-Host "[APP2] Waiting for CDP to become stable..." -ForegroundColor Cyan
+if (-not (Wait-CdpStable -P $Port)) {
+  throw "APP2 browser CDP did not become stable on port $Port. Close only the APP2 Edge window and run this command again."
+}
+Write-Host "[APP2] CDP stable on port $Port." -ForegroundColor Green
 
 $node = Get-Command node -ErrorAction SilentlyContinue
 $npm = Get-Command npm.cmd -ErrorAction SilentlyContinue
@@ -88,14 +109,46 @@ try {
   $env:DAVID_APP2_CHAT_URL = $ChatUrl
   $env:DAVID_APP2_STATE_FILE = Join-Path $Here ".david-app2-state.json"
 
+  # Playwright can need more than its default 30s while a fresh Edge profile
+  # initializes. Build a local runtime copy with a 120s CDP handshake timeout.
+  $WorkerSource = Join-Path $Here "auto-complete-app2-v1.mjs"
+  $RuntimeWorker = Join-Path $Here ".auto-complete-app2-runtime.mjs"
+  $source = [System.IO.File]::ReadAllText($WorkerSource)
+  $source = $source.Replace(
+    'chromium.connectOverCDP(CDP_URL)',
+    'chromium.connectOverCDP(CDP_URL, { timeout: 120000 })'
+  )
+  $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+  [System.IO.File]::WriteAllText($RuntimeWorker, $source, $utf8NoBom)
+
   Write-Host ""
   Write-Host "[APP2] TARGET: $ChatUrl" -ForegroundColor Green
   Write-Host "[APP2] AUTOPILOT: plan -> implementation -> tests -> fixes -> production verification -> 100%." -ForegroundColor Green
   Write-Host "[APP2] Dedicated Edge profile and port $Port. Existing Enchev DAVID on 9444 is untouched." -ForegroundColor Green
+  Write-Host "[APP2] CDP handshake timeout: 120s. Worker auto-restart: ON." -ForegroundColor Green
   Write-Host "[APP2] Ctrl+C stops only APP2 worker." -ForegroundColor Yellow
   Write-Host ""
 
-  & $node.Source (Join-Path $Here "auto-complete-app2-v1.mjs")
-  if ($LASTEXITCODE -ne 0) { throw "APP2 worker exited with code $LASTEXITCODE." }
+  $attempt = 0
+  while ($true) {
+    $attempt++
+    Write-Host "[APP2] Starting worker attempt $attempt..." -ForegroundColor Cyan
+    & $node.Source $RuntimeWorker
+    $code = $LASTEXITCODE
+    if ($code -eq 0) {
+      Write-Host "[APP2] Worker finished normally." -ForegroundColor Green
+      break
+    }
+
+    Write-Host "[APP2] Worker exited with code $code. Keeping APP2 alive and reconnecting..." -ForegroundColor Yellow
+    if (-not (Wait-CdpStable -P $Port -MaxChecks 20)) {
+      throw "APP2 Edge/CDP disappeared. Restart only the APP2 Edge and run this script again."
+    }
+    Start-Sleep -Seconds 4
+  }
 }
-finally { Pop-Location }
+finally {
+  $RuntimeWorker = Join-Path $Here ".auto-complete-app2-runtime.mjs"
+  if (Test-Path $RuntimeWorker) { Remove-Item $RuntimeWorker -Force -ErrorAction SilentlyContinue }
+  Pop-Location
+}
