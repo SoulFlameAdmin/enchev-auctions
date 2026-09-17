@@ -62,6 +62,21 @@ At task start:
 
 Absence from these surfaces is recorded as **not proven**, not as proof that no external Redis account exists.
 
+## Attempt 1 blocker evidence — 2026-09-17
+A safe production probe was added and deployed to determine whether a Redis secret already existed but was hidden from the available project metadata.
+
+Evidence:
+- runtime-probe implementation commit: `980841c1acece87e3b422e0dd359c5b7ee7aafa6`;
+- GitHub Actions run `35251323401`: verify-web SUCCESS and sync-plan-cloud SUCCESS;
+- Redis environment contract invariant PASS;
+- Redis environment self-tests PASS;
+- TypeScript PASS;
+- production build PASS;
+- Vercel deployment `dpl_AdVAgbByUCKnNb36dZwzzBNxzhmb`: READY on exact implementation commit;
+- exact deployment `/api/health/redis`: HTTP 503 with sanitized body `{"ok":false,"configured":false,"status":"missing-redis-url"}`.
+
+This proves the Vercel production runtime does **not** currently receive `REDIS_URL`. It does not expose or infer any secret value.
+
 ## GREEN gate
 01.06 may become GREEN only when all of the following are evidenced:
 1. a real Redis/Valkey provider instance is provisioned for Enchev;
@@ -73,6 +88,6 @@ Absence from these surfaces is recorded as **not proven**, not as proof that no 
 7. the exact evidence is recorded here and synced to the Command Center cloud state.
 
 ## Current blocker
-No authorized/proven live Redis provider endpoint or secret is available through the connected GitHub/Vercel/Supabase surfaces. Therefore 01.06 remains YELLOW and the next dependent foundation task must not be treated as if Redis were production-ready.
+The connected GitHub/Vercel/Supabase tool surfaces do not expose an authorized action that can provision a Vercel Marketplace Redis/Valkey resource or create the required Vercel `REDIS_URL` secret. The production probe proves that `REDIS_URL` is currently absent. Therefore 01.06 remains YELLOW and 01.07 must not be treated as dependency-complete.
 
 No pricing/payment/finance scope is added.
