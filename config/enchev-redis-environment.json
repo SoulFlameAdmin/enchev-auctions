@@ -1,0 +1,26 @@
+{
+  "task": "01.06",
+  "name": "Redis environment",
+  "binding_status": "pending-live-provider",
+  "provider": null,
+  "authoritative_auction_state": false,
+  "allowed_roles": [
+    "cache",
+    "rate-limit-support",
+    "realtime-fanout-support",
+    "ephemeral-coordination"
+  ],
+  "forbidden_roles": [
+    "accepted-bid-authority",
+    "auction-state-authority",
+    "winner-authority",
+    "final-result-authority"
+  ],
+  "environment_variable": "REDIS_URL",
+  "allowed_schemes": ["redis:", "rediss:"],
+  "tls_required_nonlocal": true,
+  "key_prefix": "enchev:",
+  "secret_values_in_repository": false,
+  "live_ping_required_for_green": true,
+  "notes": "Redis is a non-authoritative support dependency. PostgreSQL remains authoritative for auction state, bids and results."
+}
