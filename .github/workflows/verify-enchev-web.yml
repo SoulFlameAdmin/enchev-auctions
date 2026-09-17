@@ -54,7 +54,29 @@ jobs:
         run: node scripts/verify-status-audit-trail.mjs
       - name: Status audit trail self-tests
         run: node scripts/verify-status-audit-trail.mjs --self-test
+      - name: Cloud plan state invariant
+        run: node scripts/verify-cloud-plan-state.mjs
+      - name: Cloud plan state self-tests
+        run: node scripts/verify-cloud-plan-state.mjs --self-test
       - name: TypeScript check
         run: npx tsc --noEmit
       - name: Production build
         run: npm run build
+
+  sync-plan-cloud:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify-web
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Sync verified Master Plan state to Supabase
+        run: node scripts/sync-cloud-plan-state.mjs
