@@ -1,6 +1,6 @@
 # Enchev Auctions — 01.06 Redis environment
 
-Status: YELLOW — Redis environment contract, CI guard and production runtime probes are implemented; no provisioned/live Redis provider binding has been proven yet
+Status: YELLOW — Redis environment contract, CI guard and production runtime probes are implemented; production has no Redis/Valkey binding yet
 MASTER SYSTEM PLAN v1.0 FROZEN task: `01.06`
 Execution wave: `WAVE 1 — Engineering foundation & cross-cutting design`
 Depends on: `01.05 Supabase project` GREEN and completed Wave 0 governance baseline
@@ -86,10 +86,14 @@ Evidence:
 - `REDIS_ENV_SELF_TEST PASS config_cases=8 tcp_url_cases=3 rest_url_cases=2`;
 - TypeScript PASS;
 - production build PASS and `/api/health/redis` present as a dynamic route;
-- direct Vercel deploy tool was also attempted but rejected by the connector because its exposed no-argument schema cannot supply the backend-required `target`, `name` and `files` fields;
-- current Vercel project metadata still exposes no environment-variable list or Marketplace mutation surface.
+- evidence/retrigger descendant: `f4379f86fdcf9ccbd7516345f4fb583555893215`;
+- Vercel deployment `dpl_FEJ5EMyuqPzV1oouvmapDg4JzB95`: READY on that descendant;
+- Vercel build: compile PASS, TypeScript PASS, static generation 9/9;
+- exact deployment `/api/health/redis`: HTTP 503 with sanitized body `{"ok":false,"configured":false,"status":"missing-redis-binding"}`.
 
-The expanded runtime probe is therefore implemented and CI-proven, but it still requires a production deployment containing `3838d7b9...` or a descendant before its Upstash/KV presence result can be used as runtime evidence.
+This proves the production runtime receives none of the supported Redis binding shapes: no `REDIS_URL`, no complete Upstash REST pair and no complete Vercel KV REST pair.
+
+The direct Vercel deploy tool was also attempted but its current connector schema cannot supply backend-required deployment parameters. Vercel project metadata does not expose an environment-variable mutation or Marketplace resource provisioning action through the connected tool surface.
 
 ## GREEN gate
 01.06 may become GREEN only when all of the following are evidenced:
@@ -102,6 +106,6 @@ The expanded runtime probe is therefore implemented and CI-proven, but it still 
 7. exact evidence is recorded here and synced to Command Center cloud state.
 
 ## Current blocker
-No authorized/proven live Redis/Valkey provider binding is available through the connected GitHub/Vercel/Supabase surfaces. The connected Vercel tools cannot provision a Marketplace Redis resource or create project environment variables, and the direct deploy connector cannot currently deploy the expanded probe because required deployment arguments are not exposed by its schema. Therefore 01.06 remains YELLOW and dependent work must not treat Redis as production-ready.
+Production evidence now proves that no supported Redis/Valkey binding exists in Vercel. The connected GitHub/Vercel/Supabase tools still cannot provision a Marketplace Redis resource or create the required project environment variables/secrets. Therefore 01.06 remains YELLOW and dependent work must not treat Redis as production-ready.
 
 No pricing/payment/finance scope is added.
