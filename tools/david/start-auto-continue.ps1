@@ -30,30 +30,77 @@ function Test-Cdp {
   }
 }
 
-if (-not (Test-Cdp -P $Port)) {
-  $edgeCandidates = @(
-    "$env:ProgramFiles(x86)\Microsoft\Edge\Application\msedge.exe",
-    "$env:ProgramFiles\Microsoft\Edge\Application\msedge.exe",
-    "$env:LOCALAPPDATA\Microsoft\Edge\Application\msedge.exe"
-  )
+function Get-BrowserPath {
+  $candidates = New-Object System.Collections.Generic.List[string]
 
-  $edge = $edgeCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
-  if (-not $edge) {
-    throw "Microsoft Edge was not found. Install Edge or start Chromium manually with remote debugging on port $Port."
+  if (${env:ProgramFiles(x86)}) {
+    $candidates.Add((Join-Path ${env:ProgramFiles(x86)} "Microsoft\Edge\Application\msedge.exe"))
+    $candidates.Add((Join-Path ${env:ProgramFiles(x86)} "Google\Chrome\Application\chrome.exe"))
+  }
+  if ($env:ProgramFiles) {
+    $candidates.Add((Join-Path $env:ProgramFiles "Microsoft\Edge\Application\msedge.exe"))
+    $candidates.Add((Join-Path $env:ProgramFiles "Google\Chrome\Application\chrome.exe"))
+    $candidates.Add((Join-Path $env:ProgramFiles "BraveSoftware\Brave-Browser\Application\brave.exe"))
+  }
+  if ($env:LOCALAPPDATA) {
+    $candidates.Add((Join-Path $env:LOCALAPPDATA "Microsoft\Edge\Application\msedge.exe"))
+    $candidates.Add((Join-Path $env:LOCALAPPDATA "Google\Chrome\Application\chrome.exe"))
+    $candidates.Add((Join-Path $env:LOCALAPPDATA "BraveSoftware\Brave-Browser\Application\brave.exe"))
+  }
+
+  foreach ($cmdName in @("msedge.exe", "msedge", "chrome.exe", "chrome", "brave.exe", "brave")) {
+    $cmd = Get-Command $cmdName -ErrorAction SilentlyContinue
+    if ($cmd -and $cmd.Source) {
+      $candidates.Add($cmd.Source)
+    }
+  }
+
+  foreach ($regPath in @(
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\msedge.exe",
+    "HKLM:\SOFTWARE\WOW6432Node\Microsoft\Windows\CurrentVersion\App Paths\msedge.exe",
+    "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\msedge.exe",
+    "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe",
+    "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\chrome.exe"
+  )) {
+    try {
+      $value = (Get-ItemProperty -Path $regPath -ErrorAction Stop).'(default)'
+      if ($value) {
+        $candidates.Add($value)
+      }
+    }
+    catch {}
+  }
+
+  foreach ($candidate in ($candidates | Select-Object -Unique)) {
+    if ($candidate -and (Test-Path $candidate)) {
+      return $candidate
+    }
+  }
+
+  return $null
+}
+
+if (-not (Test-Cdp -P $Port)) {
+  $browser = Get-BrowserPath
+  if (-not $browser) {
+    throw "No supported Chromium browser was found. Expected Microsoft Edge, Google Chrome, or Brave."
   }
 
   New-Item -ItemType Directory -Force -Path $ProfileDir | Out-Null
-  Write-Host "[DAVID] Starting dedicated Edge profile on CDP port $Port..." -ForegroundColor Cyan
+  Write-Host "[DAVID] Browser: $browser" -ForegroundColor DarkGray
+  Write-Host "[DAVID] Starting dedicated browser profile on CDP port $Port..." -ForegroundColor Cyan
 
-  Start-Process -FilePath $edge -ArgumentList @(
+  Start-Process -FilePath $browser -ArgumentList @(
     "--remote-debugging-address=127.0.0.1",
     "--remote-debugging-port=$Port",
     "--user-data-dir=$ProfileDir",
+    "--no-first-run",
+    "--no-default-browser-check",
     $ChatUrl
   )
 
   $ok = $false
-  for ($i = 0; $i -lt 30; $i++) {
+  for ($i = 0; $i -lt 40; $i++) {
     Start-Sleep -Milliseconds 750
     if (Test-Cdp -P $Port) {
       $ok = $true
@@ -62,7 +109,7 @@ if (-not (Test-Cdp -P $Port)) {
   }
 
   if (-not $ok) {
-    throw "Edge started, but CDP port $Port did not become available."
+    throw "Browser started, but CDP port $Port did not become available. Close the dedicated browser window and run again."
   }
 }
 
@@ -95,7 +142,7 @@ try {
 
   Write-Host ""
   Write-Host "[DAVID] TARGET: $ChatUrl" -ForegroundColor Green
-  Write-Host "[DAVID] If this Edge profile is not logged in to ChatGPT, log in once, press Ctrl+C, and run again." -ForegroundColor Yellow
+  Write-Host "[DAVID] If this browser profile is not logged in to ChatGPT, log in once, press Ctrl+C, and run again." -ForegroundColor Yellow
   Write-Host "[DAVID] Ctrl+C stops the worker." -ForegroundColor Yellow
   Write-Host ""
 
