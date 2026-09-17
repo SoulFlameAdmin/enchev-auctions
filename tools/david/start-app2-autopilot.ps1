@@ -4,8 +4,8 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-# APP2 reuses the already-stable DAVID Edge profile/session used by Enchev.
-# This avoids the blank/loading second-browser problem and keeps the logged-in ChatGPT session.
+# ASCII-only launcher for Windows PowerShell 5.1.
+# APP2 reuses the stable DAVID Edge profile/session on port 9444.
 $SharedPort = 9444
 $ChatUrl = "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4"
 $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -59,7 +59,7 @@ function Get-BrowserPath {
 }
 
 if ($Port -ne $SharedPort) {
-  Write-Host "[APP2] Ignoring old port $Port. Stable shared DAVID Edge uses port $SharedPort." -ForegroundColor Yellow
+  Write-Host "[APP2] Ignoring port $Port. Shared DAVID Edge uses port $SharedPort." -ForegroundColor Yellow
 }
 $Port = $SharedPort
 
@@ -67,7 +67,7 @@ if (-not (Test-Cdp -P $Port)) {
   $browser = Get-BrowserPath
   if (-not $browser) { throw "Microsoft Edge was not found." }
   New-Item -ItemType Directory -Force -Path $ProfileDir | Out-Null
-  Write-Host "[APP2] Enchev DAVID Edge is not running. Starting the SAME stable profile on port $Port..." -ForegroundColor Cyan
+  Write-Host "[APP2] Shared DAVID Edge is not running. Starting profile on port $Port..." -ForegroundColor Cyan
   Start-Process -FilePath $browser -ArgumentList @(
     "--remote-debugging-address=127.0.0.1",
     "--remote-debugging-port=$Port",
@@ -84,7 +84,7 @@ if (-not (Test-Cdp -P $Port)) {
   if (-not $ok) { throw "Shared DAVID Edge started, but CDP port 9444 did not become available." }
 }
 else {
-  Write-Host "[APP2] Reusing working Enchev DAVID Edge on port 9444." -ForegroundColor Green
+  Write-Host "[APP2] Reusing working DAVID Edge on port 9444." -ForegroundColor Green
 }
 
 $node = Get-Command node -ErrorAction SilentlyContinue
@@ -105,25 +105,23 @@ try {
   $env:DAVID_APP2_CHAT_URL = $ChatUrl
   $env:DAVID_APP2_STATE_FILE = Join-Path $Here ".david-app2-state-6aac2dbb.json"
 
-  # If an older run is stuck on a known external blocker, do not boot directly
-  # back into the fix loop. Preserve the blocker for history, clear only the
-  # active retry state, and let GPT choose independent work from the master plan.
+  # Normalize a stale external blocker so the worker can continue independent work.
   if (Test-Path $env:DAVID_APP2_STATE_FILE) {
     try {
       $state = Get-Content $env:DAVID_APP2_STATE_FILE -Raw | ConvertFrom-Json
-      if ($state.problem -and ([string]$state.problem -match '(?i)build-rate-limit|rate limit|quota|billing|plan limit|external access|legal sign-off|customer data|vendor credentials|credential|permission')) {
+      if ($state.problem -and ([string]$state.problem -match '(?i)build-rate-limit|rate limit|quota|billing|plan limit|external access|legal sign-off|customer data|vendor credentials|credential|permission|vercel')) {
         $state | Add-Member -NotePropertyName deferredBlocker -NotePropertyValue ([string]$state.problem) -Force
         $state.problem = $null
         $state.problemAttempts = 0
         $state.watchdog = "external-blocker-deferred"
-        $state.lastAction = "External blocker deferred; continue independent master-plan tasks"
+        $state.lastAction = "External blocker deferred; continue independent work"
         $state.updatedAt = (Get-Date).ToUniversalTime().ToString("o")
         $state | ConvertTo-Json -Depth 20 | Set-Content -Path $env:DAVID_APP2_STATE_FILE -Encoding UTF8
-        Write-Host "[APP2] Existing external blocker deferred. Independent tasks may continue." -ForegroundColor Green
+        Write-Host "[APP2] Previous external blocker deferred." -ForegroundColor Green
       }
     }
     catch {
-      Write-Host "[APP2] Could not normalize previous state; worker will recover normally." -ForegroundColor Yellow
+      Write-Host "[APP2] Previous state could not be normalized; continuing normally." -ForegroundColor Yellow
     }
   }
 
@@ -134,34 +132,16 @@ try {
     'chromium.connectOverCDP(CDP_URL)',
     'chromium.connectOverCDP(CDP_URL, { timeout: 120000 })'
   )
-
-  # Runtime policy: an external BLOCKED task is recorded, not spun forever.
-  # For DPP specifically, F08/Vercel capacity must not prevent D01-D14 and any
-  # other dependency-safe work from progressing.
-  $source = $source.Replace(
-    '- Не прескачай blocker, dependency или failed test.',
-    '- Не нарушавай dependency или failed test. Ако конкретна задача е BLOCKED само от външен фактор (quota/rate limit/plan/billing/vendor credentials/legal sign-off/customer data/permission), запиши я BLOCKED с evidence и веднага продължи с най-ранната независима задача, чиито зависимости са изпълнени. За DPP Autopilot F08/Vercel build-rate-limit НЕ трябва да блокира D01-D14; докато F08 е BLOCKED, приоритизирай и реално изпълнявай D01-D14 последователно с тестове и evidence.'
-  )
-  $source = $source.Replace(
-    '- Ако остава реален нерешен blocker, последният ред да е: ${PROBLEM_PREFIX} <точно какво пречи>',
-    '- Ако blocker-ът е външен и има независима работа, НЕ завършвай с PROBLEM IN: отбележи BLOCKED и изпълни следващата независима задача, после завърши с OK. Използвай ${PROBLEM_PREFIX} само ако няма безопасна независима задача или проблемът е вътрешен технически дефект, който трябва да се поправи преди продължаване.'
-  )
-  $source = $source.Replace(
-    'Ако още е блокирано: ${PROBLEM_PREFIX} <точният оставащ проблем>',
-    'Ако още е блокирано по външна причина, запиши задачата BLOCKED с evidence и веднага изпълни следващата dependency-safe независима задача; последният ред тогава да е OK. Само ако няма независима работа или blocker-ът е вътрешен технически дефект: ${PROBLEM_PREFIX} <точният оставащ проблем>'
-  )
-
   $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
   [System.IO.File]::WriteAllText($RuntimeWorker, $source, $utf8NoBom)
 
   Write-Host ""
   Write-Host "[APP2] TARGET: $ChatUrl" -ForegroundColor Green
-  Write-Host "[APP2] MODE: shared stable Enchev Edge / separate ChatGPT tab / separate APP2 state." -ForegroundColor Green
+  Write-Host "[APP2] MODE: shared Edge / separate ChatGPT tab / separate state." -ForegroundColor Green
   Write-Host "[APP2] AUTOPILOT: plan -> build -> test -> fix -> verify -> 100%." -ForegroundColor Green
-  Write-Host "[APP2] BLOCKER POLICY: external blockers are recorded and bypassed for independent work." -ForegroundColor Green
-  Write-Host "[APP2] DPP PRIORITY: while F08 is externally blocked, continue D01-D14 in dependency order." -ForegroundColor Green
-  Write-Host "[APP2] Enchev SYSTEM/DESIGN workers remain running; APP2 uses only its own target tab." -ForegroundColor Green
-  Write-Host "[APP2] Ctrl+C stops only APP2 worker, not the browser and not Enchev DAVID." -ForegroundColor Yellow
+  Write-Host "[APP2] BLOCKER POLICY: external blockers are deferred; independent work continues." -ForegroundColor Green
+  Write-Host "[APP2] DPP PRIORITY: F08 may remain BLOCKED while D01-D14 continue." -ForegroundColor Green
+  Write-Host "[APP2] Ctrl+C stops only APP2 worker." -ForegroundColor Yellow
   Write-Host ""
 
   $attempt = 0
