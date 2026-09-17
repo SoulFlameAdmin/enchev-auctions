@@ -1,52 +1,55 @@
 @echo off
 setlocal EnableExtensions
-set "REPO=D:\ASI\enchev-auctions"
 
-where winget >nul 2>nul || (
-  echo [DAVID] Winget ne e nameren. Instalirai App Installer ot Microsoft Store i pusni otnovo.
+set "ROOT=D:\ASI"
+set "REPO=%ROOT%\enchev-auctions"
+set "PORTABLE_GIT=%ROOT%\tools\PortableGit\cmd\git.exe"
+set "PORTABLE_NODE=%ROOT%\tools\node"
+set "POWERSHELL_EXE=%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe"
+
+if exist "%ROOT%\tools\PortableGit\cmd" set "PATH=%ROOT%\tools\PortableGit\cmd;%ROOT%\tools\PortableGit\bin;%PATH%"
+if exist "%PORTABLE_NODE%" set "PATH=%PORTABLE_NODE%;%PATH%"
+
+if exist "%PORTABLE_GIT%" (
+  set "GIT_EXE=%PORTABLE_GIT%"
+) else (
+  where git >nul 2>nul || (
+    echo [DAVID] Git is missing. Run BOOTSTRAP_DAVID_ENCHEV.ps1 first.
+    pause
+    exit /b 1
+  )
+  set "GIT_EXE=git"
+)
+
+where node >nul 2>nul || (
+  echo [DAVID] Node.js is missing. Run BOOTSTRAP_DAVID_ENCHEV.ps1 first.
   pause
   exit /b 1
 )
 
-where git >nul 2>nul || (
-  echo [DAVID] Instaliram Git for Windows...
-  winget install --id Git.Git -e --source winget --accept-source-agreements --accept-package-agreements || goto :fail
-  set "PATH=%PATH%;C:\Program Files\Git\cmd"
-)
-
-where node >nul 2>nul || (
-  echo [DAVID] Instaliram Node.js LTS...
-  winget install --id OpenJS.NodeJS.LTS -e --source winget --accept-source-agreements --accept-package-agreements || goto :fail
-  set "PATH=%PATH%;C:\Program Files\nodejs"
-)
-
-where git >nul 2>nul || (
-  echo [DAVID] Git e instaliran, no PATH oshte ne e opresnen. Zatvori prozoreca i pusni START_DAVID_ENCHEV.cmd pak.
-  pause
-  exit /b 1
-)
-
-where node >nul 2>nul || (
-  echo [DAVID] Node e instaliran, no PATH oshte ne e opresnen. Zatvori prozoreca i pusni START_DAVID_ENCHEV.cmd pak.
+if not exist "%POWERSHELL_EXE%" (
+  echo [DAVID] Windows PowerShell executable was not found at:
+  echo %POWERSHELL_EXE%
   pause
   exit /b 1
 )
 
 if not exist "%REPO%\.git" (
-  echo [DAVID] Kloniram Enchev Auctions v %REPO% ...
-  if not exist "D:\ASI" mkdir "D:\ASI"
-  git clone https://github.com/SoulFlameAdmin/enchev-auctions.git "%REPO%" || goto :fail
-) else (
-  echo [DAVID] Obnovqvam repo-to...
-  git -C "%REPO%" pull --ff-only || goto :fail
+  echo [DAVID] Repository not found at %REPO%.
+  echo Run BOOTSTRAP_DAVID_ENCHEV.ps1 first.
+  pause
+  exit /b 1
 )
 
-echo [DAVID] Startiram avtomatichna etapna rabota v fiksiranata ChatGPT sesiq...
-powershell -NoProfile -ExecutionPolicy Bypass -File "%REPO%\tools\david\start-auto-continue.ps1" -Port 9444 -MaxTurns 2147483647
+echo [DAVID] Updating Enchev Auctions...
+"%GIT_EXE%" -C "%REPO%" pull --ff-only || goto :fail
+
+echo [DAVID] Starting automatic staged development in the fixed ChatGPT session...
+"%POWERSHELL_EXE%" -NoProfile -ExecutionPolicy Bypass -File "%REPO%\tools\david\start-auto-continue.ps1" -Port 9444 -MaxTurns 2147483647
 exit /b %ERRORLEVEL%
 
 :fail
 echo.
-echo [DAVID] Startut spira zaradi greshka. Ako GitHub iska login, vlezi v prozoreca na Git Credential Manager i opitai pak.
+echo [DAVID] Start stopped because of an error.
 pause
 exit /b 1
