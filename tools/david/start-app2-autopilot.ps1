@@ -3,10 +3,16 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"
+[Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
+
 $ChatUrl = "https://chatgpt.com/c/6aac1739-4ac0-83ed-92b9-4995d81fe124"
 $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Root = if (Test-Path "D:\ASI") { "D:\ASI" } else { Join-Path $env:LOCALAPPDATA "DAVID" }
-$ProfileDir = Join-Path $Root "DAVID_APP2_PROFILE"
+$ToolsRoot = Join-Path $Root "tools"
+$ChromeRoot = Join-Path $ToolsRoot "chrome-app2"
+$ChromeExe = Join-Path $ChromeRoot "chrome-win64\chrome.exe"
+$ProfileDir = Join-Path $Root "DAVID_APP2_CHROME_PROFILE"
 
 $PortableGit = "D:\ASI\tools\PortableGit"
 $PortableNode = "D:\ASI\tools\node"
@@ -23,104 +29,92 @@ function Test-Cdp {
 }
 
 function Wait-CdpStable {
-  param([int]$P, [int]$MaxChecks = 80)
+  param([int]$P, [int]$MaxChecks = 100)
   $stable = 0
   for ($i = 0; $i -lt $MaxChecks; $i++) {
     if (Test-Cdp -P $P) {
       $stable++
-      if ($stable -ge 3) {
-        Start-Sleep -Seconds 3
+      if ($stable -ge 4) {
+        Start-Sleep -Seconds 2
         return $true
       }
     }
     else { $stable = 0 }
-    Start-Sleep -Milliseconds 750
+    Start-Sleep -Milliseconds 700
   }
   return $false
 }
 
-function Get-BrowserInfo {
-  $items = New-Object System.Collections.Generic.List[object]
-  function Add-Candidate([string]$Kind, [string]$Path) {
-    if ($Path -and (Test-Path $Path)) {
-      $items.Add([pscustomobject]@{ Kind = $Kind; Path = $Path })
-    }
-  }
-
-  # APP2 intentionally prefers Chrome/Brave. Edge remains the fallback because
-  # the second isolated Edge profile on this PC has repeatedly rendered a blank page.
-  if (${env:ProgramFiles(x86)}) {
-    Add-Candidate "chrome" (Join-Path ${env:ProgramFiles(x86)} "Google\Chrome\Application\chrome.exe")
-    Add-Candidate "brave"  (Join-Path ${env:ProgramFiles(x86)} "BraveSoftware\Brave-Browser\Application\brave.exe")
-    Add-Candidate "edge"   (Join-Path ${env:ProgramFiles(x86)} "Microsoft\Edge\Application\msedge.exe")
-  }
-  if ($env:ProgramFiles) {
-    Add-Candidate "chrome" (Join-Path $env:ProgramFiles "Google\Chrome\Application\chrome.exe")
-    Add-Candidate "brave"  (Join-Path $env:ProgramFiles "BraveSoftware\Brave-Browser\Application\brave.exe")
-    Add-Candidate "edge"   (Join-Path $env:ProgramFiles "Microsoft\Edge\Application\msedge.exe")
-  }
-  if ($env:LOCALAPPDATA) {
-    Add-Candidate "chrome" (Join-Path $env:LOCALAPPDATA "Google\Chrome\Application\chrome.exe")
-    Add-Candidate "brave"  (Join-Path $env:LOCALAPPDATA "BraveSoftware\Brave-Browser\Application\brave.exe")
-    Add-Candidate "edge"   (Join-Path $env:LOCALAPPDATA "Microsoft\Edge\Application\msedge.exe")
-  }
-
-  foreach ($cmdName in @("chrome.exe", "chrome", "brave.exe", "brave", "msedge.exe", "msedge")) {
-    $cmd = Get-Command $cmdName -ErrorAction SilentlyContinue
-    if ($cmd -and $cmd.Source) {
-      $kind = if ($cmdName -like "chrome*") { "chrome" } elseif ($cmdName -like "brave*") { "brave" } else { "edge" }
-      Add-Candidate $kind $cmd.Source
-    }
-  }
-
-  return $items | Sort-Object @{Expression={ if ($_.Kind -eq "chrome") {0} elseif ($_.Kind -eq "brave") {1} else {2} }}, Path | Select-Object -First 1
-}
-
 function Stop-App2Browser {
   try {
-    Get-CimInstance Win32_Process -Filter "Name='msedge.exe' OR Name='chrome.exe' OR Name='brave.exe'" |
-      Where-Object { $_.CommandLine -and $_.CommandLine -like "*$ProfileDir*" } |
+    Get-CimInstance Win32_Process |
+      Where-Object {
+        ($_.Name -eq "chrome.exe" -or $_.Name -eq "msedge.exe" -or $_.Name -eq "brave.exe") -and
+        $_.CommandLine -and
+        $_.CommandLine -like "*$ProfileDir*"
+      } |
       ForEach-Object { Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }
   }
   catch {}
   Start-Sleep -Seconds 2
 }
 
-if (-not (Test-Cdp -P $Port)) {
-  $browserInfo = Get-BrowserInfo
-  if (-not $browserInfo) { throw "No supported Chromium browser found (Chrome, Brave or Edge)." }
-  $browser = $browserInfo.Path
-  $browserKind = $browserInfo.Kind
-  New-Item -ItemType Directory -Force -Path $ProfileDir | Out-Null
+function Ensure-PortableChrome {
+  if (Test-Path $ChromeExe) { return $ChromeExe }
 
-  Write-Host "[APP2] Browser: $browser ($browserKind)" -ForegroundColor DarkGray
+  New-Item -ItemType Directory -Force -Path $ToolsRoot | Out-Null
+  Write-Host "[APP2] Downloading isolated Chrome for Testing..." -ForegroundColor Cyan
+
+  $metaUrl = "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json"
+  $meta = Invoke-RestMethod -Uri $metaUrl -TimeoutSec 45
+  $asset = $meta.channels.Stable.downloads.chrome | Where-Object { $_.platform -eq "win64" } | Select-Object -First 1
+  if (-not $asset -or -not $asset.url) { throw "Could not resolve Chrome for Testing win64 download." }
+
+  $zip = Join-Path $ToolsRoot "chrome-app2-win64.zip"
+  $temp = Join-Path $ToolsRoot "chrome-app2-temp"
+  if (Test-Path $temp) { Remove-Item $temp -Recurse -Force }
+  if (Test-Path $ChromeRoot) { Remove-Item $ChromeRoot -Recurse -Force }
+
+  Invoke-WebRequest -Uri $asset.url -OutFile $zip -TimeoutSec 180
+  Expand-Archive -Path $zip -DestinationPath $temp -Force
+  New-Item -ItemType Directory -Force -Path $ChromeRoot | Out-Null
+  Move-Item -Path (Join-Path $temp "chrome-win64") -Destination $ChromeRoot
+  Remove-Item $temp -Recurse -Force
+  Remove-Item $zip -Force
+
+  if (-not (Test-Path $ChromeExe)) { throw "Portable Chrome extraction failed: $ChromeExe not found." }
+  Write-Host "[APP2] Portable Chrome ready: $ChromeExe" -ForegroundColor Green
+  return $ChromeExe
+}
+
+$browser = Ensure-PortableChrome
+
+if (-not (Test-Cdp -P $Port)) {
+  New-Item -ItemType Directory -Force -Path $ProfileDir | Out-Null
+  Write-Host "[APP2] Browser: $browser (portable Chrome for Testing)" -ForegroundColor DarkGray
   Write-Host "[APP2] Starting isolated APP2 browser on CDP port $Port..." -ForegroundColor Cyan
 
-  $args = @(
+  Start-Process -FilePath $browser -ArgumentList @(
     "--remote-debugging-address=127.0.0.1",
     "--remote-debugging-port=$Port",
     "--remote-allow-origins=*",
     "--user-data-dir=$ProfileDir",
     "--no-first-run",
     "--no-default-browser-check",
-    "--new-window"
+    "--disable-background-mode",
+    "--disable-component-update",
+    "--new-window",
+    $ChatUrl
   )
-  if ($browserKind -eq "edge") {
-    # Software rendering fallback for the blank second-Edge profile observed on this PC.
-    $args += "--disable-gpu"
-  }
-  $args += $ChatUrl
-
-  Start-Process -FilePath $browser -ArgumentList $args
 }
 else {
-  Write-Host "[APP2] Existing dedicated browser found on port $Port." -ForegroundColor DarkGray
+  Write-Host "[APP2] Existing dedicated APP2 browser found on port $Port." -ForegroundColor DarkGray
 }
 
 Write-Host "[APP2] Waiting for CDP to become stable..." -ForegroundColor Cyan
 if (-not (Wait-CdpStable -P $Port)) {
   Stop-App2Browser
-  throw "APP2 browser CDP did not become stable on port $Port. Run the launcher again."
+  throw "APP2 portable Chrome/CDP did not become stable on port $Port. Run the launcher again."
 }
 Write-Host "[APP2] CDP stable on port $Port." -ForegroundColor Green
 
@@ -155,8 +149,8 @@ try {
   Write-Host ""
   Write-Host "[APP2] TARGET: $ChatUrl" -ForegroundColor Green
   Write-Host "[APP2] AUTOPILOT: plan -> implementation -> tests -> fixes -> production verification -> 100%." -ForegroundColor Green
-  Write-Host "[APP2] Dedicated browser profile and port $Port. Enchev DAVID on 9444 is untouched." -ForegroundColor Green
-  Write-Host "[APP2] CDP handshake timeout: 120s. Worker auto-restart: ON." -ForegroundColor Green
+  Write-Host "[APP2] Browser isolation: portable Chrome + separate profile + port $Port." -ForegroundColor Green
+  Write-Host "[APP2] Enchev DAVID on 9444 is untouched." -ForegroundColor Green
   Write-Host "[APP2] Ctrl+C stops only APP2 worker." -ForegroundColor Yellow
   Write-Host ""
 
@@ -172,8 +166,8 @@ try {
     }
 
     Write-Host "[APP2] Worker exited with code $code. Keeping APP2 alive and reconnecting..." -ForegroundColor Yellow
-    if (-not (Wait-CdpStable -P $Port -MaxChecks 20)) {
-      throw "APP2 browser/CDP disappeared. Restart only APP2 and run this script again."
+    if (-not (Wait-CdpStable -P $Port -MaxChecks 25)) {
+      throw "APP2 portable Chrome/CDP disappeared. Run this launcher again."
     }
     Start-Sleep -Seconds 4
   }
