@@ -1,6 +1,7 @@
 "use client";
 
 import { ChangeEvent, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
 const STORAGE_KEY = "enchev-custom-hero-background";
 
@@ -14,11 +15,13 @@ function applyBackground(value: string) {
 }
 
 export default function BackgroundSwitcher() {
+  const pathname=usePathname();
   const inputRef = useRef<HTMLInputElement>(null);
   const [open, setOpen] = useState(false);
   const [hasCustom, setHasCustom] = useState(false);
 
   useEffect(() => {
+    if(pathname!=="/")return;
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
@@ -26,7 +29,9 @@ export default function BackgroundSwitcher() {
         setHasCustom(true);
       }
     } catch {}
-  }, []);
+  }, [pathname]);
+
+  if(pathname!=="/")return null;
 
   const chooseImage = (event: ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -36,8 +41,6 @@ export default function BackgroundSwitcher() {
     reader.onload = () => {
       const result = typeof reader.result === "string" ? reader.result : "";
       if (!result) return;
-
-      // Apply immediately even when a very large 4K file cannot fit in localStorage.
       applyBackground(result);
       try { localStorage.setItem(STORAGE_KEY, result); } catch {}
       setHasCustom(true);
