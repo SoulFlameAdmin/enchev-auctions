@@ -52,6 +52,12 @@ jobs:
       - name: GREEN passing-test rejection tests
         run: node scripts/verify-green-requires-passing-test.mjs --self-test
 
+      - name: YELLOW semantics invariant
+        run: node scripts/verify-yellow-semantics.mjs
+
+      - name: YELLOW semantics self-tests
+        run: node scripts/verify-yellow-semantics.mjs --self-test
+
       - name: TypeScript check
         run: npx tsc --noEmit
 
