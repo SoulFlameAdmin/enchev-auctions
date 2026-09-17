@@ -8,6 +8,7 @@ type Note = { evidence?: string; blocker?: string; updatedAt?: string };
 const STATUS_KEY = "enchev-system-status-v5";
 const NOTES_KEY = "enchev-system-notes-v5";
 const CHANNEL_KEY = "enchev-system-realtime-v5";
+// Governance-only retrigger: no runtime behavior change.
 
 const VERIFIED_WAVE_0: Record<string, string> = {
   "00.01": "docs/00_01_SYSTEM_SCOPE_AND_BOUNDARIES.md · commit 1782e4deac453adb024c2322490ac94386656a07 · Vercel production READY",
