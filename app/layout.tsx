@@ -14,6 +14,7 @@ import MouseAura from "./components/MouseAura";
 import BackgroundSwitcher from "./components/BackgroundSwitcher";
 import AiWorkerControl from "./components/AiWorkerControl";
 import VerifiedPlanEvidenceSync from "./components/VerifiedPlanEvidenceSync";
+import TestPassGreenGuard from "./components/TestPassGreenGuard";
 import LotNavigationBridge from "./components/LotNavigationBridge";
 
 export const metadata = {
@@ -29,6 +30,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <BackgroundSwitcher />
         <AiWorkerControl />
         <VerifiedPlanEvidenceSync />
+        <TestPassGreenGuard />
         <LotNavigationBridge />
         {children}
       </body>
