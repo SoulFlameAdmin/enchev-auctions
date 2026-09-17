@@ -18,6 +18,7 @@ const VERIFIED_WAVE_0: Record<string, string> = {
   "00.06": "docs/00_06_DEPENDENCY_INVENTORY.md · implementation 7bda0dbc9603ca068deac37591c9034f9c535c9c · GREEN evidence 151ea2a898f63a1d68f688e7de56f53634630583 · Vercel dpl_GEQf6ucwQZ8C4ctMEf7TPRhjGQCx READY",
   "00.07": "docs/00_07_DATA_CLASSIFICATION_MODEL.md · implementation 1561969541ca082008d26266464ca7c184ca1e3f · GREEN evidence 9227b045986a5f6b169ad58c5baedcbbd83fc890 · verified descendant e76a4e84bb43281a7891a89dc24eca49c6435a71 · Vercel dpl_8mVzSYNxUY6PicgULaEgvcYHhQ4t READY",
   "00.08": "docs/00_08_FAILURE_ASSUMPTIONS.md · implementation c727a95ac4924f18ce09c25aea720a6359ab4e1b · GREEN evidence 6970cf3fea2b8e4ec42c5326dba2511998f64ec9 · verified descendant 929b6f252231e34624253a13346e44e2f285aca1 · GitHub Actions run 35180993736 PASS · production HTTP/runtime healthy",
+  "00.09": "docs/00_09_DEFINITION_OF_GREEN_ACCEPTANCE.md · implementation b0b6cc2585a610ad4fb443c729f7100bac727b77 · GREEN evidence 6100ef6b47dfa4efd74cfa8d255c0f6a70a0597c · verified descendant 22fd06835fb9f45e55600ab0e0fff976671efa2d · GitHub Actions run 35181246608 PASS · production HTTP 200/runtime healthy",
 };
 
 export default function VerifiedPlanEvidenceSync() {
