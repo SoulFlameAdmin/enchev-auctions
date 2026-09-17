@@ -79,15 +79,15 @@ export default function LotPage(){
             <div className="lotThumbs" role="list" aria-label="Миниатюри на автомобила">{gallery.map((src,index)=><button type="button" key={src} className={`lotThumb ${index===activeImage?"active":""}`} onClick={()=>setActiveImage(index)} aria-label={`Покажи изображение ${index+1} от ${gallery.length}`} aria-pressed={index===activeImage}><img src={src} alt=""/></button>)}</div>
           </div>
 
-          <section className="lotSection" data-design-task="D20" aria-labelledby="lot-key-facts-title" style={{borderColor:"rgba(39,245,138,.18)",background:"linear-gradient(180deg,rgba(13,23,16,.96),rgba(8,16,11,.96))"}}>
-            <div className="lotSectionHead"><div><h2 id="lot-key-facts-title">Ключови данни за лота</h2><span>Най-важната информация преди офериране</span></div><span className="lotPill green">6 проверени полета</span></div>
-            <div className="lotSpecs" role="list" aria-label="Ключови данни за автомобила" style={{gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))"}}>
-              <div className="lotSpec" role="listitem"><span>VIN</span><b>WAUZZZ8V5KA123456</b></div>
+          <section className="lotSection" data-design-task="D20" aria-labelledby="lot-key-facts-title" aria-describedby="lot-key-facts-description" style={{borderColor:"rgba(39,245,138,.18)",background:"linear-gradient(180deg,rgba(13,23,16,.96),rgba(8,16,11,.96))"}}>
+            <div className="lotSectionHead"><div><h2 id="lot-key-facts-title">Ключови данни за лота</h2><span id="lot-key-facts-description">Най-важната информация преди офериране</span></div><span className="lotPill green">6 проверени полета</span></div>
+            <div className="lotSpecs" role="list" aria-label="Ключови данни за автомобила" style={{gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))"}}>
+              <div className="lotSpec" role="listitem"><span>VIN</span><b style={{overflowWrap:"anywhere"}}>WAUZZZ8V5KA123456</b></div>
               <div className="lotSpec" role="listitem"><span>LOT</span><b>{lot}</b></div>
               <div className="lotSpec" role="listitem"><span>Пробег</span><b>41 280 км</b></div>
               <div className="lotSpec" role="listitem"><span>Основна повреда</span><b>Леки драскотини / козметични следи</b></div>
               <div className="lotSpec" role="listitem"><span>Документ</span><b>Clean Title</b></div>
-              <div className="lotSpec" role="listitem"><span>Локация</span><b>Crewe, United Kingdom</b></div>
+              <div className="lotSpec" role="listitem"><span>Локация</span><b style={{overflowWrap:"anywhere"}}>Crewe, United Kingdom</b></div>
             </div>
           </section>
 
