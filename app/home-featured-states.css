@@ -1,0 +1,22 @@
+.eaFeaturedCard[data-auction-state]{position:relative}
+.eaFeaturedCard--live{border-color:rgba(45,245,139,.38);box-shadow:0 20px 52px rgba(0,0,0,.24),0 0 0 1px rgba(45,245,139,.05) inset}
+.eaFeaturedCard--buy-now{border-color:rgba(121,226,255,.24)}
+.eaFeaturedCard--upcoming{border-color:rgba(255,255,255,.12)}
+.eaFeaturedCard--sold{border-color:rgba(255,255,255,.07);background:linear-gradient(180deg,#0a0f0c,#070b09)}
+.eaFeaturedCard--sold .eaFeaturedImage img{filter:grayscale(.72) saturate(.55);opacity:.72}
+.eaFeaturedCard--sold .eaFeaturedBody{opacity:.78}
+.eaFeaturedBadge{display:inline-flex;align-items:center;gap:6px}
+.eaFeaturedBadge--live{background:rgba(13,82,46,.88);border-color:rgba(45,245,139,.48);color:#d9ffe8;box-shadow:0 0 0 1px rgba(45,245,139,.06),0 8px 20px rgba(0,0,0,.22)}
+.eaFeaturedBadge--live:before{content:"";width:6px;height:6px;border-radius:50%;background:#2df58b;box-shadow:0 0 10px rgba(45,245,139,.85);animation:eaFeaturedLivePulse 1.4s ease-in-out infinite}
+.eaFeaturedBadge--buy-now{background:rgba(12,47,58,.88);border-color:rgba(121,226,255,.34);color:#d7f8ff}
+.eaFeaturedBadge--upcoming{background:rgba(29,35,31,.88);border-color:rgba(255,255,255,.14);color:#e2ebe5}
+.eaFeaturedBadge--sold{background:rgba(36,39,37,.90);border-color:rgba(255,255,255,.10);color:#aeb8b1}
+.eaFeaturedCard--live .eaFeaturedAuctionState{color:#8fffb8;font-weight:900}
+.eaFeaturedCard--buy-now .eaFeaturedAuctionState{color:#a6edff;font-weight:800}
+.eaFeaturedCard--sold .eaFeaturedAuctionState{color:#89938c}
+.eaFeaturedCard--sold .eaFeaturedBid a{background:#252d28;color:#aeb8b1}
+.eaFeaturedCard--buy-now .eaFeaturedBid a{background:linear-gradient(135deg,#116b75,#0b4f59)}
+.eaFeaturedCard--live .eaFeaturedBid a{background:linear-gradient(135deg,#16bf67,#087b43);box-shadow:0 8px 20px rgba(22,191,103,.16)}
+@keyframes eaFeaturedLivePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(.82)}}
+@media(max-width:560px){.eaFeaturedBid{align-items:stretch;gap:12px}.eaFeaturedBid a{min-height:44px;display:inline-flex;align-items:center;justify-content:center;text-align:center}.eaFeaturedBadge{min-height:28px}}
+@media(prefers-reduced-motion:reduce){.eaFeaturedBadge--live:before{animation:none}.eaFeaturedCard,.eaFeaturedImage img{transition:none!important}}
