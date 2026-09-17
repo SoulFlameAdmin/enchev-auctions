@@ -1,6 +1,6 @@
 # Enchev Auctions — 32.09 Cloud realtime status store
 
-Status: YELLOW — cloud store, secure write path and realtime client implemented; production verification pending
+Status: GREEN — cloud plan state store, OIDC write path and SSE client implemented and verified
 MASTER SYSTEM PLAN v1.0 FROZEN task: `32.09`
 Execution wave: `WAVE 0 — Master plan governance`
 Depends on: `32.01`–`32.08`
@@ -47,17 +47,25 @@ A separate `sync-plan-cloud` GitHub Actions job runs only after `verify-web` suc
 
 The job has `id-token: write`, requests a short-lived GitHub OIDC token for audience `enchev-plan-state`, sends the current verified evidence map to the Edge Function, then reads the cloud projection back and verifies status/evidence/source commit. No static Supabase secret is stored in GitHub.
 
-## GREEN gate
-GREEN requires:
-- Supabase table exists with RLS enabled and only Enchev governance rows;
-- Edge Function ACTIVE and public read / OIDC-only write behavior proven;
-- cloud invariant + self-tests PASS;
-- all previous Wave 0 governance guards PASS;
-- TypeScript PASS;
-- production build PASS;
-- cloud sync job PASS with read-back evidence;
-- Vercel production deployment containing `CloudPlanStateSync` READY;
-- production HTTP healthy and runtime errors clean;
-- exact evidence recorded here and in `VerifiedPlanEvidenceSync`.
+## GREEN evidence
+- Supabase migration: `create_enchev_plan_state_store` — applied successfully;
+- `public.enchev_plan_state`: RLS enabled; direct `anon`/`authenticated` table grants: none;
+- Supabase Edge Function `enchev-plan-state`: id `bebf7130-4473-4db0-bc24-a97c05c6bb98`, version `1`, status `ACTIVE`;
+- browser cloud client: `cc2d21fbeaa2ab2fc77317821c134ac56c459bc4`;
+- global client mount: `244c02f77c51faf2fbc9c531c82c752885ae7776`;
+- workflow/cloud verification implementation: `78bf6ce3eb197b73b489664421587ec2d43e1955`;
+- GitHub Actions run `35246234986`: `verify-web` SUCCESS and `sync-plan-cloud` SUCCESS;
+- cloud invariant + self-tests: PASS;
+- all previous Wave 0 governance guards: PASS;
+- TypeScript check: PASS;
+- production build: PASS;
+- sync job read-back: `CLOUD_PLAN_STATE_SYNC PASS rows=18 commit=78bf6ce3eb197b73b489664421587ec2d43e1955`;
+- Supabase read-back after OIDC sync: `row_count=18`, `exact_commit_rows=18`, and every GREEN row has non-empty evidence;
+- exact Vercel production deployment: `dpl_5AAojnTphZbr5ZySixWUtQ4wRgyU` — READY for commit `78bf6ce3eb197b73b489664421587ec2d43e1955`;
+- Vercel build: compile PASS, TypeScript PASS, static generation `9/9` PASS;
+- canonical production URL: HTTP `200`;
+- Vercel runtime errors in verification window: `0`.
+
+The GREEN claim is limited to the Master Plan cloud status projection and synchronization path. PostgreSQL auction state, bids, results and other business truth remain outside this store and must use their separately defined authoritative components.
 
 No pricing/payment/finance scope is added.
