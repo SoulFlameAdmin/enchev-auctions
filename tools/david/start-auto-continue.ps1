@@ -1,6 +1,7 @@
 param(
   [int]$Port = 9444,
-  [int]$MaxTurns = 30
+  [int]$MaxTurns = 30,
+  [switch]$ResumeOnStart
 )
 
 $ErrorActionPreference = "Stop"
@@ -8,6 +9,7 @@ $ChatUrl = "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71"
 $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Root = if (Test-Path "D:\ASI") { "D:\ASI" } else { Join-Path $env:LOCALAPPDATA "DAVID" }
 $ProfileDir = Join-Path $Root "DAVID_CHATGPT_PROFILE"
+$ResumeOnceFile = Join-Path $Here ".david-resume-once"
 
 # Keep this file ASCII-only so Windows PowerShell 5.1 cannot corrupt UTF-8 text.
 $PortableGit = "D:\ASI\tools\PortableGit"
@@ -134,6 +136,11 @@ try {
     if ($LASTEXITCODE -ne 0) {
       throw "npm install failed with exit code $LASTEXITCODE."
     }
+  }
+
+  if ($ResumeOnStart) {
+    Set-Content -Path $ResumeOnceFile -Value ([DateTime]::UtcNow.ToString("o")) -Encoding ASCII
+    Write-Host "[DAVID] Intentional one-time resume armed for existing DAVID_STOP." -ForegroundColor Yellow
   }
 
   $env:DAVID_CDP_URL = "http://127.0.0.1:$Port"
