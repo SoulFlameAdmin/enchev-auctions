@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { accountNavigation, primaryNavigation } from "../site-navigation";
 
 const LOT_SECONDS = 10;
 const cars = [
@@ -79,15 +80,15 @@ export default function InventoryPage(){
   const liveCar=auctionCars.find(car=>car.status==="live");
 
   return <main className="inventoryPage">
-    <div className="inv2TopUtility"><div className="inv2UtilityLive"><i/> ENCHEV LIVE NETWORK <span>·</span> Обновяване в реално време</div><div className="inv2UtilityRight"><span>BG · EUR</span><span>Помощ</span><span>Транспорт</span></div></div>
+    <div className="inv2TopUtility"><div className="inv2UtilityLive"><i/> ENCHEV LIVE NETWORK <span>·</span> Обновяване в реално време</div><div className="inv2UtilityRight"><span>BG · EUR</span><a href="/support">Помощ</a><a href="/transport">Транспорт</a></div></div>
 
     <header className="inventoryHeader">
       <a href="/" className="inventoryLogo"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
       <div className="inventorySearch"><span>⌕</span><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Търси марка, модел, VIN, LOT, повреда или локация..."/><button>Търси</button></div>
-      <div className="inventoryAccount"><button>Вход</button><button className="registerBtn">Регистрация</button></div>
+      <div className="inventoryAccount"><a href={accountNavigation.profile}>Вход / Профил</a><a className="registerBtn" href={accountNavigation.register}>Регистрация</a></div>
     </header>
 
-    <nav className="inventoryNav"><a href="/">Начало</a><a className="active" href="/inventory">Инвентар</a><a className="navLive" href="/inventory">Търгове на живо</a><a href="/#how">Как да купя</a><a href="/#contact">Транспорт</a><a href="/#contact">История на МПС</a><a href="/#contact">Поддръжка</a></nav>
+    <nav className="inventoryNav" aria-label="Основна навигация"><a href="/">Начало</a>{primaryNavigation.map(item=><a key={item.key} className={`${item.key==="inventory"?"active":""} ${item.key==="live"?"navLive":""}`.trim()} href={item.href}>{item.label}</a>)}</nav>
 
     <section className="inv2Hero">
       <div className="inventoryIntro"><div><span>ENCHEV MARKETPLACE</span><h1>Автомобили от международни търгове</h1><p>Филтрирай, следи и наддавай. LIVE лотът има 10-секунден брояч; всяка нова оферта връща времето на 10 секунди.</p></div></div>
