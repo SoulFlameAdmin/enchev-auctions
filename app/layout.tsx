@@ -10,6 +10,7 @@ import VerifiedPlanEvidenceSync from "./components/VerifiedPlanEvidenceSync";
 import TestPassGreenGuard from "./components/TestPassGreenGuard";
 import GapAppendOnlyGuard from "./components/GapAppendOnlyGuard";
 import PlanStatusAuditTrail from "./components/PlanStatusAuditTrail";
+import CloudPlanStateSync from "./components/CloudPlanStateSync";
 import LotNavigationBridge from "./components/LotNavigationBridge";
 
 export const metadata: Metadata = {
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <TestPassGreenGuard />
         <GapAppendOnlyGuard />
         <PlanStatusAuditTrail />
+        <CloudPlanStateSync />
         <LotNavigationBridge />
         {children}
       </body>
