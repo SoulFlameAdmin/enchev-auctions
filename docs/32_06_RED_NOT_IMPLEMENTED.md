@@ -1,6 +1,6 @@
 # Enchev Auctions — 32.06 RED = not implemented
 
-Status: GREEN — RED semantics are machine-enforced and verified
+Status: YELLOW — governance enforcement and CI verified; live Command Center sync deployment pending
 MASTER SYSTEM PLAN v1.0 FROZEN task: `32.06`
 Execution wave: `WAVE 0 — Master plan governance`
 Depends on: `32.01`, `32.02`, `32.03`, `32.04`, `32.05`
@@ -60,7 +60,7 @@ Self-test mode proves the semantic state machine:
 - CI integration: `3c467c8a301661c0862b5d7647b0e63d32deba90`
 - governance artifact: `f698956b8972469f9c2184f8a869728715a19a85`
 
-## Verified evidence
+## Verified implementation evidence
 
 - GitHub Actions run `35213784067`: overall `SUCCESS` on exact artifact commit `f698956b8972469f9c2184f8a869728715a19a85`;
 - frozen task ID lock: PASS;
@@ -72,13 +72,13 @@ Self-test mode proves the semantic state machine:
 - RED semantics self-tests: PASS for 7 state cases;
 - TypeScript check: PASS;
 - production build: PASS;
-- production regression baseline `20a0e261468c158cb3dabadbf0e283c4e7e3b2e0` is deployed as Vercel `dpl_FDjFFdjtAcmamNEJCDTYuftgJa35` READY;
-- that Vercel build compiled successfully, completed TypeScript, and generated static pages `9/9`;
-- canonical production URL `https://enchev-auctions.vercel.app/`: HTTP `200`;
-- Vercel runtime error check for the recent one-hour window: no runtime errors found.
+- production regression baseline `20a0e261468c158cb3dabadbf0e283c4e7e3b2e0` is Vercel `dpl_FDjFFdjtAcmamNEJCDTYuftgJa35` READY;
+- canonical production URL returned HTTP `200` and the recent runtime-error check returned no errors.
 
-## Acceptance result
+## Remaining GREEN gate
 
-All `32.06` acceptance requirements are satisfied. RED remains machine-checked as not implemented/missing, YELLOW remains partial/error/pending verification, and GREEN remains verified completion.
+The Command Center evidence-sync commit `98281d3d5c165f4a462993dd785e9257d000cc69` and safe retrigger descendant `e33916b522c79143a1d4bad0e05393719b0cb1dc` were both rejected by Vercel with `build-rate-limit`. Direct Vercel deployment is also unavailable through the connected tool because its exposed schema omits required `target`, `name`, and `files` arguments.
+
+`32.06` must remain YELLOW until an exact sync commit or proven descendant containing the 32.06 mapping receives a READY production deployment and final HTTP/runtime verification.
 
 No pricing/payment/finance scope is added by this task.
