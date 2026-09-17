@@ -95,7 +95,6 @@ function Wait-ChatWindow {
 $edge = Get-EdgePath
 if (-not $edge) { throw "Microsoft Edge was not found." }
 
-# Always remove only stale APP2 browser processes. Enchev on 9444 uses another profile and is untouched.
 Stop-StaleApp2Browsers
 
 if (Test-Cdp -P $Port) {
@@ -125,11 +124,10 @@ if (-not (Wait-CdpStable -P $Port)) {
 }
 Write-Host "[APP2] CDP stable." -ForegroundColor Green
 
-# Give ChatGPT home a chance to render before DAVID navigates to the conversation.
 if (Wait-ChatWindow -P $Port -Seconds 30) {
   Write-Host "[APP2] ChatGPT UI detected." -ForegroundColor Green
 } else {
-  Write-Host "[APP2] ChatGPT is still loading. DAVID will keep recovering/retrying after startup." -ForegroundColor Yellow
+  Write-Host "[APP2] ChatGPT is still loading." -ForegroundColor Yellow
 }
 
 $node = Get-Command node -ErrorAction SilentlyContinue
@@ -150,6 +148,10 @@ try {
   $env:DAVID_APP2_CHAT_URL = $ChatUrl
   $env:DAVID_APP2_STATE_FILE = Join-Path $Here ".david-app2-state-6aac2dbb.json"
 
+  Write-Host "[APP2] Checking ChatGPT authentication before opening the target conversation..." -ForegroundColor Cyan
+  & $node.Source (Join-Path $Here "wait-app2-chatgpt-login.mjs")
+  if ($LASTEXITCODE -ne 0) { throw "APP2 ChatGPT login/target preflight failed with code $LASTEXITCODE." }
+
   $WorkerSource = Join-Path $Here "auto-complete-app2-v1.mjs"
   $RuntimeWorker = Join-Path $Here ".auto-complete-app2-runtime.mjs"
   $source = [System.IO.File]::ReadAllText($WorkerSource)
@@ -165,7 +167,6 @@ try {
   Write-Host "[APP2] AUTOPILOT: plan -> implementation -> tests -> fixes -> production verification -> 100%." -ForegroundColor Green
   Write-Host "[APP2] Edge isolation: separate profile + port $Port." -ForegroundColor Green
   Write-Host "[APP2] Enchev DAVID on 9444 is untouched." -ForegroundColor Green
-  Write-Host "[APP2] If ChatGPT asks for login in this Edge, log in once; this profile will keep it." -ForegroundColor Yellow
   Write-Host "[APP2] Ctrl+C stops only APP2 worker." -ForegroundColor Yellow
   Write-Host ""
 
