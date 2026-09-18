@@ -81,12 +81,12 @@ export default function MyAuctionsPanel(){
       <a href="/live-auctions" className="myAuctionsLiveLink">Отвори LIVE залата →</a>
     </div>
 
-    <div className="myAuctionsTabs" role="tablist" aria-label="Филтър на моите търгове">
+    <div className="myAuctionsTabs" role="group" aria-label="Филтър на моите търгове">
       {tabs.map(tab=><button
         key={tab.key}
         type="button"
-        role="tab"
-        aria-selected={active===tab.key}
+        aria-pressed={active===tab.key}
+        aria-controls="my-auctions-results"
         className={active===tab.key ? "active" : ""}
         onClick={()=>setActive(tab.key)}
       >
@@ -95,7 +95,8 @@ export default function MyAuctionsPanel(){
       </button>)}
     </div>
 
-    <div className="myAuctionsList" role="tabpanel">
+    <p className="myAuctionsResultStatus" id="my-auctions-result-status" role="status" aria-live="polite">{visible.length} {visible.length===1 ? "лот" : "лота"} в избрания изглед</p>
+    <div className="myAuctionsList" id="my-auctions-results" aria-describedby="my-auctions-result-status">
       {visible.map(item=><article className="myAuctionRow" data-auction-state={item.state} key={item.lot}>
         <a className="myAuctionMedia" href={`/lot/${item.lot}`} aria-label={`Отвори ${item.title}`}>
           <img src={item.image} alt={item.title}/>
