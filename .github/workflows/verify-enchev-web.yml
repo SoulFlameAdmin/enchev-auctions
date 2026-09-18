@@ -72,6 +72,8 @@ jobs:
         run: node scripts/verify-redis-environment.mjs
       - name: Redis environment contract self-tests
         run: node scripts/verify-redis-environment.mjs --self-test
+      - name: DAVID APP2 response watchdog self-tests
+        run: node tools/david/auto-complete-app2-v1.mjs --self-test
       - name: Redis live binding verification when configured
         env:
           REDIS_URL: ${{ secrets.REDIS_URL }}
