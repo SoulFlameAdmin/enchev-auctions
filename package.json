@@ -6,7 +6,9 @@
     "dev": "next dev",
     "prebuild": "node scripts/generate-master-test-task-ids.mjs",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "verify:env": "node scripts/verify-environment-variables.mjs",
+    "verify:env:self-test": "node scripts/verify-environment-variables.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
