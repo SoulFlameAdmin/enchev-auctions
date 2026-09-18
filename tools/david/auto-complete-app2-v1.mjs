@@ -15,6 +15,14 @@ const MAX_RETRIES = Number(process.env.DAVID_APP2_MAX_RETRIES || 5);
 const PROBLEM_PREFIX = "PROBLEM IN:";
 const DONE_MARKER = "PROJECT_100_PERCENT_COMPLETE";
 const RELAY_MARKER = "[DAVID_APP2_AUTOPILOT_V2]";
+const DEPLOY_LAW = `
+DAVID VERCEL DEPLOY LAW:
+- Before ANY Vercel create/update/redeploy, claim the global Supabase lease:
+  select public.david_claim_vercel_deploy('DPP_APP2','dpp-autopilot',<commit_sha_or_null>,900);
+- granted=false => DO NOT deploy; continue dependency-safe non-deploy work.
+- granted=true => mark deploying, perform exactly one intended deployment, then release with public.david_release_vercel_deploy('DPP_APP2',<success>,<detail_json>).
+- Record quota/rate-limit backoff only when Vercel gives a real retry time. Never invent one.
+`;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const hash = (x) => createHash("sha256").update(String(x || "")).digest("hex");
 function responseProgressed(previousHash, currentHash) {
@@ -55,6 +63,8 @@ const MASTER_PROMPT = `@GitHub @Vercel @Supabase
 - PROBLEM IN използвай само за вътрешен технически дефект, който реално спира безопасната независима работа, или когато няма никаква друга dependency-safe задача.
 - Когато всички задължителни точки са GREEN, тестовете PASS и final production acceptance е доказан: последен ред ${DONE_MARKER}
 
+${DEPLOY_LAW}
+
 ${RELAY_MARKER}`;
 
 function loadState() {
@@ -84,10 +94,10 @@ function isExternalBlocker(problem) {
   return /(vercel|build-rate-limit|rate limit|quota|hobby|billing|plan limit|netlify|github pages|vendor credential|credential|permission|legal sign-off|customer data|external access|production url|deployment capacity)/i.test(String(problem || ""));
 }
 function fixPrompt(problem, attempt) {
-  return `@GitHub @Vercel @Supabase\n\nВътрешен технически проблем за поправка:\n${problem}\n\nОпит ${attempt}. Опитай сам безопасен fix, провери кода/логовете/config, тествай пак и запиши evidence. Не заобикаляй permissions/login/MFA/CAPTCHA.\n\nАко е оправено: OK\nАко същият вътрешен дефект реално още блокира всяка безопасна работа: ${PROBLEM_PREFIX} <точният проблем>\nАко целият план е доказано завършен: ${DONE_MARKER}\n\n${RELAY_MARKER}`;
+  return `@GitHub @Vercel @Supabase\n\nВътрешен технически проблем за поправка:\n${problem}\n\nОпит ${attempt}. Опитай сам безопасен fix, провери кода/логовете/config, тествай пак и запиши evidence. Не заобикаляй permissions/login/MFA/CAPTCHA.\n\nАко е оправено: OK\nАко същият вътрешен дефект реално още блокира всяка безопасна работа: ${PROBLEM_PREFIX} <точният проблем>\nАко целият план е доказано завършен: ${DONE_MARKER}\n\n${DEPLOY_LAW}\n\n${RELAY_MARKER}`;
 }
 function deferPrompt(problem, repeat = 1) {
-  return `@GitHub @Vercel @Supabase\n\nВъншният blocker е записан и се ОТЛАГА, не го опитвай отново сега:\n${problem}\n\nТова НЕ е причина да спираш DPP Autopilot. F08 може да остане BLOCKED. Веднага отвори source of truth и изпълни най-ранната независима dependency-safe задача. За текущото състояние приоритетът е D01 -> D14. Ако D01 е RED, реализирай D01 сега, пусни приложимите тестове, запиши evidence/status и продължи. Това е defer опит ${repeat}.\n\nНе завършвай с PROBLEM IN само заради същия външен blocker. Ако завършиш реален блок работа: OK. PROBLEM IN е позволено само за нов вътрешен технически дефект, който спира всяка безопасна независима работа.\n\n${RELAY_MARKER}`;
+  return `@GitHub @Vercel @Supabase\n\nВъншният blocker е записан и се ОТЛАГА, не го опитвай отново сега:\n${problem}\n\nТова НЕ е причина да спираш DPP Autopilot. F08 може да остане BLOCKED. Веднага отвори source of truth и изпълни най-ранната независима dependency-safe задача. За текущото състояние приоритетът е D01 -> D14. Ако D01 е RED, реализирай D01 сега, пусни приложимите тестове, запиши evidence/status и продължи. Това е defer опит ${repeat}.\n\nНе завършвай с PROBLEM IN само заради същия външен blocker. Ако завършиш реален блок работа: OK. PROBLEM IN е позволено само за нов вътрешен технически дефект, който спира всяка безопасна независима работа.\n\n${DEPLOY_LAW}\n\n${RELAY_MARKER}`;
 }
 
 async function ensurePage(context, current) {
@@ -303,8 +313,10 @@ async function recoverActive(context, page, state, reason) {
   console.log(`[APP2] Recovery ${reason}: STOP -> clean retry.`);
   await forceStop(page).catch(() => {});
   if (reason === "stalled-or-blank") {
-    await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
-    await sleep(1500);
+    state.watchdog = "stalled-resend";
+    save(state, "LAW: GPT stopped thinking/writing -> resend before refresh");
+    console.log("[APP2] LAW: stopped thinking/writing -> RESEND.");
+    await sleep(700);
   }
   return waitReady(context, page, state);
 }
@@ -389,10 +401,11 @@ async function runPrompt(context, page, state, prompt, kind) {
       continue;
     }
     if (!start.started) {
-      if (attempt % MAX_RETRIES === 0) {
-        await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
-        await sleep(2500);
-      }
+      state.watchdog = "no-thinking-refresh";
+      save(state, "LAW: GPT did not start thinking -> refresh -> resend");
+      console.log("[APP2] LAW: no thinking -> REFRESH -> RESEND.");
+      await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+      await sleep(1800);
       continue;
     }
     state.turnsSent = Number(state.turnsSent || 0) + 1;
