@@ -13,6 +13,14 @@ const STALL_MS = Number(process.env.DAVID_APK_STALL_MS || 70000);
 const COOLDOWN_MS = Number(process.env.DAVID_APK_COOLDOWN_MS || 1200);
 const PROBLEM_PREFIX = "PROBLEM IN:";
 const MARKER = "[DAVID_RELAY_APK_V1]";
+const DEPLOY_LAW = `
+DAVID VERCEL DEPLOY LAW:
+- Before ANY Vercel create/update/redeploy, claim the global Supabase lease:
+  select public.david_claim_vercel_deploy('DAVID_APK','soulflame-twins',<commit_sha_or_null>,900);
+- granted=false => DO NOT deploy; continue dependency-safe APK work.
+- granted=true => mark deploying, perform exactly one intended deployment, then release with public.david_release_vercel_deploy('DAVID_APK',<success>,<detail_json>).
+- Record quota/rate-limit backoff only when Vercel gives a real retry time. Never invent one.
+`;
 const TITLE_MATCH = /(DAVID\s*Phone|SoulFlame\s*Twins|DAVID\s*APK)/i;
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const hash = (x) => createHash("sha256").update(String(x || "")).digest("hex");
@@ -29,6 +37,8 @@ const APK_PROMPT = `@GitHub
 Работи в test branch, пусни приложимите build/tests, поправи грешките и остави evidence. Не измисляй резултати, не заобикаляй login/CAPTCHA/MFA/permissions и не прави destructive действие без разрешение.
 Ако стъпката е успешно завършена и доказана, последният ред да е: OK
 Ако има реален blocker, последният ред да е: ${PROBLEM_PREFIX} <точният проблем>
+
+${DEPLOY_LAW}
 
 ${MARKER}`;
 
@@ -69,6 +79,8 @@ TRY TO MAKE THIS FIX YOURSELF NOW. Опит ${attempt}. Провери SoulFlame
 Ако още е блокирано: ${PROBLEM_PREFIX} <точният оставащ проблем>
 
 След успешен fix продължи следващата dependency-safe DAVID Phone/APK задача.
+
+${DEPLOY_LAW}
 ${MARKER}`;
 }
 
@@ -310,6 +322,7 @@ async function fillAndSend(page, text) {
   await c.press("Enter");
 }
 async function runPrompt(context, page, state, prompt, kind) {
+  let stallResends = 0;
   for (;;) {
     page = await waitReady(context, page, state);
     const base = hash(await latestAssistant(page));
@@ -329,8 +342,11 @@ async function runPrompt(context, page, state, prompt, kind) {
       await sleep(POLL_MS);
     }
     if (!started) {
+      state.watchdog = "apk-no-thinking-refresh";
+      save(state, "LAW: APK GPT did not start thinking -> refresh -> resend");
+      console.log("[APK] LAW: no thinking -> REFRESH -> RESEND.");
       await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
-      await sleep(2500);
+      await sleep(1800);
       continue;
     }
 
@@ -354,10 +370,20 @@ async function runPrompt(context, page, state, prompt, kind) {
         }
       }
       if (Date.now() - lastActivity > STALL_MS) {
-        state.watchdog = "apk-stalled";
-        save(state, "APK GPT stalled; refresh/retry");
+        stallResends += 1;
+        if (stallResends <= 2) {
+          state.watchdog = "apk-stalled-resend";
+          save(state, `LAW: APK GPT stopped thinking/writing -> resend ${stallResends}/2`);
+          console.log(`[APK] LAW: stopped thinking/writing -> RESEND (${stallResends}/2).`);
+          await sleep(800);
+          break;
+        }
+        state.watchdog = "apk-stalled-refresh-resend";
+        save(state, "LAW: repeated APK stall -> refresh -> resend");
+        console.log("[APK] LAW: repeated stall -> REFRESH -> RESEND.");
         await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
-        await sleep(2500);
+        await sleep(1800);
+        stallResends = 0;
         break;
       }
       await sleep(POLL_MS);
