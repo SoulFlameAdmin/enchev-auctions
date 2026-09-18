@@ -13,6 +13,14 @@ const START_TIMEOUT_MS = 15000;
 const STALL_MS = 70000;
 const COOLDOWN_MS = 1200;
 const PROBLEM_PREFIX = "PROBLEM IN:";
+const DEPLOY_LAW = `
+DAVID VERCEL DEPLOY LAW:
+- Before ANY Vercel create/update/redeploy, claim the global Supabase lease:
+  select public.david_claim_vercel_deploy('ENCHEV_DESIGN','enchev-auctions',<commit_sha_or_null>,900);
+- granted=false => DO NOT deploy; continue design/code/tests.
+- granted=true => mark deploying, perform exactly one intended deployment, then release with public.david_release_vercel_deploy('ENCHEV_DESIGN',<success>,<detail_json>).
+- Record quota/rate-limit backoff only when Vercel gives a real retry time. Never invent one.
+`;
 const MARKER = "[DAVID_RELAY_ENCHEV_DESIGN_V1]";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const hash = (x) => createHash("sha256").update(String(x || "")).digest("hex");
@@ -39,6 +47,8 @@ const DESIGN_PROMPT = `@GitHub @Vercel @Supabase
 Ако задачата е завършена, последният ред да е само: OK
 Външен blocker като Redis/Valkey/Vercel Marketplace/provider credential/permissions НЕ спира design плана: запиши го и премини към следващата независима D-задача.
 Използвай ${PROBLEM_PREFIX} само ако нов вътрешен технически дефект реално спира всяка безопасна design работа. Преди това опитай безопасна техническа алтернатива.
+
+${DEPLOY_LAW}
 
 ${MARKER}`;
 
@@ -75,10 +85,12 @@ ${problem}
 Не го опитвай отново сега. Запиши blocker/evidence за текущата D-задача, ако е приложимо, и продължи веднага към най-ранната независима D-задача от docs/DESIGN_PLAN_V1.md. Направи реалната UI промяна, responsive/interaction проверка, тест и evidence. Това е defer cycle ${repeat}.
 
 Не завършвай с PROBLEM IN само заради същия външен blocker. PROBLEM IN е само за нов вътрешен технически дефект, който спира всяка безопасна design работа.
+
+${DEPLOY_LAW}
 ${MARKER}`;
 }
 function fixPrompt(problem, attempt) {
-  return `@GitHub @Vercel @Supabase\n\nDESIGN PROBLEM:\n${problem}\n\nTRY TO MAKE THIS FIX YOURSELF NOW. Опит ${attempt}. Провери repo/deployment и приложи безопасен fix или алтернатива. Не измисляй evidence. Не заобикаляй CAPTCHA/MFA/login/permissions и не прави destructive действие без разрешение.\n\nАко fix-ът е доказан: OK\nАко още е блокирано: ${PROBLEM_PREFIX} <точният оставащ проблем>\n\nСлед успешен fix продължи следващата D-задача от docs/DESIGN_PLAN_V1.md.\n${MARKER}`;
+  return `@GitHub @Vercel @Supabase\n\nDESIGN PROBLEM:\n${problem}\n\nTRY TO MAKE THIS FIX YOURSELF NOW. Опит ${attempt}. Провери repo/deployment и приложи безопасен fix или алтернатива. Не измисляй evidence. Не заобикаляй CAPTCHA/MFA/login/permissions и не прави destructive действие без разрешение.\n\nАко fix-ът е доказан: OK\nАко още е блокирано: ${PROBLEM_PREFIX} <точният оставащ проблем>\n\nСлед успешен fix продължи следващата D-задача от docs/DESIGN_PLAN_V1.md.\n\n${DEPLOY_LAW}\n${MARKER}`;
 }
 
 async function ensurePage(context, current) {
@@ -313,10 +325,11 @@ async function runPrompt(context, page, state, prompt, kind) {
       await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
       continue;
     }
-    if (!started.started) { state.watchdog = "design-refreshing"; save(state, "Design GPT did not start; refresh/retry"); await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {}); await sleep(2500); continue; }
+    if (!started.started) { state.watchdog = "design-refreshing"; save(state, "LAW: Design GPT did not start -> refresh -> resend"); console.log("[DESIGN] LAW: no thinking -> REFRESH -> RESEND."); await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {}); await sleep(2500); continue; }
     state.turnsSent = Number(state.turnsSent || 0) + 1; save(state, `Design GPT started cycle ${state.turnsSent}`);
     const done = await waitCompletion(context, page, base, state); page = done.page;
-    if (done.blocker || done.stalled) { state.watchdog = "design-refreshing"; save(state, done.blocker ? `Design blocker ${done.blocker}` : "Design GPT stalled"); await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {}); await sleep(2500); continue; }
+    if (done.blocker) { state.watchdog = "design-refreshing"; save(state, `Design blocker ${done.blocker}`); await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {}); await sleep(2500); continue; }
+    if (done.stalled) { state.watchdog = "design-stalled-resend"; save(state, "LAW: Design GPT stopped thinking/writing -> resend"); console.log("[DESIGN] LAW: stopped thinking/writing -> RESEND."); await sleep(800); continue; }
     state.lastAssistantHash = hash(done.text);
     if (state.justRolledOver) state.justRolledOver = false;
     syncActiveChatUrl(page, state);
