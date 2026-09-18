@@ -159,6 +159,10 @@ jobs:
         run: node scripts/verify-cross-browser-visual-contract.mjs
       - name: Cross-browser visual self-tests
         run: node scripts/verify-cross-browser-visual-contract.mjs --self-test
+      - name: ENCHEV final identity/originality invariant
+        run: node scripts/verify-enchev-final-consistency.mjs
+      - name: ENCHEV final identity/originality self-tests
+        run: node scripts/verify-enchev-final-consistency.mjs --self-test
       - name: CI test suite
         run: npm test
       - name: TypeScript check
