@@ -29,9 +29,10 @@ const CONTINUE_PROMPT = `@GitHub @Vercel @Supabase
 ВАЖЕН ПРОТОКОЛ ЗА DAVID:
 - Никога не пиши DAVID_STOP.
 - Ако задачата е успешно завършена и доказана, завърши последния ред само с: OK
-- Ако има нерешен проблем/blocker, завърши с: ${PROBLEM_PREFIX} <кратко и точно какво пречи>
+- Външен blocker (quota/rate-limit/billing/provider credential/Marketplace permission/legal sign-off/customer data) НЕ спира целия план. Запиши го като blocker/evidence и премини към най-ранната независима dependency-safe задача.
+- Ако има вътрешен технически проблем, който реално спира всяка безопасна независима работа, завърши с: ${PROBLEM_PREFIX} <кратко и точно какво пречи>
 - Преди PROBLEM IN опитай сам разумните безопасни варианти.
-- Не заобикаляй CAPTCHA/MFA/login/permissions, не измисляй secrets и не прави destructive действие без разрешение. Ако такова е неизбежно, опиши го като PROBLEM IN, но не спирай останалата безопасна работа, която може да се свърши.
+- Не заобикаляй CAPTCHA/MFA/login/permissions, не измисляй secrets и не прави destructive действие без разрешение.
 
 ${RELAY_MARKER}`;
 
@@ -290,6 +291,21 @@ function extractProblem(text) {
 function endsOk(text) {
   const rows = String(text || "").split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
   return rows.length > 0 && /^OK[.!]?$/i.test(rows.at(-1));
+}
+function isExternalBlocker(problem) {
+  return /(redis|valkey|upstash|vercel|marketplace|environment-secret|environment secret|provider credential|credential|permission|authorization|rate limit|quota|billing|plan limit|external access|legal sign-off|customer data|oidc.*deployment|deployment.*queued|deployment.*initializing)/i.test(String(problem || ""));
+}
+function deferPrompt(problem, repeat = 1) {
+  return `@GitHub @Vercel @Supabase
+
+ВЪНШЕН BLOCKER Е ОТЛОЖЕН:
+${problem}
+
+Не го опитвай отново в този цикъл и не прави нови безполезни retry/rollover-и за него. Запиши blocker/evidence в MASTER SYSTEM PLAN и веднага избери най-ранната независима dependency-safe задача, която може да се изпълни с наличните GitHub/Vercel/Supabase capabilities. Направи реална промяна, тест и evidence. Това е defer cycle ${repeat}.
+
+Не завършвай с PROBLEM IN само заради същия външен blocker. PROBLEM IN е позволено само за нов вътрешен технически дефект, който спира всяка безопасна независима работа.
+
+${RELAY_MARKER}`;
 }
 
 function fixPrompt(problem, attempt) {
@@ -571,6 +587,39 @@ async function main() {
   let mode = state.problem ? "fix" : "work";
 
   while (state.turnsSent < MAX_TURNS) {
+    if (state.problem && isExternalBlocker(state.problem)) {
+      const deferred = state.problem;
+      state.deferredBlocker = deferred;
+      state.deferredBlockerCount = Number(state.deferredBlockerCount || 0) + 1;
+      state.problem = null;
+      state.problemAttempts = 0;
+      mode = "work";
+      state.watchdog = "external-blocker-deferred";
+      saveState(state, `External blocker deferred: ${deferred}`);
+      console.log(`[DAVID] External blocker deferred; continuing independent work: ${deferred}`);
+      const result = await runPrompt(context, page, state, deferPrompt(deferred, state.deferredBlockerCount), "work");
+      page = result.page;
+      const nextProblem = extractProblem(result.text);
+      if (nextProblem) {
+        if (isExternalBlocker(nextProblem)) {
+          state.deferredBlocker = nextProblem;
+          state.problem = null;
+          saveState(state, `External blocker still deferred: ${nextProblem}`);
+          await sleep(COOLDOWN_MS);
+          continue;
+        }
+        state.problem = nextProblem;
+        mode = "fix";
+        saveState(state, `New internal problem after deferred blocker: ${nextProblem}`);
+        await sleep(COOLDOWN_MS);
+        continue;
+      }
+      state.lastResult = endsOk(result.text) ? "OK" : "completed";
+      saveState(state, "Independent work completed after external blocker defer");
+      await sleep(COOLDOWN_MS);
+      continue;
+    }
+
     if (mode === "fix" && state.problem) {
       state.problemAttempts = Number(state.problemAttempts || 0) + 1;
       state.watchdog = "fixing-problem";
