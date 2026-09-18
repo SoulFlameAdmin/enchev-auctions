@@ -77,7 +77,20 @@ function extractProblem(text) {
 }
 function endsOk(text) {
   const rows = String(text || "").split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
-  return Boolean(rows.length && /^OK[.!]?$/i.test(rows.at(-1)));
+  return Boolean(rows.length && /^OK$/i.test(rows.at(-1)));
+}
+async function waitForTerminalMarker(page, state) {
+  while (true) {
+    const text = await latestAssistant(page);
+    const problem = extractProblem(text);
+    if (problem) return { type: "problem", text, problem };
+    if (endsOk(text)) return { type: "ok", text };
+    state.watchdog = "apk-awaiting-final-ok";
+    state.lastResult = "waiting-for-final-ok";
+    save(state, "LAW: no new APK prompt until final line is exactly OK or PROBLEM IN appears");
+    console.log("[APK] LAW: waiting for final OK. NO NEW PROMPT.");
+    await sleep(3000);
+  }
 }
 function fixPrompt(problem, attempt) {
   return `@GitHub
@@ -462,10 +475,18 @@ async function main() {
         await sleep(state.problemAttempts % 4 === 0 ? 30000 : COOLDOWN_MS);
         continue;
       }
+      if (!endsOk(result.text)) {
+        const terminal = await waitForTerminalMarker(page, state);
+        if (terminal.type === "problem") {
+          state.problem = terminal.problem;
+          save(state, `APK fix terminal marker became PROBLEM IN: ${terminal.problem}`);
+          continue;
+        }
+      }
       state.problem = null;
       state.problemAttempts = 0;
-      state.lastResult = endsOk(result.text) ? "OK" : "completed";
-      save(state, "APK problem fixed; continuing");
+      state.lastResult = "OK";
+      save(state, "APK problem fixed with final OK; continuing");
       await sleep(COOLDOWN_MS);
       continue;
     }
@@ -480,8 +501,18 @@ async function main() {
       await sleep(COOLDOWN_MS);
       continue;
     }
-    state.lastResult = endsOk(result.text) ? "OK" : "completed";
-    save(state, "APK task/block complete; continuing automatically");
+    if (!endsOk(result.text)) {
+      const terminal = await waitForTerminalMarker(page, state);
+      if (terminal.type === "problem") {
+        state.problem = terminal.problem;
+        state.problemAttempts = 0;
+        save(state, `APK terminal marker became PROBLEM IN: ${terminal.problem}`);
+        continue;
+      }
+    }
+    state.lastResult = "OK";
+    save(state, "Final OK received; next APK prompt allowed");
+    console.log("[APK] Final OK received. NEXT prompt allowed.");
     await sleep(COOLDOWN_MS);
   }
 }
