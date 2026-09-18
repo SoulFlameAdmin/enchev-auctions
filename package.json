@@ -26,7 +26,9 @@
     "verify:packages-domain": "node scripts/verify-packages-domain.mjs",
     "verify:packages-domain:self-test": "node scripts/verify-packages-domain.mjs --self-test",
     "verify:packages-contracts": "node scripts/verify-packages-contracts.mjs",
-    "verify:packages-contracts:self-test": "node scripts/verify-packages-contracts.mjs --self-test"
+    "verify:packages-contracts:self-test": "node scripts/verify-packages-contracts.mjs --self-test",
+    "verify:packages-config": "node scripts/verify-packages-config.mjs",
+    "verify:packages-config:self-test": "node scripts/verify-packages-config.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
