@@ -7,9 +7,9 @@ import { spawn, spawnSync } from "node:child_process";
 const ROUTES=[
   {name:"home",path:"/",ready:"document.querySelector('.eaHero') && document.querySelector('.eaFeaturedCard')"},
   {name:"inventory",path:"/inventory",ready:"document.querySelectorAll('.inventoryCard').length >= 1 && getComputedStyle(document.querySelector('.inventoryGrid')).display === 'grid' && getComputedStyle(document.querySelector('.inventoryCard')).borderRadius !== '0px'"},
-  {name:"lot-ea-10539",path:"/lot/EA-10539",ready:"document.querySelector('.lotPage') && document.querySelector('.lotMedia img')"},
+  {name:"lot-ea-10539",path:"/lot/EA-10539",ready:"document.querySelector('.lotPage') && document.querySelector('.lotMainImage img')"},
   {name:"live-auctions",path:"/live-auctions",ready:"document.querySelector('.liveStage') && document.querySelector('.liveBidPanel')"},
-  {name:"profile",path:"/profile",ready:"document.querySelector('.profileDashboardShell') && document.querySelector('.profileWatchlist')"},
+  {name:"profile",path:"/profile",ready:"document.querySelector('.profileDashboardShell') && document.querySelector('.profileOverview')"},
 ];
 
 const VIEWPORTS=[
