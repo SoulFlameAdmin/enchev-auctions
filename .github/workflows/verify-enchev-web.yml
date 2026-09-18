@@ -86,6 +86,11 @@ jobs:
           REDIS_CLOUD_API_KEY: ${{ secrets.REDIS_CLOUD_API_KEY }}
           REDIS_CLOUD_SECRET_KEY: ${{ secrets.REDIS_CLOUD_SECRET_KEY }}
         run: node scripts/detect-redis-provisioning-credentials.mjs
+      - name: DAVID worker syntax checks
+        run: |
+          node --check tools/david/auto-continue-enchev-v5.mjs
+          node --check tools/david/auto-continue-design-v1.mjs
+          node --check tools/david/auto-complete-app2-v1.mjs
       - name: DAVID APP2 response watchdog self-tests
         run: node tools/david/auto-complete-app2-v1.mjs --self-test
       - name: Redis live binding verification when configured
