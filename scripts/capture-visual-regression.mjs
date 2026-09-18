@@ -158,6 +158,41 @@ async function verifyD29Watchlist(call,viewport){
   if(!a||a.count!==2||a.saved!==2||a.live!==0||a.ids.includes(removedLot))fail(`D29 ${viewport.name} remove interaction did not update watchlist state`);
 }
 
+
+async function verifyD30MyAuctions(call,viewport){
+  const read=async()=> {
+    const result=await call("Runtime.evaluate",{expression:`(()=>{const section=document.querySelector('.myAuctions[data-design-task="D30"]');const list=section?.querySelector('.myAuctionsList');const tabs=[...(section?.querySelectorAll('.myAuctionsTabs [role="tab"]')||[])];const rows=[...(section?.querySelectorAll('.myAuctionRow')||[])];if(!section||!list||tabs.length!==5)return null;const sr=section.getBoundingClientRect();const tr=tabs[0].getBoundingClientRect();const states=rows.map(row=>row.getAttribute('data-auction-state')||'');const ids=rows.map(row=>row.getAttribute('data-lot-id')||'');return {viewportWidth:innerWidth,scrollWidth:document.documentElement.scrollWidth,active:list.getAttribute('data-active-tab')||'',visible:Number(list.getAttribute('data-visible-count')||-1),selected:tabs.filter(tab=>tab.getAttribute('aria-selected')==='true').map(tab=>tab.getAttribute('data-tab-key')||''),tabKeys:tabs.map(tab=>tab.getAttribute('data-tab-key')||''),tabCounts:tabs.map(tab=>Number(tab.querySelector('span')?.textContent||-1)),states,ids,rowsContained:rows.every(row=>{const r=row.getBoundingClientRect();return r.left>=sr.left-3&&r.right<=sr.right+3;}),actionLinks:rows.map(row=>row.querySelector('.myAuctionAction a')?.getAttribute('href')||''),mediaLinks:rows.map(row=>row.querySelector('.myAuctionMedia')?.getAttribute('href')||''),tabHeight:tr.height};})()`,returnByValue:true});
+    return result?.result?.value;
+  };
+
+  const initial=await read();
+  if(!initial)fail("D30 my-auctions runtime elements missing");
+  if(initial.scrollWidth>initial.viewportWidth+3)fail(`D30 ${viewport.name} horizontal overflow`);
+  if(initial.active!=="all"||initial.visible!==4||initial.selected.length!==1||initial.selected[0]!=="all")fail(`D30 ${viewport.name} initial all-tab state invalid`);
+  if(initial.tabKeys.join(",")!=="all,watching,bidding,leading,ended")fail("D30 tab key order mismatch");
+  if(initial.tabCounts.join(",")!=="4,1,1,1,1")fail(`D30 ${viewport.name} tab counts mismatch`);
+  if(!["watching","bidding","leading","ended"].every(state=>initial.states.includes(state)))fail(`D30 ${viewport.name} missing auction visual state`);
+  if(!initial.rowsContained)fail(`D30 ${viewport.name} auction row escapes section bounds`);
+  if(viewport.mobile&&initial.tabHeight<43)fail(`D30 mobile tab target below 44px: ${initial.tabHeight}`);
+
+  for(const key of ["watching","bidding","leading","ended"]){
+    await call("Runtime.evaluate",{expression:`document.querySelector('.myAuctionsTabs [data-tab-key="${key}"]')?.click()`});
+    await sleep(90);
+    const state=await read();
+    if(!state||state.active!==key||state.visible!==1||state.selected.length!==1||state.selected[0]!==key)fail(`D30 ${viewport.name} ${key} tab did not activate correctly`);
+    if(state.states.length!==1||state.states[0]!==key)fail(`D30 ${viewport.name} ${key} filter returned wrong row state`);
+    if(state.ids.length!==1||!state.ids[0].startsWith("EA-"))fail(`D30 ${viewport.name} ${key} row lot id missing`);
+    if(state.mediaLinks[0]!==`/lot/${state.ids[0]}`)fail(`D30 ${viewport.name} ${key} media link mismatch`);
+    const expectedAction=key==="ended"?`/lot/${state.ids[0]}`:"/live-auctions";
+    if(state.actionLinks[0]!==expectedAction)fail(`D30 ${viewport.name} ${key} action link mismatch`);
+  }
+
+  await call("Runtime.evaluate",{expression:"document.querySelector('.myAuctionsTabs [data-tab-key=\"all\"]')?.click()"});
+  await sleep(90);
+  const restored=await read();
+  if(!restored||restored.active!=="all"||restored.visible!==4||restored.states.length!==4)fail(`D30 ${viewport.name} all tab did not restore four rows`);
+}
+
 function findChrome(){
   const candidates=[
     process.env.CHROME_BIN,
@@ -341,6 +376,7 @@ async function captureOne({port,baseUrl,route,viewport,outputDir}){
 
     if(route.name==="profile"){
       await verifyD29Watchlist(call,viewport);
+      await verifyD30MyAuctions(call,viewport);
     }
 
     return {
