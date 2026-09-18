@@ -102,6 +102,22 @@ function syncActiveChatUrl(page, state) {
   save(state, `Design conversation URL synced: ${u}`);
   console.log(`[DESIGN] Active conversation: ${u}`);
 }
+async function closeOldConversationTabs(context, oldUrl, keepPage) {
+  const oldConversationUrl = cleanConversationUrl(oldUrl);
+  if (!oldConversationUrl) return 0;
+  let closed = 0;
+  for (const candidate of context.pages()) {
+    if (!candidate || candidate === keepPage || candidate.isClosed()) continue;
+    try {
+      if (cleanConversationUrl(candidate.url()) !== oldConversationUrl) continue;
+      await candidate.close({ runBeforeUnload: false }).catch(() => {});
+      closed += 1;
+    } catch {}
+  }
+  if (closed) console.log(`[DAVID] Closed ${closed} stale old conversation tab(s): ${oldConversationUrl}`);
+  return closed;
+}
+
 async function rolloverConversation(context, page, state) {
   const oldUrl = cleanConversationUrl(page?.url?.()) || page?.url?.() || activeChatUrl;
   state.previousChatUrl = oldUrl;
@@ -115,6 +131,7 @@ async function rolloverConversation(context, page, state) {
   console.log(`[DESIGN] Conversation reached max length. Opening NEW CHAT in SAME tab (#${state.rolloverCount})...`);
   if (!page || page.isClosed()) page = await ensurePage(context, null);
   await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  await closeOldConversationTabs(context, oldUrl, page);
   await sleep(1200);
   return page;
 }
