@@ -90,6 +90,10 @@ jobs:
         run: node scripts/verify-apps-api.mjs
       - name: apps/api architecture self-tests
         run: node scripts/verify-apps-api.mjs --self-test
+      - name: apps/realtime architecture boundary
+        run: node scripts/verify-apps-realtime.mjs
+      - name: apps/realtime architecture self-tests
+        run: node scripts/verify-apps-realtime.mjs --self-test
       - name: Redis environment contract invariant
         run: node scripts/verify-redis-environment.mjs
       - name: Redis environment contract self-tests
