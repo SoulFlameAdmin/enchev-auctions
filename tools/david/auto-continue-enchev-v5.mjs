@@ -14,6 +14,7 @@ const RESPONSE_START_TIMEOUT_MS = Number(process.env.DAVID_RESPONSE_START_TIMEOU
 const STALL_TIMEOUT_MS = Number(process.env.DAVID_STALL_TIMEOUT_MS || 60000);
 const REFRESH_SETTLE_MS = Number(process.env.DAVID_REFRESH_SETTLE_MS || 3000);
 const MAX_RECOVERY_ATTEMPTS = Number(process.env.DAVID_MAX_RECOVERY_ATTEMPTS || 4);
+const SAME_TURN_RECOVERY_LIMIT = Number(process.env.DAVID_SAME_TURN_RECOVERY_LIMIT || 3);
 const PROBLEM_BACKOFF_MS = Number(process.env.DAVID_PROBLEM_BACKOFF_MS || 30000);
 const PLATFORM_BACKOFF_MS = Number(process.env.DAVID_PLATFORM_BACKOFF_MS || 180000);
 const STATE_FILE = process.env.DAVID_STATE_FILE || path.join(process.cwd(), ".david-enchev-state.json");
@@ -212,6 +213,32 @@ async function latestTurnInfo(page) {
       text: (await node.innerText().catch(() => "")).trim()
     };
   } catch { return { role: null, text: "" }; }
+}
+
+async function latestUserText(page) {
+  if (!usable(page)) return "";
+  try {
+    const nodes = page.locator('[data-message-author-role="user"]');
+    if (!await nodes.count()) return "";
+    return (await nodes.last().innerText().catch(() => "")).trim();
+  } catch { return ""; }
+}
+
+async function messageCounts(page) {
+  if (!usable(page)) return { user: 0, assistant: 0 };
+  try {
+    const user = await page.locator('[data-message-author-role="user"]').count();
+    const assistant = await page.locator('[data-message-author-role="assistant"]').count();
+    return { user, assistant };
+  } catch { return { user: 0, assistant: 0 }; }
+}
+
+function promptAcceptedSignal(currentUserCount, baselineUserCount, latestUserHash, outgoingHash) {
+  return currentUserCount > baselineUserCount && Boolean(outgoingHash) && latestUserHash === outgoingHash;
+}
+
+function sameTurnPromptPresent(latestUserHash, outgoingHash) {
+  return Boolean(outgoingHash) && latestUserHash === outgoingHash;
 }
 
 async function latestAssistantText(page) {
@@ -451,7 +478,7 @@ async function waitPlatform(context, page, state, blocker) {
   return page;
 }
 
-async function waitForResponseStart(context, page, baselineHash, state) {
+async function waitForResponseStart(context, page, baselineHash, baselineUserCount, outgoingHash, state) {
   const until = Date.now() + RESPONSE_START_TIMEOUT_MS;
   while (Date.now() < until) {
     page = await waitForSession(context, page, state);
@@ -460,14 +487,21 @@ async function waitForResponseStart(context, page, baselineHash, state) {
     if (await isGenerating(page)) {
       state.watchdog = "gpt-thinking";
       saveState(state, "GPT started thinking/generating");
-      return { started: true, page };
+      return { started: true, acceptedOnly: false, page };
     }
     const turn = await latestTurnInfo(page);
     const text = await latestAssistantText(page);
     if (turn.role === "assistant" && text && hashText(text) !== baselineHash) {
       state.watchdog = "gpt-writing";
       saveState(state, "GPT started a new response");
-      return { started: true, page };
+      return { started: true, acceptedOnly: false, page };
+    }
+    const counts = await messageCounts(page);
+    const latestUserHash = hashText(await latestUserText(page));
+    if (promptAcceptedSignal(counts.user, baselineUserCount, latestUserHash, outgoingHash)) {
+      state.watchdog = "prompt-accepted-waiting-response";
+      saveState(state, "User turn accepted; waiting without duplicate resend");
+      return { started: true, acceptedOnly: true, page };
     }
     await sleep(POLL_MS);
   }
@@ -476,6 +510,12 @@ async function waitForResponseStart(context, page, baselineHash, state) {
 
 async function sendWithRecovery(context, page, state, text, kind) {
   const baselineHash = hashText(await latestAssistantText(page));
+  const baselineCounts = await messageCounts(page);
+  const outgoingText = state.justRolledOver
+    ? `AUTOMATIC CHAT ROLLOVER: The previous Enchev conversation reached its maximum length. Reconstruct the exact current state from GitHub, MASTER SYSTEM PLAN and evidence, then continue from the next unfinished dependency-safe task. Do NOT restart completed work.\n\n${text}`
+    : text;
+  const outgoingHash = hashText(outgoingText);
+
   for (let attempt = 1; attempt <= MAX_RECOVERY_ATTEMPTS; attempt++) {
     page = await waitForSession(context, page, state);
     const blocker = await visiblePlatformBlock(page);
@@ -484,17 +524,26 @@ async function sendWithRecovery(context, page, state, text, kind) {
       attempt -= 1;
       continue;
     }
+
+    const countsBeforeRetry = await messageCounts(page);
+    const latestUserHashBeforeRetry = hashText(await latestUserText(page));
+    if (promptAcceptedSignal(countsBeforeRetry.user, baselineCounts.user, latestUserHashBeforeRetry, outgoingHash)) {
+      state.watchdog = "prompt-already-accepted";
+      state.recoveryAttempt = attempt - 1;
+      saveState(state, "Prompt already exists as accepted user turn; suppressing duplicate resend");
+      console.log("[DAVID] Prompt already accepted. Duplicate resend suppressed.");
+      return { ok: true, page, baselineHash, outgoingHash };
+    }
+
     if (attempt >= 3) page = await refreshChat(context, page, state, attempt);
     state.watchdog = kind === "fix" ? "fixing-problem" : attempt === 1 ? "sending-relay" : "recovering-relay";
     state.recoveryAttempt = attempt - 1;
     state.relayAttempts = Number(state.relayAttempts || 0) + 1;
     saveState(state, kind === "fix" ? "Sending problem-fix instruction" : `Sending development relay attempt ${attempt}`);
     console.log(`[DAVID] Sending ${kind} attempt ${attempt}/${MAX_RECOVERY_ATTEMPTS}.`);
-    const outgoingText = state.justRolledOver
-      ? `AUTOMATIC CHAT ROLLOVER: The previous Enchev conversation reached its maximum length. Reconstruct the exact current state from GitHub, MASTER SYSTEM PLAN and evidence, then continue from the next unfinished dependency-safe task. Do NOT restart completed work.\n\n${text}`
-      : text;
+
     await sendText(page, outgoingText);
-    const started = await waitForResponseStart(context, page, baselineHash, state);
+    const started = await waitForResponseStart(context, page, baselineHash, baselineCounts.user, outgoingHash, state);
     page = started.page;
     syncActiveChatUrl(page, state);
     if (started.blocker) {
@@ -504,62 +553,77 @@ async function sendWithRecovery(context, page, state, text, kind) {
     if (started.started) {
       state.turnsSent = Number(state.turnsSent || 0) + 1;
       state.recoveryAttempt = 0;
-      saveState(state, `GPT response started; logical cycle ${state.turnsSent}`);
-      return { ok: true, page, baselineHash };
+      saveState(state, started.acceptedOnly
+        ? `User turn accepted; logical cycle ${state.turnsSent}; waiting for assistant`
+        : `GPT response started; logical cycle ${state.turnsSent}`);
+      return { ok: true, page, baselineHash, outgoingHash };
     }
-    console.log("[DAVID] GPT did not start. Retrying.");
+    console.log("[DAVID] GPT did not start and user turn was not confirmed. Safe retry allowed.");
   }
   state.watchdog = "refreshing-chat";
-  state.problem = "GPT did not start after recovery attempts";
+  state.problem = "GPT did not accept the user turn after recovery attempts";
   saveState(state, "Response start recovery exhausted; refreshing instead of stopping");
   page = await refreshChat(context, page, state, MAX_RECOVERY_ATTEMPTS);
-  return { ok: false, page, baselineHash };
+  return { ok: false, page, baselineHash, outgoingHash };
 }
-
 async function waitForCompletion(context, page, state, baselineHash) {
   let lastHash = baselineHash;
   let lastActivityAt = Date.now();
+  let generatingObserved = false;
   while (true) {
     page = await waitForSession(context, page, state);
     const blocker = await visiblePlatformBlock(page);
     if (blocker) {
       page = await waitPlatform(context, page, state, blocker);
       lastActivityAt = Date.now();
+      generatingObserved = false;
       continue;
     }
     const generating = await isGenerating(page);
     const turn = await latestTurnInfo(page);
     const text = await latestAssistantText(page);
     const currentHash = text ? hashText(text) : null;
-    if (generating) {
+
+    if (turn.role === "assistant" && currentHash && currentHash !== baselineHash && currentHash !== lastHash) {
+      lastHash = currentHash;
       lastActivityAt = Date.now();
-      state.watchdog = "gpt-thinking";
-      saveState(state, "GPT is thinking/generating");
+      state.watchdog = "gpt-writing";
+      saveState(state, "GPT text progressed");
+    }
+
+    if (generating) {
+      if (!generatingObserved) {
+        generatingObserved = true;
+        state.watchdog = "gpt-thinking";
+        saveState(state, "GPT generation indicator observed");
+      }
+      if (Date.now() - lastActivityAt >= STALL_TIMEOUT_MS) {
+        state.watchdog = "stalled";
+        state.problem = "GPT response stalled or remained blank";
+        saveState(state, "GPT generation stalled without text progress");
+        return { status: "stalled", page, text, hash: currentHash };
+      }
       await sleep(POLL_MS);
       continue;
     }
+
+    generatingObserved = false;
     if (turn.role === "assistant" && currentHash && currentHash !== baselineHash) {
-      if (currentHash !== lastHash) {
-        lastHash = currentHash;
-        lastActivityAt = Date.now();
-        state.watchdog = "gpt-writing";
-        saveState(state, "GPT is writing");
-      }
       if (await responseComplete(page)) {
         const finalText = await latestAssistantText(page);
         return { status: "complete", page, text: finalText, hash: hashText(finalText) };
       }
     }
+
     if (Date.now() - lastActivityAt >= STALL_TIMEOUT_MS) {
       state.watchdog = "stalled";
       state.problem = "GPT response stalled or remained blank";
-      saveState(state, "GPT stalled/blank; refresh recovery");
+      saveState(state, "GPT stalled/blank; same-turn recovery required");
       return { status: "stalled", page, text, hash: currentHash };
     }
     await sleep(POLL_MS);
   }
 }
-
 async function runPrompt(context, page, state, prompt, kind) {
   while (true) {
     const sent = await sendWithRecovery(context, page, state, prompt, kind);
@@ -568,20 +632,47 @@ async function runPrompt(context, page, state, prompt, kind) {
       await sleep(1000);
       continue;
     }
-    const result = await waitForCompletion(context, page, state, sent.baselineHash);
-    page = result.page;
-    if (result.status === "stalled") {
-      page = await refreshChat(context, page, state, 1);
-      continue;
+
+    let sameTurnRecoveries = 0;
+    while (true) {
+      const result = await waitForCompletion(context, page, state, sent.baselineHash);
+      page = result.page;
+      if (result.status !== "stalled") {
+        state.lastAssistantHash = result.hash;
+        state.problem = null;
+        if (state.justRolledOver) state.justRolledOver = false;
+        syncActiveChatUrl(page, state);
+        saveState(state, "Completed assistant response captured");
+        return { page, text: result.text, hash: result.hash };
+      }
+
+      sameTurnRecoveries += 1;
+      page = await refreshChat(context, page, state, sameTurnRecoveries);
+      const latestUserHash = hashText(await latestUserText(page));
+      if (sameTurnPromptPresent(latestUserHash, sent.outgoingHash)) {
+        state.problem = null;
+        state.watchdog = "same-turn-recovery";
+        saveState(state, `Blank/stalled response recovery ${sameTurnRecoveries}; keeping accepted user turn`);
+        console.log(`[DAVID] Blank/stalled response: same-turn recovery ${sameTurnRecoveries}; no duplicate resend.`);
+        if (sameTurnRecoveries >= SAME_TURN_RECOVERY_LIMIT) {
+          state.problemRetryAt = new Date(Date.now() + PROBLEM_BACKOFF_MS).toISOString();
+          state.watchdog = "same-turn-backoff";
+          saveState(state, "Accepted turn still pending; backoff before another same-turn check");
+          await sleep(PROBLEM_BACKOFF_MS);
+          delete state.problemRetryAt;
+          sameTurnRecoveries = 0;
+        }
+        continue;
+      }
+
+      state.problem = null;
+      state.watchdog = "accepted-turn-missing";
+      saveState(state, "Previously accepted user turn no longer present after refresh; safe resend may proceed");
+      console.log("[DAVID] Accepted user turn is no longer present after refresh. Safe resend allowed.");
+      break;
     }
-    state.lastAssistantHash = result.hash;
-    if (state.justRolledOver) state.justRolledOver = false;
-    syncActiveChatUrl(page, state);
-    saveState(state, "Completed assistant response captured");
-    return { page, text: result.text, hash: result.hash };
   }
 }
-
 async function main() {
   console.log(`[DAVID] Connecting to browser CDP: ${CDP_URL}`);
   const browser = await chromium.connectOverCDP(CDP_URL);
@@ -714,7 +805,23 @@ async function main() {
   }
 }
 
-main().catch(async (error) => {
-  console.error("[DAVID] FATAL:", error?.stack || error);
-  process.exit(1);
-});
+function runSelfTest() {
+  const outgoingHash = hashText("relay");
+  const otherHash = hashText("other");
+  if (!promptAcceptedSignal(4, 3, outgoingHash, outgoingHash)) throw new Error("ENCH_EV5 self-test: accepted user turn must suppress resend");
+  if (promptAcceptedSignal(3, 3, outgoingHash, outgoingHash)) throw new Error("ENCH_EV5 self-test: unchanged user count must not claim new acceptance");
+  if (promptAcceptedSignal(4, 3, otherHash, outgoingHash)) throw new Error("ENCH_EV5 self-test: different user text must not claim acceptance");
+  if (!sameTurnPromptPresent(outgoingHash, outgoingHash)) throw new Error("ENCH_EV5 self-test: same accepted turn must survive refresh recovery");
+  if (sameTurnPromptPresent(otherHash, outgoingHash)) throw new Error("ENCH_EV5 self-test: different latest user turn must permit safe resend");
+  if (!runPrompt.toString().includes("no duplicate resend")) throw new Error("ENCH_EV5 self-test: same-turn recovery must explicitly suppress duplicate resend");
+  console.log("ENCHEV_V5_RESPONSE_WATCHDOG_SELF_TEST PASS accepted_turn=3 same_turn=2 duplicate_resend_guard=1");
+}
+
+if (process.argv.includes("--self-test")) {
+  runSelfTest();
+} else {
+  main().catch(async (error) => {
+    console.error("[DAVID] FATAL:", error?.stack || error);
+    process.exit(1);
+  });
+}
