@@ -5,11 +5,11 @@ import crypto from "node:crypto";
 import { spawn, spawnSync } from "node:child_process";
 
 const ROUTES=[
-  {name:"home",path:"/"},
-  {name:"inventory",path:"/inventory"},
-  {name:"lot-ea-10539",path:"/lot/EA-10539"},
-  {name:"live-auctions",path:"/live-auctions"},
-  {name:"profile",path:"/profile"},
+  {name:"home",path:"/",ready:"document.querySelector('.eaHero') && document.querySelector('.eaFeaturedCard')"},
+  {name:"inventory",path:"/inventory",ready:"document.querySelectorAll('.inventoryCard').length >= 1 && getComputedStyle(document.querySelector('.inventoryGrid')).display === 'grid' && getComputedStyle(document.querySelector('.inventoryCard')).borderRadius !== '0px'"},
+  {name:"lot-ea-10539",path:"/lot/EA-10539",ready:"document.querySelector('.lotPage') && document.querySelector('.lotMedia img')"},
+  {name:"live-auctions",path:"/live-auctions",ready:"document.querySelector('.liveStage') && document.querySelector('.liveBidPanel')"},
+  {name:"profile",path:"/profile",ready:"document.querySelector('.profileDashboardShell') && document.querySelector('.profileWatchlist')"},
 ];
 
 const VIEWPORTS=[
@@ -130,10 +130,20 @@ async function createCdpClient(wsUrl){
   return {ws,call};
 }
 
-async function settlePage(call){
+async function settlePage(call,route){
   for(let attempt=0;attempt<80;attempt++){
     const state=await call("Runtime.evaluate",{expression:"document.readyState",returnByValue:true});
     if(state?.result?.value==="complete")break;
+    await sleep(100);
+  }
+
+  for(let attempt=0;attempt<100;attempt++){
+    const ready=await call("Runtime.evaluate",{
+      expression:`Boolean(${route.ready})`,
+      returnByValue:true,
+    });
+    if(ready?.result?.value===true)break;
+    if(attempt===99)fail(`${route.name} did not reach stable visual DOM`);
     await sleep(100);
   }
 
@@ -184,7 +194,7 @@ async function captureOne({port,baseUrl,route,viewport,outputDir}){
     const navigation=await call("Page.navigate",{url});
     if(navigation.errorText)fail(`${route.name} navigation failed: ${navigation.errorText}`);
 
-    await settlePage(call);
+    await settlePage(call,route);
 
     const result=await call("Page.captureScreenshot",{
       format:"png",
