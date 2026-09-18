@@ -287,6 +287,7 @@ async function main() {
   activeChatUrl = state.chatUrl || INITIAL_CHAT_URL;
   let page = await waitReady(context, await ensurePage(context, null), state);
   syncActiveChatUrl(page, state);
+  if (state.previousChatUrl) await closeOldConversationTabs(context, state.previousChatUrl, page);
   console.log(`[DESIGN] Session ready: ${page.url()}`);
   state.watchdog = "design-monitoring";
   save(state, "Design worker connected in shared Edge tab");
