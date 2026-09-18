@@ -103,8 +103,24 @@ jobs:
           node --check tools/david/auto-continue-david-apk-v1.mjs
           node --check tools/david/dual-session-worker.mjs
           node --check tools/david/auto-complete-app2-v1.mjs
+      - name: DAVID SYSTEM response watchdog self-tests
+        run: node tools/david/auto-continue-enchev-v5.mjs --self-test
       - name: DAVID APP2 response watchdog self-tests
         run: node tools/david/auto-complete-app2-v1.mjs --self-test
+      - name: DAVID PowerShell syntax checks
+        shell: pwsh
+        run: |
+          function Test-PowerShellFile([string]$Path) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($Path, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error "$Path :: $($_.Message)" }
+              throw "PowerShell syntax check failed: $Path"
+            }
+          }
+          Test-PowerShellFile "$PWD/START_DAVID_ALL.ps1"
+          Test-PowerShellFile "$PWD/tools/david/david-status-dashboard.ps1"
       - name: Redis live binding verification when configured
         env:
           REDIS_URL: ${{ secrets.REDIS_URL }}
