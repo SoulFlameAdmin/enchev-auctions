@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import "./live-auctions.css";
 import "./live-d24.css";
 import "./live-d26.css";
+import "./live-d27.css";
 
 const LOT_SECONDS=10;
 const lots=[
@@ -13,13 +14,21 @@ const lots=[
   {lot:"EA-10627",title:"2020 BMW X5 xDrive40i",location:"Texas, USA",damage:"Rear end",mileage:"96 210 km",price:15100,image:"https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1500&q=86"},
 ];
 
+type BidFeedbackKind="accepted"|"rejected"|"outbid"|"leading";
+type BidFeedback={kind:BidFeedbackKind;title:string;detail:string};
+
 type LiveClockPayload={
   serverNow:number;
   roundEndsAt:number;
   durationMs:number;
   lotIndex:number;
   lotId:string;
+  currentBid:number;
+  bidSequence:number;
+  minimumBid:number;
   scope:string;
+  outcome?:"accepted"|"rejected";
+  reason?:"stale-lot"|"invalid-bid"|"bid-too-low";
 };
 
 export default function LiveAuctionsPage(){
@@ -29,6 +38,7 @@ export default function LiveAuctionsPage(){
   const [bidFlash,setBidFlash]=useState(false);
   const [clockMode,setClockMode]=useState<"syncing"|"server">("syncing");
   const [soldNotice,setSoldNotice]=useState<string|null>(null);
+  const [bidFeedback,setBidFeedback]=useState<BidFeedback|null>(null);
 
   const deadlineRef=useRef<number|null>(null);
   const serverOffsetRef=useRef(0);
@@ -36,11 +46,24 @@ export default function LiveAuctionsPage(){
   const syncInFlightRef=useRef(false);
   const activeRef=useRef(0);
   const soldNoticeTimerRef=useRef<number|null>(null);
+  const feedbackTimerRef=useRef<number|null>(null);
+  const ownBidRef=useRef<{lotId:string;amount:number;sequence:number}|null>(null);
+
+  const showFeedback=(feedback:BidFeedback,autoClearMs?:number)=>{
+    setBidFeedback(feedback);
+    if(feedbackTimerRef.current!==null)window.clearTimeout(feedbackTimerRef.current);
+    feedbackTimerRef.current=null;
+    if(autoClearMs){
+      feedbackTimerRef.current=window.setTimeout(()=>setBidFeedback(null),autoClearMs);
+    }
+  };
 
   const applyClock=(data:LiveClockPayload,sentAt:number,receivedAt:number)=>{
     if(
       !Number.isFinite(data.serverNow)||
       !Number.isFinite(data.roundEndsAt)||
+      !Number.isFinite(data.currentBid)||
+      !Number.isInteger(data.bidSequence)||
       !Number.isInteger(data.lotIndex)||
       data.lotIndex<0||
       data.lotIndex>=lots.length||
@@ -51,11 +74,27 @@ export default function LiveAuctionsPage(){
     const offset=data.serverNow-midpoint;
     const previousIndex=activeRef.current;
     const hadServerState=lastServerNowRef.current>0;
+    const ownBid=ownBidRef.current;
+
+    if(
+      ownBid&&
+      data.lotId===ownBid.lotId&&
+      data.currentBid>ownBid.amount&&
+      data.bidSequence>ownBid.sequence
+    ){
+      showFeedback({
+        kind:"outbid",
+        title:"Наддадено е над твоята оферта",
+        detail:`Текущата ставка вече е €${data.currentBid.toLocaleString("bg-BG")}.`,
+      });
+      ownBidRef.current=null;
+    }
 
     if(hadServerState&&data.lotIndex!==previousIndex){
       setSoldNotice(lots[previousIndex].lot);
       if(soldNoticeTimerRef.current!==null)window.clearTimeout(soldNoticeTimerRef.current);
       soldNoticeTimerRef.current=window.setTimeout(()=>setSoldNotice(null),1800);
+      if(ownBidRef.current?.lotId===lots[previousIndex].lot)ownBidRef.current=null;
     }
 
     lastServerNowRef.current=data.serverNow;
@@ -63,6 +102,7 @@ export default function LiveAuctionsPage(){
     deadlineRef.current=data.roundEndsAt;
     activeRef.current=data.lotIndex;
     setActive(data.lotIndex);
+    setPrices(p=>({...p,[data.lotId]:data.currentBid}));
     setRemaining(Math.max(0,Math.ceil((data.roundEndsAt-(Date.now()+offset))/1000)));
     setClockMode("server");
     return true;
@@ -100,6 +140,7 @@ export default function LiveAuctionsPage(){
       window.clearInterval(tickId);
       window.clearInterval(resyncId);
       if(soldNoticeTimerRef.current!==null)window.clearTimeout(soldNoticeTimerRef.current);
+      if(feedbackTimerRef.current!==null)window.clearTimeout(feedbackTimerRef.current);
     };
   // D25 sync lifecycle is intentionally ref-backed; D28 owns reconnect/stale UI.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -112,29 +153,55 @@ export default function LiveAuctionsPage(){
 
   const bid=async()=>{
     const bidLot=current;
+    const requestedBid=price+100;
     const sentAt=Date.now();
+
     try{
       const response=await fetch("/api/live-auction-clock",{
         method:"POST",
         cache:"no-store",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({action:"bid"}),
+        body:JSON.stringify({action:"bid",lotId:bidLot.lot,bidAmount:requestedBid}),
       });
-      if(!response.ok)return;
 
       const data=await response.json() as LiveClockPayload;
       const applied=applyClock(data,sentAt,Date.now());
-      if(!applied||data.lotId!==bidLot.lot)return;
 
-      setPrices(p=>({...p,[bidLot.lot]:(p[bidLot.lot]??bidLot.price)+100}));
+      if(!response.ok||!applied||data.outcome!=="accepted"||data.lotId!==bidLot.lot){
+        const detail=
+          data.reason==="stale-lot"?"Лотът вече е сменен. Показваме актуалния търг.":
+          data.reason==="bid-too-low"?`Нужна е минимум €${data.minimumBid.toLocaleString("bg-BG")}.`:
+          "Офертата не отговаря на текущото server state.";
+        showFeedback({kind:"rejected",title:"Офертата не е приета",detail},3200);
+        return;
+      }
+
+      ownBidRef.current={lotId:data.lotId,amount:data.currentBid,sequence:data.bidSequence};
+      showFeedback({
+        kind:"accepted",
+        title:"Офертата е приета",
+        detail:`Server потвърди €${data.currentBid.toLocaleString("bg-BG")} за LOT ${data.lotId}.`,
+      });
+      feedbackTimerRef.current=window.setTimeout(()=>{
+        const own=ownBidRef.current;
+        if(own&&own.lotId===data.lotId&&own.sequence===data.bidSequence){
+          setBidFeedback({
+            kind:"leading",
+            title:"Водиш наддаването",
+            detail:`Твоята потвърдена оферта е €${data.currentBid.toLocaleString("bg-BG")}.`,
+          });
+        }
+      },900);
+
       setBidFlash(true);
       window.setTimeout(()=>setBidFlash(false),650);
     }catch{
-      // D28 adds explicit connection/reconnect/stale-state feedback.
+      // D28 owns connection/reconnect/stale-state feedback.
     }
   };
 
   const fmt=(v:number)=>`00:${String(v).padStart(2,"0")}`;
+  const feedbackState=bidFeedback?.kind??"idle";
 
   return <main className="livePage">
     <div className="liveUtility"><span><i/> ENCHEV LIVE NETWORK</span><span>Server-synced demo session · 10 sec per lot</span></div>
@@ -164,6 +231,19 @@ export default function LiveAuctionsPage(){
         <div className="liveBidTop"><span>ТЕКУЩА СТАВКА</span><b>€{price.toLocaleString("bg-BG")}</b></div>
         <div className="liveBidMeta"><div><span>Следваща оферта</span><b>€{(price+100).toLocaleString("bg-BG")}</b></div><div><span>Остава</span><b>{fmt(remaining)}</b></div></div>
         <button className="liveBidButton" onClick={()=>void bid()}>Оферирай +€100 <span>→</span></button>
+        <div
+          className={`liveBidFeedback ${feedbackState}`}
+          data-bid-feedback-task="D27"
+          data-bid-state={feedbackState}
+          role={bidFeedback?.kind==="rejected"||bidFeedback?.kind==="outbid"?"alert":"status"}
+          aria-live={bidFeedback?.kind==="rejected"||bidFeedback?.kind==="outbid"?"assertive":"polite"}
+        >
+          <span className="liveBidFeedbackDot" aria-hidden="true"/>
+          <div>
+            <b>{bidFeedback?.title??"Готов за оферта"}</b>
+            <span>{bidFeedback?.detail??"Офертата ще бъде валидирана спрямо текущото server state."}</span>
+          </div>
+        </div>
         <a className="liveLotLink" href={`/lot/${current.lot}`}>Отвори детайлите на лота</a>
 
         <section className="liveNextPreview" data-live-slot="next" aria-labelledby="live-next-lot-title">
@@ -179,7 +259,7 @@ export default function LiveAuctionsPage(){
           </a>
         </section>
 
-        <div className="liveRule"><b>Как работи</b><p>Офертата се потвърждава през server clock endpoint и връща таймера на 10 сек. След 00:00 интерфейсът ресинхронизира текущия лот със server session state.</p></div>
+        <div className="liveRule"><b>Как работи</b><p>Офертата се валидира от server session state. Приета оферта става leading; stale/ниска оферта се отхвърля, а по-висока последваща server оферта показва outbid.</p></div>
       </aside>
     </section>
 
