@@ -17,8 +17,8 @@ import CloudPlanStateSync from "./components/CloudPlanStateSync";
 import LotNavigationBridge from "./components/LotNavigationBridge";
 
 export const metadata: Metadata = {
-  title: "Enchev Auctions",
-  description: "International vehicle auction platform",
+  title: "ENCHEV Auctions",
+  description: "ENCHEV — международна платформа за автомобилни търгове, LIVE наддаване, история и транспорт.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

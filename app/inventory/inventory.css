@@ -1,4 +1,4 @@
-/* ENCHEV AUCTIONS — inventory marketplace, AutoBidMaster-inspired structure in ENCHEV theme */
+/* ENCHEV AUCTIONS — original ENCHEV inventory marketplace theme */
 :root{--inv-green:#27ef82;--inv-green-2:#15c968;--inv-bg:#050806;--inv-card:#0d1310;--inv-card-2:#0a0f0c;--inv-line:rgba(255,255,255,.09);--inv-muted:#8e9a93;--inv-text:#f5f8f6}
 .inventoryPage{min-height:100vh;background:linear-gradient(180deg,#06100b 0,#050806 180px,#050806 100%);color:var(--inv-text);padding-bottom:72px}
 .inventoryHeader{position:sticky;top:0;z-index:45;height:84px;padding:0 34px;display:grid;grid-template-columns:240px minmax(320px,760px) 1fr;gap:26px;align-items:center;background:rgba(5,10,7,.96);backdrop-filter:blur(18px);border-bottom:1px solid rgba(39,239,130,.10);box-shadow:0 8px 30px rgba(0,0,0,.22)}
