@@ -3,7 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
-const CHAT_URL = process.env.DAVID_APP2_CHAT_URL || "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4";
+const INITIAL_CHAT_URL = process.env.DAVID_APP2_CHAT_URL || "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4";
+let activeChatUrl = INITIAL_CHAT_URL;
 const CDP_URL = process.env.DAVID_APP2_CDP_URL || "http://127.0.0.1:9444";
 const STATE_FILE = process.env.DAVID_APP2_STATE_FILE || path.join(process.cwd(), ".david-app2-state.json");
 const POLL_MS = Number(process.env.DAVID_APP2_POLL_MS || 800);
@@ -21,6 +22,18 @@ function responseProgressed(previousHash, currentHash) {
 }
 function stallExpired(lastProgressAt, now = Date.now(), stallMs = STALL_MS) {
   return now - lastProgressAt > stallMs;
+}
+function conversationLimitText(text) {
+  return /(достигнахте максималната продължителност на този разговор|максималната продължителност на този разговор|maximum length for this conversation|conversation has reached (?:its )?maximum length)/i.test(String(text || ""));
+}
+function cleanConversationUrl(url) {
+  const m = String(url || "").match(/^https:\/\/chatgpt\.com\/c\/[^/?#]+/i);
+  return m ? m[0] : null;
+}
+function matchesActiveChat(url) {
+  const u = String(url || "");
+  if (activeChatUrl === "https://chatgpt.com/") return u === "https://chatgpt.com/" || u === "https://chatgpt.com";
+  return u.startsWith(activeChatUrl);
 }
 
 const MASTER_PROMPT = `@GitHub @Vercel @Supabase
@@ -78,10 +91,59 @@ function deferPrompt(problem, repeat = 1) {
 }
 
 async function ensurePage(context, current) {
-  if (current && !current.isClosed() && current.url().startsWith(CHAT_URL)) return current;
-  let page = context.pages().find((p) => !p.isClosed() && p.url().startsWith(CHAT_URL));
+  if (current && !current.isClosed() && current.url().startsWith("https://chatgpt.com/")) return current;
+  let page = context.pages().find((p) => !p.isClosed() && matchesActiveChat(p.url()));
+  if (!page && activeChatUrl !== INITIAL_CHAT_URL) {
+    page = context.pages().find((p) => !p.isClosed() && p.url().startsWith(INITIAL_CHAT_URL));
+  }
   if (!page) page = await context.newPage();
-  if (!page.url().startsWith(CHAT_URL)) await page.goto(CHAT_URL, { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  if (!matchesActiveChat(page.url())) {
+    await page.goto(activeChatUrl, { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  }
+  return page;
+}
+async function conversationLimitReached(page) {
+  try {
+    return await page.evaluate(() => {
+      const visible = (el) => {
+        const s = getComputedStyle(el), r = el.getBoundingClientRect();
+        return s.display !== "none" && s.visibility !== "hidden" && r.width > 0 && r.height > 0;
+      };
+      const re = /(достигнахте максималната продължителност на този разговор|максималната продължителност на този разговор|maximum length for this conversation|conversation has reached (?:its )?maximum length)/i;
+      for (const el of document.querySelectorAll("div,section,p,span")) {
+        if (!visible(el)) continue;
+        const t = (el.textContent || "").replace(/\s+/g, " ").trim();
+        if (t && t.length < 500 && re.test(t)) return true;
+      }
+      return false;
+    });
+  } catch { return false; }
+}
+function syncActiveChatUrl(page, state) {
+  const u = cleanConversationUrl(page?.url?.());
+  if (!u || u === activeChatUrl) return;
+  activeChatUrl = u;
+  state.chatUrl = u;
+  state.pendingNewChat = false;
+  state.lastConversationUrl = u;
+  save(state, `Conversation URL synced: ${u}`);
+  console.log(`[APP2] Active conversation: ${u}`);
+}
+async function rolloverConversation(context, page, state) {
+  const oldUrl = cleanConversationUrl(page?.url?.()) || page?.url?.() || activeChatUrl;
+  state.previousChatUrl = oldUrl;
+  state.rolloverCount = Number(state.rolloverCount || 0) + 1;
+  state.pendingNewChat = true;
+  state.justRolledOver = true;
+  state.watchdog = "conversation-rollover";
+  activeChatUrl = "https://chatgpt.com/";
+  state.chatUrl = activeChatUrl;
+  save(state, `Conversation max length -> rollover #${state.rolloverCount}`);
+  console.log(`[APP2] Conversation max length reached. Rolling over in SAME tab (#${state.rolloverCount})...`);
+
+  if (!page || page.isClosed()) page = await ensurePage(context, null);
+  await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  await sleep(1200);
   return page;
 }
 async function composer(page) {
@@ -146,11 +208,16 @@ async function platformBlock(page) {
     });
   } catch { return null; }
 }
-async function waitReady(context, page) {
+async function waitReady(context, page, state) {
   while (true) {
     page = await ensurePage(context, page);
     const u = page.url();
     if (u.includes("/login") || u.includes("/auth/")) { await sleep(1200); continue; }
+    if (await conversationLimitReached(page)) {
+      page = await rolloverConversation(context, page, state);
+      continue;
+    }
+    syncActiveChatUrl(page, state);
     if (await composer(page) || await latestAssistant(page)) return page;
     await sleep(POLL_MS);
   }
@@ -193,12 +260,12 @@ async function recoverActive(context, page, state, reason) {
     await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
     await sleep(1500);
   }
-  return waitReady(context, page);
+  return waitReady(context, page, state);
 }
 async function waitStart(context, page, baseHash, state) {
   const end = Date.now() + START_TIMEOUT_MS;
   while (Date.now() < end) {
-    page = await waitReady(context, page);
+    page = await waitReady(context, page, state);
     if (await interruptionVisible(page)) {
       page = await recoverActive(context, page, state, "connection-interrupted");
       return { page, started: false, recovered: true };
@@ -216,7 +283,7 @@ async function waitComplete(context, page, baseHash, state) {
   let lastHash = baseHash;
   let lastProgressAt = Date.now();
   while (true) {
-    page = await waitReady(context, page);
+    page = await waitReady(context, page, state);
     if (await interruptionVisible(page)) return { page, retry: true, reason: "connection-interrupted" };
     const pb = await platformBlock(page);
     if (pb) return { page, retry: true, reason: pb };
@@ -255,15 +322,19 @@ async function waitComplete(context, page, baseHash, state) {
 }
 async function runPrompt(context, page, state, prompt, kind) {
   for (let attempt = 1; ; attempt++) {
-    page = await waitReady(context, page);
+    page = await waitReady(context, page, state);
     const baseHash = hash(await latestAssistant(page));
     state.watchdog = `sending-${kind}`;
     state.relayAttempts = Number(state.relayAttempts || 0) + 1;
     save(state, `${kind} attempt ${attempt}`);
     console.log(`[APP2] Sending ${kind} attempt ${attempt}.`);
-    await fillAndSend(page, prompt);
+    const outgoingPrompt = state.justRolledOver
+      ? `AUTOMATIC CHAT ROLLOVER: The previous ChatGPT conversation reached its maximum length. Reconstruct the exact current project state from GitHub/source-of-truth/evidence and continue from the next unfinished dependency-safe task. Do NOT restart completed work.\n\n${prompt}`
+      : prompt;
+    await fillAndSend(page, outgoingPrompt);
     const start = await waitStart(context, page, baseHash, state);
     page = start.page;
+    syncActiveChatUrl(page, state);
     if (start.blocker) {
       state.problem = `ChatGPT platform: ${start.blocker}`;
       state.watchdog = "platform-block";
@@ -292,6 +363,8 @@ async function runPrompt(context, page, state, prompt, kind) {
       continue;
     }
     state.lastAssistantHash = done.hash;
+    if (state.justRolledOver) state.justRolledOver = false;
+    syncActiveChatUrl(page, state);
     save(state, "Assistant response complete");
     return { page, text: done.text };
   }
@@ -303,10 +376,13 @@ async function main() {
   const browser = await chromium.connectOverCDP(CDP_URL, { timeout: 120000 });
   const context = browser.contexts()[0];
   if (!context) throw new Error("No Chromium context on APP2 port");
-  let page = await waitReady(context, await ensurePage(context, null));
+  const state = loadState();
+  activeChatUrl = state.chatUrl || INITIAL_CHAT_URL;
+  let page = await waitReady(context, await ensurePage(context, null), state);
+  syncActiveChatUrl(page, state);
   console.log(`[APP2] Session ready: ${page.url()}`);
 
-  const state = loadState();
+
   if (state.complete) {
     console.log(`[APP2] Already marked ${DONE_MARKER}.`);
     return;
@@ -391,7 +467,10 @@ function runSelfTest() {
   if (stallExpired(1000, 1000 + STALL_MS)) throw new Error("APP2 watchdog self-test: exact stall threshold must not expire early");
   if (!stallExpired(1000, 1001 + STALL_MS)) throw new Error("APP2 watchdog self-test: stalled response must expire after threshold");
   if (/fillAndSend\s*\(/.test(recoverActive.toString())) throw new Error("APP2 watchdog self-test: recovery must not resend; outer retry owns sending");
-  console.log("APP2_RESPONSE_WATCHDOG_SELF_TEST PASS progress=2 stall=2 recovery_single_send=1");
+  if (!conversationLimitText("Достигнахте максималната продължителност на този разговор, но можете да продължите да говорите, като започнете нов чат.")) throw new Error("APP2 rollover self-test: BG limit text not detected");
+  if (!conversationLimitText("You've reached the maximum length for this conversation, but you can keep talking by starting a new chat.")) throw new Error("APP2 rollover self-test: EN limit text not detected");
+  if (conversationLimitText("Normal assistant response")) throw new Error("APP2 rollover self-test: false positive");
+  console.log("APP2_RESPONSE_WATCHDOG_SELF_TEST PASS progress=2 stall=2 recovery_single_send=1 rollover=3");
 }
 
 if (process.argv.includes("--self-test")) {
