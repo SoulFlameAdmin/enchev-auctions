@@ -134,6 +134,30 @@ async function verifyD24LiveRoom(call,viewport){
   await sleep(80);
 }
 
+
+async function verifyD29Watchlist(call,viewport){
+  const before=await call("Runtime.evaluate",{expression:`(()=>{const s=document.querySelector('.profileWatchlist[data-design-task="D29"]');const summary=s?.querySelector('.profileWatchlistSummary');const grid=s?.querySelector('.profileWatchlistGrid');const cards=[...(s?.querySelectorAll('.profileWatchlistCard')||[])];const first=cards[0];const remove=first?.querySelector('.profileWatchlistRemove');if(!s||!summary||!grid||!first||!remove)return null;remove.focus({preventScroll:true});const rr=remove.getBoundingClientRect();const states=cards.map(x=>x.getAttribute('data-auction-state')||'');const ids=cards.map(x=>x.getAttribute('data-lot-id')||'');return {viewportWidth:innerWidth,scrollWidth:document.documentElement.scrollWidth,columns:getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length,count:cards.length,saved:Number(summary.getAttribute('data-saved-count')),live:Number(summary.getAttribute('data-live-count')),states,ids,focused:document.activeElement===remove,removeWidth:rr.width,removeHeight:rr.height,lotLinks:cards.every((x,i)=>x.querySelector('.profileWatchlistActions a:first-child')?.getAttribute('href')==='/lot/'+ids[i]),liveLinks:cards.every(x=>x.querySelector('.profileWatchlistActions a:last-child')?.getAttribute('href')==='/live-auctions')};})()`,returnByValue:true});
+  const b=before?.result?.value;
+  if(!b)fail("D29 watchlist runtime elements missing");
+  if(b.scrollWidth>b.viewportWidth+3)fail(`D29 ${viewport.name} horizontal overflow`);
+  if(b.count!==3||b.saved!==3||b.live!==1)fail(`D29 ${viewport.name} initial count mismatch`);
+  if(!["live","upcoming","buy-now"].every(state=>b.states.includes(state)))fail(`D29 ${viewport.name} missing saved-vehicle state`);
+  if(!b.focused||!b.lotLinks||!b.liveLinks)fail(`D29 ${viewport.name} focus or action-link contract failed`);
+  if(viewport.mobile){
+    if(b.columns!==1)fail(`D29 mobile grid expected 1 column, got ${b.columns}`);
+    if(b.removeWidth<43||b.removeHeight<43)fail("D29 mobile remove target below 44px");
+  }else if(b.columns!==3){
+    fail(`D29 desktop grid expected 3 columns, got ${b.columns}`);
+  }
+
+  const removedLot=b.ids[0];
+  await call("Runtime.evaluate",{expression:"document.querySelector('.profileWatchlistCard .profileWatchlistRemove')?.click()"});
+  await sleep(120);
+  const after=await call("Runtime.evaluate",{expression:`(()=>{const s=document.querySelector('.profileWatchlist[data-design-task="D29"]');const summary=s?.querySelector('.profileWatchlistSummary');const cards=[...(s?.querySelectorAll('.profileWatchlistCard')||[])];return {count:cards.length,saved:Number(summary?.getAttribute('data-saved-count')),live:Number(summary?.getAttribute('data-live-count')),ids:cards.map(x=>x.getAttribute('data-lot-id')||'')};})()`,returnByValue:true});
+  const a=after?.result?.value;
+  if(!a||a.count!==2||a.saved!==2||a.live!==0||a.ids.includes(removedLot))fail(`D29 ${viewport.name} remove interaction did not update watchlist state`);
+}
+
 function findChrome(){
   const candidates=[
     process.env.CHROME_BIN,
@@ -314,6 +338,10 @@ async function captureOne({port,baseUrl,route,viewport,outputDir}){
     const filename=`${route.name}--${viewport.name}.png`;
     const filepath=path.resolve(outputDir,filename);
     fs.writeFileSync(filepath,png);
+
+    if(route.name==="profile"){
+      await verifyD29Watchlist(call,viewport);
+    }
 
     return {
       route:route.path,
