@@ -570,7 +570,8 @@ async function sendWithRecovery(context, page, state, text, kind) {
         : `GPT response started; logical cycle ${state.turnsSent}`);
       return { ok: true, page, baselineHash, outgoingHash };
     }
-    console.log("[DAVID] GPT did not start and user turn was not confirmed. Safe retry allowed.");
+    console.log("[DAVID] GPT did not start and user turn was not confirmed. LAW: REFRESH -> RESEND.");
+    page = await refreshChat(context, page, state, attempt);
   }
   state.watchdog = "refreshing-chat";
   state.problem = "GPT did not accept the user turn after recovery attempts";
@@ -659,28 +660,19 @@ async function runPrompt(context, page, state, prompt, kind) {
       }
 
       sameTurnRecoveries += 1;
-      page = await refreshChat(context, page, state, sameTurnRecoveries);
-      const latestUserHash = hashText(await latestUserText(page));
-      if (sameTurnPromptPresent(latestUserHash, sent.outgoingHash)) {
-        state.problem = null;
-        state.watchdog = "same-turn-recovery";
-        saveState(state, `Blank/stalled response recovery ${sameTurnRecoveries}; keeping accepted user turn`);
-        console.log(`[DAVID] Blank/stalled response: same-turn recovery ${sameTurnRecoveries}; no duplicate resend.`);
-        if (sameTurnRecoveries >= SAME_TURN_RECOVERY_LIMIT) {
-          state.problemRetryAt = new Date(Date.now() + PROBLEM_BACKOFF_MS).toISOString();
-          state.watchdog = "same-turn-backoff";
-          saveState(state, "Accepted turn still pending; backoff before another same-turn check");
-          await sleep(PROBLEM_BACKOFF_MS);
-          delete state.problemRetryAt;
-          sameTurnRecoveries = 0;
-        }
-        continue;
+      state.problem = null;
+      if (sameTurnRecoveries <= STALL_RESEND_LIMIT) {
+        state.watchdog = "stalled-resend";
+        saveState(state, `LAW: GPT stopped thinking/writing -> resend same logical task ${sameTurnRecoveries}/${STALL_RESEND_LIMIT}`);
+        console.log(`[DAVID] LAW: GPT stopped thinking/writing -> RESEND (${sameTurnRecoveries}/${STALL_RESEND_LIMIT}).`);
+        break;
       }
 
-      state.problem = null;
-      state.watchdog = "accepted-turn-missing";
-      saveState(state, "Previously accepted user turn no longer present after refresh; safe resend may proceed");
-      console.log("[DAVID] Accepted user turn is no longer present after refresh. Safe resend allowed.");
+      page = await refreshChat(context, page, state, sameTurnRecoveries);
+      state.watchdog = "stalled-refresh-resend";
+      saveState(state, "LAW: repeated stall -> refresh -> resend");
+      console.log("[DAVID] LAW: repeated stall -> REFRESH -> RESEND.");
+      sameTurnRecoveries = 0;
       break;
     }
   }
@@ -826,8 +818,9 @@ function runSelfTest() {
   if (promptAcceptedSignal(4, 3, otherHash, outgoingHash)) throw new Error("ENCH_EV5 self-test: different user text must not claim acceptance");
   if (!sameTurnPromptPresent(outgoingHash, outgoingHash)) throw new Error("ENCH_EV5 self-test: same accepted turn must survive refresh recovery");
   if (sameTurnPromptPresent(otherHash, outgoingHash)) throw new Error("ENCH_EV5 self-test: different latest user turn must permit safe resend");
-  if (!runPrompt.toString().includes("no duplicate resend")) throw new Error("ENCH_EV5 self-test: same-turn recovery must explicitly suppress duplicate resend");
-  console.log("ENCHEV_V5_RESPONSE_WATCHDOG_SELF_TEST PASS accepted_turn=3 same_turn=2 duplicate_resend_guard=1");
+  if (!runPrompt.toString().includes("stalled-resend")) throw new Error("ENCH_EV5 self-test: stalled generation must trigger bounded resend");
+  if (!runPrompt.toString().includes("stalled-refresh-resend")) throw new Error("ENCH_EV5 self-test: repeated stall must refresh before resend");
+  console.log("ENCHEV_V5_RESPONSE_WATCHDOG_SELF_TEST PASS accepted_turn=3 bounded_stall_resend=1 refresh_after_repeat=1");
 }
 
 if (process.argv.includes("--self-test")) {
