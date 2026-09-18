@@ -18,6 +18,7 @@ let shuttingDown = false;
 let monitorBrowser = null;
 let monitorContext = null;
 let monitorBusy = false;
+let lastMonitorSignature = "";
 
 const specs = [
   {
@@ -245,6 +246,12 @@ async function monitorManagedTabs() {
       if (kind && u) snapshot.managed[kind].push(u);
     }
     fs.writeFileSync(MONITOR_FILE, JSON.stringify(snapshot, null, 2), "utf8");
+    const counts = Object.fromEntries(Object.entries(snapshot.managed).map(([kind, urls]) => [kind, urls.length]));
+    const signature = JSON.stringify(counts);
+    if (signature !== lastMonitorSignature) {
+      lastMonitorSignature = signature;
+      console.log(`[DUAL] TRACK SYSTEM=${counts.SYSTEM} DESIGN=${counts.DESIGN} APP2=${counts.APP2} APK=${counts.APK} chatgptTabs=${snapshot.totalChatGptTabs}`);
+    }
     const duplicates = Object.entries(snapshot.managed)
       .filter(([, urls]) => urls.length > 1)
       .map(([kind, urls]) => `${kind}=${urls.length}`);
