@@ -90,6 +90,8 @@ jobs:
         run: |
           node --check tools/david/auto-continue-enchev-v5.mjs
           node --check tools/david/auto-continue-design-v1.mjs
+          node --check tools/david/auto-continue-david-apk-v1.mjs
+          node --check tools/david/dual-session-worker.mjs
           node --check tools/david/auto-complete-app2-v1.mjs
       - name: DAVID APP2 response watchdog self-tests
         run: node tools/david/auto-complete-app2-v1.mjs --self-test
