@@ -43,17 +43,15 @@ export function validateDomainPackage(rootPackage, packageJson, boundary, source
     if (!forbiddenOwnership.has(capability)) fail(`missing explicit non-ownership capability ${capability}`);
   }
 
-  const forbiddenTokens = [
-    "from \"next",
-    "from 'next",
-    "from \"react",
-    "from 'react",
-    "@supabase/",
-    "app/",
-    "apps/"
+  const forbiddenImports = [
+    { label: "next", pattern: /(?:from\s+|import\s*)["']next(?:\/|["'])/ },
+    { label: "react", pattern: /(?:from\s+|import\s*)["']react(?:\/|["'])/ },
+    { label: "supabase", pattern: /(?:from\s+|import\s*)["']@supabase\// },
+    { label: "app layer", pattern: /(?:from\s+|import\s*)["'](?:\.\.\/)*app\// },
+    { label: "apps layer", pattern: /(?:from\s+|import\s*)["'](?:\.\.\/)*apps\// }
   ];
-  for (const token of forbiddenTokens) {
-    if (source.includes(token)) fail(`framework/runtime coupling forbidden in domain source: ${token}`);
+  for (const rule of forbiddenImports) {
+    if (rule.pattern.test(source)) fail(`framework/runtime coupling forbidden in domain source: ${rule.label}`);
   }
 
   if (!source.includes('DOMAIN_PACKAGE_NAME = "@enchev/domain"')) fail("boundary marker export missing");
@@ -92,7 +90,7 @@ if (process.argv.includes("--self-test")) {
   expectRejected("wrong frozen task", (x) => ({ ...x, boundary: { ...x.boundary, task: "02.06" } }));
   expectRejected("framework independence disabled", (x) => ({ ...x, boundary: { ...x.boundary, framework_independent: false } }));
   expectRejected("Next dependency leak", (x) => ({ ...x, source: x.source + '\nimport "next/server";\n' }));
-  expectRejected("app layer leak", (x) => ({ ...x, source: x.source + '\n// app/private-runtime\n' }));
+  expectRejected("app layer leak", (x) => ({ ...x, source: x.source + '\nimport "../../app/private-runtime";\n' }));
   console.log("PACKAGES_DOMAIN_BOUNDARY_SELF_TEST PASS negative_cases=6");
 } else {
   console.log("PACKAGES_DOMAIN_BOUNDARY PASS workspace=packages/domain package=@enchev/domain framework_independent=true");
