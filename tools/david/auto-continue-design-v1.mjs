@@ -12,6 +12,9 @@ const POLL_MS = Number(process.env.DAVID_DESIGN_POLL_MS || 900);
 const START_TIMEOUT_MS = 15000;
 const STALL_MS = 70000;
 const COOLDOWN_MS = 1200;
+const COMPLETE_QUIET_MS = Number(process.env.DAVID_COMPLETE_QUIET_MS || 7000);
+const COMPLETE_STABLE_SAMPLES = Number(process.env.DAVID_COMPLETE_STABLE_SAMPLES || 5);
+const COMPLETE_SAMPLE_MS = Number(process.env.DAVID_COMPLETE_SAMPLE_MS || 1200);
 const PROBLEM_PREFIX = "PROBLEM IN:";
 const DEPLOY_LAW = `
 DAVID VERCEL DEPLOY LAW:
@@ -212,26 +215,34 @@ async function latestRole(page) {
   return x.last().getAttribute("data-message-author-role").catch(() => null);
 }
 async function generating(page) {
-  for (const s of ['[data-testid="stop-button"]','button[aria-label*="Stop"]','button:has-text("Stop generating")','button:has-text("Спри генерирането")']) {
+  for (const s of ['[data-testid="stop-button"]','[data-testid*="stop" i]','button[aria-label*="Stop"]','button[aria-label*="stop"]','button[aria-label*="Спри"]','button:has-text("Stop generating")','button:has-text("Stop thinking")','button:has-text("Stop response")','button:has-text("Спри генерирането")','button:has-text("Спри да мисли")','button:has-text("Спри отговора")']) {
     const x = page.locator(s).last();
     if (await x.count() && await x.isVisible().catch(() => false)) return true;
   }
   return false;
 }
-async function complete(page) {
-  if (await generating(page) || await latestRole(page) !== "assistant") return false;
-  const text = await latestAssistant(page);
-  if (!text) return false;
-  const turn = page.locator('article[data-testid^="conversation-turn-"]').filter({ has: page.locator('[data-message-author-role="assistant"]') }).last();
-  try {
-    const buttons = turn.locator("button");
-    let visible = 0;
-    for (let i = 0; i < await buttons.count(); i++) if (await buttons.nth(i).isVisible().catch(() => false)) visible++;
-    if (visible >= 4) return true;
-  } catch {}
-  const before = text;
-  await sleep(1200);
-  return !await generating(page) && await latestRole(page) === "assistant" && (await latestAssistant(page)) === before;
+async function complete(page, baseHash = null) {
+  let stableHash = null;
+  let stableSince = 0;
+  let stableSamples = 0;
+  const deadline = Date.now() + COMPLETE_QUIET_MS + 12000;
+  while (Date.now() < deadline) {
+    if (await generating(page) || await latestRole(page) !== "assistant") return false;
+    const text = await latestAssistant(page);
+    if (!text) return false;
+    const h = hash(text);
+    if (baseHash && h === baseHash) return false;
+    if (h !== stableHash) {
+      stableHash = h;
+      stableSince = Date.now();
+      stableSamples = 1;
+    } else {
+      stableSamples += 1;
+    }
+    if (stableSamples >= COMPLETE_STABLE_SAMPLES && Date.now() - stableSince >= COMPLETE_QUIET_MS && !await generating(page)) return true;
+    await sleep(COMPLETE_SAMPLE_MS);
+  }
+  return false;
 }
 async function platformBlock(page) {
   try {
@@ -300,7 +311,7 @@ async function waitCompletion(context, page, base, state) {
     if (await generating(page)) { lastActivity = Date.now(); state.watchdog = "design-thinking"; save(state, "Design GPT thinking"); await sleep(POLL_MS); continue; }
     if (text && h !== base) {
       if (h !== last) { last = h; lastActivity = Date.now(); state.watchdog = "design-writing"; save(state, "Design GPT writing"); }
-      if (await complete(page)) return { page, blocker: null, stalled: false, text };
+      if (await complete(page, base)) return { page, blocker: null, stalled: false, text: await latestAssistant(page) };
     }
     if (Date.now() - lastActivity > STALL_MS) return { page, blocker: null, stalled: true, text };
     await sleep(POLL_MS);
