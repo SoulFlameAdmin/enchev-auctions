@@ -397,6 +397,7 @@ async function main() {
   activeChatUrl = state.chatUrl || INITIAL_CHAT_URL;
   let page = await waitReady(context, await ensurePage(context, null), state);
   syncActiveChatUrl(page, state);
+  if (state.previousChatUrl) await closeOldConversationTabs(context, state.previousChatUrl, page);
   console.log(`[APP2] Session ready: ${page.url()}`);
 
 
