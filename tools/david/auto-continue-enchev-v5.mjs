@@ -4,7 +4,8 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
-const CHAT_URL = process.env.DAVID_CHAT_URL || "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71";
+const INITIAL_CHAT_URL = process.env.DAVID_CHAT_URL || "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71";
+let activeChatUrl = INITIAL_CHAT_URL;
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const MAX_TURNS = Number(process.env.DAVID_MAX_TURNS || 2147483647);
 const POLL_MS = Number(process.env.DAVID_POLL_MS || 800);
@@ -36,6 +37,15 @@ ${RELAY_MARKER}`;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const hashText = (text) => createHash("sha256").update(String(text || "")).digest("hex");
+function cleanConversationUrl(url) {
+  const m = String(url || "").match(/^https:\/\/chatgpt\.com\/c\/[^/?#]+/i);
+  return m ? m[0] : null;
+}
+function matchesActiveChat(url) {
+  const u = String(url || "");
+  if (activeChatUrl === "https://chatgpt.com/") return u === "https://chatgpt.com/" || u === "https://chatgpt.com";
+  return u.startsWith(activeChatUrl);
+}
 
 function loadState() {
   try { return JSON.parse(fs.readFileSync(STATE_FILE, "utf8")); }
@@ -65,16 +75,62 @@ function usable(page) { return Boolean(page && !page.isClosed()); }
 async function safeUrl(page) { try { return usable(page) ? page.url() : ""; } catch { return ""; } }
 
 async function ensureTargetPage(context, current = null) {
-  if (usable(current) && (await safeUrl(current)).startsWith(CHAT_URL)) return current;
+  if (usable(current) && (await safeUrl(current)).startsWith("https://chatgpt.com/")) return current;
   const pages = context.pages().filter((p) => !p.isClosed());
-  let page = pages.find((p) => p.url().startsWith(CHAT_URL))
-    || pages.find((p) => p.url().includes("chatgpt.com/c/"))
-    || pages.find((p) => p.url().includes("chatgpt.com"))
+  let page = pages.find((p) => matchesActiveChat(p.url()))
+    || pages.find((p) => p.url().startsWith(INITIAL_CHAT_URL))
     || await context.newPage();
   const url = await safeUrl(page);
-  if (!url.startsWith(CHAT_URL) && !url.includes("/auth/") && !url.includes("/login")) {
-    await page.goto(CHAT_URL, { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  if (!matchesActiveChat(url) && !url.includes("/auth/") && !url.includes("/login")) {
+    await page.goto(activeChatUrl, { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
   }
+  return page;
+}
+
+async function conversationLimitReached(page) {
+  if (!usable(page)) return false;
+  try {
+    return await page.evaluate(() => {
+      const visible = (el) => {
+        const s = getComputedStyle(el), r = el.getBoundingClientRect();
+        return s.display !== "none" && s.visibility !== "hidden" && r.width > 0 && r.height > 0;
+      };
+      const re = /(достигнахте максималната продължителност на този разговор|максималната продължителност на този разговор|maximum length for this conversation|conversation has reached (?:its )?maximum length)/i;
+      for (const el of document.querySelectorAll("div,section,p,span")) {
+        if (!visible(el)) continue;
+        const t = (el.textContent || "").replace(/\s+/g, " ").trim();
+        if (t && t.length < 500 && re.test(t)) return true;
+      }
+      return false;
+    });
+  } catch { return false; }
+}
+
+function syncActiveChatUrl(page, state) {
+  const u = cleanConversationUrl(page?.url?.());
+  if (!u || u === activeChatUrl) return;
+  activeChatUrl = u;
+  state.chatUrl = u;
+  state.pendingNewChat = false;
+  state.lastConversationUrl = u;
+  saveState(state, `Conversation URL synced: ${u}`);
+  console.log(`[DAVID] Active conversation: ${u}`);
+}
+
+async function rolloverConversation(context, page, state) {
+  const oldUrl = cleanConversationUrl(await safeUrl(page)) || await safeUrl(page) || activeChatUrl;
+  state.previousChatUrl = oldUrl;
+  state.rolloverCount = Number(state.rolloverCount || 0) + 1;
+  state.pendingNewChat = true;
+  state.justRolledOver = true;
+  state.watchdog = "conversation-rollover";
+  activeChatUrl = "https://chatgpt.com/";
+  state.chatUrl = activeChatUrl;
+  saveState(state, `Conversation max length -> rollover #${state.rolloverCount}`);
+  console.log(`[DAVID] Conversation reached max length. Opening NEW CHAT in SAME tab (#${state.rolloverCount})...`);
+  if (!usable(page)) page = await ensureTargetPage(context, null);
+  await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  await sleep(1200);
   return page;
 }
 
@@ -250,7 +306,7 @@ async function visiblePlatformBlock(page) {
   return null;
 }
 
-async function waitForSession(context, page) {
+async function waitForSession(context, page, state) {
   while (true) {
     page = await ensureTargetPage(context, page);
     const url = await safeUrl(page);
@@ -258,8 +314,13 @@ async function waitForSession(context, page) {
       await sleep(POLL_MS);
       continue;
     }
-    if (!url.startsWith(CHAT_URL)) {
-      await page.goto(CHAT_URL, { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+    if (await conversationLimitReached(page)) {
+      page = await rolloverConversation(context, page, state);
+      continue;
+    }
+    syncActiveChatUrl(page, state);
+    if (!matchesActiveChat(url) && activeChatUrl !== "https://chatgpt.com/") {
+      await page.goto(activeChatUrl, { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
       await sleep(POLL_MS);
       continue;
     }
@@ -303,10 +364,10 @@ async function refreshChat(context, page, state, attempt) {
   state.recoveryAttempt = attempt;
   saveState(state, `Refreshing ChatGPT recovery ${attempt}`);
   console.log(`[DAVID] Refreshing ChatGPT (recovery ${attempt}/${MAX_RECOVERY_ATTEMPTS}).`);
-  page = await waitForSession(context, page);
+  page = await waitForSession(context, page, state);
   if (usable(page)) await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
   await sleep(REFRESH_SETTLE_MS);
-  return waitForSession(context, page);
+  return waitForSession(context, page, state);
 }
 
 async function waitPlatform(context, page, state, blocker) {
@@ -328,7 +389,7 @@ async function waitPlatform(context, page, state, blocker) {
 async function waitForResponseStart(context, page, baselineHash, state) {
   const until = Date.now() + RESPONSE_START_TIMEOUT_MS;
   while (Date.now() < until) {
-    page = await waitForSession(context, page);
+    page = await waitForSession(context, page, state);
     const blocker = await visiblePlatformBlock(page);
     if (blocker) return { started: false, blocker, page };
     if (await isGenerating(page)) {
@@ -351,7 +412,7 @@ async function waitForResponseStart(context, page, baselineHash, state) {
 async function sendWithRecovery(context, page, state, text, kind) {
   const baselineHash = hashText(await latestAssistantText(page));
   for (let attempt = 1; attempt <= MAX_RECOVERY_ATTEMPTS; attempt++) {
-    page = await waitForSession(context, page);
+    page = await waitForSession(context, page, state);
     const blocker = await visiblePlatformBlock(page);
     if (blocker) {
       page = await waitPlatform(context, page, state, blocker);
@@ -364,9 +425,13 @@ async function sendWithRecovery(context, page, state, text, kind) {
     state.relayAttempts = Number(state.relayAttempts || 0) + 1;
     saveState(state, kind === "fix" ? "Sending problem-fix instruction" : `Sending development relay attempt ${attempt}`);
     console.log(`[DAVID] Sending ${kind} attempt ${attempt}/${MAX_RECOVERY_ATTEMPTS}.`);
-    await sendText(page, text);
+    const outgoingText = state.justRolledOver
+      ? `AUTOMATIC CHAT ROLLOVER: The previous Enchev conversation reached its maximum length. Reconstruct the exact current state from GitHub, MASTER SYSTEM PLAN and evidence, then continue from the next unfinished dependency-safe task. Do NOT restart completed work.\n\n${text}`
+      : text;
+    await sendText(page, outgoingText);
     const started = await waitForResponseStart(context, page, baselineHash, state);
     page = started.page;
+    syncActiveChatUrl(page, state);
     if (started.blocker) {
       page = await waitPlatform(context, page, state, started.blocker);
       continue;
@@ -390,7 +455,7 @@ async function waitForCompletion(context, page, state, baselineHash) {
   let lastHash = baselineHash;
   let lastActivityAt = Date.now();
   while (true) {
-    page = await waitForSession(context, page);
+    page = await waitForSession(context, page, state);
     const blocker = await visiblePlatformBlock(page);
     if (blocker) {
       page = await waitPlatform(context, page, state, blocker);
@@ -445,6 +510,8 @@ async function runPrompt(context, page, state, prompt, kind) {
       continue;
     }
     state.lastAssistantHash = result.hash;
+    if (state.justRolledOver) state.justRolledOver = false;
+    syncActiveChatUrl(page, state);
     saveState(state, "Completed assistant response captured");
     return { page, text: result.text, hash: result.hash };
   }
@@ -455,10 +522,12 @@ async function main() {
   const browser = await chromium.connectOverCDP(CDP_URL);
   const context = browser.contexts()[0];
   if (!context) throw new Error("No active Chromium context on CDP port.");
-  let page = await waitForSession(context, await ensureTargetPage(context));
+  const state = loadState();
+  activeChatUrl = state.chatUrl || INITIAL_CHAT_URL;
+  let page = await waitForSession(context, await ensureTargetPage(context), state);
+  syncActiveChatUrl(page, state);
   console.log(`[DAVID] Session ready: ${await safeUrl(page)}`);
 
-  const state = loadState();
   state.stopped = false;
   state.watchdog = "monitoring";
   delete state.stopReason;
