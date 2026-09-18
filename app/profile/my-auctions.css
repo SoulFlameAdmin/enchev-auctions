@@ -334,3 +334,11 @@
     outline:3px solid Highlight;
   }
 }
+
+
+.myAuctionsResultStatus{
+  margin:0 2px 10px;
+  color:#78847c;
+  font-size:10px;
+  line-height:1.4;
+}
