@@ -9,7 +9,7 @@ const CDP_URL = process.env.DAVID_APP2_CDP_URL || "http://127.0.0.1:9444";
 const STATE_FILE = process.env.DAVID_APP2_STATE_FILE || path.join(process.cwd(), ".david-app2-state.json");
 const POLL_MS = Number(process.env.DAVID_APP2_POLL_MS || 800);
 const START_TIMEOUT_MS = Number(process.env.DAVID_APP2_START_TIMEOUT_MS || 15000);
-const STALL_MS = Number(process.env.DAVID_APP2_STALL_MS || 90000);
+const STALL_MS = Number(process.env.DAVID_APP2_STALL_MS || 240000);
 const COOLDOWN_MS = Number(process.env.DAVID_APP2_COOLDOWN_MS || 1200);
 const MAX_RETRIES = Number(process.env.DAVID_APP2_MAX_RETRIES || 5);
 const COMPLETE_QUIET_MS = Number(process.env.DAVID_COMPLETE_QUIET_MS || 7000);
@@ -237,7 +237,20 @@ async function stopButton(page) {
   }
   return null;
 }
-async function generating(page) { return Boolean(await stopButton(page)); }
+async function generating(page) {
+  if (await stopButton(page)) return true;
+  try {
+    return await page.evaluate(() => {
+      const turns = Array.from(document.querySelectorAll('article[data-testid^="conversation-turn-"]'));
+      const last = turns.at(-1);
+      if (!last || !last.querySelector('[data-message-author-role="assistant"]')) return false;
+      const finalAction = last.querySelector('button[aria-label*="Copy" i],button[aria-label*="Share" i],button[aria-label*="Regenerate" i],button[data-testid*="copy" i],button[data-testid*="thumb" i]');
+      if (finalAction) return false;
+      const text = (last.textContent || "").replace(/\s+/g, " ").trim();
+      return /(thinking|мислене|мисли|working|работи|calling tool|called tool|tool call|извикан инструмент|извиква инструмент|searching|търсене|browsing|преглежда|analyzing|анализира)/i.test(text);
+    });
+  } catch { return false; }
+}
 async function interruptionVisible(page) {
   try {
     return await page.evaluate(() => {
@@ -313,8 +326,14 @@ async function recoverActive(context, page, state, reason) {
   state.watchdog = `recover-${reason}`;
   state.recoveryAttempt = Number(state.recoveryAttempt || 0) + 1;
   save(state, `Recovery: ${reason}; stop and prepare clean retry`);
-  console.log(`[APP2] Recovery ${reason}: STOP -> clean retry.`);
-  await forceStop(page).catch(() => {});
+  if (reason === "connection-interrupted" && await generating(page)) {
+    state.watchdog = "interruption-transient-active";
+    save(state, "Interruption-like UI while GPT still active; recovery cancelled");
+    console.log("[APP2] Interruption-like UI while GPT is active. NO STOP / NO RESEND.");
+    return waitReady(context, page, state);
+  }
+  console.log(`[APP2] Recovery ${reason}: clean retry.`);
+  if (reason !== "connection-interrupted") await forceStop(page).catch(() => {});
   if (reason === "stalled-or-blank") {
     state.watchdog = "stalled-resend";
     save(state, "LAW: GPT stopped thinking/writing -> resend before refresh");
@@ -327,7 +346,7 @@ async function waitStart(context, page, baseHash, state) {
   const end = Date.now() + START_TIMEOUT_MS;
   while (Date.now() < end) {
     page = await waitReady(context, page, state);
-    if (await interruptionVisible(page)) {
+    if (await interruptionVisible(page) && !await generating(page)) {
       page = await recoverActive(context, page, state, "connection-interrupted");
       return { page, started: false, recovered: true };
     }
