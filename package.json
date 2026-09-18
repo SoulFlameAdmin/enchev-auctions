@@ -16,7 +16,9 @@
     "verify:health": "node scripts/verify-health-endpoints.mjs",
     "verify:health:self-test": "node scripts/verify-health-endpoints.mjs --self-test",
     "verify:apps-web": "node scripts/verify-apps-web.mjs",
-    "verify:apps-web:self-test": "node scripts/verify-apps-web.mjs --self-test"
+    "verify:apps-web:self-test": "node scripts/verify-apps-web.mjs --self-test",
+    "verify:apps-api": "node scripts/verify-apps-api.mjs",
+    "verify:apps-api:self-test": "node scripts/verify-apps-api.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
