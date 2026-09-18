@@ -3,7 +3,7 @@ import "./globals.css";
 import "./enchev-theme.css";
 import "./home-v2.css";
 import "./navigation.css";
-import "./command-center-responsive.css";
+import "./command-center-responsive.css";\nimport "./mobile-quality.css";
 import MouseAura from "./components/MouseAura";
 import BackgroundSwitcher from "./components/BackgroundSwitcher";
 import VerifiedPlanEvidenceSync from "./components/VerifiedPlanEvidenceSync";
