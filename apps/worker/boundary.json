@@ -1,0 +1,21 @@
+{
+  "task": "02.04",
+  "workspace": "apps/worker",
+  "package": "@enchev/worker",
+  "runtime": "node-background-worker",
+  "source_mode": "workspace-shell",
+  "implementation_state": "not-implemented",
+  "single_source": true,
+  "owns": [
+    "background-job-boundary",
+    "scheduled-job-contracts",
+    "async-processing-boundary"
+  ],
+  "does_not_own": [
+    "auction-authority",
+    "http-api-authority",
+    "realtime-authority",
+    "browser-ui",
+    "david-automation"
+  ]
+}
