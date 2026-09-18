@@ -168,8 +168,8 @@
       "id": "D24",
       "group": "Live auction",
       "title": "Dedicated live room layout с current lot + next lot",
-      "status": "red",
-      "evidence": ""
+      "status": "yellow",
+      "evidence": "Implemented D24 dedicated live-room composition in test/design-d24-live-room-20260919 through commits c821646bb3d86ccb1318eabf1b7e1562135696b3 and c89dd3658fd3fc1be76ca46910d690d183f49c69, exposed by data-design-task=D24 in app/live-auctions/page.tsx. The current lot, live bid panel/countdown context and an explicit next-lot card now share one working live-room layout; app/live-auctions/live-auctions.css adds sticky desktop rail, tablet two-card rail, mobile single-column flow, 44px next-lot action and focus-visible handling. Pull request #6 triggered GitHub Verify Enchev Web run 35395629118, which completed SUCCESS including all plan invariants, Supabase live binding check, TypeScript check and Production build. Vercel production proof is still externally blocked: recent project deployments remain QUEUED/INITIALIZING (including dpl_Fo8KwnsqL9Gi135RRZiyX6Q1QVFv, dpl_2N41gVPb1RYjotUJCrnUypAuGz7p, dpl_CvDhXUYw8iViUH4wFxTvLVEJ4yx3 and dpl_F64DmfmJ5kZ36bLBVTLVjwyakxUv), while the latest READY production deployment remains dpl_2N9yU54HqBWj7C2jbksEo8ax99b8 from before D23/D24. D24 therefore stays YELLOW pending real canonical production responsive/interaction verification; no Redis/provider retry was performed."
     },
     {
       "id": "D25",
