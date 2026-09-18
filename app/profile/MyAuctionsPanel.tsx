@@ -84,6 +84,7 @@ export default function MyAuctionsPanel(){
     <div className="myAuctionsTabs" role="tablist" aria-label="Филтър на моите търгове">
       {tabs.map(tab=><button
         key={tab.key}
+        data-tab-key={tab.key}
         type="button"
         role="tab"
         aria-selected={active===tab.key}
@@ -95,8 +96,8 @@ export default function MyAuctionsPanel(){
       </button>)}
     </div>
 
-    <div className="myAuctionsList" role="tabpanel">
-      {visible.map(item=><article className="myAuctionRow" data-auction-state={item.state} key={item.lot}>
+    <div className="myAuctionsList" role="tabpanel" data-active-tab={active} data-visible-count={visible.length}>
+      {visible.map(item=><article className="myAuctionRow" data-lot-id={item.lot} data-auction-state={item.state} key={item.lot}>
         <a className="myAuctionMedia" href={`/lot/${item.lot}`} aria-label={`Отвори ${item.title}`}>
           <img src={item.image} alt={item.title}/>
         </a>
