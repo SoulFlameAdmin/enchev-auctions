@@ -1,4 +1,3 @@
-import { chromium } from "playwright-core";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -674,6 +673,7 @@ async function runPrompt(context, page, state, prompt, kind) {
   }
 }
 async function main() {
+  const { chromium } = await import("playwright-core");
   console.log(`[DAVID] Connecting to browser CDP: ${CDP_URL}`);
   const browser = await chromium.connectOverCDP(CDP_URL);
   const context = browser.contexts()[0];
