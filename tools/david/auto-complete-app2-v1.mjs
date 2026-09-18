@@ -91,7 +91,21 @@ function extractProblem(text) {
   }
   return null;
 }
-function endsOk(text) { return /^OK[.!]?$/i.test(lastLine(text)); }
+function endsOk(text) { return /^OK$/i.test(lastLine(text)); }
+async function waitForTerminalMarker(page, state) {
+  while (true) {
+    const text = await latestAssistant(page);
+    const problem = extractProblem(text);
+    if (problem) return { type: "problem", text, problem };
+    if (isDone(text)) return { type: "done", text };
+    if (endsOk(text)) return { type: "ok", text };
+    state.watchdog = "awaiting-final-ok";
+    state.lastResult = "waiting-for-final-ok";
+    save(state, "LAW: no new APP2 prompt until final line is exactly OK, PROBLEM IN, or project-complete marker");
+    console.log("[APP2] LAW: waiting for final OK. NO NEW PROMPT.");
+    await sleep(3000);
+  }
+}
 function isDone(text) { return lastLine(text) === DONE_MARKER; }
 function isExternalBlocker(problem) {
   return /(vercel|build-rate-limit|rate limit|quota|hobby|billing|plan limit|netlify|github pages|vendor credential|credential|permission|legal sign-off|customer data|external access|production url|deployment capacity)/i.test(String(problem || ""));
@@ -559,14 +573,41 @@ async function main() {
       continue;
     }
 
-    if (endsOk(result.text)) console.log("[APP2] Block OK -> next task.");
-    else console.log("[APP2] Response complete -> continue master plan.");
+    if (!endsOk(result.text)) {
+      const terminal = await waitForTerminalMarker(page, state);
+      if (terminal.type === "done") {
+        state.complete = true;
+        state.problem = null;
+        state.lastResult = DONE_MARKER;
+        state.watchdog = "100-percent-complete";
+        save(state, "Project complete after terminal marker wait");
+        console.log(`[APP2] ${DONE_MARKER}`);
+        break;
+      }
+      if (terminal.type === "problem") {
+        const problem2 = terminal.problem;
+        if (isExternalBlocker(problem2)) {
+          state.deferredBlocker = problem2;
+          state.problem = null;
+          state.problemAttempts = 0;
+          state.watchdog = "external-blocker-deferred";
+          mode = "defer";
+        } else {
+          state.problem = problem2;
+          state.watchdog = "internal-problem";
+          mode = "fix";
+        }
+        save(state, `Terminal marker became PROBLEM IN: ${problem2}`);
+        continue;
+      }
+    }
 
+    console.log("[APP2] Final OK received. NEXT prompt allowed.");
     state.problem = null;
     state.problemAttempts = 0;
-    state.lastResult = endsOk(result.text) ? "OK" : "completed";
+    state.lastResult = "OK";
     state.watchdog = "block-complete";
-    save(state, "Continuing master plan automatically");
+    save(state, "Final OK received; continuing master plan");
     mode = "work";
     deferRepeats = 0;
     await sleep(COOLDOWN_MS);
