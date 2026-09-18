@@ -109,8 +109,12 @@ jobs:
           else
             echo "REDIS_ENV_LIVE SKIP no Redis binding secret configured"
           fi
+      - name: Lint
+        run: npm run lint
       - name: TypeScript check
-        run: npx tsc --noEmit
+        run: npm run typecheck
+      - name: Foundation tests
+        run: npm test
       - name: Production build
         run: npm run build
 
