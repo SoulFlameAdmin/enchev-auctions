@@ -1,0 +1,86 @@
+/* D33 — keyboard, focus and contrast accessibility pass. */
+.eaSkipLink{
+  position:fixed;
+  z-index:1000;
+  left:14px;
+  top:14px;
+  max-width:calc(100vw - 28px);
+  padding:12px 16px;
+  border:2px solid #8bffc0;
+  border-radius:10px;
+  background:#061009;
+  color:#f7fff9;
+  font-size:13px;
+  font-weight:900;
+  text-decoration:none;
+  box-shadow:0 14px 34px rgba(0,0,0,.38);
+  transform:translateY(-160%);
+  transition:transform 160ms ease;
+}
+
+.eaSkipLink:focus-visible{
+  transform:translateY(0);
+  outline:3px solid #ffffff;
+  outline-offset:3px;
+}
+
+:where(a,button,input,select,textarea,[tabindex]):focus-visible{
+  outline:3px solid #8bffc0!important;
+  outline-offset:3px!important;
+  box-shadow:0 0 0 2px #041008,0 0 0 5px rgba(139,255,192,.28)!important;
+}
+
+:where(a,button,[role="button"]){
+  -webkit-tap-highlight-color:rgba(139,255,192,.18);
+}
+
+:where(input,select,textarea)::placeholder{
+  color:#a7b7ad;
+  opacity:1;
+}
+
+:where(button,input,select,textarea):disabled,
+:where([aria-disabled="true"]){
+  cursor:not-allowed;
+  opacity:.58;
+}
+
+@media(prefers-contrast:more){
+  :where(a,button,input,select,textarea,[tabindex]):focus-visible{
+    outline-width:4px!important;
+    outline-color:#ffffff!important;
+    box-shadow:0 0 0 2px #000000,0 0 0 6px #8bffc0!important;
+  }
+
+  .eaSkipLink{
+    border-color:#ffffff;
+    background:#000000;
+    color:#ffffff;
+  }
+
+  :where(input,select,textarea)::placeholder{
+    color:#dce7e0;
+  }
+}
+
+@media(forced-colors:active){
+  .eaSkipLink{
+    border:2px solid ButtonText;
+    background:Canvas;
+    color:CanvasText;
+    forced-color-adjust:auto;
+  }
+
+  .eaSkipLink:focus-visible,
+  :where(a,button,input,select,textarea,[tabindex]):focus-visible{
+    outline:3px solid Highlight!important;
+    outline-offset:3px!important;
+    box-shadow:none!important;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .eaSkipLink{
+    transition:none;
+  }
+}

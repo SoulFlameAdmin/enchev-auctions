@@ -35,21 +35,21 @@ export function validateMobileContract(sources) {
   need(sources.mobile, /\.liveHero,[\s\S]*\.liveStage,[\s\S]*\.liveQueue,[\s\S]*\.liveSold[\s\S]*width:calc\(100% - 24px\)!important/, "live mobile gutters must use the compact width contract");
   need(sources.mobile, /@media\(max-width:380px\)/, "extra-narrow mobile fallback missing");
 
-  need(sources.homePage, /<main className="eaHome">/, "homepage root marker missing");
+  need(sources.homePage, /<main[^>]*className="eaHome"[^>]*>/, "homepage root marker missing");
   need(sources.homeCss, /@media\(max-width:560px\)/, "homepage mobile breakpoint missing");
   need(sources.homeCss, /\.eaFeaturedGrid\{grid-template-columns:1fr\}/, "homepage featured cards must collapse to one column");
 
-  need(sources.inventoryPage, /<main className="inventoryPage"/, "inventory root marker missing");
+  need(sources.inventoryPage, /<main[^>]*className="inventoryPage"/, "inventory root marker missing");
   need(sources.inventoryCss, /@media\(max-width:640px\)/, "inventory mobile breakpoint missing");
   need(sources.inventoryCss, /\.inv2MobileFiltersToggle\{[^}]*min-height:44px/, "inventory mobile filter control must be touch-sized");
   need(sources.inventoryCss, /\.inventoryGrid\{grid-template-columns:1fr!important\}/, "inventory grid must collapse to one column");
 
-  need(sources.lotPage, /<main className="lotPage"/, "lot root marker missing");
+  need(sources.lotPage, /<main[^>]*className="lotPage"/, "lot root marker missing");
   need(sources.lotDockCss, /@media\(max-width:560px\)/, "lot mobile dock breakpoint missing");
   need(sources.lotDockCss, /env\(safe-area-inset-bottom\)/, "lot mobile dock must respect safe-area inset");
   need(sources.lotDockCss, /\.lotMobileBidAction\{[^}]*min-height:48px/, "lot mobile bid action must be touch-sized");
 
-  need(sources.livePage, /<main className="livePage">/, "live root marker missing");
+  need(sources.livePage, /<main[^>]*className="livePage"[^>]*>/, "live root marker missing");
   need(sources.liveCss, /@media\(max-width:680px\)/, "live room mobile breakpoint missing");
   need(sources.liveCss, /\.liveQueueGrid,\.liveSoldGrid\{grid-template-columns:1fr\}/, "live queue and sold grid must collapse to one column");
   need(sources.liveD24Css, /@media\(max-width:560px\)/, "D24 next-lot preview mobile breakpoint missing");
