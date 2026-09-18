@@ -5,6 +5,7 @@ import "./home-v2.css";
 import "./navigation.css";
 import "./command-center-responsive.css";
 import "./mobile-quality.css";
+import "./accessibility-quality.css";
 import MouseAura from "./components/MouseAura";
 import BackgroundSwitcher from "./components/BackgroundSwitcher";
 import VerifiedPlanEvidenceSync from "./components/VerifiedPlanEvidenceSync";
@@ -23,6 +24,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="bg">
       <body>
+        <a className="eaSkipLink" href="#main-content">Към основното съдържание</a>
         <MouseAura />
         <BackgroundSwitcher />
         <VerifiedPlanEvidenceSync />
