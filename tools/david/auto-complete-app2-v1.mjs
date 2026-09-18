@@ -1,4 +1,3 @@
-import { chromium } from "playwright-core";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -17,6 +16,12 @@ const DONE_MARKER = "PROJECT_100_PERCENT_COMPLETE";
 const RELAY_MARKER = "[DAVID_APP2_AUTOPILOT_V2]";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const hash = (x) => createHash("sha256").update(String(x || "")).digest("hex");
+function responseProgressed(previousHash, currentHash) {
+  return Boolean(currentHash && currentHash !== previousHash);
+}
+function stallExpired(lastProgressAt, now = Date.now(), stallMs = STALL_MS) {
+  return now - lastProgressAt > stallMs;
+}
 
 const MASTER_PROMPT = `@GitHub @Vercel @Supabase
 
@@ -178,23 +183,25 @@ async function forceStop(page) {
   await sleep(700);
   return true;
 }
-async function resendActive(context, page, state, activePrompt, reason) {
+async function recoverActive(context, page, state, reason) {
   state.watchdog = `recover-${reason}`;
   state.recoveryAttempt = Number(state.recoveryAttempt || 0) + 1;
-  save(state, `Recovery: ${reason}; stop and resend active prompt`);
-  console.log(`[APP2] Recovery ${reason}: STOP -> resend.`);
+  save(state, `Recovery: ${reason}; stop and prepare clean retry`);
+  console.log(`[APP2] Recovery ${reason}: STOP -> clean retry.`);
   await forceStop(page).catch(() => {});
-  page = await waitReady(context, page);
-  await fillAndSend(page, activePrompt);
-  return page;
+  if (reason === "stalled-or-blank") {
+    await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+    await sleep(1500);
+  }
+  return waitReady(context, page);
 }
-async function waitStart(context, page, baseHash, state, activePrompt) {
+async function waitStart(context, page, baseHash, state) {
   const end = Date.now() + START_TIMEOUT_MS;
   while (Date.now() < end) {
     page = await waitReady(context, page);
     if (await interruptionVisible(page)) {
-      page = await resendActive(context, page, state, activePrompt, "connection-interrupted");
-      return { page, started: false, resent: true };
+      page = await recoverActive(context, page, state, "connection-interrupted");
+      return { page, started: false, recovered: true };
     }
     const pb = await platformBlock(page);
     if (pb) return { page, started: false, blocker: pb };
@@ -207,35 +214,42 @@ async function waitStart(context, page, baseHash, state, activePrompt) {
 }
 async function waitComplete(context, page, baseHash, state) {
   let lastHash = baseHash;
-  let lastActivity = Date.now();
+  let lastProgressAt = Date.now();
   while (true) {
     page = await waitReady(context, page);
     if (await interruptionVisible(page)) return { page, retry: true, reason: "connection-interrupted" };
     const pb = await platformBlock(page);
     if (pb) return { page, retry: true, reason: pb };
+
     const t = await latestAssistant(page);
     const h = t ? hash(t) : null;
-    if (await generating(page)) {
-      lastActivity = Date.now();
-      state.watchdog = "gpt-working";
-      save(state, "GPT working");
+    const role = await latestRole(page);
+    const isGenerating = await generating(page);
+
+    if (responseProgressed(lastHash, h)) {
+      lastHash = h;
+      lastProgressAt = Date.now();
+      state.watchdog = "gpt-writing";
+      save(state, "GPT text progressed");
+    }
+
+    if (isGenerating) {
+      state.watchdog = t && h !== baseHash ? "gpt-writing" : "gpt-thinking";
+      save(state, state.watchdog === "gpt-writing" ? "GPT writing" : "GPT thinking");
+      if (stallExpired(lastProgressAt)) return { page, retry: true, reason: "stalled-or-blank" };
       await sleep(POLL_MS);
       continue;
     }
-    if (await latestRole(page) === "assistant" && h && h !== baseHash) {
-      if (h !== lastHash) {
-        lastHash = h;
-        lastActivity = Date.now();
-        state.watchdog = "gpt-writing";
-        save(state, "GPT writing");
-      }
+
+    if (role === "assistant" && h && h !== baseHash) {
       const before = t;
       await sleep(1200);
       if (!await generating(page) && await latestRole(page) === "assistant" && (await latestAssistant(page)) === before) {
         return { page, retry: false, text: before, hash: h };
       }
     }
-    if (Date.now() - lastActivity > STALL_MS) return { page, retry: true, reason: "stalled-or-blank" };
+
+    if (stallExpired(lastProgressAt)) return { page, retry: true, reason: "stalled-or-blank" };
     await sleep(POLL_MS);
   }
 }
@@ -248,7 +262,7 @@ async function runPrompt(context, page, state, prompt, kind) {
     save(state, `${kind} attempt ${attempt}`);
     console.log(`[APP2] Sending ${kind} attempt ${attempt}.`);
     await fillAndSend(page, prompt);
-    const start = await waitStart(context, page, baseHash, state, prompt);
+    const start = await waitStart(context, page, baseHash, state);
     page = start.page;
     if (start.blocker) {
       state.problem = `ChatGPT platform: ${start.blocker}`;
@@ -271,7 +285,7 @@ async function runPrompt(context, page, state, prompt, kind) {
     page = done.page;
     if (done.retry) {
       if (done.reason === "connection-interrupted" || done.reason === "stalled-or-blank") {
-        page = await resendActive(context, page, state, prompt, done.reason);
+        page = await recoverActive(context, page, state, done.reason);
       } else {
         await sleep(10000);
       }
@@ -284,6 +298,7 @@ async function runPrompt(context, page, state, prompt, kind) {
 }
 
 async function main() {
+  const { chromium } = await import("playwright-core");
   console.log(`[APP2] Connecting to shared Edge CDP ${CDP_URL}`);
   const browser = await chromium.connectOverCDP(CDP_URL, { timeout: 120000 });
   const context = browser.contexts()[0];
@@ -368,7 +383,22 @@ async function main() {
   }
 }
 
-main().catch((e) => {
-  console.error("[APP2] FATAL", e?.stack || e);
-  process.exit(1);
-});
+function runSelfTest() {
+  const h1 = hash("partial");
+  const h2 = hash("partial plus");
+  if (responseProgressed(h1, h1)) throw new Error("APP2 watchdog self-test: unchanged text must not count as progress");
+  if (!responseProgressed(h1, h2)) throw new Error("APP2 watchdog self-test: changed assistant text must count as progress");
+  if (stallExpired(1000, 1000 + STALL_MS)) throw new Error("APP2 watchdog self-test: exact stall threshold must not expire early");
+  if (!stallExpired(1000, 1001 + STALL_MS)) throw new Error("APP2 watchdog self-test: stalled response must expire after threshold");
+  if (/fillAndSend\s*\(/.test(recoverActive.toString())) throw new Error("APP2 watchdog self-test: recovery must not resend; outer retry owns sending");
+  console.log("APP2_RESPONSE_WATCHDOG_SELF_TEST PASS progress=2 stall=2 recovery_single_send=1");
+}
+
+if (process.argv.includes("--self-test")) {
+  runSelfTest();
+} else {
+  main().catch((e) => {
+    console.error("[APP2] FATAL", e?.stack || e);
+    process.exit(1);
+  });
+}
