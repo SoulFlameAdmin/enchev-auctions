@@ -38,7 +38,7 @@ export default function LiveAuctionsPage(){
   };
   const fmt=(v:number)=>`00:${String(v).padStart(2,"0")}`;
 
-  return <main className="livePage">
+  return <main className="livePage" data-design-task="D24">
     <div className="liveUtility"><span><i/> ENCHEV LIVE NETWORK</span><span>Demo live rotation · 10 sec per lot</span></div>
     <header className="liveHeader">
       <a href="/" className="liveLogo"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
@@ -51,7 +51,9 @@ export default function LiveAuctionsPage(){
       <div className="liveHeroClock"><small>Текущ лот</small><b>{fmt(remaining)}</b><span>LOT {current.lot}</span></div>
     </section>
 
-    <section className="liveStage">
+    <section className="liveRoom" aria-labelledby="live-room-heading">
+      <div className="liveRoomHead"><div><span>LIVE ROOM</span><h2 id="live-room-heading">Текущ и следващ лот в един работен изглед</h2></div><p>Следи активната оферта, оставащото време и следващия автомобил без да напускаш аукционната зала.</p></div>
+      <div className="liveStage">
       <div className="liveVisual">
         <img src={current.image} alt={current.title}/>
         <div className="liveVisualShade"/>
@@ -61,13 +63,24 @@ export default function LiveAuctionsPage(){
         <div className="liveVisualInfo"><span>LOT {current.lot}</span><h2>{current.title}</h2><p>{current.location} · {current.damage} · {current.mileage}</p></div>
       </div>
 
-      <aside className="liveBidPanel">
-        <div className="liveBidTop"><span>ТЕКУЩА СТАВКА</span><b>€{price.toLocaleString("bg-BG")}</b></div>
-        <div className="liveBidMeta"><div><span>Следваща оферта</span><b>€{(price+100).toLocaleString("bg-BG")}</b></div><div><span>Остава</span><b>{fmt(remaining)}</b></div></div>
-        <button className="liveBidButton" onClick={bid}>Оферирай +€100 <span>→</span></button>
-        <a className="liveLotLink" href={`/lot/${current.lot}`}>Отвори детайлите на лота</a>
-        <div className="liveRule"><b>Как работи</b><p>При нова оферта таймерът се връща на 10 сек. Ако стигне 00:00 без нов bid, текущият лот приключва и започва следващият.</p></div>
-      </aside>
+      <div className="liveRail">
+        <aside className="liveBidPanel" aria-label="Панел за текущия лот">
+          <div className="liveBidTop"><span>ТЕКУЩА СТАВКА</span><b>€{price.toLocaleString("bg-BG")}</b></div>
+          <div className="liveBidMeta"><div><span>Следваща оферта</span><b>€{(price+100).toLocaleString("bg-BG")}</b></div><div><span>Остава</span><b>{fmt(remaining)}</b></div></div>
+          <button className="liveBidButton" onClick={bid}>Оферирай +€100 <span>→</span></button>
+          <a className="liveLotLink" href={`/lot/${current.lot}`}>Отвори детайлите на лота</a>
+          <div className="liveRule"><b>Как работи</b><p>При нова оферта таймерът се връща на 10 сек. Ако стигне 00:00 без нов bid, текущият лот приключва и започва следващият.</p></div>
+        </aside>
+        <article className="liveNextLot" aria-labelledby="next-live-lot-title">
+          <div className="liveNextMedia"><img src={next.image} alt={next.title}/><span>СЛЕДВАЩ</span></div>
+          <div className="liveNextBody">
+            <div><small>LOT {next.lot}</small><h3 id="next-live-lot-title">{next.title}</h3></div>
+            <dl><div><dt>Локация</dt><dd>{next.location}</dd></div><div><dt>Старт</dt><dd>€{(prices[next.lot]??next.price).toLocaleString("bg-BG")}</dd></div></dl>
+            <a href={`/lot/${next.lot}`}>Преглед на следващия лот →</a>
+          </div>
+        </article>
+      </div>
+      </div>
     </section>
 
     <section className="liveQueue">
