@@ -27,7 +27,7 @@ function conversationLimitText(text) {
   return /(достигнахте максималната продължителност на този разговор|максималната продължителност на този разговор|maximum length for this conversation|conversation has reached (?:its )?maximum length)/i.test(String(text || ""));
 }
 function cleanConversationUrl(url) {
-  const m = String(url || "").match(/^https:\/\/chatgpt\.com\/c\/[^/?#]+/i);
+  const m = String(url || "").match(/^https:\/\/chatgpt\.com\/c\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?=[/?#]|$)/i);
   return m ? m[0] : null;
 }
 function matchesActiveChat(url) {
@@ -91,11 +91,14 @@ function deferPrompt(problem, repeat = 1) {
 }
 
 async function ensurePage(context, current) {
-  if (current && !current.isClosed() && current.url().startsWith("https://chatgpt.com/")) return current;
-  let page = context.pages().find((p) => !p.isClosed() && matchesActiveChat(p.url()));
-  if (!page && activeChatUrl !== INITIAL_CHAT_URL) {
-    page = context.pages().find((p) => !p.isClosed() && p.url().startsWith(INITIAL_CHAT_URL));
+  if (current && !current.isClosed()) {
+    const currentUrl = current.url();
+    if (matchesActiveChat(currentUrl)) return current;
+    if (activeChatUrl === "https://chatgpt.com/" && currentUrl.startsWith("https://chatgpt.com/")) return current;
   }
+  let page = activeChatUrl === "https://chatgpt.com/"
+    ? null
+    : context.pages().find((p) => !p.isClosed() && matchesActiveChat(p.url()));
   if (!page) page = await context.newPage();
   if (!matchesActiveChat(page.url())) {
     await page.goto(activeChatUrl, { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
