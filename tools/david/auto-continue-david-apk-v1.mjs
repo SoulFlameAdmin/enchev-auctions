@@ -172,19 +172,38 @@ async function conversationLimitReached(page) {
 
 async function rolloverConversation(context, page, state) {
   const oldUrl = cleanConversationUrl(page?.url?.()) || page?.url?.() || activeChatUrl;
+  
+  const oldPage = page;
   state.previousChatUrl = oldUrl;
   state.staleChatUrls = Array.from(new Set([...(Array.isArray(state.staleChatUrls) ? state.staleChatUrls : []), oldUrl])).slice(-20);
   state.rolloverCount = Number(state.rolloverCount || 0) + 1;
+  state.pendingNewChat = true;
   state.justRolledOver = true;
   state.watchdog = "apk-conversation-rollover";
+
+  const event = {
+    number: state.rolloverCount,
+    oldUrl: cleanConversationUrl(oldUrl) || oldUrl,
+    newUrl: null,
+    startedAt: new Date().toISOString(),
+    oldTabClosedAt: null
+  };
+  state.rolloverHistory = [...(Array.isArray(state.rolloverHistory) ? state.rolloverHistory : []), event].slice(-50);
+
+  const newPage = await context.newPage();
+  await newPage.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
   activeChatUrl = "https://chatgpt.com/";
   state.chatUrl = activeChatUrl;
-  save(state, `APK conversation max length -> rollover #${state.rolloverCount}`);
-  console.log(`[APK] Conversation reached max length. Rolling over in SAME tab (#${state.rolloverCount})...`);
-  await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
-  await closeOldConversationTabs(context, oldUrl, page);
+
+  if (oldPage && !oldPage.isClosed()) {
+    await oldPage.close({ runBeforeUnload: false }).catch(() => {});
+    event.oldTabClosedAt = new Date().toISOString();
+  }
+  await closeOldConversationTabs(context, oldUrl, newPage);
+  save(state, `APK conversation max length -> new tab #${state.rolloverCount}; old tab closed`);
+  console.log(`[APK] Conversation max length -> NEW TAB #${state.rolloverCount}; OLD TAB CLOSED.`);
   await sleep(1200);
-  return page;
+  return newPage;
 }
 
 function syncChatUrl(page, state) {
@@ -192,8 +211,18 @@ function syncChatUrl(page, state) {
   if (!u || u === activeChatUrl) return;
   activeChatUrl = u;
   state.chatUrl = u;
+  state.pendingNewChat = false;
   state.lastConversationUrl = u;
-  save(state, `APK conversation URL synced: ${u}`);
+  const history = Array.isArray(state.rolloverHistory) ? state.rolloverHistory : [];
+  for (let i = history.length - 1; i >= 0; i--) {
+    if (!history[i]?.newUrl) {
+      history[i].newUrl = u;
+      history[i].newChatConfirmedAt = new Date().toISOString();
+      break;
+    }
+  }
+  state.rolloverHistory = history.slice(-50);
+  save(state, `Conversation URL synced: ${u}`);
   console.log(`[APK] Active conversation: ${u}`);
 }
 
