@@ -14,7 +14,7 @@ const featuredCars = [
 ];
 
 export default function Home(){
-  return <main className="eaHome">
+  return <main id="main-content" className="eaHome">
     <MasterSystemPlanV1 />
     <SeedAuditGaps />
     <BulgarianStageLabels />
