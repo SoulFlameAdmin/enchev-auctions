@@ -119,6 +119,15 @@ function syncActiveChatUrl(page, state) {
   state.chatUrl = u;
   state.pendingNewChat = false;
   state.lastConversationUrl = u;
+  const history = Array.isArray(state.rolloverHistory) ? state.rolloverHistory : [];
+  for (let i = history.length - 1; i >= 0; i--) {
+    if (!history[i]?.newUrl) {
+      history[i].newUrl = u;
+      history[i].newChatConfirmedAt = new Date().toISOString();
+      break;
+    }
+  }
+  state.rolloverHistory = history.slice(-50);
   saveState(state, `Conversation URL synced: ${u}`);
   console.log(`[DAVID] Active conversation: ${u}`);
 }
@@ -141,21 +150,38 @@ async function closeOldConversationTabs(context, oldUrl, keepPage) {
 
 async function rolloverConversation(context, page, state) {
   const oldUrl = cleanConversationUrl(await safeUrl(page)) || await safeUrl(page) || activeChatUrl;
+  if (!usable(page)) page = await ensureTargetPage(context, null);
+  const oldPage = page;
   state.previousChatUrl = oldUrl;
   state.staleChatUrls = Array.from(new Set([...(Array.isArray(state.staleChatUrls) ? state.staleChatUrls : []), oldUrl])).slice(-20);
   state.rolloverCount = Number(state.rolloverCount || 0) + 1;
   state.pendingNewChat = true;
   state.justRolledOver = true;
   state.watchdog = "conversation-rollover";
+
+  const event = {
+    number: state.rolloverCount,
+    oldUrl: cleanConversationUrl(oldUrl) || oldUrl,
+    newUrl: null,
+    startedAt: new Date().toISOString(),
+    oldTabClosedAt: null
+  };
+  state.rolloverHistory = [...(Array.isArray(state.rolloverHistory) ? state.rolloverHistory : []), event].slice(-50);
+
+  const newPage = await context.newPage();
+  await newPage.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
   activeChatUrl = "https://chatgpt.com/";
   state.chatUrl = activeChatUrl;
-  saveState(state, `Conversation max length -> rollover #${state.rolloverCount}`);
-  console.log(`[DAVID] Conversation reached max length. Opening NEW CHAT in SAME tab (#${state.rolloverCount})...`);
-  if (!usable(page)) page = await ensureTargetPage(context, null);
-  await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
-  await closeOldConversationTabs(context, oldUrl, page);
+
+  if (oldPage && !oldPage.isClosed()) {
+    await oldPage.close({ runBeforeUnload: false }).catch(() => {});
+    event.oldTabClosedAt = new Date().toISOString();
+  }
+  await closeOldConversationTabs(context, oldUrl, newPage);
+  saveState(state, `Conversation max length -> new tab #${state.rolloverCount}; old tab closed`);
+  console.log(`[DAVID] Conversation max length -> NEW TAB #${state.rolloverCount}; OLD TAB CLOSED.`);
   await sleep(1200);
-  return page;
+  return newPage;
 }
 
 async function getComposer(page) {
