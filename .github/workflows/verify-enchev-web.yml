@@ -26,6 +26,10 @@ jobs:
         run: npm install --no-audit --no-fund
       - name: Generate frozen test task registry
         run: node scripts/generate-master-test-task-ids.mjs
+      - name: Repository lint
+        run: npm run lint
+      - name: CI quality gate contract
+        run: node scripts/verify-ci-quality-gates.mjs
       - name: Frozen master task ID lock
         run: node scripts/verify-master-task-ids.mjs
       - name: Frozen delete/renumber rejection tests
@@ -115,8 +119,10 @@ jobs:
           else
             echo "REDIS_ENV_LIVE SKIP no Redis binding secret configured"
           fi
+      - name: CI test suite
+        run: npm test
       - name: TypeScript check
-        run: npx tsc --noEmit
+        run: npm run typecheck
       - name: Production build
         run: npm run build
 

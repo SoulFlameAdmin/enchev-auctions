@@ -1,0 +1,28 @@
+import { spawnSync } from "node:child_process";
+
+const cases = [
+  ["scripts/verify-master-task-ids.mjs", "--self-test"],
+  ["scripts/verify-green-requires-evidence.mjs", "--self-test"],
+  ["scripts/verify-green-requires-passing-test.mjs", "--self-test"],
+  ["scripts/verify-yellow-semantics.mjs", "--self-test"],
+  ["scripts/verify-red-semantics.mjs", "--self-test"],
+  ["scripts/verify-gap-append-only.mjs", "--self-test"],
+  ["scripts/verify-status-audit-trail.mjs", "--self-test"],
+  ["scripts/verify-cloud-plan-state.mjs", "--self-test"],
+  ["scripts/verify-plan-version-ui.mjs", "--self-test"],
+  ["scripts/verify-supabase-project-binding.mjs", "--self-test"],
+  ["scripts/verify-environment-variables.mjs", "--self-test"],
+  ["scripts/verify-redis-environment.mjs", "--self-test"],
+  ["scripts/verify-redis-production-gate.mjs", "--self-test"],
+  ["scripts/verify-ci-quality-gates.mjs", "--self-test"],
+  ["tools/david/auto-complete-app2-v1.mjs", "--self-test"]
+];
+
+for (const [file, ...args] of cases) {
+  const result = spawnSync(process.execPath, [file, ...args], { stdio: "inherit" });
+  if (result.status !== 0) {
+    throw new Error(`CI_TEST_SUITE FAIL: ${file} ${args.join(" ")} exited with ${result.status}`);
+  }
+}
+
+console.log(`CI_TEST_SUITE PASS cases=${cases.length}`);

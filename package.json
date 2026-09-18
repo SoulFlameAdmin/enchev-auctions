@@ -8,7 +8,11 @@
     "build": "next build",
     "start": "next start",
     "verify:env": "node scripts/verify-environment-variables.mjs",
-    "verify:env:self-test": "node scripts/verify-environment-variables.mjs --self-test"
+    "verify:env:self-test": "node scripts/verify-environment-variables.mjs --self-test",
+    "lint": "node scripts/lint-repository.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "node scripts/run-ci-tests.mjs",
+    "ci:verify": "npm run lint && npm test && npm run typecheck && npm run build"
   },
   "dependencies": {
     "next": "latest",
