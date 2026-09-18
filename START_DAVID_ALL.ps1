@@ -13,20 +13,46 @@ $PortableNode = Join-Path $Root "tools\node"
 if (Test-Path $PortableGitDir) { $env:Path = "$PortableGitDir\cmd;$PortableGitDir\bin;$env:Path" }
 if (Test-Path $PortableNode) { $env:Path = "$PortableNode;$env:Path" }
 
-function Test-CommandLineMatch {
-  param([string[]]$Needles)
+function Get-MatchingProcesses {
+  param(
+    [string[]]$Names,
+    [string[]]$Needles
+  )
+  $hits = @()
   try {
     foreach ($p in Get-CimInstance Win32_Process) {
+      if ($p.ProcessId -eq $PID) { continue }
+      if ($Names -and ($Names -notcontains ([string]$p.Name).ToLowerInvariant())) { continue }
       $cmd = [string]$p.CommandLine
       if (-not $cmd) { continue }
       $all = $true
       foreach ($n in $Needles) {
         if ($cmd -notlike "*$n*") { $all = $false; break }
       }
-      if ($all) { return $true }
+      if ($all) { $hits += $p }
     }
   } catch {}
-  return $false
+  return @($hits)
+}
+
+function Test-Cdp {
+  param([int]$P)
+  try {
+    $null = Invoke-RestMethod -Uri "http://127.0.0.1:$P/json/version" -TimeoutSec 2
+    return $true
+  } catch {
+    return $false
+  }
+}
+
+function Stop-MatchingProcesses {
+  param(
+    [string[]]$Names,
+    [string[]]$Needles
+  )
+  foreach ($p in (Get-MatchingProcesses -Names $Names -Needles $Needles)) {
+    Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue
+  }
 }
 
 if (-not (Test-Path (Join-Path $Repo ".git"))) {
@@ -98,10 +124,19 @@ try {
   Write-Host "[DAVID ALL] DPP progress source unavailable; APP2 still starts, Matrix may show DPP N/A." -ForegroundColor Yellow
 }
 
-$mainRunning = (Test-CommandLineMatch @("dual-session-worker.mjs")) -or
-               (Test-CommandLineMatch @("start-auto-continue.ps1"))
+$mainNodes = @(Get-MatchingProcesses -Names @("node.exe") -Needles @("dual-session-worker.mjs"))
+$cdpReady = Test-Cdp -P $Port
+$mainRunning = ($mainNodes.Count -gt 0 -and $cdpReady)
+
+if ($mainNodes.Count -gt 0 -and -not $cdpReady) {
+  Write-Host "[DAVID ALL] Stale SYSTEM/DESIGN/APK supervisor detected without CDP. Killing stale process..." -ForegroundColor Yellow
+  Stop-MatchingProcesses -Names @("node.exe") -Needles @("dual-session-worker.mjs")
+  Start-Sleep -Seconds 1
+  $mainRunning = $false
+}
+
 if ($mainRunning) {
-  Write-Host "[DAVID ALL] SYSTEM + DESIGN + APK supervisor already running. Reusing it." -ForegroundColor Green
+  Write-Host "[DAVID ALL] SYSTEM + DESIGN + APK supervisor healthy. Reusing it." -ForegroundColor Green
 } else {
   Write-Host "[DAVID ALL] Starting SYSTEM + DESIGN + APK supervisor..." -ForegroundColor Cyan
   Start-Process -FilePath $pwsh -ArgumentList @(
@@ -111,16 +146,37 @@ if ($mainRunning) {
     "-Port", "$Port",
     "-MaxTurns", "2147483647"
   )
+
+  $mainHealthy = $false
+  for ($i = 0; $i -lt 80; $i++) {
+    Start-Sleep -Milliseconds 500
+    $nodes = @(Get-MatchingProcesses -Names @("node.exe") -Needles @("dual-session-worker.mjs"))
+    if ($nodes.Count -gt 0 -and (Test-Cdp -P $Port)) {
+      $mainHealthy = $true
+      break
+    }
+  }
+  if (-not $mainHealthy) {
+    throw "SYSTEM + DESIGN + APK supervisor failed health check: dual-session-worker.mjs and CDP $Port were not both ready."
+  }
+  Write-Host "[DAVID ALL] SYSTEM + DESIGN + APK supervisor health check PASS." -ForegroundColor Green
 }
 
 Start-Sleep -Seconds 2
 
-$app2Running = (Test-CommandLineMatch @("start-app2-autopilot.ps1")) -or
-               (Test-CommandLineMatch @(".auto-complete-app2-runtime.mjs")) -or
-               (Test-CommandLineMatch @("auto-complete-app2-v1.mjs"))
+$app2Nodes = @(
+  @(Get-MatchingProcesses -Names @("node.exe") -Needles @(".auto-complete-app2-runtime.mjs")) +
+  @(Get-MatchingProcesses -Names @("node.exe") -Needles @("auto-complete-app2-v1.mjs"))
+)
+$app2Running = ($app2Nodes.Count -gt 0 -and (Test-Cdp -P $Port))
 if ($app2Running) {
-  Write-Host "[DAVID ALL] DPP/APP2 worker already running. Reusing it." -ForegroundColor Green
+  Write-Host "[DAVID ALL] DPP/APP2 worker healthy. Reusing it." -ForegroundColor Green
 } else {
+  if ($app2Nodes.Count -gt 0) {
+    Write-Host "[DAVID ALL] Stale APP2 process detected. Cleaning it before restart..." -ForegroundColor Yellow
+    Stop-MatchingProcesses -Names @("node.exe") -Needles @(".auto-complete-app2-runtime.mjs")
+    Stop-MatchingProcesses -Names @("node.exe") -Needles @("auto-complete-app2-v1.mjs")
+  }
   Write-Host "[DAVID ALL] Starting DPP/APP2 worker..." -ForegroundColor Cyan
   Start-Process -FilePath $pwsh -ArgumentList @(
     "-NoProfile",
@@ -130,7 +186,7 @@ if ($app2Running) {
   )
 }
 
-$dashboardRunning = Test-CommandLineMatch @("david-status-dashboard.ps1")
+$dashboardRunning = @(Get-MatchingProcesses -Names @("powershell.exe","pwsh.exe") -Needles @("david-status-dashboard.ps1")).Count -gt 0
 if ($dashboardRunning) {
   Write-Host "[DAVID ALL] Matrix dashboard already running. Reusing it." -ForegroundColor Green
 } else {
