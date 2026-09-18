@@ -12,7 +12,9 @@
     "lint": "node scripts/lint-repository.mjs",
     "typecheck": "tsc --noEmit",
     "test": "node scripts/run-ci-tests.mjs",
-    "ci:verify": "npm run lint && npm test && npm run typecheck && npm run build"
+    "ci:verify": "npm run lint && npm test && npm run typecheck && npm run build",
+    "verify:health": "node scripts/verify-health-endpoints.mjs",
+    "verify:health:self-test": "node scripts/verify-health-endpoints.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
