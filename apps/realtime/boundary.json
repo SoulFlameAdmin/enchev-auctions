@@ -1,0 +1,20 @@
+{
+  "task": "02.03",
+  "workspace": "apps/realtime",
+  "package": "@enchev/realtime",
+  "runtime": "node-realtime-service",
+  "source_mode": "workspace-shell",
+  "implementation_state": "not-implemented",
+  "single_source": true,
+  "owns": [
+    "realtime-service-boundary",
+    "socket-room-contracts",
+    "presence-delivery-boundary"
+  ],
+  "does_not_own": [
+    "auction-authority",
+    "http-api-authority",
+    "worker-jobs",
+    "browser-ui"
+  ]
+}
