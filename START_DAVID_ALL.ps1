@@ -54,7 +54,8 @@ if ($codeUpdated) {
     "start-app2-autopilot.ps1",
     ".auto-complete-app2-runtime.mjs",
     "auto-complete-app2-v1.mjs",
-    "auto-continue-david-apk-v1.mjs"
+    "auto-continue-david-apk-v1.mjs",
+    "david-status-dashboard.ps1"
   )
   try {
     $managed = Get-CimInstance Win32_Process | Where-Object {
@@ -76,6 +77,7 @@ if ($codeUpdated) {
 
 $mainLauncher = Join-Path $Repo "tools\david\start-auto-continue.ps1"
 $app2Launcher = Join-Path $Repo "tools\david\start-app2-autopilot.ps1"
+$dashboard = Join-Path $Repo "tools\david\david-status-dashboard.ps1"
 $pwsh = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
 
 $mainRunning = (Test-CommandLineMatch @("dual-session-worker.mjs")) -or
@@ -110,6 +112,19 @@ if ($app2Running) {
   )
 }
 
+$dashboardRunning = Test-CommandLineMatch @("david-status-dashboard.ps1")
+if ($dashboardRunning) {
+  Write-Host "[DAVID ALL] Matrix dashboard already running. Reusing it." -ForegroundColor Green
+} else {
+  Write-Host "[DAVID ALL] Starting DAVID Matrix live report..." -ForegroundColor Cyan
+  Start-Process -FilePath $pwsh -ArgumentList @(
+    "-NoProfile",
+    "-ExecutionPolicy", "Bypass",
+    "-File", $dashboard,
+    "-RefreshSeconds", "3"
+  )
+}
+
 Write-Host ""
 Write-Host "[DAVID ALL] Expected managed ChatGPT sessions:" -ForegroundColor Green
 Write-Host "  1. ENCHEV SYSTEM"
@@ -120,3 +135,7 @@ Write-Host ""
 Write-Host "[DAVID ALL] APK worker auto-discovers a unique recent DAVID Phone / SoulFlame Twins / DAVID APK chat when no exact URL is configured." -ForegroundColor Green
 Write-Host "[DAVID ALL] On max-length rollover the worker opens a new ChatGPT tab, closes the old managed tab, records the new URL/history, and continues there." -ForegroundColor Green
 Write-Host "[DAVID ALL] Duplicate worker launches are blocked by process detection." -ForegroundColor Green
+
+Write-Host "[DAVID ALL] Recovery laws: stall=>resend, no-thinking=>refresh+resend, interrupted=>stop+resend." -ForegroundColor Yellow
+Write-Host "[DAVID ALL] Vercel deploy coordinator: Supabase global lease; one worker deploys at a time." -ForegroundColor Yellow
+Write-Host "[DAVID ALL] Matrix dashboard starts automatically with live progress + worker report." -ForegroundColor Yellow
