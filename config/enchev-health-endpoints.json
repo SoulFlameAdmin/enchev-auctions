@@ -1,0 +1,12 @@
+{
+  "task": "01.10",
+  "name": "Web / API / realtime / worker health endpoints",
+  "schema_version": 1,
+  "endpoints": [
+    {"component":"web","path":"/api/health/web","http_status":200,"ready":true,"status":"healthy"},
+    {"component":"api","path":"/api/health/api","http_status":200,"ready":true,"status":"healthy"},
+    {"component":"realtime","path":"/api/health/realtime","http_status":503,"ready":false,"status":"service-pending"},
+    {"component":"worker","path":"/api/health/worker","http_status":503,"ready":false,"status":"service-pending"}
+  ],
+  "notes": "01.10 certifies truthful health endpoints. It does not claim that later realtime or worker service phases are implemented."
+}
