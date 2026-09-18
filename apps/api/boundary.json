@@ -1,0 +1,20 @@
+{
+  "task": "02.02",
+  "workspace": "apps/api",
+  "package": "@enchev/api",
+  "runtime": "next-route-handlers",
+  "source_mode": "root-api-bridge",
+  "runtime_source": "../../app/api",
+  "single_source": true,
+  "owns": [
+    "http-api-boundary",
+    "request-response-contracts",
+    "health-api-routes"
+  ],
+  "does_not_own": [
+    "auction-authority",
+    "realtime-authority",
+    "worker-jobs",
+    "browser-ui"
+  ]
+}
