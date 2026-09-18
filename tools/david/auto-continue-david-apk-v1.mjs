@@ -34,6 +34,15 @@ const APK_PROMPT = `@GitHub
 
 Първо провери реалното текущо GitHub/PR/CI състояние и не повтаряй вече завършена работа. После изпълни една най-важна следваща dependency-safe стъпка към стабилен DAVID Phone APK: voice/app commands, contacts/messaging, permissions, updater, build/tests и безопасен release handoff според реалното състояние.
 
+DAVID APK UPGRADE LAW:
+- продължавай upgrade-а версия по версия, без да рестартираш завършена работа;
+- работи в test branch/PR, не директно в main;
+- преди следващ upgrade първо стабилизирай текущия: build + приложими tests + evidence;
+- ако build/test се счупи, поправи го преди нов feature;
+- пази GPT chat routing и current session continuity;
+- не merge-вай/release-вай към production без изрично разрешение, но можеш да подготвяш доказан APK build/artifact и PR;
+- след успешно завършен блок автоматично премини към следващия най-важен upgrade.
+
 Работи в test branch, пусни приложимите build/tests, поправи грешките и остави evidence. Не измисляй резултати, не заобикаляй login/CAPTCHA/MFA/permissions и не прави destructive действие без разрешение.
 Ако стъпката е успешно завършена и доказана, последният ред да е: OK
 Ако има реален blocker, последният ред да е: ${PROBLEM_PREFIX} <точният проблем>
