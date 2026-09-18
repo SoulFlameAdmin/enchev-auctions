@@ -252,8 +252,8 @@
       "id": "D36",
       "group": "Качество",
       "title": "Final consistency pass: ENCHEV identity навсякъде, без копирани чужди assets/copy/code",
-      "status": "red",
-      "evidence": ""
+      "status": "green",
+      "evidence": "Completed and merged via PR #30 as main merge commit 45fc0383a9b9332c047f4ce053d3cf2d21eb8960. D36 unified app metadata to ENCHEV Auctions with an ENCHEV-specific Bulgarian description, removed the remaining AutoBidMaster reference-brand wording from app/inventory/inventory.css, and added scripts/verify-enchev-final-consistency.mjs. The final consistency guard scans user-facing app/public text sources, requires ENCHEV identity across 8 production routes (home, inventory, lot detail, live auctions, profile, support, transport, vehicle history), rejects reference auction/partner brand names and domains (including AutoBidMaster/Copart/EasyHaul/ClearVin/CarKiosk/LightStream/SalvageBid/AuctionExport/IAA) from production UI sources/public asset paths, checks ENCHEV AUCTIONS lockups and metadata, and rejects reference-site/partner asset URLs. Negative self-tests prove rejection of foreign reference branding, reference asset URLs, missing route identity and wrong metadata branding. Exact-head Verify Enchev Web run 35401056046 completed SUCCESS for PR head 633ded9871238e81a824e682c6f32267c9487871: ENCHEV final identity/originality invariant/self-tests, all architecture/design guards, CI test suite, TypeScript, production build, built health smoke, Visual regression screenshots and artifact upload all passed. Visual artifact 10571010833 digest sha256:8272abb6476c196be5915d1469d3f7da5e3f22e9aeb4c2fd32c16eba821a1136 confirms the existing 5-route x 2-viewport Chrome regression suite still passes after D36. Vercel production was checked and remains on an older main deployment (e5776fc64e06b66e68aede529a2c6accd0ce1783); this is recorded as external deployment lag and does not change the independently verified D36 implementation. D36 GREEN."
     }
   ]
 }
