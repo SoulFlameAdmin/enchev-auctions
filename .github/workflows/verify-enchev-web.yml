@@ -74,6 +74,18 @@ jobs:
         run: node scripts/verify-redis-environment.mjs --self-test
       - name: Redis production acceptance gate self-tests
         run: node scripts/verify-redis-production-gate.mjs --self-test
+      - name: Redis provisioning credential availability
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          UPSTASH_API_KEY: ${{ secrets.UPSTASH_API_KEY }}
+          UPSTASH_EMAIL: ${{ secrets.UPSTASH_EMAIL }}
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          DIGITALOCEAN_ACCESS_TOKEN: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+          AIVEN_TOKEN: ${{ secrets.AIVEN_TOKEN }}
+          REDIS_CLOUD_API_KEY: ${{ secrets.REDIS_CLOUD_API_KEY }}
+          REDIS_CLOUD_SECRET_KEY: ${{ secrets.REDIS_CLOUD_SECRET_KEY }}
+        run: node scripts/detect-redis-provisioning-credentials.mjs
       - name: DAVID APP2 response watchdog self-tests
         run: node tools/david/auto-complete-app2-v1.mjs --self-test
       - name: Redis live binding verification when configured
