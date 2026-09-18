@@ -19,6 +19,7 @@ const cases = [
   ["scripts/verify-accessibility-visual-pass.mjs", "--self-test"],
   ["scripts/verify-cross-browser-visual-contract.mjs", "--self-test"],
   ["scripts/capture-visual-regression.mjs", "--self-test"],
+  ["scripts/verify-enchev-final-consistency.mjs", "--self-test"],
   ["tools/david/auto-complete-app2-v1.mjs", "--self-test"],
   ["tools/david/auto-continue-enchev-v5.mjs", "--self-test"],
   ["scripts/verify-health-endpoints.mjs", "--self-test"],
