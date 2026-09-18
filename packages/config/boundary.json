@@ -1,0 +1,29 @@
+{
+  "task": "02.07",
+  "workspace": "packages/config",
+  "package": "@enchev/config",
+  "layer": "config",
+  "implementation_state": "boundary-established",
+  "secret_free": true,
+  "runtime_env_reads": false,
+  "owns": [
+    "typed-config-contracts",
+    "non-secret-defaults",
+    "configuration-key-names"
+  ],
+  "canonical_root_config": [
+    "config/enchev-environment-variables.json",
+    "config/enchev-health-endpoints.json",
+    "config/enchev-redis-environment.json",
+    "config/enchev-supabase-project.json"
+  ],
+  "does_not_own": [
+    "secret-values",
+    "provider-clients",
+    "domain-authority",
+    "http-runtime",
+    "realtime-runtime",
+    "background-jobs",
+    "browser-ui"
+  ]
+}
