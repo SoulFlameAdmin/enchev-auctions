@@ -37,7 +37,8 @@ const DESIGN_PROMPT = `@GitHub @Vercel @Supabase
 Не променяй MASTER SYSTEM PLAN IDs и не добавяй pricing/payment/finance scope.
 
 Ако задачата е завършена, последният ред да е само: OK
-Ако има реален нерешен blocker, последният ред да е: ${PROBLEM_PREFIX} <точният проблем>. Преди това опитай безопасна техническа алтернатива.
+Външен blocker като Redis/Valkey/Vercel Marketplace/provider credential/permissions НЕ спира design плана: запиши го и премини към следващата независима D-задача.
+Използвай ${PROBLEM_PREFIX} само ако нов вътрешен технически дефект реално спира всяка безопасна design работа. Преди това опитай безопасна техническа алтернатива.
 
 ${MARKER}`;
 
@@ -61,6 +62,20 @@ function extractProblem(text) {
 function endsOk(text) {
   const rows = String(text || "").split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
   return Boolean(rows.length && /^OK[.!]?$/i.test(rows.at(-1)));
+}
+function isExternalBlocker(problem) {
+  return /(redis|valkey|upstash|vercel|marketplace|environment-secret|environment secret|provider credential|credential|permission|authorization|rate limit|quota|billing|plan limit|external access|legal sign-off|customer data|deployment.*queued|deployment.*initializing)/i.test(String(problem || ""));
+}
+function deferPrompt(problem, repeat = 1) {
+  return `@GitHub @Vercel @Supabase
+
+DESIGN EXTERNAL BLOCKER DEFERRED:
+${problem}
+
+Не го опитвай отново сега. Запиши blocker/evidence за текущата D-задача, ако е приложимо, и продължи веднага към най-ранната независима D-задача от docs/DESIGN_PLAN_V1.md. Направи реалната UI промяна, responsive/interaction проверка, тест и evidence. Това е defer cycle ${repeat}.
+
+Не завършвай с PROBLEM IN само заради същия външен blocker. PROBLEM IN е само за нов вътрешен технически дефект, който спира всяка безопасна design работа.
+${MARKER}`;
 }
 function fixPrompt(problem, attempt) {
   return `@GitHub @Vercel @Supabase\n\nDESIGN PROBLEM:\n${problem}\n\nTRY TO MAKE THIS FIX YOURSELF NOW. Опит ${attempt}. Провери repo/deployment и приложи безопасен fix или алтернатива. Не измисляй evidence. Не заобикаляй CAPTCHA/MFA/login/permissions и не прави destructive действие без разрешение.\n\nАко fix-ът е доказан: OK\nАко още е блокирано: ${PROBLEM_PREFIX} <точният оставащ проблем>\n\nСлед успешен fix продължи следващата D-задача от docs/DESIGN_PLAN_V1.md.\n${MARKER}`;
@@ -298,6 +313,37 @@ async function main() {
   save(state, "Design worker connected in shared Edge tab");
 
   while (true) {
+    if (state.problem && isExternalBlocker(state.problem)) {
+      const deferred = state.problem;
+      state.deferredBlocker = deferred;
+      state.deferredBlockerCount = Number(state.deferredBlockerCount || 0) + 1;
+      state.problem = null;
+      state.problemAttempts = 0;
+      state.watchdog = "design-external-blocker-deferred";
+      save(state, `Design external blocker deferred: ${deferred}`);
+      console.log(`[DESIGN] External blocker deferred; continuing independent D-task: ${deferred}`);
+      const result = await runPrompt(context, page, state, deferPrompt(deferred, state.deferredBlockerCount), "work");
+      page = result.page;
+      const nextProblem = extractProblem(result.text);
+      if (nextProblem) {
+        if (isExternalBlocker(nextProblem)) {
+          state.deferredBlocker = nextProblem;
+          state.problem = null;
+          save(state, `Design external blocker still deferred: ${nextProblem}`);
+          await sleep(COOLDOWN_MS);
+          continue;
+        }
+        state.problem = nextProblem;
+        save(state, `Design new internal problem: ${nextProblem}`);
+        await sleep(COOLDOWN_MS);
+        continue;
+      }
+      state.lastResult = endsOk(result.text) ? "OK" : "completed";
+      save(state, "Design independent task completed after blocker defer");
+      await sleep(COOLDOWN_MS);
+      continue;
+    }
+
     if (state.problem && !String(state.problem).startsWith("ChatGPT platform:")) {
       state.problemAttempts = Number(state.problemAttempts || 0) + 1;
       const result = await runPrompt(context, page, state, fixPrompt(state.problem, state.problemAttempts), "fix");
