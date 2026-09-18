@@ -1,7 +1,7 @@
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-// DAVID attempt 10: application-code deployment trigger; no secrets or business state are modified.
+// DAVID attempt 11: isolated pull_request deployment-path probe; no secrets or business state are modified.
 const PROJECT_ID = "prj_X3TAEQf9oGE79te9NdNlvB6jnhno";
 const TEAM_ID = "team_cKaIZfnCMzoiiq80J0MhV0A2";
 
