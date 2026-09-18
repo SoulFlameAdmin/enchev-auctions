@@ -42,7 +42,7 @@ function save(state, action) {
   fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2), "utf8");
 }
 function cleanConversationUrl(url) {
-  const m = String(url || "").match(/^https:\/\/chatgpt\.com\/c\/[^/?#]+/i);
+  const m = String(url || "").match(/^https:\/\/chatgpt\.com\/c\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?=[/?#]|$)/i);
   return m ? m[0] : null;
 }
 function extractProblem(text) {
