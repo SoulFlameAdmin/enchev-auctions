@@ -238,8 +238,8 @@
       "id": "D34",
       "group": "Качество",
       "title": "Cross-browser визуална проверка Edge/Chrome/mobile",
-      "status": "red",
-      "evidence": ""
+      "status": "yellow",
+      "evidence": "Implemented and merged via PR #25 as main merge commit edab0672f41d3900faa91be49543d8a087f91f1f. app/cross-browser-quality.css adds browser-compatibility hardening for the ENCHEV buyer routes: -webkit/standard text-size adjustment, -webkit backdrop-filter support, solid-background fallback when backdrop-filter is unavailable, overflow:clip fallback to overflow-x:hidden, text-wrap:balance fallback, coarse-pointer 44px touch targets, hover-transform suppression on touch devices and narrow-control containment. scripts/verify-cross-browser-visual-contract.mjs validates these compatibility fallbacks together with the D32 mobile and D33 forced-colors layers; negative self-tests reject missing backdrop, overflow and coarse-pointer fallbacks. Verify Enchev Web run 35399375812 completed SUCCESS for exact PR head c5b4bda803d5fe75a868c4c7ff8068a5f449af5a: Cross-browser visual contract/self-tests, Mobile-first and Accessibility gates, CI test suite, TypeScript check, Production build and Built health endpoint smoke test all passed. GitHub commit status reports Vercel=failure with target upgradeToPro=build-rate-limit, and the connector provides no browser/screenshot tool; therefore real Edge/Chrome/mobile visual inspection is not available. D34 remains YELLOW rather than GREEN."
     },
     {
       "id": "D35",
