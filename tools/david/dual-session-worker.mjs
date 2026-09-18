@@ -13,7 +13,11 @@ const NODE = process.execPath;
 const children = new Map();
 const MONITOR_FILE = path.join(HERE, ".david-tab-monitor.json");
 const MONITOR_MS = Number(process.env.DAVID_TAB_MONITOR_MS || 15000);
+const MONITOR_CONNECT_TIMEOUT_MS = Number(process.env.DAVID_TAB_MONITOR_CONNECT_TIMEOUT_MS || 60000);
 let shuttingDown = false;
+let monitorBrowser = null;
+let monitorContext = null;
+let monitorBusy = false;
 
 const specs = [
   {
@@ -104,6 +108,32 @@ function readState(file) {
   catch { return {}; }
 }
 
+async function getMonitorContext() {
+  if (monitorContext) {
+    try {
+      void monitorContext.pages();
+      return monitorContext;
+    } catch {
+      monitorContext = null;
+      monitorBrowser = null;
+    }
+  }
+  const cdp = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
+  monitorBrowser = await chromium.connectOverCDP(cdp, { timeout: MONITOR_CONNECT_TIMEOUT_MS });
+  monitorContext = monitorBrowser.contexts()[0] || null;
+  if (!monitorContext) {
+    monitorBrowser = null;
+    throw new Error("No shared Edge context available for tab monitor");
+  }
+  monitorBrowser.on("disconnected", () => {
+    monitorBrowser = null;
+    monitorContext = null;
+    console.log("[DUAL] Persistent tab monitor CDP disconnected; next cycle will reconnect.");
+  });
+  console.log("[DUAL] Persistent tab monitor CDP connected.");
+  return monitorContext;
+}
+
 async function detectManagedKind(page) {
   try {
     const u = cleanConversationUrl(page.url());
@@ -143,10 +173,8 @@ async function cleanupManagedTabs() {
   }
   for (const u of preferredByKind.values()) stale.delete(u);
 
-  const cdp = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
   try {
-    const browser = await chromium.connectOverCDP(cdp, { timeout: 15000 });
-    const context = browser.contexts()[0];
+    const context = await getMonitorContext();
     if (!context) return;
 
     const managed = [];
@@ -198,11 +226,10 @@ console.log("[DUAL] INTERRUPTION GUARD: watches every ChatGPT conversation tab i
 console.log("[DUAL] If ChatGPT shows connection interrupted: STOP response -> paste last user prompt -> SEND again.");
 console.log("[DUAL] SYSTEM + DESIGN + APK share the same Edge CDP/profile on port 9444. APP2/DPP may run beside them in the same profile.");
 async function monitorManagedTabs() {
-  if (shuttingDown) return;
-  const cdp = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
+  if (shuttingDown || monitorBusy) return;
+  monitorBusy = true;
   try {
-    const browser = await chromium.connectOverCDP(cdp, { timeout: 15000 });
-    const context = browser.contexts()[0];
+    const context = await getMonitorContext();
     if (!context) return;
     const snapshot = {
       checkedAt: new Date().toISOString(),
@@ -226,7 +253,11 @@ async function monitorManagedTabs() {
       await cleanupManagedTabs();
     }
   } catch (e) {
+    monitorBrowser = null;
+    monitorContext = null;
     console.log(`[DUAL] Tab monitor skipped: ${e?.message || e}`);
+  } finally {
+    monitorBusy = false;
   }
 }
 
