@@ -543,6 +543,7 @@ async function main() {
   activeChatUrl = state.chatUrl || INITIAL_CHAT_URL;
   let page = await waitForSession(context, await ensureTargetPage(context), state);
   syncActiveChatUrl(page, state);
+  if (state.previousChatUrl) await closeOldConversationTabs(context, state.previousChatUrl, page);
   console.log(`[DAVID] Session ready: ${await safeUrl(page)}`);
 
   state.stopped = false;
