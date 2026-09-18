@@ -217,8 +217,8 @@
       "id": "D31",
       "group": "Профил",
       "title": "Account navigation и responsive dashboard shell",
-      "status": "red",
-      "evidence": ""
+      "status": "yellow",
+      "evidence": "Implemented and merged via PR #19 as main merge commit 3b09a918ebb0129302ab78da65b1be5f763e175b after clean branch design/d31-account-shell-v2-20260919. app/profile/page.tsx now exposes data-design-task=D31 with an original ENCHEV two-column buyer dashboard shell, desktop sticky account rail, account navigation to overview/watchlist/my-auctions/support, quick profile actions and responsive content flow. app/profile/WatchlistPanel.tsx and app/profile/MyAuctionsPanel.tsx expose #watchlist and #my-auctions anchor targets without changing their D29/D30 behavior. app/profile/profile-shell.css provides desktop layout plus <=980px single-column/horizontal account navigation, <=640px mobile spacing and 44px targets, visible focus states, prefers-reduced-motion and forced-colors handling. Verify Enchev Web run 35397377293 completed SUCCESS for exact head 63920566130b069db26d5395cd882bcf80d57fb5; Repository lint, CI quality-gate contract, invariant/self-tests, CI test suite, TypeScript check and Production build all passed. Vercel currently has no READY deployment containing the D31 merge commit, so browser-level responsive/interaction/visual proof is not yet available. D31 therefore remains YELLOW rather than GREEN."
     },
     {
       "id": "D32",
