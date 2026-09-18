@@ -1,0 +1,19 @@
+{
+  "task": "02.01",
+  "workspace": "apps/web",
+  "package": "@enchev/web",
+  "runtime": "nextjs",
+  "source_mode": "root-app-bridge",
+  "runtime_source": "../../app",
+  "single_source": true,
+  "owns": [
+    "browser-ui",
+    "web-routes",
+    "next-route-handlers"
+  ],
+  "does_not_own": [
+    "auction-authority",
+    "realtime-authority",
+    "worker-jobs"
+  ]
+}

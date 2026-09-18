@@ -82,6 +82,10 @@ jobs:
         run: node scripts/verify-health-endpoints.mjs
       - name: Health endpoint contract self-tests
         run: node scripts/verify-health-endpoints.mjs --self-test
+      - name: apps/web architecture boundary
+        run: node scripts/verify-apps-web.mjs
+      - name: apps/web architecture self-tests
+        run: node scripts/verify-apps-web.mjs --self-test
       - name: Redis environment contract invariant
         run: node scripts/verify-redis-environment.mjs
       - name: Redis environment contract self-tests
