@@ -30,7 +30,7 @@ export function validateMobileContract(sources) {
   need(sources.mobile, /@media\(max-width:640px\)/, "D32 <=640px mobile layer missing");
   need(sources.mobile, /\.eaHome,[\s\S]*\.inventoryPage,[\s\S]*\.lotPage,[\s\S]*\.livePage,[\s\S]*\.navigationPage[\s\S]*overflow-x:clip/, "core routes need horizontal overflow protection");
   need(sources.mobile, /\.eaHeroCopy h1[\s\S]*font-size:clamp\(44px,17vw,58px\)!important/, "homepage narrow headline clamp missing");
-  need(sources.mobile, /\.inventoryToolbar select,[\s\S]*\.inv2ViewSwitch button[\s\S]*min-height:44px!important/, "inventory mobile controls must reach 44px");
+  need(sources.mobile, /\.inventoryToolbar select,\s*\.inv2ViewSwitch button\{[^}]*min-height:44px!important/, "inventory mobile controls must reach 44px");
   need(sources.mobile, /\.liveHeader button[\s\S]*min-height:44px!important/, "live header mobile action must reach 44px");
   need(sources.mobile, /\.liveHero,[\s\S]*\.liveStage,[\s\S]*\.liveQueue,[\s\S]*\.liveSold[\s\S]*width:calc\(100% - 24px\)!important/, "live mobile gutters must use the compact width contract");
   need(sources.mobile, /@media\(max-width:380px\)/, "extra-narrow mobile fallback missing");
