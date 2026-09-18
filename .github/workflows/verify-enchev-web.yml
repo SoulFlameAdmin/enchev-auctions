@@ -178,6 +178,30 @@ jobs:
             sleep 1
           done
           node scripts/verify-health-endpoints.mjs --live http://127.0.0.1:3010
+      - name: Visual regression screenshots
+        shell: bash
+        run: |
+          npm run start -- --hostname 127.0.0.1 -p 3011 > /tmp/enchev-visual.log 2>&1 &
+          NEXT_PID=$!
+          trap 'kill $NEXT_PID 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:3011/api/health/web > /dev/null; then
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              cat /tmp/enchev-visual.log
+              exit 1
+            fi
+            sleep 1
+          done
+          node scripts/capture-visual-regression.mjs http://127.0.0.1:3011
+      - name: Upload visual regression artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: enchev-visual-regression-${{ github.sha }}
+          path: artifacts/visual-regression
+          if-no-files-found: error
+          retention-days: 14
 
   sync-plan-cloud:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
