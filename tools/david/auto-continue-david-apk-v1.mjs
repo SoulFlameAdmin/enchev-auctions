@@ -11,6 +11,9 @@ const POLL_MS = Number(process.env.DAVID_APK_POLL_MS || 900);
 const START_TIMEOUT_MS = Number(process.env.DAVID_APK_START_TIMEOUT_MS || 15000);
 const STALL_MS = Number(process.env.DAVID_APK_STALL_MS || 70000);
 const COOLDOWN_MS = Number(process.env.DAVID_APK_COOLDOWN_MS || 1200);
+const COMPLETE_QUIET_MS = Number(process.env.DAVID_COMPLETE_QUIET_MS || 7000);
+const COMPLETE_STABLE_SAMPLES = Number(process.env.DAVID_COMPLETE_STABLE_SAMPLES || 5);
+const COMPLETE_SAMPLE_MS = Number(process.env.DAVID_COMPLETE_SAMPLE_MS || 1200);
 const PROBLEM_PREFIX = "PROBLEM IN:";
 const MARKER = "[DAVID_RELAY_APK_V1]";
 const DEPLOY_LAW = `
@@ -272,7 +275,7 @@ async function latestRole(page) {
   } catch { return null; }
 }
 async function generating(page) {
-  for (const s of ['[data-testid="stop-button"]','button[aria-label*="Stop"]','button:has-text("Stop generating")','button:has-text("Спри генерирането")']) {
+  for (const s of ['[data-testid="stop-button"]','[data-testid*="stop" i]','button[aria-label*="Stop"]','button[aria-label*="stop"]','button[aria-label*="Спри"]','button:has-text("Stop generating")','button:has-text("Stop thinking")','button:has-text("Stop response")','button:has-text("Спри генерирането")','button:has-text("Спри да мисли")','button:has-text("Спри отговора")']) {
     try {
       const x = page.locator(s).last();
       if (await x.count() && await x.isVisible().catch(() => false)) return true;
@@ -280,12 +283,36 @@ async function generating(page) {
   }
   return false;
 }
-async function complete(page) {
-  if (await generating(page) || await latestRole(page) !== "assistant") return false;
-  const before = await latestAssistant(page);
-  if (!before) return false;
-  await sleep(1200);
-  return !await generating(page) && await latestRole(page) === "assistant" && (await latestAssistant(page)) === before;
+async function complete(page, baseHash = null) {
+  let stableHash = null;
+  let stableSince = 0;
+  let stableSamples = 0;
+  const deadline = Date.now() + COMPLETE_QUIET_MS + 12000;
+
+  while (Date.now() < deadline) {
+    if (await generating(page) || await latestRole(page) !== "assistant") return false;
+    const text = await latestAssistant(page);
+    if (!text) return false;
+    const h = hash(text);
+    if (baseHash && h === baseHash) return false;
+
+    if (h !== stableHash) {
+      stableHash = h;
+      stableSince = Date.now();
+      stableSamples = 1;
+    } else {
+      stableSamples += 1;
+    }
+
+    if (
+      stableSamples >= COMPLETE_STABLE_SAMPLES &&
+      Date.now() - stableSince >= COMPLETE_QUIET_MS &&
+      !await generating(page)
+    ) return true;
+
+    await sleep(COMPLETE_SAMPLE_MS);
+  }
+  return false;
 }
 
 async function waitReady(context, page, state) {
@@ -370,7 +397,7 @@ async function runPrompt(context, page, state, prompt, kind) {
         lastActivity = Date.now();
       } else if (text && h !== base) {
         if (h !== last) { last = h; lastActivity = Date.now(); }
-        if (await complete(page)) {
+        if (await complete(page, base)) {
           if (state.justRolledOver) state.justRolledOver = false;
           syncChatUrl(page, state);
           state.lastAssistantHash = h;
