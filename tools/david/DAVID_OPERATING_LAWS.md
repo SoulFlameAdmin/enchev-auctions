@@ -2,6 +2,13 @@
 
 These rules are mandatory for SYSTEM, DESIGN, DPP/APP2 and DAVID APK workers.
 
+## 0. Terminal OK gate
+- A new normal DAVID prompt is allowed only when the previous GPT assistant response has fully completed and its final non-empty line is exactly `OK`.
+- `OK.`, `completed`, a quiet response, tool completion, or visible action buttons are not sufficient.
+- If the final marker is `PROBLEM IN: ...`, DAVID may enter the bounded problem-fix/defer flow for that problem; it must not advance to the next normal project task.
+- If there is neither exact final `OK` nor `PROBLEM IN:`, DAVID waits and sends no new prompt.
+- APP2 may also stop permanently on its explicit project-complete marker.
+
 ## 1. ChatGPT response recovery
 1. A prompt is considered accepted only when the user turn is visible in the conversation.
 2. If GPT does not begin thinking/writing within the worker start timeout:
