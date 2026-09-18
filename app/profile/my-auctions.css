@@ -334,3 +334,23 @@
     outline:3px solid Highlight;
   }
 }
+
+
+.myAuctionsResultCount{
+  margin:0 0 10px;
+  color:#77847b;
+  font-size:10px;
+  font-weight:700;
+}
+
+.myAuctionsList:focus-visible{
+  outline:3px solid #87ffb8;
+  outline-offset:4px;
+  border-radius:14px;
+}
+
+@media(forced-colors:active){
+  .myAuctionsList:focus-visible{
+    outline-color:Highlight;
+  }
+}
