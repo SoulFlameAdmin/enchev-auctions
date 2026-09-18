@@ -15,6 +15,9 @@ const REFRESH_SETTLE_MS = Number(process.env.DAVID_REFRESH_SETTLE_MS || 3000);
 const MAX_RECOVERY_ATTEMPTS = Number(process.env.DAVID_MAX_RECOVERY_ATTEMPTS || 4);
 const SAME_TURN_RECOVERY_LIMIT = Number(process.env.DAVID_SAME_TURN_RECOVERY_LIMIT || 3);
 const STALL_RESEND_LIMIT = Number(process.env.DAVID_STALL_RESEND_LIMIT || 2);
+const COMPLETE_QUIET_MS = Number(process.env.DAVID_COMPLETE_QUIET_MS || 7000);
+const COMPLETE_STABLE_SAMPLES = Number(process.env.DAVID_COMPLETE_STABLE_SAMPLES || 5);
+const COMPLETE_SAMPLE_MS = Number(process.env.DAVID_COMPLETE_SAMPLE_MS || 1200);
 const PROBLEM_BACKOFF_MS = Number(process.env.DAVID_PROBLEM_BACKOFF_MS || 30000);
 const PLATFORM_BACKOFF_MS = Number(process.env.DAVID_PLATFORM_BACKOFF_MS || 180000);
 const STATE_FILE = process.env.DAVID_STATE_FILE || path.join(process.cwd(), ".david-enchev-state.json");
@@ -276,10 +279,16 @@ async function isGenerating(page) {
   if (!usable(page)) return false;
   for (const selector of [
     '[data-testid="stop-button"]',
+    '[data-testid*="stop" i]',
     'button[aria-label*="Stop"]',
     'button[aria-label*="stop"]',
+    'button[aria-label*="Спри"]',
     'button:has-text("Stop generating")',
-    'button:has-text("Спри генерирането")'
+    'button:has-text("Stop thinking")',
+    'button:has-text("Stop response")',
+    'button:has-text("Спри генерирането")',
+    'button:has-text("Спри да мисли")',
+    'button:has-text("Спри отговора")'
   ]) {
     try {
       const loc = page.locator(selector).last();
@@ -327,20 +336,41 @@ async function hasFinalActionBar(page) {
   } catch { return false; }
 }
 
-async function responseComplete(page) {
-  if (!usable(page) || await isGenerating(page)) return false;
-  const turn = await latestTurnInfo(page);
-  if (turn.role !== "assistant") return false;
-  const text = await latestAssistantText(page);
-  if (!text) return false;
-  if (await hasFinalActionBar(page)) return true;
-  const before = text;
-  await sleep(1200);
-  if (!usable(page) || await isGenerating(page)) return false;
-  const afterTurn = await latestTurnInfo(page);
-  if (afterTurn.role !== "assistant") return false;
-  const after = await latestAssistantText(page);
-  return Boolean(after && after === before);
+async function responseComplete(page, baselineHash = null) {
+  if (!usable(page)) return false;
+  let stableHash = null;
+  let stableSince = 0;
+  let stableSamples = 0;
+  const deadline = Date.now() + COMPLETE_QUIET_MS + 12000;
+
+  while (Date.now() < deadline) {
+    if (!usable(page) || await isGenerating(page)) return false;
+    const turn = await latestTurnInfo(page);
+    if (turn.role !== "assistant") return false;
+
+    const text = await latestAssistantText(page);
+    if (!text) return false;
+    const h = hashText(text);
+    if (baselineHash && h === baselineHash) return false;
+
+    if (h !== stableHash) {
+      stableHash = h;
+      stableSince = Date.now();
+      stableSamples = 1;
+    } else {
+      stableSamples += 1;
+    }
+
+    if (
+      stableSamples >= COMPLETE_STABLE_SAMPLES &&
+      Date.now() - stableSince >= COMPLETE_QUIET_MS &&
+      !await isGenerating(page)
+    ) {
+      return true;
+    }
+    await sleep(COMPLETE_SAMPLE_MS);
+  }
+  return false;
 }
 
 function extractProblem(text) {
@@ -622,7 +652,7 @@ async function waitForCompletion(context, page, state, baselineHash) {
 
     generatingObserved = false;
     if (turn.role === "assistant" && currentHash && currentHash !== baselineHash) {
-      if (await responseComplete(page)) {
+      if (await responseComplete(page, baselineHash)) {
         const finalText = await latestAssistantText(page);
         return { status: "complete", page, text: finalText, hash: hashText(finalText) };
       }
