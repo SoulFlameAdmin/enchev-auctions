@@ -143,6 +143,10 @@ jobs:
         run: node scripts/verify-mobile-first-design.mjs
       - name: Mobile-first design self-tests
         run: node scripts/verify-mobile-first-design.mjs --self-test
+      - name: Accessibility visual invariant
+        run: node scripts/verify-accessibility-visual-pass.mjs
+      - name: Accessibility visual self-tests
+        run: node scripts/verify-accessibility-visual-pass.mjs --self-test
       - name: CI test suite
         run: npm test
       - name: TypeScript check
