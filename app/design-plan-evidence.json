@@ -175,8 +175,8 @@
       "id": "D25",
       "group": "Live auction",
       "title": "10-second bid countdown визуално синхронизиран със server state",
-      "status": "red",
-      "evidence": ""
+      "status": "yellow",
+      "evidence": "Implemented D25 on branch test/design-d25-server-clock-20260919 through commits 4b1c2929e6bc889fb24a82ebbb7668e46c76a327 and 30dc836d6fa28b1fa3c05c45b44ab3160de5f662. app/api/live-auction-clock/route.ts now provides a no-store 10-second server-issued browser-session clock: GET normalizes/advances expired lot state and POST action=bid resets the server-issued deadline. app/live-auctions/page.tsx preserves the current D24 layout, exposes data-design-task=D25 on the role=timer clock, estimates client/server offset from request round-trip timing, renders remaining time from roundEndsAt, resyncs every 3 seconds and at 00:00, and only applies a bid increment after a matching server response. PR #10 exact implementation head 30dc836d6fa28b1fa3c05c45b44ab3160de5f662 passed GitHub Verify Enchev Web run 35396250080 SUCCESS, including all plan/environment invariants, Supabase live endpoint, TypeScript check and Production build. Supabase was intentionally not mutated because config/enchev-supabase-project.json declares shared_project=true, scope=development-governance and auction_authority=false. Production/browser proof is not available for this D25 branch because Git deployment generation remains paused and no D25 preview deployment exists; the newest listed READY production deployment dpl_Fo8KwnsqL9Gi135RRZiyX6Q1QVFv is for main commit e5776fc64e06b66e68aede529a2c6accd0ce1783, not the D25 branch. D25 therefore remains YELLOW: build/server-sync logic is proven, while live browser interaction and authoritative multi-user auction synchronization are not yet proven."
     },
     {
       "id": "D26",
