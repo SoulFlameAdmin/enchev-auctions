@@ -1,5 +1,6 @@
 import { primaryNavigation } from "../site-navigation";
 import WatchlistPanel from "./WatchlistPanel";
+import MyAuctionsPanel from "./MyAuctionsPanel";
 
 export default function ProfilePage(){
   return <main className="navigationPage">
@@ -16,6 +17,7 @@ export default function ProfilePage(){
       <p>Следи запазените автомобили и използвай buyer workspace като изходна точка към инвентара и LIVE търговете.</p>
 
       <WatchlistPanel />
+      <MyAuctionsPanel />
 
       <div className="navigationRouteGrid">
         <article className="navigationRouteCard"><b>Инвентар</b><p>Продължи към търсенето и намери следващ автомобил или лот.</p></article>
