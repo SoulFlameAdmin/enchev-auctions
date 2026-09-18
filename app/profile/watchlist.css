@@ -1,0 +1,353 @@
+.profileWatchlist{
+  margin-top:34px;
+  padding:24px;
+  border:1px solid rgba(255,255,255,.09);
+  border-radius:22px;
+  background:linear-gradient(180deg,rgba(15,22,18,.92),rgba(8,13,10,.96));
+  box-shadow:0 24px 64px rgba(0,0,0,.18);
+}
+
+.profileWatchlistHead{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:24px;
+  margin-bottom:18px;
+}
+
+.profileWatchlistKicker{
+  color:#53e98c;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.18em;
+}
+
+.profileWatchlistHead h2{
+  margin:5px 0 7px;
+  color:#f3f8f5;
+  font-size:clamp(26px,3vw,38px);
+  letter-spacing:-.04em;
+}
+
+.profileWatchlistHead p{
+  max-width:700px;
+  margin:0;
+  color:#8f9a93;
+  line-height:1.6;
+}
+
+.profileWatchlistSummary{
+  display:grid;
+  grid-template-columns:auto auto;
+  align-items:end;
+  gap:0 7px;
+  min-width:128px;
+  padding:14px 16px;
+  border:1px solid rgba(39,239,130,.18);
+  border-radius:15px;
+  background:rgba(39,239,130,.055);
+}
+
+.profileWatchlistSummary strong{
+  grid-row:1 / span 2;
+  color:#fff;
+  font-size:34px;
+  line-height:.9;
+}
+
+.profileWatchlistSummary span{
+  color:#a8b5ad;
+  font-size:10px;
+  font-weight:800;
+  text-transform:uppercase;
+}
+
+.profileWatchlistSummary small{
+  color:#62ee95;
+  font-size:9px;
+  font-weight:900;
+}
+
+.profileWatchlistGrid{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:16px;
+}
+
+.profileWatchlistCard{
+  min-width:0;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.08);
+  border-radius:18px;
+  background:#0b100d;
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+
+.profileWatchlistCard:hover,
+.profileWatchlistCard:focus-within{
+  transform:translateY(-2px);
+  border-color:rgba(39,239,130,.3);
+  box-shadow:0 18px 40px rgba(0,0,0,.22);
+}
+
+.profileWatchlistMedia{
+  position:relative;
+  height:190px;
+  background:#111713;
+}
+
+.profileWatchlistMedia img{
+  width:100%;
+  height:100%;
+  display:block;
+  object-fit:cover;
+}
+
+.profileWatchlistMedia:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(180deg,rgba(3,6,4,.02),rgba(3,6,4,.42));
+  pointer-events:none;
+}
+
+.profileWatchlistState{
+  position:absolute;
+  z-index:2;
+  left:12px;
+  top:12px;
+  padding:7px 9px;
+  border:1px solid rgba(39,239,130,.28);
+  border-radius:999px;
+  background:rgba(4,12,7,.84);
+  color:#bcffd1;
+  font-size:9px;
+  font-weight:1000;
+  letter-spacing:.1em;
+}
+
+.profileWatchlistCard[data-auction-state="upcoming"] .profileWatchlistState{
+  border-color:rgba(129,173,255,.32);
+  color:#c7d9ff;
+}
+
+.profileWatchlistCard[data-auction-state="buy-now"] .profileWatchlistState{
+  border-color:rgba(255,211,102,.34);
+  color:#ffe8a6;
+}
+
+.profileWatchlistRemove{
+  position:absolute;
+  z-index:3;
+  right:10px;
+  top:10px;
+  width:38px;
+  height:38px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:50%;
+  background:rgba(5,8,6,.82);
+  color:#fff;
+  font-size:22px;
+  line-height:1;
+  cursor:pointer;
+}
+
+.profileWatchlistRemove:hover{
+  border-color:rgba(255,255,255,.4);
+  background:rgba(22,29,24,.95);
+}
+
+.profileWatchlistRemove:focus-visible,
+.profileWatchlistActions a:focus-visible,
+.profileWatchlistEmpty a:focus-visible{
+  outline:3px solid #87ffb8;
+  outline-offset:3px;
+}
+
+.profileWatchlistBody{
+  padding:16px;
+}
+
+.profileWatchlistLot{
+  color:#63ea93;
+  font-size:9px;
+  font-weight:900;
+  letter-spacing:.14em;
+}
+
+.profileWatchlistBody h3{
+  margin:7px 0 14px;
+  color:#f4f8f5;
+  font-size:19px;
+  letter-spacing:-.025em;
+}
+
+.profileWatchlistFacts{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:10px;
+  margin:0;
+}
+
+.profileWatchlistFacts div{
+  min-width:0;
+}
+
+.profileWatchlistFacts dt{
+  color:#6f7b73;
+  font-size:9px;
+}
+
+.profileWatchlistFacts dd{
+  margin:3px 0 0;
+  overflow-wrap:anywhere;
+  color:#cbd4ce;
+  font-size:11px;
+}
+
+.profileWatchlistBid{
+  display:flex;
+  align-items:end;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:17px;
+  padding-top:14px;
+  border-top:1px solid rgba(255,255,255,.07);
+}
+
+.profileWatchlistBid span{
+  color:#78847c;
+  font-size:9px;
+}
+
+.profileWatchlistBid strong{
+  color:#fff;
+  font-size:20px;
+}
+
+.profileWatchlistActions{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:8px;
+  margin-top:14px;
+}
+
+.profileWatchlistActions a,
+.profileWatchlistEmpty a{
+  min-height:44px;
+  display:grid;
+  place-items:center;
+  padding:0 12px;
+  border:1px solid rgba(39,239,130,.22);
+  border-radius:10px;
+  color:#c9ffdc;
+  text-decoration:none;
+  font-size:11px;
+  font-weight:900;
+}
+
+.profileWatchlistActions a:first-child{
+  border-color:#27ef82;
+  background:#27ef82;
+  color:#061009;
+}
+
+.profileWatchlistEmpty{
+  display:grid;
+  place-items:center;
+  min-height:280px;
+  padding:28px;
+  border:1px dashed rgba(255,255,255,.14);
+  border-radius:18px;
+  text-align:center;
+  background:rgba(255,255,255,.02);
+}
+
+.profileWatchlistEmpty>span{
+  color:#62ed95;
+  font-size:38px;
+}
+
+.profileWatchlistEmpty h3{
+  margin:8px 0 4px;
+  color:#fff;
+}
+
+.profileWatchlistEmpty p{
+  margin:0 0 16px;
+  color:#88948c;
+}
+
+.profileWatchlistEmpty a{
+  min-width:180px;
+}
+
+@media(max-width:980px){
+  .profileWatchlistGrid{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+  }
+}
+
+@media(max-width:680px){
+  .profileWatchlist{
+    margin-top:24px;
+    padding:16px;
+    border-radius:18px;
+  }
+
+  .profileWatchlistHead{
+    align-items:stretch;
+    flex-direction:column;
+    gap:14px;
+  }
+
+  .profileWatchlistSummary{
+    width:max-content;
+  }
+
+  .profileWatchlistGrid{
+    grid-template-columns:1fr;
+  }
+
+  .profileWatchlistMedia{
+    height:220px;
+  }
+
+  .profileWatchlistRemove{
+    width:44px;
+    height:44px;
+  }
+
+  .profileWatchlistActions{
+    grid-template-columns:1fr;
+  }
+}
+
+@media(prefers-reduced-motion:reduce){
+  .profileWatchlistCard{
+    transition:none;
+  }
+
+  .profileWatchlistCard:hover,
+  .profileWatchlistCard:focus-within{
+    transform:none;
+  }
+}
+
+@media(forced-colors:active){
+  .profileWatchlist,
+  .profileWatchlistCard,
+  .profileWatchlistSummary,
+  .profileWatchlistState,
+  .profileWatchlistActions a,
+  .profileWatchlistEmpty,
+  .profileWatchlistEmpty a{
+    border-color:CanvasText;
+  }
+
+  .profileWatchlistRemove:focus-visible,
+  .profileWatchlistActions a:focus-visible,
+  .profileWatchlistEmpty a:focus-visible{
+    outline:3px solid Highlight;
+  }
+}
