@@ -6,6 +6,7 @@ import "./navigation.css";
 import "./command-center-responsive.css";
 import "./mobile-quality.css";
 import "./accessibility-quality.css";
+import "./cross-browser-quality.css";
 import MouseAura from "./components/MouseAura";
 import BackgroundSwitcher from "./components/BackgroundSwitcher";
 import VerifiedPlanEvidenceSync from "./components/VerifiedPlanEvidenceSync";
