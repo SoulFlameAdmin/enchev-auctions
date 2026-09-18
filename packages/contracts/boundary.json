@@ -1,0 +1,22 @@
+{
+  "task": "02.06",
+  "workspace": "packages/contracts",
+  "package": "@enchev/contracts",
+  "layer": "contracts",
+  "implementation_state": "boundary-established",
+  "transport_neutral": true,
+  "owns": [
+    "request-response-dtos",
+    "event-contracts",
+    "validation-schema-interfaces"
+  ],
+  "does_not_own": [
+    "domain-authority",
+    "http-runtime",
+    "realtime-runtime",
+    "background-jobs",
+    "browser-ui",
+    "provider-clients",
+    "persistence-adapters"
+  ]
+}
