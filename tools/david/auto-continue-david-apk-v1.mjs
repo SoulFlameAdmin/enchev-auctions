@@ -343,6 +343,7 @@ async function main() {
   const state = loadState();
   activeChatUrl = cleanConversationUrl(ENV_CHAT_URL) || cleanConversationUrl(state.chatUrl) || "";
   let page = await waitReady(context, null, state);
+  if (state.previousChatUrl) await closeOldConversationTabs(context, state.previousChatUrl, page);
   console.log(`[APK] Session ready: ${page.url()}`);
   state.watchdog = "apk-monitoring";
   save(state, "DAVID APK worker connected");
