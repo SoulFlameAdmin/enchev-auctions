@@ -3,47 +3,257 @@
   "reference": "https://www.autobidmaster.com/",
   "referencePolicy": "Use AutoBidMaster only as UX/information-architecture inspiration. Keep ENCHEV branding, code, copy, assets and visual identity original.",
   "tasks": [
-    {"id":"D01","group":"Основа","title":"Дизайн токени: цветове, типография, spacing, radius, shadows","status":"green","evidence":"Implemented in app/enchev-theme.css at commit 7c4eeb82262088985a84e31726c35e8dfcea7eba and globally imported by app/layout.tsx. Production deployment dpl_Erm8aPPNQizB8Sgph81SbuzC6osS for commit f55f50adf53293ed2daa06d1f01bcf13f0f9c929 is READY and aliased to enchev-auctions.vercel.app. Production / and /inventory both returned HTTP 200 and load CSS with ENCHEV semantic color, typography, spacing, radius, shadow, focus and motion tokens, responsive media queries and prefers-reduced-motion fallback."},
-    {"id":"D02","group":"Основа","title":"Единен responsive grid и breakpoints за desktop/tablet/mobile","status":"green","evidence":"Implemented app/responsive-grid.css at commit 842c62cc38b64b49fb46ad4173904e97ffc417dd and loaded globally by app/layout.tsx at commit bedb54659873c57041e79ff1d2eb6c342df50976. Production deployment dpl_91SULVo5PWw5BfjfsXkDkV2K1NHn is READY. Production CSS contains --ea-grid-max/--ea-grid-gutter/--ea-grid-gap, breakpoints <=1200/<=900/<=640, overflow safety and route-specific desktop/tablet/mobile grids."},
-    {"id":"D03","group":"Основа","title":"Оригинален ENCHEV header + utility bar + account actions","status":"green","evidence":"Production deployment dpl_91SULVo5PWw5BfjfsXkDkV2K1NHn serves original ENCHEV header systems on / and /inventory with ENCHEV branding, utility information, navigation and distinct account actions. Production CSS includes responsive header behavior for tablet/mobile, and both routes returned HTTP 200."},
-    {"id":"D04","group":"Основа","title":"Навигационна архитектура за инвентар, live търгове, помощ и профил","status":"green","evidence":"Canonical navigation is implemented in app/site-navigation.ts and connected to homepage and inventory. Dedicated /support and /profile routes plus navigation-shell styling are shipped. GitHub Verify Enchev Web run 35183833517 for commit 3df71f8d66d27d2eeed0602075951dc2ed640e93 completed successfully. A safe Git webhook retrigger produced Vercel production deployment dpl_Eg54V8YciqffeTF51QiaZY7hBM3V for commit ac5875b6b41d6725fa7b89b0dd6a3b0cdf8b9a39; build logs list /inventory, /live-auctions, /profile, /support, /transport and /vehicle-history and the deployment is READY and aliased to enchev-auctions.vercel.app. Production /inventory, /live-auctions, /support and /profile each returned HTTP 200. Production markup shows canonical dedicated links and aria-current on support/profile routes."},
-
-    {"id":"D05","group":"Начална страница","title":"Hero със силно търсене по марка, модел, VIN и lot","status":"green","evidence":"Implemented VIN-aware search in app/inventory/page.tsx at commit 890cb18ff643ee53a7631b09d0b8eadbdb9a2dd2 and strengthened the homepage hero search semantics at commit 4eeca07c28ea38f4b78bf207ef7d914bd413c590 with role=search, type=search, accessible labels and GET action=/inventory name=q. Canonical Vercel production deployment dpl_GzJpQS2zrGrHtvBS8XcJGUuvhpb9 for commit 4eeca07c28ea38f4b78bf207ef7d914bd413c590 completed successfully, is READY and aliased to enchev-auctions.vercel.app. Production / returned HTTP 200 and exposes the accessible hero search form for mark/model/VIN/LOT. Production /inventory?q=WBS3R9C50JAK10482 returned HTTP 200; deployed client chunk 0gjvklcxodvqy.js contains VIN fields for the inventory data, reads the q URL parameter and filters across title, brand, vin, lot, location and damage. Production CSS contains .eaSearch desktop styling and <=560px responsive state plus global focus-visible behavior, confirming the shipped responsive/interaction visual states."},
-    {"id":"D06","group":"Начална страница","title":"Quick filters / популярни категории под търсенето","status":"green","evidence":"Implemented functional homepage quick filters in app/page.tsx at commit d151e03f24673fbe65f235be0f79d3c5cbad5177. The quick-filter row is now a semantic nav with aria-label=Популярни категории and six working presets: BMW, Mercedes, Audi, Porsche, САЩ and Front end, each linking to /inventory?q=<preset>. Canonical Vercel production deployment dpl_5h7A4wnYghWgzNydvRxc7mKdhceW for commit d151e03f24673fbe65f235be0f79d3c5cbad5177 completed successfully, is READY and aliased to enchev-auctions.vercel.app; GitHub Vercel status is success. Production / returned HTTP 200 and its markup contains all six preset links. Production /inventory?q=BMW returned HTTP 200, while the deployed inventory client reads q from window.location.search and filters the auction dataset across title, brand, VIN, lot, location and damage, proving the preset handoff path is functional after hydration. Production CSS contains .eaHeroQuick flex-wrap, gap, pill and hover states plus the <=560px compact-gap rule and global focus-visible styling for anchors, verifying responsive/focus visual states."},
-    {"id":"D07","group":"Начална страница","title":"Live auction spotlight card с timer, current bid и status","status":"green","evidence":"Implemented a dedicated client-side app/components/HomeLiveSpotlight.tsx at commit 0138836a9d3dc71724d143a440c263ff14b3dda6 and mounted it from app/page.tsx at commit c4bbdbf9d2bbf601d18c56bb35106f8509df6510. The spotlight exposes LIVE status, lot EA-10539, current bid €21 900, accessible timer labeling and a 10-second client countdown that decrements once per second and loops back to 10. Canonical Vercel production deployment dpl_22M4uyxmaByQGRQnLbaHZoSL57pZ for commit c4bbdbf9d2bbf601d18c56bb35106f8509df6510 is READY and aliased to enchev-auctions.vercel.app; GitHub Vercel status is success. Production / returned HTTP 200 and renders the LIVE spotlight markup with role=status, aria-live timer, current bid and /live-auctions CTA. Production client chunk 3_iuuvrnlis8m.js contains the shipped useState(10), setInterval(...,1000), decrement/reset timer logic and current-bid/status rendering. Existing production CSS provides the .eaLiveCard/.eaLiveOrb/.eaLiveBid visual states and responsive full-width card <=820px plus reduced-motion fallback."},
-    {"id":"D08","group":"Начална страница","title":"Featured inventory секция с реални auction card states","status":"green","evidence":"Implemented explicit homepage auction-state data and semantic card markup in app/page.tsx at commit 4f2f910a36eace4af04bf727d07e0a88536f7761 with UPCOMING, BUY NOW, LIVE and SOLD examples, state-specific bid labels, timing/status text and CTAs. Added original ENCHEV state styling in app/home-featured-states.css at commit b09c6fa7b45e5383db7960b3e69446ab726511af and loaded it globally from app/layout.tsx at commit 5d6398b137232b0359e06a8203068eb64989b825. Canonical Vercel production deployment dpl_7DyBryxfK91XAe8RZDfY91RTcA1E for commit 5d6398b137232b0359e06a8203068eb64989b825 is READY and aliased to enchev-auctions.vercel.app; GitHub Vercel status is success. Production / returned HTTP 200 and its rendered markup contains four cards with data-auction-state=upcoming/buy-now/live/sold, accessible state labels and contextual actions. Production CSS chunk 2rk7-djn7g2p-.css contains distinct LIVE/BUY NOW/UPCOMING/SOLD badge and card treatments, muted/grayscale SOLD media, LIVE pulse, <=560px mobile CTA/touch layout and prefers-reduced-motion fallback."},
-    {"id":"D09","group":"Начална страница","title":"How it works / buyer journey секция","status":"green","evidence":"Implemented the buyer journey styling in app/home-featured-states.css at commit e6167cda2547e9aa26edec7e98aa8e83bafbc1ea and completed semantic buyer-journey markup in app/page.tsx at commit 149b4d57d6f3c66a07eb9c6275339acc7b8ff65b. The homepage now exposes an ordered four-step flow: search inventory, inspect the lot, join LIVE auction, and organize transport, with direct CTAs plus buyer-support handoff. Canonical Vercel production deployment dpl_BGHLv7uyatsCXSiUcC1kV9g2ujaL for commit 149b4d57d6f3c66a07eb9c6275339acc7b8ff65b is READY, aliased to enchev-auctions.vercel.app, and GitHub Vercel status is success. Production / returned HTTP 200 and contains #how with aria-labelledby=buyer-journey-heading, an ordered list labeled Стъпки за покупка през ENCHEV, four eaJourneyStep items and links to /inventory, /live-auctions, /transport and /support. Those destination routes returned HTTP 200 in production. Production CSS chunk 1kqy4q39dcft6.css contains journey hover/focus-within states, responsive <=820px/<=560px layouts, 44px mobile CTA touch target and prefers-reduced-motion fallback."},
-    {"id":"D10","group":"Начална страница","title":"Trust, support и international coverage секции","status":"green","evidence":"Implemented scoped D10 styling in app/components/HomeTrustSupport.module.css at commit 98570b88372ca542d313c2e35d8e478f63f01cc1, semantic component at commit 4c63796979e813544c882b0b49923f04b9fedd2a, mounted at commit ddb63f31c98869890bc70749c93e489575da39b3 and production-verification marker at commit 9ac47d9fb0555d0473eec4ef715bc02ca674f976. GitHub Verify Enchev Web run 35212105730 for the mount commit completed successfully. Canonical Vercel production deployment dpl_FDjFFdjtAcmamNEJCDTYuftgJa35 for descendant commit 20a0e261468c158cb3dabadbf0e283c4e7e3b2e0 is READY and aliased to enchev-auctions.vercel.app. Production / returned HTTP 200 and contains data-design-task=D10 and data-section=trust-support-coverage, separate TRUST and SUPPORT cards, international coverage for Европа · САЩ · Канада, and links to /inventory, /support and /transport. Production CSS chunk 0gnw833-saewx.css contains hover/focus-within states, <=980px and <=620px responsive layouts, 44px mobile actions and prefers-reduced-motion fallback."},
-
-    {"id":"D11","group":"Инвентар","title":"Inventory page layout с sidebar filters + results grid/list","status":"green","evidence":"Implemented functional inventory layout in app/inventory/page.tsx and app/inventory/inventory-v2.css at commit 8f1b4c828986a2ef94eb9cac78b822d2751f48db. The inventory keeps a dedicated sidebar filter panel and adds an accessible functional grid/list view switch plus a mobile filter disclosure. Canonical Vercel production deployment dpl_FDsMqFtjDtkk8iXNkHmTvowKaRxo for the exact commit is READY and aliased to enchev-auctions.vercel.app; GitHub Vercel status is success. Production /inventory returned HTTP 200 and renders data-design-task=D11, the sidebar panel, view switch with aria-pressed states, results grid data-view=grid and mobile filter control. Production client chunk 1tte3f1bszq-5.js contains useState(grid), grid/list click handlers, inventoryGrid--list class switching and mobile filter open/isMobileOpen logic. Production CSS chunk 1dopf0ac_lvm2.css contains the desktop list layout, <=900 adaptation, <=640 one-column list, 44px mobile filter toggle and mobile sidebar reveal."},
-    {"id":"D12","group":"Инвентар","title":"Филтри: make/model/year/location/damage/title/status","status":"green","evidence":"Implemented functional make/model/year/location/damage/title/status filtering in app/inventory/page.tsx at commit 0e31a06ff7a0502ea8529904a9ad34ecaa17ff64. Vehicle records now expose year, model and titleStatus metadata; the sidebar provides accessible controls for make, dependent model, year range, region/location, damage, title status and auction status, while reset clears the full D12 filter state. GitHub Verify Enchev Web run 35243700308 completed successfully for the exact commit. Canonical Vercel production deployment dpl_8Xcz6V1ksLMCKm4NyUMvahhLDx55 for the exact commit is READY and aliased to enchev-auctions.vercel.app. Production /inventory returned HTTP 200 and renders data-design-filter-task=D12 plus all make/model/year/location/damage/title/status controls. Production client chunk 1wzulch_spxrk.js contains dependent model/location option generation, full reset logic, year-range matching and the combined make/model/location/damage/title/status predicate with next normalized to UPCOMING. Production CSS chunk 1dopf0ac_lvm2.css contains ENCHEV select/range focus styling, <=900 responsive layout, <=640 mobile filter disclosure with 44px toggle and the existing reduced-motion/focus-visible safeguards."},
-    {"id":"D13","group":"Инвентар","title":"Active filter chips, clear-all и URL state","status":"green","evidence":"Implemented active filter chips, individual removal, clear-all and URL-backed inventory filter state in app/inventory/page.tsx plus scoped app/inventory/inventory-d13.css at commit 7bb7e2d4cefb79d06fd8b62610838b80fe456295. GitHub Verify Enchev Web run 35244642655 completed successfully for the exact commit, and GitHub Vercel status is success. Exact canonical Vercel production deployment dpl_52q7Y8zkr1Qf2xPevjN6MKv9L83b for commit 7bb7e2d4cefb79d06fd8b62610838b80fe456295 is READY and was aliased to enchev-auctions.vercel.app; current descendant production deployment dpl_E5GQ8MV8JxjmgsDmbA22m6dcdVdx is also READY and canonical. Production /inventory with make=BMW, region=САЩ, title=Salvage, yearFrom=2020 and buyNow=1 returned HTTP 200 and renders data-design-url-task=D13. Production client chunk 154h848ghnmv-.js reads q/make/model/region/location/damage/title/status/yearFrom/yearTo/buyNow/live from URLSearchParams, mirrors state back with history.replaceState, builds accessible active-filter chips, supports per-chip removal and full reset. Production CSS chunk 08xcjgpjjpgan.css contains chip/clear-all hover states, <=900 wrapping, <=640 44px touch targets and prefers-reduced-motion fallback."},
-    {"id":"D14","group":"Инвентар","title":"Sorting, pagination/infinite load и result count","status":"green","evidence":"Implemented functional D14 sorting and pagination in app/inventory/page.tsx at commit 687e2d8a7c15f4df50e4f4c6bd3c81d2c7c960d2 with PAGE_SIZE=4, currentPage, URL-backed sort/page state, recommended/price/year sorting, result-range feedback, accessible page controls, page clamping and filter reset to page 1. Added scoped responsive pagination/result styling in app/inventory/inventory-d14.css at commit 267ca8fccf04691fbdef71873b6b8beb8ec8d633 and focus-visible strengthening at descendant commit 6a642d6fa2eed2a63e3bbe578f75e5d8ad16df29. GitHub Verify Enchev Web run 35246605416 verify-web job completed SUCCESS for the exact page implementation; TypeScript and production build steps passed. Canonical Vercel production deployment dpl_FEJ5EMyuqPzV1oouvmapDg4JzB95 for descendant commit f4379f86fdcf9ccbd7516345f4fb583555893215 is READY and aliased to enchev-auctions.vercel.app. GitHub compare confirms that deployed commit is 29 commits ahead of the D14 implementation commit with behind_by=0. Production /inventory?sort=priceAsc&page=2 returned HTTP 200 and renders data-design-pagination-task=D14, result count/range, sort control and pagination markup. Deployed client chunk 189so_7zr8qc6.js reads sort/page from URLSearchParams, writes them back with history.replaceState, applies price/year sorting, PAGE_SIZE=4 slicing, page clamping and accessible page controls. Production CSS chunk 392al15q-jy59.css contains D14 pagination/result styling, focus-visible behavior, <=900 and <=640 responsive rules plus 44px mobile pagination targets. D14 is proven in canonical production."},
-    {"id":"D15","group":"Инвентар","title":"Vehicle cards: image, lot, location, damage, title, bid, timer","status":"green","evidence":"The existing inventory card implementation in app/inventory/page.tsx satisfies the D15 card field set and is shipped by canonical production deployment dpl_FEJ5EMyuqPzV1oouvmapDg4JzB95 for descendant commit f4379f86fdcf9ccbd7516345f4fb583555893215. Production /inventory returned HTTP 200 and renders vehicle cards with image/alt text, LOT number, vehicle title, mileage, damage, location, current or starting bid, auction-state badge and timer for non-sold lots; the LIVE card also exposes NEW BID and the 10-second countdown. Deployed client chunk 189so_7zr8qc6.js contains the vehicle image/lot/title/damage/location/bid/timer rendering, per-lot bidPrices state, +€100 LIVE bid update and countdown reset to 10 seconds. Production CSS chunk 1b-e67iwedffd.css contains scoped inventory card/image/lot/details/bid/timer styling, hover/focus behavior and <=640 mobile card layout; the responsive grid/list rules remain active. D15 is therefore verified in canonical production without requiring a duplicate implementation change."},
-    {"id":"D16","group":"Инвентар","title":"Card states: NEW BID / LIVE / UPCOMING / SOLD / BUY NOW","status":"green","evidence":"Implemented explicit D16 card-state hierarchy in app/inventory/inventory-d14.css at commit 6c251c830969ea1443592c95f18de805604064de and added focus-visible plus prefers-contrast hardening at commit e64f7556b579647e0b9bde1e6420226c26a58904. GitHub Verify Enchev Web run 35255481347 completed successfully for the D16 implementation. Canonical Vercel production deployment dpl_853HLRtYFTJaZ4mtHreYikwZcyPZ for exact commit e64f7556b579647e0b9bde1e6420226c26a58904 is READY and aliased to enchev-auctions.vercel.app; GitHub Vercel status is success. Production /inventory returned HTTP 200 and renders soldCard, liveCard, nextCard, NEW BID and buyBtn states. Production CSS chunk 2tivnom7cp93y.css contains explicit LIVE/UPCOMING/SOLD suffixes, BUY NOW chip treatment, distinct LIVE/UPCOMING outlines, focus-visible states, <=640 mobile sizing, prefers-contrast and prefers-reduced-motion handling. D16 is proven in canonical production."},
-    {"id":"D17","group":"Инвентар","title":"Sold cards визуално приглушени без загуба на четимост","status":"green","evidence":"Implemented D17 sold-card readability overrides in app/inventory/inventory-d14.css at commit 7ad37029015282d79710a9f20d64ebb69e06f62c. GitHub Verify Enchev Web run 35256560877 completed successfully for the exact D17 commit. Canonical Vercel production deployment dpl_75WAG5EXSb2XfHkzTVSEoRqEYRdL for descendant commit 601387e046db71ccbec1bc0b3e03991ea75960ab is READY and was aliased to enchev-auctions.vercel.app; GitHub ancestry verification confirms the deployed commit is a descendant of D17 with behind_by=0. Production /inventory returned HTTP 200 and renders soldCard with readable title, lot, metadata, detail controls and ended-sale text. Production CSS chunk 0hxvaojx9jii_.css contains the D17 muted/desaturated image treatment while restoring readable body text, clearer SOLD stamp, focus-visible sold-details action, <=640 mobile handling and prefers-contrast fallback. D17 is proven in canonical production."},
-    {"id":"D18","group":"Инвентар","title":"Loading skeletons, empty state и error state","status":"green","evidence":"Implemented D18 inventory states at commit ed00cea338ae97ef7941b8f2c051bba10c73d959; GitHub Verify Enchev Web run 35260049216 completed successfully. Canonical Vercel production deployment dpl_8vkFr1oHJaVWAvymPTm73vtdK5N5 for descendant commit 8395c1d08c944b29fd792b751bbd2f5a45407ab1 is READY and aliased to enchev-auctions.vercel.app; GitHub compare confirms the deployment is 7 commits ahead of D18 with behind_by=0. Production /inventory returned HTTP 200 and streamed data-design-state-task=D18/data-ui-state=loading with aria-busy, aria-live and four skeleton cards. Production error chunk 2_chj564pged-.js contains the D18 role=alert error boundary with retry, inventory and support actions. Production client chunk 189so_7zr8qc6.js contains the functional emptyInventory state. Production CSS chunk 0c_fqh_eexo4w.css contains loading/empty/error styling, <=900/<=640 responsive layouts, focus-visible behavior, prefers-contrast and prefers-reduced-motion. D18 is proven in canonical production."},
-
-    {"id":"D19","group":"Lot details","title":"Vehicle gallery + thumbnails + fullscreen media viewer","status":"green","evidence":"Implemented D19 fullscreen lot gallery in app/lot/[id]/page.tsx and app/lot/lot.css at commit 45db36a4bbb44dbefd42252c7a7ebd9f1666ae91 and focus restoration hardening at descendant commit 949a86576b6cb00bf6566b62ef613b5cebe79205. GitHub Verify Enchev Web run 35261939906 completed successfully for the original D19 implementation. Canonical Vercel production deployment dpl_BokbbEs6e9Jrpinzp1s1aPYy4k4N for descendant commit 23bf6af665f9b748ff3560a2cefb563d07e3bc4c is READY and aliased to enchev-auctions.vercel.app; GitHub compare confirms it is ahead of the focus-hardening commit with behind_by=0. Production /lot/EA-10539 returned HTTP 200 and renders data-design-task=D19, fullscreen-open main image control and aria-pressed thumbnails. Production client chunk 3r4324j74wa1a.js contains modal dialog rendering, previous/next controls, Escape/ArrowLeft/ArrowRight handling, body scroll locking and focus move/restore behavior. Production CSS chunk 25pl4euu80bm5.css contains the fullscreen viewer, <=760/<=480 responsive layouts, focus-visible, prefers-contrast and prefers-reduced-motion states. D19 is proven in canonical production."},
-    {"id":"D20","group":"Lot details","title":"Key facts panel: VIN/lot/odometer/damage/title/location","status":"green","evidence":"Implemented the dedicated D20 key-facts panel in app/lot/[id]/page.tsx at commit d8ed9f6e3dc4aef941de58ced3495db63e18c0f9 and hardened it through commits f812cc2d3d06b4c9d760c28b4d87de9946330a1f and 4bfd1cf213a9f1cb5d53f9f6acade10c806800eb. GitHub Verify Enchev Web run 35264296605 completed SUCCESS for the exact final D20 hardening commit, including TypeScript and Production build. Canonical Vercel production deployment dpl_BU7u4k8NshNqi52mjZNWp6qaLR7R for descendant commit f34edb1ee819d78afc69d308f727492f96607365 is READY, target=production and aliased to enchev-auctions.vercel.app; GitHub compare confirms it is ahead of 4bfd1cf213a9f1cb5d53f9f6acade10c806800eb with behind_by=0. Canonical production /lot/EA-10539 returned HTTP 200 and renders data-design-task=D20 with aria-labelledby/aria-describedby, the 6-field verification badge, VIN, LOT, odometer, primary damage, document/title and location. The shipped markup includes responsive auto-fit minmax(160px,1fr) layout and overflow wrapping for long VIN/location values. D20 is proven in canonical production."},
-    {"id":"D21","group":"Lot details","title":"Auction panel: current bid, timer, bid CTA, max bid","status":"green","evidence":"Implemented D21 in app/lot/[id]/page.tsx plus scoped app/lot/lot-d21.css at commit 541c5e5b7c6609942c31814039cf30d7767cd4da and narrow-screen hardening at commit 598174d70feba518be7e946e0a3a1690ea191163. GitHub Verify Enchev Web run 35265635775 completed SUCCESS for the hardening commit, including TypeScript and Production build. Direct canonical production verification against https://enchev-auctions.vercel.app/lot/EA-10539 returned HTTP 200 and renders data-design-task=D21 with current bid, minimum bid, role=timer countdown, bid CTA and max-bid controls. Production client chunk 3yhb4op2egs0c.js contains the 1-second countdown loop, valid-bid update/reset-to-10 logic and session-local max-bid state; production CSS chunk 3r7i2rrelq24i.css contains the D21 urgent/focus states plus <=1050/<=560/<=380 responsive rules, prefers-contrast and prefers-reduced-motion handling. Vercel deployment-list/status metadata still reports the earlier build-rate-limit state, so D21 production proof is based on the canonical served HTML/JS/CSS rather than an inferred deployment ID. D21 is proven in canonical production."},
-    {"id":"D22","group":"Lot details","title":"Condition / inspection / provenance presentation","status":"green","evidence":"Implemented D22 in app/lot/[id]/page.tsx plus scoped app/lot/lot-d22.css at commit c0f4543a68db65c9b9283db367a795ff04723553. GitHub Verify Enchev Web run 35266394715 completed SUCCESS for the exact D22 commit, including TypeScript and Production build. Canonical Vercel production deployment dpl_2N9yU54HqBWj7C2jbksEo8ax99b8 for descendant commit 52f1136906f11e6fbea3d39133babb80ebea9311 is READY, target=production and aliased to enchev-auctions.vercel.app; GitHub compare confirms it is 2 commits ahead of D22 with behind_by=0. Canonical production /lot/EA-10539 returned HTTP 200 and renders data-design-task=D22 with separate condition, inspection and provenance cards, explicit source labels, neutral missing-report states, vehicle-history handoff and the non-fabrication disclosure. The production HTML references the lot CSS bundle from the same descendant build; app/lot/lot-d22.css provides 3-column desktop, 2-column tablet and 1-column mobile layouts, a 44px mobile history action, focus-visible, prefers-contrast and prefers-reduced-motion handling. D22 is proven in canonical production."},
-    {"id":"D23","group":"Lot details","title":"Sticky desktop/mobile action area без припокриване","status":"yellow","evidence":"Implemented D23 in app/lot/[id]/page.tsx and scoped app/lot/lot-d23.css at commit a55d8aa297a7f98bd41d6585a23407e8d425c96b, with short-viewport/mobile hardening at commit 35c7725af110e7abaa8209becdc4f60ac745aba6 and safe-area inset hardening at commit ecc89b042ade38bc5a7ed6821677480a828e563b. The desktop auction panel is viewport-bounded sticky with internal overflow protection; <=1050px switches it to normal flow and introduces a fixed mobile bid dock that shows current/minimum bid and moves focus to the existing bid field. The dock is hidden while the fullscreen viewer is open, reserves page-bottom space, respects bottom plus left/right device safe-area insets, includes short-height <=620px compaction plus <=560/<=360 responsive layouts, focus-visible, prefers-contrast and prefers-reduced-motion handling. GitHub Verify Enchev Web run 35389686673 completed SUCCESS for the exact safe-area hardening commit, including TypeScript and Production build. Vercel status for ecc89b042ade38bc5a7ed6821677480a828e563b is failure with account-level build-rate-limit; there is no new deployment after canceled dpl_3g8aGoqknM2uCxwMCjnJ63u9yVnG, and canonical /lot/EA-10539 still serves D22-era markup without data-sticky-task=D23 or lotMobileBidDock. Production verification is therefore still pending, so D23 remains YELLOW."},
-
-    {"id":"D24","group":"Live auction","title":"Dedicated live room layout с current lot + next lot","status":"red","evidence":""},
-    {"id":"D25","group":"Live auction","title":"10-second bid countdown визуално синхронизиран със server state","status":"red","evidence":""},
-    {"id":"D26","group":"Live auction","title":"Автоматично преминаване към следващ lot след SOLD","status":"red","evidence":""},
-    {"id":"D27","group":"Live auction","title":"Bid feedback states: accepted / rejected / outbid / leading","status":"red","evidence":""},
-    {"id":"D28","group":"Live auction","title":"Connection/reconnect/stale-state indicators","status":"red","evidence":""},
-
-    {"id":"D29","group":"Профил","title":"Watchlist / saved vehicles визуален модел","status":"red","evidence":""},
-    {"id":"D30","group":"Профил","title":"My Auctions: watching / bidding / leading / ended","status":"red","evidence":""},
-    {"id":"D31","group":"Профил","title":"Account navigation и responsive dashboard shell","status":"red","evidence":""},
-
-    {"id":"D32","group":"Качество","title":"Mobile-first проверка на ключовите страници","status":"red","evidence":""},
-    {"id":"D33","group":"Качество","title":"Keyboard/focus/contrast/accessibility visual pass","status":"red","evidence":""},
-    {"id":"D34","group":"Качество","title":"Cross-browser визуална проверка Edge/Chrome/mobile","status":"red","evidence":""},
-    {"id":"D35","group":"Качество","title":"Visual regression screenshots за основните маршрути","status":"red","evidence":""},
-    {"id":"D36","group":"Качество","title":"Final consistency pass: ENCHEV identity навсякъде, без копирани чужди assets/copy/code","status":"red","evidence":""}
+    {
+      "id": "D01",
+      "group": "Основа",
+      "title": "Дизайн токени: цветове, типография, spacing, radius, shadows",
+      "status": "green",
+      "evidence": "Implemented in app/enchev-theme.css at commit 7c4eeb82262088985a84e31726c35e8dfcea7eba and globally imported by app/layout.tsx. Production deployment dpl_Erm8aPPNQizB8Sgph81SbuzC6osS for commit f55f50adf53293ed2daa06d1f01bcf13f0f9c929 is READY and aliased to enchev-auctions.vercel.app. Production / and /inventory both returned HTTP 200 and load CSS with ENCHEV semantic color, typography, spacing, radius, shadow, focus and motion tokens, responsive media queries and prefers-reduced-motion fallback."
+    },
+    {
+      "id": "D02",
+      "group": "Основа",
+      "title": "Единен responsive grid и breakpoints за desktop/tablet/mobile",
+      "status": "green",
+      "evidence": "Implemented app/responsive-grid.css at commit 842c62cc38b64b49fb46ad4173904e97ffc417dd and loaded globally by app/layout.tsx at commit bedb54659873c57041e79ff1d2eb6c342df50976. Production deployment dpl_91SULVo5PWw5BfjfsXkDkV2K1NHn is READY. Production CSS contains --ea-grid-max/--ea-grid-gutter/--ea-grid-gap, breakpoints <=1200/<=900/<=640, overflow safety and route-specific desktop/tablet/mobile grids."
+    },
+    {
+      "id": "D03",
+      "group": "Основа",
+      "title": "Оригинален ENCHEV header + utility bar + account actions",
+      "status": "green",
+      "evidence": "Production deployment dpl_91SULVo5PWw5BfjfsXkDkV2K1NHn serves original ENCHEV header systems on / and /inventory with ENCHEV branding, utility information, navigation and distinct account actions. Production CSS includes responsive header behavior for tablet/mobile, and both routes returned HTTP 200."
+    },
+    {
+      "id": "D04",
+      "group": "Основа",
+      "title": "Навигационна архитектура за инвентар, live търгове, помощ и профил",
+      "status": "green",
+      "evidence": "Canonical navigation is implemented in app/site-navigation.ts and connected to homepage and inventory. Dedicated /support and /profile routes plus navigation-shell styling are shipped. GitHub Verify Enchev Web run 35183833517 for commit 3df71f8d66d27d2eeed0602075951dc2ed640e93 completed successfully. A safe Git webhook retrigger produced Vercel production deployment dpl_Eg54V8YciqffeTF51QiaZY7hBM3V for commit ac5875b6b41d6725fa7b89b0dd6a3b0cdf8b9a39; build logs list /inventory, /live-auctions, /profile, /support, /transport and /vehicle-history and the deployment is READY and aliased to enchev-auctions.vercel.app. Production /inventory, /live-auctions, /support and /profile each returned HTTP 200. Production markup shows canonical dedicated links and aria-current on support/profile routes."
+    },
+    {
+      "id": "D05",
+      "group": "Начална страница",
+      "title": "Hero със силно търсене по марка, модел, VIN и lot",
+      "status": "green",
+      "evidence": "Implemented VIN-aware search in app/inventory/page.tsx at commit 890cb18ff643ee53a7631b09d0b8eadbdb9a2dd2 and strengthened the homepage hero search semantics at commit 4eeca07c28ea38f4b78bf207ef7d914bd413c590 with role=search, type=search, accessible labels and GET action=/inventory name=q. Canonical Vercel production deployment dpl_GzJpQS2zrGrHtvBS8XcJGUuvhpb9 for commit 4eeca07c28ea38f4b78bf207ef7d914bd413c590 completed successfully, is READY and aliased to enchev-auctions.vercel.app. Production / returned HTTP 200 and exposes the accessible hero search form for mark/model/VIN/LOT. Production /inventory?q=WBS3R9C50JAK10482 returned HTTP 200; deployed client chunk 0gjvklcxodvqy.js contains VIN fields for the inventory data, reads the q URL parameter and filters across title, brand, vin, lot, location and damage. Production CSS contains .eaSearch desktop styling and <=560px responsive state plus global focus-visible behavior, confirming the shipped responsive/interaction visual states."
+    },
+    {
+      "id": "D06",
+      "group": "Начална страница",
+      "title": "Quick filters / популярни категории под търсенето",
+      "status": "green",
+      "evidence": "Implemented functional homepage quick filters in app/page.tsx at commit d151e03f24673fbe65f235be0f79d3c5cbad5177. The quick-filter row is now a semantic nav with aria-label=Популярни категории and six working presets: BMW, Mercedes, Audi, Porsche, САЩ and Front end, each linking to /inventory?q=<preset>. Canonical Vercel production deployment dpl_5h7A4wnYghWgzNydvRxc7mKdhceW for commit d151e03f24673fbe65f235be0f79d3c5cbad5177 completed successfully, is READY and aliased to enchev-auctions.vercel.app; GitHub Vercel status is success. Production / returned HTTP 200 and its markup contains all six preset links. Production /inventory?q=BMW returned HTTP 200, while the deployed inventory client reads q from window.location.search and filters the auction dataset across title, brand, VIN, lot, location and damage, proving the preset handoff path is functional after hydration. Production CSS contains .eaHeroQuick flex-wrap, gap, pill and hover states plus the <=560px compact-gap rule and global focus-visible styling for anchors, verifying responsive/focus visual states."
+    },
+    {
+      "id": "D07",
+      "group": "Начална страница",
+      "title": "Live auction spotlight card с timer, current bid и status",
+      "status": "green",
+      "evidence": "Implemented a dedicated client-side app/components/HomeLiveSpotlight.tsx at commit 0138836a9d3dc71724d143a440c263ff14b3dda6 and mounted it from app/page.tsx at commit c4bbdbf9d2bbf601d18c56bb35106f8509df6510. The spotlight exposes LIVE status, lot EA-10539, current bid €21 900, accessible timer labeling and a 10-second client countdown that decrements once per second and loops back to 10. Canonical Vercel production deployment dpl_22M4uyxmaByQGRQnLbaHZoSL57pZ for commit c4bbdbf9d2bbf601d18c56bb35106f8509df6510 is READY and aliased to enchev-auctions.vercel.app; GitHub Vercel status is success. Production / returned HTTP 200 and renders the LIVE spotlight markup with role=status, aria-live timer, current bid and /live-auctions CTA. Production client chunk 3_iuuvrnlis8m.js contains the shipped useState(10), setInterval(...,1000), decrement/reset timer logic and current-bid/status rendering. Existing production CSS provides the .eaLiveCard/.eaLiveOrb/.eaLiveBid visual states and responsive full-width card <=820px plus reduced-motion fallback."
+    },
+    {
+      "id": "D08",
+      "group": "Начална страница",
+      "title": "Featured inventory секция с реални auction card states",
+      "status": "green",
+      "evidence": "Implemented explicit homepage auction-state data and semantic card markup in app/page.tsx at commit 4f2f910a36eace4af04bf727d07e0a88536f7761 with UPCOMING, BUY NOW, LIVE and SOLD examples, state-specific bid labels, timing/status text and CTAs. Added original ENCHEV state styling in app/home-featured-states.css at commit b09c6fa7b45e5383db7960b3e69446ab726511af and loaded it globally from app/layout.tsx at commit 5d6398b137232b0359e06a8203068eb64989b825. Canonical Vercel production deployment dpl_7DyBryxfK91XAe8RZDfY91RTcA1E for commit 5d6398b137232b0359e06a8203068eb64989b825 is READY and aliased to enchev-auctions.vercel.app; GitHub Vercel status is success. Production / returned HTTP 200 and its rendered markup contains four cards with data-auction-state=upcoming/buy-now/live/sold, accessible state labels and contextual actions. Production CSS chunk 2rk7-djn7g2p-.css contains distinct LIVE/BUY NOW/UPCOMING/SOLD badge and card treatments, muted/grayscale SOLD media, LIVE pulse, <=560px mobile CTA/touch layout and prefers-reduced-motion fallback."
+    },
+    {
+      "id": "D09",
+      "group": "Начална страница",
+      "title": "How it works / buyer journey секция",
+      "status": "green",
+      "evidence": "Implemented the buyer journey styling in app/home-featured-states.css at commit e6167cda2547e9aa26edec7e98aa8e83bafbc1ea and completed semantic buyer-journey markup in app/page.tsx at commit 149b4d57d6f3c66a07eb9c6275339acc7b8ff65b. The homepage now exposes an ordered four-step flow: search inventory, inspect the lot, join LIVE auction, and organize transport, with direct CTAs plus buyer-support handoff. Canonical Vercel production deployment dpl_BGHLv7uyatsCXSiUcC1kV9g2ujaL for commit 149b4d57d6f3c66a07eb9c6275339acc7b8ff65b is READY, aliased to enchev-auctions.vercel.app, and GitHub Vercel status is success. Production / returned HTTP 200 and contains #how with aria-labelledby=buyer-journey-heading, an ordered list labeled Стъпки за покупка през ENCHEV, four eaJourneyStep items and links to /inventory, /live-auctions, /transport and /support. Those destination routes returned HTTP 200 in production. Production CSS chunk 1kqy4q39dcft6.css contains journey hover/focus-within states, responsive <=820px/<=560px layouts, 44px mobile CTA touch target and prefers-reduced-motion fallback."
+    },
+    {
+      "id": "D10",
+      "group": "Начална страница",
+      "title": "Trust, support и international coverage секции",
+      "status": "green",
+      "evidence": "Implemented scoped D10 styling in app/components/HomeTrustSupport.module.css at commit 98570b88372ca542d313c2e35d8e478f63f01cc1, semantic component at commit 4c63796979e813544c882b0b49923f04b9fedd2a, mounted at commit ddb63f31c98869890bc70749c93e489575da39b3 and production-verification marker at commit 9ac47d9fb0555d0473eec4ef715bc02ca674f976. GitHub Verify Enchev Web run 35212105730 for the mount commit completed successfully. Canonical Vercel production deployment dpl_FDjFFdjtAcmamNEJCDTYuftgJa35 for descendant commit 20a0e261468c158cb3dabadbf0e283c4e7e3b2e0 is READY and aliased to enchev-auctions.vercel.app. Production / returned HTTP 200 and contains data-design-task=D10 and data-section=trust-support-coverage, separate TRUST and SUPPORT cards, international coverage for Европа · САЩ · Канада, and links to /inventory, /support and /transport. Production CSS chunk 0gnw833-saewx.css contains hover/focus-within states, <=980px and <=620px responsive layouts, 44px mobile actions and prefers-reduced-motion fallback."
+    },
+    {
+      "id": "D11",
+      "group": "Инвентар",
+      "title": "Inventory page layout с sidebar filters + results grid/list",
+      "status": "green",
+      "evidence": "Implemented functional inventory layout in app/inventory/page.tsx and app/inventory/inventory-v2.css at commit 8f1b4c828986a2ef94eb9cac78b822d2751f48db. The inventory keeps a dedicated sidebar filter panel and adds an accessible functional grid/list view switch plus a mobile filter disclosure. Canonical Vercel production deployment dpl_FDsMqFtjDtkk8iXNkHmTvowKaRxo for the exact commit is READY and aliased to enchev-auctions.vercel.app; GitHub Vercel status is success. Production /inventory returned HTTP 200 and renders data-design-task=D11, the sidebar panel, view switch with aria-pressed states, results grid data-view=grid and mobile filter control. Production client chunk 1tte3f1bszq-5.js contains useState(grid), grid/list click handlers, inventoryGrid--list class switching and mobile filter open/isMobileOpen logic. Production CSS chunk 1dopf0ac_lvm2.css contains the desktop list layout, <=900 adaptation, <=640 one-column list, 44px mobile filter toggle and mobile sidebar reveal."
+    },
+    {
+      "id": "D12",
+      "group": "Инвентар",
+      "title": "Филтри: make/model/year/location/damage/title/status",
+      "status": "green",
+      "evidence": "Implemented functional make/model/year/location/damage/title/status filtering in app/inventory/page.tsx at commit 0e31a06ff7a0502ea8529904a9ad34ecaa17ff64. Vehicle records now expose year, model and titleStatus metadata; the sidebar provides accessible controls for make, dependent model, year range, region/location, damage, title status and auction status, while reset clears the full D12 filter state. GitHub Verify Enchev Web run 35243700308 completed successfully for the exact commit. Canonical Vercel production deployment dpl_8Xcz6V1ksLMCKm4NyUMvahhLDx55 for the exact commit is READY and aliased to enchev-auctions.vercel.app. Production /inventory returned HTTP 200 and renders data-design-filter-task=D12 plus all make/model/year/location/damage/title/status controls. Production client chunk 1wzulch_spxrk.js contains dependent model/location option generation, full reset logic, year-range matching and the combined make/model/location/damage/title/status predicate with next normalized to UPCOMING. Production CSS chunk 1dopf0ac_lvm2.css contains ENCHEV select/range focus styling, <=900 responsive layout, <=640 mobile filter disclosure with 44px toggle and the existing reduced-motion/focus-visible safeguards."
+    },
+    {
+      "id": "D13",
+      "group": "Инвентар",
+      "title": "Active filter chips, clear-all и URL state",
+      "status": "green",
+      "evidence": "Implemented active filter chips, individual removal, clear-all and URL-backed inventory filter state in app/inventory/page.tsx plus scoped app/inventory/inventory-d13.css at commit 7bb7e2d4cefb79d06fd8b62610838b80fe456295. GitHub Verify Enchev Web run 35244642655 completed successfully for the exact commit, and GitHub Vercel status is success. Exact canonical Vercel production deployment dpl_52q7Y8zkr1Qf2xPevjN6MKv9L83b for commit 7bb7e2d4cefb79d06fd8b62610838b80fe456295 is READY and was aliased to enchev-auctions.vercel.app; current descendant production deployment dpl_E5GQ8MV8JxjmgsDmbA22m6dcdVdx is also READY and canonical. Production /inventory with make=BMW, region=САЩ, title=Salvage, yearFrom=2020 and buyNow=1 returned HTTP 200 and renders data-design-url-task=D13. Production client chunk 154h848ghnmv-.js reads q/make/model/region/location/damage/title/status/yearFrom/yearTo/buyNow/live from URLSearchParams, mirrors state back with history.replaceState, builds accessible active-filter chips, supports per-chip removal and full reset. Production CSS chunk 08xcjgpjjpgan.css contains chip/clear-all hover states, <=900 wrapping, <=640 44px touch targets and prefers-reduced-motion fallback."
+    },
+    {
+      "id": "D14",
+      "group": "Инвентар",
+      "title": "Sorting, pagination/infinite load и result count",
+      "status": "green",
+      "evidence": "Implemented functional D14 sorting and pagination in app/inventory/page.tsx at commit 687e2d8a7c15f4df50e4f4c6bd3c81d2c7c960d2 with PAGE_SIZE=4, currentPage, URL-backed sort/page state, recommended/price/year sorting, result-range feedback, accessible page controls, page clamping and filter reset to page 1. Added scoped responsive pagination/result styling in app/inventory/inventory-d14.css at commit 267ca8fccf04691fbdef71873b6b8beb8ec8d633 and focus-visible strengthening at descendant commit 6a642d6fa2eed2a63e3bbe578f75e5d8ad16df29. GitHub Verify Enchev Web run 35246605416 verify-web job completed SUCCESS for the exact page implementation; TypeScript and production build steps passed. Canonical Vercel production deployment dpl_FEJ5EMyuqPzV1oouvmapDg4JzB95 for descendant commit f4379f86fdcf9ccbd7516345f4fb583555893215 is READY and aliased to enchev-auctions.vercel.app. GitHub compare confirms that deployed commit is 29 commits ahead of the D14 implementation commit with behind_by=0. Production /inventory?sort=priceAsc&page=2 returned HTTP 200 and renders data-design-pagination-task=D14, result count/range, sort control and pagination markup. Deployed client chunk 189so_7zr8qc6.js reads sort/page from URLSearchParams, writes them back with history.replaceState, applies price/year sorting, PAGE_SIZE=4 slicing, page clamping and accessible page controls. Production CSS chunk 392al15q-jy59.css contains D14 pagination/result styling, focus-visible behavior, <=900 and <=640 responsive rules plus 44px mobile pagination targets. D14 is proven in canonical production."
+    },
+    {
+      "id": "D15",
+      "group": "Инвентар",
+      "title": "Vehicle cards: image, lot, location, damage, title, bid, timer",
+      "status": "green",
+      "evidence": "The existing inventory card implementation in app/inventory/page.tsx satisfies the D15 card field set and is shipped by canonical production deployment dpl_FEJ5EMyuqPzV1oouvmapDg4JzB95 for descendant commit f4379f86fdcf9ccbd7516345f4fb583555893215. Production /inventory returned HTTP 200 and renders vehicle cards with image/alt text, LOT number, vehicle title, mileage, damage, location, current or starting bid, auction-state badge and timer for non-sold lots; the LIVE card also exposes NEW BID and the 10-second countdown. Deployed client chunk 189so_7zr8qc6.js contains the vehicle image/lot/title/damage/location/bid/timer rendering, per-lot bidPrices state, +€100 LIVE bid update and countdown reset to 10 seconds. Production CSS chunk 1b-e67iwedffd.css contains scoped inventory card/image/lot/details/bid/timer styling, hover/focus behavior and <=640 mobile card layout; the responsive grid/list rules remain active. D15 is therefore verified in canonical production without requiring a duplicate implementation change."
+    },
+    {
+      "id": "D16",
+      "group": "Инвентар",
+      "title": "Card states: NEW BID / LIVE / UPCOMING / SOLD / BUY NOW",
+      "status": "green",
+      "evidence": "Implemented explicit D16 card-state hierarchy in app/inventory/inventory-d14.css at commit 6c251c830969ea1443592c95f18de805604064de and added focus-visible plus prefers-contrast hardening at commit e64f7556b579647e0b9bde1e6420226c26a58904. GitHub Verify Enchev Web run 35255481347 completed successfully for the D16 implementation. Canonical Vercel production deployment dpl_853HLRtYFTJaZ4mtHreYikwZcyPZ for exact commit e64f7556b579647e0b9bde1e6420226c26a58904 is READY and aliased to enchev-auctions.vercel.app; GitHub Vercel status is success. Production /inventory returned HTTP 200 and renders soldCard, liveCard, nextCard, NEW BID and buyBtn states. Production CSS chunk 2tivnom7cp93y.css contains explicit LIVE/UPCOMING/SOLD suffixes, BUY NOW chip treatment, distinct LIVE/UPCOMING outlines, focus-visible states, <=640 mobile sizing, prefers-contrast and prefers-reduced-motion handling. D16 is proven in canonical production."
+    },
+    {
+      "id": "D17",
+      "group": "Инвентар",
+      "title": "Sold cards визуално приглушени без загуба на четимост",
+      "status": "green",
+      "evidence": "Implemented D17 sold-card readability overrides in app/inventory/inventory-d14.css at commit 7ad37029015282d79710a9f20d64ebb69e06f62c. GitHub Verify Enchev Web run 35256560877 completed successfully for the exact D17 commit. Canonical Vercel production deployment dpl_75WAG5EXSb2XfHkzTVSEoRqEYRdL for descendant commit 601387e046db71ccbec1bc0b3e03991ea75960ab is READY and was aliased to enchev-auctions.vercel.app; GitHub ancestry verification confirms the deployed commit is a descendant of D17 with behind_by=0. Production /inventory returned HTTP 200 and renders soldCard with readable title, lot, metadata, detail controls and ended-sale text. Production CSS chunk 0hxvaojx9jii_.css contains the D17 muted/desaturated image treatment while restoring readable body text, clearer SOLD stamp, focus-visible sold-details action, <=640 mobile handling and prefers-contrast fallback. D17 is proven in canonical production."
+    },
+    {
+      "id": "D18",
+      "group": "Инвентар",
+      "title": "Loading skeletons, empty state и error state",
+      "status": "green",
+      "evidence": "Implemented D18 inventory states at commit ed00cea338ae97ef7941b8f2c051bba10c73d959; GitHub Verify Enchev Web run 35260049216 completed successfully. Canonical Vercel production deployment dpl_8vkFr1oHJaVWAvymPTm73vtdK5N5 for descendant commit 8395c1d08c944b29fd792b751bbd2f5a45407ab1 is READY and aliased to enchev-auctions.vercel.app; GitHub compare confirms the deployment is 7 commits ahead of D18 with behind_by=0. Production /inventory returned HTTP 200 and streamed data-design-state-task=D18/data-ui-state=loading with aria-busy, aria-live and four skeleton cards. Production error chunk 2_chj564pged-.js contains the D18 role=alert error boundary with retry, inventory and support actions. Production client chunk 189so_7zr8qc6.js contains the functional emptyInventory state. Production CSS chunk 0c_fqh_eexo4w.css contains loading/empty/error styling, <=900/<=640 responsive layouts, focus-visible behavior, prefers-contrast and prefers-reduced-motion. D18 is proven in canonical production."
+    },
+    {
+      "id": "D19",
+      "group": "Lot details",
+      "title": "Vehicle gallery + thumbnails + fullscreen media viewer",
+      "status": "green",
+      "evidence": "Implemented D19 fullscreen lot gallery in app/lot/[id]/page.tsx and app/lot/lot.css at commit 45db36a4bbb44dbefd42252c7a7ebd9f1666ae91 and focus restoration hardening at descendant commit 949a86576b6cb00bf6566b62ef613b5cebe79205. GitHub Verify Enchev Web run 35261939906 completed successfully for the original D19 implementation. Canonical Vercel production deployment dpl_BokbbEs6e9Jrpinzp1s1aPYy4k4N for descendant commit 23bf6af665f9b748ff3560a2cefb563d07e3bc4c is READY and aliased to enchev-auctions.vercel.app; GitHub compare confirms it is ahead of the focus-hardening commit with behind_by=0. Production /lot/EA-10539 returned HTTP 200 and renders data-design-task=D19, fullscreen-open main image control and aria-pressed thumbnails. Production client chunk 3r4324j74wa1a.js contains modal dialog rendering, previous/next controls, Escape/ArrowLeft/ArrowRight handling, body scroll locking and focus move/restore behavior. Production CSS chunk 25pl4euu80bm5.css contains the fullscreen viewer, <=760/<=480 responsive layouts, focus-visible, prefers-contrast and prefers-reduced-motion states. D19 is proven in canonical production."
+    },
+    {
+      "id": "D20",
+      "group": "Lot details",
+      "title": "Key facts panel: VIN/lot/odometer/damage/title/location",
+      "status": "green",
+      "evidence": "Implemented the dedicated D20 key-facts panel in app/lot/[id]/page.tsx at commit d8ed9f6e3dc4aef941de58ced3495db63e18c0f9 and hardened it through commits f812cc2d3d06b4c9d760c28b4d87de9946330a1f and 4bfd1cf213a9f1cb5d53f9f6acade10c806800eb. GitHub Verify Enchev Web run 35264296605 completed SUCCESS for the exact final D20 hardening commit, including TypeScript and Production build. Canonical Vercel production deployment dpl_BU7u4k8NshNqi52mjZNWp6qaLR7R for descendant commit f34edb1ee819d78afc69d308f727492f96607365 is READY, target=production and aliased to enchev-auctions.vercel.app; GitHub compare confirms it is ahead of 4bfd1cf213a9f1cb5d53f9f6acade10c806800eb with behind_by=0. Canonical production /lot/EA-10539 returned HTTP 200 and renders data-design-task=D20 with aria-labelledby/aria-describedby, the 6-field verification badge, VIN, LOT, odometer, primary damage, document/title and location. The shipped markup includes responsive auto-fit minmax(160px,1fr) layout and overflow wrapping for long VIN/location values. D20 is proven in canonical production."
+    },
+    {
+      "id": "D21",
+      "group": "Lot details",
+      "title": "Auction panel: current bid, timer, bid CTA, max bid",
+      "status": "green",
+      "evidence": "Implemented D21 in app/lot/[id]/page.tsx plus scoped app/lot/lot-d21.css at commit 541c5e5b7c6609942c31814039cf30d7767cd4da and narrow-screen hardening at commit 598174d70feba518be7e946e0a3a1690ea191163. GitHub Verify Enchev Web run 35265635775 completed SUCCESS for the hardening commit, including TypeScript and Production build. Direct canonical production verification against https://enchev-auctions.vercel.app/lot/EA-10539 returned HTTP 200 and renders data-design-task=D21 with current bid, minimum bid, role=timer countdown, bid CTA and max-bid controls. Production client chunk 3yhb4op2egs0c.js contains the 1-second countdown loop, valid-bid update/reset-to-10 logic and session-local max-bid state; production CSS chunk 3r7i2rrelq24i.css contains the D21 urgent/focus states plus <=1050/<=560/<=380 responsive rules, prefers-contrast and prefers-reduced-motion handling. Vercel deployment-list/status metadata still reports the earlier build-rate-limit state, so D21 production proof is based on the canonical served HTML/JS/CSS rather than an inferred deployment ID. D21 is proven in canonical production."
+    },
+    {
+      "id": "D22",
+      "group": "Lot details",
+      "title": "Condition / inspection / provenance presentation",
+      "status": "green",
+      "evidence": "Implemented D22 in app/lot/[id]/page.tsx plus scoped app/lot/lot-d22.css at commit c0f4543a68db65c9b9283db367a795ff04723553. GitHub Verify Enchev Web run 35266394715 completed SUCCESS for the exact D22 commit, including TypeScript and Production build. Canonical Vercel production deployment dpl_2N9yU54HqBWj7C2jbksEo8ax99b8 for descendant commit 52f1136906f11e6fbea3d39133babb80ebea9311 is READY, target=production and aliased to enchev-auctions.vercel.app; GitHub compare confirms it is 2 commits ahead of D22 with behind_by=0. Canonical production /lot/EA-10539 returned HTTP 200 and renders data-design-task=D22 with separate condition, inspection and provenance cards, explicit source labels, neutral missing-report states, vehicle-history handoff and the non-fabrication disclosure. The production HTML references the lot CSS bundle from the same descendant build; app/lot/lot-d22.css provides 3-column desktop, 2-column tablet and 1-column mobile layouts, a 44px mobile history action, focus-visible, prefers-contrast and prefers-reduced-motion handling. D22 is proven in canonical production."
+    },
+    {
+      "id": "D23",
+      "group": "Lot details",
+      "title": "Sticky desktop/mobile action area без припокриване",
+      "status": "yellow",
+      "evidence": "Implemented D23 in app/lot/[id]/page.tsx and scoped app/lot/lot-d23.css at commit a55d8aa297a7f98bd41d6585a23407e8d425c96b, with short-viewport/mobile hardening at commit 35c7725af110e7abaa8209becdc4f60ac745aba6, safe-area inset hardening at commit ecc89b042ade38bc5a7ed6821677480a828e563b, and mobile focus-clearance hardening at commit 5acf86093e8d1f9375282e03c467d3f268da46f2. The desktop auction panel is viewport-bounded sticky with internal overflow protection; <=1050px switches it to normal flow and introduces a fixed mobile bid dock that shows current/minimum bid and moves focus to the existing bid field. The dock is hidden while the fullscreen viewer is open, reserves page-bottom space, respects bottom plus left/right device safe-area insets, includes short-height <=620px compaction plus <=560/<=360 responsive layouts, and the bid/max inputs now use mobile scroll-margin clearance so focus/keyboard navigation does not leave them covered by the dock. GitHub Verify Enchev Web run 35390376942 completed SUCCESS for commit 5acf86093e8d1f9375282e03c467d3f268da46f2, including TypeScript and Production build. Vercel reports no deployment after canceled dpl_3g8aGoqknM2uCxwMCjnJ63u9yVnG, and canonical /lot/EA-10539 still serves D22-era markup without data-sticky-task=D23 or lotMobileBidDock. Production verification is still pending, so D23 remains YELLOW."
+    },
+    {
+      "id": "D24",
+      "group": "Live auction",
+      "title": "Dedicated live room layout с current lot + next lot",
+      "status": "red",
+      "evidence": ""
+    },
+    {
+      "id": "D25",
+      "group": "Live auction",
+      "title": "10-second bid countdown визуално синхронизиран със server state",
+      "status": "red",
+      "evidence": ""
+    },
+    {
+      "id": "D26",
+      "group": "Live auction",
+      "title": "Автоматично преминаване към следващ lot след SOLD",
+      "status": "red",
+      "evidence": ""
+    },
+    {
+      "id": "D27",
+      "group": "Live auction",
+      "title": "Bid feedback states: accepted / rejected / outbid / leading",
+      "status": "red",
+      "evidence": ""
+    },
+    {
+      "id": "D28",
+      "group": "Live auction",
+      "title": "Connection/reconnect/stale-state indicators",
+      "status": "red",
+      "evidence": ""
+    },
+    {
+      "id": "D29",
+      "group": "Профил",
+      "title": "Watchlist / saved vehicles визуален модел",
+      "status": "red",
+      "evidence": ""
+    },
+    {
+      "id": "D30",
+      "group": "Профил",
+      "title": "My Auctions: watching / bidding / leading / ended",
+      "status": "red",
+      "evidence": ""
+    },
+    {
+      "id": "D31",
+      "group": "Профил",
+      "title": "Account navigation и responsive dashboard shell",
+      "status": "red",
+      "evidence": ""
+    },
+    {
+      "id": "D32",
+      "group": "Качество",
+      "title": "Mobile-first проверка на ключовите страници",
+      "status": "red",
+      "evidence": ""
+    },
+    {
+      "id": "D33",
+      "group": "Качество",
+      "title": "Keyboard/focus/contrast/accessibility visual pass",
+      "status": "red",
+      "evidence": ""
+    },
+    {
+      "id": "D34",
+      "group": "Качество",
+      "title": "Cross-browser визуална проверка Edge/Chrome/mobile",
+      "status": "red",
+      "evidence": ""
+    },
+    {
+      "id": "D35",
+      "group": "Качество",
+      "title": "Visual regression screenshots за основните маршрути",
+      "status": "red",
+      "evidence": ""
+    },
+    {
+      "id": "D36",
+      "group": "Качество",
+      "title": "Final consistency pass: ENCHEV identity навсякъде, без копирани чужди assets/copy/code",
+      "status": "red",
+      "evidence": ""
+    }
   ]
 }
