@@ -1,0 +1,83 @@
+/* D34 — Chromium/Edge/mobile compatibility hardening. */
+html{
+  -webkit-text-size-adjust:100%;
+  text-size-adjust:100%;
+}
+
+:where(button,input,select,textarea){
+  font:inherit;
+}
+
+:where(input[type="search"]){
+  -webkit-appearance:none;
+  appearance:none;
+}
+
+.eaTopbar,
+.eaMainnav,
+.inventoryHeader,
+.liveHeader,
+.navigationRouteHeader,
+.profileAccountRail,
+.eaLiveCard{
+  -webkit-backdrop-filter:blur(16px);
+}
+
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .eaTopbar,
+  .eaMainnav,
+  .inventoryHeader,
+  .liveHeader,
+  .navigationRouteHeader,
+  .profileAccountRail,
+  .eaLiveCard{
+    backdrop-filter:none!important;
+    -webkit-backdrop-filter:none!important;
+    background-color:#07100b!important;
+  }
+}
+
+@supports not (overflow:clip){
+  .eaHome,
+  .inventoryPage,
+  .lotPage,
+  .livePage,
+  .navigationPage{
+    overflow-x:hidden;
+  }
+}
+
+@supports not (text-wrap:balance){
+  .eaHeroCopy h1,
+  .navigationRouteMain h1,
+  .liveHero h1,
+  .lotTitle h1{
+    max-width:100%;
+  }
+}
+
+@media(hover:none) and (pointer:coarse){
+  :where(a,button){
+    min-height:44px;
+  }
+
+  .eaFeaturedCard:hover,
+  .inventoryCard:hover,
+  .liveNextPreviewCard:hover,
+  .profileAccountNav a:hover{
+    transform:none!important;
+  }
+
+  .inventoryCard:not(.soldCard):hover .inventoryImage img,
+  .eaFeaturedCard:hover .eaFeaturedImage img{
+    transform:none!important;
+  }
+}
+
+@media(max-width:640px){
+  select,
+  input,
+  button{
+    max-width:100%;
+  }
+}
