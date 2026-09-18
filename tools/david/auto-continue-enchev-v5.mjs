@@ -398,7 +398,20 @@ function extractProblem(text) {
 
 function endsOk(text) {
   const rows = String(text || "").split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
-  return rows.length > 0 && /^OK[.!]?$/i.test(rows.at(-1));
+  return rows.length > 0 && /^OK$/i.test(rows.at(-1));
+}
+async function waitForTerminalMarker(page, state) {
+  while (true) {
+    const text = await latestAssistantText(page);
+    const problem = extractProblem(text);
+    if (problem) return { type: "problem", text, problem };
+    if (endsOk(text)) return { type: "ok", text };
+    state.watchdog = "awaiting-final-ok";
+    state.lastResult = "waiting-for-final-ok";
+    saveState(state, "LAW: no new prompt until final line is exactly OK or PROBLEM IN appears");
+    console.log("[DAVID] LAW: waiting for final OK. NO NEW PROMPT.");
+    await sleep(3000);
+  }
 }
 function isExternalBlocker(problem) {
   return /(redis|valkey|upstash|vercel|marketplace|environment-secret|environment secret|provider credential|credential|permission|authorization|rate limit|quota|billing|plan limit|external access|legal sign-off|customer data|oidc.*deployment|deployment.*queued|deployment.*initializing)/i.test(String(problem || ""));
@@ -781,8 +794,17 @@ async function main() {
         await sleep(COOLDOWN_MS);
         continue;
       }
-      state.lastResult = endsOk(result.text) ? "OK" : "completed";
-      saveState(state, "Independent work completed after external blocker defer");
+      if (!endsOk(result.text)) {
+        const terminal = await waitForTerminalMarker(page, state);
+        if (terminal.type === "problem") {
+          state.problem = terminal.problem;
+          mode = isExternalBlocker(terminal.problem) ? "work" : "fix";
+          saveState(state, `Terminal marker became PROBLEM IN: ${terminal.problem}`);
+          continue;
+        }
+      }
+      state.lastResult = "OK";
+      saveState(state, "Independent work completed with final OK");
       await sleep(COOLDOWN_MS);
       continue;
     }
@@ -812,7 +834,16 @@ async function main() {
         continue;
       }
 
-      if (endsOk(result.text)) console.log("[DAVID] Fix result: OK.");
+      if (!endsOk(result.text)) {
+        const terminal = await waitForTerminalMarker(page, state);
+        if (terminal.type === "problem") {
+          state.problem = terminal.problem;
+          state.watchdog = "problem-detected";
+          saveState(state, `Fix response ended in PROBLEM IN: ${terminal.problem}`);
+          continue;
+        }
+      }
+      console.log("[DAVID] Fix result: OK.");
       state.problem = null;
       state.problemAttempts = 0;
       delete state.problemRetryAt;
@@ -839,13 +870,19 @@ async function main() {
       continue;
     }
 
-    if (endsOk(result.text)) {
-      state.lastResult = "OK";
-      console.log("[DAVID] Stage/block result: OK. Continuing to next stage.");
-    } else {
-      state.lastResult = "completed-without-marker";
-      console.log("[DAVID] Completed response without PROBLEM IN. Continuing.");
+    if (!endsOk(result.text)) {
+      const terminal = await waitForTerminalMarker(page, state);
+      if (terminal.type === "problem") {
+        state.problem = terminal.problem;
+        state.problemAttempts = 0;
+        state.watchdog = "problem-detected";
+        mode = isExternalBlocker(terminal.problem) ? "work" : "fix";
+        saveState(state, `Terminal marker became PROBLEM IN: ${terminal.problem}`);
+        continue;
+      }
     }
+    state.lastResult = "OK";
+    console.log("[DAVID] Final OK received. NOW sending/continuing to next stage is allowed.");
     state.problem = null;
     state.problemAttempts = 0;
     state.watchdog = "answer-complete";
