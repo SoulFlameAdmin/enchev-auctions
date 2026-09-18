@@ -80,6 +80,24 @@ $app2Launcher = Join-Path $Repo "tools\david\start-app2-autopilot.ps1"
 $dashboard = Join-Path $Repo "tools\david\david-status-dashboard.ps1"
 $pwsh = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
 
+$DppRepo = Join-Path $Root "DPPautopilot"
+$DppUrl = "https://github.com/SoulFlameAdmin/DPPautopilot.git"
+try {
+  if (-not (Test-Path (Join-Path $DppRepo ".git"))) {
+    Write-Host "[DAVID ALL] Cloning DPP progress source for Matrix..." -ForegroundColor Cyan
+    & $git clone $DppUrl $DppRepo
+    if ($LASTEXITCODE -ne 0) { throw "DPP clone failed with exit code $LASTEXITCODE" }
+  } else {
+    Write-Host "[DAVID ALL] Updating DPP progress source for Matrix..." -ForegroundColor DarkCyan
+    & $git -C $DppRepo pull --ff-only
+    if ($LASTEXITCODE -ne 0) {
+      Write-Host "[DAVID ALL] DPP progress source pull skipped; existing local copy will be used." -ForegroundColor Yellow
+    }
+  }
+} catch {
+  Write-Host "[DAVID ALL] DPP progress source unavailable; APP2 still starts, Matrix may show DPP N/A." -ForegroundColor Yellow
+}
+
 $mainRunning = (Test-CommandLineMatch @("dual-session-worker.mjs")) -or
                (Test-CommandLineMatch @("start-auto-continue.ps1"))
 if ($mainRunning) {
