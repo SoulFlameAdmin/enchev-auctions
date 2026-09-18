@@ -119,6 +119,10 @@ jobs:
           else
             echo "REDIS_ENV_LIVE SKIP no Redis binding secret configured"
           fi
+      - name: Mobile-first design invariant
+        run: node scripts/verify-mobile-first-design.mjs
+      - name: Mobile-first design self-tests
+        run: node scripts/verify-mobile-first-design.mjs --self-test
       - name: CI test suite
         run: npm test
       - name: TypeScript check
