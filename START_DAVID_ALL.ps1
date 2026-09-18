@@ -1,5 +1,6 @@
 param(
-  [int]$Port = 9444
+  [int]$Port = 9444,
+  [switch]$ForceRestart
 )
 
 $ErrorActionPreference = "Stop"
@@ -38,9 +39,40 @@ $git = if (Test-Path $PortableGit) { $PortableGit } else {
   $g.Source
 }
 
+$beforeHead = (& $git -C $Repo rev-parse HEAD 2>$null | Select-Object -First 1)
 Write-Host "[DAVID ALL] Updating orchestrator..." -ForegroundColor Cyan
 & $git -C $Repo pull --ff-only
 if ($LASTEXITCODE -ne 0) { throw "git pull failed with exit code $LASTEXITCODE" }
+$afterHead = (& $git -C $Repo rev-parse HEAD 2>$null | Select-Object -First 1)
+$codeUpdated = $ForceRestart -or ($beforeHead -and $afterHead -and $beforeHead -ne $afterHead)
+
+if ($codeUpdated) {
+  Write-Host "[DAVID ALL] New worker code detected. Restarting managed DAVID workers once..." -ForegroundColor Yellow
+  $patterns = @(
+    "dual-session-worker.mjs",
+    "start-auto-continue.ps1",
+    "start-app2-autopilot.ps1",
+    ".auto-complete-app2-runtime.mjs",
+    "auto-complete-app2-v1.mjs",
+    "auto-continue-david-apk-v1.mjs"
+  )
+  try {
+    $managed = Get-CimInstance Win32_Process | Where-Object {
+      $cmd = [string]$_.CommandLine
+      if (-not $cmd) { return $false }
+      foreach ($p in $patterns) {
+        if ($cmd -like "*$p*") { return $true }
+      }
+      return $false
+    }
+    foreach ($p in $managed) {
+      Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue
+    }
+    Start-Sleep -Seconds 2
+  } catch {
+    Write-Host "[DAVID ALL] Could not fully stop an old managed worker; duplicate guard will still apply." -ForegroundColor Yellow
+  }
+}
 
 $mainLauncher = Join-Path $Repo "tools\david\start-auto-continue.ps1"
 $app2Launcher = Join-Path $Repo "tools\david\start-app2-autopilot.ps1"
