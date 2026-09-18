@@ -93,6 +93,47 @@ async function verifyD23StickyActions(call,viewport){
   await sleep(80);
 }
 
+
+export function validateD24Runtime(snapshot,viewport){
+  if(!snapshot||!viewport)fail("D24 runtime snapshot missing");
+  const tolerance=3;
+  if(snapshot.scrollWidth>snapshot.viewportWidth+tolerance)fail(`D24 ${viewport.name} horizontal overflow: ${snapshot.scrollWidth} > ${snapshot.viewportWidth}`);
+  if(snapshot.stageDisplay!=="grid")fail(`D24 stage must remain grid, got ${snapshot.stageDisplay}`);
+  if(snapshot.visual.width<120||snapshot.visual.height<180)fail("D24 current-lot visual is not meaningfully visible");
+  if(snapshot.panel.width<120||snapshot.panel.height<180)fail("D24 bid/next panel is not meaningfully visible");
+  if(snapshot.next.width<120||snapshot.next.height<70)fail("D24 next-lot preview is not meaningfully visible");
+  if(!snapshot.currentLot||!snapshot.nextLot||snapshot.currentLot===snapshot.nextLot)fail(`D24 current/next lots must be distinct: ${snapshot.currentLot||"missing"} / ${snapshot.nextLot||"missing"}`);
+  if(snapshot.nextHref!==`/lot/${snapshot.nextLot}`)fail(`D24 next-lot link mismatch: href=${snapshot.nextHref} next=${snapshot.nextLot}`);
+  if(snapshot.focusedClass!=="liveNextPreviewCard")fail(`D24 next-lot card did not accept keyboard focus: ${snapshot.focusedClass||"none"}`);
+  if(snapshot.next.left<snapshot.panel.left-tolerance||snapshot.next.right>snapshot.panel.right+tolerance)fail("D24 next-lot preview escapes bid panel horizontally");
+
+  if(viewport.mobile){
+    if(snapshot.panel.top<snapshot.visual.bottom-tolerance)fail(`D24 mobile panel must stack below current lot: panelTop=${snapshot.panel.top}, visualBottom=${snapshot.visual.bottom}`);
+    if(snapshot.visual.left<-tolerance||snapshot.visual.right>snapshot.viewportWidth+tolerance)fail("D24 mobile current lot escapes viewport horizontally");
+    if(snapshot.panel.left<-tolerance||snapshot.panel.right>snapshot.viewportWidth+tolerance)fail("D24 mobile bid/next panel escapes viewport horizontally");
+  }else{
+    if(snapshot.visual.right>snapshot.panel.left+tolerance)fail(`D24 desktop current/next columns overlap: visualRight=${snapshot.visual.right}, panelLeft=${snapshot.panel.left}`);
+    if(snapshot.panel.right>snapshot.viewportWidth+tolerance)fail("D24 desktop bid/next panel escapes viewport horizontally");
+  }
+  return true;
+}
+
+async function d24Snapshot(call){
+  const result=await call("Runtime.evaluate",{
+    expression:`(()=>{const stage=document.querySelector('.liveStage[data-design-task="D24"]');const visual=stage?.querySelector('[data-live-slot="current"]');const panel=stage?.querySelector('.liveBidPanel');const next=stage?.querySelector('[data-live-slot="next"]');const nextLink=next?.querySelector('.liveNextPreviewCard');if(!stage||!visual||!panel||!next||!nextLink)return null;nextLink.focus({preventScroll:true});const vr=visual.getBoundingClientRect();const pr=panel.getBoundingClientRect();const nr=next.getBoundingClientRect();const lotOf=(text)=>text.match(/EA-\\d+/)?.[0]||"";return {viewportWidth:window.innerWidth,viewportHeight:window.innerHeight,scrollWidth:document.documentElement.scrollWidth,stageDisplay:getComputedStyle(stage).display,visual:{top:vr.top,bottom:vr.bottom,left:vr.left,right:vr.right,width:vr.width,height:vr.height},panel:{top:pr.top,bottom:pr.bottom,left:pr.left,right:pr.right,width:pr.width,height:pr.height},next:{top:nr.top,bottom:nr.bottom,left:nr.left,right:nr.right,width:nr.width,height:nr.height},currentLot:lotOf(visual.textContent||""),nextLot:lotOf(next.textContent||""),nextHref:nextLink.getAttribute('href')||"",focusedClass:document.activeElement?.className||""};})()`,
+    returnByValue:true,
+  });
+  return result?.result?.value;
+}
+
+async function verifyD24LiveRoom(call,viewport){
+  const snapshot=await d24Snapshot(call);
+  if(!snapshot)fail("D24 live-room runtime elements missing");
+  validateD24Runtime(snapshot,viewport);
+  await call("Runtime.evaluate",{expression:"document.activeElement?.blur();window.scrollTo(0,0)"});
+  await sleep(80);
+}
+
 function findChrome(){
   const candidates=[
     process.env.CHROME_BIN,
@@ -255,6 +296,9 @@ async function captureOne({port,baseUrl,route,viewport,outputDir}){
     if(route.name==="lot-ea-10539"){
       await verifyD23StickyActions(call,viewport);
     }
+    if(route.name==="live-auctions"){
+      await verifyD24LiveRoom(call,viewport);
+    }
 
     const result=await call("Page.captureScreenshot",{
       format:"png",
@@ -368,7 +412,21 @@ if(process.argv.includes("--self-test")){
   try{validateD23Runtime({...mobileSnapshot,contentBottomAtPageEnd:800},{name:"mobile",mobile:true});}catch{rejected=true;}
   if(!rejected)fail("D23 negative self-test did not reject dock overlap");
 
-  console.log("VISUAL_REGRESSION_CAPTURE_SELF_TEST PASS matrix=5x2 negative_cases=4 d23_runtime=desktop+mobile protocol=cdp");
+
+  const d24Desktop={viewportWidth:1440,viewportHeight:1200,scrollWidth:1440,stageDisplay:"grid",visual:{top:250,bottom:870,left:24,right:1010,width:986,height:620},panel:{top:250,bottom:1000,left:1028,right:1416,width:388,height:750},next:{top:650,bottom:790,left:1052,right:1392,width:340,height:140},currentLot:"EA-10511",nextLot:"EA-10539",nextHref:"/lot/EA-10539",focusedClass:"liveNextPreviewCard"};
+  const d24Mobile={viewportWidth:390,viewportHeight:844,scrollWidth:390,stageDisplay:"grid",visual:{top:300,bottom:800,left:24,right:366,width:342,height:500},panel:{top:818,bottom:1500,left:24,right:366,width:342,height:682},next:{top:1120,bottom:1240,left:48,right:342,width:294,height:120},currentLot:"EA-10511",nextLot:"EA-10539",nextHref:"/lot/EA-10539",focusedClass:"liveNextPreviewCard"};
+  validateD24Runtime(d24Desktop,{name:"desktop",mobile:false});
+  validateD24Runtime(d24Mobile,{name:"mobile",mobile:true});
+
+  rejected=false;
+  try{validateD24Runtime({...d24Desktop,nextLot:"EA-10511",nextHref:"/lot/EA-10511"},{name:"desktop",mobile:false});}catch{rejected=true;}
+  if(!rejected)fail("D24 negative self-test did not reject identical current/next lot");
+
+  rejected=false;
+  try{validateD24Runtime({...d24Mobile,panel:{...d24Mobile.panel,top:760}},{name:"mobile",mobile:true});}catch{rejected=true;}
+  if(!rejected)fail("D24 negative self-test did not reject mobile current/next overlap");
+
+  console.log("VISUAL_REGRESSION_CAPTURE_SELF_TEST PASS matrix=5x2 negative_cases=6 d23_runtime=desktop+mobile d24_runtime=desktop+mobile protocol=cdp");
 }else{
   const baseUrl=process.argv[2]||"http://127.0.0.1:3011";
   await captureScreenshots(baseUrl);
