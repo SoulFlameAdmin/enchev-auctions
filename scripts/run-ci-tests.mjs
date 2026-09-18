@@ -15,6 +15,7 @@ const cases = [
   ["scripts/verify-redis-environment.mjs", "--self-test"],
   ["scripts/verify-redis-production-gate.mjs", "--self-test"],
   ["scripts/verify-ci-quality-gates.mjs", "--self-test"],
+  ["scripts/verify-mobile-first-design.mjs", "--self-test"],
   ["tools/david/auto-complete-app2-v1.mjs", "--self-test"],
   ["tools/david/auto-continue-enchev-v5.mjs", "--self-test"],
   ["scripts/verify-health-endpoints.mjs", "--self-test"]
