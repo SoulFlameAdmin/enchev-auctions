@@ -3,10 +3,14 @@ import process from "node:process";
 
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const POLL_MS = Number(process.env.DAVID_INTERRUPT_POLL_MS || 500);
-const RETRY_COOLDOWN_MS = Number(process.env.DAVID_INTERRUPT_RETRY_COOLDOWN_MS || 8000);
+const RETRY_COOLDOWN_MS = Number(process.env.DAVID_INTERRUPT_RETRY_COOLDOWN_MS || 15000);
+const CONFIRM_MS = Number(process.env.DAVID_INTERRUPT_CONFIRM_MS || 12000);
+const CONFIRM_SAMPLES = Number(process.env.DAVID_INTERRUPT_CONFIRM_SAMPLES || 6);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const recoveredAt = new Map();
+const interruptionSince = new Map();
+const interruptionSamples = new Map();
 
 function isChat(page) {
   try { return !page.isClosed() && /^https:\/\/chatgpt\.com\/c\//i.test(page.url()); }
@@ -35,31 +39,54 @@ async function interruptionVisible(page) {
   } catch { return false; }
 }
 
-async function stopResponse(page) {
-  const selectors = [
-    '[data-testid="stop-button"]',
-    'button[aria-label*="Stop"]',
-    'button[aria-label*="stop"]',
-    'button[aria-label*="Спри"]',
-    'button[title*="Stop"]',
-    'button[title*="Спри"]',
-    'button:has-text("Stop generating")',
-    'button:has-text("Stop response")',
-    'button:has-text("Спри отговора")',
-    'button:has-text("Спри генерирането")'
-  ];
-  for (const selector of selectors) {
-    try {
-      const button = page.locator(selector).last();
-      if (await button.count() && await button.isVisible().catch(() => false) && await button.isEnabled().catch(() => false)) {
-        await button.click({ timeout: 3000 }).catch(() => {});
-        return true;
+async function activeAssistantWork(page) {
+  if (!isChat(page)) return false;
+  try {
+    return await page.evaluate(() => {
+      const visible = (el) => {
+        const s = getComputedStyle(el);
+        const r = el.getBoundingClientRect();
+        return s.display !== "none" && s.visibility !== "hidden" && Number(s.opacity || 1) > 0 && r.width > 0 && r.height > 0;
+      };
+      const stopSelectors = [
+        '[data-testid="stop-button"]',
+        '[data-testid*="stop" i]',
+        'button[aria-label*="Stop"]',
+        'button[aria-label*="stop"]',
+        'button[aria-label*="Спри"]'
+      ];
+      for (const sel of stopSelectors) {
+        for (const el of document.querySelectorAll(sel)) if (visible(el)) return true;
       }
-    } catch {}
-  }
-  return false;
+
+      const turns = Array.from(document.querySelectorAll('article[data-testid^="conversation-turn-"]'));
+      const lastTurn = turns.at(-1);
+      if (!lastTurn || !lastTurn.querySelector('[data-message-author-role="assistant"]')) return false;
+
+      const finalAction = lastTurn.querySelector(
+        'button[aria-label*="Copy" i],button[aria-label*="Share" i],button[aria-label*="Regenerate" i],button[data-testid*="copy" i],button[data-testid*="thumb" i]'
+      );
+      if (finalAction) return false;
+
+      const text = (lastTurn.textContent || "").replace(/\s+/g, " ").trim();
+      return /(thinking|мислене|мисли|working|работи|calling tool|called tool|tool call|извикан инструмент|извиква инструмент|searching|търсене|browsing|преглежда|анализира|analyzing)/i.test(text);
+    });
+  } catch { return false; }
 }
 
+async function assistantTextHash(page) {
+  try {
+    const nodes = page.locator('[data-message-author-role="assistant"]');
+    if (!await nodes.count()) return "";
+    const text = (await nodes.last().innerText().catch(() => "")).trim();
+    let h = 2166136261;
+    for (let i = 0; i < text.length; i++) {
+      h ^= text.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return String(h >>> 0);
+  } catch { return ""; }
+}
 async function latestUserText(page) {
   try {
     const nodes = page.locator('[data-message-author-role="user"]');
@@ -121,35 +148,81 @@ async function recover(page) {
   const key = url;
   const now = Date.now();
   if (now - Number(recoveredAt.get(key) || 0) < RETRY_COOLDOWN_MS) return;
-  recoveredAt.set(key, now);
 
-  const prompt = await latestUserText(page);
-  if (!prompt) {
-    console.log(`[INTERRUPT] Detected on ${url}, but no previous user prompt was found. Retrying scan.`);
-    recoveredAt.set(key, 0);
+  if (await activeAssistantWork(page)) {
+    interruptionSince.delete(key);
+    interruptionSamples.delete(key);
+    console.log(`[INTERRUPT] Interruption-like UI seen on ${url}, but GPT is still active. NO ACTION.`);
     return;
   }
 
-  console.log(`[INTERRUPT] Connection interruption detected on ${url}`);
-  const stopped = await stopResponse(page);
-  console.log(`[INTERRUPT] Stop response: ${stopped ? "clicked" : "button not visible"}`);
+  const firstSeen = Number(interruptionSince.get(key) || 0);
+  const samples = Number(interruptionSamples.get(key) || 0) + 1;
+  if (!firstSeen) interruptionSince.set(key, now);
+  interruptionSamples.set(key, samples);
 
-  await sleep(stopped ? 900 : 500);
+  const age = now - Number(interruptionSince.get(key) || now);
+  if (age < CONFIRM_MS || samples < CONFIRM_SAMPLES) {
+    console.log(`[INTERRUPT] Candidate on ${url}; confirming ${samples}/${CONFIRM_SAMPLES}, age=${age}ms. NO STOP.`);
+    return;
+  }
+
+  const beforeHash = await assistantTextHash(page);
+  await sleep(2500);
+  if (await activeAssistantWork(page)) {
+    interruptionSince.delete(key);
+    interruptionSamples.delete(key);
+    console.log(`[INTERRUPT] GPT resumed on ${url}. Recovery cancelled.`);
+    return;
+  }
+  const afterHash = await assistantTextHash(page);
+  if (beforeHash && afterHash && beforeHash !== afterHash) {
+    interruptionSince.delete(key);
+    interruptionSamples.delete(key);
+    console.log(`[INTERRUPT] Assistant text progressed on ${url}. Recovery cancelled.`);
+    return;
+  }
+
+  const prompt = await latestUserText(page);
+  if (!prompt) {
+    console.log(`[INTERRUPT] Confirmed interruption on ${url}, but no previous user prompt was found.`);
+    interruptionSince.delete(key);
+    interruptionSamples.delete(key);
+    return;
+  }
+
+  recoveredAt.set(key, Date.now());
+  interruptionSince.delete(key);
+  interruptionSamples.delete(key);
+
+  console.log(`[INTERRUPT] CONFIRMED interruption on ${url}. LAW: REFRESH -> VERIFY -> RESEND. Never stop active GPT.`);
+  await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  await sleep(2500);
+
+  if (await activeAssistantWork(page)) {
+    console.log("[INTERRUPT] GPT is active after refresh. Resend cancelled.");
+    return;
+  }
+
+  if (!await interruptionVisible(page)) {
+    console.log("[INTERRUPT] Interruption disappeared after refresh. Resend cancelled.");
+    return;
+  }
+
   let composer = await getComposer(page);
   for (let i = 0; !composer && i < 8; i++) {
     await sleep(500);
     composer = await getComposer(page);
   }
   if (!composer) {
-    console.log("[INTERRUPT] Composer unavailable after stop; will retry when UI recovers.");
-    recoveredAt.set(key, 0);
+    console.log("[INTERRUPT] Composer unavailable after confirmed refresh; waiting for next scan.");
     return;
   }
 
   await fillComposer(composer, prompt);
   await sleep(250);
   const via = await sendComposer(page, composer);
-  console.log(`[INTERRUPT] Previous prompt pasted and resent via ${via}.`);
+  console.log(`[INTERRUPT] Previous prompt resent via ${via} after confirmed interruption.`);
 }
 
 async function main() {
@@ -163,7 +236,13 @@ async function main() {
     const pages = context.pages().filter(isChat);
     for (const page of pages) {
       try {
-        if (await interruptionVisible(page)) await recover(page);
+        if (await interruptionVisible(page)) {
+          await recover(page);
+        } else {
+          const key = page.url();
+          interruptionSince.delete(key);
+          interruptionSamples.delete(key);
+        }
       } catch (error) {
         console.log(`[INTERRUPT] Recovery scan error: ${error?.message || error}`);
       }
