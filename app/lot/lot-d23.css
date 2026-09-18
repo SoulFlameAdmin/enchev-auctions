@@ -1,5 +1,5 @@
 /* D23 — sticky desktop/mobile action area without content overlap */
-.lotBidPanel[data-sticky-task="D23"]{scroll-margin-top:104px;max-height:calc(100dvh - 116px);overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+.lotBidPanel[data-sticky-task="D23"]{scroll-margin-top:104px;max-height:calc(100vh - 116px);max-height:calc(100dvh - 116px);overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
 .lotMobileBidDock{display:none}
 @media(max-width:1050px){
   .lotPage{padding-bottom:calc(104px + env(safe-area-inset-bottom))}
@@ -43,3 +43,5 @@
 }
 @media(prefers-contrast:more){.lotMobileBidDock{border-color:#fff;background:#061009}.lotMobileBidSummary span,.lotMobileBidSummary small{color:#d6e2da}.lotMobileBidAction{border-color:#fff}}
 @media(prefers-reduced-motion:reduce){.lotMobileBidDock{backdrop-filter:none}.lotMobileBidAction{transition:none!important}.lotMobileBidAction:active{transform:none}}
+
+@media(forced-colors:active){.lotMobileBidDock{border:1px solid CanvasText;background:Canvas}.lotMobileBidSummary strong,.lotMobileBidSummary span,.lotMobileBidSummary small{color:CanvasText}.lotMobileBidAction{border:2px solid ButtonText;background:ButtonFace;color:ButtonText}.lotMobileBidAction:focus-visible{outline:2px solid Highlight}}
