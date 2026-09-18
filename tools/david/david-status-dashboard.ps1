@@ -236,6 +236,7 @@ while ($true) {
   }
   Write-Fit ""
   Write-Fit "  ------------------------------ DAVID LAWS -------------------------------------------------------" Green
+  Write-Fit "  FINAL GATE => NO EXACT FINAL OK = NO NEXT NORMAL PROMPT" Red
   Write-Fit "  STOPS THINKING/WRITING => bounded RESEND | NO THINKING START => REFRESH + RESEND" Yellow
   Write-Fit "  CONNECTION INTERRUPTED => STOP + recover prompt + RESEND | MAX CHAT => NEW TAB + CLOSE OLD TAB" Yellow
   Write-Fit "  EXTERNAL BLOCKER => DEFER + independent work | CAPTCHA/MFA/LOGIN/PERMISSION => NEVER BYPASS" Yellow
