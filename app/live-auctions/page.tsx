@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import "./live-auctions.css";
+import "./live-d24.css";
 
 const LOT_SECONDS=10;
 const lots=[
@@ -51,21 +52,35 @@ export default function LiveAuctionsPage(){
       <div className="liveHeroClock"><small>Текущ лот</small><b>{fmt(remaining)}</b><span>LOT {current.lot}</span></div>
     </section>
 
-    <section className="liveStage">
-      <div className="liveVisual">
+    <section className="liveStage" data-design-task="D24" aria-label="Live auction room: текущ и следващ лот">
+      <div className="liveVisual" data-live-slot="current" aria-labelledby="live-current-lot-title">
         <img src={current.image} alt={current.title}/>
         <div className="liveVisualShade"/>
         <span className="liveStatus"><i/> ПРОДАВА СЕ НА ЖИВО</span>
         {bidFlash&&<div className="liveNewBid">NEW BID</div>}
         <div className="liveRing"><strong>{remaining}</strong><small>SEC</small></div>
-        <div className="liveVisualInfo"><span>LOT {current.lot}</span><h2>{current.title}</h2><p>{current.location} · {current.damage} · {current.mileage}</p></div>
+        <div className="liveVisualInfo"><span>ТЕКУЩ ЛОТ · {current.lot}</span><h2 id="live-current-lot-title">{current.title}</h2><p>{current.location} · {current.damage} · {current.mileage}</p></div>
       </div>
 
-      <aside className="liveBidPanel">
+      <aside className="liveBidPanel" aria-label="Наддаване и следващ лот">
         <div className="liveBidTop"><span>ТЕКУЩА СТАВКА</span><b>€{price.toLocaleString("bg-BG")}</b></div>
         <div className="liveBidMeta"><div><span>Следваща оферта</span><b>€{(price+100).toLocaleString("bg-BG")}</b></div><div><span>Остава</span><b>{fmt(remaining)}</b></div></div>
         <button className="liveBidButton" onClick={bid}>Оферирай +€100 <span>→</span></button>
         <a className="liveLotLink" href={`/lot/${current.lot}`}>Отвори детайлите на лота</a>
+
+        <section className="liveNextPreview" data-live-slot="next" aria-labelledby="live-next-lot-title">
+          <div className="liveNextPreviewHead"><span>СЛЕДВАЩ ЛОТ</span><small>Стартира след текущия</small></div>
+          <a className="liveNextPreviewCard" href={`/lot/${next.lot}`}>
+            <img src={next.image} alt=""/>
+            <div>
+              <span>LOT {next.lot}</span>
+              <h3 id="live-next-lot-title">{next.title}</h3>
+              <p>{next.location} · {next.damage}</p>
+              <b>Старт €{(prices[next.lot]??next.price).toLocaleString("bg-BG")}</b>
+            </div>
+          </a>
+        </section>
+
         <div className="liveRule"><b>Как работи</b><p>При нова оферта таймерът се връща на 10 сек. Ако стигне 00:00 без нов bid, текущият лот приключва и започва следващият.</p></div>
       </aside>
     </section>
