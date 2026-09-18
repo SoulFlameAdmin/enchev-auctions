@@ -212,7 +212,16 @@ jobs:
             sleep 1
           done
           node scripts/verify-health-endpoints.mjs --live http://127.0.0.1:3010
-      - name: Visual regression screenshots
+      - name: Install Microsoft Edge stable
+        shell: bash
+        run: |
+          curl --fail --silent --show-error https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /tmp/microsoft-edge.gpg
+          sudo install -o root -g root -m 644 /tmp/microsoft-edge.gpg /usr/share/keyrings/microsoft-edge.gpg
+          echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-edge.gpg] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge.list > /dev/null
+          sudo apt-get update -qq
+          sudo apt-get install -y microsoft-edge-stable
+          microsoft-edge --version
+      - name: Chrome and Edge visual regression screenshots
         shell: bash
         run: |
           npm run start -- --hostname 127.0.0.1 -p 3011 > /tmp/enchev-visual.log 2>&1 &
@@ -228,12 +237,23 @@ jobs:
             fi
             sleep 1
           done
+
           node scripts/capture-visual-regression.mjs http://127.0.0.1:3011
-      - name: Upload visual regression artifact
+          cp -R artifacts/visual-regression artifacts/visual-regression-chrome
+
+          rm -rf artifacts/visual-regression
+          CHROME_BIN="$(command -v microsoft-edge)" node scripts/capture-visual-regression.mjs http://127.0.0.1:3011
+          mv artifacts/visual-regression artifacts/visual-regression-edge
+          mv artifacts/visual-regression-chrome artifacts/visual-regression
+
+          node -e 'const fs=require("fs"); const chrome=JSON.parse(fs.readFileSync("artifacts/visual-regression/manifest.json","utf8")); const edge=JSON.parse(fs.readFileSync("artifacts/visual-regression-edge/manifest.json","utf8")); if(chrome.count!==10||edge.count!==10) process.exit(1); if(!/edge/i.test(edge.browserExecutable)) process.exit(1); console.log("D34_BROWSER_MATRIX PASS chrome=10 edge=10 desktop=1440x1200 mobile=390x844");'
+      - name: Upload Chrome and Edge visual regression artifact
         uses: actions/upload-artifact@v4
         with:
-          name: enchev-visual-regression-${{ github.sha }}
-          path: artifacts/visual-regression
+          name: enchev-cross-browser-visual-${{ github.sha }}
+          path: |
+            artifacts/visual-regression
+            artifacts/visual-regression-edge
           if-no-files-found: error
           retention-days: 14
 
