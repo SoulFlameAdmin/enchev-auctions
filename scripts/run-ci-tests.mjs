@@ -18,7 +18,8 @@ const cases = [
   ["scripts/verify-mobile-first-design.mjs", "--self-test"],
   ["tools/david/auto-complete-app2-v1.mjs", "--self-test"],
   ["tools/david/auto-continue-enchev-v5.mjs", "--self-test"],
-  ["scripts/verify-health-endpoints.mjs", "--self-test"]
+  ["scripts/verify-health-endpoints.mjs", "--self-test"],
+  ["scripts/verify-apps-web.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of cases) {
