@@ -196,7 +196,7 @@ export default function InventoryPage(){
   const formatTime=(seconds:number)=>`00:${String(seconds).padStart(2,"0")}`;
   const liveCar=auctionCars.find(car=>car.status==="live");
 
-  return <main className="inventoryPage" data-design-task="D11" data-design-filter-task="D12" data-design-url-task="D13" data-design-pagination-task="D14" data-result-count={filtered.length} data-current-page={currentPage}>
+  return <main id="main-content" className="inventoryPage" data-design-task="D11" data-design-filter-task="D12" data-design-url-task="D13" data-design-pagination-task="D14" data-result-count={filtered.length} data-current-page={currentPage}>
     <div className="inv2TopUtility"><div className="inv2UtilityLive"><i/> ENCHEV LIVE NETWORK <span>·</span> Обновяване в реално време</div><div className="inv2UtilityRight"><span>BG · EUR</span><a href="/support">Помощ</a><a href="/transport">Транспорт</a></div></div>
 
     <header className="inventoryHeader">
