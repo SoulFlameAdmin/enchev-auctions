@@ -182,8 +182,8 @@
       "id": "D26",
       "group": "Live auction",
       "title": "Автоматично преминаване към следващ lot след SOLD",
-      "status": "red",
-      "evidence": ""
+      "status": "yellow",
+      "evidence": "Implemented D26 automatic SOLD-to-next transition on branch test/design-d25-server-clock-20260919 at commits d69025926488f69f9af9efd5732684679a3dacdd and 5032a7d7d22667e6037cf285d2eb91d8e61184da. The D25 server session clock remains the source of lotIndex/roundEndsAt; when a later server response advances lotIndex after expiry, app/live-auctions/page.tsx atomically updates activeRef/current lot, recomputes next lot through the existing D24 layout, and exposes data-auto-advance-task=D26. The previous lot is announced through a short role=status / aria-live SOLD transition, then the next lot is presented as active without a page reload. app/live-auctions/live-d26.css supplies responsive SOLD transition styling plus prefers-reduced-motion and forced-colors handling. The intermediate run 35396482177 failed only because the stylesheet import landed one commit before the stylesheet file; this was corrected by 5032a7d7d22667e6037cf285d2eb91d8e61184da. Exact corrected head passed GitHub Verify Enchev Web run 35396573651 SUCCESS, including all plan/environment invariants, TypeScript check and Production build. D26 remains YELLOW because Git deployment generation is paused/no D26 branch preview exists, so browser-level automatic transition behavior is not yet proven on a READY deployment; multi-user auction authority is also intentionally not claimed because the shared Supabase config declares auction_authority=false."
     },
     {
       "id": "D27",
