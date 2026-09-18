@@ -10,7 +10,7 @@ const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const STATE_FILE = process.env.DAVID_DESIGN_STATE_FILE || path.join(process.cwd(), ".david-enchev-design-state.json");
 const POLL_MS = Number(process.env.DAVID_DESIGN_POLL_MS || 900);
 const START_TIMEOUT_MS = 15000;
-const STALL_MS = 70000;
+const STALL_MS = Number(process.env.DAVID_DESIGN_STALL_MS || 240000);
 const COOLDOWN_MS = 1200;
 const COMPLETE_QUIET_MS = Number(process.env.DAVID_COMPLETE_QUIET_MS || 7000);
 const COMPLETE_STABLE_SAMPLES = Number(process.env.DAVID_COMPLETE_STABLE_SAMPLES || 5);
@@ -219,7 +219,17 @@ async function generating(page) {
     const x = page.locator(s).last();
     if (await x.count() && await x.isVisible().catch(() => false)) return true;
   }
-  return false;
+  try {
+    return await page.evaluate(() => {
+      const turns = Array.from(document.querySelectorAll('article[data-testid^="conversation-turn-"]'));
+      const last = turns.at(-1);
+      if (!last || !last.querySelector('[data-message-author-role="assistant"]')) return false;
+      const finalAction = last.querySelector('button[aria-label*="Copy" i],button[aria-label*="Share" i],button[aria-label*="Regenerate" i],button[data-testid*="copy" i],button[data-testid*="thumb" i]');
+      if (finalAction) return false;
+      const text = (last.textContent || "").replace(/\s+/g, " ").trim();
+      return /(thinking|мислене|мисли|working|работи|calling tool|called tool|tool call|извикан инструмент|извиква инструмент|searching|търсене|browsing|преглежда|analyzing|анализира)/i.test(text);
+    });
+  } catch { return false; }
 }
 async function complete(page, baseHash = null) {
   let stableHash = null;
