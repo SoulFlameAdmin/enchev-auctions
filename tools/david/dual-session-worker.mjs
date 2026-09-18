@@ -1,6 +1,8 @@
 import { spawn } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { chromium } from "playwright-core";
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1"));
 const SYSTEM = path.join(HERE, "auto-continue-enchev-v5.mjs");
@@ -90,13 +92,77 @@ function shutdown() {
   setTimeout(() => process.exit(0), 1000);
 }
 
-console.log("[DUAL] DAVID dual-session mode ON.");
+function cleanConversationUrl(url) {
+  const m = String(url || "").match(/^https:\/\/chatgpt\.com\/c\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?=[/?#]|$)/i);
+  return m ? m[0] : null;
+}
+
+function readState(file) {
+  try { return JSON.parse(fs.readFileSync(file, "utf8")); }
+  catch { return {}; }
+}
+
+async function cleanupManagedTabs() {
+  const stateSpecs = [
+    { file: path.join(HERE, ".david-enchev-state.json"), fallback: "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71" },
+    { file: path.join(HERE, ".david-enchev-design-state.json"), fallback: "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7" },
+    { file: path.join(HERE, ".david-app2-state-6aac2dbb.json"), fallback: "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4" },
+    { file: path.join(HERE, ".david-apk-state.json"), fallback: null }
+  ];
+  const current = new Set();
+  const stale = new Set();
+  for (const spec of stateSpecs) {
+    const st = readState(spec.file);
+    const cur = cleanConversationUrl(st.chatUrl) || cleanConversationUrl(spec.fallback);
+    const prev = cleanConversationUrl(st.previousChatUrl);
+    if (cur) current.add(cur);
+    if (prev) stale.add(prev);
+    for (const old of Array.isArray(st.staleChatUrls) ? st.staleChatUrls : []) {
+      const u = cleanConversationUrl(old);
+      if (u) stale.add(u);
+    }
+  }
+  for (const u of current) stale.delete(u);
+
+  const cdp = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
+  try {
+    const browser = await chromium.connectOverCDP(cdp, { timeout: 15000 });
+    const context = browser.contexts()[0];
+    if (!context) return;
+    let closed = 0;
+    const seenCurrent = new Set();
+    for (const page of context.pages()) {
+      if (!page || page.isClosed()) continue;
+      const u = cleanConversationUrl(page.url());
+      if (!u) continue;
+      if (stale.has(u)) {
+        await page.close({ runBeforeUnload: false }).catch(() => {});
+        closed++;
+        continue;
+      }
+      if (current.has(u)) {
+        if (seenCurrent.has(u)) {
+          await page.close({ runBeforeUnload: false }).catch(() => {});
+          closed++;
+        } else {
+          seenCurrent.add(u);
+        }
+      }
+    }
+    console.log(`[DUAL] Managed tab cleanup complete. closed=${closed} current=${current.size} stale=${stale.size}`);
+  } catch (e) {
+    console.log(`[DUAL] Managed tab cleanup skipped: ${e?.message || e}`);
+  }
+}
+
+console.log("[DUAL] DAVID multi-session mode ON.");
 console.log("[DUAL] SYSTEM tab: 6aab44e1-385c-83eb-b122-c4ae9836cb71");
 console.log("[DUAL] DESIGN tab: 6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7");
 console.log("[DUAL] APK tab: auto-discover DAVID Phone / SoulFlame Twins / DAVID APK session; exact DAVID_APK_CHAT_URL wins when provided.");
 console.log("[DUAL] INTERRUPTION GUARD: watches every ChatGPT conversation tab in this DAVID Edge profile.");
 console.log("[DUAL] If ChatGPT shows connection interrupted: STOP response -> paste last user prompt -> SEND again.");
 console.log("[DUAL] SYSTEM + DESIGN + APK share the same Edge CDP/profile on port 9444. APP2/DPP may run beside them in the same profile.");
+await cleanupManagedTabs();
 specs.forEach(launch);
 
 process.on("SIGINT", shutdown);
