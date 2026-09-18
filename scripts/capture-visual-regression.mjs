@@ -134,6 +134,40 @@ async function verifyD24LiveRoom(call,viewport){
   await sleep(80);
 }
 
+async function d29Snapshot(call,focusFirstRemove=false){
+  const result=await call("Runtime.evaluate",{
+    expression:`(()=>{const section=document.querySelector('.profileWatchlist[data-design-task="D29"]');const summary=section?.querySelector('.profileWatchlistSummary');const grid=section?.querySelector('.profileWatchlistGrid');const cards=[...(section?.querySelectorAll('.profileWatchlistCard')||[])];const first=cards[0];const remove=first?.querySelector('.profileWatchlistRemove');if(!section||!summary||!grid||!first||!remove)return null;if(${focusFirstRemove?"true":"false"})remove.focus({preventScroll:true});const sr=section.getBoundingClientRect();const rr=remove.getBoundingClientRect();const rects=cards.map(card=>card.getBoundingClientRect());return {viewportWidth:window.innerWidth,scrollWidth:document.documentElement.scrollWidth,gridColumns:getComputedStyle(grid).gridTemplateColumns.trim().split(/\\s+/).filter(Boolean).length,cardCount:cards.length,savedCount:Number(summary.getAttribute('data-saved-count')||-1),liveCount:Number(summary.getAttribute('data-live-count')||-1),states:cards.map(card=>card.getAttribute('data-auction-state')||""),lotIds:cards.map(card=>card.getAttribute('data-lot-id')||""),focusedClass:document.activeElement?.className||"",removeWidth:rr.width,removeHeight:rr.height,cardsContained:rects.every(rect=>rect.left>=sr.left-3&&rect.right<=sr.right+3)};})()`,
+    returnByValue:true,
+  });
+  return result?.result?.value;
+}
+
+async function verifyD29Watchlist(call,viewport){
+  const before=await d29Snapshot(call,true);
+  if(!before)fail("D29 watchlist runtime elements missing");
+  if(before.scrollWidth>before.viewportWidth+3)fail(`D29 ${viewport.name} horizontal overflow`);
+  if(before.cardCount!==3||before.savedCount!==3||before.liveCount!==1)fail(`D29 ${viewport.name} initial counts mismatch`);
+  for(const state of ["live","upcoming","buy-now"]){
+    if(!before.states.includes(state))fail(`D29 ${viewport.name} missing state ${state}`);
+  }
+  if(before.lotIds.some(id=>id.length!==8||!id.startsWith("EA-")))fail(`D29 ${viewport.name} semantic lot id missing`);
+  if(!before.cardsContained)fail(`D29 ${viewport.name} card escapes watchlist bounds`);
+  if(before.focusedClass!=="profileWatchlistRemove")fail(`D29 ${viewport.name} remove control did not accept focus`);
+  if(viewport.mobile){
+    if(before.gridColumns!==1)fail(`D29 mobile grid columns=${before.gridColumns}`);
+    if(before.removeWidth+1<44||before.removeHeight+1<44)fail(`D29 mobile remove target ${before.removeWidth}x${before.removeHeight}`);
+  }else if(before.gridColumns!==3){
+    fail(`D29 desktop grid columns=${before.gridColumns}`);
+  }
+
+  await call("Runtime.evaluate",{expression:"document.querySelector('.profileWatchlistCard .profileWatchlistRemove')?.click()"});
+  await sleep(140);
+  const after=await d29Snapshot(call,false);
+  if(!after)fail("D29 post-remove snapshot missing");
+  if(after.cardCount!==2||after.savedCount!==2||after.liveCount!==0)fail(`D29 ${viewport.name} remove interaction did not update counts`);
+  if(after.lotIds.includes(before.lotIds[0]))fail(`D29 ${viewport.name} removed lot is still present`);
+}
+
 function findChrome(){
   const candidates=[
     process.env.CHROME_BIN,
@@ -314,6 +348,10 @@ async function captureOne({port,baseUrl,route,viewport,outputDir}){
     const filename=`${route.name}--${viewport.name}.png`;
     const filepath=path.resolve(outputDir,filename);
     fs.writeFileSync(filepath,png);
+
+    if(route.name==="profile"){
+      await verifyD29Watchlist(call,viewport);
+    }
 
     return {
       route:route.path,
