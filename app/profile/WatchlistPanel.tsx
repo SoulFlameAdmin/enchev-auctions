@@ -51,7 +51,7 @@ export default function WatchlistPanel(){
     setSaved(current=>current.filter(vehicle=>vehicle.lot!==lot));
   };
 
-  return <section className="profileWatchlist" data-design-task="D29" aria-labelledby="watchlist-heading">
+  return <section id="watchlist" className="profileWatchlist" data-design-task="D29" aria-labelledby="watchlist-heading">
     <div className="profileWatchlistHead">
       <div>
         <span className="profileWatchlistKicker">WATCHLIST</span>
