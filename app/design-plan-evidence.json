@@ -210,8 +210,8 @@
       "id": "D30",
       "group": "Профил",
       "title": "My Auctions: watching / bidding / leading / ended",
-      "status": "red",
-      "evidence": ""
+      "status": "yellow",
+      "evidence": "Implemented D30 My Auctions visual/client state workspace. PR #14 test branch design/d30-my-auctions-20260919 introduced app/profile/MyAuctionsPanel.tsx and app/profile/my-auctions.css with accessible state tabs/counts for watching, bidding, leading and ended lots, clear per-lot status/bid/action rows, responsive desktop/tablet/mobile layout, focus-visible, prefers-reduced-motion and forced-colors support. Verify Enchev Web run 35396735605 completed SUCCESS with Repository lint, CI quality-gate contract, CI test suite, TypeScript check and Production build all passing. The tested files were then safely applied to current main as commits 28cb491cdd72fa316589df03a2eec11f6a4988d9, 067b97e63d7bec7e67c6a859772d75cc0472e371 and a936d5fa2667866bf83b59cdfa3cf1bdee30fa7d. D30 deliberately remains a non-authoritative UI model while D25-D28 runtime authority is unavailable. Vercel READY/browser responsive-interaction-visual proof is still unavailable, so D30 remains YELLOW."
     },
     {
       "id": "D31",
