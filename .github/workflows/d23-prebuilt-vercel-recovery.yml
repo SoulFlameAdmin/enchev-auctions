@@ -1,0 +1,80 @@
+name: D23 Prebuilt Vercel Recovery
+
+on:
+  push:
+    branches:
+      - david/d23-prebuilt-recovery-20260918
+
+permissions:
+  contents: read
+
+concurrency:
+  group: d23-prebuilt-vercel-recovery
+  cancel-in-progress: true
+
+jobs:
+  recover-production:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      VERCEL_ORG_ID: team_cKaIZfnCMzoiiq80J0MhV0A2
+      VERCEL_PROJECT_ID: prj_X3TAEQf9oGE79te9NdNlvB6jnhno
+    steps:
+      - name: Checkout recovery snapshot
+        uses: actions/checkout@v4
+
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: package.json
+
+      - name: Check authorized Vercel token
+        id: auth
+        shell: bash
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          if [ -n "$VERCEL_TOKEN" ]; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            echo "Authorized Vercel token is available."
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "VERCEL_TOKEN is not configured in GitHub Actions; recovery deploy will be skipped."
+          fi
+
+      - name: Install app dependencies
+        if: steps.auth.outputs.available == 'true'
+        run: npm install --no-audit --no-fund
+
+      - name: Pull production environment
+        if: steps.auth.outputs.available == 'true'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: npx --yes vercel@latest pull --yes --environment=production --token="$VERCEL_TOKEN"
+
+      - name: Build Vercel output locally
+        if: steps.auth.outputs.available == 'true'
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: npx --yes vercel@latest build --prod --token="$VERCEL_TOKEN"
+
+      - name: Publish prebuilt output to production
+        if: steps.auth.outputs.available == 'true'
+        id: deploy
+        shell: bash
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          DEPLOYMENT_URL="$(npx --yes vercel@latest deploy --prebuilt --prod --yes --token="$VERCEL_TOKEN")"
+          echo "url=$DEPLOYMENT_URL" >> "$GITHUB_OUTPUT"
+          echo "D23_PREBUILT_DEPLOYMENT=$DEPLOYMENT_URL"
+
+      - name: Recovery summary
+        if: always()
+        shell: bash
+        run: |
+          echo "### D23 prebuilt recovery" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Vercel token available: ${{ steps.auth.outputs.available }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Deployment URL: ${{ steps.deploy.outputs.url }}" >> "$GITHUB_STEP_SUMMARY"
