@@ -44,22 +44,50 @@ function Unique-Matches([string]$Text, [string]$Pattern) {
 }
 
 function Get-SystemProgress {
-  $master = Join-Path $Repo "docs\MASTER_SYSTEM_PLAN_V1_FROZEN.md"
+  $planSource = Join-Path $Repo "app\components\MasterSystemPlanV1.tsx"
   $verified = Join-Path $Repo "app\components\VerifiedPlanEvidenceSync.tsx"
   $gaps = Join-Path $Repo "app\components\SeedAuditGaps.tsx"
-  $masterText = if (Test-Path $master) { Get-Content -Raw $master } else { "" }
+  $planText = if (Test-Path $planSource) { Get-Content -Raw $planSource } else { "" }
   $verifiedText = if (Test-Path $verified) { Get-Content -Raw $verified } else { "" }
   $gapText = if (Test-Path $gaps) { Get-Content -Raw $gaps } else { "" }
 
   $total = New-Object 'System.Collections.Generic.HashSet[string]'
-  foreach ($id in (Unique-Matches $masterText '\b(\d{2}\.\d{2})\b')) { [void]$total.Add($id) }
-  foreach ($id in (Unique-Matches $gapText '\b(GAP-\d{3,})\b')) { [void]$total.Add($id) }
-
   $green = New-Object 'System.Collections.Generic.HashSet[string]'
-  foreach ($id in (Unique-Matches $verifiedText '["'']((?:\d{2}\.\d{2})|(?:GAP-\d{3,}))["'']\s*:')) { [void]$green.Add($id) }
+
+  $phaseRegex = New-Object System.Text.RegularExpressions.Regex(
+    '\["(\d{2})","[^"]+",\[(.*?)\]\]',
+    [System.Text.RegularExpressions.RegexOptions]::Singleline
+  )
+  foreach ($pm in $phaseRegex.Matches($planText)) {
+    $phaseId = $pm.Groups[1].Value
+    $items = [regex]::Matches($pm.Groups[2].Value, '"((?:\\.|[^"\\])*)"')
+    $index = 0
+    foreach ($im in $items) {
+      $index++
+      $id = "{0}.{1:D2}" -f $phaseId,$index
+      [void]$total.Add($id)
+      $entry = $im.Groups[1].Value
+      $parts = $entry -split '\|'
+      if ($parts.Count -gt 1 -and $parts[1].Trim().ToLowerInvariant() -eq "green") {
+        [void]$green.Add($id)
+      }
+    }
+  }
+
+  foreach ($id in (Unique-Matches $verifiedText '["'']((?:\d{2}\.\d{2})|(?:GAP-\d{3,}))["'']\s*:')) {
+    if ($total.Contains($id)) { [void]$green.Add($id) }
+  }
+
+  foreach ($gm in [regex]::Matches($gapText, 'id\s*:\s*"((?:GAP-|GAP\.)[^"]+)"')) {
+    $id = $gm.Groups[1].Value.ToUpperInvariant()
+    [void]$total.Add($id)
+    $windowStart = [math]::Max(0, $gm.Index - 100)
+    $windowLen = [math]::Min(500, $gapText.Length - $windowStart)
+    $window = $gapText.Substring($windowStart, $windowLen)
+    if ($window -match 'defaultStatus\s*:\s*"green"') { [void]$green.Add($id) }
+  }
 
   $g = @($green | Where-Object { $total.Contains($_) }).Count
-  if ($total.Count -eq 0 -and $green.Count -gt 0) { $g = $green.Count }
   [pscustomobject]@{ Name="SYSTEM"; Green=$g; Total=$total.Count; Percent=(CalcPct $g $total.Count) }
 }
 
@@ -112,9 +140,10 @@ function Short([object]$Value, [int]$Max = 92) {
   return $s
 }
 
-function Progress-Bar([Nullable[double]]$Pct, [int]$Width = 42) {
+function Progress-Bar($Pct, [int]$Width = 42) {
   if ($null -eq $Pct) { return "[" + ("?" * $Width) + "]" }
-  $filled = [math]::Round(($Pct.Value / 100.0) * $Width)
+  try { $value = [double]$Pct } catch { return "[" + ("?" * $Width) + "]" }
+  $filled = [int][math]::Round(($value / 100.0) * $Width)
   if ($filled -lt 0) { $filled = 0 }
   if ($filled -gt $Width) { $filled = $Width }
   return "[" + ("#" * $filled) + ("-" * ($Width - $filled)) + "]"
@@ -124,23 +153,20 @@ function Write-Fit([string]$Text, [ConsoleColor]$Color = [ConsoleColor]::Gray) {
   $width = 120
   try { $width = [math]::Max(80, [Console]::WindowWidth - 1) } catch {}
   if ($Text.Length -gt $width) { $Text = $Text.Substring(0, $width) }
-  Write-Host $Text -ForegroundColor $Color -BackgroundColor Black
+  $line = $Text.PadRight($width)
+  Write-Host $line -ForegroundColor $Color -BackgroundColor Black
 }
 
 function Matrix-Fill {
   try {
+    Clear-Host
     $w = [math]::Max(80, [Console]::WindowWidth - 1)
-    $h = [math]::Max(25, [Console]::WindowHeight - 1)
-    $chars = "001101DAVIDSOUL010100111001"
-    [Console]::SetCursorPosition(0,0)
-    for ($y=0; $y -lt $h; $y++) {
-      $sb = New-Object System.Text.StringBuilder
-      for ($x=0; $x -lt $w; $x++) {
-        [void]$sb.Append($chars[(Get-Random -Minimum 0 -Maximum $chars.Length)])
-      }
-      Write-Host $sb.ToString() -ForegroundColor DarkGreen -BackgroundColor Black
+    $chars = "01DAVIDSOUL"
+    $sb = New-Object System.Text.StringBuilder
+    for ($x=0; $x -lt $w; $x++) {
+      [void]$sb.Append($chars[(Get-Random -Minimum 0 -Maximum $chars.Length)])
     }
-    [Console]::SetCursorPosition(0,0)
+    Write-Host $sb.ToString() -ForegroundColor DarkGreen -BackgroundColor Black
   } catch {
     Clear-Host
   }
