@@ -12,6 +12,9 @@ const START_TIMEOUT_MS = Number(process.env.DAVID_APP2_START_TIMEOUT_MS || 15000
 const STALL_MS = Number(process.env.DAVID_APP2_STALL_MS || 90000);
 const COOLDOWN_MS = Number(process.env.DAVID_APP2_COOLDOWN_MS || 1200);
 const MAX_RETRIES = Number(process.env.DAVID_APP2_MAX_RETRIES || 5);
+const COMPLETE_QUIET_MS = Number(process.env.DAVID_COMPLETE_QUIET_MS || 7000);
+const COMPLETE_STABLE_SAMPLES = Number(process.env.DAVID_COMPLETE_STABLE_SAMPLES || 5);
+const COMPLETE_SAMPLE_MS = Number(process.env.DAVID_COMPLETE_SAMPLE_MS || 1200);
 const PROBLEM_PREFIX = "PROBLEM IN:";
 const DONE_MARKER = "PROJECT_100_PERCENT_COMPLETE";
 const RELAY_MARKER = "[DAVID_APP2_AUTOPILOT_V2]";
@@ -226,7 +229,7 @@ async function latestRole(page) {
   } catch { return null; }
 }
 async function stopButton(page) {
-  for (const s of ['[data-testid="stop-button"]','button[aria-label*="Stop"]','button[aria-label*="stop"]','button[aria-label*="Спри"]','button:has-text("Stop generating")','button:has-text("Stop response")','button:has-text("Спри отговора")','button:has-text("Спри генерирането")']) {
+  for (const s of ['[data-testid="stop-button"]','[data-testid*="stop" i]','button[aria-label*="Stop"]','button[aria-label*="stop"]','button[aria-label*="Спри"]','button:has-text("Stop generating")','button:has-text("Stop thinking")','button:has-text("Stop response")','button:has-text("Спри отговора")','button:has-text("Спри генерирането")','button:has-text("Спри да мисли")']) {
     try {
       const x = page.locator(s).last();
       if (await x.count() && await x.isVisible().catch(() => false) && await x.isEnabled().catch(() => false)) return x;
@@ -340,6 +343,10 @@ async function waitStart(context, page, baseHash, state) {
 async function waitComplete(context, page, baseHash, state) {
   let lastHash = baseHash;
   let lastProgressAt = Date.now();
+  let stableHash = null;
+  let stableSince = 0;
+  let stableSamples = 0;
+
   while (true) {
     page = await waitReady(context, page, state);
     if (await interruptionVisible(page)) return { page, retry: true, reason: "connection-interrupted" };
@@ -354,11 +361,17 @@ async function waitComplete(context, page, baseHash, state) {
     if (responseProgressed(lastHash, h)) {
       lastHash = h;
       lastProgressAt = Date.now();
+      stableHash = h;
+      stableSince = Date.now();
+      stableSamples = 1;
       state.watchdog = "gpt-writing";
       save(state, "GPT text progressed");
     }
 
     if (isGenerating) {
+      stableHash = null;
+      stableSince = 0;
+      stableSamples = 0;
       state.watchdog = t && h !== baseHash ? "gpt-writing" : "gpt-thinking";
       save(state, state.watchdog === "gpt-writing" ? "GPT writing" : "GPT thinking");
       if (stallExpired(lastProgressAt)) return { page, retry: true, reason: "stalled-or-blank" };
@@ -367,15 +380,37 @@ async function waitComplete(context, page, baseHash, state) {
     }
 
     if (role === "assistant" && h && h !== baseHash) {
-      const before = t;
-      await sleep(1200);
-      if (!await generating(page) && await latestRole(page) === "assistant" && (await latestAssistant(page)) === before) {
-        return { page, retry: false, text: before, hash: h };
+      if (h !== stableHash) {
+        stableHash = h;
+        stableSince = Date.now();
+        stableSamples = 1;
+      } else {
+        stableSamples += 1;
       }
+
+      state.watchdog = "gpt-settling";
+      save(state, `GPT quiet completion check ${stableSamples}/${COMPLETE_STABLE_SAMPLES}`);
+
+      if (
+        stableSamples >= COMPLETE_STABLE_SAMPLES &&
+        Date.now() - stableSince >= COMPLETE_QUIET_MS &&
+        !await generating(page) &&
+        await latestRole(page) === "assistant"
+      ) {
+        const finalText = await latestAssistant(page);
+        const finalHash = finalText ? hash(finalText) : null;
+        if (finalHash && finalHash === stableHash) {
+          return { page, retry: false, text: finalText, hash: finalHash };
+        }
+      }
+    } else {
+      stableHash = null;
+      stableSince = 0;
+      stableSamples = 0;
     }
 
     if (stallExpired(lastProgressAt)) return { page, retry: true, reason: "stalled-or-blank" };
-    await sleep(POLL_MS);
+    await sleep(COMPLETE_SAMPLE_MS);
   }
 }
 async function runPrompt(context, page, state, prompt, kind) {
