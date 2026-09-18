@@ -78,6 +78,10 @@ jobs:
         run: node scripts/verify-environment-variables.mjs --self-test
       - name: Environment variable runtime probe
         run: node scripts/verify-environment-variables.mjs --runtime
+      - name: Health endpoint contract invariant
+        run: node scripts/verify-health-endpoints.mjs
+      - name: Health endpoint contract self-tests
+        run: node scripts/verify-health-endpoints.mjs --self-test
       - name: Redis environment contract invariant
         run: node scripts/verify-redis-environment.mjs
       - name: Redis environment contract self-tests
@@ -141,6 +145,23 @@ jobs:
         run: npm run typecheck
       - name: Production build
         run: npm run build
+      - name: Built health endpoint smoke test
+        shell: bash
+        run: |
+          npm run start -- --hostname 127.0.0.1 -p 3010 > /tmp/enchev-next.log 2>&1 &
+          NEXT_PID=$!
+          trap 'kill $NEXT_PID 2>/dev/null || true' EXIT
+          for attempt in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:3010/api/health/web > /dev/null; then
+              break
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              cat /tmp/enchev-next.log
+              exit 1
+            fi
+            sleep 1
+          done
+          node scripts/verify-health-endpoints.mjs --live http://127.0.0.1:3010
 
   sync-plan-cloud:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
