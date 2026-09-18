@@ -102,54 +102,87 @@ function readState(file) {
   catch { return {}; }
 }
 
+async function detectManagedKind(page) {
+  try {
+    const u = cleanConversationUrl(page.url());
+    if (!u) return null;
+    const text = await page.locator('[data-message-author-role="user"],[data-message-author-role="assistant"]')
+      .allInnerTexts()
+      .then((xs) => xs.slice(-12).join("\n"))
+      .catch(() => "");
+    if (/\[DAVID_RELAY_ENCHEV_V5\]/.test(text)) return "SYSTEM";
+    if (/\[DAVID_RELAY_ENCHEV_DESIGN_V1\]/.test(text)) return "DESIGN";
+    if (/\[DAVID_APP2_AUTOPILOT_V2\]/.test(text)) return "APP2";
+    if (/\[DAVID_RELAY_APK_V1\]/.test(text)) return "APK";
+    return null;
+  } catch { return null; }
+}
+
 async function cleanupManagedTabs() {
   const stateSpecs = [
-    { file: path.join(HERE, ".david-enchev-state.json"), fallback: "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71" },
-    { file: path.join(HERE, ".david-enchev-design-state.json"), fallback: "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7" },
-    { file: path.join(HERE, ".david-app2-state-6aac2dbb.json"), fallback: "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4" },
-    { file: path.join(HERE, ".david-apk-state.json"), fallback: null }
+    { kind: "SYSTEM", file: path.join(HERE, ".david-enchev-state.json"), fallback: "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71" },
+    { kind: "DESIGN", file: path.join(HERE, ".david-enchev-design-state.json"), fallback: "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7" },
+    { kind: "APP2", file: path.join(HERE, ".david-app2-state-6aac2dbb.json"), fallback: "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4" },
+    { kind: "APK", file: path.join(HERE, ".david-apk-state.json"), fallback: null }
   ];
-  const current = new Set();
+  const preferredByKind = new Map();
   const stale = new Set();
+
   for (const spec of stateSpecs) {
     const st = readState(spec.file);
     const cur = cleanConversationUrl(st.chatUrl) || cleanConversationUrl(spec.fallback);
+    if (cur) preferredByKind.set(spec.kind, cur);
     const prev = cleanConversationUrl(st.previousChatUrl);
-    if (cur) current.add(cur);
     if (prev) stale.add(prev);
     for (const old of Array.isArray(st.staleChatUrls) ? st.staleChatUrls : []) {
       const u = cleanConversationUrl(old);
       if (u) stale.add(u);
     }
   }
-  for (const u of current) stale.delete(u);
+  for (const u of preferredByKind.values()) stale.delete(u);
 
   const cdp = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
   try {
     const browser = await chromium.connectOverCDP(cdp, { timeout: 15000 });
     const context = browser.contexts()[0];
     if (!context) return;
-    let closed = 0;
-    const seenCurrent = new Set();
+
+    const managed = [];
     for (const page of context.pages()) {
       if (!page || page.isClosed()) continue;
       const u = cleanConversationUrl(page.url());
       if (!u) continue;
-      if (stale.has(u)) {
-        await page.close({ runBeforeUnload: false }).catch(() => {});
+      const kind = await detectManagedKind(page);
+      if (kind) managed.push({ page, url: u, kind });
+    }
+
+    let closed = 0;
+    for (const u of stale) {
+      for (const item of managed) {
+        if (item.page.isClosed()) continue;
+        if (item.url !== u) continue;
+        await item.page.close({ runBeforeUnload: false }).catch(() => {});
         closed++;
-        continue;
-      }
-      if (current.has(u)) {
-        if (seenCurrent.has(u)) {
-          await page.close({ runBeforeUnload: false }).catch(() => {});
-          closed++;
-        } else {
-          seenCurrent.add(u);
-        }
       }
     }
-    console.log(`[DUAL] Managed tab cleanup complete. closed=${closed} current=${current.size} stale=${stale.size}`);
+
+    for (const kind of ["SYSTEM","DESIGN","APP2","APK"]) {
+      const tabs = managed.filter((x) => x.kind === kind && !x.page.isClosed());
+      if (tabs.length <= 1) continue;
+      const preferred = preferredByKind.get(kind);
+      let keep = tabs.find((x) => preferred && x.url === preferred) || tabs.at(-1);
+      for (const item of tabs) {
+        if (item === keep || item.page.isClosed()) continue;
+        await item.page.close({ runBeforeUnload: false }).catch(() => {});
+        closed++;
+      }
+    }
+
+    const remaining = {};
+    for (const kind of ["SYSTEM","DESIGN","APP2","APK"]) {
+      remaining[kind] = managed.filter((x) => x.kind === kind && !x.page.isClosed()).length;
+    }
+    console.log(`[DUAL] Managed tab cleanup complete. closed=${closed} remaining=${JSON.stringify(remaining)}`);
   } catch (e) {
     console.log(`[DUAL] Managed tab cleanup skipped: ${e?.message || e}`);
   }
