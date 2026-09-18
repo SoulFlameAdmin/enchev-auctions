@@ -142,6 +142,7 @@ async function closeOldConversationTabs(context, oldUrl, keepPage) {
 async function rolloverConversation(context, page, state) {
   const oldUrl = cleanConversationUrl(await safeUrl(page)) || await safeUrl(page) || activeChatUrl;
   state.previousChatUrl = oldUrl;
+  state.staleChatUrls = Array.from(new Set([...(Array.isArray(state.staleChatUrls) ? state.staleChatUrls : []), oldUrl])).slice(-20);
   state.rolloverCount = Number(state.rolloverCount || 0) + 1;
   state.pendingNewChat = true;
   state.justRolledOver = true;
