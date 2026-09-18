@@ -89,7 +89,7 @@ export default function LotPage(){
     };
   },[viewerOpen]);
 
-  return <main className="lotPage">
+  return <main id="main-content" className="lotPage">
     <header className="lotHeader">
       <a className="lotLogo" href="/"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
       <nav className="lotNav"><a href="/inventory">Инвентар</a><a href="/live-auctions">LIVE търгове</a><a href="/#how">Как работи</a><a href="/transport">Транспорт</a></nav>
