@@ -1,0 +1,107 @@
+/* D32 — mobile-first hardening for the five core buyer routes. */
+@media(max-width:640px){
+  .eaHome,
+  .inventoryPage,
+  .lotPage,
+  .livePage,
+  .navigationPage{
+    overflow-x:hidden;
+    overflow-x:clip;
+  }
+
+  .eaHome img,
+  .inventoryPage img,
+  .lotPage img,
+  .livePage img,
+  .navigationPage img{
+    max-width:100%;
+  }
+
+  .eaHeroCopy h1{
+    max-width:100%;
+    font-size:clamp(44px,17vw,58px)!important;
+    overflow-wrap:anywhere;
+  }
+
+  .eaSearch,
+  .eaHeroCopy,
+  .inventoryResults,
+  .inventoryToolbarControls,
+  .lotMain,
+  .lotSection,
+  .liveStage>*,
+  .liveBidPanel,
+  .liveNextPreviewCard>div,
+  .profileDashboardContent{
+    min-width:0;
+  }
+
+  .inventoryToolbar select,
+  .inv2ViewSwitch button{
+    min-height:44px!important;
+    height:44px!important;
+  }
+
+  .liveHeader button{
+    min-height:44px!important;
+    height:44px!important;
+  }
+
+  .liveHero,
+  .liveStage,
+  .liveQueue,
+  .liveSold{
+    width:calc(100% - 24px)!important;
+  }
+
+  .liveBidPanel{
+    padding:18px;
+  }
+
+  .liveBidTop b{
+    max-width:100%;
+    font-size:clamp(36px,13vw,48px);
+    overflow-wrap:anywhere;
+  }
+
+  .liveVisualInfo{
+    left:18px;
+    right:18px;
+  }
+
+  .liveVisualInfo h2,
+  .liveNextPreviewCard h3,
+  .profileOverview h1,
+  .profileWatchlistCard h3,
+  .myAuctionMain h3{
+    overflow-wrap:anywhere;
+  }
+}
+
+@media(max-width:380px){
+  .eaHeroCopy h1{
+    font-size:clamp(40px,16.5vw,52px)!important;
+  }
+
+  .liveQueueCard{
+    grid-template-columns:96px minmax(0,1fr);
+  }
+
+  .liveVisual{
+    height:450px;
+  }
+
+  .liveBidPanel{
+    padding:15px;
+  }
+}
+
+@media(forced-colors:active){
+  @media(max-width:640px){
+    .inventoryToolbar select,
+    .inv2ViewSwitch button,
+    .liveHeader button{
+      border:1px solid ButtonText;
+    }
+  }
+}
