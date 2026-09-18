@@ -14,7 +14,9 @@
     "test": "node scripts/run-ci-tests.mjs",
     "ci:verify": "npm run lint && npm test && npm run typecheck && npm run build",
     "verify:health": "node scripts/verify-health-endpoints.mjs",
-    "verify:health:self-test": "node scripts/verify-health-endpoints.mjs --self-test"
+    "verify:health:self-test": "node scripts/verify-health-endpoints.mjs --self-test",
+    "verify:apps-web": "node scripts/verify-apps-web.mjs",
+    "verify:apps-web:self-test": "node scripts/verify-apps-web.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
@@ -26,5 +28,8 @@
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "typescript": "latest"
-  }
+  },
+  "workspaces": [
+    "apps/*"
+  ]
 }
