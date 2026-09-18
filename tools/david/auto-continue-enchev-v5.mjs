@@ -14,11 +14,20 @@ const STALL_TIMEOUT_MS = Number(process.env.DAVID_STALL_TIMEOUT_MS || 60000);
 const REFRESH_SETTLE_MS = Number(process.env.DAVID_REFRESH_SETTLE_MS || 3000);
 const MAX_RECOVERY_ATTEMPTS = Number(process.env.DAVID_MAX_RECOVERY_ATTEMPTS || 4);
 const SAME_TURN_RECOVERY_LIMIT = Number(process.env.DAVID_SAME_TURN_RECOVERY_LIMIT || 3);
+const STALL_RESEND_LIMIT = Number(process.env.DAVID_STALL_RESEND_LIMIT || 2);
 const PROBLEM_BACKOFF_MS = Number(process.env.DAVID_PROBLEM_BACKOFF_MS || 30000);
 const PLATFORM_BACKOFF_MS = Number(process.env.DAVID_PLATFORM_BACKOFF_MS || 180000);
 const STATE_FILE = process.env.DAVID_STATE_FILE || path.join(process.cwd(), ".david-enchev-state.json");
 const RELAY_MARKER = "[DAVID_RELAY_ENCHEV_V5]";
 const PROBLEM_PREFIX = "PROBLEM IN:";
+const DEPLOY_LAW = `
+DAVID VERCEL DEPLOY LAW:
+- Before ANY Vercel create/update/redeploy, atomically claim the global Supabase lease with:
+  select public.david_claim_vercel_deploy('ENCHEV_SYSTEM','enchev-auctions',<commit_sha_or_null>,900);
+- If granted=false: DO NOT deploy. Continue dependency-safe non-deploy work.
+- If granted=true: call public.david_mark_vercel_deploying(...), perform exactly one intended deployment, then always release with public.david_release_vercel_deploy('ENCHEV_SYSTEM',<success>,<detail_json>).
+- If Vercel returns a quota/rate limit with a concrete retry time, record it with public.david_block_vercel_deploys(...). Never invent a retry time.
+`;
 
 const CONTINUE_PROMPT = `@GitHub @Vercel @Supabase
 
@@ -33,6 +42,8 @@ const CONTINUE_PROMPT = `@GitHub @Vercel @Supabase
 - Ако има вътрешен технически проблем, който реално спира всяка безопасна независима работа, завърши с: ${PROBLEM_PREFIX} <кратко и точно какво пречи>
 - Преди PROBLEM IN опитай сам разумните безопасни варианти.
 - Не заобикаляй CAPTCHA/MFA/login/permissions, не измисляй secrets и не прави destructive действие без разрешение.
+
+${DEPLOY_LAW}
 
 ${RELAY_MARKER}`;
 
@@ -358,11 +369,13 @@ ${problem}
 
 Не завършвай с PROBLEM IN само заради същия външен blocker. PROBLEM IN е позволено само за нов вътрешен технически дефект, който спира всяка безопасна независима работа.
 
+${DEPLOY_LAW}
+
 ${RELAY_MARKER}`;
 }
 
 function fixPrompt(problem, attempt) {
-  return `@GitHub @Vercel @Supabase\n\nDAVID засече проблем в текущия етап:\n${problem}\n\nTRY TO MAKE THIS FIX YOURSELF NOW. Това е опит ${attempt}. Провери реалното състояние и опитай безопасен технически fix или валиден алтернативен подход. Не измисляй evidence, secrets или резултати. Не заобикаляй CAPTCHA/MFA/login/permissions и не прави destructive действие без разрешение.\n\nАко го оправиш и го докажеш, завърши последния ред само с: OK\nАко още не е решено, завърши с: ${PROBLEM_PREFIX} <точният оставащ проблем>\nСлед успешен fix продължи към следващата зависима задача от MASTER SYSTEM PLAN.\n\n${RELAY_MARKER}`;
+  return `@GitHub @Vercel @Supabase\n\nDAVID засече проблем в текущия етап:\n${problem}\n\nTRY TO MAKE THIS FIX YOURSELF NOW. Това е опит ${attempt}. Провери реалното състояние и опитай безопасен технически fix или валиден алтернативен подход. Не измисляй evidence, secrets или резултати. Не заобикаляй CAPTCHA/MFA/login/permissions и не прави destructive действие без разрешение.\n\nАко го оправиш и го докажеш, завърши последния ред само с: OK\nАко още не е решено, завърши с: ${PROBLEM_PREFIX} <точният оставащ проблем>\nСлед успешен fix продължи към следващата зависима задача от MASTER SYSTEM PLAN.\n\n${DEPLOY_LAW}\n\n${RELAY_MARKER}`;
 }
 
 async function visiblePlatformBlock(page) {
