@@ -11,6 +11,8 @@ const APK = path.join(HERE, "auto-continue-david-apk-v1.mjs");
 const INTERRUPT_GUARD = path.join(HERE, "connection-interruption-guard.mjs");
 const NODE = process.execPath;
 const children = new Map();
+const MONITOR_FILE = path.join(HERE, ".david-tab-monitor.json");
+const MONITOR_MS = Number(process.env.DAVID_TAB_MONITOR_MS || 15000);
 let shuttingDown = false;
 
 const specs = [
@@ -195,8 +197,46 @@ console.log("[DUAL] APK tab: auto-discover DAVID Phone / SoulFlame Twins / DAVID
 console.log("[DUAL] INTERRUPTION GUARD: watches every ChatGPT conversation tab in this DAVID Edge profile.");
 console.log("[DUAL] If ChatGPT shows connection interrupted: STOP response -> paste last user prompt -> SEND again.");
 console.log("[DUAL] SYSTEM + DESIGN + APK share the same Edge CDP/profile on port 9444. APP2/DPP may run beside them in the same profile.");
+async function monitorManagedTabs() {
+  if (shuttingDown) return;
+  const cdp = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
+  try {
+    const browser = await chromium.connectOverCDP(cdp, { timeout: 15000 });
+    const context = browser.contexts()[0];
+    if (!context) return;
+    const snapshot = {
+      checkedAt: new Date().toISOString(),
+      totalBrowserTabs: context.pages().filter((p) => !p.isClosed()).length,
+      totalChatGptTabs: 0,
+      managed: { SYSTEM: [], DESIGN: [], APP2: [], APK: [] }
+    };
+    for (const page of context.pages()) {
+      if (!page || page.isClosed()) continue;
+      if (page.url().startsWith("https://chatgpt.com/")) snapshot.totalChatGptTabs += 1;
+      const kind = await detectManagedKind(page);
+      const u = cleanConversationUrl(page.url());
+      if (kind && u) snapshot.managed[kind].push(u);
+    }
+    fs.writeFileSync(MONITOR_FILE, JSON.stringify(snapshot, null, 2), "utf8");
+    const duplicates = Object.entries(snapshot.managed)
+      .filter(([, urls]) => urls.length > 1)
+      .map(([kind, urls]) => `${kind}=${urls.length}`);
+    if (duplicates.length) {
+      console.log(`[DUAL] Tab monitor found duplicates: ${duplicates.join(", ")}. Cleaning...`);
+      await cleanupManagedTabs();
+    }
+  } catch (e) {
+    console.log(`[DUAL] Tab monitor skipped: ${e?.message || e}`);
+  }
+}
+
 await cleanupManagedTabs();
+await monitorManagedTabs();
 specs.forEach(launch);
+const monitorTimer = setInterval(() => {
+  monitorManagedTabs().catch((e) => console.log(`[DUAL] Tab monitor error: ${e?.message || e}`));
+}, MONITOR_MS);
+monitorTimer.unref?.();
 
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
