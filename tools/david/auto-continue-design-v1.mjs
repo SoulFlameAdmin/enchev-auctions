@@ -74,7 +74,20 @@ function extractProblem(text) {
 }
 function endsOk(text) {
   const rows = String(text || "").split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
-  return Boolean(rows.length && /^OK[.!]?$/i.test(rows.at(-1)));
+  return Boolean(rows.length && /^OK$/i.test(rows.at(-1)));
+}
+async function waitForTerminalMarker(page, state) {
+  while (true) {
+    const text = await latestAssistant(page);
+    const problem = extractProblem(text);
+    if (problem) return { type: "problem", text, problem };
+    if (endsOk(text)) return { type: "ok", text };
+    state.watchdog = "design-awaiting-final-ok";
+    state.lastResult = "waiting-for-final-ok";
+    save(state, "LAW: no new DESIGN prompt until final line is exactly OK or PROBLEM IN appears");
+    console.log("[DESIGN] LAW: waiting for final OK. NO NEW PROMPT.");
+    await sleep(3000);
+  }
 }
 function isExternalBlocker(problem) {
   return /(redis|valkey|upstash|vercel|marketplace|environment-secret|environment secret|provider credential|credential|permission|authorization|rate limit|quota|billing|plan limit|external access|legal sign-off|customer data|deployment.*queued|deployment.*initializing)/i.test(String(problem || ""));
@@ -399,8 +412,16 @@ async function main() {
         await sleep(COOLDOWN_MS);
         continue;
       }
-      state.lastResult = endsOk(result.text) ? "OK" : "completed";
-      save(state, "Design independent task completed after blocker defer");
+      if (!endsOk(result.text)) {
+        const terminal = await waitForTerminalMarker(page, state);
+        if (terminal.type === "problem") {
+          state.problem = terminal.problem;
+          save(state, `Design terminal marker became PROBLEM IN: ${terminal.problem}`);
+          continue;
+        }
+      }
+      state.lastResult = "OK";
+      save(state, "Design independent task completed with final OK");
       await sleep(COOLDOWN_MS);
       continue;
     }
@@ -411,7 +432,16 @@ async function main() {
       page = result.page;
       const problem = extractProblem(result.text);
       if (problem) { state.problem = problem; state.watchdog = "design-problem"; save(state, `Design problem remains: ${problem}`); await sleep(state.problemAttempts % 4 === 0 ? 30000 : COOLDOWN_MS); continue; }
-      state.problem = null; state.problemAttempts = 0; state.lastResult = endsOk(result.text) ? "OK" : "completed"; state.watchdog = "design-problem-fixed"; save(state, "Design problem fixed; continuing plan"); await sleep(COOLDOWN_MS); continue;
+      if (!endsOk(result.text)) {
+        const terminal = await waitForTerminalMarker(page, state);
+        if (terminal.type === "problem") {
+          state.problem = terminal.problem;
+          state.watchdog = "design-problem";
+          save(state, `Design fix terminal marker became PROBLEM IN: ${terminal.problem}`);
+          continue;
+        }
+      }
+      state.problem = null; state.problemAttempts = 0; state.lastResult = "OK"; state.watchdog = "design-problem-fixed"; save(state, "Design problem fixed with final OK; continuing plan"); await sleep(COOLDOWN_MS); continue;
     }
 
     state.problem = null;
@@ -419,9 +449,20 @@ async function main() {
     page = result.page;
     const problem = extractProblem(result.text);
     if (problem) { state.problem = problem; state.problemAttempts = 0; state.watchdog = "design-problem"; save(state, `Design GPT reported: ${problem}`); await sleep(COOLDOWN_MS); continue; }
-    state.lastResult = endsOk(result.text) ? "OK" : "completed";
+    if (!endsOk(result.text)) {
+      const terminal = await waitForTerminalMarker(page, state);
+      if (terminal.type === "problem") {
+        state.problem = terminal.problem;
+        state.problemAttempts = 0;
+        state.watchdog = "design-problem";
+        save(state, `Design terminal marker became PROBLEM IN: ${terminal.problem}`);
+        continue;
+      }
+    }
+    state.lastResult = "OK";
     state.watchdog = "design-complete";
-    save(state, "Design task/block complete; continuing automatically");
+    save(state, "Final OK received; next DESIGN prompt allowed");
+    console.log("[DESIGN] Final OK received. NEXT prompt allowed.");
     await sleep(COOLDOWN_MS);
   }
 }
