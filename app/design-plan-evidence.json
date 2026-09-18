@@ -169,42 +169,42 @@
       "group": "Live auction",
       "title": "Dedicated live room layout с current lot + next lot",
       "status": "yellow",
-      "evidence": "Implemented D24 on branch design/d24-live-room-20260919 through commits 3eec1bbb2f7e3a94734a5e71730b03194344fc83 and 8589b8430f4f2b0118a19d26fcbee5f9532ae02f. app/live-auctions/page.tsx now exposes data-design-task=D24 with explicit data-live-slot=current and data-live-slot=next regions, a dedicated next-lot preview inside the live bidding rail, direct next-lot detail handoff and accessible current/next labeling. app/live-auctions/live-d24.css adds desktop/tablet/mobile states plus focus-visible, prefers-reduced-motion and forced-colors handling. PR #7 is mergeable. GitHub Verify Enchev Web run 35395637956 completed SUCCESS for head 8589b8430f4f2b0118a19d26fcbee5f9532ae02f; TypeScript check and Production build both passed. Vercel production proof is not yet available because existing project deployments remain QUEUED/INITIALIZING and Git deployment generation was intentionally paused while the D23 queue drains; no D24 preview/production deployment was created. D24 therefore remains YELLOW pending browser-level responsive/interaction/visual verification on a READY deployment."
+      "evidence": "Implemented and merged via PR #7 as main commit a630b1e46e2b943bff42e86bb3cfc5f32c9cb781. The dedicated ENCHEV live room exposes explicit current/next-lot regions, accessible handoff and responsive/focus/reduced-motion/forced-colors states. Verify Enchev Web runs 35395637956 and 35395725086 completed SUCCESS, including TypeScript check and Production build. Vercel still has no READY descendant deployment for D24 because the existing project queue remains QUEUED/INITIALIZING and Git deployment generation was paused while D23 drains; canonical production therefore cannot yet provide browser-level responsive/interaction/visual proof. D24 remains YELLOW pending that proof."
     },
     {
       "id": "D25",
       "group": "Live auction",
       "title": "10-second bid countdown визуално синхронизиран със server state",
       "status": "red",
-      "evidence": ""
+      "evidence": "Dependency review on 2026-09-19 found no safe authoritative auction-state backend bound to Enchev. scripts/verify-supabase-project-binding.mjs explicitly requires the shared Supabase project to remain scope=development-governance with auction_authority=false and permits only public.enchev_development_events/public.enchev_plan_state for Enchev. A server-synchronized 10-second countdown was therefore not fabricated or attached to the shared project. D25 remains RED (not implemented) until an authorized auction-authority runtime exists."
     },
     {
       "id": "D26",
       "group": "Live auction",
       "title": "Автоматично преминаване към следващ lot след SOLD",
       "status": "red",
-      "evidence": ""
+      "evidence": "Not implemented. Automatic authoritative transition after SOLD depends on the same missing auction-authority runtime identified during D25 review. The shared Supabase binding is explicitly development-governance only with auction_authority=false, so no unsafe auction state/table was created. D26 remains RED and was skipped so independent design work could continue."
     },
     {
       "id": "D27",
       "group": "Live auction",
       "title": "Bid feedback states: accepted / rejected / outbid / leading",
       "status": "red",
-      "evidence": ""
+      "evidence": "Not implemented. Accepted/rejected/outbid/leading feedback must be grounded in authoritative bid results; the currently bound shared Supabase project is explicitly not auction authority. No fake production bid authority was introduced. D27 remains RED and was skipped to independent profile work."
     },
     {
       "id": "D28",
       "group": "Live auction",
       "title": "Connection/reconnect/stale-state indicators",
       "status": "red",
-      "evidence": ""
+      "evidence": "Not implemented. Connection/reconnect/stale-state indicators require a real realtime auction authority/transport to report truthfully. The current Supabase binding is development-governance only and not auction authority, so D28 remains RED rather than simulating a production connection state."
     },
     {
       "id": "D29",
       "group": "Профил",
       "title": "Watchlist / saved vehicles визуален модел",
-      "status": "red",
-      "evidence": ""
+      "status": "yellow",
+      "evidence": "Implemented on branch design/d29-watchlist-v2-20260919 through commits d374f6511b6e0f5390a954cd24b48162ff1c21ca, 9cce4619f535225711df389b2f9bf9bec9c4f8f5 and efc04cb2ec7f97648a98424b3bf2b41c74d2e516. app/profile/WatchlistPanel.tsx provides a functional client-side saved-vehicle visual model with LIVE/UPCOMING/BUY NOW card states, accessible remove actions, live saved-count feedback, lot/LIVE handoffs and an empty state. app/profile/watchlist.css provides original ENCHEV 3/2/1-column responsive layout, 44px mobile touch targets, focus-visible, prefers-reduced-motion and forced-colors handling. PR #9 targets current main with behind_by=0 at implementation time. Verify Enchev Web run 35396107309 completed SUCCESS, including environment-contract checks, Supabase/Redis invariants, TypeScript check and Production build. Vercel browser-level proof is still unavailable because the existing deployment queue remains blocked/paused; D29 therefore remains YELLOW pending a READY deployment and responsive/interaction/visual verification."
     },
     {
       "id": "D30",
