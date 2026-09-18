@@ -37,6 +37,62 @@ export function validateMatrix(routes=ROUTES,viewports=VIEWPORTS){
   return true;
 }
 
+
+export function validateD23Runtime(snapshot,viewport){
+  if(!snapshot||!viewport)fail("D23 runtime snapshot missing");
+  const tolerance=2;
+  if(snapshot.scrollWidth>snapshot.viewportWidth+tolerance)fail(`D23 ${viewport.name} horizontal overflow: ${snapshot.scrollWidth} > ${snapshot.viewportWidth}`);
+
+  if(viewport.mobile){
+    if(snapshot.panelPosition!=="relative")fail(`D23 mobile bid panel must be relative, got ${snapshot.panelPosition}`);
+    if(snapshot.dockPosition!=="fixed"||snapshot.dockDisplay==="none")fail(`D23 mobile dock must be fixed and visible, got ${snapshot.dockPosition}/${snapshot.dockDisplay}`);
+    if(snapshot.dock.left<-tolerance||snapshot.dock.right>snapshot.viewportWidth+tolerance)fail("D23 mobile dock escapes viewport horizontally");
+    if(snapshot.dock.top<0||snapshot.dock.bottom>snapshot.viewportHeight+tolerance)fail("D23 mobile dock escapes viewport vertically");
+    if(snapshot.pagePaddingBottom+1<snapshot.dock.height)fail(`D23 mobile page padding ${snapshot.pagePaddingBottom}px is smaller than dock height ${snapshot.dock.height}px`);
+    if(snapshot.contentBottomAtPageEnd>snapshot.dock.top+tolerance)fail(`D23 mobile dock overlaps final lot content: contentBottom=${snapshot.contentBottomAtPageEnd}, dockTop=${snapshot.dock.top}`);
+    if(snapshot.focusedId!=="lot-bid-input")fail(`D23 mobile action did not focus bid input, active=${snapshot.focusedId||"none"}`);
+    if(snapshot.focusedInputBottom>snapshot.dock.top+tolerance)fail(`D23 focused bid input is hidden behind dock: inputBottom=${snapshot.focusedInputBottom}, dockTop=${snapshot.dock.top}`);
+  }else{
+    if(snapshot.panelPosition!=="sticky")fail(`D23 desktop bid panel must be sticky, got ${snapshot.panelPosition}`);
+    if(snapshot.dockDisplay!=="none")fail(`D23 desktop mobile dock must be hidden, got ${snapshot.dockDisplay}`);
+    if(snapshot.panel.top<snapshot.headerBottom-tolerance)fail(`D23 desktop sticky panel overlaps header: panelTop=${snapshot.panel.top}, headerBottom=${snapshot.headerBottom}`);
+    if(snapshot.panel.bottom>snapshot.viewportHeight+tolerance)fail(`D23 desktop sticky panel escapes viewport: panelBottom=${snapshot.panel.bottom}, viewport=${snapshot.viewportHeight}`);
+    if(snapshot.panel.left<-tolerance||snapshot.panel.right>snapshot.viewportWidth+tolerance)fail("D23 desktop sticky panel escapes viewport horizontally");
+  }
+  return true;
+}
+
+async function d23Snapshot(call){
+  const expression=`(()=>{const panel=document.querySelector('#lot-bid-panel');const dock=document.querySelector('.lotMobileBidDock');const page=document.querySelector('.lotPage');const wrap=document.querySelector('.lotWrap');const header=document.querySelector('.lotHeader');if(!panel||!dock||!page||!wrap) return null;const pr=panel.getBoundingClientRect();const dr=dock.getBoundingClientRect();const hr=header?.getBoundingClientRect();return {viewportWidth:window.innerWidth,viewportHeight:window.innerHeight,scrollWidth:document.documentElement.scrollWidth,panelPosition:getComputedStyle(panel).position,dockPosition:getComputedStyle(dock).position,dockDisplay:getComputedStyle(dock).display,pagePaddingBottom:parseFloat(getComputedStyle(page).paddingBottom)||0,panel:{top:pr.top,bottom:pr.bottom,left:pr.left,right:pr.right,height:pr.height},dock:{top:dr.top,bottom:dr.bottom,left:dr.left,right:dr.right,height:dr.height},headerBottom:hr?.bottom||0,contentBottomAtPageEnd:wrap.getBoundingClientRect().bottom,focusedId:document.activeElement?.id||"",focusedInputBottom:document.querySelector('#lot-bid-input')?.getBoundingClientRect().bottom??Infinity};})()`;
+  const result=await call("Runtime.evaluate",{expression,returnByValue:true});
+  return result?.result?.value;
+}
+
+async function verifyD23StickyActions(call,viewport){
+  if(viewport.mobile){
+    await call("Runtime.evaluate",{expression:"document.documentElement.style.scrollBehavior='auto';window.scrollTo(0,document.documentElement.scrollHeight)"});
+    await sleep(180);
+    const endSnapshot=await d23Snapshot(call);
+    if(!endSnapshot)fail("D23 mobile runtime elements missing");
+
+    await call("Runtime.evaluate",{expression:"document.querySelector('.lotMobileBidAction')?.click()"});
+    await sleep(520);
+    const actionSnapshot=await d23Snapshot(call);
+    if(!actionSnapshot)fail("D23 mobile action snapshot missing");
+    actionSnapshot.contentBottomAtPageEnd=endSnapshot.contentBottomAtPageEnd;
+    validateD23Runtime(actionSnapshot,viewport);
+  }else{
+    await call("Runtime.evaluate",{expression:"window.scrollTo(0,900)"});
+    await sleep(120);
+    const snapshot=await d23Snapshot(call);
+    if(!snapshot)fail("D23 desktop runtime elements missing");
+    validateD23Runtime(snapshot,viewport);
+  }
+
+  await call("Runtime.evaluate",{expression:"document.documentElement.style.scrollBehavior='auto';window.scrollTo(0,0);document.documentElement.style.scrollBehavior=''"});
+  await sleep(80);
+}
+
 function findChrome(){
   const candidates=[
     process.env.CHROME_BIN,
@@ -196,6 +252,10 @@ async function captureOne({port,baseUrl,route,viewport,outputDir}){
 
     await settlePage(call,route);
 
+    if(route.name==="lot-ea-10539"){
+      await verifyD23StickyActions(call,viewport);
+    }
+
     const result=await call("Page.captureScreenshot",{
       format:"png",
       fromSurface:true,
@@ -294,7 +354,21 @@ if(process.argv.includes("--self-test")){
   try{validateMatrix(ROUTES,[{name:"mobile",width:200,height:400,mobile:true}]);}catch{rejected=true;}
   if(!rejected)fail("negative self-test did not reject invalid viewport");
 
-  console.log("VISUAL_REGRESSION_CAPTURE_SELF_TEST PASS matrix=5x2 negative_cases=2 protocol=cdp");
+
+  const desktopSnapshot={viewportWidth:1440,viewportHeight:1200,scrollWidth:1440,panelPosition:"sticky",dockPosition:"static",dockDisplay:"none",pagePaddingBottom:70,panel:{top:96,bottom:1180,left:1000,right:1420,height:1084},dock:{top:0,bottom:0,left:0,right:0,height:0},headerBottom:78,contentBottomAtPageEnd:700,focusedId:"",focusedInputBottom:500};
+  const mobileSnapshot={viewportWidth:390,viewportHeight:844,scrollWidth:390,panelPosition:"relative",dockPosition:"fixed",dockDisplay:"grid",pagePaddingBottom:116,panel:{top:180,bottom:720,left:12,right:378,height:540},dock:{top:754,bottom:836,left:8,right:382,height:82},headerBottom:72,contentBottomAtPageEnd:720,focusedId:"lot-bid-input",focusedInputBottom:500};
+  validateD23Runtime(desktopSnapshot,{name:"desktop",mobile:false});
+  validateD23Runtime(mobileSnapshot,{name:"mobile",mobile:true});
+
+  rejected=false;
+  try{validateD23Runtime({...mobileSnapshot,focusedId:""},{name:"mobile",mobile:true});}catch{rejected=true;}
+  if(!rejected)fail("D23 negative self-test did not reject missing focus handoff");
+
+  rejected=false;
+  try{validateD23Runtime({...mobileSnapshot,contentBottomAtPageEnd:800},{name:"mobile",mobile:true});}catch{rejected=true;}
+  if(!rejected)fail("D23 negative self-test did not reject dock overlap");
+
+  console.log("VISUAL_REGRESSION_CAPTURE_SELF_TEST PASS matrix=5x2 negative_cases=4 d23_runtime=desktop+mobile protocol=cdp");
 }else{
   const baseUrl=process.argv[2]||"http://127.0.0.1:3011";
   await captureScreenshots(baseUrl);
