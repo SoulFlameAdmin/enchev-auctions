@@ -70,6 +70,8 @@ const items: AuctionItem[] = [
 export default function MyAuctionsPanel(){
   const [active,setActive]=useState<"all" | AuctionState>("all");
   const visible=useMemo(()=>active==="all" ? items : items.filter(item=>item.state===active),[active]);
+  const panelId="my-auctions-panel";
+  const activeTabId=`my-auctions-tab-${active}`;
 
   return <section className="myAuctions" data-design-task="D30" aria-labelledby="my-auctions-heading">
     <div className="myAuctionsHead">
@@ -84,18 +86,31 @@ export default function MyAuctionsPanel(){
     <div className="myAuctionsTabs" role="tablist" aria-label="Филтър на моите търгове">
       {tabs.map(tab=><button
         key={tab.key}
+        id={`my-auctions-tab-${tab.key}`}
         type="button"
         role="tab"
         aria-selected={active===tab.key}
+        aria-controls={panelId}
+        tabIndex={active===tab.key ? 0 : -1}
         className={active===tab.key ? "active" : ""}
         onClick={()=>setActive(tab.key)}
       >
         {tab.label}
-        <span>{tab.key==="all" ? items.length : items.filter(item=>item.state===tab.key).length}</span>
+        <span aria-hidden="true">{tab.key==="all" ? items.length : items.filter(item=>item.state===tab.key).length}</span>
       </button>)}
     </div>
 
-    <div className="myAuctionsList" role="tabpanel">
+    <p className="myAuctionsResultCount" role="status" aria-live="polite">
+      Показани {visible.length} от {items.length} търга.
+    </p>
+
+    <div
+      id={panelId}
+      className="myAuctionsList"
+      role="tabpanel"
+      aria-labelledby={activeTabId}
+      tabIndex={0}
+    >
       {visible.map(item=><article className="myAuctionRow" data-auction-state={item.state} key={item.lot}>
         <a className="myAuctionMedia" href={`/lot/${item.lot}`} aria-label={`Отвори ${item.title}`}>
           <img src={item.image} alt={item.title}/>
