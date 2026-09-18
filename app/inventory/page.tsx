@@ -2,6 +2,8 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { accountNavigation, primaryNavigation } from "../site-navigation";
+import "./inventory.css";
+import "./inventory-v2.css";
 import "./inventory-d13.css";
 import "./inventory-d14.css";
 
