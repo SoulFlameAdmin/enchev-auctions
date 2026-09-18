@@ -68,6 +68,12 @@ jobs:
         run: node scripts/verify-supabase-project-binding.mjs --self-test
       - name: Supabase project live endpoint
         run: node scripts/verify-supabase-project-binding.mjs --live
+      - name: Environment variable contract invariant
+        run: node scripts/verify-environment-variables.mjs
+      - name: Environment variable contract self-tests
+        run: node scripts/verify-environment-variables.mjs --self-test
+      - name: Environment variable runtime probe
+        run: node scripts/verify-environment-variables.mjs --runtime
       - name: Redis environment contract invariant
         run: node scripts/verify-redis-environment.mjs
       - name: Redis environment contract self-tests

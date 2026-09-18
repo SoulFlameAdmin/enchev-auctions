@@ -1,0 +1,23 @@
+{
+  "task": "01.08",
+  "name": "Environment variable validation",
+  "secret_values_in_repository": false,
+  "validation_targets": ["local", "ci", "staging", "production"],
+  "forbidden_public_name_fragments": ["SECRET", "TOKEN", "PASSWORD", "PRIVATE", "SERVICE_ROLE", "API_KEY"],
+  "variables": [
+    {"name":"REDIS_URL","kind":"url","required":false,"secret":true,"allowed_schemes":["redis:","rediss:"],"nonlocal_tls_required":true},
+    {"name":"UPSTASH_REDIS_REST_URL","kind":"url","required":false,"secret":false,"allowed_schemes":["https:"]},
+    {"name":"UPSTASH_REDIS_REST_TOKEN","kind":"string","required":false,"secret":true},
+    {"name":"KV_REST_API_URL","kind":"url","required":false,"secret":false,"allowed_schemes":["https:"]},
+    {"name":"KV_REST_API_TOKEN","kind":"string","required":false,"secret":true}
+  ],
+  "all_or_none_groups": [
+    {"name":"upstash-rest","variables":["UPSTASH_REDIS_REST_URL","UPSTASH_REDIS_REST_TOKEN"]},
+    {"name":"vercel-kv-rest","variables":["KV_REST_API_URL","KV_REST_API_TOKEN"]}
+  ],
+  "platform_managed_variables": [
+    "NODE_ENV","VERCEL","VERCEL_ENV","VERCEL_URL","VERCEL_OIDC_TOKEN",
+    "ACTIONS_ID_TOKEN_REQUEST_URL","ACTIONS_ID_TOKEN_REQUEST_TOKEN"
+  ],
+  "notes": "Validate the contract and variables that are present. Missing external provider bindings remain owned by their provider task."
+}
