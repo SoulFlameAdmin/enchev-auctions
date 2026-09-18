@@ -168,8 +168,8 @@
       "id": "D24",
       "group": "Live auction",
       "title": "Dedicated live room layout с current lot + next lot",
-      "status": "red",
-      "evidence": ""
+      "status": "yellow",
+      "evidence": "Implemented D24 on branch design/d24-live-room-20260919 through commits 3eec1bbb2f7e3a94734a5e71730b03194344fc83 and 8589b8430f4f2b0118a19d26fcbee5f9532ae02f. app/live-auctions/page.tsx now exposes data-design-task=D24 with explicit data-live-slot=current and data-live-slot=next regions, a dedicated next-lot preview inside the live bidding rail, direct next-lot detail handoff and accessible current/next labeling. app/live-auctions/live-d24.css adds desktop/tablet/mobile states plus focus-visible, prefers-reduced-motion and forced-colors handling. PR #7 is mergeable. GitHub Verify Enchev Web run 35395637956 completed SUCCESS for head 8589b8430f4f2b0118a19d26fcbee5f9532ae02f; TypeScript check and Production build both passed. Vercel production proof is not yet available because existing project deployments remain QUEUED/INITIALIZING and Git deployment generation was intentionally paused while the D23 queue drains; no D24 preview/production deployment was created. D24 therefore remains YELLOW pending browser-level responsive/interaction/visual verification on a READY deployment."
     },
     {
       "id": "D25",
