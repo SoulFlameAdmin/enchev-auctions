@@ -136,6 +136,8 @@ jobs:
             }
           }
           Test-PowerShellFile "$PWD/START_DAVID_ALL.ps1"
+          Test-PowerShellFile "$PWD/STOP_DAVID_ALL_CLEAN.ps1"
+          Test-PowerShellFile "$PWD/RESTART_DAVID_ALL_CLEAN.ps1"
           Test-PowerShellFile "$PWD/tools/david/david-status-dashboard.ps1"
       - name: Redis live binding verification when configured
         env:
