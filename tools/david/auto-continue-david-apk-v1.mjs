@@ -173,6 +173,7 @@ async function conversationLimitReached(page) {
 async function rolloverConversation(context, page, state) {
   const oldUrl = cleanConversationUrl(page?.url?.()) || page?.url?.() || activeChatUrl;
   state.previousChatUrl = oldUrl;
+  state.staleChatUrls = Array.from(new Set([...(Array.isArray(state.staleChatUrls) ? state.staleChatUrls : []), oldUrl])).slice(-20);
   state.rolloverCount = Number(state.rolloverCount || 0) + 1;
   state.justRolledOver = true;
   state.watchdog = "apk-conversation-rollover";
