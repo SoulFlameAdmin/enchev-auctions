@@ -224,8 +224,8 @@
       "id": "D32",
       "group": "Качество",
       "title": "Mobile-first проверка на ключовите страници",
-      "status": "red",
-      "evidence": ""
+      "status": "yellow",
+      "evidence": "Implemented and merged via PR #22 as main merge commit f9bb6768bc359f2343b347d4a2514d8c710fe514 from clean branch design/d32-mobile-first-v2-20260919. D32 covers the five key buyer routes: /, /inventory, /lot/EA-10539, /live-auctions and /profile. app/mobile-quality.css adds <=640px and <=380px hardening for cross-route horizontal-overflow safety, narrow homepage headline scaling, min-width containment, 44px inventory toolbar/view and live-header touch targets, compact live-room gutters/panel spacing and long-text wrapping. scripts/verify-mobile-first-design.mjs enforces the mobile contract across the five route roots and existing responsive CSS, including inventory one-column/filter behavior, lot safe-area mobile bid dock, live one-column queue/sold layout and D31 profile touch navigation; it also contains negative self-tests. The checker is loaded into scripts/run-ci-tests.mjs and explicit workflow steps. Verify Enchev Web run 35398171529 completed SUCCESS for exact PR head 85b765f728bd63dfeef26d93bc9979e96e4a3122: Mobile-first design invariant, Mobile-first design self-tests, CI test suite, TypeScript check, Production build and Built health endpoint smoke test all passed, along with the repository/global guards. Vercel currently exposes no deployment for the D32 branch/head or merge commit, so browser-level mobile visual/interaction verification is still unavailable. D32 therefore remains YELLOW rather than GREEN."
     },
     {
       "id": "D33",
