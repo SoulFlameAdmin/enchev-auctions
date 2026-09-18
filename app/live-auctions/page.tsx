@@ -39,7 +39,7 @@ export default function LiveAuctionsPage(){
   };
   const fmt=(v:number)=>`00:${String(v).padStart(2,"0")}`;
 
-  return <main className="livePage">
+  return <main id="main-content" className="livePage">
     <div className="liveUtility"><span><i/> ENCHEV LIVE NETWORK</span><span>Demo live rotation · 10 sec per lot</span></div>
     <header className="liveHeader">
       <a href="/" className="liveLogo"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
