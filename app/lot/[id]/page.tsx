@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import "../lot.css";
 import "../lot-d21.css";
 import "../lot-d22.css";
+import "../lot-d23.css";
 
 const gallery=[
   "https://images.unsplash.com/photo-1655283733642-f1d813b40616?auto=format&fit=crop&w=1600&q=88",
@@ -27,6 +28,7 @@ export default function LotPage(){
   const [viewerOpen,setViewerOpen]=useState(false);
   const viewerTriggerRef=useRef<HTMLButtonElement|null>(null);
   const viewerCloseRef=useRef<HTMLButtonElement|null>(null);
+  const bidInputRef=useRef<HTMLInputElement|null>(null);
   const [bid,setBid]=useState(21900);
   const [bidInput,setBidInput]=useState("22000");
   const [countdown,setCountdown]=useState(10);
@@ -54,6 +56,13 @@ export default function LotPage(){
 
   const showPreviousImage=()=>setActiveImage(index=>(index-1+gallery.length)%gallery.length);
   const showNextImage=()=>setActiveImage(index=>(index+1)%gallery.length);
+  const focusBidPanel=()=>{
+    const input=bidInputRef.current;
+    if(!input)return;
+    const reduceMotion=window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    input.scrollIntoView({behavior:reduceMotion?"auto":"smooth",block:"center"});
+    window.setTimeout(()=>input.focus({preventScroll:true}),reduceMotion?0:260);
+  };
 
   useEffect(()=>{
     const interval=window.setInterval(()=>setCountdown(value=>value<=1?10:value-1),1000);
@@ -143,11 +152,11 @@ export default function LotPage(){
           <section className="lotSection"><div className="lotSectionHead"><div><h2>Подобни автомобили</h2><span>Други активни лотове</span></div></div><div className="lotRelated"><a href="/lot/EA-10482"><img src="https://images.unsplash.com/photo-1658558195433-1af533e3309c?auto=format&fit=crop&w=900&q=82" alt="BMW M4"/><div><b>2018 BMW M4 F82</b><span>€12 750 · LOT EA-10482</span></div></a><a href="/lot/EA-10511"><img src="https://images.unsplash.com/photo-1612280782903-d34dcdc10107?auto=format&fit=crop&w=900&q=82" alt="Mercedes GLC"/><div><b>2021 Mercedes-Benz GLC</b><span>€18 400 · LOT EA-10511</span></div></a><a href="/lot/EA-10702"><img src="https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=900&q=82" alt="Porsche Macan"/><div><b>2023 Porsche Macan S</b><span>€28 750 · LOT EA-10702</span></div></a></div></section>
         </div>
 
-        <aside className="lotBidPanel" data-design-task="D21" aria-labelledby="lot-auction-panel-title">
+        <aside id="lot-bid-panel" className="lotBidPanel" data-design-task="D21" data-sticky-task="D23" aria-labelledby="lot-auction-panel-title">
           <div className="lotLiveRow"><span className="lotLiveBadge"><i/> ПРОДАВА СЕ НА ЖИВО</span><span className="lotCountdown" data-urgent={countdown<=3?"true":"false"} role="timer" aria-live="polite" aria-label={`Оставащо време ${countdown} секунди`}>00:{String(countdown).padStart(2,"0")}</span></div>
           <h2 id="lot-auction-panel-title">Текуща ставка</h2><div className="lotCurrentBid" aria-live="polite">€{bid.toLocaleString("bg-BG")}</div><div className="lotBidHint" id="lot-bid-minimum">Следваща минимална оферта: €{minimumBid.toLocaleString("bg-BG")}</div>
           <label className="lotBidLabel" htmlFor="lot-bid-input">Твоя оферта</label>
-          <div className="lotBidInputRow"><input id="lot-bid-input" className="lotBidInput" value={bidInput} onChange={e=>setBidInput(e.target.value)} inputMode="numeric" aria-describedby="lot-bid-minimum"/><button type="button" className="lotBidBtn" onClick={placeBid}>Оферирай</button></div>
+          <div className="lotBidInputRow"><input ref={bidInputRef} id="lot-bid-input" className="lotBidInput" value={bidInput} onChange={e=>setBidInput(e.target.value)} inputMode="numeric" aria-describedby="lot-bid-minimum"/><button type="button" className="lotBidBtn" onClick={placeBid}>Оферирай</button></div>
           <div className="lotMaxBid" aria-labelledby="lot-max-bid-title">
             <div className="lotMaxBidHead"><div><strong id="lot-max-bid-title">Max bid</strong><span>Запази максимален лимит за тази сесия</span></div>{maxBid!==null&&<b aria-live="polite">€{maxBid.toLocaleString("bg-BG")}</b>}</div>
             <label className="lotBidLabel" htmlFor="lot-max-bid-input">Максимална оферта</label>
@@ -160,6 +169,11 @@ export default function LotPage(){
         </aside>
       </div>
     </div>
+
+    {!viewerOpen&&<section className="lotMobileBidDock" data-design-task="D23" aria-label="Бързи действия за офериране">
+      <div className="lotMobileBidSummary"><span>Текуща ставка</span><strong>€{bid.toLocaleString("bg-BG")}</strong><small>Минимум €{minimumBid.toLocaleString("bg-BG")}</small></div>
+      <button type="button" className="lotMobileBidAction" onClick={focusBidPanel} aria-controls="lot-bid-panel">Към офертата</button>
+    </section>}
 
     {viewerOpen&&<div className="lotViewer" role="dialog" aria-modal="true" aria-labelledby="lot-viewer-title" onMouseDown={event=>{if(event.target===event.currentTarget)setViewerOpen(false)}}>
       <div className="lotViewerShell">
