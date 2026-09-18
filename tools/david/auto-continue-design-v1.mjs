@@ -17,7 +17,7 @@ const MARKER = "[DAVID_RELAY_ENCHEV_DESIGN_V1]";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const hash = (x) => createHash("sha256").update(String(x || "")).digest("hex");
 function cleanConversationUrl(url) {
-  const m = String(url || "").match(/^https:\/\/chatgpt\.com\/c\/[^/?#]+/i);
+  const m = String(url || "").match(/^https:\/\/chatgpt\.com\/c\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?=[/?#]|$)/i);
   return m ? m[0] : null;
 }
 function matchesActiveChat(url) {
@@ -67,9 +67,14 @@ function fixPrompt(problem, attempt) {
 }
 
 async function ensurePage(context, current) {
-  if (current && !current.isClosed() && current.url().startsWith("https://chatgpt.com/")) return current;
-  const exact = context.pages().find((p) => !p.isClosed() && matchesActiveChat(p.url()))
-    || context.pages().find((p) => !p.isClosed() && p.url().startsWith(INITIAL_CHAT_URL));
+  if (current && !current.isClosed()) {
+    const currentUrl = current.url();
+    if (matchesActiveChat(currentUrl)) return current;
+    if (activeChatUrl === "https://chatgpt.com/" && currentUrl.startsWith("https://chatgpt.com/")) return current;
+  }
+  const exact = activeChatUrl === "https://chatgpt.com/"
+    ? null
+    : context.pages().find((p) => !p.isClosed() && matchesActiveChat(p.url()));
   if (exact) return exact;
   const page = await context.newPage();
   await page.goto(activeChatUrl, { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
