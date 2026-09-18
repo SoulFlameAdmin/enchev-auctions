@@ -38,7 +38,7 @@ ${RELAY_MARKER}`;
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const hashText = (text) => createHash("sha256").update(String(text || "")).digest("hex");
 function cleanConversationUrl(url) {
-  const m = String(url || "").match(/^https:\/\/chatgpt\.com\/c\/[^/?#]+/i);
+  const m = String(url || "").match(/^https:\/\/chatgpt\.com\/c\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?=[/?#]|$)/i);
   return m ? m[0] : null;
 }
 function matchesActiveChat(url) {
@@ -75,11 +75,16 @@ function usable(page) { return Boolean(page && !page.isClosed()); }
 async function safeUrl(page) { try { return usable(page) ? page.url() : ""; } catch { return ""; } }
 
 async function ensureTargetPage(context, current = null) {
-  if (usable(current) && (await safeUrl(current)).startsWith("https://chatgpt.com/")) return current;
+  if (usable(current)) {
+    const currentUrl = await safeUrl(current);
+    if (matchesActiveChat(currentUrl)) return current;
+    if (activeChatUrl === "https://chatgpt.com/" && currentUrl.startsWith("https://chatgpt.com/")) return current;
+  }
   const pages = context.pages().filter((p) => !p.isClosed());
-  let page = pages.find((p) => matchesActiveChat(p.url()))
-    || pages.find((p) => p.url().startsWith(INITIAL_CHAT_URL))
-    || await context.newPage();
+  let page = activeChatUrl === "https://chatgpt.com/"
+    ? null
+    : pages.find((p) => matchesActiveChat(p.url()));
+  if (!page) page = await context.newPage();
   const url = await safeUrl(page);
   if (!matchesActiveChat(url) && !url.includes("/auth/") && !url.includes("/login")) {
     await page.goto(activeChatUrl, { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
