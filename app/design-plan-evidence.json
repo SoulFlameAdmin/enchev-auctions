@@ -245,8 +245,8 @@
       "id": "D35",
       "group": "Качество",
       "title": "Visual regression screenshots за основните маршрути",
-      "status": "red",
-      "evidence": ""
+      "status": "green",
+      "evidence": "Completed and merged via PR #26 as main merge commit 4f3aaf0a33856a7772602edc6854597e23b54545. D35 adds scripts/capture-visual-regression.mjs using Chrome DevTools Protocol Page.captureScreenshot against the locally built Next app and captures the five core buyer routes /, /inventory, /lot/EA-10539, /live-auctions and /profile at desktop 1440x1200 and mobile 390x844. The harness waits for stable route-specific DOM, validates PNG bytes, writes SHA-256 hashes and a manifest, and CI uploads the screenshot set as an artifact. During visual review the first artifact exposed a real inventory regression: app/inventory/page.tsx had lost inventory.css and inventory-v2.css imports and mobile capture could include the D18 loading boundary. Both were fixed before completion. Exact-head Verify Enchev Web run 35400551767 completed SUCCESS for head 1a734849b493b1627a17b529f044777a1ceaa613; lint, all plan/architecture/design invariants, CI test suite, TypeScript, production build, built health smoke, Visual regression screenshots and Upload visual regression artifact all passed. Artifact 10569114663 (digest sha256:ba8b894661102e256b9b4df5688e498a9580e198c6590c2f5354d8b14954c4cc) contains manifest version 2 with count=10 and ten non-empty PNGs. Manual visual inspection of the full 10-image contact sheet confirmed coherent ENCHEV styling on desktop/mobile for homepage, inventory, live auction, lot detail and profile; inventory mobile no longer shows the loading skeleton. Example final hashes: inventory desktop 748e129df3c340af1152aff7b147f56a8e06b65a6dddb0fa87a26ff5e56c04dd, inventory mobile 496b02874c105d2ceb5e01e9b0b03a42f27cf88e408adbb6f2e6f75ad53cd712. D35 GREEN."
     },
     {
       "id": "D36",
