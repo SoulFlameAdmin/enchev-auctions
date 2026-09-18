@@ -118,5 +118,5 @@ Write-Host "  3. DPP / APP2"
 Write-Host "  4. DAVID PHONE / APK"
 Write-Host ""
 Write-Host "[DAVID ALL] APK worker auto-discovers a unique recent DAVID Phone / SoulFlame Twins / DAVID APK chat when no exact URL is configured." -ForegroundColor Green
-Write-Host "[DAVID ALL] On max-length rollover the worker stays in the same tab and closes stale copies of the old conversation." -ForegroundColor Green
+Write-Host "[DAVID ALL] On max-length rollover the worker opens a new ChatGPT tab, closes the old managed tab, records the new URL/history, and continues there." -ForegroundColor Green
 Write-Host "[DAVID ALL] Duplicate worker launches are blocked by process detection." -ForegroundColor Green
