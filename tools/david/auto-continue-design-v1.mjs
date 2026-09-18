@@ -4,7 +4,8 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 
-const CHAT_URL = process.env.DAVID_DESIGN_CHAT_URL || "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7";
+const INITIAL_CHAT_URL = process.env.DAVID_DESIGN_CHAT_URL || "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7";
+let activeChatUrl = INITIAL_CHAT_URL;
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const STATE_FILE = process.env.DAVID_DESIGN_STATE_FILE || path.join(process.cwd(), ".david-enchev-design-state.json");
 const POLL_MS = Number(process.env.DAVID_DESIGN_POLL_MS || 900);
@@ -15,6 +16,15 @@ const PROBLEM_PREFIX = "PROBLEM IN:";
 const MARKER = "[DAVID_RELAY_ENCHEV_DESIGN_V1]";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const hash = (x) => createHash("sha256").update(String(x || "")).digest("hex");
+function cleanConversationUrl(url) {
+  const m = String(url || "").match(/^https:\/\/chatgpt\.com\/c\/[^/?#]+/i);
+  return m ? m[0] : null;
+}
+function matchesActiveChat(url) {
+  const u = String(url || "");
+  if (activeChatUrl === "https://chatgpt.com/") return u === "https://chatgpt.com/" || u === "https://chatgpt.com";
+  return u.startsWith(activeChatUrl);
+}
 
 const DESIGN_PROMPT = `@GitHub @Vercel @Supabase
 
@@ -57,11 +67,55 @@ function fixPrompt(problem, attempt) {
 }
 
 async function ensurePage(context, current) {
-  if (current && !current.isClosed() && current.url().startsWith(CHAT_URL)) return current;
-  const exact = context.pages().find((p) => !p.isClosed() && p.url().startsWith(CHAT_URL));
+  if (current && !current.isClosed() && current.url().startsWith("https://chatgpt.com/")) return current;
+  const exact = context.pages().find((p) => !p.isClosed() && matchesActiveChat(p.url()))
+    || context.pages().find((p) => !p.isClosed() && p.url().startsWith(INITIAL_CHAT_URL));
   if (exact) return exact;
   const page = await context.newPage();
-  await page.goto(CHAT_URL, { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  await page.goto(activeChatUrl, { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  return page;
+}
+async function conversationLimitReached(page) {
+  try {
+    return await page.evaluate(() => {
+      const visible = (el) => {
+        const s = getComputedStyle(el), r = el.getBoundingClientRect();
+        return s.display !== "none" && s.visibility !== "hidden" && r.width > 0 && r.height > 0;
+      };
+      const re = /(достигнахте максималната продължителност на този разговор|максималната продължителност на този разговор|maximum length for this conversation|conversation has reached (?:its )?maximum length)/i;
+      for (const el of document.querySelectorAll("div,section,p,span")) {
+        if (!visible(el)) continue;
+        const t = (el.textContent || "").replace(/\s+/g, " ").trim();
+        if (t && t.length < 500 && re.test(t)) return true;
+      }
+      return false;
+    });
+  } catch { return false; }
+}
+function syncActiveChatUrl(page, state) {
+  const u = cleanConversationUrl(page?.url?.());
+  if (!u || u === activeChatUrl) return;
+  activeChatUrl = u;
+  state.chatUrl = u;
+  state.pendingNewChat = false;
+  state.lastConversationUrl = u;
+  save(state, `Design conversation URL synced: ${u}`);
+  console.log(`[DESIGN] Active conversation: ${u}`);
+}
+async function rolloverConversation(context, page, state) {
+  const oldUrl = cleanConversationUrl(page?.url?.()) || page?.url?.() || activeChatUrl;
+  state.previousChatUrl = oldUrl;
+  state.rolloverCount = Number(state.rolloverCount || 0) + 1;
+  state.pendingNewChat = true;
+  state.justRolledOver = true;
+  state.watchdog = "design-conversation-rollover";
+  activeChatUrl = "https://chatgpt.com/";
+  state.chatUrl = activeChatUrl;
+  save(state, `Design conversation max length -> rollover #${state.rolloverCount}`);
+  console.log(`[DESIGN] Conversation reached max length. Opening NEW CHAT in SAME tab (#${state.rolloverCount})...`);
+  if (!page || page.isClosed()) page = await ensurePage(context, null);
+  await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  await sleep(1200);
   return page;
 }
 async function composer(page) {
@@ -120,10 +174,15 @@ async function platformBlock(page) {
     });
   } catch { return null; }
 }
-async function waitReady(context, page) {
+async function waitReady(context, page, state) {
   while (true) {
     page = await ensurePage(context, page);
     if (page.url().includes("/login") || page.url().includes("/auth/")) { await sleep(1500); continue; }
+    if (await conversationLimitReached(page)) {
+      page = await rolloverConversation(context, page, state);
+      continue;
+    }
+    syncActiveChatUrl(page, state);
     if (await composer(page) || await latestAssistant(page)) return page;
     await sleep(1000);
   }
@@ -145,7 +204,7 @@ async function fillAndSend(page, text) {
 async function waitStart(context, page, base, state) {
   const end = Date.now() + START_TIMEOUT_MS;
   while (Date.now() < end) {
-    page = await waitReady(context, page);
+    page = await waitReady(context, page, state);
     const pb = await platformBlock(page);
     if (pb) return { page, blocker: pb, started: false };
     if (await generating(page)) return { page, blocker: null, started: true };
@@ -158,7 +217,7 @@ async function waitStart(context, page, base, state) {
 async function waitCompletion(context, page, base, state) {
   let lastActivity = Date.now(), last = base;
   while (true) {
-    page = await waitReady(context, page);
+    page = await waitReady(context, page, state);
     const pb = await platformBlock(page);
     if (pb) return { page, blocker: pb, stalled: false, text: "" };
     const text = await latestAssistant(page), h = hash(text);
@@ -173,13 +232,17 @@ async function waitCompletion(context, page, base, state) {
 }
 async function runPrompt(context, page, state, prompt, kind) {
   for (;;) {
-    page = await waitReady(context, page);
+    page = await waitReady(context, page, state);
     const base = hash(await latestAssistant(page));
     state.watchdog = kind === "fix" ? "design-fixing-problem" : "design-sending-relay";
     state.relayAttempts = Number(state.relayAttempts || 0) + 1;
     save(state, kind === "fix" ? "Design: sending fix instruction" : "Design: sending next D-task");
-    await fillAndSend(page, prompt);
+    const outgoingPrompt = state.justRolledOver
+      ? `AUTOMATIC CHAT ROLLOVER: The previous Enchev Design conversation reached its maximum length. Reconstruct the exact design state from GitHub, docs/DESIGN_PLAN_V1.md and evidence, then continue from the next unfinished D-task. Do NOT restart completed work.\n\n${prompt}`
+      : prompt;
+    await fillAndSend(page, outgoingPrompt);
     let started = await waitStart(context, page, base, state); page = started.page;
+    syncActiveChatUrl(page, state);
     if (started.blocker) {
       state.problem = `ChatGPT platform: ${started.blocker}`; state.watchdog = "design-platform-backoff"; save(state, `Design platform blocker: ${started.blocker}`);
       await sleep(started.blocker === "human verification" ? 30000 : 15000);
@@ -190,7 +253,10 @@ async function runPrompt(context, page, state, prompt, kind) {
     state.turnsSent = Number(state.turnsSent || 0) + 1; save(state, `Design GPT started cycle ${state.turnsSent}`);
     const done = await waitCompletion(context, page, base, state); page = done.page;
     if (done.blocker || done.stalled) { state.watchdog = "design-refreshing"; save(state, done.blocker ? `Design blocker ${done.blocker}` : "Design GPT stalled"); await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {}); await sleep(2500); continue; }
-    state.lastAssistantHash = hash(done.text); save(state, "Design response complete");
+    state.lastAssistantHash = hash(done.text);
+    if (state.justRolledOver) state.justRolledOver = false;
+    syncActiveChatUrl(page, state);
+    save(state, "Design response complete");
     return { page, text: done.text };
   }
 }
@@ -200,9 +266,11 @@ async function main() {
   const browser = await chromium.connectOverCDP(CDP_URL);
   const context = browser.contexts()[0];
   if (!context) throw new Error("No shared Edge context");
-  let page = await waitReady(context, await ensurePage(context, null));
-  console.log(`[DESIGN] Session ready: ${page.url()}`);
   const state = loadState();
+  activeChatUrl = state.chatUrl || INITIAL_CHAT_URL;
+  let page = await waitReady(context, await ensurePage(context, null), state);
+  syncActiveChatUrl(page, state);
+  console.log(`[DESIGN] Session ready: ${page.url()}`);
   state.watchdog = "design-monitoring";
   save(state, "Design worker connected in shared Edge tab");
 
