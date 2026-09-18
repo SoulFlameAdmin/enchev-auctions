@@ -10,7 +10,7 @@ const MAX_TURNS = Number(process.env.DAVID_MAX_TURNS || 2147483647);
 const POLL_MS = Number(process.env.DAVID_POLL_MS || 800);
 const COOLDOWN_MS = Number(process.env.DAVID_COOLDOWN_MS || 1000);
 const RESPONSE_START_TIMEOUT_MS = Number(process.env.DAVID_RESPONSE_START_TIMEOUT_MS || 12000);
-const STALL_TIMEOUT_MS = Number(process.env.DAVID_STALL_TIMEOUT_MS || 60000);
+const STALL_TIMEOUT_MS = Number(process.env.DAVID_STALL_TIMEOUT_MS || 240000);
 const REFRESH_SETTLE_MS = Number(process.env.DAVID_REFRESH_SETTLE_MS || 3000);
 const MAX_RECOVERY_ATTEMPTS = Number(process.env.DAVID_MAX_RECOVERY_ATTEMPTS || 4);
 const SAME_TURN_RECOVERY_LIMIT = Number(process.env.DAVID_SAME_TURN_RECOVERY_LIMIT || 3);
@@ -295,6 +295,20 @@ async function isGenerating(page) {
       if (await loc.count() && await loc.isVisible().catch(() => false)) return true;
     } catch {}
   }
+  try {
+    const active = await page.evaluate(() => {
+      const turns = Array.from(document.querySelectorAll('article[data-testid^="conversation-turn-"]'));
+      const last = turns.at(-1);
+      if (!last || !last.querySelector('[data-message-author-role="assistant"]')) return false;
+      const finalAction = last.querySelector(
+        'button[aria-label*="Copy" i],button[aria-label*="Share" i],button[aria-label*="Regenerate" i],button[data-testid*="copy" i],button[data-testid*="thumb" i]'
+      );
+      if (finalAction) return false;
+      const text = (last.textContent || "").replace(/\s+/g, " ").trim();
+      return /(thinking|мислене|мисли|working|работи|calling tool|called tool|tool call|извикан инструмент|извиква инструмент|searching|търсене|browsing|преглежда|analyzing|анализира)/i.test(text);
+    });
+    if (active) return true;
+  } catch {}
   return false;
 }
 
