@@ -62,36 +62,34 @@ export function validateD23Runtime(snapshot,viewport){
   return true;
 }
 
-async function d23Snapshot(call,mode){
-  const expression=mode==="mobile-end"
-    ? `(()=>{window.scrollTo(0,document.documentElement.scrollHeight);const panel=document.querySelector('#lot-bid-panel');const dock=document.querySelector('.lotMobileBidDock');const page=document.querySelector('.lotPage');const wrap=document.querySelector('.lotWrap');const header=document.querySelector('.lotHeader');if(!panel||!dock||!page||!wrap) return null;const pr=panel.getBoundingClientRect();const dr=dock.getBoundingClientRect();const hr=header?.getBoundingClientRect();return {viewportWidth:window.innerWidth,viewportHeight:window.innerHeight,scrollWidth:document.documentElement.scrollWidth,panelPosition:getComputedStyle(panel).position,dockPosition:getComputedStyle(dock).position,dockDisplay:getComputedStyle(dock).display,pagePaddingBottom:parseFloat(getComputedStyle(page).paddingBottom)||0,panel:{top:pr.top,bottom:pr.bottom,left:pr.left,right:pr.right,height:pr.height},dock:{top:dr.top,bottom:dr.bottom,left:dr.left,right:dr.right,height:dr.height},headerBottom:hr?.bottom||0,contentBottomAtPageEnd:wrap.getBoundingClientRect().bottom,focusedId:document.activeElement?.id||"",focusedInputBottom:document.querySelector('#lot-bid-input')?.getBoundingClientRect().bottom??Infinity};})()`
-    : `(()=>{const panel=document.querySelector('#lot-bid-panel');const dock=document.querySelector('.lotMobileBidDock');const page=document.querySelector('.lotPage');const wrap=document.querySelector('.lotWrap');const header=document.querySelector('.lotHeader');if(!panel||!dock||!page||!wrap) return null;const pr=panel.getBoundingClientRect();const dr=dock.getBoundingClientRect();const hr=header?.getBoundingClientRect();return {viewportWidth:window.innerWidth,viewportHeight:window.innerHeight,scrollWidth:document.documentElement.scrollWidth,panelPosition:getComputedStyle(panel).position,dockPosition:getComputedStyle(dock).position,dockDisplay:getComputedStyle(dock).display,pagePaddingBottom:parseFloat(getComputedStyle(page).paddingBottom)||0,panel:{top:pr.top,bottom:pr.bottom,left:pr.left,right:pr.right,height:pr.height},dock:{top:dr.top,bottom:dr.bottom,left:dr.left,right:dr.right,height:dr.height},headerBottom:hr?.bottom||0,contentBottomAtPageEnd:wrap.getBoundingClientRect().bottom,focusedId:document.activeElement?.id||"",focusedInputBottom:document.querySelector('#lot-bid-input')?.getBoundingClientRect().bottom??Infinity};})()`;
+async function d23Snapshot(call){
+  const expression=`(()=>{const panel=document.querySelector('#lot-bid-panel');const dock=document.querySelector('.lotMobileBidDock');const page=document.querySelector('.lotPage');const wrap=document.querySelector('.lotWrap');const header=document.querySelector('.lotHeader');if(!panel||!dock||!page||!wrap) return null;const pr=panel.getBoundingClientRect();const dr=dock.getBoundingClientRect();const hr=header?.getBoundingClientRect();return {viewportWidth:window.innerWidth,viewportHeight:window.innerHeight,scrollWidth:document.documentElement.scrollWidth,panelPosition:getComputedStyle(panel).position,dockPosition:getComputedStyle(dock).position,dockDisplay:getComputedStyle(dock).display,pagePaddingBottom:parseFloat(getComputedStyle(page).paddingBottom)||0,panel:{top:pr.top,bottom:pr.bottom,left:pr.left,right:pr.right,height:pr.height},dock:{top:dr.top,bottom:dr.bottom,left:dr.left,right:dr.right,height:dr.height},headerBottom:hr?.bottom||0,contentBottomAtPageEnd:wrap.getBoundingClientRect().bottom,focusedId:document.activeElement?.id||"",focusedInputBottom:document.querySelector('#lot-bid-input')?.getBoundingClientRect().bottom??Infinity};})()`;
   const result=await call("Runtime.evaluate",{expression,returnByValue:true});
   return result?.result?.value;
 }
 
 async function verifyD23StickyActions(call,viewport){
   if(viewport.mobile){
-    await call("Runtime.evaluate",{expression:"window.scrollTo(0,document.documentElement.scrollHeight)"});
-    await sleep(120);
-    const endSnapshot=await d23Snapshot(call,"mobile-end");
+    await call("Runtime.evaluate",{expression:"document.documentElement.style.scrollBehavior='auto';window.scrollTo(0,document.documentElement.scrollHeight)"});
+    await sleep(180);
+    const endSnapshot=await d23Snapshot(call);
     if(!endSnapshot)fail("D23 mobile runtime elements missing");
 
     await call("Runtime.evaluate",{expression:"document.querySelector('.lotMobileBidAction')?.click()"});
     await sleep(520);
-    const actionSnapshot=await d23Snapshot(call,"mobile-action");
+    const actionSnapshot=await d23Snapshot(call);
     if(!actionSnapshot)fail("D23 mobile action snapshot missing");
     actionSnapshot.contentBottomAtPageEnd=endSnapshot.contentBottomAtPageEnd;
     validateD23Runtime(actionSnapshot,viewport);
   }else{
     await call("Runtime.evaluate",{expression:"window.scrollTo(0,900)"});
     await sleep(120);
-    const snapshot=await d23Snapshot(call,"desktop");
+    const snapshot=await d23Snapshot(call);
     if(!snapshot)fail("D23 desktop runtime elements missing");
     validateD23Runtime(snapshot,viewport);
   }
 
-  await call("Runtime.evaluate",{expression:"window.scrollTo(0,0)"});
+  await call("Runtime.evaluate",{expression:"document.documentElement.style.scrollBehavior='auto';window.scrollTo(0,0);document.documentElement.style.scrollBehavior=''"});
   await sleep(80);
 }
 
