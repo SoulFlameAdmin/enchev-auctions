@@ -231,8 +231,8 @@
       "id": "D33",
       "group": "Качество",
       "title": "Keyboard/focus/contrast/accessibility visual pass",
-      "status": "red",
-      "evidence": ""
+      "status": "yellow",
+      "evidence": "Implemented and merged via PR #24 as main merge commit 9db5ad67e70e783de44b20b89c5a5a570000310f. app/layout.tsx now loads app/accessibility-quality.css and exposes a first-focus skip-to-content link targeting #main-content. The five core buyer routes /, /inventory, /lot/EA-10539, /live-auctions and /profile now expose a stable main-content target. app/accessibility-quality.css provides a shared 3px ENCHEV focus-visible indicator, skip-link reveal, stronger prefers-contrast:more treatment, forced-colors Highlight focus fallback, accessible placeholder contrast and reduced-motion handling. scripts/verify-accessibility-visual-pass.mjs validates the skip link, main targets, shared focus/contrast rules and route semantics; negative self-tests reject missing skip link, missing focus ring and missing route target. The D33 change also hardened scripts/verify-mobile-first-design.mjs so valid accessibility attributes on <main> do not break the prior D32 contract. Verify Enchev Web run 35399172071 completed SUCCESS for exact head 86ca42f82d5ebc4f3f05ff33c4b0ad17b537617f: Mobile-first design invariant/self-tests, Accessibility visual invariant/self-tests, CI test suite, TypeScript check, Production build and Built health endpoint smoke test all passed. Vercel still has no READY deployment containing D31-D33 and the latest D32 preview remains QUEUED, so real browser keyboard/focus/contrast visual inspection is unavailable. D33 therefore remains YELLOW rather than GREEN."
     },
     {
       "id": "D34",
