@@ -71,7 +71,7 @@ export default function MyAuctionsPanel(){
   const [active,setActive]=useState<"all" | AuctionState>("all");
   const visible=useMemo(()=>active==="all" ? items : items.filter(item=>item.state===active),[active]);
 
-  return <section className="myAuctions" data-design-task="D30" aria-labelledby="my-auctions-heading">
+  return <section id="my-auctions" className="myAuctions" data-design-task="D30" aria-labelledby="my-auctions-heading">
     <div className="myAuctionsHead">
       <div>
         <span className="myAuctionsKicker">MY AUCTIONS</span>
