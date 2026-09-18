@@ -1,4 +1,5 @@
 import { primaryNavigation } from "../site-navigation";
+import WatchlistPanel from "./WatchlistPanel";
 
 export default function ProfilePage(){
   return <main className="navigationPage">
@@ -12,7 +13,10 @@ export default function ProfilePage(){
     <section className="navigationRouteMain">
       <span className="navigationRouteKicker">BUYER WORKSPACE</span>
       <h1>Твоят ENCHEV профил</h1>
-      <p>Това е входната точка към buyer workspace. Детайлните watchlist, My Auctions и dashboard модели се разработват последователно в D29–D31.</p>
+      <p>Следи запазените автомобили и използвай buyer workspace като изходна точка към инвентара и LIVE търговете.</p>
+
+      <WatchlistPanel />
+
       <div className="navigationRouteGrid">
         <article className="navigationRouteCard"><b>Инвентар</b><p>Продължи към търсенето и намери следващ автомобил или лот.</p></article>
         <article className="navigationRouteCard"><b>LIVE търгове</b><p>Влез в отделната търгова зала и следи активния лот.</p></article>
