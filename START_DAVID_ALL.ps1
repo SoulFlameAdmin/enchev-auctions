@@ -184,6 +184,23 @@ if ($app2Running) {
     "-File", $app2Launcher,
     "-Port", "$Port"
   )
+
+  $app2Healthy = $false
+  for ($i = 0; $i -lt 80; $i++) {
+    Start-Sleep -Milliseconds 500
+    $nodes = @(
+      @(Get-MatchingProcesses -Names @("node.exe") -Needles @(".auto-complete-app2-runtime.mjs")) +
+      @(Get-MatchingProcesses -Names @("node.exe") -Needles @("auto-complete-app2-v1.mjs"))
+    )
+    if ($nodes.Count -gt 0 -and (Test-Cdp -P $Port)) {
+      $app2Healthy = $true
+      break
+    }
+  }
+  if (-not $app2Healthy) {
+    throw "DPP/APP2 worker failed health check: APP2 node and CDP $Port were not both ready."
+  }
+  Write-Host "[DAVID ALL] DPP/APP2 health check PASS." -ForegroundColor Green
 }
 
 $dashboardRunning = @(Get-MatchingProcesses -Names @("powershell.exe","pwsh.exe") -Needles @("david-status-dashboard.ps1")).Count -gt 0
