@@ -58,7 +58,7 @@ export default function WatchlistPanel(){
         <h2 id="watchlist-heading">Запазени автомобили</h2>
         <p>Следи лотовете, които искаш да сравниш или да отвориш отново преди търга.</p>
       </div>
-      <div className="profileWatchlistSummary" aria-live="polite">
+      <div className="profileWatchlistSummary" aria-live="polite" data-saved-count={saved.length} data-live-count={liveCount}>
         <strong>{saved.length}</strong>
         <span>запазени</span>
         <small>{liveCount} LIVE</small>
@@ -66,7 +66,7 @@ export default function WatchlistPanel(){
     </div>
 
     {saved.length>0 ? <div className="profileWatchlistGrid">
-      {saved.map(vehicle=><article className="profileWatchlistCard" key={vehicle.lot} data-auction-state={vehicle.state.toLowerCase().replace(" ","-")}>
+      {saved.map(vehicle=><article className="profileWatchlistCard" key={vehicle.lot} data-lot-id={vehicle.lot} data-auction-state={vehicle.state.toLowerCase().replace(" ","-")}>
         <div className="profileWatchlistMedia">
           <img src={vehicle.image} alt={vehicle.title}/>
           <span className="profileWatchlistState">{vehicle.state}</span>
