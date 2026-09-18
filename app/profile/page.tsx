@@ -4,7 +4,7 @@ import MyAuctionsPanel from "./MyAuctionsPanel";
 import "./profile-shell.css";
 
 export default function ProfilePage(){
-  return <main className="navigationPage">
+  return <main id="main-content" className="navigationPage">
     <header className="navigationRouteHeader">
       <a href="/" className="navigationRouteBrand"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
       <nav className="navigationRouteNav" aria-label="Основна навигация">
