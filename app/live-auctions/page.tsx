@@ -53,7 +53,7 @@ export default function LiveAuctionsPage(){
     </section>
 
     <section className="liveStage" data-design-task="D24" aria-label="Live auction room: текущ и следващ лот">
-      <div className="liveVisual" data-live-slot="current" aria-labelledby="live-current-lot-title">
+      <div className="liveVisual" data-live-slot="current" data-lot-id={current.lot} aria-labelledby="live-current-lot-title">
         <img src={current.image} alt={current.title}/>
         <div className="liveVisualShade"/>
         <span className="liveStatus"><i/> ПРОДАВА СЕ НА ЖИВО</span>
@@ -68,7 +68,7 @@ export default function LiveAuctionsPage(){
         <button className="liveBidButton" onClick={bid}>Оферирай +€100 <span>→</span></button>
         <a className="liveLotLink" href={`/lot/${current.lot}`}>Отвори детайлите на лота</a>
 
-        <section className="liveNextPreview" data-live-slot="next" aria-labelledby="live-next-lot-title">
+        <section className="liveNextPreview" data-live-slot="next" data-lot-id={next.lot} aria-labelledby="live-next-lot-title">
           <div className="liveNextPreviewHead"><span>СЛЕДВАЩ ЛОТ</span><small>Стартира след текущия</small></div>
           <a className="liveNextPreviewCard" href={`/lot/${next.lot}`}>
             <img src={next.image} alt=""/>
