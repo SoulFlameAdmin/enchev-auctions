@@ -4,6 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "lint": "eslint app scripts tests eslint.config.mjs --max-warnings=0",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test tests/*.test.mjs",
     "prebuild": "node scripts/generate-master-test-task-ids.mjs",
     "build": "next build",
     "start": "next start"
@@ -17,6 +20,8 @@
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "@typescript-eslint/parser": "latest",
+    "eslint": "latest",
     "typescript": "latest"
   }
 }
