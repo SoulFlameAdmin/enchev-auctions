@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./live-auctions.css";
 import "./live-d24.css";
+import "./live-d26.css";
 
 const LOT_SECONDS=10;
 const lots=[
@@ -27,11 +28,14 @@ export default function LiveAuctionsPage(){
   const [prices,setPrices]=useState<Record<string,number>>(()=>Object.fromEntries(lots.map(x=>[x.lot,x.price])));
   const [bidFlash,setBidFlash]=useState(false);
   const [clockMode,setClockMode]=useState<"syncing"|"server">("syncing");
+  const [soldNotice,setSoldNotice]=useState<string|null>(null);
 
   const deadlineRef=useRef<number|null>(null);
   const serverOffsetRef=useRef(0);
   const lastServerNowRef=useRef(0);
   const syncInFlightRef=useRef(false);
+  const activeRef=useRef(0);
+  const soldNoticeTimerRef=useRef<number|null>(null);
 
   const applyClock=(data:LiveClockPayload,sentAt:number,receivedAt:number)=>{
     if(
@@ -45,9 +49,19 @@ export default function LiveAuctionsPage(){
 
     const midpoint=sentAt+(receivedAt-sentAt)/2;
     const offset=data.serverNow-midpoint;
+    const previousIndex=activeRef.current;
+    const hadServerState=lastServerNowRef.current>0;
+
+    if(hadServerState&&data.lotIndex!==previousIndex){
+      setSoldNotice(lots[previousIndex].lot);
+      if(soldNoticeTimerRef.current!==null)window.clearTimeout(soldNoticeTimerRef.current);
+      soldNoticeTimerRef.current=window.setTimeout(()=>setSoldNotice(null),1800);
+    }
+
     lastServerNowRef.current=data.serverNow;
     serverOffsetRef.current=offset;
     deadlineRef.current=data.roundEndsAt;
+    activeRef.current=data.lotIndex;
     setActive(data.lotIndex);
     setRemaining(Math.max(0,Math.ceil((data.roundEndsAt-(Date.now()+offset))/1000)));
     setClockMode("server");
@@ -85,6 +99,7 @@ export default function LiveAuctionsPage(){
     return()=>{
       window.clearInterval(tickId);
       window.clearInterval(resyncId);
+      if(soldNoticeTimerRef.current!==null)window.clearTimeout(soldNoticeTimerRef.current);
     };
   // D25 sync lifecycle is intentionally ref-backed; D28 owns reconnect/stale UI.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -134,11 +149,12 @@ export default function LiveAuctionsPage(){
       <div className="liveHeroClock" data-design-task="D25" data-clock-mode={clockMode} role="timer" aria-label={`Остават ${remaining} секунди за лот ${current.lot}`}><small>{clockMode==="server"?"SERVER SYNC":"СИНХРОНИЗИРАНЕ"}</small><b>{fmt(remaining)}</b><span>LOT {current.lot}</span></div>
     </section>
 
-    <section className="liveStage" data-design-task="D24" aria-label="Live auction room: текущ и следващ лот">
+    <section className="liveStage" data-design-task="D24" data-auto-advance-task="D26" aria-label="Live auction room: текущ и следващ лот">
       <div className="liveVisual" data-live-slot="current" aria-labelledby="live-current-lot-title">
         <img src={current.image} alt={current.title}/>
         <div className="liveVisualShade"/>
         <span className="liveStatus"><i/> ПРОДАВА СЕ НА ЖИВО</span>
+        {soldNotice&&<div className="liveSoldTransition" role="status" aria-live="polite"><b>SOLD · LOT {soldNotice}</b><span>Следващият лот е активен</span></div>}
         {bidFlash&&<div className="liveNewBid">NEW BID</div>}
         <div className="liveRing" data-clock-mode={clockMode}><strong>{remaining}</strong><small>SEC</small></div>
         <div className="liveVisualInfo"><span>ТЕКУЩ ЛОТ · {current.lot}</span><h2 id="live-current-lot-title">{current.title}</h2><p>{current.location} · {current.damage} · {current.mileage}</p></div>
