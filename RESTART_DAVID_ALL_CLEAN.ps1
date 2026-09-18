@@ -26,11 +26,13 @@ if (-not (Test-Path $Stop)) { throw "Stop script not found after pull: $Stop" }
 
 Write-Host "[RESTART] Stopping all managed DAVID processes..." -ForegroundColor Cyan
 & $Pwsh -NoProfile -ExecutionPolicy Bypass -File $Stop -Port $Port
+if ($LASTEXITCODE -ne 0) { throw "DAVID clean shutdown failed with exit code $LASTEXITCODE. Start aborted." }
 
 Start-Sleep -Seconds 3
 
 Write-Host "[RESTART] Starting clean DAVID stack..." -ForegroundColor Cyan
 & $Pwsh -NoProfile -ExecutionPolicy Bypass -File $Start -Port $Port
+if ($LASTEXITCODE -ne 0) { throw "DAVID clean start failed with exit code $LASTEXITCODE." }
 
 Write-Host ""
 Write-Host "[RESTART] DAVID clean restart launched." -ForegroundColor Green
