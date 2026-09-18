@@ -73,6 +73,6 @@ if (Test-Path $runtime) {
 
 Write-Host ""
 Write-Host "[STOP] DAVID workers: OFF" -ForegroundColor Red
-Write-Host "[STOP] DAVID Edge/CDP $Port: OFF" -ForegroundColor Red
+Write-Host "[STOP] DAVID Edge/CDP ${Port}: OFF" -ForegroundColor Red
 Write-Host "[STOP] Profile/login/state preserved." -ForegroundColor Green
 Write-Host "[STOP] No DAVID project state was deleted." -ForegroundColor Green
