@@ -1,0 +1,21 @@
+{
+  "task": "02.05",
+  "workspace": "packages/domain",
+  "package": "@enchev/domain",
+  "layer": "domain",
+  "implementation_state": "boundary-established",
+  "framework_independent": true,
+  "owns": [
+    "domain-types",
+    "domain-value-objects",
+    "domain-invariants"
+  ],
+  "does_not_own": [
+    "http-transport",
+    "realtime-transport",
+    "background-jobs",
+    "browser-ui",
+    "provider-integrations",
+    "persistence-adapters"
+  ]
+}

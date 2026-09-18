@@ -22,7 +22,9 @@
     "verify:apps-realtime": "node scripts/verify-apps-realtime.mjs",
     "verify:apps-realtime:self-test": "node scripts/verify-apps-realtime.mjs --self-test",
     "verify:apps-worker": "node scripts/verify-apps-worker.mjs",
-    "verify:apps-worker:self-test": "node scripts/verify-apps-worker.mjs --self-test"
+    "verify:apps-worker:self-test": "node scripts/verify-apps-worker.mjs --self-test",
+    "verify:packages-domain": "node scripts/verify-packages-domain.mjs",
+    "verify:packages-domain:self-test": "node scripts/verify-packages-domain.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
@@ -36,6 +38,7 @@
     "typescript": "latest"
   },
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "packages/*"
   ]
 }

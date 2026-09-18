@@ -26,7 +26,8 @@ const cases = [
   ["scripts/verify-apps-web.mjs", "--self-test"],
   ["scripts/verify-apps-api.mjs", "--self-test"],
   ["scripts/verify-apps-realtime.mjs", "--self-test"],
-  ["scripts/verify-apps-worker.mjs", "--self-test"]
+  ["scripts/verify-apps-worker.mjs", "--self-test"],
+  ["scripts/verify-packages-domain.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of cases) {

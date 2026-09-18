@@ -1,0 +1,13 @@
+{
+  "name": "@enchev/domain",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "verify": "node ../../scripts/verify-packages-domain.mjs"
+  }
+}
