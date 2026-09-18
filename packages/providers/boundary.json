@@ -1,0 +1,24 @@
+{
+  "task": "02.08",
+  "workspace": "packages/providers",
+  "package": "@enchev/providers",
+  "layer": "providers",
+  "implementation_state": "boundary-established",
+  "credential_free": true,
+  "direct_runtime_env_reads": false,
+  "concrete_provider_clients": false,
+  "owns": [
+    "provider-adapter-boundary",
+    "provider-client-interfaces",
+    "external-service-integration-boundary"
+  ],
+  "does_not_own": [
+    "domain-authority",
+    "configuration-authority",
+    "secret-storage",
+    "business-workflows",
+    "browser-ui",
+    "auction-authority",
+    "database-authority"
+  ]
+}
