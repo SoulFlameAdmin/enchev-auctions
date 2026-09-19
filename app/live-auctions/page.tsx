@@ -12,6 +12,8 @@ const lots=[
   {lot:"EA-10627",title:"2020 BMW X5 xDrive40i",location:"Texas, USA",damage:"Rear end",mileage:"96 210 km",price:15100,image:"https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1500&q=86"},
 ];
 
+type BidFeedback="accepted"|"leading"|"outbid"|"rejected";
+
 type LiveClockPayload={
   serverNow:number;
   roundEndsAt:number;
@@ -20,6 +22,8 @@ type LiveClockPayload={
   lotId:string;
   scope:string;
   auctionAuthority:boolean;
+  bidFeedback?:BidFeedback|null;
+  priceDelta?:number;
 };
 
 export default function LiveAuctionsPage(){
@@ -29,6 +33,7 @@ export default function LiveAuctionsPage(){
   const [bidFlash,setBidFlash]=useState(false);
   const [clockMode,setClockMode]=useState<"syncing"|"server">("syncing");
   const [soldNotice,setSoldNotice]=useState<string|null>(null);
+  const [bidFeedback,setBidFeedback]=useState<BidFeedback|null>(null);
 
   const deadlineRef=useRef<number|null>(null);
   const serverOffsetRef=useRef(0);
@@ -126,9 +131,14 @@ export default function LiveAuctionsPage(){
       const applied=applyClock(data,sentAt,Date.now());
       if(!applied||data.lotId!==bidLot.lot)return;
 
-      setPrices(p=>({...p,[bidLot.lot]:(p[bidLot.lot]??bidLot.price)+100}));
-      setBidFlash(true);
-      window.setTimeout(()=>setBidFlash(false),650);
+      const feedback=data.bidFeedback??null;
+      const delta=Number.isFinite(data.priceDelta)?Number(data.priceDelta):0;
+      setBidFeedback(feedback);
+      if(delta!==0){
+        setPrices(p=>({...p,[bidLot.lot]:(p[bidLot.lot]??bidLot.price)+delta}));
+        setBidFlash(true);
+        window.setTimeout(()=>setBidFlash(false),650);
+      }
     }catch{
       // D28 adds explicit connection/reconnect/stale-state feedback.
     }
@@ -162,6 +172,17 @@ export default function LiveAuctionsPage(){
       <aside className="liveBidPanel" aria-label="Наддаване и следващ лот">
         <div className="liveBidTop"><span>ТЕКУЩА СТАВКА</span><b>€{price.toLocaleString("bg-BG")}</b></div>
         <div className="liveBidMeta"><div><span>Следваща оферта</span><b>€{(price+100).toLocaleString("bg-BG")}</b></div><div><span>Остава</span><b>{fmt(remaining)}</b></div></div>
+        <div
+          className={`liveBidFeedback ${bidFeedback?`is-${bidFeedback}`:"is-idle"}`}
+          data-design-task="D27"
+          data-bid-feedback={bidFeedback??"idle"}
+          data-auction-authority="false"
+          role="status"
+          aria-live="polite"
+        >
+          <b>{bidFeedback==="accepted"?"ОФЕРТАТА Е ПРИЕТА":bidFeedback==="leading"?"ВОДИШ В ТЪРГА":bidFeedback==="outbid"?"НАДДАВАН СИ":bidFeedback==="rejected"?"ОФЕРТАТА Е ОТХВЪРЛЕНА":"ГОТОВ ЗА ОФЕРТА"}</b>
+          <span>{bidFeedback==="accepted"?"Server demo прие офертата.":bidFeedback==="leading"?"Server demo потвърди водеща позиция.":bidFeedback==="outbid"?"Server demo отчете по-висока конкурентна оферта.":bidFeedback==="rejected"?"Server demo отхвърли офертата без промяна на цената.":"Резултатът от demo офертата идва от server session state."}</span>
+        </div>
         <button className="liveBidButton" onClick={()=>void bid()}>Оферирай +€100 <span>→</span></button>
         <a className="liveLotLink" href={`/lot/${current.lot}`}>Отвори детайлите на лота</a>
 
@@ -178,7 +199,7 @@ export default function LiveAuctionsPage(){
           </a>
         </section>
 
-        <div className="liveRule"><b>Как работи</b><p>Demo офертата се потвърждава през server-session clock endpoint и връща таймера на 10 сек. След 00:00 интерфейсът ресинхронизира текущия demo lot със server state.</p></div>
+        <div className="liveRule"><b>Как работи</b><p>Demo офертата се потвърждава през server-session endpoint. Сървърът връща accepted / leading / outbid / rejected feedback и ценова промяна, а интерфейсът само визуализира този резултат. Това остава auctionAuthority=false demo state.</p></div>
       </aside>
     </section>
 
