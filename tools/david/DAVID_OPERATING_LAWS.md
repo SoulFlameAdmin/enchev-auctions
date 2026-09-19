@@ -59,6 +59,8 @@ These rules are mandatory for CONTROL/WATCHTOWER, SYSTEM, DESIGN, DPP/APP2 and D
 - CONTROL must not REFRESH or RESTART a worker merely because it is waiting on the global rate-limit coordinator.
 - Entering rate-limit wait or becoming the single probe owner MUST NOT reload/refresh the ChatGPT tab. A probe is sent in the existing healthy session.
 - Refresh is recovery-only: use it only after confirmed inactive/dead/stale UI or a bounded failed-start/connection recovery window, never as normal pacing.
+- Shared Edge CDP connection timeout is not a worker-fatal condition: CONTROL/SYSTEM/DESIGN/APP2/APK/GUARD must stay alive, wait, and reconnect to port 9444. They must never close the shared Edge browser while reconnecting.
+- For the ChatGPT send-timeout banner, the central guard owns recovery: click the visible Retry/Try again/Опитайте отново button with bounded retries; do not refresh the page and do not submit a duplicate prompt.
 - The global rate-limit state persists across DAVID clean restarts so restart cannot bypass the cooldown.
 
 ## 2. External blockers
