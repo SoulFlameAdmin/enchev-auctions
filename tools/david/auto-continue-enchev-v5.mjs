@@ -71,7 +71,7 @@ Final 100% acceptance is forbidden until every applicable task across 00-99 plus
 
 ${ORCHESTRATOR_LAW}\n\n${DEPLOY_LAW}
 
-${RELAY_MARKER}`
+${RELAY_MARKER}`;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const hashText = (text) => createHash("sha256").update(String(text || "")).digest("hex");
