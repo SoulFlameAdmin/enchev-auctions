@@ -575,8 +575,11 @@ async function waitForSession(context, page, state) {
 }
 
 async function fillComposer(composer, text) {
-  try { await composer.fill(text); return; } catch {}
-  await composer.click();
+  try {
+    await composer.fill(text, { timeout: 5000 });
+    return;
+  } catch {}
+  await composer.focus({ timeout: 3000 }).catch(() => {});
   await composer.evaluate((el, value) => {
     el.focus();
     if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) el.value = value;
@@ -594,14 +597,30 @@ async function sendText(page, text) {
     try {
       const btn = page.locator(selector).last();
       if (await btn.count() && await btn.isVisible().catch(() => false) && await btn.isEnabled().catch(() => false)) {
-        await btn.click();
-        console.log("[DAVID] Message sent via send button.");
-        return;
+        try {
+          await btn.click({ timeout: 2000 });
+          console.log("[DAVID] Message sent via send button.");
+          return;
+        } catch {}
       }
     } catch {}
   }
-  await composer.press("Enter");
-  console.log("[DAVID] Message sent via Enter.");
+  try {
+    await composer.focus({ timeout: 2000 });
+    await composer.press("Enter", { timeout: 3000 });
+    console.log("[DAVID] Message sent via Enter.");
+    return;
+  } catch {}
+
+  for (const selector of ['button[data-testid="send-button"]', 'button[aria-label*="Send"]', 'button[aria-label*="Изпрати"]']) {
+    const btn = page.locator(selector).last();
+    if (await btn.count() && await btn.isVisible().catch(() => false) && await btn.isEnabled().catch(() => false)) {
+      await btn.click({ force: true, timeout: 3000 });
+      console.log("[DAVID] Message sent via forced send-button fallback.");
+      return;
+    }
+  }
+  throw new Error("ChatGPT send failed after pointer-safe fallbacks");
 }
 
 async function refreshChat(context, page, state, attempt) {
