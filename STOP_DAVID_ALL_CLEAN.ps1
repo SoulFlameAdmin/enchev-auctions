@@ -124,6 +124,8 @@ if (Test-Path $runtime) {
 foreach ($ephemeral in @(
   (Join-Path $DavidDir ".david-control-command.json"),
   (Join-Path $DavidDir ".david-control-result.json"),
+  (Join-Path $DavidDir ".david-recovery-request.json"),
+  (Join-Path $DavidDir ".david-recovery-result.json"),
   (Join-Path $DavidDir ".david-tab-monitor.json")
 )) {
   if (Test-Path $ephemeral) {

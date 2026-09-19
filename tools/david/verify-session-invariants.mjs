@@ -106,7 +106,7 @@ for (const required of [
   "SEND_TIMEOUT_STALE_ACTIVE_MS",
   "sendTimeoutFirstSeenAt",
   "sendTimeoutLastProgressAt",
-  "Retry UI now takes precedence",
+  "SEND TIMEOUT + stale active indicator",
   "focus({ timeout: 3000 })",
   "force: true"
 ]) {
@@ -146,6 +146,18 @@ if (!controlSource.includes("focus({ timeout: 3000 })") || !controlSource.includ
   throw new Error("CONTROL pointer-safe send fallback missing");
 }
 
+const fastGuard = read("connection-interruption-guard.mjs");
+for (const required of [
+  "SEND_TIMEOUT_MAX_RETRIES || 2",
+  "SEND_TIMEOUT_STALE_ACTIVE_MS || 8000",
+  "FAST RECOVERY step=RETRY",
+  "FAST RECOVERY step=RELOAD",
+  "requestWorkerRecovery",
+  ".david-recovery-request.json"
+]) {
+  if (!fastGuard.includes(required)) throw new Error(`Fast recovery guard invariant missing: ${required}`);
+}
+
 const supervisor = read("dual-session-worker.mjs");
 for (const required of [
   "STRICT_CHATGPT_TAB_TARGET",
@@ -153,7 +165,10 @@ for (const required of [
   "cleanupUnknownChatGptTabs",
   "snapshot.totalChatGptTabs > STRICT_CHATGPT_TAB_TARGET",
   "pageShowsActiveWork",
-  "releaseWorkerLeases(spec.name, \"exited\")"
+  "releaseWorkerLeases(spec.name, \"exited\")",
+  "executeRecoveryRequest(context)",
+  "FAST RECOVERY executed RESTART",
+  "DAVID_TAB_MONITOR_MS || 2000"
 ]) {
   if (!supervisor.includes(required)) throw new Error(`Supervisor missing invariant: ${required}`);
 }
@@ -161,4 +176,4 @@ if (/allFiveOwned/.test(supervisor)) {
   throw new Error("Unmanaged-tab cleanup must not depend on all five workers already being healthy");
 }
 
-console.log("DAVID_SESSION_INVARIANTS PASS same_tab_rollover=5 project_ok_rotation=4 strict_tab_budget=5 active_work_protected=1 fresh_restart_wiring=5 pointer_safe_send=5 stale_timeout_retry=1 dead_worker_lease_release=1 fresh_parallel_prewarm=5 transient_probe_reset=1");
+console.log("DAVID_SESSION_INVARIANTS PASS same_tab_rollover=5 project_ok_rotation=4 strict_tab_budget=5 active_work_protected=1 fresh_restart_wiring=5 pointer_safe_send=5 fast_recovery_retry_reload_restart=1 dead_worker_lease_release=1 fresh_parallel_prewarm=5 transient_probe_reset=1 monitor_2s=1");
