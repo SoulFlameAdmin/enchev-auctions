@@ -353,6 +353,109 @@ async function rolloverConversation(context, page, state, reason = "conversation
   return page;
 }
 
+
+async function composer(page) {
+  for (const s of ["#prompt-textarea", '[data-testid="prompt-textarea"]', 'div[contenteditable="true"][role="textbox"]']) {
+    const x = page.locator(s).last();
+    if (await x.count() && await x.isVisible().catch(() => false)) return x;
+  }
+  return null;
+}
+async function latestAssistant(page) {
+  const x = page.locator('[data-message-author-role="assistant"]');
+  if (!await x.count()) return "";
+  return (await x.last().innerText().catch(() => "")).trim();
+}
+async function latestRole(page) {
+  const x = page.locator('[data-message-author-role="assistant"],[data-message-author-role="user"]');
+  if (!await x.count()) return null;
+  return x.last().getAttribute("data-message-author-role").catch(() => null);
+}
+async function generating(page) {
+  for (const s of ['[data-testid="stop-button"]','[data-testid*="stop" i]','button[aria-label*="Stop"]','button[aria-label*="stop"]','button[aria-label*="Спри"]','button:has-text("Stop generating")','button:has-text("Stop thinking")','button:has-text("Stop response")','button:has-text("Спри генерирането")','button:has-text("Спри да мисли")','button:has-text("Спри отговора")']) {
+    const x = page.locator(s).last();
+    if (await x.count() && await x.isVisible().catch(() => false)) return true;
+  }
+  try {
+    return await page.evaluate(() => {
+      const turns = Array.from(document.querySelectorAll('article[data-testid^="conversation-turn-"]'));
+      const last = turns.at(-1);
+      if (!last || !last.querySelector('[data-message-author-role="assistant"]')) return false;
+      const finalAction = last.querySelector('button[aria-label*="Copy" i],button[aria-label*="Share" i],button[aria-label*="Regenerate" i],button[data-testid*="copy" i],button[data-testid*="thumb" i]');
+      if (finalAction) return false;
+      const text = (last.textContent || "").replace(/\s+/g, " ").trim();
+      return /(thinking|мислене|мисли|working|работи|calling tool|called tool|tool call|извикан инструмент|извиква инструмент|searching|търсене|browsing|преглежда|analyzing|анализира)/i.test(text);
+    });
+  } catch { return false; }
+}
+async function complete(page, baseHash = null) {
+  let stableHash = null;
+  let stableSince = 0;
+  let stableSamples = 0;
+  const deadline = Date.now() + COMPLETE_QUIET_MS + 12000;
+  while (Date.now() < deadline) {
+    if (await generating(page) || await latestRole(page) !== "assistant") return false;
+    const text = await latestAssistant(page);
+    if (!text) return false;
+    const h = hash(text);
+    if (baseHash && h === baseHash) return false;
+    if (h !== stableHash) {
+      stableHash = h;
+      stableSince = Date.now();
+      stableSamples = 1;
+    } else {
+      stableSamples += 1;
+    }
+    if (stableSamples >= COMPLETE_STABLE_SAMPLES && Date.now() - stableSince >= COMPLETE_QUIET_MS && !await generating(page)) return true;
+    await sleep(COMPLETE_SAMPLE_MS);
+  }
+  return false;
+}
+async function platformBlock(page) {
+  try {
+    return await page.evaluate(() => {
+      const list = Array.from(document.querySelectorAll('[role="alert"],[aria-live="assertive"],[data-testid*="toast" i],[data-testid*="error" i]'));
+      for (const el of list) {
+        const r = el.getBoundingClientRect(), s = getComputedStyle(el);
+        if (!r.width || !r.height || s.display === "none" || s.visibility === "hidden") continue;
+        if (el.closest('[data-message-author-role]')) continue;
+        const t = (el.textContent || "").toLowerCase();
+        if (/verify you are human|потвърдете, че сте човек/.test(t)) return "human verification";
+        if (/rate limit|too many requests|достигнахте лимита/.test(t)) return "rate limit";
+        if (/изпращането на съобщението изтече по време|message sending timed out|sending the message timed out|message send timed out/.test(t)) return "send timeout";
+        if (/network error|something went wrong|нещо се обърка/.test(t)) return "network error";
+      }
+      return null;
+    });
+  } catch { return null; }
+}
+async function waitSendTimeoutRecovery(context, page, state) {
+  state.problem = null;
+  state.watchdog = "design-send-timeout-wait-guard";
+  save(state, "Message send timeout detected; central guard owns bounded Retry. DESIGN will not duplicate-send.");
+  console.log("[DESIGN] SEND TIMEOUT: waiting for central guard. NO DUPLICATE RESEND.");
+  const until = Date.now() + 60000;
+  while (Date.now() < until) {
+    await sleep(1000);
+    page = await ensurePage(context, page);
+    if (await generating(page)) {
+      state.watchdog = "design-thinking";
+      save(state, "Send-timeout retry accepted; GPT active");
+      return page;
+    }
+    const pb = await platformBlock(page);
+    if (pb !== "send timeout") {
+      state.watchdog = "design-send-timeout-recovered";
+      save(state, "Message send timeout cleared by central guard");
+      return page;
+    }
+  }
+  console.log("[DESIGN] SEND TIMEOUT still visible after 60s. Refreshing view only; no worker resend.");
+  await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  await sleep(2500);
+  return page;
+}
+
 async function waitReady(context, page, state) {
   let windowStartedAt = Date.now();
   let refreshes = 0;
