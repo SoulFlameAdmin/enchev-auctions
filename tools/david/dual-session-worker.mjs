@@ -24,6 +24,8 @@ const WORKER_TAB_MISSING_MS = Number(process.env.DAVID_WORKER_TAB_MISSING_MS || 
 const CONTROL_START_GRACE_MS = Number(process.env.DAVID_CONTROL_START_GRACE_MS || 300000);
 const CONTROL_HEARTBEAT_STALE_MS = Number(process.env.DAVID_CONTROL_HEARTBEAT_STALE_MS || 900000);
 const CONTROL_TAB_MISSING_MS = Number(process.env.DAVID_CONTROL_TAB_MISSING_MS || 180000);
+const STRICT_CHATGPT_TAB_TARGET = Number(process.env.DAVID_CHATGPT_TAB_TARGET || 5);
+const DEDICATED_DAVID_PROFILE = process.env.DAVID_DEDICATED_PROFILE !== "0";
 let shuttingDown = false;
 let monitorBrowser = null;
 let monitorContext = null;
@@ -474,7 +476,13 @@ async function cleanupManagedTabs() {
       const tabs = managed.filter((x) => x.kind === kind && !x.page.isClosed());
       if (tabs.length <= 1) continue;
       const preferred = preferredByKind.get(kind);
-      let keep = tabs.find((x) => preferred && x.url === preferred) || tabs.at(-1);
+      let keep = tabs.find((x) => preferred && x.url === preferred) || null;
+      if (!keep) {
+        for (const item of tabs) {
+          if (await pageShowsActiveWork(item.page)) { keep = item; break; }
+        }
+      }
+      keep = keep || tabs.at(-1);
       for (const item of tabs) {
         if (item === keep || item.page.isClosed()) continue;
         await item.page.close({ runBeforeUnload: false }).catch(() => {});
@@ -493,6 +501,8 @@ async function cleanupManagedTabs() {
 }
 
 async function cleanupUnknownChatGptTabs(context) {
+  if (!DEDICATED_DAVID_PROFILE) return 0;
+
   const owned = [];
   const unknown = [];
   for (const page of context.pages()) {
@@ -503,17 +513,36 @@ async function cleanupUnknownChatGptTabs(context) {
     else unknown.push(page);
   }
 
-  const counts = {};
-  for (const { kind } of owned) counts[kind] = Number(counts[kind] || 0) + 1;
-  const allFiveOwned = ["CONTROL","SYSTEM","DESIGN","APP2","APK"].every((k) => counts[k] === 1);
-  if (!allFiveOwned || !unknown.length) return 0;
+  const totalChatGptTabs = owned.length + unknown.length;
+  let excess = Math.max(0, totalChatGptTabs - STRICT_CHATGPT_TAB_TARGET);
+  if (!excess || !unknown.length) return 0;
+
+  const candidates = [];
+  for (const page of unknown) {
+    const active = await pageShowsActiveWork(page);
+    if (active) continue;
+    let url = "";
+    try { url = page.url(); } catch {}
+    const rootish = url === "https://chatgpt.com/" || url === "https://chatgpt.com" || url === "about:blank";
+    candidates.push({ page, url, rootish });
+  }
+  candidates.sort((a, b) => Number(b.rootish) - Number(a.rootish));
 
   let closed = 0;
-  for (const page of unknown) {
-    await page.close({ runBeforeUnload: false }).catch(() => {});
-    closed++;
+  for (const item of candidates) {
+    if (excess <= 0) break;
+    if (item.page.isClosed()) continue;
+    await item.page.close({ runBeforeUnload: false }).catch(() => {});
+    closed += 1;
+    excess -= 1;
   }
-  if (closed) console.log(`[DUAL] Closed ${closed} unmanaged ChatGPT tab(s); dedicated DAVID profile target is exactly 5.`);
+
+  if (closed) {
+    console.log(`[DUAL] Strict tab budget closed ${closed} unmanaged idle ChatGPT tab(s); target=${STRICT_CHATGPT_TAB_TARGET}.`);
+  }
+  if (excess > 0) {
+    console.log(`[DUAL] Strict tab budget still has excess=${excess}, but remaining unmanaged tabs show active work; leaving them untouched.`);
+  }
   return closed;
 }
 
@@ -527,6 +556,7 @@ console.log("[DUAL] INTERRUPTION GUARD: watches every managed ChatGPT conversati
 console.log("[DUAL] 24/7 law: active GPT/tool work => WAIT; confirmed frozen interruption => refresh/verify/resend; workers self-heal by heartbeat/tab ownership.");
 console.log("[DUAL] CONTROL law: GPT WATCHTOWER may request only allowlisted REFRESH/RESTART/CLEAN_DUPLICATES actions after exact final OK.");
 console.log("[DUAL] CONTROL + SYSTEM + DESIGN + APP2 + APK share the same Edge CDP/profile on port 9444.");
+console.log(`[DUAL] STRICT TAB BUDGET: target=${STRICT_CHATGPT_TAB_TARGET}, dedicatedProfile=${DEDICATED_DAVID_PROFILE}; idle unmanaged overflow is closed automatically.`);
 async function monitorManagedTabs() {
   if (shuttingDown || monitorBusy) return;
   monitorBusy = true;
@@ -537,6 +567,8 @@ async function monitorManagedTabs() {
       checkedAt: new Date().toISOString(),
       totalBrowserTabs: context.pages().filter((p) => !p.isClosed()).length,
       totalChatGptTabs: 0,
+      tabBudgetTarget: STRICT_CHATGPT_TAB_TARGET,
+      dedicatedProfile: DEDICATED_DAVID_PROFILE,
       managed: { SYSTEM: [], DESIGN: [], APP2: [], APK: [], CONTROL: [] }
     };
     for (const page of context.pages()) {
@@ -599,14 +631,7 @@ async function monitorManagedTabs() {
       await cleanupManagedTabs();
     }
 
-    if (
-      counts.CONTROL === 1 &&
-      counts.SYSTEM === 1 &&
-      counts.DESIGN === 1 &&
-      counts.APP2 === 1 &&
-      counts.APK === 1 &&
-      snapshot.totalChatGptTabs > 5
-    ) {
+    if (snapshot.totalChatGptTabs > STRICT_CHATGPT_TAB_TARGET) {
       await cleanupUnknownChatGptTabs(context);
     }
   } catch (e) {
