@@ -48,7 +48,9 @@
     "verify:en-locale": "node scripts/verify-en-locale.mjs",
     "verify:en-locale:self-test": "node scripts/verify-en-locale.mjs --self-test",
     "verify:translation-key-architecture": "node scripts/verify-translation-key-architecture.mjs",
-    "verify:translation-key-architecture:self-test": "node scripts/verify-translation-key-architecture.mjs --self-test"
+    "verify:translation-key-architecture:self-test": "node scripts/verify-translation-key-architecture.mjs --self-test",
+    "verify:design-process-2": "node scripts/verify-design-process-2.mjs",
+    "verify:design-process-2:self-test": "node scripts/verify-design-process-2.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
