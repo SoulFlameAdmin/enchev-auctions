@@ -16,14 +16,18 @@ These rules are mandatory for SYSTEM, DESIGN, DPP/APP2 and DAVID APK workers.
    - verify the same owned session;
    - resend the same logical task once;
    - never create an unbounded duplicate-send loop.
-3. If GPT began thinking/writing and then stalls:
-   - stop the stuck generation if a stop control is visible;
-   - resend the same logical task without refreshing for the first bounded recovery attempts;
-   - if the resend also does not start, refresh and resend.
+3. If GPT began thinking/writing or is using tools:
+   - treat visible active work as BUSY and wait;
+   - do not press Stop on an active GPT/tool turn;
+   - only after a long no-progress timeout may the worker enter bounded recovery;
+   - recovery is refresh/verify/resend, never an unbounded duplicate loop.
 4. Connection interrupted:
-   - stop the interrupted response when possible;
-   - recover the latest owned user prompt;
-   - resend it in the same owned session.
+   - never stop an active thinking/writing/tool-using GPT turn;
+   - require a persistent interruption signal confirmed across multiple checks;
+   - require assistant output to be inactive and not progressing;
+   - refresh the owned tab and verify the state;
+   - if the response recovered to OK / PROBLEM IN / new progress, do not resend;
+   - otherwise resend the latest owned prompt once as a stranded-turn recovery.
 5. CAPTCHA, MFA, login and explicit permission gates are never bypassed.
 6. Maximum-length conversation:
    - open a new ChatGPT tab;
