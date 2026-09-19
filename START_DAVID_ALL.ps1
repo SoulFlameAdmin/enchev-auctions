@@ -214,6 +214,7 @@ Write-Host "[DAVID ALL] On max-length rollover the worker opens a new ChatGPT ta
 Write-Host "[DAVID ALL] One unified supervisor owns SYSTEM + DESIGN + APP2 + APK; duplicate launches are blocked." -ForegroundColor Green
 
 Write-Host "[DAVID ALL] FINAL GATE: exact final OK required before any next normal prompt." -ForegroundColor Red
+Write-Host "[DAVID ALL] SEND TIMEOUT LAW: central managed guard owns bounded Retry; workers WAIT and never duplicate-send." -ForegroundColor Yellow
 Write-Host "[DAVID ALL] Recovery laws: active thinking/tool work=>WAIT; no-thinking=>refresh+resend; confirmed interruption=>refresh/verify+resend." -ForegroundColor Yellow
 Write-Host "[DAVID ALL] Vercel deploy coordinator: Supabase global lease; one worker deploys at a time." -ForegroundColor Yellow
 Write-Host "[DAVID ALL] Matrix dashboard starts automatically with live progress + worker report." -ForegroundColor Yellow
