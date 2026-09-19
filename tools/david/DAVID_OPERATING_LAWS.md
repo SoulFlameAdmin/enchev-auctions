@@ -47,13 +47,12 @@ These rules are mandatory for CONTROL/WATCHTOWER, SYSTEM, DESIGN, DPP/APP2 and D
 ## 1A. Global ChatGPT rate-limit law
 - The ChatGPT UI signals `Твърде много заявки`, `Правите заявки прекалено бързо`, `Too many requests`, or equivalent rate-limit text trigger one GLOBAL send block shared by CONTROL, SYSTEM, DESIGN, APP2 and APK.
 - While globally blocked, no worker may send a new ChatGPT message.
-- Backoff sequence is fixed:
-  1. first confirmed limit -> wait 10 minutes;
-  2. after cooldown, exactly one worker atomically becomes PROBE OWNER and may send one probe request;
-  3. if that real probe request is rate-limited again -> wait 20 minutes;
-  4. after cooldown, exactly one worker probes again;
-  5. if that real probe is rate-limited again -> wait 40 minutes;
-  6. further confirmed probe failures remain capped at 40 minutes.
+- Cooldown policy is fixed at 60 seconds:
+  1. first confirmed rate limit -> block all DAVID sends for 60 seconds;
+  2. after the timer expires, exactly one worker becomes probe owner and may send one probe;
+  3. if that real probe request is rate-limited again -> block all sends for another 60 seconds;
+  4. repeat the same 60-second cooldown + one-probe cycle until a probe completes successfully.
+- Legacy persisted 10/20/40-minute cooldown state is capped to the current 60-second policy when workers next request a global send permit.
 - A stale rate-limit popup does not escalate the backoff. Escalation requires the current probe owner to have actually started a new probe send.
 - All non-owner workers remain WAIT during probe mode.
 - A successful completed response from the probe owner clears the global rate-limit state and normal sending may resume.
@@ -170,8 +169,8 @@ Do not invent secrets, results, deployments or test evidence.
 - Confirmed ChatGPT rate-limit popups may be acknowledged automatically only with exact informational buttons such as `Разбрано`, `Got it`, or `Understood`.
 - Dismissing the popup never clears or shortens the global cooldown.
 - All normal CONTROL/SYSTEM/DESIGN/APP2/APK message sends share one atomic global send pacer.
-- Default minimum interval between new DAVID ChatGPT sends is 60 seconds account-wide, configurable with DAVID_GLOBAL_SEND_INTERVAL_MS.
+- Default minimum interval between every new DAVID ChatGPT relay is 10 seconds account-wide, configurable with DAVID_GLOBAL_SEND_INTERVAL_MS.
 - Only one worker may reserve the next send slot at a time.
-- The global pacer prevents five-tab burst sends even when no explicit rate-limit popup is visible.
+- Every actual CONTROL/SYSTEM/DESIGN/APP2/APK send marks the global pacer, so a second session cannot send until at least 10 seconds later. This prevents five-tab burst sends even when no explicit rate-limit popup is visible.
 - Matrix must show both the active rate-limit countdown and the next normal send countdown.
 - The 60-second interval is a DAVID safety policy, not a published OpenAI ChatGPT requests-per-minute entitlement.
