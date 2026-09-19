@@ -123,8 +123,10 @@ function isExternalBlocker(problem) {
 function blockerKey(problem) {
   return String(problem || "")
     .toLowerCase()
+    .replace(/[-_]+/g, " ")
     .replace(/\s+/g, " ")
     .replace(/опит\s*\d+|attempt\s*\d+/g, "")
+    .replace(/\s+/g, " ")
     .trim();
 }
 function sameBlocker(a, b) {
