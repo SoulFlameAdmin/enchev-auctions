@@ -75,6 +75,25 @@ function Get-SystemProgress {
     }
   }
 
+  # Expansion v2 phases 62-99 are part of the same SYSTEM total.
+  foreach ($part in 1..4) {
+    $expansionPath = Join-Path $Repo ("app\master-system-expansion-v2\part-{0}.json" -f $part)
+    $expansion = Read-JsonSafe $expansionPath
+    if (-not $expansion -or -not $expansion.phases) { continue }
+    foreach ($phase in @($expansion.phases)) {
+      $phaseId = [string]$phase.id
+      $index = 0
+      foreach ($task in @($phase.tasks)) {
+        $index++
+        $id = "{0}.{1:D2}" -f $phaseId,$index
+        [void]$total.Add($id)
+        if (([string]$task.defaultStatus).ToLowerInvariant() -eq "green") {
+          [void]$green.Add($id)
+        }
+      }
+    }
+  }
+
   foreach ($id in (Unique-Matches $verifiedText '["'']((?:\d{2}\.\d{2})|(?:GAP-\d{3,}))["'']\s*:')) {
     if ($total.Contains($id)) { [void]$green.Add($id) }
   }
