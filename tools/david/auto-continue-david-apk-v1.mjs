@@ -514,7 +514,7 @@ async function runPrompt(context, page, state, prompt, kind) {
       await sleep(2500);
     }
     await fillAndSend(page, outgoing);
-    if (permit.mode === "probe") await markGlobalSendStarted("APK");
+    await markGlobalSendStarted("APK");
 
     let startEnd = Date.now() + START_TIMEOUT_MS;
     let started = false;
