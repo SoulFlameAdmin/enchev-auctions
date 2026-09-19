@@ -1,4 +1,5 @@
 import HomeLiveSpotlight from "./HomeLiveSpotlight";
+import HomeDiscoveryV2 from "./HomeDiscoveryV2";
 import { getHomeHeroCopy, HOME_HERO_KEYS } from "../home-hero-messages";
 
 function T({k,children}:{k:string;children:React.ReactNode}){
@@ -49,29 +50,7 @@ export default function HomeHeroV2(){
       </div>
     </div>
 
-    <div className="eaHeroDiscovery" data-design-scope="DP2-06">
-      <form className="eaSearch" action="/inventory" role="search">
-        <input
-          type="search"
-          name="q"
-          aria-label={copy.searchAria}
-          data-i18n-key={HOME_HERO_KEYS.searchAria}
-          autoComplete="off"
-          spellCheck={false}
-          enterKeyHint="search"
-          placeholder={copy.searchPlaceholder}
-        />
-        <button type="submit" aria-label={copy.searchSubmit} data-i18n-key={HOME_HERO_KEYS.searchSubmit}>→</button>
-      </form>
-      <nav className="eaHeroQuick" aria-label={copy.shortcutLabel} data-i18n-key={HOME_HERO_KEYS.shortcutLabel}>
-        <a href="/inventory?q=BMW">BMW</a>
-        <a href="/inventory?q=Mercedes">Mercedes</a>
-        <a href="/inventory?q=Audi">Audi</a>
-        <a href="/inventory?q=Porsche">Porsche</a>
-        <a href="/inventory?live=1" data-i18n-key={HOME_HERO_KEYS.shortcutLive}>{copy.shortcutLive}</a>
-        <a href="/inventory?buyNow=1" data-i18n-key={HOME_HERO_KEYS.shortcutBuyNow}>{copy.shortcutBuyNow}</a>
-      </nav>
-    </div>
+    <HomeDiscoveryV2 />
 
     <div className="eaHeroV2Foot">
       <strong data-i18n-key={HOME_HERO_KEYS.footPrimary}>{copy.footPrimary}</strong>
