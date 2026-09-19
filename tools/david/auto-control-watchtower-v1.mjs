@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import { chromium } from "playwright-core";
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1"));
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
@@ -341,6 +340,7 @@ async function main() {
   state.watchdog = "control-starting";
   save(state, "CONTROL starting");
 
+  const { chromium } = await import("playwright-core");
   const browser = await chromium.connectOverCDP(CDP_URL, { timeout: 60000 });
   const context = browser.contexts()[0];
   if (!context) throw new Error("CONTROL: no shared Edge context");
