@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { waitForGlobalSendPermit, reportProbeSuccess, markGlobalSendStarted } from "./chatgpt-rate-limit-coordinator.mjs";
+import { CHATGPT_ROOT, rotateOwnedChatPage } from "./chatgpt-session-rotation.mjs";
 
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const STATE_FILE = process.env.DAVID_APK_STATE_FILE || path.join(process.cwd(), ".david-apk-state.json");
@@ -258,48 +259,50 @@ async function conversationLimitReached(page) {
   } catch { return false; }
 }
 
-async function rolloverConversation(context, page, state) {
+async function rolloverConversation(context, page, state, reason = "conversation-limit") {
   const oldUrl = cleanConversationUrl(page?.url?.()) || page?.url?.() || activeChatUrl;
-  
-  const oldPage = page;
+  if (!page || page.isClosed()) page = await ensurePage(context, null, state);
+  if (!page || page.isClosed()) throw new Error("APK rollover requires one owned ChatGPT tab");
+
   state.previousChatUrl = oldUrl;
   state.staleChatUrls = Array.from(new Set([...(Array.isArray(state.staleChatUrls) ? state.staleChatUrls : []), oldUrl])).slice(-20);
   state.rolloverCount = Number(state.rolloverCount || 0) + 1;
   state.pendingNewChat = true;
   state.justRolledOver = true;
-  state.watchdog = "apk-conversation-rollover";
+  state.watchdog = reason === "final-ok" ? "apk-session-rotate-after-ok" : "apk-conversation-rollover";
 
   const event = {
     number: state.rolloverCount,
+    reason,
     oldUrl: cleanConversationUrl(oldUrl) || oldUrl,
     newUrl: null,
     startedAt: new Date().toISOString(),
-    oldTabClosedAt: null
+    oldTabReusedAt: null
   };
   state.rolloverHistory = [...(Array.isArray(state.rolloverHistory) ? state.rolloverHistory : []), event].slice(-50);
 
-  activeChatUrl = "https://chatgpt.com/";
+  activeChatUrl = CHATGPT_ROOT;
   state.chatUrl = activeChatUrl;
-  save(state, `APK rollover #${state.rolloverCount} reserved; adopting/creating one pending tab`);
+  save(state, `APK session rotation #${state.rolloverCount} (${reason}); reusing owned tab only`);
 
-  let newPage = await findTaggedPage(context, [PENDING_TAB_NAME]);
-  if (!newPage || newPage === oldPage || newPage.isClosed()) {
-    newPage = await context.newPage();
-    await setPageTag(newPage, PENDING_TAB_NAME);
-    await newPage.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
-  }
-  await setPageTag(newPage, TAB_NAME);
+  const rotated = await rotateOwnedChatPage({
+    page,
+    getComposer: composer,
+    setPageTag,
+    pendingTag: PENDING_TAB_NAME,
+    managedTag: TAB_NAME,
+    onWait: async ({ phase, attempt, url }) => {
+      state.watchdog = phase === "auth-wait" ? "apk-session-rotate-auth-wait" : "apk-session-rotate-wait";
+      save(state, `APK session rotation waiting phase=${phase} attempt=${attempt} url=${url || "unknown"}; NO NEW TAB`);
+    }
+  });
+  if (!rotated.ok) throw new Error(`APK same-tab session rotation failed: ${rotated.reason}`);
 
-  if (oldPage && !oldPage.isClosed() && oldPage !== newPage) {
-    await setPageTag(oldPage, "");
-    await oldPage.close({ runBeforeUnload: false }).catch(() => {});
-    event.oldTabClosedAt = new Date().toISOString();
-  }
-  await closeOldConversationTabs(context, oldUrl, newPage);
-  save(state, `APK conversation max length -> single new tab #${state.rolloverCount}; old tab closed`);
-  console.log(`[APK] Conversation max length -> SINGLE NEW TAB #${state.rolloverCount}; OLD TAB CLOSED.`);
-  await sleep(1200);
-  return newPage;
+  event.oldTabReusedAt = new Date().toISOString();
+  await closeOldConversationTabs(context, oldUrl, page);
+  save(state, `APK fresh ChatGPT session ready in SAME TAB #${state.rolloverCount}; reason=${reason}`);
+  console.log(`[APK] Fresh ChatGPT session ready in SAME TAB #${state.rolloverCount}; reason=${reason}. NO EXTRA TAB.`);
+  return page;
 }
 
 function syncChatUrl(page, state) {
@@ -654,7 +657,8 @@ async function main() {
       state.problem = null;
       state.problemAttempts = 0;
       state.lastResult = "OK";
-      save(state, "APK problem fixed with final OK; continuing");
+      save(state, "APK problem fixed with final OK; rotating to fresh session");
+      page = await rolloverConversation(context, page, state, "final-ok");
       await sleep(COOLDOWN_MS);
       continue;
     }
@@ -679,8 +683,9 @@ async function main() {
       }
     }
     state.lastResult = "OK";
-    save(state, "Final OK received; next APK prompt allowed");
-    console.log("[APK] Final OK received. NEXT prompt allowed.");
+    save(state, "Final OK received; rotating to fresh APK session before next prompt");
+    console.log("[APK] Final OK received. Rotating to fresh session.");
+    page = await rolloverConversation(context, page, state, "final-ok");
     await sleep(COOLDOWN_MS);
   }
 }
