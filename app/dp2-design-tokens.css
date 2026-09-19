@@ -1,0 +1,352 @@
+/* ENCHEV AUCTIONS — DESIGN PROCESS 2 / DP2-02
+   Premium semantic design tokens: color, surfaces, borders, elevation,
+   radii and interaction/status roles. Typography/spacing/grid remain DP2-03. */
+
+:root{
+  /* Core canvas + surfaces */
+  --ea-canvas:#050706;
+  --ea-canvas-subtle:#080b09;
+  --ea-surface-1:#0b0f0c;
+  --ea-surface-2:#111712;
+  --ea-surface-3:#18201a;
+  --ea-surface-4:#202a22;
+  --ea-surface-overlay:rgba(10,14,11,.88);
+  --ea-surface-glass-premium:rgba(12,17,13,.78);
+
+  /* Neutral borders */
+  --ea-border-subtle:rgba(235,244,238,.07);
+  --ea-border-default:rgba(235,244,238,.12);
+  --ea-border-strong:rgba(235,244,238,.20);
+  --ea-border-interactive:rgba(99,229,140,.42);
+
+  /* Text */
+  --ea-text-primary:#f6faf7;
+  --ea-text-secondary:#c8d2cb;
+  --ea-text-tertiary:#8f9b93;
+  --ea-text-disabled:#647067;
+  --ea-text-inverse:#061009;
+
+  /* Brand / action */
+  --ea-brand:#63e58c;
+  --ea-brand-strong:#32c66b;
+  --ea-brand-deep:#178e4b;
+  --ea-brand-soft:rgba(99,229,140,.10);
+  --ea-action-primary:#63e58c;
+  --ea-action-primary-hover:#78eda0;
+  --ea-action-primary-pressed:#46cd76;
+  --ea-action-secondary:rgba(246,250,247,.04);
+
+  /* Auction + feedback semantics: intentionally distinct from brand */
+  --ea-state-live:#ff6b5f;
+  --ea-state-live-soft:rgba(255,107,95,.11);
+  --ea-state-live-border:rgba(255,107,95,.38);
+  --ea-state-info:#72a9ff;
+  --ea-state-info-soft:rgba(114,169,255,.11);
+  --ea-state-success:#63d894;
+  --ea-state-success-soft:rgba(99,216,148,.11);
+  --ea-state-warning:#e9b85b;
+  --ea-state-warning-soft:rgba(233,184,91,.11);
+  --ea-state-danger:#ff7180;
+  --ea-state-danger-soft:rgba(255,113,128,.10);
+  --ea-state-sold:#98a39c;
+  --ea-state-sold-soft:rgba(152,163,156,.10);
+
+  /* Elevation */
+  --ea-elevation-1:0 8px 24px rgba(0,0,0,.18);
+  --ea-elevation-2:0 18px 46px rgba(0,0,0,.26);
+  --ea-elevation-3:0 30px 80px rgba(0,0,0,.36);
+  --ea-elevation-live:0 18px 48px rgba(255,107,95,.08);
+
+  /* Radii */
+  --ea-radius-control:10px;
+  --ea-radius-card:16px;
+  --ea-radius-panel:22px;
+  --ea-radius-hero:28px;
+
+  /* Interaction */
+  --ea-focus-color:#9bf1b5;
+  --ea-focus-ring:0 0 0 4px rgba(155,241,181,.14);
+  --ea-hover-surface:rgba(246,250,247,.055);
+  --ea-pressed-surface:rgba(246,250,247,.08);
+
+  /* Compatibility aliases used by V1 components */
+  --ea-bg:var(--ea-canvas);
+  --ea-bg-2:var(--ea-canvas-subtle);
+  --ea-surface:var(--ea-surface-1);
+  --ea-surface-2:var(--ea-surface-2);
+  --ea-surface-3:var(--ea-surface-3);
+  --ea-line:var(--ea-border-default);
+  --ea-line-strong:var(--ea-border-interactive);
+  --ea-line-neutral:var(--ea-border-subtle);
+  --ea-text:var(--ea-text-primary);
+  --ea-text-soft:var(--ea-text-secondary);
+  --ea-muted:var(--ea-text-tertiary);
+  --ea-green:var(--ea-brand);
+  --ea-green-2:var(--ea-brand-strong);
+  --ea-green-deep:var(--ea-brand-deep);
+  --ea-danger:var(--ea-state-danger);
+  --ea-warning:var(--ea-state-warning);
+  --ea-shadow-sm:var(--ea-elevation-1);
+  --ea-shadow-md:var(--ea-elevation-2);
+  --ea-shadow-lg:var(--ea-elevation-3);
+  --ea-focus:var(--ea-focus-ring);
+}
+
+/* Global surface baseline */
+html{background:var(--ea-canvas)}
+body{
+  background:linear-gradient(180deg,var(--ea-canvas) 0%,var(--ea-canvas-subtle) 52%,var(--ea-canvas) 100%);
+  color:var(--ea-text-primary);
+}
+::selection{background:rgba(99,229,140,.24);color:var(--ea-text-primary)}
+:where(a,button,input,select,textarea):focus-visible{
+  outline:2px solid var(--ea-focus-color)!important;
+  outline-offset:3px;
+  box-shadow:var(--ea-focus-ring)!important;
+}
+
+/* Shared premium surface hierarchy across the five buyer routes */
+.eaHome,
+.inventoryPage,
+.lotPage,
+.livePage,
+.navigationPage{
+  background-color:var(--ea-canvas)!important;
+  color:var(--ea-text-primary)!important;
+}
+
+.eaTopbar,
+.eaMainnav,
+.inventoryHeader,
+.inventoryNav,
+.lotHeader,
+.liveHeader,
+.navigationRouteHeader{
+  border-color:var(--ea-border-subtle)!important;
+}
+
+.eaMainnav,
+.inventoryHeader,
+.lotHeader,
+.liveHeader,
+.navigationRouteHeader{
+  background:var(--ea-surface-overlay)!important;
+  box-shadow:0 12px 34px rgba(0,0,0,.16);
+}
+
+.eaLiveCard,
+.eaFeaturedCard,
+.inv2Hero,
+.inventoryFilters,
+.inventoryToolbar,
+.inventoryCard,
+.lotBidPanel,
+.lotSection,
+.liveHeroClock,
+.liveBidPanel,
+.liveQueueCard,
+.profileAccountRail,
+.profileOverview,
+.navigationRouteCard{
+  border-color:var(--ea-border-default)!important;
+  box-shadow:var(--ea-elevation-1)!important;
+}
+
+.eaLiveCard,
+.inventoryCard,
+.lotBidPanel,
+.liveBidPanel,
+.profileAccountRail{
+  background:linear-gradient(180deg,var(--ea-surface-2),var(--ea-surface-1))!important;
+}
+
+.eaFeaturedCard,
+.lotSection,
+.liveQueueCard,
+.navigationRouteCard{
+  background:var(--ea-surface-1)!important;
+}
+
+.inv2Hero,
+.profileOverview{
+  background:
+    radial-gradient(circle at 86% 10%,var(--ea-brand-soft),transparent 30%),
+    linear-gradient(145deg,var(--ea-surface-2),var(--ea-surface-1))!important;
+}
+
+/* Neutral interactive surfaces: brand appears on intent, not everywhere */
+.eaHeroQuick a,
+.inv2Chip,
+.detailsBtn,
+.inv2ViewSwitch button,
+.lotPill,
+.lotThumb,
+.lotCountdown,
+.liveBidMeta div,
+.profileAccountNav a,
+.profileAccountRailNote{
+  border-color:var(--ea-border-subtle)!important;
+  background:var(--ea-action-secondary)!important;
+  color:var(--ea-text-secondary)!important;
+}
+
+.eaHeroQuick a:hover,
+.inv2Chip:hover,
+.inv2Chip.active,
+.detailsBtn:hover,
+.inv2ViewSwitch button:hover,
+.inv2ViewSwitch button.active,
+.profileAccountNav a:hover,
+.profileAccountNav a:focus-visible{
+  border-color:var(--ea-border-interactive)!important;
+  background:var(--ea-brand-soft)!important;
+  color:var(--ea-text-primary)!important;
+}
+
+/* Primary actions retain ENCHEV jade */
+.eaBtnPrimary,
+.inventoryAccount .registerBtn,
+.lotHeaderActions .lotGreen,
+.lotBidBtn,
+.liveHeader .liveRegister,
+.liveBidButton,
+.profileOverviewActions a:first-child{
+  border-color:transparent!important;
+  background:linear-gradient(135deg,var(--ea-action-primary),var(--ea-brand-strong))!important;
+  color:var(--ea-text-inverse)!important;
+  box-shadow:0 12px 30px rgba(50,198,107,.14)!important;
+}
+
+.eaBtnPrimary:hover,
+.inventoryAccount .registerBtn:hover,
+.lotHeaderActions .lotGreen:hover,
+.lotBidBtn:hover,
+.liveHeader .liveRegister:hover,
+.liveBidButton:hover,
+.profileOverviewActions a:first-child:hover{
+  background:linear-gradient(135deg,var(--ea-action-primary-hover),var(--ea-action-primary))!important;
+}
+
+/* LIVE is now a distinct auction state instead of another brand-green usage */
+.eaDot,
+.eaLivePill i,
+.inventoryNav .navLive:before,
+.lotLiveBadge i,
+.liveUtility i,
+.liveStatus i{
+  background:var(--ea-state-live)!important;
+  box-shadow:0 0 14px rgba(255,107,95,.52)!important;
+}
+
+.eaLivePill,
+.inventoryNav .navLive,
+.lotLiveBadge,
+.liveEyebrow,
+.liveStatus{
+  color:#ffb1aa!important;
+}
+
+.eaLiveCard,
+.liveVisual{
+  border-color:var(--ea-state-live-border)!important;
+  box-shadow:var(--ea-elevation-2),var(--ea-elevation-live)!important;
+}
+
+.eaLiveOrb:before,
+.liveRing{
+  border-color:var(--ea-state-live-border)!important;
+}
+.eaLiveOrb:before{
+  border-top-color:var(--ea-state-live)!important;
+  border-right-color:var(--ea-state-live)!important;
+}
+.liveRing{
+  background:
+    radial-gradient(circle,rgba(8,11,9,.95) 0 54%,transparent 56%),
+    conic-gradient(var(--ea-state-live) 0 78%,rgba(255,255,255,.08) 78% 100%)!important;
+}
+.liveNewBid{
+  background:var(--ea-state-live)!important;
+  color:#fff!important;
+  box-shadow:0 12px 36px rgba(255,107,95,.20)!important;
+}
+
+/* Auction state token mapping */
+.eaFeaturedBadge--live{
+  color:#ffd7d3!important;
+  border-color:var(--ea-state-live-border)!important;
+  background:var(--ea-state-live-soft)!important;
+}
+.eaFeaturedBadge--upcoming{
+  color:#cfe0ff!important;
+  border-color:rgba(114,169,255,.34)!important;
+  background:var(--ea-state-info-soft)!important;
+}
+.eaFeaturedBadge--sold{
+  color:#cbd2cd!important;
+  border-color:rgba(152,163,156,.28)!important;
+  background:var(--ea-state-sold-soft)!important;
+}
+.eaFeaturedBadge--buy-now{
+  color:#c8f6d6!important;
+  border-color:rgba(99,216,148,.32)!important;
+  background:var(--ea-state-success-soft)!important;
+}
+
+.liveBidFeedback.is-accepted{
+  border-color:rgba(114,169,255,.34)!important;
+  background:var(--ea-state-info-soft)!important;
+}
+.liveBidFeedback.is-leading{
+  border-color:rgba(99,216,148,.34)!important;
+  background:var(--ea-state-success-soft)!important;
+}
+.liveBidFeedback.is-outbid{
+  border-color:rgba(233,184,91,.36)!important;
+  background:var(--ea-state-warning-soft)!important;
+}
+.liveBidFeedback.is-rejected{
+  border-color:rgba(255,113,128,.36)!important;
+  background:var(--ea-state-danger-soft)!important;
+}
+
+/* Confidence/status surfaces */
+.liveConnectionState{
+  border-color:var(--ea-border-default)!important;
+  background:var(--ea-surface-1)!important;
+}
+.liveConnectionState.is-connected{
+  border-color:rgba(99,216,148,.30)!important;
+  background:var(--ea-state-success-soft)!important;
+}
+.liveConnectionState.is-reconnecting{
+  border-color:rgba(233,184,91,.34)!important;
+  background:var(--ea-state-warning-soft)!important;
+}
+.liveConnectionState.is-stale{
+  border-color:rgba(255,113,128,.36)!important;
+  background:var(--ea-state-danger-soft)!important;
+}
+
+/* Premium radius/elevation aliases applied without changing layout/density */
+.eaFeaturedCard,
+.inventoryCard,
+.lotSection,
+.liveQueueCard,
+.navigationRouteCard{
+  border-radius:var(--ea-radius-card)!important;
+}
+.eaLiveCard,
+.lotBidPanel,
+.liveBidPanel,
+.profileAccountRail,
+.profileOverview{
+  border-radius:var(--ea-radius-panel)!important;
+}
+
+@media(forced-colors:active){
+  :root{
+    --ea-focus-color:Highlight;
+    --ea-focus-ring:none;
+  }
+}
