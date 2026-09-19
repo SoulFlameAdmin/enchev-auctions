@@ -574,7 +574,7 @@ async function runPrompt(context, page, state, prompt, kind) {
       await sleep(2500);
     }
     await fillAndSend(page, outgoingPrompt);
-    if (permit.mode === "probe") await markGlobalSendStarted("DESIGN");
+    await markGlobalSendStarted("DESIGN");
     let started = await waitStart(context, page, base, state); page = started.page;
     syncActiveChatUrl(page, state);
     if (started.blocker) {
