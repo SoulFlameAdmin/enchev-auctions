@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { waitForGlobalSendPermit, reportProbeSuccess } from "./chatgpt-rate-limit-coordinator.mjs";
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1"));
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
@@ -359,6 +360,18 @@ async function sendAndWait(context, page, state, prompt) {
       }
     }
 
+    const permit = await waitForGlobalSendPermit("CONTROL", async (decision) => {
+      state.watchdog = "control-global-rate-limit-wait";
+      state.problemRetryAt = decision.state?.blockedUntil || decision.state?.probeLeaseUntil || null;
+      save(state, `GLOBAL RATE LIMIT WAIT mode=${decision.mode}; owner=${decision.state?.probeOwner || "none"}`);
+    });
+    if (permit.mode === "probe") {
+      state.watchdog = "control-global-rate-limit-probe";
+      save(state, "CONTROL owns the single post-cooldown probe send");
+      await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+      await sleep(2500);
+    }
+
     await fillComposer(composer, prompt);
     await sendComposer(page, composer);
     state.turnsSent = Number(state.turnsSent || 0) + 1;
@@ -420,6 +433,8 @@ async function sendAndWait(context, page, state, prompt) {
           state.chatUrl = current;
         }
         state.watchdog = "control-complete";
+        await reportProbeSuccess("CONTROL");
+        delete state.problemRetryAt;
         save(state, "CONTROL response complete with final OK");
         return { page, text };
       }
