@@ -5,7 +5,7 @@
     {
       "id": "81",
       "title": "Vehicle intake, inspection, reconditioning & readiness",
-      "wave": 4,
+      "wave": 7,
       "profile": "operational",
       "domains": [
         "vehicle check-in",
@@ -463,7 +463,7 @@
     {
       "id": "82",
       "title": "Photography, video, media studio & listing content operations",
-      "wave": 7,
+      "wave": 8,
       "profile": "operational",
       "domains": [
         "photo checklist",
@@ -922,7 +922,7 @@
     {
       "id": "83",
       "title": "Auction operations, scheduling, lanes & capacity planning",
-      "wave": 5,
+      "wave": 8,
       "profile": "operational",
       "domains": [
         "auction event calendar",
@@ -1830,7 +1830,6 @@
         "21",
         "31",
         "39",
-        "46",
         "54",
         "55",
         "63",
@@ -2749,7 +2748,7 @@
     {
       "id": "87",
       "title": "Landed-cost, tax/customs estimate & price transparency",
-      "wave": 8,
+      "wave": 12,
       "profile": "transactional",
       "domains": [
         "vehicle price component",
