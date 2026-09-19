@@ -1,5 +1,9 @@
 import { chromium } from "playwright-core";
+import fs from "node:fs";
+import path from "node:path";
 import process from "node:process";
+
+const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1"));
 
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const POLL_MS = Number(process.env.DAVID_INTERRUPT_POLL_MS || 500);
@@ -11,6 +15,38 @@ const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const recoveredAt = new Map();
 const interruptionSince = new Map();
 const interruptionSamples = new Map();
+
+function cleanConversationUrl(url) {
+  const m = String(url || "").match(/^https:\/\/chatgpt\.com\/c\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?=[/?#]|$)/i);
+  return m ? m[0] : null;
+}
+
+function readState(file) {
+  try { return JSON.parse(fs.readFileSync(file, "utf8")); }
+  catch { return {}; }
+}
+
+function managedConversationUrls() {
+  const defs = [
+    [path.join(HERE, ".david-enchev-state.json"), "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71"],
+    [path.join(HERE, ".david-enchev-design-state.json"), "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7"],
+    [path.join(HERE, ".david-app2-state-6aac2dbb.json"), "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4"],
+    [path.join(HERE, ".david-apk-state.json"), null]
+  ];
+  const urls = new Set();
+  for (const [file, fallback] of defs) {
+    const st = readState(file);
+    const u = cleanConversationUrl(st.chatUrl) || cleanConversationUrl(fallback);
+    if (u) urls.add(u);
+  }
+  return urls;
+}
+
+function isManagedChat(page) {
+  if (!isChat(page)) return false;
+  const u = cleanConversationUrl(page.url());
+  return Boolean(u && managedConversationUrls().has(u));
+}
 
 function isChat(page) {
   try { return !page.isClosed() && /^https:\/\/chatgpt\.com\/c\//i.test(page.url()); }
@@ -243,10 +279,10 @@ async function main() {
   const browser = await chromium.connectOverCDP(CDP_URL);
   const context = browser.contexts()[0];
   if (!context) throw new Error("No active Chromium context on CDP port.");
-  console.log("[INTERRUPT] Global ChatGPT connection guard ON. Watches every ChatGPT conversation tab in DAVID Edge.");
+  console.log("[INTERRUPT] Managed-only ChatGPT guard ON. Watches SYSTEM/DESIGN/APP2/APK owned URLs only.");
 
   while (true) {
-    const pages = context.pages().filter(isChat);
+    const pages = context.pages().filter(isManagedChat);
     for (const page of pages) {
       try {
         if (await interruptionVisible(page)) {
