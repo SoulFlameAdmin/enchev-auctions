@@ -82,6 +82,13 @@ function scanSource(file, source) {
     rule.pattern.lastIndex = 0;
     let match;
     while ((match = rule.pattern.exec(source)) !== null) {
+      if (
+        rule.id === "literal-country-branch" &&
+        /typeof\s+$/.test(source.slice(Math.max(0, match.index - 24), match.index))
+      ) {
+        continue;
+      }
+
       const before = source.slice(0, match.index);
       const line = before.split("\n").length;
       violations.push({
