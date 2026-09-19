@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
-import { waitForGlobalSendPermit, reportProbeSuccess, markGlobalSendStarted } from "./chatgpt-rate-limit-coordinator.mjs";
+import { waitForGlobalSendPermit, reportRateLimit, reportProbeSuccess, markGlobalSendStarted } from "./chatgpt-rate-limit-coordinator.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(HERE, "..", "..");
@@ -557,7 +557,7 @@ async function runPrompt(context, page, state, prompt, kind) {
       : prompt;
     const permit = await waitForGlobalSendPermit("DESIGN", async (decision) => {
       state.watchdog = "global-rate-limit-wait";
-      state.problem = "ChatGPT platform: global rate limit";
+      state.problem = null;
       state.problemRetryAt = decision.state?.blockedUntil || decision.state?.probeLeaseUntil || null;
       save(state, `GLOBAL RATE LIMIT WAIT mode=${decision.mode}; owner=${decision.state?.probeOwner || "none"}`);
     });
@@ -597,6 +597,15 @@ async function runPrompt(context, page, state, prompt, kind) {
             return { page, text: doneAfterTimeout.text };
           }
         }
+        continue;
+      }
+      if (started.blocker === "rate limit") {
+        const rl = await reportRateLimit("DESIGN", "ChatGPT UI/start: rate limit");
+        state.problem = null;
+        state.problemRetryAt = rl.blockedUntil;
+        state.watchdog = "global-rate-limit-wait";
+        save(state, `GLOBAL RATE LIMIT from DESIGN start; stage=${rl.stage} until=${rl.blockedUntil}`);
+        await sleep(1000);
         continue;
       }
       state.problem = `ChatGPT platform: ${started.blocker}`; state.watchdog = "design-platform-backoff"; save(state, `Design platform blocker: ${started.blocker}`);
