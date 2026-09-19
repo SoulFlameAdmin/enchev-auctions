@@ -71,7 +71,7 @@ function isManagedChat(page) {
 }
 
 function isChat(page) {
-  try { return !page.isClosed() && /^https:\/\/chatgpt\.com\/c\//i.test(page.url()); }
+  try { return !page.isClosed() && /^https:\/\/chatgpt\.com(?:\/|$)/i.test(page.url()); }
   catch { return false; }
 }
 
@@ -207,7 +207,7 @@ async function sendTimeoutVisible(page) {
         const r = el.getBoundingClientRect();
         return s.display !== "none" && s.visibility !== "hidden" && Number(s.opacity || 1) > 0 && r.width > 0 && r.height > 0;
       };
-      const re = /(изпращането на съобщението изтече по време|моля, опитайте отново|message sending timed out|sending the message timed out|message send timed out|please try again)/i;
+      const re = /(изпращането на съобщението изтече по време|message sending timed out|sending the message timed out|message send timed out|sending timed out|съобщението не можа да бъде изпратено навреме)/i;
       for (const el of document.querySelectorAll('[role="alert"],[aria-live="assertive"],[data-testid*="error" i],div,section,p,span')) {
         if (!visible(el)) continue;
         if (el.closest('[data-message-author-role="assistant"]')) continue;
