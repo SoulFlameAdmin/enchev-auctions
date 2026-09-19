@@ -10,6 +10,17 @@ $PortableGit = Join-Path $Root "tools\PortableGit\cmd\git.exe"
 $PortableGitDir = Join-Path $Root "tools\PortableGit"
 $PortableNode = Join-Path $Root "tools\node"
 
+$OwnsMutex = $false
+$StartMutex = $null
+if ($env:DAVID_ORCHESTRATION_LOCK_HELD -ne "1") {
+  $StartMutex = New-Object System.Threading.Mutex($false, "Global\DAVID_ORCHESTRATION_V1")
+  try { $OwnsMutex = $StartMutex.WaitOne(0) }
+  catch [System.Threading.AbandonedMutexException] { $OwnsMutex = $true }
+  if (-not $OwnsMutex) {
+    throw "Another DAVID START/RESTART operation is already running. Parallel orchestration is forbidden."
+  }
+}
+
 if (Test-Path $PortableGitDir) { $env:Path = "$PortableGitDir\cmd;$PortableGitDir\bin;$env:Path" }
 if (Test-Path $PortableNode) { $env:Path = "$PortableNode;$env:Path" }
 
@@ -264,3 +275,8 @@ Write-Host "[DAVID ALL] Recovery laws: active thinking/tool work=>WAIT; no-think
 Write-Host "[DAVID ALL] Vercel deploy coordinator: Supabase global lease; one worker deploys at a time." -ForegroundColor Yellow
 Write-Host "[DAVID ALL] Matrix dashboard starts automatically with live progress + worker report." -ForegroundColor Yellow
 Write-Host "[DAVID ALL] 24/7 SELF-HEAL: stale heartbeat or missing managed tab restarts only the affected worker." -ForegroundColor Yellow
+
+if ($OwnsMutex -and $StartMutex) {
+  try { $StartMutex.ReleaseMutex() | Out-Null } catch {}
+  try { $StartMutex.Dispose() } catch {}
+}
