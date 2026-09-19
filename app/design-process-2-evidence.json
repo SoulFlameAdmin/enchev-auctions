@@ -54,10 +54,10 @@
       "id": "DP2-06",
       "group": "Homepage",
       "title": "Search, quick discovery and category shortcuts",
-      "status": "red",
-      "evidence": "",
+      "status": "green",
+      "evidence": "GREEN PASS. DP2-06 implemented on PR #93 through head 53dae15df44758b16cfc24460a8ac2ed80eafd88. app/components/HomeDiscoveryV2.tsx replaces the preserved placeholder strip with a dedicated localized homepage discovery surface: semantic q search to /inventory, auction-state shortcuts (all/LIVE/Buy Now), make shortcuts (BMW/Mercedes/Audi/Porsche), explicit labels/hints, advanced-search entry, 44px+ touch targets, focus-visible states, and responsive behavior for the required 360/390/430 mobile widths plus 1366/1440/1920 desktop classes. app/dp2-home-discovery.css is loaded globally; BG/EN discovery copy and translation keys are registered. scripts/verify-dp2-06-home-discovery.mjs is wired into npm test; accessibility and visual-runtime verifiers were updated only to follow the new component boundary without weakening existing contracts. Verify Enchev Web run 35455469136 completed SUCCESS: repository/design/mobile/accessibility/cross-browser/originality gates, CI test suite, TypeScript, production build, health smoke, Microsoft Edge install, Chrome+Edge visual regression, and artifact upload all passed. Artifact 10588546516 (enchev-cross-browser-visual-cae67cce41d49168f8b94913566bdd1187710661, digest sha256:fc8703a2fcb07e4b3a47b2a493edf4c8dde70b3c62f3cb324c17041b7ac6c283) contains the fresh 60-screenshot responsive matrix. GitHub Vercel status remains external build-rate-limit with no retry time; no manual Vercel create/update/redeploy was attempted, so no Supabase deploy lease was required. Frozen D01-D36 evidence and protected DAVID orchestrator files were not modified.",
       "blocker": "",
-      "updatedAt": null
+      "updatedAt": "2026-09-19T16:40:00Z"
     },
     {
       "id": "DP2-07",
