@@ -240,6 +240,78 @@ async function verifyD26SoldAdvance(call,viewport){
   if(response?.body?.auctionAuthority!==false)fail(`D26 ${viewport.name} must remain auctionAuthority=false`);
 }
 
+async function verifyD27BidFeedback(call,viewport){
+  await call("Network.enable");
+  const originResult=await call("Runtime.evaluate",{expression:"location.origin",returnByValue:true});
+  const origin=originResult?.result?.value;
+  if(typeof origin!=="string"||!origin.startsWith("http"))fail(`D27 ${viewport.name} origin missing`);
+
+  const seededState=encodeURIComponent(JSON.stringify({lotIndex:0,roundEndsAt:Date.now()+30_000,bidSequence:0}));
+  const cookie=await call("Network.setCookie",{
+    name:"enchev_live_demo_v2",
+    value:seededState,
+    url:origin,
+    path:"/",
+    httpOnly:true,
+    secure:false,
+    sameSite:"Lax",
+  });
+  if(cookie?.success!==true)fail(`D27 ${viewport.name} could not seed server-session state`);
+
+  await call("Page.reload",{ignoreCache:true});
+  await sleep(250);
+
+  const read=async()=>{
+    const result=await call("Runtime.evaluate",{expression:`(()=>{const timer=document.querySelector('.liveHeroClock[data-design-task="D25"]');const current=document.querySelector('.liveVisual[data-live-slot="current"]');const feedback=document.querySelector('.liveBidFeedback[data-design-task="D27"]');const bid=document.querySelector('.liveBidButton');const price=document.querySelector('.liveBidTop b');if(!timer||!current||!feedback||!bid||!price)return null;const fr=feedback.getBoundingClientRect();return {clockMode:timer.getAttribute('data-clock-mode')||'',auctionAuthority:feedback.getAttribute('data-auction-authority')||'',lotId:current.getAttribute('data-lot-id')||'',feedback:feedback.getAttribute('data-bid-feedback')||'',text:feedback.textContent||'',priceText:price.textContent||'',visible:fr.width>0&&fr.height>0,scrollWidth:document.documentElement.scrollWidth,viewportWidth:innerWidth,bidDisabled:bid.disabled===true};})()`,returnByValue:true});
+    return result?.result?.value;
+  };
+
+  let initial=null;
+  for(let attempt=0;attempt<25;attempt++){
+    initial=await read();
+    if(initial?.clockMode==="server"&&initial.lotId==="EA-10511")break;
+    await sleep(100);
+  }
+  if(!initial||initial.clockMode!=="server"||initial.lotId!=="EA-10511")fail(`D27 ${viewport.name} seeded lot did not reach server mode`);
+  if(initial.feedback!=="idle"||initial.auctionAuthority!=="false"||!initial.visible)fail(`D27 ${viewport.name} initial feedback contract invalid`);
+  if(initial.scrollWidth>initial.viewportWidth+3)fail(`D27 ${viewport.name} horizontal overflow before feedback test`);
+
+  const expected=[
+    ["accepted","ОФЕРТАТА Е ПРИЕТА",100],
+    ["leading","ВОДИШ В ТЪРГА",100],
+    ["outbid","НАДДАВАН СИ",100],
+    ["rejected","ОФЕРТАТА Е ОТХВЪРЛЕНА",0],
+  ];
+
+  let previousPrice=Number((initial.priceText.match(/[0-9\s]+/)?.[0]||"0").replace(/\s/g,""));
+  for(const [feedbackState,label,delta] of expected){
+    await call("Runtime.evaluate",{expression:"document.querySelector('.liveBidButton')?.click()"});
+    let state=null;
+    for(let attempt=0;attempt<30;attempt++){
+      await sleep(80);
+      state=await read();
+      if(state?.feedback===feedbackState)break;
+    }
+    if(!state||state.feedback!==feedbackState)fail(`D27 ${viewport.name} expected ${feedbackState}, got ${state?.feedback||"missing"}`);
+    if(!state.text.includes(label))fail(`D27 ${viewport.name} ${feedbackState} label mismatch`);
+    if(state.auctionAuthority!=="false")fail(`D27 ${viewport.name} must remain auctionAuthority=false`);
+    if(state.lotId!=="EA-10511")fail(`D27 ${viewport.name} lot changed during feedback cycle`);
+    if(state.scrollWidth>state.viewportWidth+3)fail(`D27 ${viewport.name} horizontal overflow in ${feedbackState} state`);
+
+    const nextPrice=Number((state.priceText.match(/[0-9\s]+/)?.[0]||"0").replace(/\s/g,""));
+    if(nextPrice!==previousPrice+delta)fail(`D27 ${viewport.name} ${feedbackState} price delta mismatch: ${previousPrice} -> ${nextPrice}`);
+    previousPrice=nextPrice;
+  }
+
+  const endpoint=await call("Runtime.evaluate",{
+    expression:"fetch('/api/live-auction-clock',{cache:'no-store'}).then(async r=>({status:r.status,body:await r.json()}))",
+    awaitPromise:true,
+    returnByValue:true,
+  });
+  const response=endpoint?.result?.value;
+  if(response?.status!==200||response?.body?.auctionAuthority!==false||response?.body?.scope!=="server-issued-browser-session-demo")fail(`D27 ${viewport.name} endpoint authority/scope contract mismatch`);
+}
+
 async function verifyD29Watchlist(call,viewport){
   const before=await call("Runtime.evaluate",{expression:`(()=>{const s=document.querySelector('.profileWatchlist[data-design-task="D29"]');const summary=s?.querySelector('.profileWatchlistSummary');const grid=s?.querySelector('.profileWatchlistGrid');const cards=[...(s?.querySelectorAll('.profileWatchlistCard')||[])];const first=cards[0];const remove=first?.querySelector('.profileWatchlistRemove');if(!s||!summary||!grid||!first||!remove)return null;remove.focus({preventScroll:true});const rr=remove.getBoundingClientRect();const states=cards.map(x=>x.getAttribute('data-auction-state')||'');const ids=cards.map(x=>x.getAttribute('data-lot-id')||'');return {viewportWidth:innerWidth,scrollWidth:document.documentElement.scrollWidth,columns:getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length,count:cards.length,saved:Number(summary.getAttribute('data-saved-count')),live:Number(summary.getAttribute('data-live-count')),states,ids,focused:document.activeElement===remove,removeWidth:rr.width,removeHeight:rr.height,lotLinks:cards.every((x,i)=>x.querySelector('.profileWatchlistActions a:first-child')?.getAttribute('href')==='/lot/'+ids[i]),liveLinks:cards.every(x=>x.querySelector('.profileWatchlistActions a:last-child')?.getAttribute('href')==='/live-auctions')};})()`,returnByValue:true});
   const b=before?.result?.value;
@@ -482,6 +554,7 @@ async function captureOne({port,baseUrl,route,viewport,outputDir}){
     if(route.name==="live-auctions"){
       await verifyD25ServerClock(call,viewport);
       await verifyD26SoldAdvance(call,viewport);
+      await verifyD27BidFeedback(call,viewport);
     }
     if(route.name==="profile"){
       await verifyD29Watchlist(call,viewport);
