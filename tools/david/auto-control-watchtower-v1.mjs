@@ -205,7 +205,8 @@ function anomaly(t) {
     if ((Array.isArray(t.managed && t.managed[n]) ? t.managed[n].length : 0) !== 1) return true;
     if (t.workerHealth && t.workerHealth[n] && t.workerHealth[n].processAlive === false) return true;
     if (Number(t.workerHealth && t.workerHealth[n] ? t.workerHealth[n].heartbeatAgeMs || 0 : 0) > 300000) return true;
-    if (t.workers && t.workers[n] && t.workers[n].problem) return true;
+    const watchdog = String(t.workers && t.workers[n] ? t.workers[n].watchdog || "" : "");
+    if (/(fatal|composer-missing|session-missing|cdp|browser-dead|platform-error)/i.test(watchdog)) return true;
   }
   return false;
 }
@@ -223,6 +224,8 @@ function controlPrompt(t, reason) {
     "- Prefer the smallest recovery action affecting only one worker.\n" +
     "- RESTART is stronger than REFRESH; use it only for dead/stale/missing workers.\n" +
     "- CLEAN_DUPLICATES only when a managed worker has more than one owned tab.\n" +
+    "- Project PROBLEM IN, Redis/Valkey/Vercel/provider credentials, quota, deploy blockers and test failures are NOT session-health failures: normally WAIT.\n" +
+    "- If central guard is already handling connection interruption or send timeout, WAIT unless the worker/tab/heartbeat is actually dead.\n" +
     "- Do not command actions outside the allowlist.\n\n" +
     "ALLOWLISTED OUTPUT:\n" +
     "ACTION WAIT\n" +
