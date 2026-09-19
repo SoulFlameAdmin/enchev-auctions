@@ -469,6 +469,13 @@ async function waitForTerminalMarker(page, state) {
 function isExternalBlocker(problem) {
   return /(redis|valkey|upstash|vercel|marketplace|environment-secret|environment secret|provider credential|credential|permission|authorization|rate limit|quota|billing|plan limit|external access|legal sign-off|customer data|oidc.*deployment|deployment.*queued|deployment.*initializing)/i.test(String(problem || ""));
 }
+function blockerKey(problem) {
+  return String(problem || "").toLowerCase().replace(/\s+/g, " ").replace(/опит\s*\d+|attempt\s*\d+/g, "").trim();
+}
+function sameBlocker(a, b) {
+  const x = blockerKey(a), y = blockerKey(b);
+  return Boolean(x && y && (x === y || x.includes(y) || y.includes(x)));
+}
 function deferPrompt(problem, repeat = 1) {
   return `@GitHub @Vercel @Supabase
 
@@ -871,44 +878,75 @@ async function main() {
   while (state.turnsSent < MAX_TURNS) {
     if (state.problem && isExternalBlocker(state.problem)) {
       const deferred = state.problem;
-      state.deferredBlocker = deferred;
-      state.deferredBlockerCount = Number(state.deferredBlockerCount || 0) + 1;
+      const alreadyDeferred = Boolean(state.deferredBlockerAcknowledged) && sameBlocker(state.deferredBlocker, deferred);
+
       state.problem = null;
       state.problemAttempts = 0;
       mode = "work";
-      state.watchdog = "external-blocker-deferred";
-      saveState(state, `External blocker deferred: ${deferred}`);
-      console.log(`[DAVID] External blocker deferred; continuing independent work: ${deferred}`);
-      const result = await runPrompt(context, page, state, deferPrompt(deferred, state.deferredBlockerCount), "work");
-      page = result.page;
-      const nextProblem = extractProblem(result.text);
-      if (nextProblem) {
-        if (isExternalBlocker(nextProblem)) {
-          state.deferredBlocker = nextProblem;
-          state.problem = null;
-          saveState(state, `External blocker still deferred: ${nextProblem}`);
+
+      if (alreadyDeferred) {
+        state.watchdog = "external-blocker-already-deferred";
+        saveState(state, `External blocker already deferred; skipping relay and continuing WORK: ${deferred}`);
+        console.log(`[DAVID] BLOCKER ALREADY DEFERRED -> WORK MODE: ${deferred}`);
+      } else {
+        state.deferredBlocker = deferred;
+        state.deferredBlockerAcknowledged = false;
+        state.deferredBlockerCount = Number(state.deferredBlockerCount || 0) + 1;
+        state.watchdog = "external-blocker-deferred";
+        saveState(state, `External blocker deferred once: ${deferred}`);
+        console.log(`[DAVID] NEW EXTERNAL BLOCKER -> ONE DEFER RELAY: ${deferred}`);
+
+        const result = await runPrompt(context, page, state, deferPrompt(deferred, state.deferredBlockerCount), "work");
+        page = result.page;
+        const nextProblem = extractProblem(result.text);
+
+        if (nextProblem) {
+          if (isExternalBlocker(nextProblem)) {
+            if (sameBlocker(deferred, nextProblem)) {
+              state.deferredBlocker = deferred;
+              state.deferredBlockerAcknowledged = true;
+              state.problem = null;
+              state.watchdog = "external-blocker-already-deferred";
+              saveState(state, `Same blocker repeated after one defer; forcing WORK: ${nextProblem}`);
+            } else {
+              state.deferredBlocker = nextProblem;
+              state.deferredBlockerAcknowledged = false;
+              state.problem = nextProblem;
+              saveState(state, `Different external blocker discovered: ${nextProblem}`);
+            }
+            await sleep(COOLDOWN_MS);
+            continue;
+          }
+          state.problem = nextProblem;
+          mode = "fix";
+          saveState(state, `New internal problem after deferred blocker: ${nextProblem}`);
           await sleep(COOLDOWN_MS);
           continue;
         }
-        state.problem = nextProblem;
-        mode = "fix";
-        saveState(state, `New internal problem after deferred blocker: ${nextProblem}`);
+
+        if (!endsOk(result.text)) {
+          const terminal = await waitForTerminalMarker(page, state);
+          if (terminal.type === "problem") {
+            if (isExternalBlocker(terminal.problem) && sameBlocker(deferred, terminal.problem)) {
+              state.deferredBlockerAcknowledged = true;
+              state.problem = null;
+              mode = "work";
+              saveState(state, `Same terminal blocker repeated after one defer; forcing WORK: ${terminal.problem}`);
+            } else {
+              state.problem = terminal.problem;
+              mode = isExternalBlocker(terminal.problem) ? "work" : "fix";
+              saveState(state, `Terminal marker became PROBLEM IN: ${terminal.problem}`);
+            }
+            continue;
+          }
+        }
+
+        state.deferredBlockerAcknowledged = true;
+        state.lastResult = "OK";
+        saveState(state, "One defer relay completed; same blocker will not receive another relay");
         await sleep(COOLDOWN_MS);
         continue;
       }
-      if (!endsOk(result.text)) {
-        const terminal = await waitForTerminalMarker(page, state);
-        if (terminal.type === "problem") {
-          state.problem = terminal.problem;
-          mode = isExternalBlocker(terminal.problem) ? "work" : "fix";
-          saveState(state, `Terminal marker became PROBLEM IN: ${terminal.problem}`);
-          continue;
-        }
-      }
-      state.lastResult = "OK";
-      saveState(state, "Independent work completed with final OK");
-      await sleep(COOLDOWN_MS);
-      continue;
     }
 
     if (mode === "fix" && state.problem) {
