@@ -1,5 +1,6 @@
 import HomeLiveSpotlight from "./HomeLiveSpotlight";
 import HomeDiscoveryV2 from "./HomeDiscoveryV2";
+import HomeDiscoveryV2 from "./HomeDiscoveryV2";
 import { getHomeHeroCopy, HOME_HERO_KEYS } from "../home-hero-messages";
 
 function T({k,children}:{k:string;children:React.ReactNode}){
