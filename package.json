@@ -74,7 +74,9 @@
     "verify:rtl-layout-capability": "node scripts/verify-rtl-layout-capability.mjs",
     "verify:rtl-layout-capability:self-test": "node scripts/verify-rtl-layout-capability.mjs --self-test",
     "verify:international-contact-models": "node scripts/verify-international-contact-models.mjs",
-    "verify:international-contact-models:self-test": "node scripts/verify-international-contact-models.mjs --self-test"
+    "verify:international-contact-models:self-test": "node scripts/verify-international-contact-models.mjs --self-test",
+    "verify:translation-completeness": "node scripts/verify-translation-completeness.mjs",
+    "verify:translation-completeness:self-test": "node scripts/verify-translation-completeness.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
