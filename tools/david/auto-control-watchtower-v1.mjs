@@ -477,7 +477,6 @@ async function main() {
       state.watchdog = "control-cdp-wait";
       save(state, `CONTROL CDP not ready: ${error?.message || error}; WAIT 5s -> reconnect`);
       console.log(`[CONTROL] CDP not ready: ${error?.message || error}. WAIT 5s -> reconnect. Worker stays alive.`);
-      try { await browser?.close(); } catch {}
       browser = null;
       context = null;
       await sleep(5000);
