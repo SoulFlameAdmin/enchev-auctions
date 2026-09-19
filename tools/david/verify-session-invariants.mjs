@@ -70,6 +70,19 @@ for (const [name, file, rotateAfterOk] of workerFiles) {
   }
 }
 
+const designSource = read("auto-continue-design-v1.mjs");
+for (const required of [
+  "async function composer(page)",
+  "async function latestAssistant(page)",
+  "async function latestRole(page)",
+  "async function generating(page)",
+  "async function complete(page",
+  "async function platformBlock(page)",
+  "async function waitSendTimeoutRecovery(context, page, state)"
+]) {
+  if (!designSource.includes(required)) throw new Error(`DESIGN response helper missing after session refactor: ${required}`);
+}
+
 const supervisor = read("dual-session-worker.mjs");
 for (const required of [
   "STRICT_CHATGPT_TAB_TARGET",
