@@ -190,6 +190,10 @@ jobs:
         run: node scripts/verify-locale-fallback-chain.mjs
       - name: 21.16 Locale fallback chain self-tests
         run: node scripts/verify-locale-fallback-chain.mjs --self-test
+      - name: 21.17 RTL layout capability
+        run: node scripts/verify-rtl-layout-capability.mjs
+      - name: 21.17 RTL layout capability self-tests
+        run: node scripts/verify-rtl-layout-capability.mjs --self-test
       - name: Redis environment contract invariant
         run: node scripts/verify-redis-environment.mjs
       - name: Redis environment contract self-tests
