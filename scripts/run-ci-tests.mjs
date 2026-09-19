@@ -13,6 +13,7 @@ const cases = [
   ["scripts/verify-cloud-plan-state.mjs", "--self-test"],
   ["scripts/verify-plan-version-ui.mjs", "--self-test"],
   ["scripts/verify-supabase-project-binding.mjs", "--self-test"],
+  ["scripts/verify-runtime-environments.mjs", "--self-test"],
   ["scripts/verify-environment-variables.mjs", "--self-test"],
   ["scripts/verify-redis-environment.mjs", "--self-test"],
   ["scripts/verify-redis-production-gate.mjs", "--self-test"],
