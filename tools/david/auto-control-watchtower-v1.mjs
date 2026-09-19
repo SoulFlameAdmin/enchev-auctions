@@ -25,6 +25,16 @@ const COMPOSER_WAIT_MS = Number(process.env.DAVID_CONTROL_COMPOSER_WAIT_MS || 12
 const LOAD_RETRY_BACKOFF_MS = Number(process.env.DAVID_CONTROL_LOAD_RETRY_BACKOFF_MS || 15000);
 const DECISION_WARMUP_MS = Number(process.env.DAVID_CONTROL_DECISION_WARMUP_MS || 180000);
 const TELEMETRY_MAX_AGE_MS = Number(process.env.DAVID_CONTROL_TELEMETRY_MAX_AGE_MS || 60000);
+const SUPPORTED_PROJECT_WORKERS = ["SYSTEM", "DESIGN", "APP2", "APK"];
+const ACTIVE_PROJECT_WORKERS = String(process.env.DAVID_ACTIVE_WORKERS || "SYSTEM,DESIGN,APP2,APK,CONTROL")
+  .split(",").map((x) => x.trim().toUpperCase()).filter((x) => SUPPORTED_PROJECT_WORKERS.includes(x));
+const ACTIVE_PROJECT_WORKER_SET = new Set(ACTIVE_PROJECT_WORKERS);
+const WORKER_STATE_FILES = {
+  SYSTEM: ".david-enchev-state.json",
+  DESIGN: ".david-enchev-design-state.json",
+  APP2: ".david-app2-state-6aac2dbb.json",
+  APK: ".david-apk-state.json"
+};
 
 let activeChatUrl = FRESH_SESSION_ON_START ? CHATGPT_ROOT : INITIAL_CHAT_URL;
 
@@ -274,12 +284,9 @@ function buildTelemetry() {
     managed: monitor.managed || {},
     workerHealth: monitor.workerHealth || {},
     totalChatGptTabs: monitor.totalChatGptTabs ?? null,
-    workers: {
-      SYSTEM: compactWorkerState(".david-enchev-state.json"),
-      DESIGN: compactWorkerState(".david-enchev-design-state.json"),
-      APP2: compactWorkerState(".david-app2-state-6aac2dbb.json"),
-      APK: compactWorkerState(".david-apk-state.json")
-    },
+    workers: Object.fromEntries(
+      ACTIVE_PROJECT_WORKERS.map((name) => [name, compactWorkerState(WORKER_STATE_FILES[name])])
+    ),
     lastControlResult: result,
     globalChatGptRateLimit: rateLimit
   };
@@ -287,7 +294,7 @@ function buildTelemetry() {
 
 function telemetrySignature(t) {
   const compact = {};
-  for (const n of ["SYSTEM","DESIGN","APP2","APK"]) {
+  for (const n of ACTIVE_PROJECT_WORKERS) {
     compact[n] = {
       tabs: Array.isArray(t.managed && t.managed[n]) ? t.managed[n].length : 0,
       alive: t.workerHealth && t.workerHealth[n] ? t.workerHealth[n].processAlive : null,
@@ -303,7 +310,7 @@ function telemetrySignature(t) {
 function telemetryReady(t) {
   const checkedAt = Date.parse(String(t?.checkedAt || ""));
   if (!Number.isFinite(checkedAt) || Date.now() - checkedAt > TELEMETRY_MAX_AGE_MS) return false;
-  for (const n of ["SYSTEM","DESIGN","APP2","APK"]) {
+  for (const n of ACTIVE_PROJECT_WORKERS) {
     if (!Array.isArray(t?.managed?.[n])) return false;
     if (!t?.workerHealth?.[n]) return false;
   }
@@ -311,7 +318,7 @@ function telemetryReady(t) {
 }
 
 function anomaly(t) {
-  for (const n of ["SYSTEM","DESIGN","APP2","APK"]) {
+  for (const n of ACTIVE_PROJECT_WORKERS) {
     if ((Array.isArray(t.managed && t.managed[n]) ? t.managed[n].length : 0) !== 1) return true;
     if (t.workerHealth && t.workerHealth[n] && t.workerHealth[n].processAlive === false) return true;
     if (Number(t.workerHealth && t.workerHealth[n] ? t.workerHealth[n].heartbeatAgeMs || 0 : 0) > 300000) return true;
@@ -340,8 +347,8 @@ function controlPrompt(t, reason) {
     "- Do not command actions outside the allowlist.\n\n" +
     "ALLOWLISTED OUTPUT:\n" +
     "ACTION WAIT\n" +
-    "ACTION REFRESH SYSTEM|DESIGN|APP2|APK\n" +
-    "ACTION RESTART SYSTEM|DESIGN|APP2|APK\n" +
+    "ACTION REFRESH " + ACTIVE_PROJECT_WORKERS.join("|") + "\n" +
+    "ACTION RESTART " + ACTIVE_PROJECT_WORKERS.join("|") + "\n" +
     "ACTION CLEAN_DUPLICATES\n\n" +
     "You may output multiple ACTION lines only when independently necessary.\n" +
     "End the final non-empty line with exactly:\nOK\n\n" +
@@ -357,8 +364,8 @@ function parseActions(text) {
     if (line === "ACTION WAIT") actions.push({ type: "WAIT" });
     else if (line === "ACTION CLEAN_DUPLICATES") actions.push({ type: "CLEAN_DUPLICATES" });
     else {
-      const m = line.match(/^ACTION\s+(REFRESH|RESTART)\s+(SYSTEM|DESIGN|APP2|APK)$/);
-      if (m) actions.push({ type: m[1], target: m[2] });
+      const m = line.match(/^ACTION\s+(REFRESH|RESTART)\s+([A-Z0-9_-]+)$/);
+      if (m && ACTIVE_PROJECT_WORKER_SET.has(m[2])) actions.push({ type: m[1], target: m[2] });
     }
   }
   return actions.slice(0, 4);
