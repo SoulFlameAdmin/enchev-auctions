@@ -124,6 +124,52 @@ function validateAppShell(component, css, layout, capture) {
   assert(capture.includes("Escape did not close drawer"), "DP2-04 Escape-close runtime assertion missing");
 }
 
+function validateHomeHero(component,messages,css,layout,page,translationKeys,capture) {
+  for (const needle of [
+    'data-design-task="DP2-05"',
+    "eaHeroV2Title",
+    "eaHeroV2Actions",
+    "eaHeroV2Proof",
+    "eaHeroV2Availability",
+    "HomeLiveSpotlight"
+  ]) assert(component.includes(needle), `DP2-05 hero missing ${needle}`);
+
+  for (const needle of [
+    '"bg-BG"',
+    '"en-US"',
+    "home.hero.title.primary",
+    "home.hero.availability.note",
+    "active market profile"
+  ]) assert(messages.includes(needle) || messages.includes("активирания market profile"), `DP2-05 message catalog missing ${needle}`);
+
+  const keys=JSON.parse(translationKeys).keys||[];
+  for (const key of [
+    "home.hero.actions.browse",
+    "home.hero.actions.live",
+    "home.hero.availability.note",
+    "home.hero.eyebrow",
+    "home.hero.lead",
+    "home.hero.proof.identity",
+    "home.hero.proof.status",
+    "home.hero.proof.transport",
+    "home.hero.title.accent",
+    "home.hero.title.primary",
+    "home.hero.title.secondary"
+  ]) assert(keys.includes(key), `DP2-05 translation registry missing ${key}`);
+
+  assert(layout.includes('import "./dp2-home-hero.css";'), "Root layout must import DP2-05 hero CSS");
+  assert(page.includes("<HomeHeroV2 />"), "Homepage must render HomeHeroV2");
+  assert(!page.includes('<section className="eaHero" id="top">'), "Legacy campaign hero must be removed from homepage DOM");
+  assert(!page.includes("10K+"), "DP2-05 must not present unverified inventory-volume claims");
+  assert(!page.includes("Европа · САЩ · Канада"), "DP2-05 must not hardcode market availability in the hero");
+  for (const needle of ["@media(max-width:430px)","@media(max-width:360px)","@media(min-width:1920px)",".eaHeroV2Proof",".eaHeroDiscovery"]) {
+    assert(css.includes(needle), `DP2-05 hero CSS missing ${needle}`);
+  }
+  assert(capture.includes("verifyDP205HomeHero"), "DP2-05 browser runtime verification missing");
+  assert(capture.includes("spotlight must stack below hero content"), "DP2-05 mobile composition assertion missing");
+  assert(capture.includes("desktop hero columns overlap"), "DP2-05 desktop composition assertion missing");
+}
+
 function validateEvidence(data) {
   assert(data && data.version === "2.0", "DP2 evidence version must be 2.0");
   assert(data.status === "active", "DP2 evidence status must be active");
@@ -162,6 +208,13 @@ function validateRepository() {
   const appShell = read("app/components/EnchevAppShell.tsx");
   const appShellCss = read("app/dp2-app-shell.css");
   validateAppShell(appShell, appShellCss, rootLayout, capture);
+
+  const homeHero = read("app/components/HomeHeroV2.tsx");
+  const homeHeroMessages = read("app/home-hero-messages.ts");
+  const homeHeroCss = read("app/dp2-home-hero.css");
+  const homePage = read("app/page.tsx");
+  const translationKeys = read("locales/translation-keys.json");
+  validateHomeHero(homeHero,homeHeroMessages,homeHeroCss,rootLayout,homePage,translationKeys,capture);
 
   const plan = read("docs/DESIGN_PROCESS_2.md");
   assert(plan.includes("DP2-01") && plan.includes("DP2-30"), "DP2 plan must define DP2-01 and DP2-30");
@@ -275,6 +328,18 @@ function selfTest() {
   rejected=false;
   try{ validateAppShell(shellFixture.replace("eaAppMobileDrawer",""),shellCssFixture,shellLayoutFixture,shellCaptureFixture); }catch{ rejected=true; }
   assert(rejected,"DP2 self-test must reject missing mobile drawer contract");
+
+  const heroFixture='data-design-task="DP2-05" eaHeroV2Title eaHeroV2Actions eaHeroV2Proof eaHeroV2Availability HomeLiveSpotlight';
+  const heroMessagesFixture='"bg-BG" "en-US" home.hero.title.primary home.hero.availability.note активирания market profile';
+  const heroCssFixture='@media(max-width:430px) @media(max-width:360px) @media(min-width:1920px) .eaHeroV2Proof .eaHeroDiscovery';
+  const heroLayoutFixture='import "./dp2-home-hero.css";';
+  const heroPageFixture='<HomeHeroV2 />';
+  const heroKeysFixture=JSON.stringify({keys:["home.hero.actions.browse","home.hero.actions.live","home.hero.availability.note","home.hero.eyebrow","home.hero.lead","home.hero.proof.identity","home.hero.proof.status","home.hero.proof.transport","home.hero.title.accent","home.hero.title.primary","home.hero.title.secondary"]});
+  const heroCaptureFixture='verifyDP205HomeHero spotlight must stack below hero content desktop hero columns overlap';
+  validateHomeHero(heroFixture,heroMessagesFixture,heroCssFixture,heroLayoutFixture,heroPageFixture,heroKeysFixture,heroCaptureFixture);
+  rejected=false;
+  try{validateHomeHero(heroFixture.replace("eaHeroV2Proof",""),heroMessagesFixture,heroCssFixture,heroLayoutFixture,heroPageFixture,heroKeysFixture,heroCaptureFixture);}catch{rejected=true;}
+  assert(rejected,"DP2 self-test must reject missing hero proof hierarchy");
 
   console.log("DESIGN_PROCESS_2_SELF_TEST PASS");
 }
