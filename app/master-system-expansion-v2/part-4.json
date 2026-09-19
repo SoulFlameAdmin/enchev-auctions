@@ -898,7 +898,7 @@
     {
       "id": "93",
       "title": "Internal backoffice, approvals, workflow automation & RPA",
-      "wave": 7,
+      "wave": 12,
       "profile": "operational",
       "domains": [
         "work queue",
@@ -1361,7 +1361,7 @@
     {
       "id": "94",
       "title": "IT service management, incident, problem & change management",
-      "wave": 10,
+      "wave": 12,
       "profile": "operational",
       "domains": [
         "service catalog",
@@ -1820,7 +1820,7 @@
     {
       "id": "95",
       "title": "Business continuity, disaster recovery & regional/site failover",
-      "wave": 10,
+      "wave": 12,
       "profile": "operational",
       "domains": [
         "business impact analysis",
@@ -2284,7 +2284,7 @@
     {
       "id": "96",
       "title": "Corporate security, GRC, assurance & audit program",
-      "wave": 9,
+      "wave": 12,
       "profile": "security",
       "domains": [
         "security policy framework",
@@ -2744,7 +2744,7 @@
     {
       "id": "97",
       "title": "Legal/compliance operations, policy lifecycle & regulatory change",
-      "wave": 3,
+      "wave": 12,
       "profile": "compliance",
       "domains": [
         "legal obligation register",
