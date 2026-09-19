@@ -106,7 +106,7 @@ for (const required of [
   "SEND_TIMEOUT_STALE_ACTIVE_MS",
   "sendTimeoutFirstSeenAt",
   "sendTimeoutLastProgressAt",
-  "Retry UI now takes precedence",
+  "SEND TIMEOUT + stale active indicator",
   "focus({ timeout: 3000 })",
   "force: true"
 ]) {
