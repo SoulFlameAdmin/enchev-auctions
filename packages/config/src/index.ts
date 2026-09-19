@@ -20,3 +20,4 @@ export * from "./translation-key";
 export * from "./country-kyc-profile";
 export * from "./country-legal-profile";
 export * from "./country-document-profile";
+export * from "./market-activation-gate";
