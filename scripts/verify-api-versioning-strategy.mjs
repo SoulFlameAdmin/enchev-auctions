@@ -7,10 +7,25 @@ function fail(message) {
   throw new Error(`API_VERSIONING_STRATEGY FAIL: ${message}`);
 }
 
-function semver(value) {
-  const match = /^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-[0-9A-Za-z.-]+)?(?:\\+[0-9A-Za-z.-]+)?$/.exec(value);
-  if (!match) fail(`invalid semantic version: ${value}`);
-  return { major: Number(match[1]), minor: Number(match[2]), patch: Number(match[3]) };
+function parseSemver(value) {
+  if (typeof value !== "string") fail("semantic version must be a string");
+  const core = value.split(/[+-]/, 1)[0];
+  const parts = core.split(".");
+  if (parts.length !== 3) fail(`invalid semantic version: ${value}`);
+  const numbers = parts.map((part) => Number(part));
+  if (numbers.some((number, index) => !Number.isInteger(number) || number < 0 || String(number) !== parts[index])) {
+    fail(`invalid semantic version: ${value}`);
+  }
+  return { major: numbers[0], minor: numbers[1], patch: numbers[2] };
+}
+
+function isReservedVersionedMajorPath(value) {
+  const segments = String(value).split("/");
+  if (segments.length < 3) return false;
+  const candidate = segments[2] || "";
+  if (!candidate.startsWith("v")) return false;
+  const major = candidate.slice(1);
+  return major.length > 0 && [...major].every((char) => char >= "0" && char <= "9");
 }
 
 export function validate(strategy, spec) {
@@ -21,10 +36,10 @@ export function validate(strategy, spec) {
   if (strategy.currentBasePath !== "/api") fail("current base path must remain /api");
   if (strategy.futureBreakingVersionPathTemplate !== "/api/v{major}") fail("future major path template drift");
 
-  const current = semver(strategy.currentContractVersion);
+  const current = parseSemver(strategy.currentContractVersion);
   if (!spec || typeof spec !== "object" || Array.isArray(spec)) fail("OpenAPI spec must be an object");
   if (!spec.info || spec.info.version !== strategy.currentContractVersion) fail("OpenAPI info.version must match currentContractVersion");
-  const openApiVersion = semver(spec.info.version);
+  const openApiVersion = parseSemver(spec.info.version);
   if (JSON.stringify(current) !== JSON.stringify(openApiVersion)) fail("semantic version mismatch");
 
   const rules = strategy.rules || {};
@@ -64,7 +79,7 @@ export function validate(strategy, spec) {
 
   const paths = Object.keys(spec.paths || {});
   if (!paths.length) fail("OpenAPI paths missing");
-  if (paths.some((value) => /^\\/api\\/v\\d+(?:\\/|$)/.test(value))) fail("versioned routes cannot be invented by strategy task");
+  if (paths.some(isReservedVersionedMajorPath)) fail("versioned routes cannot be invented by strategy task");
   if (paths.some((value) => !value.startsWith("/api/"))) fail("all current paths must remain under /api");
 
   return {
