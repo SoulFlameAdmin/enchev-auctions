@@ -18,10 +18,10 @@
       "id": "DP2-02",
       "group": "Foundation",
       "title": "Premium ENCHEV design tokens",
-      "status": "red",
-      "evidence": "",
-      "blocker": "",
-      "updatedAt": null
+      "status": "yellow",
+      "evidence": "Implemented premium semantic token layer in app/dp2-design-tokens.css through commit 4dbae993396887290c73eeeb9f4c427a87bfd0d6 and imported globally from app/layout.tsx. DP2-02 now separates canvas/surface/border/elevation/radius/interaction roles and splits LIVE/info/success/warning/danger/sold semantics away from ENCHEV brand/action green across the five buyer-route families. scripts/verify-design-process-2.mjs now enforces the required token contract, five-route coverage and global import. YELLOW pending fresh PR CI, production build and Chrome+Edge visual regression proof.",
+      "blocker": "Pending fresh branch CI/visual regression proof.",
+      "updatedAt": "2026-09-19T05:46:45Z"
     },
     {
       "id": "DP2-03",
