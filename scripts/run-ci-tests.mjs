@@ -15,6 +15,7 @@ const cases = [
   ["scripts/verify-supabase-project-binding.mjs", "--self-test"],
   ["scripts/verify-runtime-environments.mjs", "--self-test"],
   ["scripts/verify-openapi-api-specification.mjs", "--self-test"],
+  ["scripts/verify-unit-test-strategy.mjs", "--self-test"],
   ["scripts/verify-environment-variables.mjs", "--self-test"],
   ["scripts/verify-redis-environment.mjs", "--self-test"],
   ["scripts/verify-redis-production-gate.mjs", "--self-test"],
