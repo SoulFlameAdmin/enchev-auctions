@@ -359,7 +359,7 @@ while ($true) {
       $dd = if ($null -ne $dh.heartbeatAgeMs) { [math]::Round(([double]$dh.heartbeatAgeMs)/1000) } else { "?" }
       $aa = if ($null -ne $ah.heartbeatAgeMs) { [math]::Round(([double]$ah.heartbeatAgeMs)/1000) } else { "?" }
       $kk = if ($null -ne $kh.heartbeatAgeMs) { [math]::Round(([double]$kh.heartbeatAgeMs)/1000) } else { "?" }
-      Write-Fit ("  HEARTBEAT age(s): CONTROL={0} SYSTEM={1} DESIGN={2} APP2={3} APK={4} | self-heal stale>600s / missing-tab>90s" -f $ccs,$ss,$dd,$aa,$kk) DarkCyan
+      Write-Fit ("  HEARTBEAT age(s): CONTROL={0} SYSTEM={1} DESIGN={2} APP2={3} APK={4} | fast monitor=2s / missing worker tab~30s" -f $ccs,$ss,$dd,$aa,$kk) DarkCyan
     }
   } else {
     Write-Fit "  Tab monitor state not available yet..." Yellow
@@ -414,7 +414,9 @@ while ($true) {
   Write-Fit "  ------------------------------ DAVID LAWS -------------------------------------------------------" Green
   Write-Fit "  CONTROL WATCHTOWER => ALLOWLISTED WAIT/REFRESH/RESTART/CLEAN_DUPLICATES ONLY" Magenta
   Write-Fit "  FINAL GATE => NO EXACT FINAL OK = NO NEXT NORMAL PROMPT" Red
-  Write-Fit "  SEND TIMEOUT => CENTRAL GUARD OWNS RETRY | WORKERS WAIT | NO DUPLICATE SEND" Yellow
+  Write-Fit "  FAST RECOVERY => ACTIVE=WAIT | TIMEOUT: RETRY x2 -> RELOAD -> affected-worker RESTART" Yellow
+  Write-Fit "  NEW CHAT => exact final OK or conversation-max safe rollover; never duplicate an active task" Yellow
+  Write-Fit "  SEND TIMEOUT => CENTRAL GUARD OWNS RECOVERY | WORKERS DO NOT DUPLICATE-SEND" Yellow
   Write-Fit "  TOO MANY REQUESTS => AUTO-DISMISS POPUP + GLOBAL BLOCK 60s -> ONE PROBE -> repeat 60s if still limited" Yellow
   Write-Fit "  NORMAL SENDS => GLOBAL PACER >=10s BETWEEN EVERY DAVID RELAY; ONE SESSION SEND AT A TIME" Yellow
   Write-Fit "  ACTIVE THINKING/TOOL WORK => WAIT | LONG NO-PROGRESS >600s => REFRESH/VERIFY/RESEND" Yellow
