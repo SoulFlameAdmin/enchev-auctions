@@ -225,6 +225,7 @@ while ($true) {
   $apkState = Get-State "APK"
   $controlState = Get-State "CONTROL"
   $tabs = Read-JsonSafe (Join-Path $DavidDir ".david-tab-monitor.json")
+  $rateLimit = Read-JsonSafe (Join-Path $DavidDir ".david-global-chatgpt-rate-limit.json")
 
   Matrix-Fill
   Write-Fit "================================================================================================================" Green
@@ -293,10 +294,31 @@ while ($true) {
   Write-Fit ("  CDP 9444={0} | TABS={1} | PROCESSES={2} | OVERALL RUNTIME => {3}" -f $(if($cdpOnline){"ONLINE"}else{"OFFLINE"}),$(if($tabStable){"PASS"}else{"FAIL"}),$(if($processStable){"PASS"}else{"FAIL"}),$(if($runtimeStable){"STABLE"}else{"CHECK"})) $(if($runtimeStable){[ConsoleColor]::Green}else{[ConsoleColor]::Red})
 
   Write-Fit ""
+  Write-Fit "  ------------------------------ CHATGPT RATE LIMIT -----------------------------------------------" Green
+  if ($rateLimit) {
+    $rlStatus = [string]$rateLimit.status
+    $rlStage = [int]$rateLimit.stage
+    $rlOwner = [string]$rateLimit.probeOwner
+    $rlUntil = if ($rlStatus -eq "blocked") { [string]$rateLimit.blockedUntil } elseif ($rlStatus -eq "probe") { [string]$rateLimit.probeLeaseUntil } else { "" }
+    $rlRemainMin = 0
+    if ($rlUntil) {
+      try {
+        $delta = ([datetime]$rlUntil) - (Get-Date)
+        $rlRemainMin = [math]::Max(0,[math]::Ceiling($delta.TotalMinutes))
+      } catch {}
+    }
+    $rlStageText = if ($rlStage -lt 0) { "clear" } elseif ($rlStage -eq 0) { "10m" } elseif ($rlStage -eq 1) { "20m" } else { "40m" }
+    Write-Fit ("  STATUS={0}  STAGE={1}  WAIT≈{2}m  PROBE_OWNER={3}" -f $rlStatus,$rlStageText,$rlRemainMin,$(if($rlOwner){$rlOwner}else{"none"})) $(if($rlStatus -eq "clear"){[ConsoleColor]::Green}else{[ConsoleColor]::Yellow})
+  } else {
+    Write-Fit "  STATUS=clear  STAGE=clear  WAIT=0m  PROBE_OWNER=none" Green
+  }
+
+  Write-Fit ""
   Write-Fit "  ------------------------------ DAVID LAWS -------------------------------------------------------" Green
   Write-Fit "  CONTROL WATCHTOWER => ALLOWLISTED WAIT/REFRESH/RESTART/CLEAN_DUPLICATES ONLY" Magenta
   Write-Fit "  FINAL GATE => NO EXACT FINAL OK = NO NEXT NORMAL PROMPT" Red
   Write-Fit "  SEND TIMEOUT => CENTRAL GUARD OWNS RETRY | WORKERS WAIT | NO DUPLICATE SEND" Yellow
+  Write-Fit "  TOO MANY REQUESTS => GLOBAL BLOCK 10m -> ONE PROBE -> 20m -> ONE PROBE -> 40m; NEVER 5-WORKER RETRY" Yellow
   Write-Fit "  ACTIVE THINKING/TOOL WORK => WAIT | LONG NO-PROGRESS >600s => REFRESH/VERIFY/RESEND" Yellow
   Write-Fit "  INTERRUPTED => CONFIRM + INACTIVE + NO PROGRESS => REFRESH/VERIFY/RESEND | NEVER STOP ACTIVE GPT" Yellow
   Write-Fit "  EXTERNAL BLOCKER => DEFER + independent work | CAPTCHA/MFA/LOGIN/PERMISSION => NEVER BYPASS" Yellow
@@ -319,6 +341,7 @@ while ($true) {
       APK = $apkState
     }
     tabs = $tabs
+    chatgptRateLimit = $rateLimit
     runtime = [ordered]@{
       cdpOnline = $cdpOnline
       tabStable = $tabStable
