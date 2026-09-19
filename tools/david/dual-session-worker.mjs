@@ -16,7 +16,7 @@ const children = new Map();
 const MONITOR_FILE = path.join(HERE, ".david-tab-monitor.json");
 const CONTROL_COMMAND_FILE = path.join(HERE, ".david-control-command.json");
 const CONTROL_RESULT_FILE = path.join(HERE, ".david-control-result.json");
-const MONITOR_MS = Number(process.env.DAVID_TAB_MONITOR_MS || 15000);
+const MONITOR_MS = Number(process.env.DAVID_TAB_MONITOR_MS || 5000);
 const MONITOR_CONNECT_TIMEOUT_MS = Number(process.env.DAVID_TAB_MONITOR_CONNECT_TIMEOUT_MS || 60000);
 const WORKER_START_GRACE_MS = Number(process.env.DAVID_WORKER_START_GRACE_MS || 120000);
 const WORKER_HEARTBEAT_STALE_MS = Number(process.env.DAVID_WORKER_HEARTBEAT_STALE_MS || 600000);
@@ -31,6 +31,9 @@ let monitorBusy = false;
 let lastMonitorSignature = "";
 const launchedAt = new Map();
 const missingTabSince = new Map();
+const restartTimers = new Map();
+const restartRequestedAt = new Map();
+const workerGeneration = new Map();
 let lastControlCommandId = null;
 
 const specs = [
@@ -99,8 +102,48 @@ function pipe(name, stream, target) {
   });
 }
 
-function launch(spec) {
+function childAlive(child) {
+  return Boolean(child && child.exitCode === null && !child.killed);
+}
+
+function clearRestartTimer(name) {
+  const timer = restartTimers.get(name);
+  if (timer) clearTimeout(timer);
+  restartTimers.delete(name);
+}
+
+function scheduleRestart(spec, delayMs = 3000, reason = "worker exit") {
   if (shuttingDown) return;
+  if (restartTimers.has(spec.name)) return;
+
+  const timer = setTimeout(() => {
+    restartTimers.delete(spec.name);
+    if (shuttingDown) return;
+    const current = children.get(spec.name);
+    if (childAlive(current)) {
+      console.log(`[DUAL] ${spec.name} restart timer skipped; worker already alive pid=${current.pid}`);
+      return;
+    }
+    launch(spec);
+  }, delayMs);
+
+  restartTimers.set(spec.name, timer);
+  console.log(`[DUAL] ${spec.name} restart scheduled in ${delayMs}ms: ${reason}`);
+}
+
+function launch(spec) {
+  if (shuttingDown) return null;
+
+  const existing = children.get(spec.name);
+  if (childAlive(existing)) {
+    console.log(`[DUAL] ${spec.name} launch suppressed; already running pid=${existing.pid}`);
+    return existing;
+  }
+
+  clearRestartTimer(spec.name);
+  const generation = Number(workerGeneration.get(spec.name) || 0) + 1;
+  workerGeneration.set(spec.name, generation);
+
   const child = spawn(NODE, [spec.script], {
     cwd: HERE,
     windowsHide: false,
@@ -108,28 +151,38 @@ function launch(spec) {
       ...process.env,
       DAVID_CDP_URL: process.env.DAVID_CDP_URL || "http://127.0.0.1:9444",
       DAVID_MAX_TURNS: process.env.DAVID_MAX_TURNS || "2147483647",
+      DAVID_WORKER_GENERATION: String(generation),
       ...spec.env
     },
     stdio: ["ignore", "pipe", "pipe"]
   });
+
   children.set(spec.name, child);
   launchedAt.set(spec.name, Date.now());
-  console.log(`[DUAL] ${spec.name} worker started pid=${child.pid}`);
+  console.log(`[DUAL] ${spec.name} worker started pid=${child.pid} generation=${generation}`);
   pipe(spec.name, child.stdout, process.stdout);
   pipe(spec.name, child.stderr, process.stderr);
+
   child.on("exit", (code, signal) => {
-    children.delete(spec.name);
-    launchedAt.delete(spec.name);
-    console.log(`[DUAL] ${spec.name} exited code=${code} signal=${signal || "none"}`);
-    if (!shuttingDown) {
-      console.log(`[DUAL] Restarting ${spec.name} in 3000ms...`);
-      setTimeout(() => launch(spec), 3000);
+    const current = children.get(spec.name);
+    if (current === child) {
+      children.delete(spec.name);
+      launchedAt.delete(spec.name);
+    }
+
+    console.log(`[DUAL] ${spec.name} exited code=${code} signal=${signal || "none"} generation=${generation}`);
+    if (!shuttingDown && current === child) {
+      scheduleRestart(spec, 3000, "owned worker exit");
     }
   });
+
+  return child;
 }
 
 function shutdown() {
   shuttingDown = true;
+  for (const timer of restartTimers.values()) clearTimeout(timer);
+  restartTimers.clear();
   for (const child of children.values()) {
     try { child.kill("SIGTERM"); } catch {}
   }
@@ -140,14 +193,24 @@ function restartWorker(name, reason) {
   if (shuttingDown) return;
   const spec = specs.find((x) => x.name === name);
   if (!spec) return;
+
+  const now = Date.now();
+  const last = Number(restartRequestedAt.get(name) || 0);
+  if (now - last < 30000) {
+    console.log(`[DUAL] SELF-HEAL ${name} suppressed by 30s debounce: ${reason}`);
+    return;
+  }
+  restartRequestedAt.set(name, now);
+  clearRestartTimer(name);
+  missingTabSince.delete(name);
+
   const child = children.get(name);
   console.log(`[DUAL] SELF-HEAL ${name}: ${reason}`);
-  missingTabSince.delete(name);
-  launchedAt.set(name, Date.now());
-  if (child) {
+  if (childAlive(child)) {
     try { child.kill("SIGTERM"); } catch {}
+    scheduleRestart(spec, 3000, "self-heal");
   } else {
-    launch(spec);
+    scheduleRestart(spec, 1000, "self-heal missing worker");
   }
 }
 
