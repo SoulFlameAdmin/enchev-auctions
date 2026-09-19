@@ -36,8 +36,8 @@ These rules are mandatory for CONTROL/WATCHTOWER, SYSTEM, DESIGN, DPP/APP2 and D
    - if Retry does not clear the error, refresh the owned tab, verify, and allow at most the bounded retry count;
    - never paste a duplicate project prompt while explicit send-timeout recovery is active.
 
-5. CAPTCHA, MFA, login and explicit permission gates are never bypassed.
-6. Maximum-length conversation:
+6. CAPTCHA, MFA, login and explicit permission gates are never bypassed.
+7. Maximum-length conversation:
    - open a new ChatGPT tab;
    - carry forward the project/source-of-truth context;
    - close the old managed tab;
@@ -105,3 +105,6 @@ Do not invent secrets, results, deployments or test evidence.
 - RESTART is stronger than REFRESH and is reserved for dead, stale, missing-tab, or otherwise evidenced worker failure.
 - CONTROL itself is monitored by the same 24/7 supervisor heartbeat and tab-ownership laws.
 - CONTROL conversation max-length follows the same rollover law: create replacement chat, close the old managed CONTROL tab, preserve state/history, continue monitoring.
+- Project blockers are not session-health failures: Redis/Valkey/provider credentials, Vercel quota/deploy blockers, failing tests, and ordinary PROBLEM IN project work normally require WAIT, not refresh/restart.
+- The local supervisor independently rejects CONTROL REFRESH/RESTART commands when the target watchdog or browser UI shows active thinking, writing, tool work, final-OK waiting, sending, settling, or send-timeout recovery.
+- CONTROL suggestions never override CAPTCHA/MFA/login/permission restrictions, exact-final-OK laws, deploy coordination, or worker-specific safety laws.
