@@ -18,6 +18,13 @@ const COMPLETE_SAMPLE_MS = Number(process.env.DAVID_COMPLETE_SAMPLE_MS || 1200);
 const PROBLEM_PREFIX = "PROBLEM IN:";
 const DONE_MARKER = "PROJECT_100_PERCENT_COMPLETE";
 const RELAY_MARKER = "[DAVID_APP2_AUTOPILOT_V2]";
+const ORCHESTRATOR_LAW = `
+DAVID ORCHESTRATOR IMMUTABILITY LAW:
+- During normal SYSTEM/DESIGN/DPP/APK project work, NEVER modify the DAVID infrastructure files in SoulFlameAdmin/enchev-auctions:
+  tools/david/*, START_DAVID_ALL.ps1, STOP_DAVID_ALL_CLEAN.ps1, RESTART_DAVID_ALL_CLEAN.ps1, RESTART_DAVID_ALL.cmd.
+- Those files may be changed only when the current user task explicitly requests DAVID infrastructure/worker/supervisor maintenance.
+- Do not revert, rewrite, format, regenerate or "clean up" those protected files incidentally.
+`;
 const DEPLOY_LAW = `
 DAVID VERCEL DEPLOY LAW:
 - Before ANY Vercel create/update/redeploy, claim the global Supabase lease:
@@ -66,7 +73,7 @@ const MASTER_PROMPT = `@GitHub @Vercel @Supabase
 - PROBLEM IN използвай само за вътрешен технически дефект, който реално спира безопасната независима работа, или когато няма никаква друга dependency-safe задача.
 - Когато всички задължителни точки са GREEN, тестовете PASS и final production acceptance е доказан: последен ред ${DONE_MARKER}
 
-${DEPLOY_LAW}
+${ORCHESTRATOR_LAW}\n\n${DEPLOY_LAW}
 
 ${RELAY_MARKER}`;
 
