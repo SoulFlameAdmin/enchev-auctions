@@ -2,6 +2,7 @@ import { chromium } from "playwright-core";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { reportRateLimit } from "./chatgpt-rate-limit-coordinator.mjs";
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1"));
 
@@ -19,6 +20,7 @@ const interruptionSince = new Map();
 const interruptionSamples = new Map();
 const sendTimeoutRecoveredAt = new Map();
 const sendTimeoutAttempts = new Map();
+const rateLimitReportedAt = new Map();
 
 function cleanConversationUrl(url) {
   const m = String(url || "").match(/^https:\/\/chatgpt\.com\/c\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?=[/?#]|$)/i);
@@ -56,6 +58,44 @@ function isManagedChat(page) {
 function isChat(page) {
   try { return !page.isClosed() && /^https:\/\/chatgpt\.com\/c\//i.test(page.url()); }
   catch { return false; }
+}
+
+function managedKindFromUrl(url) {
+  const u = cleanConversationUrl(url);
+  if (!u) return "GLOBAL";
+  const defs = [
+    ["SYSTEM", path.join(HERE, ".david-enchev-state.json"), "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71"],
+    ["DESIGN", path.join(HERE, ".david-enchev-design-state.json"), "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7"],
+    ["APP2", path.join(HERE, ".david-app2-state-6aac2dbb.json"), "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4"],
+    ["APK", path.join(HERE, ".david-apk-state.json"), null],
+    ["CONTROL", path.join(HERE, ".david-control-state.json"), "https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e"]
+  ];
+  for (const [kind, file, fallback] of defs) {
+    const st = readState(file);
+    const current = cleanConversationUrl(st.chatUrl) || cleanConversationUrl(fallback);
+    if (current === u) return kind;
+  }
+  return "GLOBAL";
+}
+
+async function rateLimitVisible(page) {
+  if (!isManagedChat(page)) return false;
+  try {
+    return await page.evaluate(() => {
+      const visible = (el) => {
+        const s = getComputedStyle(el);
+        const r = el.getBoundingClientRect();
+        return s.display !== "none" && s.visibility !== "hidden" && Number(s.opacity || 1) > 0 && r.width > 0 && r.height > 0;
+      };
+      const re = /(твърде много заявки|правите заявки прекалено бързо|изчакайте няколко минути|too many requests|requests too quickly|please wait a few minutes|rate limit)/i;
+      for (const el of document.querySelectorAll('[role="dialog"],[role="alert"],[aria-live="assertive"],[data-testid*="error" i],div,section,p,span')) {
+        if (!visible(el)) continue;
+        const text = (el.textContent || "").replace(/\s+/g, " ").trim();
+        if (text && text.length < 600 && re.test(text)) return true;
+      }
+      return false;
+    });
+  } catch { return false; }
 }
 
 async function sendTimeoutVisible(page) {
@@ -387,6 +427,18 @@ async function main() {
     const pages = context.pages().filter(isManagedChat);
     for (const page of pages) {
       try {
+        if (await rateLimitVisible(page)) {
+          const key = page.url();
+          const now = Date.now();
+          if (now - Number(rateLimitReportedAt.get(key) || 0) > 30000) {
+            const kind = managedKindFromUrl(key);
+            const rl = await reportRateLimit(kind, "ChatGPT UI: too many requests / requests too quickly");
+            rateLimitReportedAt.set(key, now);
+            console.log(`[INTERRUPT] GLOBAL RATE LIMIT detected by ${kind}; stage=${rl.stage}; blockedUntil=${rl.blockedUntil}`);
+          }
+          continue;
+        }
+
         if (await sendTimeoutVisible(page)) {
           await recoverSendTimeout(page);
           continue;
