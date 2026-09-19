@@ -106,7 +106,7 @@ for (const required of [
   "SEND_TIMEOUT_STALE_ACTIVE_MS",
   "sendTimeoutFirstSeenAt",
   "sendTimeoutLastProgressAt",
-  "SEND TIMEOUT + stale active indicator",
+  "MANDATORY IMMEDIATE TRY AGAIN",
   "focus({ timeout: 3000 })",
   "force: true"
 ]) {
