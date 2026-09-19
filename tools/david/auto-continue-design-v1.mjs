@@ -606,8 +606,17 @@ async function runPrompt(context, page, state, prompt, kind) {
         await sleep(1000);
         continue;
       }
-      state.problem = `ChatGPT platform: ${started.blocker}`; state.watchdog = "design-platform-backoff"; save(state, `Design platform blocker: ${started.blocker}`);
-      await sleep(started.blocker === "human verification" ? 30000 : 15000);
+      if (started.blocker === "human verification") {
+        state.problem = "ChatGPT platform: human verification";
+        state.watchdog = "design-human-blocked";
+        save(state, "Design waiting for human verification; NO REFRESH / NO BYPASS");
+        await sleep(30000);
+        continue;
+      }
+      state.problem = `ChatGPT platform: ${started.blocker}`;
+      state.watchdog = "design-platform-backoff";
+      save(state, `Design platform blocker: ${started.blocker}; one bounded network recovery`);
+      await sleep(15000);
       await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
       continue;
     }
@@ -635,7 +644,28 @@ async function runPrompt(context, page, state, prompt, kind) {
         page = await waitSendTimeoutRecovery(context, page, state);
         continue;
       }
-      state.watchdog = "design-refreshing"; save(state, `Design blocker ${done.blocker}`); await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {}); await sleep(2500); continue;
+      if (done.blocker === "rate limit") {
+        const rl = await reportRateLimit("DESIGN", "ChatGPT UI/completion: rate limit");
+        state.problem = null;
+        state.problemRetryAt = rl.blockedUntil;
+        state.watchdog = "global-rate-limit-wait";
+        save(state, `GLOBAL RATE LIMIT during DESIGN completion; stage=${rl.stage} until=${rl.blockedUntil}; NO REFRESH`);
+        await sleep(1000);
+        continue;
+      }
+      if (done.blocker === "human verification") {
+        state.problem = "ChatGPT platform: human verification";
+        state.watchdog = "design-human-blocked";
+        save(state, "Design waiting for human verification during completion; NO REFRESH / NO BYPASS");
+        await sleep(30000);
+        continue;
+      }
+      state.watchdog = "design-network-recovery";
+      save(state, `Design network blocker ${done.blocker}; one bounded refresh`);
+      await sleep(15000);
+      await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+      await sleep(2500);
+      continue;
     }
     if (done.stalled) { state.watchdog = "design-stalled-resend"; save(state, "LAW: Design GPT stopped thinking/writing -> resend"); console.log("[DESIGN] LAW: stopped thinking/writing -> RESEND."); await sleep(800); continue; }
     state.lastAssistantHash = hash(done.text);
