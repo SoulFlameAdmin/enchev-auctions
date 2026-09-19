@@ -40,7 +40,8 @@ const cases = [
   ["scripts/verify-bg-locale.mjs", "--self-test"],
   ["scripts/verify-en-locale.mjs", "--self-test"],
   ["scripts/verify-translation-key-architecture.mjs", "--self-test"],
-  ["scripts/verify-country-kyc-profile.mjs", "--self-test"]
+  ["scripts/verify-country-kyc-profile.mjs", "--self-test"],
+  ["scripts/verify-country-legal-profile.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of cases) {
