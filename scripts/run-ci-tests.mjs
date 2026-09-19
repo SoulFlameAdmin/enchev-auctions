@@ -42,7 +42,8 @@ const cases = [
   ["scripts/verify-translation-key-architecture.mjs", "--self-test"],
   ["scripts/verify-country-kyc-profile.mjs", "--self-test"],
   ["scripts/verify-country-legal-profile.mjs", "--self-test"],
-  ["scripts/verify-country-document-profile.mjs", "--self-test"]
+  ["scripts/verify-country-document-profile.mjs", "--self-test"],
+  ["scripts/verify-market-activation-gate.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of cases) {
