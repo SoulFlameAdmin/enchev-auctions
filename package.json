@@ -40,7 +40,9 @@
     "verify:no-country-hardcoding": "node scripts/verify-no-country-hardcoding.mjs",
     "verify:no-country-hardcoding:self-test": "node scripts/verify-no-country-hardcoding.mjs --self-test",
     "verify:locale-aware-dates": "node scripts/verify-locale-aware-dates.mjs",
-    "verify:locale-aware-dates:self-test": "node scripts/verify-locale-aware-dates.mjs --self-test"
+    "verify:locale-aware-dates:self-test": "node scripts/verify-locale-aware-dates.mjs --self-test",
+    "verify:timezone-aware-display": "node scripts/verify-timezone-aware-display.mjs",
+    "verify:timezone-aware-display:self-test": "node scripts/verify-timezone-aware-display.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
