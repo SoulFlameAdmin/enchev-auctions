@@ -1,11 +1,12 @@
 {
   "name": "enchev-david-auto-continue",
-  "version": "1.5.2",
+  "version": "1.6.0",
   "private": true,
   "type": "module",
   "scripts": {
     "start": "node dual-session-worker.mjs",
-    "verify:sessions": "node verify-session-invariants.mjs"
+    "verify:sessions": "node verify-session-invariants.mjs",
+    "verify:resilience": "node chatgpt-session-resilience.mjs --self-test && node --check connection-interruption-guard.mjs && node --check dual-session-worker.mjs && node verify-session-invariants.mjs"
   },
   "dependencies": {
     "playwright-core": "1.63.0"
