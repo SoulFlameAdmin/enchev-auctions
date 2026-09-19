@@ -30,7 +30,9 @@
     "verify:packages-config": "node scripts/verify-packages-config.mjs",
     "verify:packages-config:self-test": "node scripts/verify-packages-config.mjs --self-test",
     "verify:packages-providers": "node scripts/verify-packages-providers.mjs",
-    "verify:packages-providers:self-test": "node scripts/verify-packages-providers.mjs --self-test"
+    "verify:packages-providers:self-test": "node scripts/verify-packages-providers.mjs --self-test",
+    "verify:database-migrations-structure": "node scripts/verify-database-migrations-structure.mjs",
+    "verify:database-migrations-structure:self-test": "node scripts/verify-database-migrations-structure.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
