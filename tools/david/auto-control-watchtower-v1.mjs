@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { waitForGlobalSendPermit, reportProbeSuccess, markGlobalSendStarted } from "./chatgpt-rate-limit-coordinator.mjs";
+import { CHATGPT_ROOT, rotateOwnedChatPage } from "./chatgpt-session-rotation.mjs";
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1"));
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
@@ -207,31 +208,36 @@ async function conversationMaxed(page) {
 
 async function rollover(context, page, state) {
   const old = cleanConversationUrl(page && page.url ? page.url() : "") || activeChatUrl;
+  if (!page || page.isClosed()) page = await ensurePage(context, null, state);
+  if (!page || page.isClosed()) throw new Error("CONTROL rollover requires one owned ChatGPT tab");
+
   state.previousChatUrl = old;
   state.staleChatUrls = Array.from(new Set([...(Array.isArray(state.staleChatUrls) ? state.staleChatUrls : []), old])).slice(-20);
   state.rolloverCount = Number(state.rolloverCount || 0) + 1;
   state.pendingNewChat = true;
 
-  activeChatUrl = "https://chatgpt.com/";
+  activeChatUrl = CHATGPT_ROOT;
   state.chatUrl = activeChatUrl;
-  save(state, "CONTROL rollover #" + state.rolloverCount + " reserved; adopting/creating one pending tab");
+  save(state, "CONTROL rollover #" + state.rolloverCount + " reserved; SAME TAB only");
 
-  let next = await findTaggedPage(context, [PENDING_TAB_NAME]);
-  if (!next || next === page || next.isClosed()) {
-    next = await context.newPage();
-    await setPageTag(next, PENDING_TAB_NAME);
-    await next.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
-  }
-  await setPageTag(next, TAB_NAME);
+  const rotated = await rotateOwnedChatPage({
+    page,
+    getComposer,
+    setPageTag,
+    pendingTag: PENDING_TAB_NAME,
+    managedTag: TAB_NAME,
+    readyTimeoutMs: COMPOSER_WAIT_MS,
+    retryBackoffMs: LOAD_RETRY_BACKOFF_MS,
+    onWait: async ({ phase, attempt, url }) => {
+      state.watchdog = phase === "auth-wait" ? "control-rollover-auth-wait" : "control-rollover-wait";
+      save(state, `CONTROL rollover waiting phase=${phase} attempt=${attempt} url=${url || "unknown"}; NO NEW TAB`);
+    }
+  });
+  if (!rotated.ok) throw new Error(`CONTROL same-tab rollover failed: ${rotated.reason}`);
 
-  if (page && !page.isClosed() && page !== next) {
-    await setPageTag(page, "");
-    await page.close({ runBeforeUnload: false }).catch(() => {});
-  }
-
-  save(state, "CONTROL rollover #" + state.rolloverCount + "; single new tab adopted; old tab closed");
-  console.log("[CONTROL] Max length -> SINGLE NEW TAB #" + state.rolloverCount + "; OLD TAB CLOSED.");
-  return next;
+  save(state, "CONTROL rollover #" + state.rolloverCount + "; fresh session ready in SAME TAB");
+  console.log("[CONTROL] Max length -> FRESH SESSION IN SAME TAB #" + state.rolloverCount + ". NO EXTRA TAB.");
+  return page;
 }
 
 function compactWorkerState(file) {
