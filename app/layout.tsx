@@ -10,6 +10,7 @@ import "./cross-browser-quality.css";
 import "./dp2-design-tokens.css";
 import "./dp2-foundation.css";
 import "./dp2-app-shell.css";
+import "./dp2-home-hero.css";
 import MouseAura from "./components/MouseAura";
 import BackgroundSwitcher from "./components/BackgroundSwitcher";
 import VerifiedPlanEvidenceSync from "./components/VerifiedPlanEvidenceSync";

@@ -104,6 +104,28 @@ async function verifyDP204AppShell(call,viewport){
   return true;
 }
 
+async function verifyDP205HomeHero(call,viewport){
+  const result=await call("Runtime.evaluate",{expression:`(()=>{const hero=document.querySelector('.eaHeroV2[data-design-task="DP2-05"]');const content=document.querySelector('.eaHeroV2Content');const title=document.querySelector('.eaHeroV2Title');const lead=document.querySelector('.eaHeroV2Lead');const primary=document.querySelector('.eaHeroV2Primary');const secondary=document.querySelector('.eaHeroV2Secondary');const proof=[...document.querySelectorAll('.eaHeroV2Proof article')];const spot=document.querySelector('.eaHeroV2Spotlight .eaLiveCard');const discovery=document.querySelector('.eaHeroDiscovery');const keyed=[...hero?.querySelectorAll('[data-i18n-key]')||[]];if(!hero||!content||!title||!lead||!primary||!secondary||!spot||!discovery)return null;const rect=e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height}};return {viewportWidth:innerWidth,scrollWidth:document.documentElement.scrollWidth,locale:hero.getAttribute('data-locale')||'',titleText:title.textContent||'',leadText:lead.textContent||'',proofCount:proof.length,keyedCount:keyed.length,hero:rect(hero),content:rect(content),title:rect(title),lead:rect(lead),primary:rect(primary),secondary:rect(secondary),spot:rect(spot),discovery:rect(discovery),primaryText:primary.textContent||'',secondaryText:secondary.textContent||''};})()`,returnByValue:true});
+  const s=result?.result?.value;
+  if(!s)fail(`DP2-05 ${viewport.name} hero runtime elements missing`);
+  if(s.scrollWidth>s.viewportWidth+3)fail(`DP2-05 ${viewport.name} horizontal overflow`);
+  if(s.locale!=="bg-BG")fail(`DP2-05 ${viewport.name} active hero locale marker missing`);
+  if(s.proofCount!==3)fail(`DP2-05 ${viewport.name} proof hierarchy must contain 3 items`);
+  if(s.keyedCount<18)fail(`DP2-05 ${viewport.name} translation-key coverage too low: ${s.keyedCount}`);
+  if(!s.titleText.includes("Намери автомобила")||!s.titleText.includes("Продължи уверено"))fail(`DP2-05 ${viewport.name} value proposition missing`);
+  if(s.primary.width<120||s.primary.height<44||s.secondary.width<120||s.secondary.height<44)fail(`DP2-05 ${viewport.name} hero CTA target below acceptance`);
+  for(const [name,r] of [["content",s.content],["title",s.title],["primary",s.primary],["secondary",s.secondary],["spotlight",s.spot],["discovery",s.discovery]]){
+    if(r.left<-3||r.right>s.viewportWidth+3)fail(`DP2-05 ${viewport.name} ${name} escapes viewport`);
+  }
+  if(viewport.mobile){
+    if(s.spot.top<s.content.bottom-3)fail(`DP2-05 ${viewport.name} spotlight must stack below hero content`);
+  }else{
+    if(s.spot.left<s.content.right-6)fail(`DP2-05 ${viewport.name} desktop hero columns overlap`);
+    if(s.title.width<400)fail(`DP2-05 ${viewport.name} desktop value proposition is too compressed`);
+  }
+  return true;
+}
+
 async function verifyD23StickyActions(call,viewport){
   if(viewport.mobile){
     await call("Runtime.evaluate",{expression:"document.documentElement.style.scrollBehavior='auto';window.scrollTo(0,document.documentElement.scrollHeight)"});
@@ -633,6 +655,7 @@ async function captureOne({port,baseUrl,route,viewport,outputDir}){
 
     await settlePage(call,route);
     await verifyDP204AppShell(call,viewport);
+    if(route.name==="home")await verifyDP205HomeHero(call,viewport);
 
     if(route.name==="lot-ea-10539"){
       await verifyD23StickyActions(call,viewport);

@@ -45,10 +45,10 @@
       "id": "DP2-05",
       "group": "Homepage",
       "title": "World-class hero composition and value proposition",
-      "status": "red",
-      "evidence": "",
+      "status": "green",
+      "evidence": "GREEN PASS. DP2-05 replaces the legacy campaign-style homepage hero with app/components/HomeHeroV2.tsx and app/dp2-home-hero.css: a restrained ENCHEV value proposition, clear inventory/LIVE primary actions, three product-capability proof points, market-profile availability context, a responsive LIVE spotlight and preserved discovery/search scope for DP2-06. app/home-hero-messages.ts now supplies BG/EN hero copy and locales/translation-keys.json registers the canonical home.hero.* keys. The nested HomeLiveSpotlight was aligned with GLOBAL_COMMERCE_UX_SPEC_V1 by removing ad-hoc EUR/current-bid formatting and hardcoded country display from the hero; market availability is not hardcoded. scripts/verify-design-process-2.mjs enforces hero structure, translation-key coverage, no unverified 10K+ volume claim, no hardcoded market list/currency display and required mobile/wide CSS. Accessibility and identity verifiers were updated only to follow the existing DP2 component/app-shell architecture, preserving their original requirements. Verify Enchev Web run 35452273967 on head afcdd54762513b99bf00f85459218b678a795c64 completed SUCCESS: DP2 invariant/self-tests, mobile-first, accessibility, cross-browser contract, ENCHEV identity/originality, aggregate CI suite, TypeScript, production build, health smoke, Edge installation, and Chrome+Edge visual/runtime regression all passed. The DP2-05 runtime gate verified CTA target size, three proof points, translation-key coverage, mobile stacking, desktop non-overlap and viewport containment at 360/390/430/1366/1440/1920. Artifact 10587455787 (enchev-cross-browser-visual-a54d572876ee54d629f8a2c04a2077eb20d8868d, digest sha256:4f1db60eb735405fb21ed85b80129651ba5b5e719682e29c2251f996e7beb78f) contains the fresh 60-screenshot Chrome/Edge matrix. GitHub Vercel status reports external build-rate-limit with no retry time; no manual Vercel create/update/redeploy was attempted, so no Supabase deployment lease was required. Frozen D01-D36 evidence and protected DAVID orchestrator files were not modified.",
       "blocker": "",
-      "updatedAt": null
+      "updatedAt": "2026-09-19T15:38:47Z"
     },
     {
       "id": "DP2-06",
