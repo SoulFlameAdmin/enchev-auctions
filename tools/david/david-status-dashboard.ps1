@@ -169,6 +169,19 @@ function Progress-Bar($Pct, [int]$Width = 42) {
   return "[" + ("#" * $filled) + ("-" * ($Width - $filled)) + "]"
 }
 
+function Format-Countdown([object]$UntilValue) {
+  if (-not $UntilValue) { return "00:00" }
+  try {
+    $delta = ([datetime]$UntilValue) - (Get-Date)
+    $seconds = [math]::Max(0,[math]::Ceiling($delta.TotalSeconds))
+    $hours = [math]::Floor($seconds / 3600)
+    $minutes = [math]::Floor(($seconds % 3600) / 60)
+    $secs = $seconds % 60
+    if ($hours -gt 0) { return ("{0:D2}:{1:D2}:{2:D2}" -f $hours,$minutes,$secs) }
+    return ("{0:D2}:{1:D2}" -f $minutes,$secs)
+  } catch { return "00:00" }
+}
+
 function Write-Fit([string]$Text, [ConsoleColor]$Color = [ConsoleColor]::Gray) {
   $width = 120
   try { $width = [math]::Max(80, [Console]::WindowWidth - 1) } catch {}
@@ -300,17 +313,15 @@ while ($true) {
     $rlStage = [int]$rateLimit.stage
     $rlOwner = [string]$rateLimit.probeOwner
     $rlUntil = if ($rlStatus -eq "blocked") { [string]$rateLimit.blockedUntil } elseif ($rlStatus -eq "probe") { [string]$rateLimit.probeLeaseUntil } else { "" }
-    $rlRemainMin = 0
-    if ($rlUntil) {
-      try {
-        $delta = ([datetime]$rlUntil) - (Get-Date)
-        $rlRemainMin = [math]::Max(0,[math]::Ceiling($delta.TotalMinutes))
-      } catch {}
-    }
     $rlStageText = if ($rlStage -lt 0) { "clear" } elseif ($rlStage -eq 0) { "10m" } elseif ($rlStage -eq 1) { "20m" } else { "40m" }
-    Write-Fit ("  STATUS={0}  STAGE={1}  WAIT≈{2}m  PROBE_OWNER={3}" -f $rlStatus,$rlStageText,$rlRemainMin,$(if($rlOwner){$rlOwner}else{"none"})) $(if($rlStatus -eq "clear"){[ConsoleColor]::Green}else{[ConsoleColor]::Yellow})
+    $rateCountdown = Format-Countdown $rlUntil
+    $nextSendCountdown = Format-Countdown ([string]$rateLimit.nextGlobalSendAt)
+    $intervalSec = if ($rateLimit.globalSendIntervalMs) { [math]::Round(([double]$rateLimit.globalSendIntervalMs)/1000) } else { 60 }
+    Write-Fit ("  STATUS={0}  STAGE={1}  RATE_LIMIT_TIMER={2}  PROBE_OWNER={3}" -f $rlStatus,$rlStageText,$rateCountdown,$(if($rlOwner){$rlOwner}else{"none"})) $(if($rlStatus -eq "clear"){[ConsoleColor]::Green}else{[ConsoleColor]::Yellow})
+    Write-Fit ("  GLOBAL SEND PACER: min interval={0}s  NEXT_SEND={1}  SLOT_OWNER={2}" -f $intervalSec,$nextSendCountdown,$(if($rateLimit.sendSlotOwner){$rateLimit.sendSlotOwner}else{"none"})) Cyan
   } else {
-    Write-Fit "  STATUS=clear  STAGE=clear  WAIT=0m  PROBE_OWNER=none" Green
+    Write-Fit "  STATUS=clear  STAGE=clear  RATE_LIMIT_TIMER=00:00  PROBE_OWNER=none" Green
+    Write-Fit "  GLOBAL SEND PACER: min interval=60s  NEXT_SEND=00:00  SLOT_OWNER=none" Cyan
   }
 
   Write-Fit ""
@@ -318,7 +329,8 @@ while ($true) {
   Write-Fit "  CONTROL WATCHTOWER => ALLOWLISTED WAIT/REFRESH/RESTART/CLEAN_DUPLICATES ONLY" Magenta
   Write-Fit "  FINAL GATE => NO EXACT FINAL OK = NO NEXT NORMAL PROMPT" Red
   Write-Fit "  SEND TIMEOUT => CENTRAL GUARD OWNS RETRY | WORKERS WAIT | NO DUPLICATE SEND" Yellow
-  Write-Fit "  TOO MANY REQUESTS => GLOBAL BLOCK 10m -> ONE PROBE -> 20m -> ONE PROBE -> 40m; NEVER 5-WORKER RETRY" Yellow
+  Write-Fit "  TOO MANY REQUESTS => AUTO-DISMISS POPUP + GLOBAL BLOCK 10m -> ONE PROBE -> 20m -> ONE PROBE -> 40m" Yellow
+  Write-Fit "  NORMAL SENDS => GLOBAL PACER >=60s BETWEEN NEW DAVID PROMPTS; NO 5-TAB BURSTS" Yellow
   Write-Fit "  ACTIVE THINKING/TOOL WORK => WAIT | LONG NO-PROGRESS >600s => REFRESH/VERIFY/RESEND" Yellow
   Write-Fit "  INTERRUPTED => CONFIRM + INACTIVE + NO PROGRESS => REFRESH/VERIFY/RESEND | NEVER STOP ACTIVE GPT" Yellow
   Write-Fit "  EXTERNAL BLOCKER => DEFER + independent work | CAPTCHA/MFA/LOGIN/PERMISSION => NEVER BYPASS" Yellow
