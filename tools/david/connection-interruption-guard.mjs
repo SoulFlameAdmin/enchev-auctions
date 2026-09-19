@@ -469,7 +469,8 @@ async function main() {
             const kind = managedKindFromUrl(key);
             const rl = await reportRateLimit(kind, "ChatGPT UI: too many requests / requests too quickly");
             rateLimitReportedAt.set(key, now);
-            console.log(`[INTERRUPT] GLOBAL RATE LIMIT detected by ${kind}; stage=${rl.stage}; blockedUntil=${rl.blockedUntil}`);
+            const until = rl.blockedUntil || rl.probeLeaseUntil || null;
+            console.log(`[INTERRUPT] GLOBAL RATE LIMIT detected by ${kind}; status=${rl.status}; stage=${rl.stage}; until=${until}`);
           }
 
           const dismissed = await clickRateLimitAcknowledge(page);
