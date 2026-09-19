@@ -10,6 +10,8 @@ const MONITOR_FILE = path.join(HERE, ".david-tab-monitor.json");
 const COMMAND_FILE = path.join(HERE, ".david-control-command.json");
 const RESULT_FILE = path.join(HERE, ".david-control-result.json");
 const MARKER = "[DAVID_CONTROL_WATCHTOWER_V1]";
+const TAB_NAME = "DAVID_CONTROL_MANAGED_V1";
+const PENDING_TAB_NAME = "DAVID_CONTROL_PENDING_V1";
 const POLL_MS = Number(process.env.DAVID_CONTROL_POLL_MS || 15000);
 const HEARTBEAT_REPORT_MS = Number(process.env.DAVID_CONTROL_HEARTBEAT_REPORT_MS || 1800000);
 const COMPLETE_QUIET_MS = Number(process.env.DAVID_COMPLETE_QUIET_MS || 7000);
@@ -58,13 +60,52 @@ function lastLine(text) {
 }
 function endsOk(text) { return /^OK$/i.test(lastLine(text)); }
 
+async function pageTag(page) {
+  try { return await page.evaluate(() => window.name || ""); }
+  catch { return ""; }
+}
+
+async function setPageTag(page, value) {
+  try { await page.evaluate((v) => { window.name = v; }, value); }
+  catch {}
+}
+
+async function findTaggedPage(context, names = [TAB_NAME, PENDING_TAB_NAME]) {
+  for (const page of [...context.pages()].reverse()) {
+    if (!page || page.isClosed()) continue;
+    const tag = await pageTag(page);
+    if (names.includes(tag)) return page;
+  }
+  return null;
+}
+
 async function ensurePage(context, current, state) {
-  if (current && !current.isClosed() && cleanConversationUrl(current.url()) === cleanConversationUrl(activeChatUrl)) return current;
-  let page = context.pages().find((p) => !p.isClosed() && cleanConversationUrl(p.url()) === cleanConversationUrl(activeChatUrl));
+  if (current && !current.isClosed()) {
+    const currentUrl = cleanConversationUrl(current.url());
+    const active = cleanConversationUrl(activeChatUrl);
+    if ((active && currentUrl === active) || (!active && current.url().startsWith("https://chatgpt.com/"))) {
+      await setPageTag(current, TAB_NAME);
+      return current;
+    }
+  }
+
+  const tagged = await findTaggedPage(context);
+  if (tagged) {
+    await setPageTag(tagged, TAB_NAME);
+    return tagged;
+  }
+
+  let page = cleanConversationUrl(activeChatUrl)
+    ? context.pages().find((p) => !p.isClosed() && cleanConversationUrl(p.url()) === cleanConversationUrl(activeChatUrl))
+    : null;
+
   if (!page) {
     page = await context.newPage();
+    await setPageTag(page, cleanConversationUrl(activeChatUrl) ? TAB_NAME : PENDING_TAB_NAME);
     await page.goto(activeChatUrl, { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
   }
+
+  await setPageTag(page, TAB_NAME);
   return page;
 }
 
@@ -167,13 +208,27 @@ async function rollover(context, page, state) {
   state.previousChatUrl = old;
   state.staleChatUrls = Array.from(new Set([...(Array.isArray(state.staleChatUrls) ? state.staleChatUrls : []), old])).slice(-20);
   state.rolloverCount = Number(state.rolloverCount || 0) + 1;
-  const next = await context.newPage();
-  await next.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
-  if (page && !page.isClosed()) await page.close({ runBeforeUnload: false }).catch(() => {});
+  state.pendingNewChat = true;
+
   activeChatUrl = "https://chatgpt.com/";
   state.chatUrl = activeChatUrl;
-  save(state, "CONTROL rollover #" + state.rolloverCount + "; old tab closed");
-  console.log("[CONTROL] Max length -> NEW TAB #" + state.rolloverCount + "; OLD TAB CLOSED.");
+  save(state, "CONTROL rollover #" + state.rolloverCount + " reserved; adopting/creating one pending tab");
+
+  let next = await findTaggedPage(context, [PENDING_TAB_NAME]);
+  if (!next || next === page || next.isClosed()) {
+    next = await context.newPage();
+    await setPageTag(next, PENDING_TAB_NAME);
+    await next.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  }
+  await setPageTag(next, TAB_NAME);
+
+  if (page && !page.isClosed() && page !== next) {
+    await setPageTag(page, "");
+    await page.close({ runBeforeUnload: false }).catch(() => {});
+  }
+
+  save(state, "CONTROL rollover #" + state.rolloverCount + "; single new tab adopted; old tab closed");
+  console.log("[CONTROL] Max length -> SINGLE NEW TAB #" + state.rolloverCount + "; OLD TAB CLOSED.");
   return next;
 }
 
@@ -400,6 +455,8 @@ async function main() {
     if (current && current !== activeChatUrl) {
       activeChatUrl = current;
       state.chatUrl = current;
+      state.pendingNewChat = false;
+      await setPageTag(page, TAB_NAME);
       save(state, "CONTROL URL synced: " + current);
     }
 
