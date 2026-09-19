@@ -456,6 +456,12 @@ async function sendAndWait(context, page, state, prompt) {
 
 async function main() {
   const state = loadState();
+  if (/ChatGPT platform: (?:global )?rate limit/i.test(String(state.problem || ""))) {
+    state.problem = null;
+    delete state.problemRetryAt;
+    state.watchdog = "control-global-rate-limit-state-sanitized";
+    save(state, "Cleared stale ChatGPT rate-limit problem from CONTROL state; coordinator owns cooldown");
+  }
   state.startedAt = state.startedAt || nowIso();
   state.role = "DAVID_CONTROL_WATCHTOWER";
   state.watchdog = "control-starting";
