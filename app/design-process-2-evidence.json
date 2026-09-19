@@ -1,0 +1,279 @@
+{
+  "version": "2.0",
+  "status": "active",
+  "plan": "docs/DESIGN_PROCESS_2.md",
+  "previousPlan": "docs/DESIGN_PLAN_V1.md",
+  "executionOrder": "DP2-01 -> DP2-30",
+  "tasks": [
+    {
+      "id": "DP2-01",
+      "group": "Foundation",
+      "title": "Current UX/UI audit and gap report",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-02",
+      "group": "Foundation",
+      "title": "Premium ENCHEV design tokens",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-03",
+      "group": "Foundation",
+      "title": "Typography, spacing, density and responsive grid",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-04",
+      "group": "Foundation",
+      "title": "Unified responsive app shell and navigation",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-05",
+      "group": "Homepage",
+      "title": "World-class hero composition and value proposition",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-06",
+      "group": "Homepage",
+      "title": "Search, quick discovery and category shortcuts",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-07",
+      "group": "Homepage",
+      "title": "Featured vehicle cards and auction-state hierarchy",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-08",
+      "group": "Homepage",
+      "title": "Trust, process, logistics, support and final CTA",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-09",
+      "group": "Inventory",
+      "title": "Search/filter IA and desktop filter system",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-10",
+      "group": "Inventory",
+      "title": "Mobile filter drawer and active-filter experience",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-11",
+      "group": "Inventory",
+      "title": "Premium inventory cards and grid/list modes",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-12",
+      "group": "Inventory",
+      "title": "Sort, pagination, result counts, saved actions and empty states",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-13",
+      "group": "Vehicle detail",
+      "title": "Gallery, thumbnails, zoom/viewer and media hierarchy",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-14",
+      "group": "Vehicle detail",
+      "title": "Title, identifiers, specs, damage, documents and condition hierarchy",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-15",
+      "group": "Vehicle detail",
+      "title": "Bidding/Buy Now panel and sticky responsive CTA",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-16",
+      "group": "Vehicle detail",
+      "title": "History, fees/context, transport, related vehicles and trust",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-17",
+      "group": "LIVE auction",
+      "title": "LIVE auction stage composition and visual priority",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-18",
+      "group": "LIVE auction",
+      "title": "Bid feedback states and action safety",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-19",
+      "group": "LIVE auction",
+      "title": "Next lot, queue, sold results and continuity",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-20",
+      "group": "LIVE auction",
+      "title": "Timer, connection, reconnect and stale-state confidence",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-21",
+      "group": "Buyer workspace",
+      "title": "Profile/dashboard shell and account navigation",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-22",
+      "group": "Buyer workspace",
+      "title": "Watchlist, saved vehicles and My Auctions",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-23",
+      "group": "Buyer workspace",
+      "title": "Support, transport, history and account route consistency",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-24",
+      "group": "Responsive & accessibility",
+      "title": "Phone acceptance at 360/390/430px",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-25",
+      "group": "Responsive & accessibility",
+      "title": "Tablet and desktop acceptance 768px–1920px+",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-26",
+      "group": "Responsive & accessibility",
+      "title": "Keyboard, focus, contrast, zoom, reduced motion and touch targets",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-27",
+      "group": "Polish & certification",
+      "title": "Loading, empty, error, offline, success states and copy consistency",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-28",
+      "group": "Polish & certification",
+      "title": "Performance-oriented design and layout stability",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-29",
+      "group": "Polish & certification",
+      "title": "Chrome and Edge visual regression desktop + phone",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    },
+    {
+      "id": "DP2-30",
+      "group": "Polish & certification",
+      "title": "Final ENCHEV consistency, originality and production acceptance",
+      "status": "red",
+      "evidence": "",
+      "blocker": "",
+      "updatedAt": null
+    }
+  ]
+}
