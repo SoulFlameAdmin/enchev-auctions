@@ -3,6 +3,9 @@ import { readFileSync } from "node:fs";
 const PARTS = [1,2,3,4].map((n) => `app/master-system-expansion-v2/part-${n}.json`);
 const EXPECTED_PHASE_COUNT = 38;
 const EXPECTED_TASK_COUNT = 3226;
+const EXPECTED_FROZEN_TASK_COUNT = 1054;
+const EXPECTED_GAP_TASK_COUNT = 94;
+const EXPECTED_UNIFIED_SYSTEM_TOTAL = 4374;
 const EXPECTED_FIRST_PHASE = 62;
 const EXPECTED_LAST_PHASE = 99;
 const EXPECTED_FNV1A32 = "e7c9cf20";
@@ -123,7 +126,8 @@ function verifyIntegration() {
   const expansionDoc = readFileSync("docs/MASTER_SYSTEM_EXPANSION_V2.md", "utf8");
   const globalCommerce = readFileSync("docs/GLOBAL_COMMERCE_UX_SPEC_V1.md", "utf8");
   const designPlan = readFileSync("docs/DESIGN_PROCESS_2.md", "utf8");
-  if (!expansionDoc.includes("4,280 system points")) fail("expansion source-of-truth must declare combined 4,280-point baseline");
+  if (!expansionDoc.includes("4,374 system points")) fail("expansion source-of-truth must declare unified 4,374-point SYSTEM total");
+  if (!expansionDoc.includes("4,280 system points")) fail("expansion source-of-truth must retain 4,280 frozen+expansion baseline");
   if (!expansionDoc.includes("FNV1a32 e7c9cf20")) fail("expansion source-of-truth digest mismatch");
   if (!expansionDoc.includes("phases 62–99")) fail("expansion source-of-truth must define phases 62-99");
   if (!globalCommerce.includes("GLOBAL COMMERCE UX SPEC V1")) fail("Global Commerce UX source missing");
@@ -150,8 +154,18 @@ function verifyIntegration() {
   const generatedIds = JSON.parse(generatedMatch[1]);
   if (generatedIds.length !== 1201) fail(`combined master test registry must contain 1,201 IDs, got ${generatedIds.length}`);
 
+  const gapSource = readFileSync("app/components/SeedAuditGaps.tsx", "utf8");
+  const gapIds = new Set([...gapSource.matchAll(/id:\s*"(GAP-[^"]+)"/g)].map((match) => match[1]));
+  if (gapIds.size !== EXPECTED_GAP_TASK_COUNT) fail(`expected ${EXPECTED_GAP_TASK_COUNT} GAP tasks, got ${gapIds.size}`);
+  if (EXPECTED_FROZEN_TASK_COUNT + EXPECTED_GAP_TASK_COUNT + EXPECTED_TASK_COUNT !== EXPECTED_UNIFIED_SYSTEM_TOTAL) fail("unified SYSTEM arithmetic mismatch");
+
+  const dashboard = readFileSync("tools/david/david-status-dashboard.ps1", "utf8");
+  if (!dashboard.includes("app\\master-system-expansion-v2\\part-{0}.json")) fail("MATRIX SYSTEM total does not load expansion registry");
+  if (!dashboard.includes("foreach ($part in 1..4)")) fail("MATRIX SYSTEM total must include all four expansion parts");
+
   const worker = readFileSync("tools/david/auto-continue-enchev-v5.mjs", "utf8");
   if (!worker.includes("MASTER SYSTEM EXPANSION v2.0 APPEND-ONLY")) fail("SYSTEM worker does not know the expansion source");
+  if (!worker.includes("4,374 tasks")) fail("SYSTEM worker must state the unified 4,374-task tracker");
   if (!worker.includes("dependsOn")) fail("SYSTEM worker must obey expansion dependency graph");
   if (worker.includes("не добавяй pricing/payment/finance")) fail("obsolete pricing/payment/finance ban still present");
   const designWorker = readFileSync("tools/david/auto-continue-design-v1.mjs", "utf8");
