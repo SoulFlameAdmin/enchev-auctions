@@ -60,7 +60,9 @@
     "verify:market-activation-gate": "node scripts/verify-market-activation-gate.mjs",
     "verify:market-activation-gate:self-test": "node scripts/verify-market-activation-gate.mjs --self-test",
     "verify:master-expansion-v2": "node scripts/verify-master-system-expansion-v2.mjs",
-    "verify:master-expansion-v2:self-test": "node scripts/verify-master-system-expansion-v2.mjs --self-test"
+    "verify:master-expansion-v2:self-test": "node scripts/verify-master-system-expansion-v2.mjs --self-test",
+    "verify:country-2-without-core-rewrite": "node scripts/verify-country-2-without-core-rewrite.mjs",
+    "verify:country-2-without-core-rewrite:self-test": "node scripts/verify-country-2-without-core-rewrite.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
