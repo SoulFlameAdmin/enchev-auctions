@@ -1,0 +1,32 @@
+{
+  "taskId": "25.02",
+  "name": "Integration-test strategy",
+  "scope": [
+    "web-api-boundaries",
+    "database-contract-boundaries",
+    "provider-adapter-boundaries",
+    "multi-module-flows"
+  ],
+  "principles": {
+    "deterministic": true,
+    "isolatedFromProduction": true,
+    "realModuleBoundariesPreferred": true,
+    "networkControlled": true,
+    "testDataSynthetic": true,
+    "failurePathsRequired": true
+  },
+  "execution": {
+    "environment": "local-or-ci",
+    "liveProviderCallsDefault": "forbidden",
+    "databasePolicy": "ephemeral-or-dedicated-test-state",
+    "externalServices": "stub-or-approved-sandbox",
+    "cleanupRequired": true
+  },
+  "acceptance": {
+    "criticalBoundaryHasHappyPath": true,
+    "criticalBoundaryHasFailurePath": true,
+    "testMustBeRepeatable": true,
+    "productionCredentialsForbidden": true,
+    "failingApplicableTestBlocksGreen": true
+  }
+}
