@@ -82,7 +82,9 @@
     "verify:runtime-environments": "node scripts/verify-runtime-environments.mjs",
     "verify:runtime-environments:self-test": "node scripts/verify-runtime-environments.mjs --self-test",
     "verify:openapi-api-specification": "node scripts/verify-openapi-api-specification.mjs",
-    "verify:openapi-api-specification:self-test": "node scripts/verify-openapi-api-specification.mjs --self-test"
+    "verify:openapi-api-specification:self-test": "node scripts/verify-openapi-api-specification.mjs --self-test",
+    "verify:api-versioning-strategy": "node scripts/verify-api-versioning-strategy.mjs",
+    "verify:api-versioning-strategy:self-test": "node scripts/verify-api-versioning-strategy.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",

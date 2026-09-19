@@ -7,6 +7,8 @@
   },
   "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
   "x-enchev-task": "24.01",
+  "x-api-versioning-strategy-task": "24.02",
+  "x-current-routing-mode": "unversioned-current-contract",
   "x-authority-boundary": "PostgreSQL remains authoritative for auction state, accepted bids, winner selection and final results; this specification is non-authoritative documentation.",
   "servers": [
     {
