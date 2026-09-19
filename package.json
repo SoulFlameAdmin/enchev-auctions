@@ -78,7 +78,9 @@
     "verify:translation-completeness": "node scripts/verify-translation-completeness.mjs",
     "verify:translation-completeness:self-test": "node scripts/verify-translation-completeness.mjs --self-test",
     "verify:cross-script-search": "node scripts/verify-cross-script-search.mjs",
-    "verify:cross-script-search:self-test": "node scripts/verify-cross-script-search.mjs --self-test"
+    "verify:cross-script-search:self-test": "node scripts/verify-cross-script-search.mjs --self-test",
+    "verify:openapi-api-specification": "node scripts/verify-openapi-api-specification.mjs",
+    "verify:openapi-api-specification:self-test": "node scripts/verify-openapi-api-specification.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
