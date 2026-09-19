@@ -208,6 +208,10 @@ jobs:
         run: node scripts/verify-international-contact-models.mjs
       - name: 21.18 International names, address and phone models self-tests
         run: node scripts/verify-international-contact-models.mjs --self-test
+      - name: 21.19 Translation completeness checks
+        run: node scripts/verify-translation-completeness.mjs
+      - name: 21.19 Translation completeness checks self-tests
+        run: node scripts/verify-translation-completeness.mjs --self-test
       - name: Redis environment contract invariant
         run: node scripts/verify-redis-environment.mjs
       - name: Redis environment contract self-tests
