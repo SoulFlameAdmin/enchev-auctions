@@ -36,10 +36,10 @@
       "id": "DP2-04",
       "group": "Foundation",
       "title": "Unified responsive app shell and navigation",
-      "status": "red",
-      "evidence": "",
-      "blocker": "",
-      "updatedAt": null
+      "status": "yellow",
+      "evidence": "Implemented unified responsive ENCHEV buyer app shell in app/components/EnchevAppShell.tsx + app/dp2-app-shell.css and mounted it globally from app/layout.tsx. The shell consolidates brand, global vehicle search, primary navigation, account actions and purpose-built mobile drawer; legacy per-route headers are visually retired without deleting route code. Mobile drawer supports focus handoff, Escape close and body scroll lock. Core buyer routes retain main-content skip targets. scripts/capture-visual-regression.mjs now runtime-verifies DP2-04 shell behavior on every core route/acceptance viewport in addition to the 60-screenshot matrix. YELLOW pending fresh PR CI/build/Chrome+Edge interaction proof.",
+      "blocker": "Pending fresh DP2-04 CI and cross-browser interaction/visual proof.",
+      "updatedAt": "2026-09-19T06:28:00Z"
     },
     {
       "id": "DP2-05",
