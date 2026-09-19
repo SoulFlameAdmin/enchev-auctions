@@ -1,5 +1,6 @@
 param(
-  [int]$Port = 9444
+  [int]$Port = 9444,
+  [switch]$FreshSessions
 )
 
 $ErrorActionPreference = "Stop"
@@ -42,14 +43,22 @@ if ($LASTEXITCODE -ne 0) { throw "DAVID clean shutdown failed with exit code $LA
 Start-Sleep -Seconds 3
 
 Write-Host "[RESTART] Starting clean DAVID stack..." -ForegroundColor Cyan
-& $Pwsh -NoProfile -ExecutionPolicy Bypass -File $Start -Port $Port
+$startArgs = @("-NoProfile","-ExecutionPolicy","Bypass","-File",$Start,"-Port","$Port")
+if ($FreshSessions) {
+  $startArgs += "-FreshSessions"
+  Write-Host "[RESTART] FRESH SESSION MODE: all 5 DAVID GPT workers will start in new chats; project state/login are preserved." -ForegroundColor Magenta
+}
+& $Pwsh @startArgs
 if ($LASTEXITCODE -ne 0) { throw "DAVID clean start failed with exit code $LASTEXITCODE." }
 
 Write-Host ""
 Write-Host "[RESTART] DAVID clean restart launched." -ForegroundColor Green
 Write-Host "[RESTART] Expected: CONTROL + SYSTEM + DESIGN PROCESS 2 + APP2/DPP + APK + MATRIX." -ForegroundColor Green
 Write-Host "[RESTART] APK continues from saved state/session and keeps upgrading with GPT." -ForegroundColor Green
-Write-Host "[RESTART] Profile/login/session state preserved." -ForegroundColor Green
+Write-Host "[RESTART] Profile/login/project state preserved." -ForegroundColor Green
+if ($FreshSessions) {
+  Write-Host "[RESTART] Old GPT conversation URLs were not reused for this boot; 5 fresh managed chats were requested." -ForegroundColor Green
+}
 }
 finally {
   Remove-Item Env:DAVID_ORCHESTRATION_LOCK_HELD -ErrorAction SilentlyContinue
