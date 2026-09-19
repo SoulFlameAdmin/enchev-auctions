@@ -414,7 +414,7 @@ while ($true) {
   Write-Fit "  ------------------------------ DAVID LAWS -------------------------------------------------------" Green
   Write-Fit "  CONTROL WATCHTOWER => ALLOWLISTED WAIT/REFRESH/RESTART/CLEAN_DUPLICATES ONLY" Magenta
   Write-Fit "  FINAL GATE => NO EXACT FINAL OK = NO NEXT NORMAL PROMPT" Red
-  Write-Fit "  FAST RECOVERY => ACTIVE=WAIT | TIMEOUT: RETRY x2 -> RELOAD -> affected-worker RESTART" Yellow
+  Write-Fit "  FAST RECOVERY => explicit TRY AGAIN = CLICK NOW x3 -> RELOAD -> affected-worker RESTART" Yellow
   Write-Fit "  NEW CHAT => exact final OK or conversation-max safe rollover; never duplicate an active task" Yellow
   Write-Fit "  SEND TIMEOUT => CENTRAL GUARD OWNS RECOVERY | WORKERS DO NOT DUPLICATE-SEND" Yellow
   Write-Fit "  TOO MANY REQUESTS => AUTO-DISMISS POPUP + GLOBAL BLOCK 60s -> ONE PROBE -> repeat 60s if still limited" Yellow
