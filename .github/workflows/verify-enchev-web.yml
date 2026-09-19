@@ -174,6 +174,10 @@ jobs:
         run: node scripts/verify-country-2-without-core-rewrite.mjs
       - name: 21.12 Country #2 without core rewrite self-tests
         run: node scripts/verify-country-2-without-core-rewrite.mjs --self-test
+      - name: 21.13 Regional CDN strategy
+        run: node scripts/verify-regional-cdn-strategy.mjs
+      - name: 21.13 Regional CDN strategy self-tests
+        run: node scripts/verify-regional-cdn-strategy.mjs --self-test
       - name: Redis environment contract invariant
         run: node scripts/verify-redis-environment.mjs
       - name: Redis environment contract self-tests
