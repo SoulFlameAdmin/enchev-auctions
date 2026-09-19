@@ -195,14 +195,30 @@ function Progress-Bar($Pct, [int]$Width = 42) {
 function Format-Countdown([object]$UntilValue) {
   if (-not $UntilValue) { return "00:00" }
   try {
-    $delta = ([datetime]$UntilValue) - (Get-Date)
-    $seconds = [math]::Max(0,[math]::Ceiling($delta.TotalSeconds))
+    $until = [DateTimeOffset]::Parse(
+      [string]$UntilValue,
+      [System.Globalization.CultureInfo]::InvariantCulture,
+      [System.Globalization.DateTimeStyles]::RoundtripKind
+    )
+    $now = [DateTimeOffset]::UtcNow
+    $seconds = [math]::Max(0,[math]::Ceiling(($until.ToUniversalTime() - $now).TotalSeconds))
     $hours = [math]::Floor($seconds / 3600)
     $minutes = [math]::Floor(($seconds % 3600) / 60)
     $secs = $seconds % 60
     if ($hours -gt 0) { return ("{0:D2}:{1:D2}:{2:D2}" -f $hours,$minutes,$secs) }
     return ("{0:D2}:{1:D2}" -f $minutes,$secs)
   } catch { return "00:00" }
+}
+
+function Format-LocalTime([object]$UntilValue) {
+  if (-not $UntilValue) { return "-" }
+  try {
+    return [DateTimeOffset]::Parse(
+      [string]$UntilValue,
+      [System.Globalization.CultureInfo]::InvariantCulture,
+      [System.Globalization.DateTimeStyles]::RoundtripKind
+    ).ToLocalTime().ToString("HH:mm:ss")
+  } catch { return "-" }
 }
 
 function Write-Fit([string]$Text, [ConsoleColor]$Color = [ConsoleColor]::Gray) {
@@ -343,7 +359,8 @@ while ($true) {
     $rateCountdown = Format-Countdown $rlUntil
     $nextSendCountdown = Format-Countdown ([string]$rateLimit.nextGlobalSendAt)
     $intervalSec = if ($rateLimit.globalSendIntervalMs) { [math]::Round(([double]$rateLimit.globalSendIntervalMs)/1000) } else { 60 }
-    Write-Fit ("  STATUS={0}  STAGE={1}  RATE_LIMIT_TIMER={2}  PROBE_OWNER={3}" -f $rlStatus,$rlStageText,$rateCountdown,$(if($rlOwner){$rlOwner}else{"none"})) $(if($rlStatus -eq "clear"){[ConsoleColor]::Green}else{[ConsoleColor]::Yellow})
+    $untilLocal = Format-LocalTime $rlUntil
+    Write-Fit ("  STATUS={0}  STAGE={1}  RATE_LIMIT_TIMER={2}  UNTIL_LOCAL={3}  PROBE_OWNER={4}" -f $rlStatus,$rlStageText,$rateCountdown,$untilLocal,$(if($rlOwner){$rlOwner}else{"none"})) $(if($rlStatus -eq "clear"){[ConsoleColor]::Green}else{[ConsoleColor]::Yellow})
     Write-Fit ("  GLOBAL SEND PACER: min interval={0}s  NEXT_SEND={1}  SLOT_OWNER={2}" -f $intervalSec,$nextSendCountdown,$(if($rateLimit.sendSlotOwner){$rateLimit.sendSlotOwner}else{"none"})) Cyan
   } else {
     Write-Fit "  STATUS=clear  STAGE=clear  RATE_LIMIT_TIMER=00:00  PROBE_OWNER=none" Green
