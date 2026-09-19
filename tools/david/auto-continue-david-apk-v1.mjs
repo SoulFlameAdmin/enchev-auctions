@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { waitForGlobalSendPermit, reportProbeSuccess } from "./chatgpt-rate-limit-coordinator.mjs";
 
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const STATE_FILE = process.env.DAVID_APK_STATE_FILE || path.join(process.cwd(), ".david-apk-state.json");
@@ -494,6 +495,18 @@ async function runPrompt(context, page, state, prompt, kind) {
       : prompt;
     state.watchdog = kind === "fix" ? "apk-fixing-problem" : "apk-sending-relay";
     save(state, kind === "fix" ? "APK: sending fix instruction" : "APK: sending next task");
+    const permit = await waitForGlobalSendPermit("APK", async (decision) => {
+      state.watchdog = "global-rate-limit-wait";
+      state.problem = "ChatGPT platform: global rate limit";
+      state.problemRetryAt = decision.state?.blockedUntil || decision.state?.probeLeaseUntil || null;
+      save(state, `GLOBAL RATE LIMIT WAIT mode=${decision.mode}; owner=${decision.state?.probeOwner || "none"}`);
+    });
+    if (permit.mode === "probe") {
+      state.watchdog = "global-rate-limit-probe";
+      save(state, "APK owns the single post-cooldown probe send");
+      await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+      await sleep(2500);
+    }
     await fillAndSend(page, outgoing);
 
     let startEnd = Date.now() + START_TIMEOUT_MS;
@@ -539,6 +552,8 @@ async function runPrompt(context, page, state, prompt, kind) {
           if (state.justRolledOver) state.justRolledOver = false;
           syncChatUrl(page, state);
           state.lastAssistantHash = h;
+          await reportProbeSuccess("APK");
+          delete state.problemRetryAt;
           save(state, "APK response complete");
           return { page, text };
         }
