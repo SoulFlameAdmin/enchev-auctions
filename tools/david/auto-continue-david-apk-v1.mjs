@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import { waitForGlobalSendPermit, reportProbeSuccess, markProbeSendStarted } from "./chatgpt-rate-limit-coordinator.mjs";
+import { waitForGlobalSendPermit, reportProbeSuccess, markGlobalSendStarted } from "./chatgpt-rate-limit-coordinator.mjs";
 
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const STATE_FILE = process.env.DAVID_APK_STATE_FILE || path.join(process.cwd(), ".david-apk-state.json");
@@ -508,7 +508,7 @@ async function runPrompt(context, page, state, prompt, kind) {
       await sleep(2500);
     }
     await fillAndSend(page, outgoing);
-    if (permit.mode === "probe") await markProbeSendStarted("APK");
+    if (permit.mode === "probe") await markGlobalSendStarted("APK");
 
     let startEnd = Date.now() + START_TIMEOUT_MS;
     let started = false;
