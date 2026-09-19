@@ -14,7 +14,7 @@ let activeChatUrl = INITIAL_CHAT_URL;
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const STATE_FILE = process.env.DAVID_DESIGN_STATE_FILE || path.join(process.cwd(), ".david-enchev-design-state.json");
 const POLL_MS = Number(process.env.DAVID_DESIGN_POLL_MS || 900);
-const START_TIMEOUT_MS = 15000;
+const START_TIMEOUT_MS = Number(process.env.DAVID_DESIGN_START_TIMEOUT_MS || 60000);
 const READY_TIMEOUT_MS = Number(process.env.DAVID_DESIGN_READY_TIMEOUT_MS || 120000);
 const READY_REFRESH_LIMIT = Number(process.env.DAVID_DESIGN_READY_REFRESH_LIMIT || 2);
 const READY_BACKOFF_MS = Number(process.env.DAVID_DESIGN_READY_BACKOFF_MS || 15000);
@@ -611,7 +611,23 @@ async function runPrompt(context, page, state, prompt, kind) {
       await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
       continue;
     }
-    if (!started.started) { state.watchdog = "design-refreshing"; save(state, "LAW: Design GPT did not start -> refresh -> resend"); console.log("[DESIGN] LAW: no thinking -> REFRESH -> RESEND."); await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {}); await sleep(2500); continue; }
+    if (!started.started) {
+      state.watchdog = "design-no-start-grace";
+      save(state, "Design GPT did not start yet; WAIT 30s and verify same turn before any refresh");
+      console.log("[DESIGN] No start yet -> WAIT 30s, verify same turn. NO REFRESH.");
+      await sleep(30000);
+      started = await waitStart(context, page, base, state);
+      page = started.page;
+      if (!started.started && !started.blocker) {
+        state.watchdog = "design-bounded-refresh";
+        save(state, "Design still inactive after extended grace -> one bounded refresh");
+        console.log("[DESIGN] Still inactive after grace -> one bounded REFRESH.");
+        await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+        await sleep(2500);
+        continue;
+      }
+      if (started.blocker) continue;
+    }
     state.turnsSent = Number(state.turnsSent || 0) + 1; save(state, `Design GPT started cycle ${state.turnsSent}`);
     const done = await waitCompletion(context, page, base, state); page = done.page;
     if (done.blocker) {
