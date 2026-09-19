@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "start": "node dual-session-worker.mjs",
-    "verify:sessions": "node verify-session-invariants.mjs"
+    "verify:sessions": "node verify-session-invariants.mjs",
+    "verify:resilience": "node verify-session-invariants.mjs"
   },
   "dependencies": {
     "playwright-core": "1.63.0"
