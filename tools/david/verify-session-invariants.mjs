@@ -106,7 +106,7 @@ for (const required of [
   "SEND_TIMEOUT_STALE_ACTIVE_MS",
   "sendTimeoutFirstSeenAt",
   "sendTimeoutLastProgressAt",
-  "SEND TIMEOUT + stale active indicator",
+  "MANDATORY IMMEDIATE TRY AGAIN",
   "focus({ timeout: 3000 })",
   "force: true"
 ]) {
@@ -148,9 +148,9 @@ if (!controlSource.includes("focus({ timeout: 3000 })") || !controlSource.includ
 
 const fastGuard = read("connection-interruption-guard.mjs");
 for (const required of [
-  "SEND_TIMEOUT_MAX_RETRIES || 2",
+  "SEND_TIMEOUT_MAX_RETRIES || 3",
   "SEND_TIMEOUT_STALE_ACTIVE_MS || 8000",
-  "FAST RECOVERY step=RETRY",
+  "MANDATORY IMMEDIATE TRY AGAIN",
   "FAST RECOVERY step=RELOAD",
   "requestWorkerRecovery",
   ".david-recovery-request.json"
@@ -176,4 +176,4 @@ if (/allFiveOwned/.test(supervisor)) {
   throw new Error("Unmanaged-tab cleanup must not depend on all five workers already being healthy");
 }
 
-console.log("DAVID_SESSION_INVARIANTS PASS same_tab_rollover=5 project_ok_rotation=4 strict_tab_budget=5 active_work_protected=1 fresh_restart_wiring=5 pointer_safe_send=5 fast_recovery_retry_reload_restart=1 dead_worker_lease_release=1 fresh_parallel_prewarm=5 transient_probe_reset=1 monitor_2s=1");
+console.log("DAVID_SESSION_INVARIANTS PASS same_tab_rollover=5 project_ok_rotation=4 strict_tab_budget=5 active_work_protected=1 fresh_restart_wiring=5 pointer_safe_send=5 mandatory_immediate_try_again=1 retry_x3_reload_restart=1 dead_worker_lease_release=1 fresh_parallel_prewarm=5 transient_probe_reset=1 monitor_2s=1");
