@@ -869,9 +869,21 @@ async function runPrompt(context, page, state, prompt, kind) {
 async function main() {
   const { chromium } = await import("playwright-core");
   console.log(`[DAVID] Connecting to browser CDP: ${CDP_URL}`);
-  const browser = await chromium.connectOverCDP(CDP_URL);
-  const context = browser.contexts()[0];
-  if (!context) throw new Error("No active Chromium context on CDP port.");
+  let browser = null;
+  let context = null;
+  while (!context) {
+    try {
+      browser = await chromium.connectOverCDP(CDP_URL, { timeout: 120000 });
+      context = browser.contexts()[0] || null;
+      if (!context) throw new Error("No active Chromium context on CDP port.");
+    } catch (error) {
+      console.log(`[DAVID] CDP not ready: ${error?.message || error}. WAIT 5s -> reconnect. Worker stays alive.`);
+      try { await browser?.close(); } catch {}
+      browser = null;
+      context = null;
+      await sleep(5000);
+    }
+  }
   const state = loadState();
   if (/ChatGPT platform: (?:global )?rate limit/i.test(String(state.problem || ""))) {
     state.problem = null;
