@@ -179,13 +179,36 @@ async function getMonitorContext() {
   return monitorContext;
 }
 
+function currentOwnedUrls() {
+  const defs = [
+    ["SYSTEM", path.join(HERE, ".david-enchev-state.json"), "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71"],
+    ["DESIGN", path.join(HERE, ".david-enchev-design-state.json"), "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7"],
+    ["APP2", path.join(HERE, ".david-app2-state-6aac2dbb.json"), "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4"],
+    ["APK", path.join(HERE, ".david-apk-state.json"), null]
+  ];
+  const byUrl = new Map();
+  for (const [kind, file, fallback] of defs) {
+    const st = readState(file);
+    const u = cleanConversationUrl(st.chatUrl) || cleanConversationUrl(fallback);
+    if (u) byUrl.set(u, kind);
+  }
+  return byUrl;
+}
+
 async function detectManagedKind(page) {
   try {
     const u = cleanConversationUrl(page.url());
     if (!u) return null;
+
+    // Primary ownership is the persisted current chat URL. This remains stable
+    // even after the relay marker has scrolled far out of the recent messages.
+    const owned = currentOwnedUrls().get(u);
+    if (owned) return owned;
+
+    // Marker scan is only a fallback for first discovery / rollover races.
     const text = await page.locator('[data-message-author-role="user"],[data-message-author-role="assistant"]')
       .allInnerTexts()
-      .then((xs) => xs.slice(-12).join("\n"))
+      .then((xs) => xs.slice(-60).join("\n"))
       .catch(() => "");
     if (/\[DAVID_RELAY_ENCHEV_V5\]/.test(text)) return "SYSTEM";
     if (/\[DAVID_RELAY_ENCHEV_DESIGN_V1\]/.test(text)) return "DESIGN";
