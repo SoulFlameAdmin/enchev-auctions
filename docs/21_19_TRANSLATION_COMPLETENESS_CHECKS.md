@@ -25,7 +25,7 @@ For every registered locale:
 7. catalog locale must exactly match the locale metadata record;
 8. registry and catalog key order must remain deterministic.
 
-The current registry contains 36 keys. BG and EN therefore prove 72 complete message entries.
+The current registry contains 49 keys. BG and EN therefore prove 98 complete message entries.
 
 ## Boundaries
 
