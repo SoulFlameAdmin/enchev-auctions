@@ -172,6 +172,7 @@ jobs:
           node --check tools/david/auto-control-watchtower-v1.mjs
           node --check tools/david/dual-session-worker.mjs
           node --check tools/david/connection-interruption-guard.mjs
+          node --check tools/david/chatgpt-rate-limit-coordinator.mjs
           node --check tools/david/auto-complete-app2-v1.mjs
       - name: DAVID SYSTEM response watchdog self-tests
         run: node tools/david/auto-continue-enchev-v5.mjs --self-test
@@ -179,6 +180,8 @@ jobs:
         run: node tools/david/auto-complete-app2-v1.mjs --self-test
       - name: DAVID CONTROL watchtower self-tests
         run: node tools/david/auto-control-watchtower-v1.mjs --self-test
+      - name: DAVID ChatGPT rate-limit coordinator self-tests
+        run: node tools/david/chatgpt-rate-limit-coordinator.mjs --self-test
       - name: DAVID PowerShell syntax checks
         shell: pwsh
         run: |
