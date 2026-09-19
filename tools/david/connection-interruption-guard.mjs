@@ -48,6 +48,7 @@ async function activeAssistantWork(page) {
         const r = el.getBoundingClientRect();
         return s.display !== "none" && s.visibility !== "hidden" && Number(s.opacity || 1) > 0 && r.width > 0 && r.height > 0;
       };
+
       const stopSelectors = [
         '[data-testid="stop-button"]',
         '[data-testid*="stop" i]',
@@ -59,17 +60,17 @@ async function activeAssistantWork(page) {
         for (const el of document.querySelectorAll(sel)) if (visible(el)) return true;
       }
 
-      const turns = Array.from(document.querySelectorAll('article[data-testid^="conversation-turn-"]'));
-      const lastTurn = turns.at(-1);
-      if (!lastTurn || !lastTurn.querySelector('[data-message-author-role="assistant"]')) return false;
-
-      const finalAction = lastTurn.querySelector(
-        'button[aria-label*="Copy" i],button[aria-label*="Share" i],button[aria-label*="Regenerate" i],button[data-testid*="copy" i],button[data-testid*="thumb" i]'
-      );
-      if (finalAction) return false;
-
-      const text = (lastTurn.textContent || "").replace(/\s+/g, " ").trim();
-      return /(thinking|мислене|мисли|working|работи|calling tool|called tool|tool call|извикан инструмент|извиква инструмент|searching|търсене|browsing|преглежда|анализира|analyzing)/i.test(text);
+      // Static historical tool cards ("Извикан инструмент") are NOT enough to
+      // classify the turn as still active. Only live status outside completed
+      // conversation turns counts as active when no Stop control is visible.
+      const liveRe = /^(thinking|мислене|мисли|working|работи|searching|търсене|browsing|преглежда|analyzing|анализира)(\.{0,3})$/i;
+      for (const el of document.querySelectorAll("div,span,p")) {
+        if (!visible(el)) continue;
+        if (el.closest('[data-message-author-role], article[data-testid^="conversation-turn-"]')) continue;
+        const text = (el.textContent || "").replace(/\s+/g, " ").trim();
+        if (text && text.length < 80 && liveRe.test(text)) return true;
+      }
+      return false;
     });
   } catch { return false; }
 }
@@ -204,10 +205,22 @@ async function recover(page) {
     return;
   }
 
-  if (!await interruptionVisible(page)) {
-    console.log("[INTERRUPT] Interruption disappeared after refresh. Resend cancelled.");
+  const refreshedHash = await assistantTextHash(page);
+  const refreshedText = await page.locator('[data-message-author-role="assistant"]').last().innerText().catch(() => "");
+  const terminal = String(refreshedText || "").split(/\r?\n/).map((x) => x.trim()).filter(Boolean).at(-1) || "";
+  if (/^OK$/i.test(terminal) || /^PROBLEM IN:/i.test(terminal)) {
+    console.log("[INTERRUPT] Response recovered to a terminal marker after refresh. Resend cancelled.");
     return;
   }
+  if (beforeHash && refreshedHash && beforeHash !== refreshedHash) {
+    console.log("[INTERRUPT] Assistant response progressed after refresh. Waiting instead of resending.");
+    return;
+  }
+
+  // A confirmed interruption with no active GPT, no terminal marker and no
+  // assistant progress means the accepted turn was stranded. Resend even if
+  // the banner disappeared during reload.
+  console.log("[INTERRUPT] Confirmed stranded turn after refresh. Safe resend allowed.");
 
   let composer = await getComposer(page);
   for (let i = 0; !composer && i < 8; i++) {
