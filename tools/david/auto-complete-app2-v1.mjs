@@ -118,7 +118,7 @@ async function waitForTerminalMarker(page, state) {
 }
 function isDone(text) { return lastLine(text) === DONE_MARKER; }
 function isExternalBlocker(problem) {
-  return /(vercel|build-rate-limit|rate limit|quota|hobby|billing|plan limit|netlify|github pages|vendor credential|credential|permission|legal sign-off|customer data|external access|production url|deployment capacity)/i.test(String(problem || ""));
+  return /(vercel|build-rate-limit|quota|hobby|billing|plan limit|netlify|github pages|vendor credential|credential|permission|legal sign-off|customer data|external access|production url|deployment capacity)/i.test(String(problem || ""));
 }
 function blockerKey(problem) {
   return String(problem || "")
@@ -557,6 +557,12 @@ async function runPrompt(context, page, state, prompt, kind) {
       state.problemRetryAt = decision.state?.blockedUntil || decision.state?.probeLeaseUntil || null;
       save(state, `GLOBAL RATE LIMIT WAIT mode=${decision.mode}; owner=${decision.state?.probeOwner || "none"}`);
     });
+    if (/ChatGPT platform: (?:global )?rate limit/i.test(String(state.problem || ""))) {
+      state.problem = null;
+      delete state.problemRetryAt;
+      state.watchdog = "app2-send-permit";
+      save(state, "ChatGPT platform rate-limit wait cleared by global coordinator; no project defer relay");
+    }
     if (permit.mode === "probe") {
       state.watchdog = "global-rate-limit-probe";
       save(state, "APP2 owns the single post-cooldown probe send");
