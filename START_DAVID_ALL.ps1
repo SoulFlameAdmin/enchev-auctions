@@ -126,10 +126,7 @@ if ($codeUpdated -and $mainNodes.Count -eq 1) {
 $mainRunning = ($mainNodes.Count -eq 1 -and $cdpReady)
 
 if ($mainNodes.Count -gt 0 -and -not $cdpReady) {
-  Write-Host "[DAVID ALL] Stale CONTROL/SYSTEM/DESIGN/APP2/APK supervisor detected without CDP. Killing stale process..." -ForegroundColor Yellow
-  Stop-MatchingProcesses -Names @("node.exe") -Needles @("dual-session-worker.mjs")
-  Start-Sleep -Seconds 1
-  $mainRunning = $false
+  throw "DAVID supervisor exists but CDP $Port is offline. Refusing partial cleanup. Run RESTART_DAVID_ALL_CLEAN.ps1."
 }
 
 if ($mainRunning) {
