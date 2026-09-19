@@ -62,7 +62,9 @@
     "verify:master-expansion-v2": "node scripts/verify-master-system-expansion-v2.mjs",
     "verify:master-expansion-v2:self-test": "node scripts/verify-master-system-expansion-v2.mjs --self-test",
     "verify:country-2-without-core-rewrite": "node scripts/verify-country-2-without-core-rewrite.mjs",
-    "verify:country-2-without-core-rewrite:self-test": "node scripts/verify-country-2-without-core-rewrite.mjs --self-test"
+    "verify:country-2-without-core-rewrite:self-test": "node scripts/verify-country-2-without-core-rewrite.mjs --self-test",
+    "verify:regional-cdn-strategy": "node scripts/verify-regional-cdn-strategy.mjs",
+    "verify:regional-cdn-strategy:self-test": "node scripts/verify-regional-cdn-strategy.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
