@@ -609,12 +609,36 @@ async function runPrompt(context, page, state, prompt, kind) {
       continue;
     }
     if (!start.started) {
-      state.watchdog = "no-thinking-refresh";
-      save(state, "LAW: GPT did not start thinking -> refresh -> resend");
-      console.log("[APP2] LAW: no thinking -> REFRESH -> RESEND.");
-      await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
-      await sleep(1800);
-      continue;
+      state.watchdog = "no-thinking-grace";
+      save(state, "GPT did not start yet; WAIT 30s and verify same turn before any refresh");
+      console.log("[APP2] No start yet -> WAIT 30s, verify same turn. NO REFRESH.");
+      await sleep(30000);
+      const graceStart = await waitStart(context, page, baseHash, state);
+      page = graceStart.page;
+      if (graceStart.blocker) {
+        if (graceStart.blocker === "rate limit") {
+          const rl = await reportRateLimit("APP2", "ChatGPT UI/grace: rate limit");
+          state.problem = null;
+          state.problemRetryAt = rl.blockedUntil;
+          state.watchdog = "global-rate-limit-wait";
+          save(state, `GLOBAL RATE LIMIT from APP2 grace; stage=${rl.stage} until=${rl.blockedUntil}`);
+          await sleep(1000);
+          continue;
+        }
+        state.problem = `ChatGPT platform: ${graceStart.blocker}`;
+        state.watchdog = "platform-block";
+        save(state, `Platform block during APP2 grace: ${graceStart.blocker}`);
+        await sleep(graceStart.blocker === "human verification" ? 30000 : 15000);
+        continue;
+      }
+      if (!graceStart.started) {
+        state.watchdog = "no-thinking-bounded-refresh";
+        save(state, "GPT still inactive after extended grace -> one bounded refresh");
+        console.log("[APP2] Still inactive after grace -> one bounded REFRESH.");
+        await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+        await sleep(1800);
+        continue;
+      }
     }
     state.turnsSent = Number(state.turnsSent || 0) + 1;
     state.recoveryAttempt = 0;
