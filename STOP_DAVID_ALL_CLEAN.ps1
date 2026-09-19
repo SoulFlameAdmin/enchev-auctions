@@ -99,6 +99,15 @@ if (Test-Path $runtime) {
   Remove-Item $runtime -Force -ErrorAction SilentlyContinue
 }
 
+foreach ($ephemeral in @(
+  (Join-Path $DavidDir ".david-control-command.json"),
+  (Join-Path $DavidDir ".david-control-result.json")
+)) {
+  if (Test-Path $ephemeral) {
+    Remove-Item $ephemeral -Force -ErrorAction SilentlyContinue
+  }
+}
+
 Write-Host ""
 Write-Host "[STOP] DAVID workers: OFF" -ForegroundColor Red
 Write-Host "[STOP] DAVID Edge/CDP ${Port}: OFF" -ForegroundColor Red
