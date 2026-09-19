@@ -175,8 +175,7 @@ function verifySourceContract(source, indexSource, docSource) {
     "VERCEL_ENV",
     "Preview/staging is never production authority",
     "01.06 Redis/Valkey remains YELLOW",
-    "does not require",
-    "manual Vercel create/update/redeploy"
+    "No manual Vercel create/update/redeploy operation is required"
   ]) {
     if (!docSource.includes(token)) {
       fail(`documentation boundary missing: ${token}`);
