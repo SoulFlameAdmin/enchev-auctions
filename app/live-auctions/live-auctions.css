@@ -19,3 +19,108 @@
 .liveBidFeedback.is-rejected b{color:#ffc0c8}
 @media(max-width:680px){.liveBidFeedback{padding:10px 11px}.liveBidFeedback b{font-size:9px}}
 @media(forced-colors:active){.liveBidFeedback{border-color:CanvasText;background:Canvas;color:CanvasText}.liveBidFeedback b,.liveBidFeedback span{color:CanvasText}}
+
+
+.liveHeroStatusStack{
+  min-width:250px;
+  display:grid;
+  gap:10px;
+}
+.liveHeroStatusStack .liveHeroClock{
+  min-width:0;
+}
+.liveConnectionState{
+  display:grid;
+  grid-template-columns:10px minmax(0,1fr);
+  gap:10px;
+  align-items:center;
+  min-height:56px;
+  padding:10px 12px;
+  border:1px solid rgba(255,255,255,.1);
+  border-radius:13px;
+  background:#0a100d;
+}
+.liveConnectionState>i{
+  width:9px;
+  height:9px;
+  border-radius:50%;
+  background:#9aa49e;
+  box-shadow:0 0 12px rgba(154,164,158,.24);
+}
+.liveConnectionState div{
+  min-width:0;
+}
+.liveConnectionState b,
+.liveConnectionState small{
+  display:block;
+}
+.liveConnectionState b{
+  color:#dce6df;
+  font-size:9px;
+  letter-spacing:.12em;
+}
+.liveConnectionState small{
+  margin-top:3px;
+  color:#7f8d84;
+  font-size:9px;
+  line-height:1.35;
+}
+.liveConnectionState.is-connected{
+  border-color:rgba(39,239,130,.28);
+  background:rgba(39,239,130,.06);
+}
+.liveConnectionState.is-connected>i{
+  background:#27ef82;
+  box-shadow:0 0 14px rgba(39,239,130,.65);
+}
+.liveConnectionState.is-reconnecting{
+  border-color:rgba(255,190,92,.32);
+  background:rgba(255,190,92,.07);
+}
+.liveConnectionState.is-reconnecting>i{
+  background:#ffbe5c;
+  box-shadow:0 0 14px rgba(255,190,92,.46);
+}
+.liveConnectionState.is-stale{
+  border-color:rgba(255,105,120,.34);
+  background:rgba(255,105,120,.07);
+}
+.liveConnectionState.is-stale>i{
+  background:#ff6978;
+  box-shadow:0 0 14px rgba(255,105,120,.46);
+}
+@media(max-width:680px){
+  .liveHeroStatusStack{
+    width:100%;
+    min-width:0;
+  }
+  .liveConnectionState{
+    min-height:54px;
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .liveConnectionState>i{
+    box-shadow:none;
+  }
+}
+@media(forced-colors:active){
+  .liveConnectionState,
+  .liveConnectionState.is-connected,
+  .liveConnectionState.is-reconnecting,
+  .liveConnectionState.is-stale{
+    border-color:CanvasText;
+    background:Canvas;
+    color:CanvasText;
+  }
+  .liveConnectionState>i,
+  .liveConnectionState.is-connected>i,
+  .liveConnectionState.is-reconnecting>i,
+  .liveConnectionState.is-stale>i{
+    background:CanvasText;
+    box-shadow:none;
+  }
+  .liveConnectionState b,
+  .liveConnectionState small{
+    color:CanvasText;
+  }
+}

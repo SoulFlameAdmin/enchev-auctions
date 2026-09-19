@@ -370,6 +370,74 @@ async function verifyD30MyAuctions(call,viewport){
   if(!restored||restored.active!=="all"||restored.visible!==4||restored.states.length!==4)fail(`D30 ${viewport.name} all tab did not restore four rows`);
 }
 
+
+async function d28ConnectionSnapshot(call){
+  const result=await call("Runtime.evaluate",{expression:`(()=>{const el=document.querySelector('.liveConnectionState[data-design-task="D28"]');if(!el)return null;const r=el.getBoundingClientRect();return {state:el.getAttribute('data-connection-state')||'',authority:el.getAttribute('data-auction-authority')||'',text:el.textContent||'',viewportWidth:innerWidth,scrollWidth:document.documentElement.scrollWidth,rect:{left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height},display:getComputedStyle(el).display};})()`,returnByValue:true});
+  return result?.result?.value;
+}
+
+async function waitForD28State(call,expected,attempts=40,delay=100){
+  let snapshot=null;
+  for(let attempt=0;attempt<attempts;attempt++){
+    snapshot=await d28ConnectionSnapshot(call);
+    if(snapshot?.state===expected)return snapshot;
+    await sleep(delay);
+  }
+  fail(`D28 connection state did not reach ${expected}; last=${snapshot?.state||"missing"}`);
+}
+
+async function verifyD28ConnectionState(call,viewport){
+  const connected=await waitForD28State(call,"connected",40,100);
+  if(connected.authority!=="false")fail(`D28 ${viewport.name} must declare auctionAuthority=false`);
+  if(connected.scrollWidth>connected.viewportWidth+3)fail(`D28 ${viewport.name} horizontal overflow`);
+  if(connected.display==="none"||connected.rect.width<140||connected.rect.height<44)fail(`D28 ${viewport.name} status indicator is not meaningfully visible`);
+  if(connected.rect.left<-3||connected.rect.right>connected.viewportWidth+3)fail(`D28 ${viewport.name} status indicator escapes viewport`);
+  if(!connected.text.includes("СВЪРЗАН"))fail(`D28 ${viewport.name} connected label missing`);
+
+  if(viewport.mobile)return;
+
+  await call("Network.enable");
+  try{
+    await call("Network.emulateNetworkConditions",{
+      offline:true,
+      latency:0,
+      downloadThroughput:0,
+      uploadThroughput:0,
+      connectionType:"none",
+    });
+    await call("Runtime.evaluate",{expression:"window.dispatchEvent(new Event('offline'))"});
+    const reconnecting=await waitForD28State(call,"reconnecting",20,100);
+    if(!reconnecting.text.includes("ПОВТОРНО СВЪРЗВАНЕ"))fail("D28 reconnecting label missing");
+
+    const stale=await waitForD28State(call,"stale",60,100);
+    if(!stale.text.includes("ОСТАРЕЛИ"))fail("D28 stale label missing");
+
+    await call("Network.emulateNetworkConditions",{
+      offline:false,
+      latency:0,
+      downloadThroughput:-1,
+      uploadThroughput:-1,
+      connectionType:"wifi",
+    });
+    await call("Runtime.evaluate",{expression:"window.dispatchEvent(new Event('online'))"});
+    const recovered=await waitForD28State(call,"connected",40,100);
+    if(!recovered.text.includes("СВЪРЗАН"))fail("D28 recovery label missing");
+  }finally{
+    try{
+      await call("Network.emulateNetworkConditions",{
+        offline:false,
+        latency:0,
+        downloadThroughput:-1,
+        uploadThroughput:-1,
+        connectionType:"wifi",
+      });
+      await call("Runtime.evaluate",{expression:"window.dispatchEvent(new Event('online'))"});
+      await sleep(120);
+      await call("Network.disable");
+    }catch{}
+  }
+}
+
 function findChrome(){
   const candidates=[
     process.env.CHROME_BIN,
@@ -555,6 +623,7 @@ async function captureOne({port,baseUrl,route,viewport,outputDir}){
       await verifyD25ServerClock(call,viewport);
       await verifyD26SoldAdvance(call,viewport);
       await verifyD27BidFeedback(call,viewport);
+      await verifyD28ConnectionState(call,viewport);
     }
     if(route.name==="profile"){
       await verifyD29Watchlist(call,viewport);
