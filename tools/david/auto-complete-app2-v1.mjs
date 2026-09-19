@@ -550,8 +550,8 @@ async function runPrompt(context, page, state, prompt, kind) {
       await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
       await sleep(2500);
     }
-    if (permit.mode === "probe") await markProbeSendStarted("APP2");
     await fillAndSend(page, outgoingPrompt);
+    if (permit.mode === "probe") await markProbeSendStarted("APP2");
     const start = await waitStart(context, page, baseHash, state);
     page = start.page;
     syncActiveChatUrl(page, state);
