@@ -129,6 +129,7 @@ function Get-State([string]$Kind) {
       return $null
     }
     "APK" { return Read-JsonSafe (Join-Path $DavidDir ".david-apk-state.json") }
+    "CONTROL" { return Read-JsonSafe (Join-Path $DavidDir ".david-control-state.json") }
   }
 }
 
@@ -203,6 +204,7 @@ while ($true) {
   $desState = Get-State "DESIGN"
   $appState = Get-State "APP2"
   $apkState = Get-State "APK"
+  $controlState = Get-State "CONTROL"
   $tabs = Read-JsonSafe (Join-Path $DavidDir ".david-tab-monitor.json")
 
   Matrix-Fill
@@ -218,35 +220,40 @@ while ($true) {
   Write-Fit "  APK     plan%=N/A (no formal finite APK plan yet) -- live worker state shown below" Cyan
   Write-Fit ""
   Write-Fit "  ------------------------------ LIVE WORKERS ----------------------------------------------------" Green
-  Render-Worker "SYSTEM" $sysState
-  Render-Worker "DESIGN" $desState
-  Render-Worker "APP2"   $appState
-  Render-Worker "APK"    $apkState
+  Render-Worker "CONTROL" $controlState
+  Render-Worker "SYSTEM"  $sysState
+  Render-Worker "DESIGN"  $desState
+  Render-Worker "APP2"    $appState
+  Render-Worker "APK"     $apkState
   Write-Fit ""
   Write-Fit "  ------------------------------ TAB OWNERSHIP ----------------------------------------------------" Green
   if ($tabs -and $tabs.managed) {
+    $cc = @($tabs.managed.CONTROL).Count
     $sc = @($tabs.managed.SYSTEM).Count
     $dc = @($tabs.managed.DESIGN).Count
     $ac = @($tabs.managed.APP2).Count
     $kc = @($tabs.managed.APK).Count
-    $stable = ($sc -eq 1 -and $dc -eq 1 -and $ac -eq 1 -and $kc -eq 1)
-    Write-Fit ("  SYSTEM={0}  DESIGN={1}  APP2={2}  APK={3}  ChatGPT tabs={4}  => {5}" -f $sc,$dc,$ac,$kc,$tabs.totalChatGptTabs,$(if($stable){"STABLE"}else{"CHECK"})) $(if($stable){[ConsoleColor]::Green}else{[ConsoleColor]::Red})
+    $stable = ($cc -eq 1 -and $sc -eq 1 -and $dc -eq 1 -and $ac -eq 1 -and $kc -eq 1)
+    Write-Fit ("  CONTROL={0} SYSTEM={1} DESIGN={2} APP2={3} APK={4} ChatGPT tabs={5} => {6}" -f $cc,$sc,$dc,$ac,$kc,$tabs.totalChatGptTabs,$(if($stable){"STABLE"}else{"CHECK"})) $(if($stable){[ConsoleColor]::Green}else{[ConsoleColor]::Red})
     if ($tabs.workerHealth) {
+      $ch = $tabs.workerHealth.CONTROL
       $sh = $tabs.workerHealth.SYSTEM
       $dh = $tabs.workerHealth.DESIGN
       $ah = $tabs.workerHealth.APP2
       $kh = $tabs.workerHealth.APK
+      $ccs = if ($null -ne $ch.heartbeatAgeMs) { [math]::Round(([double]$ch.heartbeatAgeMs)/1000) } else { "?" }
       $ss = if ($null -ne $sh.heartbeatAgeMs) { [math]::Round(([double]$sh.heartbeatAgeMs)/1000) } else { "?" }
       $dd = if ($null -ne $dh.heartbeatAgeMs) { [math]::Round(([double]$dh.heartbeatAgeMs)/1000) } else { "?" }
       $aa = if ($null -ne $ah.heartbeatAgeMs) { [math]::Round(([double]$ah.heartbeatAgeMs)/1000) } else { "?" }
       $kk = if ($null -ne $kh.heartbeatAgeMs) { [math]::Round(([double]$kh.heartbeatAgeMs)/1000) } else { "?" }
-      Write-Fit ("  HEARTBEAT age(s): SYSTEM={0} DESIGN={1} APP2={2} APK={3} | self-heal stale>600s / missing-tab>90s" -f $ss,$dd,$aa,$kk) DarkCyan
+      Write-Fit ("  HEARTBEAT age(s): CONTROL={0} SYSTEM={1} DESIGN={2} APP2={3} APK={4} | self-heal stale>600s / missing-tab>90s" -f $ccs,$ss,$dd,$aa,$kk) DarkCyan
     }
   } else {
     Write-Fit "  Tab monitor state not available yet..." Yellow
   }
   Write-Fit ""
   Write-Fit "  ------------------------------ DAVID LAWS -------------------------------------------------------" Green
+  Write-Fit "  CONTROL WATCHTOWER => ALLOWLISTED WAIT/REFRESH/RESTART/CLEAN_DUPLICATES ONLY" Magenta
   Write-Fit "  FINAL GATE => NO EXACT FINAL OK = NO NEXT NORMAL PROMPT" Red
   Write-Fit "  SEND TIMEOUT => CENTRAL GUARD OWNS RETRY | WORKERS WAIT | NO DUPLICATE SEND" Yellow
   Write-Fit "  ACTIVE THINKING/TOOL WORK => WAIT | LONG NO-PROGRESS >600s => REFRESH/VERIFY/RESEND" Yellow
@@ -264,6 +271,7 @@ while ($true) {
     design = $design
     dpp = $dpp
     workers = [ordered]@{
+      CONTROL = $controlState
       SYSTEM = $sysState
       DESIGN = $desState
       APP2 = $appState
