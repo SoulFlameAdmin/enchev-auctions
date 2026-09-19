@@ -50,22 +50,6 @@ export const HOME_DISCOVERY_KEYS = {
   buyNow:"home.discovery.buyNow",
 } as const;
 
-export const HOME_DISCOVERY_KEYS = {
-  eyebrow:"home.discovery.eyebrow",
-  title:"home.discovery.title",
-  lead:"home.discovery.lead",
-  advanced:"home.discovery.advanced",
-  searchLabel:"home.discovery.search.label",
-  searchPlaceholder:"home.discovery.search.placeholder",
-  searchSubmit:"home.discovery.search.submit",
-  searchHint:"home.discovery.search.hint",
-  stateLabel:"home.discovery.group.state",
-  makeLabel:"home.discovery.group.make",
-  all:"home.discovery.all",
-  live:"home.discovery.live",
-  buyNow:"home.discovery.buyNow",
-} as const;
-
 const catalog = {
   "bg-BG":{
     eyebrow:"МЕЖДУНАРОДНА ПЛАТФОРМА ЗА АВТОМОБИЛНИ ТЪРГОВЕ",
