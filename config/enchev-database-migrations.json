@@ -1,0 +1,15 @@
+{
+  "task": "02.09",
+  "engine": "postgresql",
+  "provider": "supabase",
+  "migration_root": "supabase/migrations",
+  "naming": "YYYYMMDDHHMMSS_snake_case.sql",
+  "implementation_state": "structure-established",
+  "append_only": true,
+  "schema_baseline_task": "03.01",
+  "migration_runner_task": "03.02",
+  "staging_seed_task": "03.03",
+  "schema_baseline_state": "deferred",
+  "migration_runner_state": "deferred",
+  "staging_seed_state": "deferred"
+}
