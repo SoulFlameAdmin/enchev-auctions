@@ -51,26 +51,45 @@ function Get-DavidBrowsers {
   })
 }
 
-for ($pass = 1; $pass -le 5; $pass++) {
-  $workers = @(Get-ManagedWorkers)
-  if ($workers.Count -eq 0) { break }
-  Write-Host ("[STOP] worker cleanup pass {0}: {1} process(es)" -f $pass,$workers.Count) -ForegroundColor DarkYellow
-  foreach ($p in $workers) {
-    Write-Host ("[STOP] worker pid={0} name={1}" -f $p.ProcessId,$p.Name) -ForegroundColor Yellow
-    Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue
+function Stop-ProcessTree {
+  param([int]$Id)
+  $taskkill = Join-Path $env:SystemRoot "System32\taskkill.exe"
+  if (Test-Path $taskkill) {
+    & $taskkill /PID $Id /T /F *> $null
+  } else {
+    Stop-Process -Id $Id -Force -ErrorAction SilentlyContinue
   }
-  Start-Sleep -Milliseconds 900
 }
 
-for ($pass = 1; $pass -le 5; $pass++) {
+function Get-RootProcesses {
+  param([object[]]$Processes)
+  $ids = @{}
+  foreach ($p in $Processes) { $ids[[int]$p.ProcessId] = $true }
+  return @($Processes | Where-Object { -not $ids.ContainsKey([int]$_.ParentProcessId) })
+}
+
+for ($pass = 1; $pass -le 8; $pass++) {
+  $workers = @(Get-ManagedWorkers)
+  if ($workers.Count -eq 0) { break }
+  $roots = @(Get-RootProcesses -Processes $workers)
+  Write-Host ("[STOP] worker cleanup pass {0}: {1} process(es), {2} root tree(s)" -f $pass,$workers.Count,$roots.Count) -ForegroundColor DarkYellow
+  foreach ($p in $roots) {
+    Write-Host ("[STOP] worker tree root pid={0} name={1}" -f $p.ProcessId,$p.Name) -ForegroundColor Yellow
+    Stop-ProcessTree -Id ([int]$p.ProcessId)
+  }
+  Start-Sleep -Seconds 1
+}
+
+for ($pass = 1; $pass -le 8; $pass++) {
   $davidBrowsers = @(Get-DavidBrowsers)
   if ($davidBrowsers.Count -eq 0) { break }
-  Write-Host ("[STOP] browser cleanup pass {0}: {1} process(es)" -f $pass,$davidBrowsers.Count) -ForegroundColor DarkYellow
-  foreach ($p in $davidBrowsers) {
-    Write-Host ("[STOP] DAVID browser pid={0} name={1}" -f $p.ProcessId,$p.Name) -ForegroundColor Yellow
-    Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue
+  $roots = @(Get-RootProcesses -Processes $davidBrowsers)
+  Write-Host ("[STOP] browser cleanup pass {0}: {1} process(es), {2} root tree(s)" -f $pass,$davidBrowsers.Count,$roots.Count) -ForegroundColor DarkYellow
+  foreach ($p in $roots) {
+    Write-Host ("[STOP] DAVID browser tree root pid={0} name={1}" -f $p.ProcessId,$p.Name) -ForegroundColor Yellow
+    Stop-ProcessTree -Id ([int]$p.ProcessId)
   }
-  Start-Sleep -Milliseconds 900
+  Start-Sleep -Seconds 1
 }
 
 $remainingWorkers = @(Get-ManagedWorkers)
@@ -101,7 +120,8 @@ if (Test-Path $runtime) {
 
 foreach ($ephemeral in @(
   (Join-Path $DavidDir ".david-control-command.json"),
-  (Join-Path $DavidDir ".david-control-result.json")
+  (Join-Path $DavidDir ".david-control-result.json"),
+  (Join-Path $DavidDir ".david-tab-monitor.json")
 )) {
   if (Test-Path $ephemeral) {
     Remove-Item $ephemeral -Force -ErrorAction SilentlyContinue
