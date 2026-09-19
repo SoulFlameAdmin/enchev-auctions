@@ -175,9 +175,15 @@ jobs:
           node --check tools/david/auto-continue-david-apk-v1.mjs
           node --check tools/david/auto-control-watchtower-v1.mjs
           node --check tools/david/dual-session-worker.mjs
+          node --check tools/david/worker-control.mjs
+          node --check dual-session-worker.mjs
           node --check tools/david/connection-interruption-guard.mjs
           node --check tools/david/chatgpt-rate-limit-coordinator.mjs
           node --check tools/david/auto-complete-app2-v1.mjs
+      - name: DAVID legacy owner guards
+        run: |
+          node -e "const fs=require('fs');const c=fs.readFileSync('tools/david/worker-control.mjs','utf8');if(c.includes('setTimeout(() => startWorker(), 900)')||c.includes('Auto-restart in 3s')){throw new Error('legacy worker-control still owns DAVID lifecycle')};const r=fs.readFileSync('dual-session-worker.mjs','utf8');if(!r.includes('Legacy root dual-session-worker.mjs is disabled')){throw new Error('legacy root supervisor is not disabled')};console.log('DAVID_LEGACY_OWNER_GUARD PASS');"
+
       - name: DAVID SYSTEM response watchdog self-tests
         run: node tools/david/auto-continue-enchev-v5.mjs --self-test
       - name: DAVID APP2 response watchdog self-tests
