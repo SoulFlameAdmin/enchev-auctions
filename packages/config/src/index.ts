@@ -19,3 +19,4 @@ export * from "./timezone-aware-display";
 export * from "./translation-key";
 export * from "./country-kyc-profile";
 export * from "./country-legal-profile";
+export * from "./country-document-profile";
