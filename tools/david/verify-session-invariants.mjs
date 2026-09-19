@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { selfTest as resilienceSelfTest } from "./chatgpt-session-resilience.mjs";
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1"));
 
@@ -101,6 +102,29 @@ for (const required of [
   if (!designSource.includes(required)) throw new Error(`DESIGN response helper missing after session refactor: ${required}`);
 }
 
+resilienceSelfTest();
+
+const resilienceSource = read("chatgpt-session-resilience.mjs");
+for (const required of [
+  "SESSION_ISSUE",
+  "SEND_TIMEOUT",
+  "INTERRUPTION",
+  "RATE_LIMIT",
+  "RETRYABLE_ERROR",
+  "CONVERSATION_UNAVAILABLE",
+  "HUMAN_REQUIRED",
+  "chooseRecoveryAction"
+]) {
+  if (!resilienceSource.includes(required)) throw new Error(`Session resilience classifier missing: ${required}`);
+}
+
+for (const file of ["auto-continue-enchev-v5.mjs","auto-continue-design-v1.mjs","auto-complete-app2-v1.mjs","auto-continue-david-apk-v1.mjs"]) {
+  const source = read(file);
+  for (const required of ["unable to load conversation", "conversation not found", "start a new chat to continue"]) {
+    if (!source.includes(required)) throw new Error(`Fresh-chat recovery coverage missing in ${file}: ${required}`);
+  }
+}
+
 const guardSource = read("connection-interruption-guard.mjs");
 for (const required of [
   "SEND_TIMEOUT_STALE_ACTIVE_MS",
@@ -108,7 +132,12 @@ for (const required of [
   "sendTimeoutLastProgressAt",
   "Retry UI now takes precedence",
   "focus({ timeout: 3000 })",
-  "force: true"
+  "force: true",
+  "managedKindFromPage",
+  "SESSION_HEALTH_FILE",
+  "visibleGenericIssue",
+  "recoverGenericIssue",
+  "active GPT/tool work protected"
 ]) {
   if (!guardSource.includes(required)) throw new Error(`Guard recovery invariant missing: ${required}`);
 }
@@ -161,4 +190,4 @@ if (/allFiveOwned/.test(supervisor)) {
   throw new Error("Unmanaged-tab cleanup must not depend on all five workers already being healthy");
 }
 
-console.log("DAVID_SESSION_INVARIANTS PASS same_tab_rollover=5 project_ok_rotation=4 strict_tab_budget=5 active_work_protected=1 fresh_restart_wiring=5 pointer_safe_send=5 stale_timeout_retry=1 dead_worker_lease_release=1 fresh_parallel_prewarm=5 transient_probe_reset=1");
+console.log("DAVID_SESSION_INVARIANTS PASS same_tab_rollover=5 project_ok_rotation=4 strict_tab_budget=5 active_work_protected=1 fresh_restart_wiring=5 pointer_safe_send=5 stale_timeout_retry=1 dead_worker_lease_release=1 fresh_parallel_prewarm=5 transient_probe_reset=1 resilience_classifier=11 tagged_guard=1 session_health=1 unavailable_chat_rotation=4");
