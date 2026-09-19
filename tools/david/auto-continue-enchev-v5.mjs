@@ -433,13 +433,13 @@ ${problem}
 
 Не завършвай с PROBLEM IN само заради същия външен blocker. PROBLEM IN е позволено само за нов вътрешен технически дефект, който спира всяка безопасна независима работа.
 
-${DEPLOY_LAW}
+${ORCHESTRATOR_LAW}\n\n${DEPLOY_LAW}
 
 ${RELAY_MARKER}`;
 }
 
 function fixPrompt(problem, attempt) {
-  return `@GitHub @Vercel @Supabase\n\nDAVID засече проблем в текущия етап:\n${problem}\n\nTRY TO MAKE THIS FIX YOURSELF NOW. Това е опит ${attempt}. Провери реалното състояние и опитай безопасен технически fix или валиден алтернативен подход. Не измисляй evidence, secrets или резултати. Не заобикаляй CAPTCHA/MFA/login/permissions и не прави destructive действие без разрешение.\n\nАко го оправиш и го докажеш, завърши последния ред само с: OK\nАко още не е решено, завърши с: ${PROBLEM_PREFIX} <точният оставащ проблем>\nСлед успешен fix продължи към следващата зависима задача от MASTER SYSTEM PLAN.\n\n${DEPLOY_LAW}\n\n${RELAY_MARKER}`;
+  return `@GitHub @Vercel @Supabase\n\nDAVID засече проблем в текущия етап:\n${problem}\n\nTRY TO MAKE THIS FIX YOURSELF NOW. Това е опит ${attempt}. Провери реалното състояние и опитай безопасен технически fix или валиден алтернативен подход. Не измисляй evidence, secrets или резултати. Не заобикаляй CAPTCHA/MFA/login/permissions и не прави destructive действие без разрешение.\n\nАко го оправиш и го докажеш, завърши последния ред само с: OK\nАко още не е решено, завърши с: ${PROBLEM_PREFIX} <точният оставащ проблем>\nСлед успешен fix продължи към следващата зависима задача от MASTER SYSTEM PLAN.\n\n${ORCHESTRATOR_LAW}\n\n${DEPLOY_LAW}\n\n${RELAY_MARKER}`;
 }
 
 async function visiblePlatformBlock(page) {
