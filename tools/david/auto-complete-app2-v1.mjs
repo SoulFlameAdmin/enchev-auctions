@@ -9,7 +9,7 @@ let activeChatUrl = INITIAL_CHAT_URL;
 const CDP_URL = process.env.DAVID_APP2_CDP_URL || "http://127.0.0.1:9444";
 const STATE_FILE = process.env.DAVID_APP2_STATE_FILE || path.join(process.cwd(), ".david-app2-state.json");
 const POLL_MS = Number(process.env.DAVID_APP2_POLL_MS || 800);
-const START_TIMEOUT_MS = Number(process.env.DAVID_APP2_START_TIMEOUT_MS || 15000);
+const START_TIMEOUT_MS = Number(process.env.DAVID_APP2_START_TIMEOUT_MS || 60000);
 const STALL_MS = Number(process.env.DAVID_APP2_STALL_MS || 600000);
 const COOLDOWN_MS = Number(process.env.DAVID_APP2_COOLDOWN_MS || 1200);
 const MAX_RETRIES = Number(process.env.DAVID_APP2_MAX_RETRIES || 5);
@@ -565,9 +565,7 @@ async function runPrompt(context, page, state, prompt, kind) {
     }
     if (permit.mode === "probe") {
       state.watchdog = "global-rate-limit-probe";
-      save(state, "APP2 owns the single post-cooldown probe send");
-      await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
-      await sleep(2500);
+      save(state, "APP2 owns the single post-cooldown probe send; no refresh required");
     }
     await fillAndSend(page, outgoingPrompt);
     await markGlobalSendStarted("APP2");
