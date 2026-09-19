@@ -30,7 +30,8 @@ const cases = [
   ["scripts/verify-packages-domain.mjs", "--self-test"],
   ["scripts/verify-packages-contracts.mjs", "--self-test"],
   ["scripts/verify-packages-config.mjs", "--self-test"],
-  ["scripts/verify-packages-providers.mjs", "--self-test"]
+  ["scripts/verify-packages-providers.mjs", "--self-test"],
+  ["scripts/verify-database-migrations-structure.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of cases) {
