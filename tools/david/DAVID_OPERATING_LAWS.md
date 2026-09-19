@@ -57,6 +57,8 @@ These rules are mandatory for CONTROL/WATCHTOWER, SYSTEM, DESIGN, DPP/APP2 and D
 - All non-owner workers remain WAIT during probe mode.
 - A successful completed response from the probe owner clears the global rate-limit state and normal sending may resume.
 - CONTROL must not REFRESH or RESTART a worker merely because it is waiting on the global rate-limit coordinator.
+- Entering rate-limit wait or becoming the single probe owner MUST NOT reload/refresh the ChatGPT tab. A probe is sent in the existing healthy session.
+- Refresh is recovery-only: use it only after confirmed inactive/dead/stale UI or a bounded failed-start/connection recovery window, never as normal pacing.
 - The global rate-limit state persists across DAVID clean restarts so restart cannot bypass the cooldown.
 
 ## 2. External blockers
