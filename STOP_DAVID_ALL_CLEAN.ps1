@@ -18,6 +18,7 @@ $workerPatterns = @(
   "auto-continue-enchev-v5.mjs",
   "auto-continue-design-v1.mjs",
   "auto-continue-david-apk-v1.mjs",
+  "auto-control-watchtower-v1.mjs",
   "connection-interruption-guard.mjs",
   "start-auto-continue.ps1",
   "start-app2-autopilot.ps1",
