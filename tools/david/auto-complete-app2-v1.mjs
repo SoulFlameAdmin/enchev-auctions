@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import { waitForGlobalSendPermit, reportProbeSuccess, markProbeSendStarted } from "./chatgpt-rate-limit-coordinator.mjs";
+import { waitForGlobalSendPermit, reportProbeSuccess, markGlobalSendStarted } from "./chatgpt-rate-limit-coordinator.mjs";
 
 const INITIAL_CHAT_URL = process.env.DAVID_APP2_CHAT_URL || "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4";
 let activeChatUrl = INITIAL_CHAT_URL;
@@ -564,7 +564,7 @@ async function runPrompt(context, page, state, prompt, kind) {
       await sleep(2500);
     }
     await fillAndSend(page, outgoingPrompt);
-    if (permit.mode === "probe") await markProbeSendStarted("APP2");
+    if (permit.mode === "probe") await markGlobalSendStarted("APP2");
     const start = await waitStart(context, page, baseHash, state);
     page = start.page;
     syncActiveChatUrl(page, state);
