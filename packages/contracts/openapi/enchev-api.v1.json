@@ -1,0 +1,256 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Enchev Auctions HTTP API",
+    "version": "0.1.0",
+    "description": "Canonical specification of HTTP routes that are implemented in the repository. It is descriptive only and does not create auction authority."
+  },
+  "jsonSchemaDialect": "https://json-schema.org/draft/2020-12/schema",
+  "x-enchev-task": "24.01",
+  "x-authority-boundary": "PostgreSQL remains authoritative for auction state, accepted bids, winner selection and final results; this specification is non-authoritative documentation.",
+  "servers": [
+    {
+      "url": "https://enchev-auctions.vercel.app",
+      "description": "Canonical production web origin"
+    },
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development origin"
+    }
+  ],
+  "paths": {
+    "/api/health/web": {
+      "get": {
+        "operationId": "getWebHealth",
+        "summary": "Web health",
+        "responses": {
+          "200": { "$ref": "#/components/responses/HealthyComponent" }
+        }
+      }
+    },
+    "/api/health/api": {
+      "get": {
+        "operationId": "getApiHealth",
+        "summary": "API health",
+        "responses": {
+          "200": { "$ref": "#/components/responses/HealthyComponent" }
+        }
+      }
+    },
+    "/api/health/realtime": {
+      "get": {
+        "operationId": "getRealtimeHealth",
+        "summary": "Realtime service readiness",
+        "responses": {
+          "503": { "$ref": "#/components/responses/PendingComponent" }
+        }
+      }
+    },
+    "/api/health/worker": {
+      "get": {
+        "operationId": "getWorkerHealth",
+        "summary": "Worker service readiness",
+        "responses": {
+          "503": { "$ref": "#/components/responses/PendingComponent" }
+        }
+      }
+    },
+    "/api/health/redis": {
+      "get": {
+        "operationId": "getRedisHealth",
+        "summary": "Sanitized Redis or Valkey binding health",
+        "responses": {
+          "200": {
+            "description": "Configured binding returned PONG",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RedisHealth" }
+              }
+            }
+          },
+          "503": {
+            "description": "Binding is missing or failed the live PING",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RedisHealth" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health/redis-env": {
+      "get": {
+        "operationId": "getRedisEnvironmentHealth",
+        "summary": "Sanitized Redis-related environment key inventory",
+        "responses": {
+          "200": {
+            "description": "Candidate key names only; values are never exposed",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/RedisEnvironmentHealth" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/health/vercel-oidc-management": {
+      "get": {
+        "operationId": "getVercelOidcManagementHealth",
+        "summary": "Sanitized Vercel OIDC management reachability probe",
+        "responses": {
+          "200": {
+            "description": "OIDC token exists and the management request is authorized"
+          },
+          "503": {
+            "description": "OIDC token is absent, unauthorized, or management request failed"
+          }
+        }
+      }
+    },
+    "/api/live-auction-clock": {
+      "get": {
+        "operationId": "getLiveAuctionDemoClock",
+        "summary": "Read the server-issued non-authoritative browser-session demo clock",
+        "responses": {
+          "200": {
+            "description": "Demo clock state",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LiveAuctionDemoClock" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "postLiveAuctionDemoBid",
+        "summary": "Advance the non-authoritative browser-session demo bid feedback",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["action"],
+                "properties": {
+                  "action": { "const": "bid" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Demo bid feedback",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LiveAuctionDemoClock" }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON or unsupported action",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ErrorEnvelope" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "responses": {
+      "HealthyComponent": {
+        "description": "Component is ready",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ComponentHealth" }
+          }
+        }
+      },
+      "PendingComponent": {
+        "description": "Component exists but its backing service is pending",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/ComponentHealth" }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "ComponentHealth": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ok", "component", "ready", "status", "schemaVersion", "valuesExposed"],
+        "properties": {
+          "ok": { "type": "boolean" },
+          "component": { "enum": ["web", "api", "realtime", "worker"] },
+          "ready": { "type": "boolean" },
+          "status": { "enum": ["healthy", "service-pending"] },
+          "schemaVersion": { "const": 1 },
+          "valuesExposed": { "const": false }
+        }
+      },
+      "RedisHealth": {
+        "type": "object",
+        "required": ["ok", "configured", "status"],
+        "properties": {
+          "ok": { "type": "boolean" },
+          "configured": { "type": "boolean" },
+          "status": { "enum": ["pong", "redis-binding-ping-failed", "missing-redis-binding"] },
+          "binding": { "enum": ["tcp-url", "upstash-rest", "vercel-kv-rest"] },
+          "tls": { "type": "boolean" },
+          "latencyMs": { "type": "integer", "minimum": 0 }
+        }
+      },
+      "RedisEnvironmentHealth": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["ok", "candidateKeyCount", "candidateKeys", "valuesExposed"],
+        "properties": {
+          "ok": { "const": true },
+          "candidateKeyCount": { "type": "integer", "minimum": 0 },
+          "candidateKeys": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "valuesExposed": { "const": false }
+        }
+      },
+      "LiveAuctionDemoClock": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["serverNow", "roundEndsAt", "durationMs", "lotIndex", "lotId", "scope", "auctionAuthority", "bidFeedback", "priceDelta"],
+        "properties": {
+          "serverNow": { "type": "integer" },
+          "roundEndsAt": { "type": "integer" },
+          "durationMs": { "type": "integer", "minimum": 1 },
+          "lotIndex": { "type": "integer", "minimum": 0 },
+          "lotId": { "type": "string" },
+          "scope": { "const": "server-issued-browser-session-demo" },
+          "auctionAuthority": { "const": false },
+          "bidFeedback": {
+            "oneOf": [
+              { "type": "null" },
+              { "enum": ["accepted", "leading", "outbid", "rejected"] }
+            ]
+          },
+          "priceDelta": { "type": "number" }
+        }
+      },
+      "ErrorEnvelope": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["error"],
+        "properties": {
+          "error": { "type": "string" }
+        }
+      }
+    }
+  }
+}
