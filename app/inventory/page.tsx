@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { accountNavigation, primaryNavigation } from "../site-navigation";
+import { accountNavigation, primaryNavigation } from "../site-navigation";\nimport { matchesCrossScriptSearch } from "../../packages/config/src/cross-script-search";
 import "./inventory.css";
 import "./inventory-v2.css";
 import "./inventory-d13.css";
