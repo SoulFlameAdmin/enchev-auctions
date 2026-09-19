@@ -16,3 +16,4 @@ export type ConfigPackageBoundary = Readonly<{
 export * from "./country-profile";
 export * from "./locale-aware-date";
 export * from "./timezone-aware-display";
+export * from "./translation-key";

@@ -46,7 +46,9 @@
     "verify:bg-locale": "node scripts/verify-bg-locale.mjs",
     "verify:bg-locale:self-test": "node scripts/verify-bg-locale.mjs --self-test",
     "verify:en-locale": "node scripts/verify-en-locale.mjs",
-    "verify:en-locale:self-test": "node scripts/verify-en-locale.mjs --self-test"
+    "verify:en-locale:self-test": "node scripts/verify-en-locale.mjs --self-test",
+    "verify:translation-key-architecture": "node scripts/verify-translation-key-architecture.mjs",
+    "verify:translation-key-architecture:self-test": "node scripts/verify-translation-key-architecture.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
