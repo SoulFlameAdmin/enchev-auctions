@@ -452,6 +452,12 @@
           "kind": "core",
           "defaultStatus": "red"
         }
+      ],
+      "dependsOn": [
+        "06",
+        "34",
+        "60",
+        "80"
       ]
     },
     {
@@ -904,6 +910,13 @@
           "kind": "core",
           "defaultStatus": "red"
         }
+      ],
+      "dependsOn": [
+        "34",
+        "35",
+        "49",
+        "56",
+        "81"
       ]
     },
     {
@@ -1356,6 +1369,15 @@
           "kind": "core",
           "defaultStatus": "red"
         }
+      ],
+      "dependsOn": [
+        "08",
+        "10",
+        "11",
+        "36",
+        "61",
+        "81",
+        "82"
       ]
     },
     {
@@ -1803,6 +1825,19 @@
           "kind": "global",
           "defaultStatus": "red"
         }
+      ],
+      "dependsOn": [
+        "21",
+        "31",
+        "39",
+        "46",
+        "54",
+        "55",
+        "63",
+        "67",
+        "69",
+        "70",
+        "71"
       ]
     },
     {
@@ -2250,6 +2285,12 @@
           "kind": "global",
           "defaultStatus": "red"
         }
+      ],
+      "dependsOn": [
+        "21",
+        "56",
+        "57",
+        "84"
       ]
     },
     {
@@ -2697,6 +2738,12 @@
           "kind": "global",
           "defaultStatus": "red"
         }
+      ],
+      "dependsOn": [
+        "06",
+        "21",
+        "38",
+        "85"
       ]
     },
     {
@@ -3149,6 +3196,15 @@
           "kind": "security",
           "defaultStatus": "red"
         }
+      ],
+      "dependsOn": [
+        "64",
+        "67",
+        "68",
+        "70",
+        "73",
+        "74",
+        "84"
       ]
     },
     {
@@ -3596,6 +3652,13 @@
           "kind": "core",
           "defaultStatus": "red"
         }
+      ],
+      "dependsOn": [
+        "16",
+        "41",
+        "53",
+        "65",
+        "69"
       ]
     },
     {
@@ -4048,6 +4111,12 @@
           "kind": "legal",
           "defaultStatus": "red"
         }
+      ],
+      "dependsOn": [
+        "66",
+        "68",
+        "75",
+        "76"
       ]
     },
     {
@@ -4500,6 +4569,13 @@
           "kind": "test",
           "defaultStatus": "red"
         }
+      ],
+      "dependsOn": [
+        "17",
+        "24",
+        "29",
+        "50",
+        "51"
       ]
     }
   ]
