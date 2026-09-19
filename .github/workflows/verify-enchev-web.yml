@@ -134,6 +134,10 @@ jobs:
         run: node scripts/verify-locale-aware-dates.mjs
       - name: 21.03 Locale-aware dates self-tests
         run: node scripts/verify-locale-aware-dates.mjs --self-test
+      - name: 21.04 Timezone-aware display
+        run: node scripts/verify-timezone-aware-display.mjs
+      - name: 21.04 Timezone-aware display self-tests
+        run: node scripts/verify-timezone-aware-display.mjs --self-test
       - name: Redis environment contract invariant
         run: node scripts/verify-redis-environment.mjs
       - name: Redis environment contract self-tests
