@@ -45,10 +45,10 @@
       "id": "DP2-05",
       "group": "Homepage",
       "title": "World-class hero composition and value proposition",
-      "status": "red",
-      "evidence": "",
-      "blocker": "",
-      "updatedAt": null
+      "status": "yellow",
+      "evidence": "Implemented DP2-05 world-class homepage hero through commit 097d9949c02f8654788c118e964a8c4e80d3de26. The legacy campaign hero/header DOM was replaced by app/components/HomeHeroV2.tsx with a restrained two-column value proposition, primary inventory/LIVE actions, three capability proof points, market-profile availability context, preserved DP2-06 discovery block and the existing LIVE spotlight. app/dp2-home-hero.css provides purpose-built 360/390/430 mobile stacking and 1366/1440/1920 desktop composition. New hero copy is sourced from app/home-hero-messages.ts with BG/EN message entries and canonical home.hero.* translation keys registered in locales/translation-keys.json. The nested LIVE spotlight was aligned with the Global Commerce UX law by removing ad-hoc EUR/current-bid and hardcoded country display from the hero. scripts/verify-design-process-2.mjs enforces the hero/i18n contract and scripts/capture-visual-regression.mjs runtime-verifies CTA target size, proof hierarchy, translation-key coverage, responsive stacking/non-overlap and horizontal containment at all six acceptance widths. YELLOW pending fresh branch CI, production build and Chrome+Edge visual/runtime proof.",
+      "blocker": "Pending fresh DP2-05 PR CI and expanded Chrome/Edge visual/runtime proof.",
+      "updatedAt": "2026-09-19T15:32:01Z"
     },
     {
       "id": "DP2-06",
