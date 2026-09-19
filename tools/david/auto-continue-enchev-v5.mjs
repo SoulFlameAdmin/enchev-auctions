@@ -862,6 +862,13 @@ async function main() {
   const context = browser.contexts()[0];
   if (!context) throw new Error("No active Chromium context on CDP port.");
   const state = loadState();
+  if (/ChatGPT platform: (?:global )?rate limit/i.test(String(state.problem || ""))) {
+    state.problem = null;
+    state.problemAttempts = 0;
+    delete state.problemRetryAt;
+    state.watchdog = "global-rate-limit-state-sanitized";
+    saveState(state, "Cleared stale ChatGPT rate-limit problem from SYSTEM project state; coordinator owns cooldown");
+  }
   activeChatUrl = state.chatUrl || INITIAL_CHAT_URL;
   let page = await waitForSession(context, await ensureTargetPage(context), state);
   syncActiveChatUrl(page, state);
