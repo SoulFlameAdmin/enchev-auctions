@@ -4,6 +4,7 @@ Status: ACTIVE
 Base: `docs/MASTER_SYSTEM_PLAN_V1_FROZEN.md`
 Machine-readable expansion: `app/master-system-expansion-v2/part-1.json` … `part-4.json`
 System worker: `tools/david/auto-continue-enchev-v5.mjs`
+Identity digest: `FNV1a32 e7c9cf20`
 
 ## Purpose
 
@@ -22,7 +23,7 @@ This is not a claim that every jurisdiction has identical legal, tax, customs, p
 5. Tasks marked `test` require explicit PASS/SUCCESS evidence.
 6. New discoveries after v2 use append-only GAP IDs; they are never hidden by changing old task meanings.
 7. FINAL SYSTEM ACCEPTANCE (phase 47) is blocked by every non-GREEN task outside phase 47, including phases 62–99 and manual GAP items.
-8. Expansion phases obey their explicit `dependsOn` graph. DAVID must not jump over unresolved mandatory predecessors.
+8. Expansion phases obey their explicit `dependsOn` graph. CI rejects dependency cycles and later-wave dependencies.
 9. Pricing, payments, settlement, accounting, tax, FX, customs, CRM and company-operation scope is explicitly authorized by this expansion.
 10. Legal/tax/regulatory outcomes must not be guessed or hardcoded into UI/business logic. They are country-configured and evidence-gated.
 
@@ -31,6 +32,7 @@ This is not a claim that every jurisdiction has identical legal, tax, customs, p
 - Frozen system tasks: **1,054**
 - Expansion v2 tasks: **3,226**
 - Combined baseline: **4,280**
+- Frozen + expansion test tasks: **1,201**
 - Expansion test tasks: **965**
 - Expansion security tasks: **192**
 - Expansion legal tasks: **74**
@@ -42,48 +44,48 @@ This is not a claim that every jurisdiction has identical legal, tax, customs, p
 
 | Phase | Domain | Wave | Tasks | Explicit dependencies |
 |---:|---|---:|---:|---|
-| 62 | Corporate operating model, legal entities & governance | 1 | 74 | 00, 02, 04, 32 |
-| 63 | Commercial roles, marketplace model & contract architecture | 1 | 80 | 15, 54, 59, 62 |
+| 62 | Corporate operating model, legal entities & governance | 3 | 74 | 00, 02, 04, 32 |
+| 63 | Commercial roles, marketplace model & contract architecture | 4 | 80 | 15, 54, 59, 62 |
 | 64 | Pricing, fees, commissions & commercial quote engine | 7 | 86 | 21, 63, 67 |
-| 65 | Payments, deposits, refunds, payouts & settlement | 5 | 86 | 04, 05, 16, 24, 52, 63, 64, 67, 69 |
+| 65 | Payments, deposits, refunds, payouts & settlement | 7 | 86 | 04, 05, 16, 24, 52, 63, 64, 67, 69 |
 | 66 | Accounting ledger, reconciliation & close | 12 | 86 | 03, 24, 64, 65, 67 |
-| 67 | VAT, sales tax, invoicing & fiscal documents | 3 | 84 | 15, 21, 54, 63 |
+| 67 | VAT, sales tax, invoicing & fiscal documents | 4 | 84 | 15, 21, 54, 63 |
 | 68 | Treasury, FX, currency exposure & liquidity | 12 | 86 | 65, 66, 67 |
-| 69 | AML, sanctions, high-value vehicle & financial-crime controls | 3 | 84 | 05, 52, 53, 54, 63, 65 |
-| 70 | Customs, tariffs, origin & cross-border clearance | 4 | 85 | 21, 39, 46, 54, 60, 63, 67 |
-| 71 | Vehicle import eligibility, homologation & technical compliance | 4 | 85 | 06, 21, 39, 54, 60, 70 |
-| 72 | Title, ownership transfer, registration & post-sale documents | 4 | 86 | 06, 13, 60, 70, 71 |
-| 73 | International freight, ports, carriers & delivery orchestration | 4 | 86 | 13, 20, 55, 60, 70, 71, 72 |
-| 74 | Insurance, cargo risk, claims & loss handling | 4 | 86 | 20, 55, 73 |
+| 69 | AML, sanctions, high-value vehicle & financial-crime controls | 5 | 84 | 05, 52, 53, 54, 63 |
+| 70 | Customs, tariffs, origin & cross-border clearance | 4 | 85 | 21, 54, 55, 60, 63, 67 |
+| 71 | Vehicle import eligibility, homologation & technical compliance | 4 | 85 | 06, 21, 54, 60, 70 |
+| 72 | Title, ownership transfer, registration & post-sale documents | 7 | 86 | 06, 13, 60, 70, 71 |
+| 73 | International freight, ports, carriers & delivery orchestration | 7 | 86 | 13, 55, 60, 70, 71, 72 |
+| 74 | Insurance, cargo risk, claims & loss handling | 7 | 86 | 55, 73 |
 | 75 | Seller/dealer acquisition, CRM & account management | 7 | 85 | 05, 35, 59, 63 |
 | 76 | Buyer acquisition, CRM, lifecycle & sales operations | 7 | 85 | 04, 05, 33, 59, 63 |
 | 77 | Customer service, multilingual contact center & SLA | 7 | 86 | 12, 14, 21, 57, 63 |
-| 78 | Disputes, cancellations, returns, reversals & chargebacks | 3 | 84 | 14, 15, 37, 54, 63, 65, 72, 73, 74 |
+| 78 | Disputes, cancellations, returns, reversals & chargebacks | 7 | 84 | 14, 15, 37, 54, 63, 65, 72, 73, 74 |
 | 79 | Procurement, supplier management & third-party commercial governance | 12 | 86 | 20, 55, 58, 63, 66 |
-| 80 | Yard, warehouse, parking, fleet & capacity operations | 4 | 86 | 13, 60, 72, 73 |
-| 81 | Vehicle intake, inspection, reconditioning & readiness | 4 | 86 | 06, 34, 60, 80 |
-| 82 | Photography, video, media studio & listing content operations | 7 | 86 | 34, 35, 49, 56, 81 |
-| 83 | Auction operations, scheduling, lanes & capacity planning | 5 | 86 | 08, 10, 11, 36, 61, 81, 82 |
-| 84 | Country/market configuration & launch factory | 8 | 85 | 21, 31, 39, 46, 54, 55, 63, 67, 69, 70, 71 |
+| 80 | Yard, warehouse, parking, fleet & capacity operations | 7 | 86 | 13, 60, 72, 73 |
+| 81 | Vehicle intake, inspection, reconditioning & readiness | 7 | 86 | 06, 34, 60, 80 |
+| 82 | Photography, video, media studio & listing content operations | 8 | 86 | 34, 35, 49, 56, 81 |
+| 83 | Auction operations, scheduling, lanes & capacity planning | 8 | 86 | 08, 10, 11, 36, 61, 81, 82 |
+| 84 | Country/market configuration & launch factory | 8 | 85 | 21, 31, 39, 54, 55, 63, 67, 69, 70, 71 |
 | 85 | Localization, translation, content & legal catalog operations | 8 | 85 | 21, 56, 57, 84 |
 | 86 | International vehicle catalog, taxonomy & search data quality | 8 | 85 | 06, 21, 38, 85 |
-| 87 | Landed-cost, tax/customs estimate & price transparency | 8 | 86 | 64, 67, 68, 70, 73, 74, 84 |
+| 87 | Landed-cost, tax/customs estimate & price transparency | 12 | 86 | 64, 67, 68, 70, 73, 74, 84 |
 | 88 | Fraud, trust, investigations & loss prevention | 9 | 85 | 16, 41, 53, 65, 69 |
 | 89 | Management accounting, profitability & executive reporting | 12 | 86 | 66, 68, 75, 76 |
 | 90 | Data platform, BI, warehouse, experimentation & decision systems | 7 | 86 | 17, 24, 29, 50, 51 |
 | 91 | Marketing, growth, SEO, affiliate & partnership operations | 13 | 85 | 56, 57, 75, 76, 85, 90 |
 | 92 | HR, people operations, internal IAM & training | 3 | 82 | 04, 16, 52, 62 |
-| 93 | Internal backoffice, approvals, workflow automation & RPA | 7 | 86 | 14, 24, 50, 59, 75, 76, 77, 78, 79 |
-| 94 | IT service management, incident, problem & change management | 10 | 86 | 23, 27, 30, 43, 55 |
-| 95 | Business continuity, disaster recovery & regional/site failover | 10 | 86 | 17, 27, 30, 40, 43, 48, 51, 55, 80, 94 |
-| 96 | Corporate security, GRC, assurance & audit program | 9 | 85 | 16, 41, 49, 52, 54, 55, 58, 62, 69, 94, 95 |
-| 97 | Legal/compliance operations, policy lifecycle & regulatory change | 3 | 84 | 15, 29, 54, 62, 63, 67, 69, 84, 96 |
+| 93 | Internal backoffice, approvals, workflow automation & RPA | 12 | 86 | 14, 24, 50, 59, 75, 76, 77, 78, 79 |
+| 94 | IT service management, incident, problem & change management | 12 | 86 | 23, 27, 30, 43, 55 |
+| 95 | Business continuity, disaster recovery & regional/site failover | 12 | 86 | 17, 27, 30, 40, 43, 48, 51, 55, 80, 94 |
+| 96 | Corporate security, GRC, assurance & audit program | 12 | 85 | 16, 41, 49, 52, 54, 55, 58, 62, 69, 94, 95 |
+| 97 | Legal/compliance operations, policy lifecycle & regulatory change | 12 | 84 | 15, 29, 54, 62, 63, 67, 69, 84, 96 |
 | 98 | Country-by-country production launch, scale & localization acceptance | 14 | 85 | 39, 45, 46, 84, 85, 86, 87, 91, 94, 95, 96, 97 |
 | 99 | International company final operating acceptance & scale readiness | 14 | 85 | 44, 45, 46, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98 |
 
 ## Execution meaning
 
-The numeric phase ID is an immutable taxonomy ID. The real execution order remains the existing execution-wave model plus the explicit `dependsOn` graph.
+The numeric phase ID is an immutable taxonomy ID. The real execution order is the existing execution-wave model plus the explicit `dependsOn` DAG.
 
 Typical dependency chain:
 
@@ -108,28 +110,17 @@ foundation / architecture / identity / international config
 
 The plan treats the following as reference or applicability baselines, not as a substitute for jurisdiction-specific professional advice:
 
-- OWASP ASVS 5.0 — application-security verification baseline:
-  https://owasp.org/projects/asvs
-- NIST SP 800-63-4 — modern digital identity/authentication reference:
-  https://csrc.nist.gov/pubs/sp/800/63/4/final
-- W3C WCAG 2.2 / ISO/IEC 40500:2025 — accessibility baseline:
-  https://www.w3.org/WAI/standards-guidelines/wcag/
-- ISO 4217 — currency identifiers:
-  https://www.iso.org/iso-4217-currency-codes.html
-- EU GDPR business obligations / processing principles:
-  https://commission.europa.eu/law/law-topic/data-protection/information-business-and-organisations/principles-gdpr_en
-- EU Digital Services Act, including trader traceability where applicable to online marketplaces:
-  https://eur-lex.europa.eu/eli/reg/2022/2065/oj
-- European Accessibility Act:
-  https://commission.europa.eu/strategy-and-policy/policies/justice-and-fundamental-rights/disability/european-accessibility-act-eaa_en
-- EU EORI:
-  https://taxation-customs.ec.europa.eu/customs/customs-procedures-import-and-export/customs-operations/economic-operators-registration-and-identification-number-eori_en
-- EU TARIC:
-  https://taxation-customs.ec.europa.eu/online-services/online-services-and-databases-customs/eu-customs-tariff-taric_en
-- EU VAT special schemes for second-hand goods / public auctions where applicable:
-  https://taxation-customs.ec.europa.eu/taxation/vat/vat-special-schemes_en
-- EU consumer contract rules / online marketplace obligations where applicable:
-  https://commission.europa.eu/law/law-topic/consumer-protection-law/consumer-contract-law/consumer-rights-directive_en
+- OWASP ASVS 5.0 — https://owasp.org/projects/asvs
+- NIST SP 800-63-4 — https://csrc.nist.gov/pubs/sp/800/63/4/final
+- W3C WCAG 2.2 / ISO/IEC 40500:2025 — https://www.w3.org/WAI/standards-guidelines/wcag/
+- ISO 4217 currency identifiers — https://www.iso.org/iso-4217-currency-codes.html
+- EU GDPR processing principles — https://commission.europa.eu/law/law-topic/data-protection/information-business-and-organisations/principles-gdpr_en
+- EU Digital Services Act — https://eur-lex.europa.eu/eli/reg/2022/2065/oj
+- European Accessibility Act — https://commission.europa.eu/strategy-and-policy/policies/justice-and-fundamental-rights/disability/european-accessibility-act-eaa_en
+- EU EORI — https://taxation-customs.ec.europa.eu/customs/customs-procedures-import-and-export/customs-operations/economic-operators-registration-and-identification-number-eori_en
+- EU TARIC — https://taxation-customs.ec.europa.eu/online-services/online-services-and-databases-customs/eu-customs-tariff-taric_en
+- EU VAT special schemes — https://taxation-customs.ec.europa.eu/taxation/vat/vat-special-schemes_en
+- EU Consumer Rights Directive overview — https://commission.europa.eu/law/law-topic/consumer-protection-law/consumer-contract-law/consumer-rights-directive_en
 
 ## Country-launch law
 
