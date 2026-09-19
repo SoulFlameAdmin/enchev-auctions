@@ -1,5 +1,5 @@
 import fs from "node:fs";
-import ts from "typescript";
+import * as ts from "typescript";
 
 const SOURCE_PATH = "packages/config/src/country-profile.ts";
 const INDEX_PATH = "packages/config/src/index.ts";
