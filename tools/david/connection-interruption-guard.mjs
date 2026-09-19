@@ -11,8 +11,8 @@ const POLL_MS = Number(process.env.DAVID_INTERRUPT_POLL_MS || 400);
 const RETRY_COOLDOWN_MS = Number(process.env.DAVID_INTERRUPT_RETRY_COOLDOWN_MS || 5000);
 const CONFIRM_MS = Number(process.env.DAVID_INTERRUPT_CONFIRM_MS || 5000);
 const CONFIRM_SAMPLES = Number(process.env.DAVID_INTERRUPT_CONFIRM_SAMPLES || 4);
-const SEND_TIMEOUT_COOLDOWN_MS = Number(process.env.DAVID_SEND_TIMEOUT_COOLDOWN_MS || 3000);
-const SEND_TIMEOUT_MAX_RETRIES = Number(process.env.DAVID_SEND_TIMEOUT_MAX_RETRIES || 2);
+const SEND_TIMEOUT_COOLDOWN_MS = Number(process.env.DAVID_SEND_TIMEOUT_COOLDOWN_MS || 1000);
+const SEND_TIMEOUT_MAX_RETRIES = Number(process.env.DAVID_SEND_TIMEOUT_MAX_RETRIES || 3);
 const SEND_TIMEOUT_STALE_ACTIVE_MS = Number(process.env.DAVID_SEND_TIMEOUT_STALE_ACTIVE_MS || 8000);
 const SEND_TIMEOUT_RELOAD_SETTLE_MS = Number(process.env.DAVID_SEND_TIMEOUT_RELOAD_SETTLE_MS || 2500);
 const RECOVERY_REQUEST_FILE = path.join(HERE, ".david-recovery-request.json");
@@ -212,10 +212,15 @@ async function clickSendTimeoutRetry(page) {
       const buttons = page.getByRole("button", { name: label });
       for (let i = (await buttons.count()) - 1; i >= 0; i--) {
         const b = buttons.nth(i);
-        if (await b.isVisible().catch(() => false) && await b.isEnabled().catch(() => false)) {
-          await b.click({ timeout: 4000 });
+        if (!await b.isVisible().catch(() => false) || !await b.isEnabled().catch(() => false)) continue;
+        try {
+          await b.click({ timeout: 1500 });
           return true;
-        }
+        } catch {}
+        try {
+          await b.click({ force: true, timeout: 1500 });
+          return true;
+        } catch {}
       }
     } catch {}
   }
@@ -239,46 +244,39 @@ async function recoverSendTimeout(page) {
   const lastProgressAt = Number(sendTimeoutLastProgressAt.get(url) || firstSeenAt);
   const noProgressMs = now - lastProgressAt;
 
-  if (await activeAssistantWork(page)) {
-    if (noProgressMs < SEND_TIMEOUT_STALE_ACTIVE_MS) {
-      console.log(`[INTERRUPT] SEND TIMEOUT + active GPT: WAIT ${noProgressMs}ms/${SEND_TIMEOUT_STALE_ACTIVE_MS}ms while real progress remains plausible.`);
-      return;
-    }
-    console.log(`[INTERRUPT] SEND TIMEOUT + stale active indicator: no assistant progress for ${noProgressMs}ms. RETRY now takes precedence.`);
-  }
-
+  // HARD LAW: when ChatGPT renders the explicit send-timeout Try again button,
+  // click it immediately. The timeout UI is stronger evidence than a stale
+  // "thinking" indicator; do not make the user wait for the stale-active timer.
   const attempt = Number(sendTimeoutAttempts.get(url) || 0) + 1;
   if (attempt <= SEND_TIMEOUT_MAX_RETRIES) {
     sendTimeoutAttempts.set(url, attempt);
     sendTimeoutRecoveredAt.set(url, now);
-    console.log(`[INTERRUPT] FAST RECOVERY step=RETRY attempt=${attempt}/${SEND_TIMEOUT_MAX_RETRIES} url=${url}`);
+    console.log(`[INTERRUPT] MANDATORY IMMEDIATE TRY AGAIN attempt=${attempt}/${SEND_TIMEOUT_MAX_RETRIES} url=${url}`);
 
     const clicked = await clickSendTimeoutRetry(page);
     if (clicked) {
-      await sleep(1500);
-      if (await activeAssistantWork(page)) {
-        clearSendTimeoutTracking(url);
-        console.log("[INTERRUPT] RETRY accepted; GPT became active.");
-        return;
-      }
+      await sleep(1000);
       if (!await sendTimeoutVisible(page)) {
         clearSendTimeoutTracking(url);
-        console.log("[INTERRUPT] RETRY cleared send-timeout UI.");
+        console.log("[INTERRUPT] Try again cleared the send-timeout UI.");
         return;
       }
+      if (await activeAssistantWork(page)) {
+        console.log("[INTERRUPT] Try again clicked; GPT now active. WAIT for response, no duplicate send.");
+        return;
+      }
+    } else {
+      console.log("[INTERRUPT] Try again button was expected but click did not land; next 400ms scan retries immediately.");
     }
 
-    if (attempt < SEND_TIMEOUT_MAX_RETRIES) {
-      console.log("[INTERRUPT] RETRY did not clear timeout; short backoff then one more Retry.");
-      return;
-    }
+    if (attempt < SEND_TIMEOUT_MAX_RETRIES) return;
   }
 
   if (!sendTimeoutReloaded.get(url)) {
     sendTimeoutReloaded.set(url, true);
     sendTimeoutRecoveredAt.set(url, now);
     const beforeHash = await assistantTextHash(page);
-    console.log(`[INTERRUPT] FAST RECOVERY step=RELOAD url=${url}`);
+    console.log(`[INTERRUPT] FAST RECOVERY step=RELOAD after mandatory Try again attempts url=${url}`);
     await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
     await sleep(SEND_TIMEOUT_RELOAD_SETTLE_MS);
 
@@ -308,14 +306,13 @@ async function recoverSendTimeout(page) {
 
   const finalHash = await assistantTextHash(page);
   const lastHash = String(sendTimeoutLastHash.get(url) || "");
-  const progressAfterReload = Boolean(finalHash && lastHash && finalHash !== lastHash);
-  if (progressAfterReload) {
+  if (finalHash && lastHash && finalHash !== lastHash) {
     clearSendTimeoutTracking(url);
     console.log("[INTERRUPT] Assistant text progressed after recovery ladder; WAIT.");
     return;
   }
 
-  requestWorkerRecovery(page, "send-timeout survived Retry x2 + Reload", {
+  requestWorkerRecovery(page, "send-timeout survived mandatory Try again x3 + Reload", {
     noProgressMs,
     retries: SEND_TIMEOUT_MAX_RETRIES,
     reloaded: true,
