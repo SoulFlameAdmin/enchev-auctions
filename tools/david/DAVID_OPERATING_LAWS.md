@@ -44,6 +44,22 @@ These rules are mandatory for CONTROL/WATCHTOWER, SYSTEM, DESIGN, DPP/APP2 and D
    - save old URL -> new URL rollover history;
    - one worker owns one active tab.
 
+## 1A. Global ChatGPT rate-limit law
+- The ChatGPT UI signals `Твърде много заявки`, `Правите заявки прекалено бързо`, `Too many requests`, or equivalent rate-limit text trigger one GLOBAL send block shared by CONTROL, SYSTEM, DESIGN, APP2 and APK.
+- While globally blocked, no worker may send a new ChatGPT message.
+- Backoff sequence is fixed:
+  1. first confirmed limit -> wait 10 minutes;
+  2. after cooldown, exactly one worker atomically becomes PROBE OWNER and may send one probe request;
+  3. if that real probe request is rate-limited again -> wait 20 minutes;
+  4. after cooldown, exactly one worker probes again;
+  5. if that real probe is rate-limited again -> wait 40 minutes;
+  6. further confirmed probe failures remain capped at 40 minutes.
+- A stale rate-limit popup does not escalate the backoff. Escalation requires the current probe owner to have actually started a new probe send.
+- All non-owner workers remain WAIT during probe mode.
+- A successful completed response from the probe owner clears the global rate-limit state and normal sending may resume.
+- CONTROL must not REFRESH or RESTART a worker merely because it is waiting on the global rate-limit coordinator.
+- The global rate-limit state persists across DAVID clean restarts so restart cannot bypass the cooldown.
+
 ## 2. External blockers
 Quota, provider credentials, Marketplace authorization, billing, legal sign-off and customer data are external blockers.
 They must be recorded with evidence and deferred. They must not cause endless retry loops when dependency-safe work remains.
