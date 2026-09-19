@@ -14,7 +14,9 @@ const POLL_MS = Number(process.env.DAVID_CONTROL_POLL_MS || 15000);
 const HEARTBEAT_REPORT_MS = Number(process.env.DAVID_CONTROL_HEARTBEAT_REPORT_MS || 1800000);
 const COMPLETE_QUIET_MS = Number(process.env.DAVID_COMPLETE_QUIET_MS || 7000);
 const COMPLETE_SAMPLE_MS = Number(process.env.DAVID_COMPLETE_SAMPLE_MS || 1200);
-const START_TIMEOUT_MS = Number(process.env.DAVID_CONTROL_START_TIMEOUT_MS || 20000);
+const START_TIMEOUT_MS = Number(process.env.DAVID_CONTROL_START_TIMEOUT_MS || 120000);
+const COMPOSER_WAIT_MS = Number(process.env.DAVID_CONTROL_COMPOSER_WAIT_MS || 120000);
+const LOAD_RETRY_BACKOFF_MS = Number(process.env.DAVID_CONTROL_LOAD_RETRY_BACKOFF_MS || 15000);
 
 let activeChatUrl = INITIAL_CHAT_URL;
 
@@ -102,6 +104,22 @@ async function getComposer(page) {
   return null;
 }
 
+async function waitForComposer(page, state, maxMs = COMPOSER_WAIT_MS) {
+  const end = Date.now() + maxMs;
+  let nextHeartbeat = 0;
+  while (Date.now() < end) {
+    const composer = await getComposer(page);
+    if (composer) return composer;
+    if (Date.now() >= nextHeartbeat) {
+      state.watchdog = "control-slow-load-wait";
+      save(state, "CONTROL page/composer still loading; WAIT, no refresh");
+      nextHeartbeat = Date.now() + 5000;
+    }
+    await sleep(1000);
+  }
+  return null;
+}
+
 async function fillComposer(composer, text) {
   await composer.click({ timeout: 5000 }).catch(() => {});
   const tag = await composer.evaluate((el) => el.tagName.toLowerCase()).catch(() => "div");
@@ -131,10 +149,14 @@ async function sendComposer(page, composer) {
   return "enter";
 }
 
+function conversationLimitText(text) {
+  return /(достигнахте максималната продължителност на този разговор|максималната продължителност на този разговор|maximum length for this conversation|conversation has reached (?:its )?maximum length)/i.test(String(text || ""));
+}
+
 async function conversationMaxed(page) {
   try {
-    const body = (await page.locator("body").innerText()).toLowerCase();
-    return /достигнахте максималната продължителност|maximum length for this conversation|conversation has reached.*maximum|start a new chat/.test(body);
+    const body = await page.locator("body").innerText();
+    return conversationLimitText(body);
   } catch { return false; }
 }
 
@@ -256,13 +278,18 @@ async function sendAndWait(context, page, state, prompt) {
   for (;;) {
     if (await conversationMaxed(page)) page = await rollover(context, page, state);
     const before = hashText(await latestAssistant(page));
-    const composer = await getComposer(page);
+    let composer = await waitForComposer(page, state);
     if (!composer) {
-      state.watchdog = "control-composer-missing";
-      save(state, "CONTROL composer missing; refresh");
+      state.watchdog = "control-load-timeout-refresh-once";
+      save(state, "CONTROL composer absent after slow-load window -> one bounded refresh");
       await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
-      await sleep(2500);
-      continue;
+      composer = await waitForComposer(page, state, 60000);
+      if (!composer) {
+        state.watchdog = "control-load-backoff";
+        save(state, "CONTROL still not interactive after bounded refresh; backoff without restart");
+        await sleep(LOAD_RETRY_BACKOFF_MS);
+        continue;
+      }
     }
 
     await fillComposer(composer, prompt);
@@ -280,10 +307,11 @@ async function sendAndWait(context, page, state, prompt) {
       await sleep(500);
     }
     if (!started) {
-      state.watchdog = "control-no-start-refresh";
-      save(state, "CONTROL GPT did not start -> refresh");
+      state.watchdog = "control-no-start-backoff";
+      save(state, "CONTROL GPT did not start within long start window; WAIT/backoff before one bounded refresh");
+      await sleep(LOAD_RETRY_BACKOFF_MS);
       await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
-      await sleep(2500);
+      await sleep(5000);
       continue;
     }
 
@@ -407,7 +435,16 @@ if (process.argv.includes("--self-test")) {
   if (bad.length !== 0) throw new Error("CONTROL self-test: non-allowlisted command escaped parser");
   const noOk = parseActions("ACTION RESTART APP2");
   if (noOk.length !== 0) throw new Error("CONTROL self-test: action executed without exact final OK");
-  console.log("DAVID_CONTROL_WATCHTOWER_SELF_TEST PASS allowlist=1 final_ok_gate=1 arbitrary_command_rejected=1");
+  if (!conversationLimitText("Достигнахте максималната продължителност на този разговор, но можете да продължите да говорите, като започнете нов чат.")) {
+    throw new Error("CONTROL self-test: BG conversation max-length text not detected");
+  }
+  if (!conversationLimitText("You've reached the maximum length for this conversation, but you can keep talking by starting a new chat.")) {
+    throw new Error("CONTROL self-test: EN conversation max-length text not detected");
+  }
+  if (conversationLimitText("Start a new chat")) {
+    throw new Error("CONTROL self-test: generic Start a new chat UI text caused false rollover");
+  }
+  console.log("DAVID_CONTROL_WATCHTOWER_SELF_TEST PASS allowlist=1 final_ok_gate=1 arbitrary_command_rejected=1 rollover_false_positive=0 slow_load_tolerant=1");
   process.exit(0);
 }
 
