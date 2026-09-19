@@ -107,6 +107,11 @@ try {
     Write-Host "[DAVID] ResumeOnStart is legacy. V5 continuous mode always continues and does not use DAVID_STOP." -ForegroundColor Yellow
   }
 
+  Write-Host "[DAVID] Running Session Resilience V1 preflight..." -ForegroundColor Cyan
+  & $npm.Source run verify:resilience
+  if ($LASTEXITCODE -ne 0) { throw "DAVID Session Resilience V1 preflight failed with exit code $LASTEXITCODE. Startup aborted before workers launch." }
+  Write-Host "[DAVID] Session Resilience V1 preflight PASS." -ForegroundColor Green
+
   $env:DAVID_CDP_URL = "http://127.0.0.1:$Port"
   $env:DAVID_CHAT_URL = $ChatUrl
   $env:DAVID_MAX_TURNS = "$MaxTurns"
