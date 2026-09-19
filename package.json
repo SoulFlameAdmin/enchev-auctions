@@ -66,7 +66,9 @@
     "verify:regional-cdn-strategy": "node scripts/verify-regional-cdn-strategy.mjs",
     "verify:regional-cdn-strategy:self-test": "node scripts/verify-regional-cdn-strategy.mjs --self-test",
     "verify:regional-data-residency-review": "node scripts/verify-regional-data-residency-review.mjs",
-    "verify:regional-data-residency-review:self-test": "node scripts/verify-regional-data-residency-review.mjs --self-test"
+    "verify:regional-data-residency-review:self-test": "node scripts/verify-regional-data-residency-review.mjs --self-test",
+    "verify:unicode-normalization": "node scripts/verify-unicode-normalization.mjs",
+    "verify:unicode-normalization:self-test": "node scripts/verify-unicode-normalization.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
