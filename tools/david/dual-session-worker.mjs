@@ -97,8 +97,8 @@ const specs = [
       DAVID_INTERRUPT_RETRY_COOLDOWN_MS: "5000",
       DAVID_INTERRUPT_CONFIRM_MS: "5000",
       DAVID_INTERRUPT_CONFIRM_SAMPLES: "4",
-      DAVID_SEND_TIMEOUT_COOLDOWN_MS: "3000",
-      DAVID_SEND_TIMEOUT_MAX_RETRIES: "2",
+      DAVID_SEND_TIMEOUT_COOLDOWN_MS: "1000",
+      DAVID_SEND_TIMEOUT_MAX_RETRIES: "3",
       DAVID_SEND_TIMEOUT_STALE_ACTIVE_MS: "8000",
       DAVID_SEND_TIMEOUT_RELOAD_SETTLE_MS: "2500"
     }
@@ -683,7 +683,7 @@ console.log("[DUAL] APP2 tab: 6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4");
 console.log("[DUAL] APK tab: auto-discover DAVID Phone / SoulFlame Twins / DAVID APK session; exact DAVID_APK_CHAT_URL wins when provided.");
 console.log("[DUAL] CONTROL tab: 6aade2fa-e2a0-83ed-96af-702c0430d49e");
 console.log("[DUAL] INTERRUPTION GUARD: watches every managed ChatGPT conversation in this DAVID Edge profile.");
-console.log("[DUAL] FAST RECOVERY: WAIT(active) -> RETRY -> RETRY -> RELOAD -> affected-worker RESTART; NEW CHAT only at safe rollover/final OK.");
+console.log("[DUAL] FAST RECOVERY: explicit Try again => CLICK IMMEDIATELY (x3 max) -> RELOAD -> affected-worker RESTART; active normal GPT work still protected.");
 console.log("[DUAL] 24/7 law: active GPT/tool work => WAIT; confirmed frozen interruption => refresh/verify/resend; workers self-heal by heartbeat/tab ownership.");
 console.log("[DUAL] CONTROL law: GPT WATCHTOWER may request only allowlisted REFRESH/RESTART/CLEAN_DUPLICATES actions after exact final OK.");
 console.log("[DUAL] CONTROL + SYSTEM + DESIGN + APP2 + APK share the same Edge CDP/profile on port 9444.");
