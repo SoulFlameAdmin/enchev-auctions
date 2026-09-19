@@ -7,13 +7,15 @@ import { reportRateLimit } from "./chatgpt-rate-limit-coordinator.mjs";
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1"));
 
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
-const POLL_MS = Number(process.env.DAVID_INTERRUPT_POLL_MS || 500);
-const RETRY_COOLDOWN_MS = Number(process.env.DAVID_INTERRUPT_RETRY_COOLDOWN_MS || 15000);
-const CONFIRM_MS = Number(process.env.DAVID_INTERRUPT_CONFIRM_MS || 12000);
-const CONFIRM_SAMPLES = Number(process.env.DAVID_INTERRUPT_CONFIRM_SAMPLES || 6);
-const SEND_TIMEOUT_COOLDOWN_MS = Number(process.env.DAVID_SEND_TIMEOUT_COOLDOWN_MS || 15000);
-const SEND_TIMEOUT_MAX_RETRIES = Number(process.env.DAVID_SEND_TIMEOUT_MAX_RETRIES || 3);
-const SEND_TIMEOUT_STALE_ACTIVE_MS = Number(process.env.DAVID_SEND_TIMEOUT_STALE_ACTIVE_MS || 30000);
+const POLL_MS = Number(process.env.DAVID_INTERRUPT_POLL_MS || 400);
+const RETRY_COOLDOWN_MS = Number(process.env.DAVID_INTERRUPT_RETRY_COOLDOWN_MS || 5000);
+const CONFIRM_MS = Number(process.env.DAVID_INTERRUPT_CONFIRM_MS || 5000);
+const CONFIRM_SAMPLES = Number(process.env.DAVID_INTERRUPT_CONFIRM_SAMPLES || 4);
+const SEND_TIMEOUT_COOLDOWN_MS = Number(process.env.DAVID_SEND_TIMEOUT_COOLDOWN_MS || 3000);
+const SEND_TIMEOUT_MAX_RETRIES = Number(process.env.DAVID_SEND_TIMEOUT_MAX_RETRIES || 2);
+const SEND_TIMEOUT_STALE_ACTIVE_MS = Number(process.env.DAVID_SEND_TIMEOUT_STALE_ACTIVE_MS || 8000);
+const SEND_TIMEOUT_RELOAD_SETTLE_MS = Number(process.env.DAVID_SEND_TIMEOUT_RELOAD_SETTLE_MS || 2500);
+const RECOVERY_REQUEST_FILE = path.join(HERE, ".david-recovery-request.json");
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const recoveredAt = new Map();
@@ -24,6 +26,8 @@ const sendTimeoutAttempts = new Map();
 const sendTimeoutFirstSeenAt = new Map();
 const sendTimeoutLastHash = new Map();
 const sendTimeoutLastProgressAt = new Map();
+const sendTimeoutReloaded = new Map();
+const sendTimeoutRecoveryRequestedAt = new Map();
 const rateLimitReportedAt = new Map();
 
 function cleanConversationUrl(url) {
@@ -35,6 +39,48 @@ function readState(file) {
   try { return JSON.parse(fs.readFileSync(file, "utf8")); }
   catch { return {}; }
 }
+function writeJsonAtomic(file, value) {
+  const tmp = file + ".tmp-" + process.pid + "-" + Date.now();
+  fs.writeFileSync(tmp, JSON.stringify(value, null, 2), "utf8");
+  fs.renameSync(tmp, file);
+}
+
+function requestWorkerRecovery(page, reason, evidence = {}) {
+  const url = page.url();
+  const target = managedKindFromUrl(url);
+  if (!target || target === "GLOBAL") {
+    console.log(`[INTERRUPT] Recovery escalation skipped for unmanaged URL ${url}.`);
+    return false;
+  }
+
+  const now = Date.now();
+  const last = Number(sendTimeoutRecoveryRequestedAt.get(url) || 0);
+  if (now - last < 15000) return false;
+  sendTimeoutRecoveryRequestedAt.set(url, now);
+
+  const request = {
+    id: `recover-${target.toLowerCase()}-${now}-${Math.random().toString(16).slice(2, 10)}`,
+    createdAt: new Date(now).toISOString(),
+    target,
+    action: "RESTART",
+    reason,
+    sourceUrl: url,
+    evidence
+  };
+  writeJsonAtomic(RECOVERY_REQUEST_FILE, request);
+  console.log(`[INTERRUPT] FAST RECOVERY requested worker RESTART target=${target} reason=${reason}`);
+  return true;
+}
+
+function clearSendTimeoutTracking(url) {
+  sendTimeoutAttempts.delete(url);
+  sendTimeoutFirstSeenAt.delete(url);
+  sendTimeoutLastHash.delete(url);
+  sendTimeoutLastProgressAt.delete(url);
+  sendTimeoutReloaded.delete(url);
+  sendTimeoutRecoveryRequestedAt.delete(url);
+}
+
 
 function managedConversationUrls() {
   const defs = [
@@ -191,56 +237,91 @@ async function recoverSendTimeout(page) {
     sendTimeoutLastProgressAt.set(url, now);
   }
   const lastProgressAt = Number(sendTimeoutLastProgressAt.get(url) || firstSeenAt);
+  const noProgressMs = now - lastProgressAt;
 
   if (await activeAssistantWork(page)) {
-    const noProgressMs = now - lastProgressAt;
     if (noProgressMs < SEND_TIMEOUT_STALE_ACTIVE_MS) {
-      console.log(`[INTERRUPT] Send-timeout UI on ${url}, GPT active/progress-recent. WAIT ${noProgressMs}ms/${SEND_TIMEOUT_STALE_ACTIVE_MS}ms; NO RETRY.`);
+      console.log(`[INTERRUPT] SEND TIMEOUT + active GPT: WAIT ${noProgressMs}ms/${SEND_TIMEOUT_STALE_ACTIVE_MS}ms while real progress remains plausible.`);
       return;
     }
-    console.log(`[INTERRUPT] Send-timeout UI persisted with stale active indicator for ${noProgressMs}ms and no assistant text progress. Retry UI now takes precedence.`);
+    console.log(`[INTERRUPT] SEND TIMEOUT + stale active indicator: no assistant progress for ${noProgressMs}ms. RETRY now takes precedence.`);
   }
 
   const attempt = Number(sendTimeoutAttempts.get(url) || 0) + 1;
-  if (attempt > SEND_TIMEOUT_MAX_RETRIES) {
-    sendTimeoutAttempts.set(url, 0);
+  if (attempt <= SEND_TIMEOUT_MAX_RETRIES) {
+    sendTimeoutAttempts.set(url, attempt);
     sendTimeoutRecoveredAt.set(url, now);
-    console.log(`[INTERRUPT] Send-timeout retries exhausted on ${url}. Backoff; worker remains blocked from duplicate resend.`);
-    return;
+    console.log(`[INTERRUPT] FAST RECOVERY step=RETRY attempt=${attempt}/${SEND_TIMEOUT_MAX_RETRIES} url=${url}`);
+
+    const clicked = await clickSendTimeoutRetry(page);
+    if (clicked) {
+      await sleep(1500);
+      if (await activeAssistantWork(page)) {
+        clearSendTimeoutTracking(url);
+        console.log("[INTERRUPT] RETRY accepted; GPT became active.");
+        return;
+      }
+      if (!await sendTimeoutVisible(page)) {
+        clearSendTimeoutTracking(url);
+        console.log("[INTERRUPT] RETRY cleared send-timeout UI.");
+        return;
+      }
+    }
+
+    if (attempt < SEND_TIMEOUT_MAX_RETRIES) {
+      console.log("[INTERRUPT] RETRY did not clear timeout; short backoff then one more Retry.");
+      return;
+    }
   }
 
-  sendTimeoutAttempts.set(url, attempt);
-  sendTimeoutRecoveredAt.set(url, now);
-  console.log(`[INTERRUPT] SEND TIMEOUT confirmed on ${url}. Retry button attempt ${attempt}/${SEND_TIMEOUT_MAX_RETRIES}.`);
+  if (!sendTimeoutReloaded.get(url)) {
+    sendTimeoutReloaded.set(url, true);
+    sendTimeoutRecoveredAt.set(url, now);
+    const beforeHash = await assistantTextHash(page);
+    console.log(`[INTERRUPT] FAST RECOVERY step=RELOAD url=${url}`);
+    await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+    await sleep(SEND_TIMEOUT_RELOAD_SETTLE_MS);
 
-  const clicked = await clickSendTimeoutRetry(page);
-  if (clicked) {
-    await sleep(3000);
     if (await activeAssistantWork(page)) {
-      sendTimeoutAttempts.delete(url);
-      sendTimeoutFirstSeenAt.delete(url);
-      sendTimeoutLastHash.delete(url);
-      sendTimeoutLastProgressAt.delete(url);
-      console.log("[INTERRUPT] Timed-out message retry accepted; GPT became active.");
+      console.log("[INTERRUPT] GPT active after RELOAD; WAIT.");
       return;
     }
+
+    const afterHash = await assistantTextHash(page);
+    if (beforeHash && afterHash && beforeHash !== afterHash) {
+      clearSendTimeoutTracking(url);
+      console.log("[INTERRUPT] Assistant progressed after RELOAD; recovery cancelled.");
+      return;
+    }
+
     if (!await sendTimeoutVisible(page)) {
-      sendTimeoutAttempts.delete(url);
-      sendTimeoutFirstSeenAt.delete(url);
-      sendTimeoutLastHash.delete(url);
-      sendTimeoutLastProgressAt.delete(url);
-      console.log("[INTERRUPT] Timed-out message error cleared after Retry. Waiting for worker completion gate.");
+      clearSendTimeoutTracking(url);
+      console.log("[INTERRUPT] RELOAD cleared send-timeout UI.");
       return;
     }
   }
 
-  if (attempt < SEND_TIMEOUT_MAX_RETRIES) {
-    console.log("[INTERRUPT] Retry did not clear send-timeout yet. NO REFRESH. Backoff and retry button on next guard cycle.");
+  if (await activeAssistantWork(page)) {
+    console.log("[INTERRUPT] Recovery escalation blocked because GPT became active again.");
     return;
   }
 
-  sendTimeoutAttempts.set(url, 0);
-  console.log("[INTERRUPT] Send-timeout Retry attempts exhausted. NO REFRESH / NO DUPLICATE SEND. Leave worker waiting for the next clean UI state.");
+  const finalHash = await assistantTextHash(page);
+  const lastHash = String(sendTimeoutLastHash.get(url) || "");
+  const progressAfterReload = Boolean(finalHash && lastHash && finalHash !== lastHash);
+  if (progressAfterReload) {
+    clearSendTimeoutTracking(url);
+    console.log("[INTERRUPT] Assistant text progressed after recovery ladder; WAIT.");
+    return;
+  }
+
+  requestWorkerRecovery(page, "send-timeout survived Retry x2 + Reload", {
+    noProgressMs,
+    retries: SEND_TIMEOUT_MAX_RETRIES,
+    reloaded: true,
+    assistantHash: finalHash || null
+  });
+  sendTimeoutRecoveredAt.set(url, now);
 }
 
 async function interruptionVisible(page) {
@@ -526,10 +607,7 @@ async function main() {
           continue;
         } else {
           const key = page.url();
-          sendTimeoutAttempts.delete(key);
-          sendTimeoutFirstSeenAt.delete(key);
-          sendTimeoutLastHash.delete(key);
-          sendTimeoutLastProgressAt.delete(key);
+          clearSendTimeoutTracking(key);
         }
 
         if (await interruptionVisible(page)) {
