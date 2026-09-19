@@ -124,7 +124,7 @@ function validateAppShell(component, css, layout, capture) {
   assert(capture.includes("Escape did not close drawer"), "DP2-04 Escape-close runtime assertion missing");
 }
 
-function validateHomeHero(component,messages,css,layout,page,translationKeys,capture) {
+function validateHomeHero(component,spotlight,messages,css,layout,page,translationKeys,capture) {
   for (const needle of [
     'data-design-task="DP2-05"',
     "eaHeroV2Title",
@@ -139,8 +139,13 @@ function validateHomeHero(component,messages,css,layout,page,translationKeys,cap
     '"en-US"',
     "home.hero.title.primary",
     "home.hero.availability.note",
-    "active market profile"
-  ]) assert(messages.includes(needle) || messages.includes("активирания market profile"), `DP2-05 message catalog missing ${needle}`);
+    "home.hero.spotlight.status",
+    "home.hero.spotlight.cta"
+  ]) assert(messages.includes(needle), `DP2-05 message catalog missing ${needle}`);
+  assert(messages.includes("активирания market profile") && messages.includes("activated market profile"), "DP2-05 market-profile availability copy missing in BG/EN");
+  assert(spotlight.includes("HOME_HERO_KEYS.spotlightStatus") && spotlight.includes("HOME_HERO_KEYS.spotlightCta"), "DP2-05 LIVE spotlight must consume hero translation keys");
+  assert(!spotlight.includes("CURRENT_BID") && !spotlight.includes("toLocaleString("), "DP2-05 LIVE spotlight must not format ad-hoc money");
+  assert(!spotlight.includes("Crewe, UK") && !spotlight.includes("€"), "DP2-05 LIVE spotlight must not hardcode market/currency display");
 
   const keys=JSON.parse(translationKeys).keys||[];
   for (const key of [
@@ -211,10 +216,11 @@ function validateRepository() {
 
   const homeHero = read("app/components/HomeHeroV2.tsx");
   const homeHeroMessages = read("app/home-hero-messages.ts");
+  const homeHeroSpotlight = read("app/components/HomeLiveSpotlight.tsx");
   const homeHeroCss = read("app/dp2-home-hero.css");
   const homePage = read("app/page.tsx");
   const translationKeys = read("locales/translation-keys.json");
-  validateHomeHero(homeHero,homeHeroMessages,homeHeroCss,rootLayout,homePage,translationKeys,capture);
+  validateHomeHero(homeHero,homeHeroSpotlight,homeHeroMessages,homeHeroCss,rootLayout,homePage,translationKeys,capture);
 
   const plan = read("docs/DESIGN_PROCESS_2.md");
   assert(plan.includes("DP2-01") && plan.includes("DP2-30"), "DP2 plan must define DP2-01 and DP2-30");
@@ -330,15 +336,16 @@ function selfTest() {
   assert(rejected,"DP2 self-test must reject missing mobile drawer contract");
 
   const heroFixture='data-design-task="DP2-05" eaHeroV2Title eaHeroV2Actions eaHeroV2Proof eaHeroV2Availability HomeLiveSpotlight';
-  const heroMessagesFixture='"bg-BG" "en-US" home.hero.title.primary home.hero.availability.note активирания market profile';
+  const heroMessagesFixture='"bg-BG" "en-US" home.hero.title.primary home.hero.availability.note home.hero.spotlight.status home.hero.spotlight.cta активирания market profile activated market profile';
   const heroCssFixture='@media(max-width:430px) @media(max-width:360px) @media(min-width:1920px) .eaHeroV2Proof .eaHeroDiscovery';
   const heroLayoutFixture='import "./dp2-home-hero.css";';
   const heroPageFixture='<HomeHeroV2 />';
   const heroKeysFixture=JSON.stringify({keys:["home.hero.actions.browse","home.hero.actions.live","home.hero.availability.note","home.hero.eyebrow","home.hero.lead","home.hero.proof.identity","home.hero.proof.status","home.hero.proof.transport","home.hero.title.accent","home.hero.title.primary","home.hero.title.secondary"]});
   const heroCaptureFixture='verifyDP205HomeHero spotlight must stack below hero content desktop hero columns overlap';
-  validateHomeHero(heroFixture,heroMessagesFixture,heroCssFixture,heroLayoutFixture,heroPageFixture,heroKeysFixture,heroCaptureFixture);
+  const heroSpotlightFixture="HOME_HERO_KEYS.spotlightStatus HOME_HERO_KEYS.spotlightCta";
+  validateHomeHero(heroFixture,heroSpotlightFixture,heroMessagesFixture,heroCssFixture,heroLayoutFixture,heroPageFixture,heroKeysFixture,heroCaptureFixture);
   rejected=false;
-  try{validateHomeHero(heroFixture.replace("eaHeroV2Proof",""),heroMessagesFixture,heroCssFixture,heroLayoutFixture,heroPageFixture,heroKeysFixture,heroCaptureFixture);}catch{rejected=true;}
+  try{validateHomeHero(heroFixture.replace("eaHeroV2Proof",""),heroSpotlightFixture,heroMessagesFixture,heroCssFixture,heroLayoutFixture,heroPageFixture,heroKeysFixture,heroCaptureFixture);}catch{rejected=true;}
   assert(rejected,"DP2 self-test must reject missing hero proof hierarchy");
 
   console.log("DESIGN_PROCESS_2_SELF_TEST PASS");
