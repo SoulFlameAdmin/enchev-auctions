@@ -81,6 +81,7 @@ if ($codeUpdated) {
     ".auto-complete-app2-runtime.mjs",
     "auto-complete-app2-v1.mjs",
     "auto-continue-david-apk-v1.mjs",
+    "auto-control-watchtower-v1.mjs",
     "david-status-dashboard.ps1"
   )
   try {
@@ -128,16 +129,16 @@ $cdpReady = Test-Cdp -P $Port
 $mainRunning = ($mainNodes.Count -gt 0 -and $cdpReady)
 
 if ($mainNodes.Count -gt 0 -and -not $cdpReady) {
-  Write-Host "[DAVID ALL] Stale SYSTEM/DESIGN/APP2/APK supervisor detected without CDP. Killing stale process..." -ForegroundColor Yellow
+  Write-Host "[DAVID ALL] Stale CONTROL/SYSTEM/DESIGN/APP2/APK supervisor detected without CDP. Killing stale process..." -ForegroundColor Yellow
   Stop-MatchingProcesses -Names @("node.exe") -Needles @("dual-session-worker.mjs")
   Start-Sleep -Seconds 1
   $mainRunning = $false
 }
 
 if ($mainRunning) {
-  Write-Host "[DAVID ALL] SYSTEM + DESIGN + APP2 + APK supervisor healthy. Reusing it." -ForegroundColor Green
+  Write-Host "[DAVID ALL] CONTROL + SYSTEM + DESIGN + APP2 + APK supervisor healthy. Reusing it." -ForegroundColor Green
 } else {
-  Write-Host "[DAVID ALL] Starting SYSTEM + DESIGN + APP2 + APK supervisor..." -ForegroundColor Cyan
+  Write-Host "[DAVID ALL] Starting CONTROL + SYSTEM + DESIGN + APP2 + APK supervisor..." -ForegroundColor Cyan
   Start-Process -FilePath $pwsh -ArgumentList @(
     "-NoProfile",
     "-ExecutionPolicy", "Bypass",
@@ -151,13 +152,14 @@ if ($mainRunning) {
     Start-Sleep -Milliseconds 500
     $supervisorNodes = @(Get-MatchingProcesses -Names @("node.exe") -Needles @("dual-session-worker.mjs"))
     $app2Nodes = @(Get-MatchingProcesses -Names @("node.exe") -Needles @("auto-complete-app2-v1.mjs"))
-    if ($supervisorNodes.Count -gt 0 -and $app2Nodes.Count -gt 0 -and (Test-Cdp -P $Port)) {
+    $controlNodes = @(Get-MatchingProcesses -Names @("node.exe") -Needles @("auto-control-watchtower-v1.mjs"))
+    if ($supervisorNodes.Count -gt 0 -and $app2Nodes.Count -gt 0 -and $controlNodes.Count -gt 0 -and (Test-Cdp -P $Port)) {
       $mainHealthy = $true
       break
     }
   }
   if (-not $mainHealthy) {
-    throw "Unified DAVID supervisor failed health check: supervisor + APP2 child + CDP $Port were not all ready."
+    throw "Unified DAVID supervisor failed health check: supervisor + APP2 + CONTROL children + CDP $Port were not all ready."
   }
   Write-Host "[DAVID ALL] Unified process/CDP health check PASS." -ForegroundColor Green
 }
@@ -175,8 +177,9 @@ for ($i = 0; $i -lt 180; $i++) {
     $dc = @($tabState.managed.DESIGN).Count
     $ac = @($tabState.managed.APP2).Count
     $kc = @($tabState.managed.APK).Count
-    $lastTabStatus = "SYSTEM=$sc DESIGN=$dc APP2=$ac APK=$kc ChatGPT=$($tabState.totalChatGptTabs)"
-    if ($sc -eq 1 -and $dc -eq 1 -and $ac -eq 1 -and $kc -eq 1) {
+    $cc = @($tabState.managed.CONTROL).Count
+    $lastTabStatus = "CONTROL=$cc SYSTEM=$sc DESIGN=$dc APP2=$ac APK=$kc ChatGPT=$($tabState.totalChatGptTabs)"
+    if ($cc -eq 1 -and $sc -eq 1 -and $dc -eq 1 -and $ac -eq 1 -and $kc -eq 1) {
       $tabsHealthy = $true
       break
     }
@@ -185,7 +188,7 @@ for ($i = 0; $i -lt 180; $i++) {
 if (-not $tabsHealthy) {
   throw "DAVID managed-tab health check failed after 180s: $lastTabStatus"
 }
-Write-Host "[DAVID ALL] 4/4 managed GPT tabs health check PASS: $lastTabStatus" -ForegroundColor Green
+Write-Host "[DAVID ALL] 5/5 managed GPT tabs health check PASS: $lastTabStatus" -ForegroundColor Green
 
 Start-Sleep -Seconds 2
 
@@ -204,14 +207,17 @@ if ($dashboardRunning) {
 
 Write-Host ""
 Write-Host "[DAVID ALL] Expected managed ChatGPT sessions:" -ForegroundColor Green
-Write-Host "  1. ENCHEV SYSTEM"
-Write-Host "  2. ENCHEV DESIGN"
-Write-Host "  3. DPP / APP2"
-Write-Host "  4. DAVID PHONE / APK"
+Write-Host "  1. DAVID CONTROL / WATCHTOWER"
+Write-Host "  2. ENCHEV SYSTEM"
+Write-Host "  3. ENCHEV DESIGN"
+Write-Host "  4. DPP / APP2"
+Write-Host "  5. DAVID PHONE / APK"
 Write-Host ""
 Write-Host "[DAVID ALL] APK worker auto-discovers a unique recent DAVID Phone / SoulFlame Twins / DAVID APK chat when no exact URL is configured." -ForegroundColor Green
 Write-Host "[DAVID ALL] On max-length rollover the worker opens a new ChatGPT tab, closes the old managed tab, records the new URL/history, and continues there." -ForegroundColor Green
-Write-Host "[DAVID ALL] One unified supervisor owns SYSTEM + DESIGN + APP2 + APK; duplicate launches are blocked." -ForegroundColor Green
+Write-Host "[DAVID ALL] One unified supervisor owns CONTROL + SYSTEM + DESIGN + APP2 + APK; duplicate launches are blocked." -ForegroundColor Green
+Write-Host "[DAVID ALL] CONTROL WATCHTOWER: https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e" -ForegroundColor Magenta
+Write-Host "[DAVID ALL] CONTROL can request only allowlisted WAIT/REFRESH/RESTART/CLEAN_DUPLICATES actions after exact final OK." -ForegroundColor Magenta
 
 Write-Host "[DAVID ALL] FINAL GATE: exact final OK required before any next normal prompt." -ForegroundColor Red
 Write-Host "[DAVID ALL] SEND TIMEOUT LAW: central managed guard owns bounded Retry; workers WAIT and never duplicate-send." -ForegroundColor Yellow
