@@ -234,6 +234,10 @@ async function detectManagedKind(page) {
 }
 
 async function executeControlCommand(context) {
+  if (!lastControlCommandId) {
+    const previous = readState(CONTROL_RESULT_FILE);
+    if (previous?.id) lastControlCommandId = previous.id;
+  }
   const command = readState(CONTROL_COMMAND_FILE);
   if (!command?.id || command.id === lastControlCommandId) return;
   lastControlCommandId = command.id;
