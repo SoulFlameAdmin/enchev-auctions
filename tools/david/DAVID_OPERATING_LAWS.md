@@ -1,6 +1,6 @@
 # DAVID OPERATING LAWS v1
 
-These rules are mandatory for SYSTEM, DESIGN, DPP/APP2 and DAVID APK workers.
+These rules are mandatory for CONTROL/WATCHTOWER, SYSTEM, DESIGN, DPP/APP2 and DAVID APK workers.
 
 ## 0. Terminal OK gate
 - A new normal DAVID prompt is allowed only when the previous GPT assistant response has fully completed and its final non-empty line is exactly `OK`.
@@ -81,10 +81,27 @@ Do not invent secrets, results, deployments or test evidence.
 
 
 ## 5. 24/7 supervisor health
-- One unified supervisor owns SYSTEM, DESIGN, DPP/APP2 and DAVID APK.
-- Startup is successful only after all four managed ChatGPT tabs are present exactly once: SYSTEM=1, DESIGN=1, APP2=1, APK=1.
+- One unified supervisor owns CONTROL/WATCHTOWER, SYSTEM, DESIGN, DPP/APP2 and DAVID APK.
+- Startup is successful only after all five managed ChatGPT tabs are present exactly once: CONTROL=1, SYSTEM=1, DESIGN=1, APP2=1, APK=1.
 - Worker state files act as heartbeats.
 - A stale worker heartbeat or a missing owned tab triggers restart of only the affected worker.
 - Tab ownership is persisted by current chat URL; relay markers are fallback discovery only.
 - Duplicate managed tabs are cleaned automatically.
 - A clean restart preserves profile/login/state and must not report success if stop/start health checks fail.
+
+
+## 6. CONTROL / WATCHTOWER
+- Dedicated CONTROL chat: https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e
+- CONTROL receives local DAVID telemetry only; it does not perform project implementation work.
+- CONTROL may request only these allowlisted actions:
+  - ACTION WAIT
+  - ACTION REFRESH SYSTEM|DESIGN|APP2|APK
+  - ACTION RESTART SYSTEM|DESIGN|APP2|APK
+  - ACTION CLEAN_DUPLICATES
+- CONTROL output is executable only when its final non-empty line is exactly OK.
+- Any non-allowlisted action is rejected by the local supervisor.
+- CONTROL has no arbitrary shell command bridge and no free-form destructive browser control.
+- Healthy worker means WAIT; CONTROL must not interrupt active thinking/writing/tool work.
+- RESTART is stronger than REFRESH and is reserved for dead, stale, missing-tab, or otherwise evidenced worker failure.
+- CONTROL itself is monitored by the same 24/7 supervisor heartbeat and tab-ownership laws.
+- CONTROL conversation max-length follows the same rollover law: create replacement chat, close the old managed CONTROL tab, preserve state/history, continue monitoring.
