@@ -76,7 +76,9 @@
     "verify:international-contact-models": "node scripts/verify-international-contact-models.mjs",
     "verify:international-contact-models:self-test": "node scripts/verify-international-contact-models.mjs --self-test",
     "verify:translation-completeness": "node scripts/verify-translation-completeness.mjs",
-    "verify:translation-completeness:self-test": "node scripts/verify-translation-completeness.mjs --self-test"
+    "verify:translation-completeness:self-test": "node scripts/verify-translation-completeness.mjs --self-test",
+    "verify:cross-script-search": "node scripts/verify-cross-script-search.mjs",
+    "verify:cross-script-search:self-test": "node scripts/verify-cross-script-search.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
@@ -93,4 +95,4 @@
     "apps/*",
     "packages/*"
   ]
-}
+}\n
