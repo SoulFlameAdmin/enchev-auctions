@@ -12,7 +12,8 @@ const keys=JSON.parse(read("locales/translation-keys.json")).keys;
 const visualCapture=read("scripts/capture-dp2-07-featured-cli.mjs");
 const workflow=read(".github/workflows/verify-enchev-web.yml");
 
-assert(component.includes('data-design-task="DP2-07"'),"DP2-07 marker missing");\nassert(component.includes("eaDp207LegacyVisualReady"),"DP2-07 legacy visual readiness marker missing");
+assert(component.includes('data-design-task="DP2-07"'),"DP2-07 marker missing");
+assert(component.includes("eaDp207LegacyVisualReady"),"DP2-07 legacy visual readiness marker missing");
 for(const state of ['state:"upcoming"','state:"live"','state:"buy-now"','state:"sold"']) assert(component.includes(state),"DP2-07 missing state "+state);
 assert(component.includes("Intl.NumberFormat"),"DP2-07 monetary values must use locale-aware formatting");
 assert(component.includes("Intl.DateTimeFormat"),"DP2-07 sale time must use locale-aware formatting");
