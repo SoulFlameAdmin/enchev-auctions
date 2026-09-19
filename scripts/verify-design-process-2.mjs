@@ -12,6 +12,40 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
+function validatePremiumTokens(css, layout) {
+  const requiredTokens = [
+    "--ea-canvas",
+    "--ea-surface-1",
+    "--ea-surface-2",
+    "--ea-border-default",
+    "--ea-brand",
+    "--ea-action-primary",
+    "--ea-state-live",
+    "--ea-state-info",
+    "--ea-state-success",
+    "--ea-state-warning",
+    "--ea-state-danger",
+    "--ea-state-sold",
+    "--ea-elevation-1",
+    "--ea-radius-control",
+    "--ea-radius-card",
+    "--ea-focus-ring"
+  ];
+  for (const token of requiredTokens) {
+    assert(css.includes(`${token}:`), `DP2-02 missing premium token ${token}`);
+  }
+
+  const routeCoverage = [".eaHome", ".inventoryPage", ".lotPage", ".livePage", ".navigationPage"];
+  for (const selector of routeCoverage) {
+    assert(css.includes(selector), `DP2-02 token layer missing buyer-route coverage for ${selector}`);
+  }
+
+  assert(css.includes("var(--ea-state-live)"), "DP2-02 must map LIVE to a dedicated state token");
+  assert(css.includes("var(--ea-action-primary)"), "DP2-02 must map primary actions to an action token");
+  assert(css.includes("var(--ea-border-default)"), "DP2-02 must use neutral semantic borders");
+  assert(layout.includes('import "./dp2-design-tokens.css";'), "Root layout must import DP2 design tokens");
+}
+
 function validateEvidence(data) {
   assert(data && data.version === "2.0", "DP2 evidence version must be 2.0");
   assert(data.status === "active", "DP2 evidence status must be active");
@@ -37,6 +71,10 @@ function validateEvidence(data) {
 function validateRepository() {
   const evidence = JSON.parse(read("app/design-process-2-evidence.json"));
   validateEvidence(evidence);
+
+  const premiumTokens = read("app/dp2-design-tokens.css");
+  const rootLayout = read("app/layout.tsx");
+  validatePremiumTokens(premiumTokens, rootLayout);
 
   const plan = read("docs/DESIGN_PROCESS_2.md");
   assert(plan.includes("DP2-01") && plan.includes("DP2-30"), "DP2 plan must define DP2-01 and DP2-30");
@@ -95,6 +133,26 @@ function selfTest() {
   rejected = false;
   try { validateEvidence(greenWithoutEvidence); } catch { rejected = true; }
   assert(rejected, "DP2 self-test must reject GREEN without evidence");
+
+  const requiredPremiumTokens = [
+    "--ea-canvas","--ea-surface-1","--ea-surface-2","--ea-border-default",
+    "--ea-brand","--ea-action-primary","--ea-state-live","--ea-state-info",
+    "--ea-state-success","--ea-state-warning","--ea-state-danger","--ea-state-sold",
+    "--ea-elevation-1","--ea-radius-control","--ea-radius-card","--ea-focus-ring"
+  ];
+  const tokenFixture =
+    `:root{${requiredPremiumTokens.map(token=>`${token}:x;`).join("")}}` +
+    ".eaHome,.inventoryPage,.lotPage,.livePage,.navigationPage{}" +
+    ".live{color:var(--ea-state-live);border:var(--ea-border-default);background:var(--ea-action-primary)}";
+  validatePremiumTokens(tokenFixture, 'import "./dp2-design-tokens.css";');
+
+  rejected = false;
+  try {
+    validatePremiumTokens(tokenFixture.replace("--ea-state-live:x;", ""), 'import "./dp2-design-tokens.css";');
+  } catch {
+    rejected = true;
+  }
+  assert(rejected, "DP2 self-test must reject a missing semantic LIVE token");
 
   console.log("DESIGN_PROCESS_2_SELF_TEST PASS");
 }
