@@ -1,0 +1,748 @@
+/* ENCHEV World-Class Visual System v2
+   Premium responsive layer for public buyer experience.
+   Scope: home, inventory, lot detail, live auction, generic navigation pages. */
+
+:root{
+  --pro-bg:#07090c;
+  --pro-bg-soft:#0b0f14;
+  --pro-panel:#0f141b;
+  --pro-panel-2:#141b24;
+  --pro-glass:rgba(10,14,19,.76);
+  --pro-line:rgba(255,255,255,.10);
+  --pro-line-strong:rgba(255,255,255,.17);
+  --pro-text:#f7f7f4;
+  --pro-muted:#98a2ad;
+  --pro-muted-2:#6f7883;
+  --pro-accent:#b8ff3d;
+  --pro-accent-soft:rgba(184,255,61,.11);
+  --pro-accent-line:rgba(184,255,61,.28);
+  --pro-danger:#ff6b6b;
+  --pro-warning:#ffca5b;
+  --pro-shadow:0 28px 90px rgba(0,0,0,.38);
+  --pro-shadow-soft:0 18px 50px rgba(0,0,0,.26);
+  --pro-radius:18px;
+  --pro-radius-lg:28px;
+  --pro-max:1560px;
+}
+
+html{background:var(--pro-bg)}
+body{
+  color:var(--pro-text);
+  background:
+    radial-gradient(1000px 500px at 85% -10%,rgba(184,255,61,.05),transparent 60%),
+    linear-gradient(180deg,#080b0f 0%,#07090c 58%,#090d12 100%);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+::selection{background:rgba(184,255,61,.23);color:#fff}
+
+/* ---------- shared brand language ---------- */
+body :is(.eaBrand,.inventoryLogo,.liveLogo,.lotLogo,.navigationRouteBrand) strong{
+  letter-spacing:-.065em!important;
+  font-weight:950!important;
+}
+body :is(.eaBrand,.inventoryLogo,.liveLogo,.lotLogo,.navigationRouteBrand) span{
+  color:#aeb7c0!important;
+  letter-spacing:.47em!important;
+}
+body :is(.eaBtnPrimary,.inventoryAccount .registerBtn,.liveRegister,.lotGreen,.liveBidButton,.lotBidBtn){
+  background:var(--pro-accent)!important;
+  color:#0a0d08!important;
+  border-color:var(--pro-accent)!important;
+  box-shadow:0 12px 32px rgba(184,255,61,.13)!important;
+}
+body :is(.eaBtnPrimary,.inventoryAccount .registerBtn,.liveRegister,.lotGreen,.liveBidButton,.lotBidBtn):hover{
+  filter:brightness(1.035);
+  transform:translateY(-1px);
+}
+body :is(a,button,input,select):focus-visible{
+  outline:2px solid var(--pro-accent)!important;
+  outline-offset:3px!important;
+  box-shadow:0 0 0 5px rgba(184,255,61,.10)!important;
+}
+
+/* ---------- HOME ---------- */
+body .eaHome{background:transparent!important}
+body .eaHero{
+  min-height:860px!important;
+  background-position:center 54%!important;
+  border-bottom:1px solid var(--pro-line)!important;
+}
+body .eaHero:before{
+  background:
+    linear-gradient(90deg,rgba(4,6,9,.97) 0%,rgba(5,8,11,.90) 28%,rgba(5,8,11,.36) 56%,rgba(5,8,11,.26) 100%),
+    linear-gradient(180deg,rgba(4,6,8,.15),rgba(5,8,11,.28) 54%,rgba(7,9,12,.96) 100%)!important;
+}
+body .eaHero:after{
+  background:
+    radial-gradient(circle at 73% 43%,rgba(184,255,61,.08),transparent 26%),
+    linear-gradient(115deg,transparent 0 48%,rgba(255,255,255,.025) 48.2%,transparent 48.6%)!important;
+}
+body .eaTopbar{
+  height:38px!important;
+  padding:0 max(24px,4vw)!important;
+  background:rgba(6,8,11,.68)!important;
+  border-bottom:1px solid rgba(255,255,255,.06)!important;
+  color:#8e99a5!important;
+}
+body .eaTopbarLeft strong{color:#dfe5df!important}
+body .eaDot{
+  background:var(--pro-accent)!important;
+  box-shadow:0 0 16px rgba(184,255,61,.52)!important;
+}
+body .eaMainnav{
+  height:88px!important;
+  grid-template-columns:240px minmax(0,1fr) auto!important;
+  padding:0 max(24px,4vw)!important;
+  background:rgba(7,10,13,.68)!important;
+  border-bottom:1px solid rgba(255,255,255,.055)!important;
+  backdrop-filter:blur(22px) saturate(125%)!important;
+}
+body .eaNavlinks{gap:clamp(16px,2.2vw,36px)!important}
+body .eaNavlinks a{
+  color:#bdc4cc!important;
+  font-size:11px!important;
+  letter-spacing:.07em!important;
+}
+body .eaNavlinks a:hover{color:#fff!important}
+body .eaBtnGhost{
+  border:1px solid var(--pro-line-strong)!important;
+  background:rgba(255,255,255,.035)!important;
+  border-radius:12px!important;
+}
+body .eaBtnPrimary{border-radius:12px!important}
+body .eaHeroInner{
+  width:min(var(--pro-max),92%)!important;
+  min-height:calc(860px - 126px)!important;
+  grid-template-columns:minmax(0,1.15fr) minmax(390px,.72fr)!important;
+  gap:clamp(36px,5vw,84px)!important;
+  padding:76px 0 110px!important;
+}
+body .eaEyebrow{
+  color:#c8cfd5!important;
+  font-size:11px!important;
+  letter-spacing:.24em!important;
+}
+body .eaEyebrow i{
+  width:34px!important;
+  background:var(--pro-accent)!important;
+  box-shadow:none!important;
+}
+body .eaHeroCopy h1{
+  max-width:900px!important;
+  margin:22px 0 26px!important;
+  font-size:clamp(64px,7.15vw,116px)!important;
+  line-height:.84!important;
+  letter-spacing:-.066em!important;
+  text-wrap:balance;
+}
+body .eaHeroCopy h1 em{
+  color:var(--pro-accent)!important;
+  text-shadow:none!important;
+}
+body .eaHeroLead{
+  max-width:690px!important;
+  color:#c2c9cf!important;
+  font-size:18px!important;
+}
+body .eaSearch{
+  width:min(720px,100%)!important;
+  height:70px!important;
+  border:1px solid var(--pro-line-strong)!important;
+  border-radius:16px!important;
+  background:rgba(10,14,18,.78)!important;
+  box-shadow:0 18px 60px rgba(0,0,0,.30)!important;
+}
+body .eaSearch:focus-within{
+  border-color:var(--pro-accent-line)!important;
+  box-shadow:0 18px 70px rgba(0,0,0,.38),0 0 0 4px rgba(184,255,61,.07)!important;
+}
+body .eaSearch input{font-size:15px!important;color:#f7f7f4!important}
+body .eaSearch button{
+  width:74px!important;
+  background:var(--pro-accent)!important;
+  color:#0b0e09!important;
+}
+body .eaHeroQuick a{
+  color:#aeb7c0!important;
+  border-color:var(--pro-line)!important;
+  background:rgba(255,255,255,.03)!important;
+}
+body .eaHeroQuick a:hover{
+  color:#fff!important;
+  border-color:var(--pro-accent-line)!important;
+  background:var(--pro-accent-soft)!important;
+}
+body .eaHeroStats{gap:10px!important;margin-top:30px!important}
+body .eaHeroStat{
+  min-height:78px;
+  background:rgba(12,16,21,.54)!important;
+  border-color:var(--pro-line)!important;
+  border-radius:14px!important;
+}
+body .eaHeroStat b{font-size:21px!important}
+body .eaHeroStat span{color:#89949f!important}
+
+body .eaLiveCard{
+  width:min(460px,100%)!important;
+  border-color:var(--pro-line-strong)!important;
+  border-radius:var(--pro-radius-lg)!important;
+  background:linear-gradient(180deg,rgba(18,24,31,.90),rgba(9,13,17,.92))!important;
+  box-shadow:var(--pro-shadow)!important;
+}
+body .eaLiveTop{border-color:var(--pro-line)!important}
+body .eaLivePill{color:#d9ff9d!important}
+body .eaLivePill i{background:var(--pro-accent)!important;box-shadow:0 0 16px rgba(184,255,61,.52)!important}
+body .eaLiveImage{height:292px!important}
+body .eaLiveImage img{filter:saturate(.78) contrast(1.04)!important}
+body .eaLiveOrb{
+  background:radial-gradient(circle at 40% 28%,#242b31,#0b0f13 72%)!important;
+  border-color:rgba(255,255,255,.17)!important;
+  box-shadow:0 0 0 10px rgba(184,255,61,.055),0 0 0 18px rgba(184,255,61,.018),0 20px 55px rgba(0,0,0,.5)!important;
+}
+body .eaLiveOrb:before{
+  border-color:rgba(184,255,61,.14)!important;
+  border-top-color:var(--pro-accent)!important;
+  border-right-color:var(--pro-accent)!important;
+}
+body .eaLiveOrb small{color:#d8ff9a!important}
+body .eaLiveMeta span:last-child{color:var(--pro-accent)!important}
+body .eaLiveBid{border-color:var(--pro-line)!important}
+body .eaLiveBid a{
+  background:var(--pro-accent)!important;
+  color:#0a0d08!important;
+  border-radius:12px!important;
+}
+
+body .eaSection{
+  width:min(var(--pro-max),92%)!important;
+  padding:84px 0!important;
+}
+body .eaSectionHead span{color:var(--pro-accent)!important}
+body .eaSectionHead h2{
+  font-size:clamp(38px,4vw,58px)!important;
+  letter-spacing:-.055em!important;
+}
+body .eaSectionHead p{color:var(--pro-muted)!important}
+body .eaFeaturedGrid{gap:18px!important}
+body .eaFeaturedCard{
+  border-radius:22px!important;
+  border-color:var(--pro-line)!important;
+  background:linear-gradient(180deg,#11171e,#0c1015)!important;
+  box-shadow:var(--pro-shadow-soft)!important;
+}
+body .eaFeaturedCard:hover{
+  transform:translateY(-5px)!important;
+  border-color:var(--pro-accent-line)!important;
+}
+body .eaFeaturedImage{height:235px!important}
+body .eaFeaturedImage:after{
+  content:"";position:absolute;inset:auto 0 0;height:32%;
+  background:linear-gradient(180deg,transparent,rgba(8,11,15,.72));
+}
+body .eaFeaturedBadge{
+  background:rgba(9,12,16,.84)!important;
+  color:#f1f4ed!important;
+  border-color:var(--pro-line-strong)!important;
+}
+body .eaFeaturedBody{padding:18px!important}
+body .eaFeaturedLot b{color:var(--pro-accent)!important}
+body .eaFeaturedBody p{color:var(--pro-muted)!important}
+body .eaFeaturedInfo{color:#c9d0d7!important}
+body .eaFeaturedBid{border-color:var(--pro-line)!important}
+body .eaFeaturedBid a{
+  background:#edf1e8!important;
+  color:#10130f!important;
+  border-radius:11px!important;
+}
+
+body .eaProcess{
+  background:linear-gradient(180deg,#0a0e13,#080b0f)!important;
+  border-color:var(--pro-line)!important;
+}
+body .eaStep{
+  border-color:var(--pro-line)!important;
+  background:linear-gradient(180deg,#11171e,#0d1218)!important;
+  border-radius:20px!important;
+  min-height:270px;
+}
+body .eaStep span{color:var(--pro-accent)!important}
+body .eaStep p{color:var(--pro-muted)!important}
+body .eaCta{
+  width:min(var(--pro-max),92%)!important;
+  border-color:var(--pro-line-strong)!important;
+  background:
+    radial-gradient(circle at 18% 30%,rgba(184,255,61,.085),transparent 32%),
+    linear-gradient(180deg,#121820,#0d1217)!important;
+  box-shadow:var(--pro-shadow-soft)!important;
+}
+body .eaCtaActions a:first-child{background:var(--pro-accent)!important;color:#0a0d08!important}
+body .eaCtaActions a:last-child{border-color:var(--pro-line-strong)!important;color:#f1f3f0!important}
+body .eaFooter{border-color:var(--pro-line)!important;color:#7f8993!important}
+
+/* ---------- INVENTORY ---------- */
+body .inventoryPage{
+  background:
+    radial-gradient(900px 420px at 85% -8%,rgba(184,255,61,.05),transparent 64%),
+    var(--pro-bg)!important;
+}
+body .inv2TopUtility{
+  background:#06080b!important;
+  border-color:var(--pro-line)!important;
+}
+body .inventoryHeader{
+  background:rgba(8,11,15,.92)!important;
+  border-color:var(--pro-line)!important;
+  box-shadow:none!important;
+  backdrop-filter:blur(22px) saturate(130%)!important;
+}
+body .inventoryNav{
+  background:#0a0d11!important;
+  border-color:var(--pro-line)!important;
+}
+body .inventoryNav a{color:#a6afb8!important}
+body .inventoryNav a.active,
+body .inventoryNav a:hover{color:#fff!important}
+body .inventorySearch input,
+body .inv2Select,
+body .inventoryToolbar select,
+body .filterSearchLabel input,
+body .inv2Range input{
+  background:#0d1218!important;
+  border-color:var(--pro-line)!important;
+  color:#f3f5f1!important;
+}
+body .inventorySearch{
+  border-color:var(--pro-line)!important;
+  background:#0d1218!important;
+}
+body .inventorySearch button{
+  background:#eef2e9!important;
+  color:#11140f!important;
+}
+body .inv2Hero{
+  background:
+    radial-gradient(circle at 77% 20%,rgba(184,255,61,.07),transparent 28%),
+    linear-gradient(180deg,#0c1117,#090c10)!important;
+  border-color:var(--pro-line)!important;
+}
+body .inventoryIntro{background:transparent!important;border:0!important}
+body .inventoryIntro span{color:var(--pro-accent)!important}
+body .inventoryIntro h1{
+  max-width:900px;
+  letter-spacing:-.055em!important;
+}
+body .inventoryIntro p{color:var(--pro-muted)!important}
+body .inv2HeroStat{
+  border-color:var(--pro-line)!important;
+  background:rgba(255,255,255,.025)!important;
+}
+body .inv2HeroStat b{color:#f5f7f2!important}
+body .inv2Quickbar,
+body .inv2ActiveFilters,
+body .inventoryToolbar{
+  background:#0b0f14!important;
+  border-color:var(--pro-line)!important;
+}
+body .inv2Chip,
+body .inv2ActiveFilterChip,
+body .inv2SaveSearch,
+body .inv2MobileFiltersToggle{
+  border-color:var(--pro-line)!important;
+  background:#10151b!important;
+  color:#bec6ce!important;
+}
+body .inv2Chip.active,
+body .inv2Chip:hover,
+body .inv2ActiveFilterChip:hover{
+  border-color:var(--pro-accent-line)!important;
+  color:#efffd7!important;
+  background:var(--pro-accent-soft)!important;
+}
+body .inventoryShell{background:transparent!important}
+body .inventoryFilters{
+  background:#090d12!important;
+  border-color:var(--pro-line)!important;
+}
+body .filterBlock{border-color:var(--pro-line)!important}
+body .inventoryResults{background:transparent!important}
+body .inventoryGrid{gap:18px!important}
+body .inventoryCard{
+  border-color:var(--pro-line)!important;
+  border-radius:22px!important;
+  background:linear-gradient(180deg,#11171e,#0c1116)!important;
+  box-shadow:var(--pro-shadow-soft)!important;
+}
+body .inventoryCard:hover{
+  transform:translateY(-4px)!important;
+  border-color:var(--pro-accent-line)!important;
+  box-shadow:var(--pro-shadow)!important;
+}
+body .inventoryImage{background:#090d11!important}
+body .inventoryCardBody{
+  background:linear-gradient(180deg,#11171e,#0c1116)!important;
+  padding:19px!important;
+}
+body .inventoryLot span{color:var(--pro-accent)!important}
+body .inventoryCard h2{color:#f6f7f4!important}
+body .inventoryCard dl dt{color:#77818b!important}
+body .inventoryCard dl dd{color:#d9dee3!important}
+body .detailsBtn,
+body .buyBtn{
+  background:#111820!important;
+  border-color:var(--pro-line)!important;
+  color:#dfe4e9!important;
+}
+body .bidBtn{
+  background:#eef2e9!important;
+  color:#10140e!important;
+  box-shadow:none!important;
+}
+body .liveCard{
+  border-color:var(--pro-accent-line)!important;
+  box-shadow:0 18px 70px rgba(0,0,0,.34),0 0 0 1px rgba(184,255,61,.025)!important;
+}
+body .liveBidOrb{
+  box-shadow:0 0 0 8px rgba(184,255,61,.06),0 20px 44px rgba(0,0,0,.42)!important;
+}
+body .inv2Pagination button{
+  border-color:var(--pro-line)!important;
+  background:#10151b!important;
+  color:#c3cbd3!important;
+}
+body .inv2Pagination button[aria-current="page"]{
+  background:var(--pro-accent)!important;
+  color:#0b0e09!important;
+  border-color:var(--pro-accent)!important;
+}
+
+/* ---------- LOT DETAIL ---------- */
+body .lotPage{
+  background:
+    radial-gradient(900px 460px at 85% -8%,rgba(184,255,61,.045),transparent 65%),
+    linear-gradient(180deg,#080b0f,#07090c)!important;
+}
+body .lotHeader{
+  background:rgba(8,11,15,.92)!important;
+  border-color:var(--pro-line)!important;
+  backdrop-filter:blur(22px) saturate(130%)!important;
+}
+body .lotNav a{color:#a0a9b2!important}
+body .lotNav a:hover{color:#fff!important}
+body .lotHeaderActions button,
+body .lotHeaderActions a{
+  border-color:var(--pro-line)!important;
+  background:#10151b!important;
+}
+body .lotWrap{width:min(var(--pro-max),calc(100% - 44px))!important}
+body .lotTitleRow h1{letter-spacing:-.055em!important}
+body .lotPill{
+  border-color:var(--pro-line)!important;
+  background:#10151b!important;
+  color:#b8c0c8!important;
+}
+body .lotPill.green{
+  color:#efffd8!important;
+  border-color:var(--pro-accent-line)!important;
+  background:var(--pro-accent-soft)!important;
+}
+body .lotMainImage{
+  border-color:var(--pro-line)!important;
+  border-radius:24px!important;
+  box-shadow:var(--pro-shadow-soft)!important;
+}
+body .lotImageBadge{
+  background:rgba(8,12,16,.84)!important;
+  border-color:var(--pro-line-strong)!important;
+  color:#f5f6f3!important;
+}
+body .lotThumb{
+  border-color:var(--pro-line)!important;
+  background:#0e1319!important;
+}
+body .lotThumb.active{border-color:var(--pro-accent-line)!important}
+body .lotBidPanel{
+  border-color:var(--pro-line-strong)!important;
+  border-radius:24px!important;
+  background:linear-gradient(180deg,#121820,#0c1117)!important;
+  box-shadow:var(--pro-shadow)!important;
+}
+body .lotLiveBadge{color:#eaffc8!important}
+body .lotLiveBadge i{background:var(--pro-accent)!important;box-shadow:0 0 14px rgba(184,255,61,.46)!important}
+body .lotCountdown,
+body .lotBidInput,
+body .lotNotice,
+body .lotSection,
+body .lotSpec,
+body .lotDamageCard,
+body .lotHistoryRow,
+body .lotTransportBox,
+body .lotRelated a{
+  border-color:var(--pro-line)!important;
+  background:#0f151b!important;
+}
+body .lotBuyNow{border-color:var(--pro-accent-line)!important;background:var(--pro-accent-soft)!important;color:#efffd6!important}
+body .lotTransportPrice{
+  border-color:var(--pro-accent-line)!important;
+  background:linear-gradient(135deg,rgba(184,255,61,.10),rgba(184,255,61,.025))!important;
+}
+
+/* ---------- LIVE AUCTION ---------- */
+body .livePage{
+  background:
+    radial-gradient(1000px 500px at 15% -10%,rgba(184,255,61,.055),transparent 62%),
+    var(--pro-bg)!important;
+}
+body .liveUtility,
+body .liveHeader{
+  background:#070a0e!important;
+  border-color:var(--pro-line)!important;
+}
+body .liveHeader{backdrop-filter:blur(22px) saturate(130%)!important}
+body .liveHeader nav a{color:#9fa8b1!important}
+body .liveHeader nav a:hover,
+body .liveHeader nav a.active{color:#fff!important}
+body .liveHeader nav a.active:after{background:var(--pro-accent)!important}
+body .liveHero,
+body .liveStage,
+body .liveQueue,
+body .liveSold{width:min(var(--pro-max),calc(100% - 48px))!important}
+body .liveEyebrow,
+body .liveSectionHead span{color:var(--pro-accent)!important}
+body .liveHero h1{letter-spacing:-.06em!important}
+body .liveHero p{color:var(--pro-muted)!important}
+body .liveHeroClock,
+body .liveConnectionState,
+body .liveBidPanel{
+  border-color:var(--pro-line-strong)!important;
+  background:linear-gradient(180deg,#121820,#0d1217)!important;
+}
+body .liveVisual{
+  border-color:var(--pro-line-strong)!important;
+  border-radius:28px!important;
+  box-shadow:var(--pro-shadow)!important;
+}
+body .liveStatus{
+  background:rgba(9,13,17,.86)!important;
+  border-color:var(--pro-line-strong)!important;
+  color:#f4f6f1!important;
+}
+body .liveStatus i,
+body .liveUtility i,
+body .liveConnectionState.is-connected>i{
+  background:var(--pro-accent)!important;
+  box-shadow:0 0 14px rgba(184,255,61,.48)!important;
+}
+body .liveRing{
+  background:
+    radial-gradient(circle,#0b0f13 0 54%,transparent 56%),
+    conic-gradient(var(--pro-accent) 0 78%,rgba(255,255,255,.08) 78% 100%)!important;
+  box-shadow:0 0 0 10px rgba(0,0,0,.28),0 0 56px rgba(184,255,61,.13)!important;
+}
+body .liveRing small{color:#dcffa2!important}
+body .liveBidMeta div,
+body .liveBidFeedback,
+body .liveNextPreviewCard,
+body .liveQueueCard,
+body .liveSoldGrid a{
+  border-color:var(--pro-line)!important;
+  background:#0f151b!important;
+}
+body .liveLotLink{border-color:var(--pro-line-strong)!important;color:#eef2ec!important}
+
+/* ---------- generic route pages ---------- */
+body .navigationPage{
+  background:
+    radial-gradient(900px 420px at 82% -8%,rgba(184,255,61,.05),transparent 62%),
+    var(--pro-bg)!important;
+}
+body .navigationRouteHeader{
+  background:rgba(8,11,15,.92)!important;
+  border-color:var(--pro-line)!important;
+  backdrop-filter:blur(22px) saturate(130%)!important;
+}
+body .navigationRouteKicker{color:var(--pro-accent)!important}
+body .navigationRouteCard{
+  border-color:var(--pro-line)!important;
+  background:linear-gradient(180deg,#11171e,#0c1116)!important;
+}
+body .navigationRouteActions a:first-child{background:var(--pro-accent)!important;color:#0a0d08!important}
+body .navigationRouteActions a:not(:first-child){border-color:var(--pro-line-strong)!important;background:#10151b!important;color:#eef1ed!important}
+
+/* ---------- tablet ---------- */
+@media(max-width:1100px){
+  body .eaMainnav{grid-template-columns:190px minmax(0,1fr) auto!important}
+  body .eaNavlinks{gap:15px!important}
+  body .eaHeroInner{grid-template-columns:minmax(0,1fr) minmax(340px,.72fr)!important}
+  body .eaFeaturedGrid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  body .lotMainImage{height:540px!important}
+}
+
+/* ---------- mobile ---------- */
+@media(max-width:820px){
+  body .eaHero{min-height:auto!important}
+  body .eaTopbar{display:none!important}
+  body .eaMainnav{
+    height:auto!important;
+    min-height:72px!important;
+    padding:12px 16px!important;
+    grid-template-columns:1fr auto!important;
+    background:rgba(8,11,15,.90)!important;
+  }
+  body .eaBrand strong{font-size:27px!important}
+  body .eaBrand span{font-size:8px!important;margin-top:7px!important}
+  body .eaNavlinks{
+    grid-column:1/-1;
+    order:3;
+    display:flex!important;
+    justify-content:flex-start!important;
+    gap:8px!important;
+    overflow-x:auto;
+    padding:4px 0 2px;
+    scrollbar-width:none;
+  }
+  body .eaNavlinks::-webkit-scrollbar{display:none}
+  body .eaNavlinks a{
+    flex:none;
+    padding:9px 11px;
+    border:1px solid var(--pro-line);
+    border-radius:999px;
+    background:rgba(255,255,255,.025);
+  }
+  body .eaNavactions{gap:7px!important}
+  body .eaNavactions .eaBtnGhost{display:none!important}
+  body .eaBtnPrimary{height:42px!important;padding:0 13px!important;font-size:12px!important}
+  body .eaHeroInner{
+    width:calc(100% - 28px)!important;
+    min-height:auto!important;
+    grid-template-columns:1fr!important;
+    gap:30px!important;
+    padding:48px 0 70px!important;
+  }
+  body .eaEyebrow{font-size:9px!important;letter-spacing:.18em!important}
+  body .eaHeroCopy h1{
+    font-size:clamp(48px,16vw,70px)!important;
+    margin:17px 0 20px!important;
+    line-height:.86!important;
+  }
+  body .eaHeroLead{font-size:15px!important;line-height:1.55!important}
+  body .eaSearch{height:60px!important}
+  body .eaSearch input{padding:0 14px!important;font-size:14px!important}
+  body .eaSearch button{width:58px!important;font-size:28px!important}
+  body .eaHeroStats{
+    grid-template-columns:repeat(3,minmax(0,1fr))!important;
+    gap:7px!important;
+  }
+  body .eaHeroStat{min-height:70px;padding:12px!important}
+  body .eaHeroStat b{font-size:17px!important}
+  body .eaHeroStat span{font-size:9px!important}
+  body .eaLiveCard{justify-self:stretch!important}
+  body .eaLiveImage{height:225px!important}
+  body .eaLiveOrb{width:108px!important;height:108px!important}
+  body .eaSection{width:calc(100% - 28px)!important;padding:58px 0!important}
+  body .eaSectionHead{align-items:flex-start!important;flex-direction:column!important}
+  body .eaFeaturedGrid{grid-template-columns:1fr!important}
+  body .eaFeaturedImage{height:230px!important}
+  body .eaSteps{grid-template-columns:1fr!important}
+  body .eaStep{min-height:0!important}
+  body .eaCta{
+    width:calc(100% - 28px)!important;
+    margin:54px auto!important;
+    padding:24px!important;
+    align-items:flex-start!important;
+    flex-direction:column!important;
+  }
+  body .eaCtaActions{width:100%!important;flex-direction:column!important}
+  body .eaCtaActions a{text-align:center!important}
+  body .eaFooter{padding:24px 16px!important;flex-direction:column!important}
+
+  body .inventoryHeader{
+    min-height:72px!important;
+    height:auto!important;
+    padding:12px 14px!important;
+    grid-template-columns:1fr auto!important;
+    gap:10px!important;
+  }
+  body .inventorySearch{
+    grid-column:1/-1!important;
+    order:3;
+    width:100%!important;
+  }
+  body .inventoryAccount .registerBtn{display:none!important}
+  body .inventoryNav{
+    overflow-x:auto;
+    justify-content:flex-start!important;
+    padding:0 14px!important;
+    scrollbar-width:none;
+  }
+  body .inventoryNav::-webkit-scrollbar{display:none}
+  body .inventoryNav a{flex:none!important}
+  body .inv2Hero{padding-left:14px!important;padding-right:14px!important}
+  body .inv2HeroStats{grid-template-columns:repeat(3,1fr)!important}
+  body .inv2Quickbar{overflow-x:auto!important}
+  body .inventoryShell{display:block!important}
+  body .inventoryFilters{
+    border-right:0!important;
+    border-bottom:1px solid var(--pro-line)!important;
+  }
+  body .inventoryGrid{grid-template-columns:1fr!important;padding:14px!important}
+  body .inventoryCard{border-radius:18px!important}
+  body .inventoryImage{min-height:230px!important}
+
+  body .lotHeader{
+    padding:12px 14px!important;
+    grid-template-columns:1fr auto!important;
+  }
+  body .lotWrap{width:calc(100% - 24px)!important}
+  body .lotTitleRow h1{font-size:30px!important}
+  body .lotMainImage{height:390px!important;border-radius:18px!important}
+  body .lotBidPanel{border-radius:18px!important}
+  body .lotSection{border-radius:16px!important}
+
+  body .liveUtility{padding:0 14px!important}
+  body .liveHeader{padding:0 14px!important}
+  body .liveHero,
+  body .liveStage,
+  body .liveQueue,
+  body .liveSold{width:calc(100% - 24px)!important}
+  body .liveVisual{height:500px!important;border-radius:20px!important}
+  body .liveBidPanel{border-radius:18px!important;padding:18px!important}
+  body .liveBidTop b{font-size:42px!important}
+}
+
+@media(max-width:480px){
+  body .eaHeroStats{grid-template-columns:1fr!important}
+  body .eaHeroStat{display:flex;justify-content:space-between;align-items:center;min-height:56px!important}
+  body .eaHeroStat span{margin:0!important;text-align:right}
+  body .eaLiveBody h3{font-size:21px!important}
+  body .eaLiveBid{align-items:center!important}
+  body .eaLiveBid strong{font-size:24px!important}
+  body .eaLiveBid a{padding:11px 12px!important;font-size:11px!important}
+  body .eaSectionHead h2{font-size:36px!important}
+  body .eaFeaturedImage{height:205px!important}
+
+  body .inventoryHeader{grid-template-columns:1fr!important}
+  body .inventoryAccount{display:none!important}
+  body .inventorySearch{grid-column:1!important}
+  body .inv2HeroStats{grid-template-columns:1fr!important}
+  body .inventoryCardBody{padding:16px!important}
+  body .inventoryCard h2{font-size:20px!important}
+
+  body .lotHeaderActions .lotGreen{display:none!important}
+  body .lotMainImage{height:310px!important}
+  body .lotCurrentBid{font-size:38px!important}
+
+  body .liveHero h1{font-size:42px!important}
+  body .liveVisual{height:455px!important}
+  body .liveVisualInfo{left:18px!important;right:18px!important;bottom:18px!important}
+  body .liveVisualInfo h2{font-size:25px!important}
+}
+
+@media(prefers-reduced-motion:reduce){
+  body *{scroll-behavior:auto!important}
+  body .eaFeaturedCard:hover,
+  body .inventoryCard:hover,
+  body :is(.eaBtnPrimary,.inventoryAccount .registerBtn,.liveRegister,.lotGreen,.liveBidButton,.lotBidBtn):hover{
+    transform:none!important;
+  }
+}
