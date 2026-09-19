@@ -41,6 +41,8 @@ DAVID VERCEL DEPLOY LAW:
 `;
 const MARKER = "[DAVID_RELAY_ENCHEV_DESIGN_V1]";
 const COMPLETE_HANDOFF_MARKER = "[DAVID_DESIGN_COMPLETE_HANDOFF_V1]";
+const TAB_NAME = "DAVID_DESIGN_MANAGED_V1";
+const PENDING_TAB_NAME = "DAVID_DESIGN_PENDING_V1";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const hash = (x) => createHash("sha256").update(String(x || "")).digest("hex");
 function cleanConversationUrl(url) {
@@ -172,18 +174,59 @@ function fixPrompt(problem, attempt) {
   return `@GitHub @Vercel @Supabase\n\nDESIGN PROBLEM:\n${problem}\n\nTRY TO MAKE THIS FIX YOURSELF NOW. Опит ${attempt}. Провери repo/deployment и приложи безопасен fix или алтернатива. Не измисляй evidence. Не заобикаляй CAPTCHA/MFA/login/permissions и не прави destructive действие без разрешение.\n\nАко fix-ът е доказан: OK\nАко още е блокирано: ${PROBLEM_PREFIX} <точният оставащ проблем>\n\nСлед успешен fix продължи следващата D-задача от docs/DESIGN_PLAN_V1.md.\n\n${ORCHESTRATOR_LAW}\n\n${DEPLOY_LAW}\n${MARKER}`;
 }
 
+async function pageTag(page) {
+  try { return await page.evaluate(() => window.name || ""); }
+  catch { return ""; }
+}
+
+async function setPageTag(page, value) {
+  try { await page.evaluate((v) => { window.name = v; }, value); }
+  catch {}
+}
+
+async function findTaggedPage(context, names = [TAB_NAME, PENDING_TAB_NAME]) {
+  for (const page of [...context.pages()].reverse()) {
+    if (!page || page.isClosed()) continue;
+    const tag = await pageTag(page);
+    if (names.includes(tag)) return page;
+  }
+  return null;
+}
+
 async function ensurePage(context, current) {
   if (current && !current.isClosed()) {
     const currentUrl = current.url();
-    if (matchesActiveChat(currentUrl)) return current;
-    if (activeChatUrl === "https://chatgpt.com/" && currentUrl.startsWith("https://chatgpt.com/")) return current;
+    if (matchesActiveChat(currentUrl) || (activeChatUrl === "https://chatgpt.com/" && currentUrl.startsWith("https://chatgpt.com/"))) {
+      await setPageTag(current, TAB_NAME);
+      return current;
+    }
   }
+
+  const tagged = await findTaggedPage(context);
+  if (tagged) {
+    const taggedUrl = tagged.url();
+    if (
+      matchesActiveChat(taggedUrl) ||
+      activeChatUrl === "https://chatgpt.com/" ||
+      taggedUrl.startsWith("https://chatgpt.com/")
+    ) {
+      await setPageTag(tagged, TAB_NAME);
+      return tagged;
+    }
+  }
+
   const exact = activeChatUrl === "https://chatgpt.com/"
     ? null
     : context.pages().find((p) => !p.isClosed() && matchesActiveChat(p.url()));
-  if (exact) return exact;
+  if (exact) {
+    await setPageTag(exact, TAB_NAME);
+    return exact;
+  }
+
   const page = await context.newPage();
+  await setPageTag(page, activeChatUrl === "https://chatgpt.com/" ? PENDING_TAB_NAME : TAB_NAME);
   await page.goto(activeChatUrl, { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  await setPageTag(page, TAB_NAME);
   return page;
 }
 async function conversationLimitReached(page) {
@@ -209,6 +252,7 @@ function syncActiveChatUrl(page, state) {
   activeChatUrl = u;
   state.chatUrl = u;
   state.pendingNewChat = false;
+  void setPageTag(page, TAB_NAME);
   state.lastConversationUrl = u;
   const history = Array.isArray(state.rolloverHistory) ? state.rolloverHistory : [];
   for (let i = history.length - 1; i >= 0; i--) {
@@ -258,18 +302,26 @@ async function rolloverConversation(context, page, state) {
   };
   state.rolloverHistory = [...(Array.isArray(state.rolloverHistory) ? state.rolloverHistory : []), event].slice(-50);
 
-  const newPage = await context.newPage();
-  await newPage.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
   activeChatUrl = "https://chatgpt.com/";
   state.chatUrl = activeChatUrl;
+  save(state, `Design rollover #${state.rolloverCount} reserved; adopting/creating one pending tab`);
 
-  if (oldPage && !oldPage.isClosed()) {
+  let newPage = await findTaggedPage(context, [PENDING_TAB_NAME]);
+  if (!newPage || newPage === oldPage || newPage.isClosed()) {
+    newPage = await context.newPage();
+    await setPageTag(newPage, PENDING_TAB_NAME);
+    await newPage.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  }
+  await setPageTag(newPage, TAB_NAME);
+
+  if (oldPage && !oldPage.isClosed() && oldPage !== newPage) {
+    await setPageTag(oldPage, "");
     await oldPage.close({ runBeforeUnload: false }).catch(() => {});
     event.oldTabClosedAt = new Date().toISOString();
   }
   await closeOldConversationTabs(context, oldUrl, newPage);
-  save(state, `Design conversation max length -> new tab #${state.rolloverCount}; old tab closed`);
-  console.log(`[DESIGN] Conversation max length -> NEW TAB #${state.rolloverCount}; OLD TAB CLOSED.`);
+  save(state, `Design conversation max length -> adopted/created single new tab #${state.rolloverCount}; old tab closed`);
+  console.log(`[DESIGN] Conversation max length -> SINGLE NEW TAB #${state.rolloverCount}; OLD TAB CLOSED.`);
   await sleep(1200);
   return newPage;
 }
