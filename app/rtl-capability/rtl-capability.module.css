@@ -1,0 +1,119 @@
+.page{
+  min-height:100vh;
+  padding-block:clamp(32px,6vw,80px);
+  padding-inline:clamp(16px,5vw,72px);
+  background:#070a08;
+  color:#f3f7f4;
+}
+.header{
+  max-inline-size:760px;
+  margin-inline:auto;
+  margin-block-end:28px;
+  text-align:start;
+}
+.header span{
+  display:inline-block;
+  margin-block-end:8px;
+  font-size:12px;
+  font-weight:900;
+  letter-spacing:.12em;
+  color:#74d392;
+}
+.header h1{
+  margin-block:0 10px;
+  margin-inline:0;
+  font-size:clamp(34px,5vw,64px);
+  line-height:1;
+}
+.header p{
+  margin:0;
+  color:#9ca8a0;
+  line-height:1.55;
+}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:20px;
+  max-inline-size:1180px;
+  margin-inline:auto;
+}
+.probe{
+  position:relative;
+  min-inline-size:0;
+  overflow:hidden;
+  padding-block:28px;
+  padding-inline:28px;
+  border:1px solid #263229;
+  border-inline-start:4px solid #64cf84;
+  border-radius:18px;
+  background:#101612;
+  text-align:start;
+}
+.inlineMarker{
+  position:absolute;
+  inset-block-start:18px;
+  inset-inline-start:18px;
+  inline-size:9px;
+  block-size:9px;
+  border-radius:50%;
+  background:#64cf84;
+  box-shadow:0 0 16px rgba(100,207,132,.45);
+}
+.copy{padding-block-start:22px}
+.kicker{
+  display:block;
+  margin-block-end:10px;
+  color:#84b892;
+  font-size:10px;
+  font-weight:900;
+  letter-spacing:.14em;
+}
+.copy strong{display:block;font-size:20px}
+.copy p{
+  margin-block:10px 0;
+  margin-inline:0;
+  color:#9ba79f;
+  line-height:1.5;
+}
+.rail{
+  display:flex;
+  gap:10px;
+  margin-block-start:22px;
+  padding-block:10px;
+  padding-inline:10px;
+  border:1px solid #29352d;
+  border-radius:12px;
+}
+.rail span{
+  display:grid;
+  place-items:center;
+  min-inline-size:46px;
+  min-block-size:42px;
+  border-radius:9px;
+  background:#18211b;
+  font-weight:900;
+}
+.actions{
+  display:flex;
+  gap:10px;
+  margin-block-start:20px;
+}
+.actions button{
+  min-block-size:44px;
+  padding-block:0;
+  padding-inline:16px;
+  border:1px solid #35433a;
+  border-radius:10px;
+  background:#151d18;
+  color:inherit;
+  font:inherit;
+}
+.actions button:last-child{
+  margin-inline-start:auto;
+  border-color:#4e9e65;
+  background:#1e5e31;
+}
+@media(max-width:780px){
+  .grid{grid-template-columns:1fr}
+  .probe{padding-inline:20px}
+}
