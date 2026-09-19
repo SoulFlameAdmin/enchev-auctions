@@ -593,6 +593,13 @@ async function main() {
   const context = browser.contexts()[0];
   if (!context) throw new Error("No shared Edge context");
   const state = loadState();
+  if (/ChatGPT platform: (?:global )?rate limit/i.test(String(state.problem || ""))) {
+    state.problem = null;
+    state.problemAttempts = 0;
+    delete state.problemRetryAt;
+    state.watchdog = "global-rate-limit-state-sanitized";
+    save(state, "Cleared stale ChatGPT rate-limit problem from APK project state; coordinator owns cooldown");
+  }
   activeChatUrl = cleanConversationUrl(ENV_CHAT_URL) || cleanConversationUrl(state.chatUrl) || "";
   let page = await waitReady(context, null, state);
   if (state.previousChatUrl) await closeOldConversationTabs(context, state.previousChatUrl, page);
