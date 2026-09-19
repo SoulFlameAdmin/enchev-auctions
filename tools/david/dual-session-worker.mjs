@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { chromium } from "playwright-core";
-import { releaseWorkerLeases, resetFreshBootTransientState } from "./chatgpt-rate-limit-coordinator.mjs";
+import { getRateLimitState, releaseWorkerLeases, resetFreshBootTransientState } from "./chatgpt-rate-limit-coordinator.mjs";
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1"));
 const SYSTEM = path.join(HERE, "auto-continue-enchev-v5.mjs");
@@ -17,14 +17,16 @@ const children = new Map();
 const MONITOR_FILE = path.join(HERE, ".david-tab-monitor.json");
 const CONTROL_COMMAND_FILE = path.join(HERE, ".david-control-command.json");
 const CONTROL_RESULT_FILE = path.join(HERE, ".david-control-result.json");
-const MONITOR_MS = Number(process.env.DAVID_TAB_MONITOR_MS || 5000);
+const RECOVERY_REQUEST_FILE = path.join(HERE, ".david-recovery-request.json");
+const RECOVERY_RESULT_FILE = path.join(HERE, ".david-recovery-result.json");
+const MONITOR_MS = Number(process.env.DAVID_TAB_MONITOR_MS || 2000);
 const MONITOR_CONNECT_TIMEOUT_MS = Number(process.env.DAVID_TAB_MONITOR_CONNECT_TIMEOUT_MS || 60000);
-const WORKER_START_GRACE_MS = Number(process.env.DAVID_WORKER_START_GRACE_MS || 120000);
+const WORKER_START_GRACE_MS = Number(process.env.DAVID_WORKER_START_GRACE_MS || 45000);
 const WORKER_HEARTBEAT_STALE_MS = Number(process.env.DAVID_WORKER_HEARTBEAT_STALE_MS || 600000);
-const WORKER_TAB_MISSING_MS = Number(process.env.DAVID_WORKER_TAB_MISSING_MS || 90000);
-const CONTROL_START_GRACE_MS = Number(process.env.DAVID_CONTROL_START_GRACE_MS || 300000);
+const WORKER_TAB_MISSING_MS = Number(process.env.DAVID_WORKER_TAB_MISSING_MS || 30000);
+const CONTROL_START_GRACE_MS = Number(process.env.DAVID_CONTROL_START_GRACE_MS || 60000);
 const CONTROL_HEARTBEAT_STALE_MS = Number(process.env.DAVID_CONTROL_HEARTBEAT_STALE_MS || 900000);
-const CONTROL_TAB_MISSING_MS = Number(process.env.DAVID_CONTROL_TAB_MISSING_MS || 180000);
+const CONTROL_TAB_MISSING_MS = Number(process.env.DAVID_CONTROL_TAB_MISSING_MS || 45000);
 const STRICT_CHATGPT_TAB_TARGET = Number(process.env.DAVID_CHATGPT_TAB_TARGET || 5);
 const DEDICATED_DAVID_PROFILE = process.env.DAVID_DEDICATED_PROFILE !== "0";
 const FRESH_SESSION_ON_START = process.env.DAVID_FRESH_SESSIONS_ON_START === "1";
@@ -39,6 +41,7 @@ const restartTimers = new Map();
 const restartRequestedAt = new Map();
 const workerGeneration = new Map();
 let lastControlCommandId = null;
+let lastRecoveryRequestId = null;
 
 const specs = [
   {
@@ -207,8 +210,8 @@ function restartWorker(name, reason) {
 
   const now = Date.now();
   const last = Number(restartRequestedAt.get(name) || 0);
-  if (now - last < 30000) {
-    console.log(`[DUAL] SELF-HEAL ${name} suppressed by 30s debounce: ${reason}`);
+  if (now - last < 10000) {
+    console.log(`[DUAL] SELF-HEAL ${name} suppressed by 10s debounce: ${reason}`);
     return;
   }
   restartRequestedAt.set(name, now);
@@ -364,6 +367,69 @@ async function controlActionProtected(target, context) {
     return { protected: true, reason: "owned ChatGPT tab shows active generation" };
   }
   return { protected: false, page, targetUrl };
+}
+
+async function executeRecoveryRequest(context) {
+  const request = readState(RECOVERY_REQUEST_FILE);
+  if (!request?.id || request.id === lastRecoveryRequestId) return;
+  lastRecoveryRequestId = request.id;
+
+  const target = String(request.target || "").toUpperCase();
+  const action = String(request.action || "").toUpperCase();
+  const allowed = new Set(["SYSTEM","DESIGN","APP2","APK","CONTROL"]);
+  const result = {
+    id: request.id,
+    target,
+    action,
+    executedAt: new Date().toISOString(),
+    ok: false,
+    detail: null
+  };
+
+  if (action !== "RESTART" || !allowed.has(target)) {
+    result.detail = "rejected by fast-recovery allowlist";
+    try { fs.writeFileSync(RECOVERY_RESULT_FILE, JSON.stringify(result, null, 2), "utf8"); } catch {}
+    return;
+  }
+
+  const createdAt = Date.parse(String(request.createdAt || ""));
+  if (!Number.isFinite(createdAt) || Date.now() - createdAt > 60000) {
+    result.detail = "stale recovery request";
+    try { fs.writeFileSync(RECOVERY_RESULT_FILE, JSON.stringify(result, null, 2), "utf8"); } catch {}
+    return;
+  }
+
+  const rate = getRateLimitState();
+  if (rate?.status === "blocked" || rate?.status === "probe") {
+    result.detail = `recovery restart deferred: global rate-limit status=${rate.status}`;
+    try { fs.writeFileSync(RECOVERY_RESULT_FILE, JSON.stringify(result, null, 2), "utf8"); } catch {}
+    return;
+  }
+
+  const spec = specs.find((x) => x.name === target);
+  const owned = currentOwnedUrls();
+  let targetUrl = null;
+  for (const [url, kind] of owned.entries()) if (kind === target) targetUrl = url;
+  const page = targetUrl ? context.pages().find((p) => !p.isClosed() && cleanConversationUrl(p.url()) === targetUrl) : null;
+
+  if (request.sourceUrl && targetUrl && cleanConversationUrl(request.sourceUrl) !== cleanConversationUrl(targetUrl)) {
+    result.detail = "stale recovery request: worker moved to another conversation";
+    try { fs.writeFileSync(RECOVERY_RESULT_FILE, JSON.stringify(result, null, 2), "utf8"); } catch {}
+    return;
+  }
+
+  if (page && await pageShowsActiveWork(page)) {
+    result.detail = "recovery restart cancelled: GPT became active";
+    try { fs.writeFileSync(RECOVERY_RESULT_FILE, JSON.stringify(result, null, 2), "utf8"); } catch {}
+    return;
+  }
+
+  await releaseWorkerLeases(target, "fast-recovery-restart").catch(() => {});
+  restartWorker(target, `FAST RECOVERY: ${request.reason || "guard escalation"}`);
+  result.ok = true;
+  result.detail = "affected worker restart requested";
+  try { fs.writeFileSync(RECOVERY_RESULT_FILE, JSON.stringify(result, null, 2), "utf8"); } catch {}
+  console.log(`[DUAL] FAST RECOVERY executed RESTART ${target}: ${request.reason || "guard escalation"}`);
 }
 
 async function executeControlCommand(context) {
@@ -611,6 +677,7 @@ console.log("[DUAL] APP2 tab: 6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4");
 console.log("[DUAL] APK tab: auto-discover DAVID Phone / SoulFlame Twins / DAVID APK session; exact DAVID_APK_CHAT_URL wins when provided.");
 console.log("[DUAL] CONTROL tab: 6aade2fa-e2a0-83ed-96af-702c0430d49e");
 console.log("[DUAL] INTERRUPTION GUARD: watches every managed ChatGPT conversation in this DAVID Edge profile.");
+console.log("[DUAL] FAST RECOVERY: WAIT(active) -> RETRY -> RETRY -> RELOAD -> affected-worker RESTART; NEW CHAT only at safe rollover/final OK.");
 console.log("[DUAL] 24/7 law: active GPT/tool work => WAIT; confirmed frozen interruption => refresh/verify/resend; workers self-heal by heartbeat/tab ownership.");
 console.log("[DUAL] CONTROL law: GPT WATCHTOWER may request only allowlisted REFRESH/RESTART/CLEAN_DUPLICATES actions after exact final OK.");
 console.log("[DUAL] CONTROL + SYSTEM + DESIGN + APP2 + APK share the same Edge CDP/profile on port 9444.");
@@ -679,6 +746,7 @@ async function monitorManagedTabs() {
       lastMonitorSignature = signature;
       console.log(`[DUAL] TRACK CONTROL=${counts.CONTROL} SYSTEM=${counts.SYSTEM} DESIGN=${counts.DESIGN} APP2=${counts.APP2} APK=${counts.APK} chatgptTabs=${snapshot.totalChatGptTabs}`);
     }
+    await executeRecoveryRequest(context);
     await executeControlCommand(context);
 
     const duplicates = Object.entries(snapshot.managed)
