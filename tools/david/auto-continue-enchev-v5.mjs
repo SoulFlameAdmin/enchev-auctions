@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { waitForGlobalSendPermit, reportRateLimit, reportProbeSuccess } from "./chatgpt-rate-limit-coordinator.mjs";
 
 const INITIAL_CHAT_URL = process.env.DAVID_CHAT_URL || "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71";
 let activeChatUrl = INITIAL_CHAT_URL;
@@ -585,6 +586,17 @@ async function refreshChat(context, page, state, attempt) {
 }
 
 async function waitPlatform(context, page, state, blocker) {
+  if (blocker === "rate limit") {
+    const rl = await reportRateLimit("SYSTEM", "ChatGPT too many requests / rate limit");
+    state.problem = "ChatGPT platform: rate limit";
+    state.problemRetryAt = rl.blockedUntil;
+    state.watchdog = "global-rate-limit";
+    saveState(state, `GLOBAL RATE LIMIT: all sends blocked until ${rl.blockedUntil}; stage=${rl.stage}`);
+    console.log(`[DAVID] GLOBAL RATE LIMIT stage=${rl.stage} until ${rl.blockedUntil}. All workers must WAIT.`);
+    await sleep(1000);
+    return waitForSession(context, page, state);
+  }
+
   if (blocker === "send timeout") {
     state.problem = null;
     state.watchdog = "send-timeout-wait-guard";
@@ -684,8 +696,20 @@ async function sendWithRecovery(context, page, state, text, kind) {
     state.recoveryAttempt = attempt - 1;
     state.relayAttempts = Number(state.relayAttempts || 0) + 1;
     saveState(state, kind === "fix" ? "Sending problem-fix instruction" : `Sending development relay attempt ${attempt}`);
-    console.log(`[DAVID] Sending ${kind} attempt ${attempt}/${MAX_RECOVERY_ATTEMPTS}.`);
+    const permit = await waitForGlobalSendPermit("SYSTEM", async (decision) => {
+      state.watchdog = "global-rate-limit-wait";
+      state.problem = "ChatGPT platform: global rate limit";
+      state.problemRetryAt = decision.state?.blockedUntil || decision.state?.probeLeaseUntil || null;
+      saveState(state, `GLOBAL RATE LIMIT WAIT mode=${decision.mode}; owner=${decision.state?.probeOwner || "none"}`);
+    });
+    if (permit.mode === "probe") {
+      state.watchdog = "global-rate-limit-probe";
+      saveState(state, "SYSTEM owns the single post-cooldown probe send");
+      await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+      await sleep(2500);
+    }
 
+    console.log(`[DAVID] Sending ${kind} attempt ${attempt}/${MAX_RECOVERY_ATTEMPTS}. rateMode=${permit.mode}`);
     await sendText(page, outgoingText);
     const started = await waitForResponseStart(context, page, baselineHash, baselineCounts.user, outgoingHash, state);
     page = started.page;
@@ -787,6 +811,8 @@ async function runPrompt(context, page, state, prompt, kind) {
         state.problem = null;
         if (state.justRolledOver) state.justRolledOver = false;
         syncActiveChatUrl(page, state);
+        await reportProbeSuccess("SYSTEM");
+        delete state.problemRetryAt;
         saveState(state, "Completed assistant response captured");
         return { page, text: result.text, hash: result.hash };
       }
