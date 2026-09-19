@@ -372,8 +372,12 @@ async function main() {
       const result = await sendAndWait(context, page, state, controlPrompt(telemetry, reason));
       page = result.page;
       const actions = parseActions(result.text);
-      const id = "ctrl-" + Date.now() + "-" + Math.random().toString(16).slice(2,10);
-      saveJson(COMMAND_FILE, { id, createdAt: nowIso(), actions, sourceChatUrl: activeChatUrl, responseHash: hashText(result.text) });
+      const executable = actions.filter((a) => a.type !== "WAIT");
+      let id = null;
+      if (executable.length) {
+        id = "ctrl-" + Date.now() + "-" + Math.random().toString(16).slice(2,10);
+        saveJson(COMMAND_FILE, { id, createdAt: nowIso(), actions: executable, sourceChatUrl: activeChatUrl, responseHash: hashText(result.text) });
+      }
       state.lastCommandId = id;
       state.lastControlActions = actions;
       state.lastTelemetrySignature = sig;
@@ -389,6 +393,19 @@ async function main() {
 
     await sleep(POLL_MS);
   }
+}
+
+if (process.argv.includes("--self-test")) {
+  const good = parseActions("ACTION REFRESH SYSTEM\nACTION CLEAN_DUPLICATES\nOK");
+  if (good.length !== 2 || good[0].type !== "REFRESH" || good[0].target !== "SYSTEM" || good[1].type !== "CLEAN_DUPLICATES") {
+    throw new Error("CONTROL self-test: allowlisted actions were not parsed correctly");
+  }
+  const bad = parseActions("ACTION SHELL SYSTEM\nACTION DELETE APK\nOK");
+  if (bad.length !== 0) throw new Error("CONTROL self-test: non-allowlisted command escaped parser");
+  const noOk = parseActions("ACTION RESTART APP2");
+  if (noOk.length !== 0) throw new Error("CONTROL self-test: action executed without exact final OK");
+  console.log("DAVID_CONTROL_WATCHTOWER_SELF_TEST PASS allowlist=1 final_ok_gate=1 arbitrary_command_rejected=1");
+  process.exit(0);
 }
 
 main().catch((error) => {
