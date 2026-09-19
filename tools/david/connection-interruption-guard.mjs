@@ -13,6 +13,7 @@ const CONFIRM_MS = Number(process.env.DAVID_INTERRUPT_CONFIRM_MS || 12000);
 const CONFIRM_SAMPLES = Number(process.env.DAVID_INTERRUPT_CONFIRM_SAMPLES || 6);
 const SEND_TIMEOUT_COOLDOWN_MS = Number(process.env.DAVID_SEND_TIMEOUT_COOLDOWN_MS || 15000);
 const SEND_TIMEOUT_MAX_RETRIES = Number(process.env.DAVID_SEND_TIMEOUT_MAX_RETRIES || 3);
+const SEND_TIMEOUT_STALE_ACTIVE_MS = Number(process.env.DAVID_SEND_TIMEOUT_STALE_ACTIVE_MS || 30000);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const recoveredAt = new Map();
@@ -20,6 +21,9 @@ const interruptionSince = new Map();
 const interruptionSamples = new Map();
 const sendTimeoutRecoveredAt = new Map();
 const sendTimeoutAttempts = new Map();
+const sendTimeoutFirstSeenAt = new Map();
+const sendTimeoutLastHash = new Map();
+const sendTimeoutLastProgressAt = new Map();
 const rateLimitReportedAt = new Map();
 
 function cleanConversationUrl(url) {
@@ -177,9 +181,24 @@ async function recoverSendTimeout(page) {
   const now = Date.now();
   if (now - Number(sendTimeoutRecoveredAt.get(url) || 0) < SEND_TIMEOUT_COOLDOWN_MS) return;
 
+  const firstSeenAt = Number(sendTimeoutFirstSeenAt.get(url) || now);
+  if (!sendTimeoutFirstSeenAt.has(url)) sendTimeoutFirstSeenAt.set(url, now);
+
+  const currentHash = await assistantTextHash(page);
+  const previousHash = String(sendTimeoutLastHash.get(url) || "");
+  if (currentHash && currentHash !== previousHash) {
+    sendTimeoutLastHash.set(url, currentHash);
+    sendTimeoutLastProgressAt.set(url, now);
+  }
+  const lastProgressAt = Number(sendTimeoutLastProgressAt.get(url) || firstSeenAt);
+
   if (await activeAssistantWork(page)) {
-    console.log(`[INTERRUPT] Send-timeout UI on ${url}, but GPT is active. WAIT / NO RETRY.`);
-    return;
+    const noProgressMs = now - lastProgressAt;
+    if (noProgressMs < SEND_TIMEOUT_STALE_ACTIVE_MS) {
+      console.log(`[INTERRUPT] Send-timeout UI on ${url}, GPT active/progress-recent. WAIT ${noProgressMs}ms/${SEND_TIMEOUT_STALE_ACTIVE_MS}ms; NO RETRY.`);
+      return;
+    }
+    console.log(`[INTERRUPT] Send-timeout UI persisted with stale active indicator for ${noProgressMs}ms and no assistant text progress. Retry UI now takes precedence.`);
   }
 
   const attempt = Number(sendTimeoutAttempts.get(url) || 0) + 1;
@@ -199,11 +218,17 @@ async function recoverSendTimeout(page) {
     await sleep(3000);
     if (await activeAssistantWork(page)) {
       sendTimeoutAttempts.delete(url);
+      sendTimeoutFirstSeenAt.delete(url);
+      sendTimeoutLastHash.delete(url);
+      sendTimeoutLastProgressAt.delete(url);
       console.log("[INTERRUPT] Timed-out message retry accepted; GPT became active.");
       return;
     }
     if (!await sendTimeoutVisible(page)) {
       sendTimeoutAttempts.delete(url);
+      sendTimeoutFirstSeenAt.delete(url);
+      sendTimeoutLastHash.delete(url);
+      sendTimeoutLastProgressAt.delete(url);
       console.log("[INTERRUPT] Timed-out message error cleared after Retry. Waiting for worker completion gate.");
       return;
     }
@@ -315,8 +340,11 @@ async function getComposer(page) {
 }
 
 async function fillComposer(composer, text) {
-  try { await composer.fill(text); return; } catch {}
-  await composer.click().catch(() => {});
+  try {
+    await composer.fill(text, { timeout: 5000 });
+    return;
+  } catch {}
+  await composer.focus({ timeout: 3000 }).catch(() => {});
   await composer.evaluate((el, value) => {
     el.focus();
     if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) el.value = value;
@@ -336,13 +364,27 @@ async function sendComposer(page, composer) {
     try {
       const button = page.locator(selector).last();
       if (await button.count() && await button.isVisible().catch(() => false) && await button.isEnabled().catch(() => false)) {
-        await button.click({ timeout: 3000 });
-        return "button";
+        try {
+          await button.click({ timeout: 2000 });
+          return "button";
+        } catch {}
       }
     } catch {}
   }
-  await composer.press("Enter");
-  return "enter";
+  try {
+    await composer.focus({ timeout: 2000 });
+    await composer.press("Enter", { timeout: 3000 });
+    return "enter";
+  } catch {}
+
+  for (const selector of selectors) {
+    const button = page.locator(selector).last();
+    if (await button.count() && await button.isVisible().catch(() => false) && await button.isEnabled().catch(() => false)) {
+      await button.click({ force: true, timeout: 3000 });
+      return "force-button";
+    }
+  }
+  throw new Error("Guard send failed after pointer-safe fallbacks");
 }
 
 async function recover(page) {
@@ -483,7 +525,11 @@ async function main() {
           await recoverSendTimeout(page);
           continue;
         } else {
-          sendTimeoutAttempts.delete(page.url());
+          const key = page.url();
+          sendTimeoutAttempts.delete(key);
+          sendTimeoutFirstSeenAt.delete(key);
+          sendTimeoutLastHash.delete(key);
+          sendTimeoutLastProgressAt.delete(key);
         }
 
         if (await interruptionVisible(page)) {
