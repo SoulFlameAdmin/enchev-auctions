@@ -21,6 +21,7 @@ const STALL_RESEND_LIMIT = Number(process.env.DAVID_STALL_RESEND_LIMIT || 2);
 const COMPLETE_QUIET_MS = Number(process.env.DAVID_COMPLETE_QUIET_MS || 7000);
 const COMPLETE_STABLE_SAMPLES = Number(process.env.DAVID_COMPLETE_STABLE_SAMPLES || 5);
 const COMPLETE_SAMPLE_MS = Number(process.env.DAVID_COMPLETE_SAMPLE_MS || 1200);
+const SEMANTIC_TERMINAL_QUIET_MS = Number(process.env.DAVID_SEMANTIC_TERMINAL_QUIET_MS || 15000);
 const PROBLEM_BACKOFF_MS = Number(process.env.DAVID_PROBLEM_BACKOFF_MS || 30000);
 const PLATFORM_BACKOFF_MS = Number(process.env.DAVID_PLATFORM_BACKOFF_MS || 180000);
 const STATE_FILE = process.env.DAVID_STATE_FILE || path.join(process.cwd(), ".david-enchev-state.json");
@@ -470,16 +471,55 @@ function endsOk(text) {
   const rows = String(text || "").split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
   return rows.length > 0 && /^OK$/i.test(rows.at(-1));
 }
+function humanTerminalGate(text) {
+  return /(captcha|verify you are human|mfa|two-factor|2fa|log in|login required|sign in|permission required|authorization required|approve access|manual approval|потвърдете, че сте човек|влезте|вход.*необходим|двуфактор|разрешение.*необходимо|ръчно одобрение)/i.test(String(text || ""));
+}
+function semanticTerminalCandidate(text) {
+  const value = String(text || "").trim();
+  if (value.length < 40 || humanTerminalGate(value)) return false;
+  if (/(still running|in progress|queued|pending|waiting for|please wait|will continue|i['’]ll continue|not complete|not finished|still working|още се изпълнява|в процес|изчаквам|чакам|ще продължа|не е завършен|не е готов)/i.test(value)) return false;
+  if (/(tests?\s+(?:are\s+)?fail(?:ed|ing)|build\s+fail(?:ed|ure)|workflow\s+fail(?:ed|ure)|ci\s+fail(?:ed|ure)|тест(?:ът|овете)?\s+.*неуспеш|билд.*неуспеш)/i.test(value)) return false;
+  return /(\bPASS\b|\bSUCCESS\b|\bGREEN\b|completed|complete|done|finished|implemented|merged|commit|pull request|artifact|evidence|tests?|готов|завърш|успеш|реализир|обединен|комит|доказател)/i.test(value);
+}
 async function waitForTerminalMarker(page, state) {
+  let semanticText = "";
+  let semanticSince = 0;
   while (true) {
     const text = await latestAssistantText(page);
     const problem = extractProblem(text);
-    if (problem) return { type: "problem", text, problem };
-    if (endsOk(text)) return { type: "ok", text };
-    state.watchdog = "awaiting-final-ok";
-    state.lastResult = "waiting-for-final-ok";
-    saveState(state, "LAW: no new prompt until final line is exactly OK or PROBLEM IN appears");
-    console.log("[DAVID] LAW: waiting for final OK. NO NEW PROMPT.");
+    if (problem) {
+      state.lastTerminalMode = "problem";
+      return { type: "problem", text, problem };
+    }
+    if (endsOk(text)) {
+      state.lastTerminalMode = "ok";
+      return { type: "ok", text };
+    }
+
+    const humanGate = humanTerminalGate(text);
+    const semanticReady = semanticTerminalCandidate(text) && !await isGenerating(page);
+    if (semanticReady) {
+      if (text !== semanticText) {
+        semanticText = text;
+        semanticSince = Date.now();
+      } else if (Date.now() - semanticSince >= SEMANTIC_TERMINAL_QUIET_MS) {
+        state.lastTerminalMode = "semantic";
+        state.lastResult = "SEMANTIC_COMPLETE";
+        saveState(state, "Stable response accepted by semantic terminal fallback; no exact OK required");
+        console.log("[DAVID] Stable semantic completion accepted. NO duplicate prompt.");
+        return { type: "ok", text, semantic: true };
+      }
+    } else {
+      semanticText = "";
+      semanticSince = 0;
+    }
+
+    state.watchdog = humanGate ? "human-terminal-gate" : "awaiting-terminal-evidence";
+    state.lastResult = humanGate ? "human-action-required" : "waiting-for-terminal-evidence";
+    saveState(state, humanGate
+      ? "Human gate detected in assistant response; autonomy paused safely"
+      : "Waiting for exact OK/PROBLEM IN or conservative stable semantic completion");
+    console.log("[DAVID] Waiting for terminal evidence. NO NEW PROMPT.");
     await sleep(3000);
   }
 }
@@ -1122,7 +1162,10 @@ function runSelfTest() {
   if (sameTurnPromptPresent(otherHash, outgoingHash)) throw new Error("ENCH_EV5 self-test: different latest user turn must permit safe resend");
   if (!runPrompt.toString().includes("stalled-resend")) throw new Error("ENCH_EV5 self-test: stalled generation must trigger bounded resend");
   if (!runPrompt.toString().includes("stalled-refresh-resend")) throw new Error("ENCH_EV5 self-test: repeated stall must refresh before resend");
-  console.log("ENCHEV_V5_RESPONSE_WATCHDOG_SELF_TEST PASS accepted_turn=3 bounded_stall_resend=1 refresh_after_repeat=1");
+  if (!semanticTerminalCandidate("Implementation completed successfully. Tests PASS. Evidence commit abc123 is recorded.")) throw new Error("ENCH_EV5 self-test: proven stable completion should allow semantic terminal fallback");
+  if (semanticTerminalCandidate("CI is still running and pending. Please wait for the workflow.")) throw new Error("ENCH_EV5 self-test: pending work must not be terminal");
+  if (semanticTerminalCandidate("Please log in and approve MFA before I can continue.")) throw new Error("ENCH_EV5 self-test: human gate must not auto-continue");
+  console.log("ENCHEV_V5_RESPONSE_WATCHDOG_SELF_TEST PASS accepted_turn=3 bounded_stall_resend=1 refresh_after_repeat=1 semantic_terminal=3");
 }
 
 if (process.argv.includes("--self-test")) {

@@ -37,7 +37,10 @@ jobs:
           node --check tools/david/auto-continue-david-apk-v1.mjs
           node --check tools/david/auto-control-watchtower-v1.mjs
           node --check tools/david/dual-session-worker.mjs
+          node --check tools/david/connection-interruption-guard.mjs
+          node --check tools/david/verify-autonomy-profile.mjs
           node tools/david/verify-session-invariants.mjs
+          node tools/david/verify-autonomy-profile.mjs
       - name: CI quality gate contract
         run: node scripts/verify-ci-quality-gates.mjs
       - name: Frozen master task ID lock
@@ -254,6 +257,10 @@ jobs:
         run: node tools/david/auto-continue-enchev-v5.mjs --self-test
       - name: DAVID APP2 response watchdog self-tests
         run: node tools/david/auto-complete-app2-v1.mjs --self-test
+      - name: DAVID APK response watchdog self-tests
+        run: |
+          npm --prefix tools/david install --no-audit --no-fund
+          node tools/david/auto-continue-david-apk-v1.mjs --self-test
       - name: DAVID CONTROL watchtower self-tests
         run: node tools/david/auto-control-watchtower-v1.mjs --self-test
       - name: DAVID ChatGPT rate-limit coordinator self-tests
@@ -271,9 +278,12 @@ jobs:
             }
           }
           Test-PowerShellFile "$PWD/START_DAVID_ALL.ps1"
+          Test-PowerShellFile "$PWD/START_DAVID_AUTONOMY.ps1"
           Test-PowerShellFile "$PWD/STOP_DAVID_ALL_CLEAN.ps1"
           Test-PowerShellFile "$PWD/RESTART_DAVID_ALL_CLEAN.ps1"
+          Test-PowerShellFile "$PWD/RESTART_DAVID_AUTONOMY_CLEAN.ps1"
           Test-PowerShellFile "$PWD/tools/david/david-status-dashboard.ps1"
+          Test-PowerShellFile "$PWD/tools/david/david-autonomy-dashboard.ps1"
       - name: Redis live binding verification when configured
         env:
           REDIS_URL: ${{ secrets.REDIS_URL }}
