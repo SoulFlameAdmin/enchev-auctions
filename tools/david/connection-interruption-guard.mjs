@@ -210,8 +210,34 @@ async function sendTimeoutVisible(page) {
   } catch { return false; }
 }
 
+async function sendTimeoutRetryButtonVisible(page) {
+  try {
+    return await page.evaluate(() => {
+      const visible = (el) => {
+        const s = getComputedStyle(el);
+        const r = el.getBoundingClientRect();
+        return s.display !== "none" && s.visibility !== "hidden" &&
+          Number(s.opacity || 1) > 0 && r.width > 0 && r.height > 0;
+      };
+      const retry = /^(опитайте\s+отново|try\s+again|retry)$/i;
+      for (const el of document.querySelectorAll('button,[role="button"]')) {
+        if (!visible(el)) continue;
+        const values = [
+          el.getAttribute("aria-label") || "",
+          el.getAttribute("title") || "",
+          el.textContent || ""
+        ].map((x) => x.replace(/\s+/g, " ").trim()).filter(Boolean);
+        if (values.some((x) => retry.test(x))) return true;
+      }
+      return false;
+    });
+  } catch {
+    return false;
+  }
+}
+
 async function clickSendTimeoutRetry(page) {
-  const labels = [/^\\s*Опитайте\\s+отново\\s*$/i, /^\\s*Try\\s+again\\s*$/i, /^\\s*Retry\\s*$/i];
+  const labels = [/^\s*Опитайте\s+отново\s*$/i, /^\s*Try\s+again\s*$/i, /^\s*Retry\s*$/i];
   for (const label of labels) {
     try {
       const buttons = page.getByRole("button", { name: label });
@@ -242,17 +268,17 @@ async function clickSendTimeoutRetry(page) {
         return s.display !== "none" && s.visibility !== "hidden" &&
           Number(s.opacity || 1) > 0 && r.width > 0 && r.height > 0;
       };
-      const retry = /^(опитайте\\s+отново|try\\s+again|retry)$/i;
+      const retry = /^(опитайте\s+отново|try\s+again|retry)$/i;
       const candidates = [...document.querySelectorAll('button,[role="button"]')];
       for (let i = candidates.length - 1; i >= 0; i--) {
         const el = candidates[i];
         if (!visible(el)) continue;
-        const text = [
+        const values = [
           el.getAttribute("aria-label") || "",
           el.getAttribute("title") || "",
           el.textContent || ""
-        ].join(" ").replace(/\\s+/g, " ").trim();
-        if (!retry.test(text)) continue;
+        ].map((x) => x.replace(/\s+/g, " ").trim()).filter(Boolean);
+        if (!values.some((x) => retry.test(x))) continue;
         try {
           el.scrollIntoView({ block: "center", inline: "center" });
           el.click();
@@ -264,7 +290,7 @@ async function clickSendTimeoutRetry(page) {
   } catch {}
 
   try {
-    const fallback = page.locator('button,[role="button"]').filter({ hasText: /Опитайте\\s+отново|Try\\s+again|Retry/i });
+    const fallback = page.locator('button,[role="button"]').filter({ hasText: /Опитайте\s+отново|Try\s+again|Retry/i });
     for (let i = (await fallback.count()) - 1; i >= 0; i--) {
       const b = fallback.nth(i);
       if (!await b.isVisible().catch(() => false)) continue;
@@ -647,6 +673,12 @@ async function main() {
           if (dismissed) {
             console.log(`[INTERRUPT] Rate-limit popup acknowledged automatically on ${key}. Cooldown remains active.`);
           }
+          continue;
+        }
+
+        if (await sendTimeoutRetryButtonVisible(page)) {
+          console.log(`[INTERRUPT] EXPLICIT TRY AGAIN visible url=${page.url()} -> immediate recovery click`);
+          await recoverSendTimeout(page);
           continue;
         }
 
