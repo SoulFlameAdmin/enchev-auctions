@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node dual-session-worker.mjs",
     "verify:sessions": "node verify-session-invariants.mjs",
-    "verify:resilience": "node chatgpt-session-resilience.mjs --self-test && node --check connection-interruption-guard.mjs && node --check dual-session-worker.mjs && node verify-session-invariants.mjs"
+    "verify:resilience": "node chatgpt-session-resilience.mjs --self-test && node --check chatgpt-session-resilience.mjs && node --check connection-interruption-guard.mjs && node --check dual-session-worker.mjs && node --check auto-continue-enchev-v5.mjs && node --check auto-continue-design-v1.mjs && node --check auto-complete-app2-v1.mjs && node --check auto-continue-david-apk-v1.mjs && node --check auto-control-watchtower-v1.mjs && node --check chatgpt-rate-limit-coordinator.mjs && node --check chatgpt-session-rotation.mjs && node verify-session-invariants.mjs"
   },
   "dependencies": {
     "playwright-core": "1.63.0"
