@@ -27,10 +27,10 @@
       "id": "DP2-03",
       "group": "Foundation",
       "title": "Typography, spacing, density and responsive grid",
-      "status": "red",
-      "evidence": "",
-      "blocker": "",
-      "updatedAt": null
+      "status": "yellow",
+      "evidence": "Implemented DP2-03 foundation through commit bcefad0a34fcfc3a2bd5b33b500eab8793dc140f: app/dp2-foundation.css defines the shared type ladder, 4px spacing rhythm, density/control sizing, route rails and responsive grid primitives; app/layout.tsx imports it after DP2-02 tokens. The visual regression matrix now explicitly covers 360/390/430 mobile and 1366/1440/1920 desktop widths (30 screenshots per browser across five core routes), and CI plus scripts/verify-design-process-2.mjs enforce the full width set and DP2-03 contract. YELLOW pending fresh PR CI, production build and Chrome+Edge visual proof.",
+      "blocker": "Pending fresh branch CI and expanded 60-screenshot Chrome/Edge proof.",
+      "updatedAt": "2026-09-19T06:01:54Z"
     },
     {
       "id": "DP2-04",
