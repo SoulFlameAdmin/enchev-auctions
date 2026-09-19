@@ -182,6 +182,10 @@ jobs:
         run: node scripts/verify-regional-data-residency-review.mjs
       - name: 21.14 Regional data/residency review self-tests
         run: node scripts/verify-regional-data-residency-review.mjs --self-test
+      - name: 21.15 Unicode normalization
+        run: node scripts/verify-unicode-normalization.mjs
+      - name: 21.15 Unicode normalization self-tests
+        run: node scripts/verify-unicode-normalization.mjs --self-test
       - name: Redis environment contract invariant
         run: node scripts/verify-redis-environment.mjs
       - name: Redis environment contract self-tests
