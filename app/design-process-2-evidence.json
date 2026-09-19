@@ -27,10 +27,10 @@
       "id": "DP2-03",
       "group": "Foundation",
       "title": "Typography, spacing, density and responsive grid",
-      "status": "red",
-      "evidence": "",
+      "status": "green",
+      "evidence": "GREEN PASS. DP2-03 implemented in app/dp2-foundation.css and imported globally after DP2-02 tokens. The foundation defines a shared typography ladder, 4px spacing rhythm, density/control sizing, buyer-route content rails and responsive auto-fit grid primitives while leaving DP2-04 app-shell structure untouched. Required acceptance widths are explicitly encoded at 360/390/430 mobile and 1366/1440/1920 desktop. scripts/capture-visual-regression.mjs now captures five core routes at all six widths (30 screenshots per browser), and .github/workflows/verify-enchev-web.yml plus scripts/verify-design-process-2.mjs enforce the full width set. Initial run 35425535154 proved both Chrome and Edge captured 30/30 screenshots but failed only because the new CI assertion read the wrong manifest field; the assertion was corrected from entry.viewport.width to entry.width. A follow-up run 35425704149 exposed and then fixed a verifier syntax typo. Final exact-head run 35425750707 on fa3df259542948db58e1ecc0391d96b6cab25f5c completed SUCCESS: DP2 invariant/self-tests, mobile-first, accessibility, cross-browser contract, originality, aggregate CI suite, TypeScript, production build, built health smoke, Edge installation, expanded Chrome+Edge visual regression and artifact upload all passed. Artifact 10579117702 (enchev-cross-browser-visual-0ebe6768d0ac44b68a3e3c44c8345dfc814e1909, digest sha256:865cd9e1ef396780b95da2d53071ec421b297c6bf3046942017427f69093b83b) contains the 60-screenshot responsive matrix. GitHub Vercel status reported external build-rate-limit with no retry time; no manual Vercel create/update/redeploy was attempted, so no Supabase deploy lease was required. Frozen D01-D36 evidence and protected DAVID orchestrator files were not modified.",
       "blocker": "",
-      "updatedAt": null
+      "updatedAt": "2026-09-19T06:10:24Z"
     },
     {
       "id": "DP2-04",

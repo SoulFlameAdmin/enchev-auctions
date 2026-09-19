@@ -13,8 +13,12 @@ const ROUTES=[
 ];
 
 const VIEWPORTS=[
-  {name:"desktop",width:1440,height:1200,mobile:false},
-  {name:"mobile",width:390,height:844,mobile:true},
+  {name:"phone-360",width:360,height:800,mobile:true},
+  {name:"phone-390",width:390,height:844,mobile:true},
+  {name:"phone-430",width:430,height:932,mobile:true},
+  {name:"desktop-1366",width:1366,height:960,mobile:false},
+  {name:"desktop-1440",width:1440,height:1200,mobile:false},
+  {name:"desktop-1920",width:1920,height:1200,mobile:false},
 ];
 
 function fail(message){
@@ -23,7 +27,7 @@ function fail(message){
 
 export function validateMatrix(routes=ROUTES,viewports=VIEWPORTS){
   if(routes.length!==5)fail(`expected 5 routes, got ${routes.length}`);
-  if(viewports.length!==2)fail(`expected 2 viewports, got ${viewports.length}`);
+  if(viewports.length!==6)fail(`expected 6 viewports, got ${viewports.length}`);
   const routeNames=new Set(routes.map(route=>route.name));
   const paths=new Set(routes.map(route=>route.path));
   if(routeNames.size!==routes.length)fail("route names must be unique");
@@ -32,8 +36,12 @@ export function validateMatrix(routes=ROUTES,viewports=VIEWPORTS){
   for(const viewport of viewports){
     if(!Number.isInteger(viewport.width)||!Number.isInteger(viewport.height)||viewport.width<320||viewport.height<600)fail(`invalid viewport ${viewport.name}`);
   }
-  if(!viewports.some(v=>v.name==="desktop"&&v.width>=1280))fail("desktop viewport missing");
-  if(!viewports.some(v=>v.name==="mobile"&&v.width<=430))fail("mobile viewport missing");
+  const widths=new Set(viewports.map(v=>v.width));
+  for(const required of [360,390,430,1366,1440,1920]){
+    if(!widths.has(required))fail(`required DP2 acceptance viewport missing: ${required}px`);
+  }
+  if(!viewports.filter(v=>v.mobile).every(v=>v.width<=430))fail("phone viewport classification invalid");
+  if(!viewports.filter(v=>!v.mobile).every(v=>v.width>=1366))fail("desktop viewport classification invalid");
   return true;
 }
 
@@ -682,7 +690,7 @@ export async function captureScreenshots(baseUrl,outputDir="artifacts/visual-reg
       }
     }
 
-    if(entries.length!==10)fail(`expected 10 screenshots, got ${entries.length}`);
+    if(entries.length!==30)fail(`expected 30 screenshots, got ${entries.length}`);
 
     const manifest={
       version:2,
@@ -741,7 +749,7 @@ if(process.argv.includes("--self-test")){
   try{validateD24Runtime({...d24Mobile,panel:{...d24Mobile.panel,top:760}},{name:"mobile",mobile:true});}catch{rejected=true;}
   if(!rejected)fail("D24 negative self-test did not reject mobile current/next overlap");
 
-  console.log("VISUAL_REGRESSION_CAPTURE_SELF_TEST PASS matrix=5x2 negative_cases=6 d23_runtime=desktop+mobile d24_runtime=desktop+mobile protocol=cdp");
+  console.log("VISUAL_REGRESSION_CAPTURE_SELF_TEST PASS matrix=5x6 widths=360,390,430,1366,1440,1920 negative_cases=6 d23_runtime=desktop+mobile d24_runtime=desktop+mobile protocol=cdp");
 }else{
   const baseUrl=process.argv[2]||"http://127.0.0.1:3011";
   await captureScreenshots(baseUrl);

@@ -1,0 +1,332 @@
+/* ENCHEV AUCTIONS — DESIGN PROCESS 2 / DP2-03
+   Typography, spacing, density and responsive grid foundation.
+   App-shell structure remains DP2-04; route-specific redesign remains DP2-05+. */
+
+:root{
+  /* Typography */
+  --ea-font-ui:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  --ea-type-micro:.6875rem;
+  --ea-type-label:.75rem;
+  --ea-type-label-lg:.8125rem;
+  --ea-type-body-sm:.875rem;
+  --ea-type-body:1rem;
+  --ea-type-body-lg:1.125rem;
+  --ea-type-title-sm:1.25rem;
+  --ea-type-title:1.5rem;
+  --ea-type-title-lg:1.875rem;
+  --ea-type-section:clamp(2rem,2.7vw,3rem);
+  --ea-type-page:clamp(2.5rem,4vw,4rem);
+  --ea-type-display:clamp(3.25rem,5.8vw,5.75rem);
+  --ea-leading-display:.94;
+  --ea-leading-heading:1.08;
+  --ea-leading-body:1.58;
+  --ea-leading-compact:1.35;
+  --ea-tracking-display:-.052em;
+  --ea-tracking-heading:-.032em;
+  --ea-tracking-label:.08em;
+
+  /* 4px spacing rhythm */
+  --ea-space-1:4px;
+  --ea-space-2:8px;
+  --ea-space-3:12px;
+  --ea-space-4:16px;
+  --ea-space-5:20px;
+  --ea-space-6:24px;
+  --ea-space-8:32px;
+  --ea-space-10:40px;
+  --ea-space-12:48px;
+  --ea-space-16:64px;
+  --ea-space-20:80px;
+  --ea-space-24:96px;
+
+  /* Density + layout */
+  --ea-density-compact:10px;
+  --ea-density-standard:14px;
+  --ea-density-comfortable:18px;
+  --ea-control-height:44px;
+  --ea-control-height-lg:52px;
+  --ea-page-gutter:24px;
+  --ea-grid-gap:18px;
+  --ea-layout-wide:1600px;
+  --ea-layout-standard:1480px;
+  --ea-layout-account:1320px;
+  --ea-layout-reading:1180px;
+  --ea-grid-card-min:300px;
+
+  /* V1 compatibility aliases now resolve to DP2 type rhythm */
+  --ea-font-sans:var(--ea-font-ui);
+  --ea-font-size-xs:var(--ea-type-micro);
+  --ea-font-size-sm:var(--ea-type-label-lg);
+  --ea-font-size-md:var(--ea-type-body);
+  --ea-font-size-lg:var(--ea-type-body-lg);
+  --ea-font-size-xl:var(--ea-type-title);
+  --ea-font-size-2xl:var(--ea-type-title-lg);
+  --ea-font-size-3xl:var(--ea-type-section);
+  --ea-font-size-display:var(--ea-type-display);
+  --ea-line-tight:var(--ea-leading-display);
+  --ea-line-heading:var(--ea-leading-heading);
+  --ea-line-body:var(--ea-leading-body);
+  --ea-tracking-tight:var(--ea-tracking-heading);
+}
+
+/* Buyer-only baseline — do not restyle the DAVID/admin control surface. */
+.eaHome,
+.inventoryPage,
+.lotPage,
+.livePage,
+.navigationPage{
+  font-family:var(--ea-font-ui);
+  font-size:var(--ea-type-body);
+  line-height:var(--ea-leading-body);
+  -webkit-font-smoothing:antialiased;
+  text-rendering:optimizeLegibility;
+}
+
+/* Consistent rails while preserving route intent. */
+.eaHeroInner,
+.eaSection,
+.eaCta,
+.inv2Hero,
+.inv2Quickbar,
+.inventoryShell,
+.lotWrap,
+.liveHero,
+.liveStage,
+.liveQueue,
+.liveSold{
+  width:min(var(--ea-layout-standard),calc(100% - (var(--ea-page-gutter) * 2)))!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+  min-width:0;
+}
+
+.profileRouteMain{
+  width:min(var(--ea-layout-account),calc(100% - (var(--ea-page-gutter) * 2)))!important;
+  margin-left:auto!important;
+  margin-right:auto!important;
+}
+
+.navigationRouteMain{
+  width:min(var(--ea-layout-reading),calc(100% - (var(--ea-page-gutter) * 2)))!important;
+}
+
+/* One heading ladder across marketplace routes. */
+.eaHeroCopy h1{
+  font-size:var(--ea-type-display)!important;
+  line-height:var(--ea-leading-display)!important;
+  letter-spacing:var(--ea-tracking-display)!important;
+  max-width:12ch;
+  text-wrap:balance;
+}
+.inv2Hero .inventoryIntro h1,
+.lotTitleRow h1,
+.liveHero h1,
+.profileOverview h1,
+.navigationRouteMain h1{
+  font-size:var(--ea-type-page)!important;
+  line-height:var(--ea-leading-heading)!important;
+  letter-spacing:var(--ea-tracking-heading)!important;
+  text-wrap:balance;
+}
+.eaSectionHead h2,
+.liveSectionHead h2,
+.profileSectionHeading h2{
+  font-size:var(--ea-type-section)!important;
+  line-height:var(--ea-leading-heading)!important;
+  letter-spacing:var(--ea-tracking-heading)!important;
+}
+.eaFeaturedBody h3,
+.inventoryCardBody h2,
+.liveQueueCard h3,
+.navigationRouteCard b{
+  line-height:var(--ea-leading-heading)!important;
+  letter-spacing:-.018em;
+}
+
+/* Body copy no longer falls into microcopy sizing. */
+.eaHeroLead,
+.inv2Hero .inventoryIntro p,
+.liveHero p,
+.profileOverview p,
+.navigationRouteMain>p{
+  font-size:var(--ea-type-body-lg)!important;
+  line-height:var(--ea-leading-body)!important;
+}
+.eaFeaturedBody p,
+.inventoryCardBody dl,
+.lotSection,
+.liveQueueCard p,
+.navigationRouteCard p,
+.profileAccountRailNote p{
+  font-size:var(--ea-type-body-sm);
+  line-height:var(--ea-leading-body);
+}
+
+/* Navigation + metadata remain compact, but readable. */
+.eaNavlinks a,
+.inventoryNav a,
+.lotNav a,
+.liveHeader nav a,
+.navigationRouteNav a{
+  font-size:var(--ea-type-label-lg)!important;
+  line-height:var(--ea-leading-compact);
+}
+.eaTopbar,
+.inv2TopUtility,
+.liveUtility,
+.eaEyebrow,
+.liveEyebrow,
+.liveSectionHead span,
+.navigationRouteKicker,
+.eaFeaturedLot,
+.inventoryLot,
+.lotBreadcrumb{
+  font-size:var(--ea-type-label)!important;
+  line-height:var(--ea-leading-compact);
+}
+.eaFeaturedBody p,
+.inventoryCardBody dl,
+.liveQueueCard p,
+.lotBidHint,
+.liveRule p,
+.profileAccountRailNote p{
+  font-size:max(var(--ea-type-label),.75rem)!important;
+}
+
+/* Shared spacing rhythm. */
+.eaSection{
+  padding-block:var(--ea-space-20)!important;
+}
+.eaSectionHead,
+.liveSectionHead{
+  margin-bottom:var(--ea-space-6)!important;
+}
+.inv2Hero,
+.lotWrap,
+.liveHero{
+  margin-top:var(--ea-space-8)!important;
+}
+.inventoryShell,
+.lotGrid,
+.liveStage,
+.profileDashboardShell{
+  gap:var(--ea-grid-gap)!important;
+}
+.eaFeaturedGrid,
+.inventoryGrid,
+.liveQueueGrid,
+.liveSoldGrid,
+.navigationRouteGrid{
+  gap:var(--ea-grid-gap)!important;
+}
+
+/* Density: compact metadata, standard cards, comfortable primary panels. */
+.eaFeaturedBody,
+.inventoryCardBody,
+.liveQueueCard>div,
+.navigationRouteCard{
+  padding:var(--ea-density-comfortable)!important;
+}
+.lotSection,
+.liveBidPanel,
+.profileOverview{
+  padding:clamp(var(--ea-space-5),2vw,var(--ea-space-8))!important;
+}
+.inventoryToolbar,
+.inv2Quickbar{
+  min-height:var(--ea-control-height);
+}
+.eaBtnGhost,
+.eaBtnPrimary,
+.inventoryAccount button,
+.inventoryAccount a,
+.lotHeaderActions button,
+.lotHeaderActions a,
+.liveHeader button,
+.navigationRouteActions a{
+  min-height:var(--ea-control-height)!important;
+}
+
+/* Responsive grid primitives. */
+.inventoryGrid{
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,var(--ea-grid-card-min)),1fr))!important;
+}
+.eaFeaturedGrid{
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr))!important;
+}
+.liveQueueGrid{
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,280px),1fr))!important;
+}
+.liveSoldGrid{
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr))!important;
+}
+.navigationRouteGrid{
+  grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr))!important;
+}
+
+/* Tablet density boundary. */
+@media(max-width:1024px){
+  :root{
+    --ea-page-gutter:18px;
+    --ea-grid-gap:16px;
+    --ea-density-comfortable:16px;
+  }
+  .eaSection{padding-block:var(--ea-space-16)!important}
+}
+
+/* Required phone acceptance widths. */
+@media(max-width:430px){
+  :root{
+    --ea-page-gutter:14px;
+    --ea-grid-gap:14px;
+    --ea-type-body-lg:1rem;
+    --ea-type-display:clamp(2.9rem,14vw,3.9rem);
+    --ea-type-page:clamp(2.15rem,10vw,3rem);
+    --ea-type-section:clamp(1.75rem,8vw,2.25rem);
+  }
+  .eaSection{padding-block:var(--ea-space-12)!important}
+  .eaFeaturedBody,
+  .inventoryCardBody,
+  .navigationRouteCard{padding:var(--ea-space-4)!important}
+}
+
+@media(max-width:390px){
+  :root{
+    --ea-page-gutter:12px;
+    --ea-grid-gap:12px;
+  }
+}
+
+@media(max-width:360px){
+  :root{
+    --ea-page-gutter:10px;
+    --ea-grid-gap:10px;
+    --ea-type-display:clamp(2.7rem,14.5vw,3.35rem);
+    --ea-type-page:clamp(2rem,10vw,2.6rem);
+  }
+  .eaHeroCopy h1{max-width:11ch}
+}
+
+/* Required desktop acceptance widths. */
+@media(min-width:1366px){
+  :root{
+    --ea-page-gutter:28px;
+    --ea-grid-gap:18px;
+  }
+}
+
+@media(min-width:1440px){
+  :root{
+    --ea-page-gutter:32px;
+    --ea-grid-gap:20px;
+  }
+}
+
+@media(min-width:1920px){
+  :root{
+    --ea-page-gutter:40px;
+    --ea-grid-gap:22px;
+    --ea-layout-standard:1540px;
+    --ea-layout-account:1380px;
+  }
+}
