@@ -144,9 +144,11 @@ function verifyIntegration() {
   if (!source.includes('expansionState==="loading"||expansionState==="ready"')) fail("lazy loader retry/duplicate-load guard missing");
   if (!source.includes("...gaps].filter")) fail("FINAL 100% gate must include append-only GAP tasks");
 
-  const docs = readFileSync("docs/MASTER_SYSTEM_EXPANSION_V2.md", "utf8");
-  if (!docs.includes("**4,280 system points**")) fail("expansion documentation combined task count missing");
-  if (!docs.includes("FNV1a32 e7c9cf20")) fail("expansion documentation identity digest mismatch");
+  const generatedTests = readFileSync("app/generated-master-plan-test-ids.ts", "utf8");
+  const generatedMatch = generatedTests.match(/MASTER_TEST_TASK_IDS\s*=\s*(\[[\s\S]*\])\s+as const;/);
+  if (!generatedMatch) fail("combined master test registry is malformed");
+  const generatedIds = JSON.parse(generatedMatch[1]);
+  if (generatedIds.length !== 1201) fail(`combined master test registry must contain 1,201 IDs, got ${generatedIds.length}`);
 
   const worker = readFileSync("tools/david/auto-continue-enchev-v5.mjs", "utf8");
   if (!worker.includes("MASTER SYSTEM EXPANSION v2.0 APPEND-ONLY")) fail("SYSTEM worker does not know the expansion source");
