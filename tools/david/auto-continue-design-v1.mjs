@@ -569,9 +569,7 @@ async function runPrompt(context, page, state, prompt, kind) {
     }
     if (permit.mode === "probe") {
       state.watchdog = "global-rate-limit-probe";
-      save(state, "DESIGN owns the single post-cooldown probe send");
-      await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
-      await sleep(2500);
+      save(state, "DESIGN owns the single post-cooldown probe send; no refresh required");
     }
     await fillAndSend(page, outgoingPrompt);
     await markGlobalSendStarted("DESIGN");
