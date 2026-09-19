@@ -47,7 +47,8 @@ const cases = [
   ["scripts/verify-market-activation-gate.mjs", "--self-test"],
   ["scripts/verify-country-2-without-core-rewrite.mjs", "--self-test"],
   ["scripts/verify-regional-cdn-strategy.mjs", "--self-test"],
-  ["scripts/verify-regional-data-residency-review.mjs", "--self-test"]
+  ["scripts/verify-regional-data-residency-review.mjs", "--self-test"],
+  ["scripts/verify-unicode-normalization.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of cases) {
