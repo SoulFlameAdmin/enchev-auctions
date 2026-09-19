@@ -8,6 +8,8 @@ $Root = "D:\ASI"
 $Repo = Join-Path $Root "enchev-auctions"
 $Git = Join-Path $Root "tools\PortableGit\cmd\git.exe"
 $Pwsh = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+$PortableNode = Join-Path $Root "tools\node"
+if (Test-Path $PortableNode) { $env:Path = "$PortableNode;$env:Path" }
 $Stop = Join-Path $Repo "STOP_DAVID_ALL_CLEAN.ps1"
 $Start = Join-Path $Repo "START_DAVID_ALL.ps1"
 
@@ -33,6 +35,23 @@ if (-not (Test-Path (Join-Path $Repo ".git"))) { throw "Repo not found: $Repo" }
 Write-Host "[RESTART] Pulling latest DAVID code..." -ForegroundColor Cyan
 & $Git -C $Repo pull --ff-only
 if ($LASTEXITCODE -ne 0) { throw "git pull failed with exit code $LASTEXITCODE" }
+
+Write-Host "[RESTART] Verifying DAVID Session Resilience V1 BEFORE stopping the running stack..." -ForegroundColor Cyan
+$Npm = Get-Command npm.cmd -ErrorAction SilentlyContinue
+if (-not $Npm) { $Npm = Get-Command npm -ErrorAction SilentlyContinue }
+if (-not $Npm) { throw "npm not found; refusing to stop the currently running DAVID before preflight." }
+$DavidDir = Join-Path $Repo "tools\david"
+Push-Location $DavidDir
+try {
+  if (-not (Test-Path (Join-Path $DavidDir "node_modules\playwright-core"))) {
+    & $Npm.Source install
+    if ($LASTEXITCODE -ne 0) { throw "npm install failed during DAVID preflight with exit code $LASTEXITCODE" }
+  }
+  & $Npm.Source run verify:resilience
+  if ($LASTEXITCODE -ne 0) { throw "DAVID resilience preflight failed with exit code $LASTEXITCODE. Current running DAVID remains untouched." }
+}
+finally { Pop-Location }
+Write-Host "[RESTART] PRE-FLIGHT PASS. Safe to stop old DAVID and switch atomically." -ForegroundColor Green
 
 if (-not (Test-Path $Stop)) { throw "Stop script not found after pull: $Stop" }
 
