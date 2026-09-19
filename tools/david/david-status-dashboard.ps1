@@ -317,6 +317,7 @@ while ($true) {
   $controlState = Get-State "CONTROL"
   $tabs = Read-JsonSafe (Join-Path $DavidDir ".david-tab-monitor.json")
   $rateLimit = Read-JsonSafe (Join-Path $DavidDir ".david-global-chatgpt-rate-limit.json")
+  $sessionHealth = Read-JsonSafe (Join-Path $DavidDir ".david-session-health.json")
 
   Matrix-Fill
   Write-Fit "================================================================================================================" Green
@@ -364,6 +365,27 @@ while ($true) {
   } else {
     Write-Fit "  Tab monitor state not available yet..." Yellow
   }
+  Write-Fit ""
+  Write-Fit "  ------------------------------ GPT SESSION RESILIENCE ------------------------------------------" Green
+  if ($sessionHealth -and $sessionHealth.workers) {
+    foreach ($sessionName in @("CONTROL","SYSTEM","DESIGN","APP2","APK")) {
+      $h = $null
+      try { $h = $sessionHealth.workers.PSObject.Properties[$sessionName].Value } catch {}
+      if ($h) {
+        $st = Short $h.state 26
+        $issue = Short $h.issue 24
+        $act = Short $h.action 24
+        $detail = Short $h.detail 48
+        $sessionColor = if ($h.issue -and ([string]$h.issue) -ne "none") { [ConsoleColor]::Yellow } elseif (($st -match 'active|ready')) { [ConsoleColor]::Green } else { [ConsoleColor]::Gray }
+        Write-Fit ("  {0,-8} state={1,-26} issue={2,-24} action={3,-24} {4}" -f $sessionName,$st,$issue,$act,$detail) $sessionColor
+      } else {
+        Write-Fit ("  {0,-8} session-health=pending" -f $sessionName) DarkGray
+      }
+    }
+  } else {
+    Write-Fit "  Session resilience health not available yet..." Yellow
+  }
+
   Write-Fit ""
   Write-Fit "  ------------------------------ RUNTIME INVARIANTS ----------------------------------------------" Green
   $proc = [ordered]@{
@@ -414,6 +436,7 @@ while ($true) {
   Write-Fit "  ------------------------------ DAVID LAWS -------------------------------------------------------" Green
   Write-Fit "  CONTROL WATCHTOWER => ALLOWLISTED WAIT/REFRESH/RESTART/CLEAN_DUPLICATES ONLY" Magenta
   Write-Fit "  FINAL GATE => NO EXACT FINAL OK = NO NEXT NORMAL PROMPT" Red
+  Write-Fit "  SESSION RESILIENCE => TAGGED CHAT OWNERSHIP + LIVE ISSUE CLASSIFICATION + SAFE RECOVERY" Yellow
   Write-Fit "  SEND TIMEOUT => CENTRAL GUARD OWNS RETRY | WORKERS WAIT | NO DUPLICATE SEND" Yellow
   Write-Fit "  TOO MANY REQUESTS => AUTO-DISMISS POPUP + GLOBAL BLOCK 60s -> ONE PROBE -> repeat 60s if still limited" Yellow
   Write-Fit "  NORMAL SENDS => GLOBAL PACER >=10s BETWEEN EVERY DAVID RELAY; ONE SESSION SEND AT A TIME" Yellow
@@ -441,6 +464,7 @@ while ($true) {
     }
     tabs = $tabs
     chatgptRateLimit = $rateLimit
+    chatgptSessionHealth = $sessionHealth
     runtime = [ordered]@{
       cdpOnline = $cdpOnline
       tabStable = $tabStable
