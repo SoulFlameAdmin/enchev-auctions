@@ -1,0 +1,41 @@
+{
+  "task": "01.07",
+  "name": "Local / staging / production environments",
+  "schema_version": 1,
+  "secret_values_in_repository": false,
+  "staging_mode": "vercel-preview",
+  "canonical_production_url": "https://enchev-auctions.vercel.app",
+  "provider_bindings_may_be_pending": true,
+  "environments": [
+    {
+      "name": "local",
+      "platform": "local",
+      "platform_environment": "development",
+      "branch_policy": "developer-worktree",
+      "url_policy": "localhost-only",
+      "production_authority": false
+    },
+    {
+      "name": "staging",
+      "platform": "vercel",
+      "platform_environment": "preview",
+      "branch_policy": "non-main",
+      "url_policy": "unique-preview-url",
+      "production_authority": false
+    },
+    {
+      "name": "production",
+      "platform": "vercel",
+      "platform_environment": "production",
+      "branch_policy": "main-only",
+      "url_policy": "canonical-project-url",
+      "production_authority": true
+    }
+  ],
+  "invariants": [
+    "local-never-production-authority",
+    "preview-never-production-authority",
+    "production-authority-main-only",
+    "environment-specific-provider-bindings-can-remain-pending"
+  ]
+}
