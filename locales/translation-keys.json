@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "separator": ".",
+  "keyFormat": "namespace.section.name",
+  "keys": [
+    "auction.actions.placeBid",
+    "auction.status.live",
+    "common.actions.cancel",
+    "common.actions.confirm",
+    "navigation.primary.inventory",
+    "vehicle.fields.vin"
+  ]
+}
