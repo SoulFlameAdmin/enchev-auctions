@@ -8,7 +8,7 @@ import { waitForGlobalSendPermit, reportProbeSuccess, markProbeSendStarted } fro
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(HERE, "..", "..");
-const DESIGN_EVIDENCE_FILE = path.join(REPO_ROOT, "app", "design-plan-evidence.json");
+const DESIGN_EVIDENCE_FILE = path.join(REPO_ROOT, "app", "design-process-2-evidence.json");
 const INITIAL_CHAT_URL = process.env.DAVID_DESIGN_CHAT_URL || "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7";
 let activeChatUrl = INITIAL_CHAT_URL;
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
@@ -40,8 +40,8 @@ DAVID VERCEL DEPLOY LAW:
 - granted=true => mark deploying, perform exactly one intended deployment, then release with public.david_release_vercel_deploy('ENCHEV_DESIGN',<success>,<detail_json>).
 - Record quota/rate-limit backoff only when Vercel gives a real retry time. Never invent one.
 `;
-const MARKER = "[DAVID_RELAY_ENCHEV_DESIGN_V1]";
-const COMPLETE_HANDOFF_MARKER = "[DAVID_DESIGN_COMPLETE_HANDOFF_V1]";
+const MARKER = "[DAVID_RELAY_ENCHEV_DESIGN_PROCESS_2]";
+const COMPLETE_HANDOFF_MARKER = "[DAVID_DESIGN_PROCESS_2_COMPLETE_HANDOFF]";
 const TAB_NAME = "DAVID_DESIGN_MANAGED_V1";
 const PENDING_TAB_NAME = "DAVID_DESIGN_PENDING_V1";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -58,19 +58,29 @@ function matchesActiveChat(url) {
 
 const DESIGN_PROMPT = `@GitHub @Vercel @Supabase
 
-Продължи СЕГА следващата незавършена задача от docs/DESIGN_PLAN_V1.md за Enchev Auctions.
-Реалната design session цел е сайтът да следва доказаните UX и information-architecture модели на https://www.autobidmaster.com/ като референция, НО със собствен ENCHEV дизайн, бранд, код, copy и assets. Не копирай чуждо logo, proprietary text, images, source code или точна визуална идентичност.
+Продължи СЕГА следващата незавършена задача от docs/DESIGN_PROCESS_2.md за Enchev Auctions.
 
-Работи последователно по D01 → D36. Провери реалния GitHub и production във Vercel. Направи реалната промяна, тествай responsive/interaction/visual state и чак тогава обнови app/design-plan-evidence.json: status=green + конкретно evidence. Ако е частично/чака тест, status=yellow. Не маркирай green без доказателство.
+DESIGN PROCESS 2 е новият world-class redesign процес за телефон и PC. Design Plan V1 (D01-D36) е frozen/complete и НЕ трябва да се променя или рестартира.
 
-Приоритет: homepage → inventory/search/filters → vehicle detail → live auction → profile → mobile/accessibility/cross-browser/visual regression.
-Не променяй MASTER SYSTEM PLAN IDs и не добавяй pricing/payment/finance scope.
+Работи последователно по DP2-01 → DP2-30 според app/design-process-2-evidence.json. Провери реалния GitHub и приложимите CI/preview доказателства. Направи реалната UI/UX промяна в отделен branch/PR, тествай responsive/interaction/visual state и чак тогава обнови app/design-process-2-evidence.json:
+- green = implementation + test + конкретно evidence;
+- yellow = partial / pending visual proof / failing test / external blocker;
+- red = not implemented.
+Никога не маркирай GREEN само защото кодът компилира.
 
-Ако D01-D36 вече са 36/36 GREEN, НЕ създавай D37 или нов design scope. Докладвай DESIGN PLAN V1 COMPLETE / IDLE и последният ред да е само: OK
+Основна цел: ENCHEV да изглежда и да се усеща като сериозна международна auction platform с premium, оригинален продукт-дизайн, а не template.
+Приоритетът е: foundation/app shell → homepage → inventory/search/filters → vehicle detail → LIVE auction → buyer workspace → mobile/tablet/desktop → accessibility/performance → Chrome/Edge visual regression → final production acceptance.
+
+Mobile acceptance минимум: 360px, 390px, 430px. Desktop acceptance: 1366px, 1440px и wide 1920-class, когато е приложимо.
+Не копирай чуждо logo, proprietary text, images, source code или точна визуална идентичност.
+Не добавяй pricing/payment/finance scope.
+Не променяй frozen D01-D36 evidence.
+
+Ако DP2-01-DP2-30 вече са 30/30 GREEN, НЕ създавай DP2-31. Докладвай DESIGN PROCESS 2 COMPLETE / IDLE и последният ред да е само: OK
 
 Ако задачата е завършена, последният ред да е само: OK
-Външен blocker като Redis/Valkey/Vercel Marketplace/provider credential/permissions НЕ спира design плана: запиши го и премини към следващата независима D-задача.
-Използвай ${PROBLEM_PREFIX} само ако нов вътрешен технически дефект реално спира всяка безопасна design работа. Преди това опитай безопасна техническа алтернатива.
+Външен blocker като Redis/Valkey/Vercel Marketplace/provider credential/permissions НЕ спира DP2: запиши blocker/evidence и продължи към следващата независима DP2 задача.
+Използвай ${PROBLEM_PREFIX} само ако нов вътрешен технически дефект реално спира всяка безопасна DP2 работа. Преди това опитай безопасна техническа алтернатива.
 
 ${ORCHESTRATOR_LAW}\n\n${DEPLOY_LAW}
 
@@ -88,12 +98,12 @@ function save(state, action) {
 function designPlanStatus() {
   try {
     const raw = JSON.parse(fs.readFileSync(DESIGN_EVIDENCE_FILE, "utf8"));
-    const tasks = Array.isArray(raw?.tasks) ? raw.tasks.filter((t) => /^D\d{2}$/i.test(String(t?.id || ""))) : [];
+    const tasks = Array.isArray(raw?.tasks) ? raw.tasks.filter((t) => /^DP2-\d{2}$/i.test(String(t?.id || ""))) : [];
     const green = tasks.filter((t) => String(t?.status || "").toLowerCase() === "green");
     return {
       total: tasks.length,
       green: green.length,
-      complete: tasks.length === 36 && green.length === 36,
+      complete: tasks.length === 30 && green.length === 30,
       nonGreen: tasks.filter((t) => String(t?.status || "").toLowerCase() !== "green").map((t) => String(t.id))
     };
   } catch (error) {
@@ -102,27 +112,26 @@ function designPlanStatus() {
 }
 
 function completeHandoffPrompt(status) {
-  return `AUTOMATIC DESIGN COMPLETION HANDOFF
-
-The previous Enchev Design conversation reached maximum length after the design plan was completed.
+  return `AUTOMATIC DESIGN PROCESS 2 COMPLETION HANDOFF
 
 Source of truth:
-- docs/DESIGN_PLAN_V1.md
-- app/design-plan-evidence.json
-- current GitHub main and applicable CI evidence
+- docs/DESIGN_PROCESS_2.md
+- app/design-process-2-evidence.json
+- current GitHub main and applicable CI/visual evidence
 
-Current local evidence summary: D01-D36 = ${status.green}/${status.total} GREEN.
+Current local evidence summary: DP2-01-DP2-30 = ${status.green}/${status.total} GREEN.
 
-Verify the current source of truth. If all D01-D36 are GREEN:
-- do NOT invent D37 or any new design scope;
-- do NOT redo completed design tasks;
-- report DESIGN PLAN V1 COMPLETE / IDLE;
+If all DP2-01-DP2-30 are GREEN:
+- do NOT invent DP2-31 or new design scope;
+- do NOT redo completed DP2 tasks;
+- report DESIGN PROCESS 2 COMPLETE / IDLE;
 - preserve external deployment lag/blockers as evidence only;
-- wait for a regression, a non-green D-task, or an explicit new user design request.
+- wait for a regression, a non-green DP2 task, or an explicit new user design request.
 
-If any D-task is no longer GREEN, identify only those task IDs and resume from the earliest affected task.
+If any DP2 task is no longer GREEN, identify only those task IDs and resume from the earliest affected task.
 
-Do not modify protected DAVID orchestrator files.
+Design Plan V1 D01-D36 remains frozen and must not be changed.
+Do not modify protected DAVID orchestrator files during normal design work.
 Final non-empty line must be exactly:
 OK
 
@@ -177,7 +186,7 @@ function deferPrompt(problem, repeat = 1) {
 DESIGN EXTERNAL BLOCKER DEFERRED:
 ${problem}
 
-Не го опитвай отново сега. Запиши blocker/evidence за текущата D-задача, ако е приложимо, и продължи веднага към най-ранната независима D-задача от docs/DESIGN_PLAN_V1.md. Направи реалната UI промяна, responsive/interaction проверка, тест и evidence. Това е defer cycle ${repeat}.
+Не го опитвай отново сега. Запиши blocker/evidence за текущата D-задача, ако е приложимо, и продължи веднага към най-ранната независима DP2-задача от docs/DESIGN_PROCESS_2.md. Направи реалната UI промяна, responsive/interaction проверка, тест и evidence. Това е defer cycle ${repeat}.
 
 Не завършвай с PROBLEM IN само заради същия външен blocker. PROBLEM IN е само за нов вътрешен технически дефект, който спира всяка безопасна design работа.
 
@@ -185,7 +194,7 @@ ${ORCHESTRATOR_LAW}\n\n${DEPLOY_LAW}
 ${MARKER}`;
 }
 function fixPrompt(problem, attempt) {
-  return `@GitHub @Vercel @Supabase\n\nDESIGN PROBLEM:\n${problem}\n\nTRY TO MAKE THIS FIX YOURSELF NOW. Опит ${attempt}. Провери repo/deployment и приложи безопасен fix или алтернатива. Не измисляй evidence. Не заобикаляй CAPTCHA/MFA/login/permissions и не прави destructive действие без разрешение.\n\nАко fix-ът е доказан: OK\nАко още е блокирано: ${PROBLEM_PREFIX} <точният оставащ проблем>\n\nСлед успешен fix продължи следващата D-задача от docs/DESIGN_PLAN_V1.md.\n\n${ORCHESTRATOR_LAW}\n\n${DEPLOY_LAW}\n${MARKER}`;
+  return `@GitHub @Vercel @Supabase\n\nDESIGN PROBLEM:\n${problem}\n\nTRY TO MAKE THIS FIX YOURSELF NOW. Опит ${attempt}. Провери repo/deployment и приложи безопасен fix или алтернатива. Не измисляй evidence. Не заобикаляй CAPTCHA/MFA/login/permissions и не прави destructive действие без разрешение.\n\nАко fix-ът е доказан: OK\nАко още е блокирано: ${PROBLEM_PREFIX} <точният оставащ проблем>\n\nСлед успешен fix продължи следващата DP2-задача от docs/DESIGN_PROCESS_2.md.\n\n${ORCHESTRATOR_LAW}\n\n${DEPLOY_LAW}\n${MARKER}`;
 }
 
 async function pageTag(page) {
@@ -544,7 +553,7 @@ async function runPrompt(context, page, state, prompt, kind) {
     const outgoingPrompt = state.justRolledOver
       ? kind === "handoff"
         ? prompt
-        : `AUTOMATIC CHAT ROLLOVER: The previous Enchev Design conversation reached its maximum length. Reconstruct the exact design state from GitHub, docs/DESIGN_PLAN_V1.md and evidence, then continue from the next unfinished D-task. Do NOT restart completed work.\n\n${prompt}`
+        : `AUTOMATIC CHAT ROLLOVER: The previous Enchev Design conversation reached its maximum length. Reconstruct the exact design state from GitHub, docs/DESIGN_PROCESS_2.md and evidence, then continue from the next unfinished D-task. Do NOT restart completed work.\n\n${prompt}`
       : prompt;
     const permit = await waitForGlobalSendPermit("DESIGN", async (decision) => {
       state.watchdog = "global-rate-limit-wait";
