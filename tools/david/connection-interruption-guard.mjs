@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { reportRateLimit } from "./chatgpt-rate-limit-coordinator.mjs";
+import { classifyPlatformText, chooseRecoveryAction, SESSION_ISSUE, SESSION_ACTION } from "./chatgpt-session-resilience.mjs";
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1"));
 
@@ -14,6 +15,11 @@ const CONFIRM_SAMPLES = Number(process.env.DAVID_INTERRUPT_CONFIRM_SAMPLES || 6)
 const SEND_TIMEOUT_COOLDOWN_MS = Number(process.env.DAVID_SEND_TIMEOUT_COOLDOWN_MS || 15000);
 const SEND_TIMEOUT_MAX_RETRIES = Number(process.env.DAVID_SEND_TIMEOUT_MAX_RETRIES || 3);
 const SEND_TIMEOUT_STALE_ACTIVE_MS = Number(process.env.DAVID_SEND_TIMEOUT_STALE_ACTIVE_MS || 30000);
+const GENERIC_CONFIRM_MS = Number(process.env.DAVID_GENERIC_ERROR_CONFIRM_MS || 8000);
+const GENERIC_CONFIRM_SAMPLES = Number(process.env.DAVID_GENERIC_ERROR_CONFIRM_SAMPLES || 4);
+const GENERIC_RETRY_COOLDOWN_MS = Number(process.env.DAVID_GENERIC_RETRY_COOLDOWN_MS || 30000);
+const GENERIC_MAX_RETRIES = Number(process.env.DAVID_GENERIC_MAX_RETRIES || 3);
+const SESSION_HEALTH_FILE = path.join(HERE, ".david-session-health.json");
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const recoveredAt = new Map();
@@ -25,6 +31,11 @@ const sendTimeoutFirstSeenAt = new Map();
 const sendTimeoutLastHash = new Map();
 const sendTimeoutLastProgressAt = new Map();
 const rateLimitReportedAt = new Map();
+const genericIssueSince = new Map();
+const genericIssueSamples = new Map();
+const genericRetryAttempts = new Map();
+const genericRecoveredAt = new Map();
+const sessionHealth = { checkedAt: null, workers: {} };
 
 function cleanConversationUrl(url) {
   const m = String(url || "").match(/^https:\/\/chatgpt\.com\/c\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?=[/?#]|$)/i);
@@ -82,8 +93,57 @@ function managedKindFromUrl(url) {
   return "GLOBAL";
 }
 
+async function managedKindFromPage(page) {
+  if (!isChat(page)) return null;
+  const tagMap = {
+    DAVID_SYSTEM_MANAGED_V1: "SYSTEM",
+    DAVID_SYSTEM_PENDING_V1: "SYSTEM",
+    DAVID_DESIGN_MANAGED_V1: "DESIGN",
+    DAVID_DESIGN_PENDING_V1: "DESIGN",
+    DAVID_APP2_MANAGED_V1: "APP2",
+    DAVID_APP2_PENDING_V1: "APP2",
+    DAVID_APK_MANAGED_V1: "APK",
+    DAVID_APK_PENDING_V1: "APK",
+    DAVID_CONTROL_MANAGED_V1: "CONTROL",
+    DAVID_CONTROL_PENDING_V1: "CONTROL"
+  };
+  try {
+    const tag = await page.evaluate(() => window.name || "");
+    if (tagMap[tag]) return tagMap[tag];
+  } catch {}
+  const byUrl = managedKindFromUrl(page.url());
+  return byUrl === "GLOBAL" ? null : byUrl;
+}
+
+function flushSessionHealth() {
+  sessionHealth.checkedAt = new Date().toISOString();
+  try {
+    const tmp = SESSION_HEALTH_FILE + ".tmp-" + process.pid;
+    fs.writeFileSync(tmp, JSON.stringify(sessionHealth, null, 2), "utf8");
+    fs.renameSync(tmp, SESSION_HEALTH_FILE);
+  } catch {}
+}
+
+function recordSessionHealth(kind, page, {
+  state = "ready",
+  issue = SESSION_ISSUE.NONE,
+  action = SESSION_ACTION.WAIT,
+  detail = null
+} = {}) {
+  if (!kind) return;
+  sessionHealth.workers[kind] = {
+    checkedAt: new Date().toISOString(),
+    url: cleanConversationUrl(page?.url?.()) || page?.url?.() || null,
+    state,
+    issue,
+    action,
+    detail
+  };
+  flushSessionHealth();
+}
+
 async function rateLimitVisible(page) {
-  if (!isManagedChat(page)) return false;
+  if (!isChat(page)) return false;
   try {
     return await page.evaluate(() => {
       const visible = (el) => {
@@ -139,7 +199,7 @@ async function clickRateLimitAcknowledge(page) {
 }
 
 async function sendTimeoutVisible(page) {
-  if (!isManagedChat(page)) return false;
+  if (!isChat(page)) return false;
   try {
     return await page.evaluate(() => {
       const visible = (el) => {
@@ -241,6 +301,179 @@ async function recoverSendTimeout(page) {
 
   sendTimeoutAttempts.set(url, 0);
   console.log("[INTERRUPT] Send-timeout Retry attempts exhausted. NO REFRESH / NO DUPLICATE SEND. Leave worker waiting for the next clean UI state.");
+}
+
+async function visibleGenericIssue(page) {
+  if (!isChat(page)) return { issue: SESSION_ISSUE.NONE, text: "" };
+  try {
+    const texts = await page.evaluate(() => {
+      const visible = (el) => {
+        const s = getComputedStyle(el);
+        const r = el.getBoundingClientRect();
+        return s.display !== "none" && s.visibility !== "hidden" && Number(s.opacity || 1) > 0 && r.width > 0 && r.height > 0;
+      };
+      const out = [];
+      const selectors = [
+        '[role="dialog"]',
+        '[role="alert"]',
+        '[aria-live="assertive"]',
+        '[aria-live="polite"]',
+        '[data-testid*="error" i]',
+        '[data-testid*="toast" i]',
+        '[data-testid*="banner" i]',
+        'button'
+      ];
+      for (const el of document.querySelectorAll(selectors.join(","))) {
+        if (!visible(el)) continue;
+        if (el.closest('[data-message-author-role], article[data-testid^="conversation-turn-"]')) continue;
+        const text = (el.textContent || el.getAttribute("aria-label") || "").replace(/\s+/g, " ").trim();
+        if (text && text.length <= 700) out.push(text);
+        if (out.length >= 80) break;
+      }
+      return Array.from(new Set(out));
+    });
+    for (const text of texts) {
+      const hit = classifyPlatformText(text);
+      if (hit.issue !== SESSION_ISSUE.NONE) return hit;
+    }
+  } catch {}
+
+  for (const selector of ['iframe[src*="captcha" i]', 'iframe[src*="challenge" i]', '[data-sitekey]']) {
+    try {
+      const loc = page.locator(selector).last();
+      if (await loc.count() && await loc.isVisible().catch(() => false)) {
+        return { issue: SESSION_ISSUE.HUMAN_REQUIRED, text: "challenge/captcha UI" };
+      }
+    } catch {}
+  }
+
+  try {
+    const url = String(page.url() || "");
+    if (/\/auth\/|\/login(?:[/?#]|$)|\/signin(?:[/?#]|$)/i.test(url)) {
+      return { issue: SESSION_ISSUE.AUTH_REQUIRED, text: "authentication route" };
+    }
+  } catch {}
+  return { issue: SESSION_ISSUE.NONE, text: "" };
+}
+
+async function retryButtonVisible(page) {
+  const labels = [/^Опитайте отново$/i, /^Try again$/i, /^Retry$/i, /^Regenerate$/i, /^Генерирай отново$/i];
+  for (const label of labels) {
+    try {
+      const buttons = page.getByRole("button", { name: label });
+      for (let i = (await buttons.count()) - 1; i >= 0; i--) {
+        const b = buttons.nth(i);
+        if (await b.isVisible().catch(() => false) && await b.isEnabled().catch(() => false)) return true;
+      }
+    } catch {}
+  }
+  return false;
+}
+
+async function clickGenericRetry(page) {
+  const labels = [/^Опитайте отново$/i, /^Try again$/i, /^Retry$/i, /^Regenerate$/i, /^Генерирай отново$/i];
+  for (const label of labels) {
+    try {
+      const buttons = page.getByRole("button", { name: label });
+      for (let i = (await buttons.count()) - 1; i >= 0; i--) {
+        const b = buttons.nth(i);
+        if (await b.isVisible().catch(() => false) && await b.isEnabled().catch(() => false)) {
+          await b.click({ timeout: 4000 });
+          return true;
+        }
+      }
+    } catch {}
+  }
+  return false;
+}
+
+function clearGenericIssueTracking(url) {
+  for (const key of Array.from(genericIssueSince.keys())) {
+    if (!key.startsWith(url + "|")) continue;
+    genericIssueSince.delete(key);
+    genericIssueSamples.delete(key);
+    genericRetryAttempts.delete(key);
+  }
+}
+
+async function recoverGenericIssue(page, kind, hit) {
+  const url = page.url();
+  const key = url + "|" + hit.issue;
+  const now = Date.now();
+
+  if (await activeAssistantWork(page)) {
+    genericIssueSince.delete(key);
+    genericIssueSamples.delete(key);
+    recordSessionHealth(kind, page, { state: "active", issue: hit.issue, action: SESSION_ACTION.WAIT, detail: "active GPT/tool work protected" });
+    console.log(`[INTERRUPT] ${kind} issue=${hit.issue}, but GPT is active. WAIT; no click/refresh.`);
+    return;
+  }
+
+  const firstSeen = Number(genericIssueSince.get(key) || now);
+  if (!genericIssueSince.has(key)) genericIssueSince.set(key, now);
+  const samples = Number(genericIssueSamples.get(key) || 0) + 1;
+  genericIssueSamples.set(key, samples);
+  const confirmed = now - firstSeen >= GENERIC_CONFIRM_MS && samples >= GENERIC_CONFIRM_SAMPLES;
+  const retryVisible = await retryButtonVisible(page);
+  const retryAttempt = Number(genericRetryAttempts.get(key) || 0);
+  const action = chooseRecoveryAction({
+    issue: hit.issue,
+    active: false,
+    progressed: false,
+    retryVisible,
+    retryAttempt,
+    maxRetryAttempts: GENERIC_MAX_RETRIES,
+    confirmed
+  });
+
+  recordSessionHealth(kind, page, {
+    state: confirmed ? "platform-problem-confirmed" : "platform-problem-observed",
+    issue: hit.issue,
+    action,
+    detail: hit.text
+  });
+
+  if (!confirmed) return;
+
+  if (action === SESSION_ACTION.HUMAN_REQUIRED) {
+    console.log(`[INTERRUPT] ${kind} HUMAN GATE issue=${hit.issue}. No bypass; waiting for user authentication/verification.`);
+    return;
+  }
+
+  if (action === SESSION_ACTION.ROTATE_CHAT) {
+    console.log(`[INTERRUPT] ${kind} issue=${hit.issue}. Worker owns safe same-tab fresh-chat rotation; guard will not click blindly.`);
+    return;
+  }
+
+  if (action === SESSION_ACTION.RATE_LIMIT_COORDINATOR) return;
+
+  if (now - Number(genericRecoveredAt.get(key) || 0) < GENERIC_RETRY_COOLDOWN_MS) return;
+
+  if (action === SESSION_ACTION.CLICK_RETRY) {
+    const attempt = retryAttempt + 1;
+    genericRetryAttempts.set(key, attempt);
+    genericRecoveredAt.set(key, now);
+    const clicked = await clickGenericRetry(page);
+    console.log(`[INTERRUPT] ${kind} issue=${hit.issue} Retry attempt ${attempt}/${GENERIC_MAX_RETRIES} clicked=${clicked}.`);
+    if (clicked) {
+      await sleep(2500);
+      if (await activeAssistantWork(page)) {
+        clearGenericIssueTracking(url);
+        recordSessionHealth(kind, page, { state: "active", issue: SESSION_ISSUE.NONE, action: SESSION_ACTION.WAIT, detail: "retry accepted; GPT resumed" });
+      }
+    }
+    return;
+  }
+
+  if (action === SESSION_ACTION.REFRESH_VERIFY || action === SESSION_ACTION.WAIT_BACKOFF) {
+    genericRecoveredAt.set(key, now);
+    if (action === SESSION_ACTION.WAIT_BACKOFF) await sleep(5000);
+    if (await activeAssistantWork(page)) return;
+    console.log(`[INTERRUPT] ${kind} issue=${hit.issue}. Safe view refresh; worker retains task ownership and duplicate-send protection.`);
+    await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+    await sleep(2500);
+    return;
+  }
 }
 
 async function interruptionVisible(page) {
@@ -497,17 +730,19 @@ async function main() {
       await sleep(5000);
     }
   }
-  console.log("[INTERRUPT] Managed-only ChatGPT guard ON. Watches CONTROL/SYSTEM/DESIGN/APP2/APK owned URLs only.");
+  console.log("[INTERRUPT] DAVID Session Resilience V1 ON. Watches tagged/owned CONTROL/SYSTEM/DESIGN/APP2/APK chats, including fresh-rollover URLs.");
 
   while (true) {
-    const pages = context.pages().filter(isManagedChat);
+    const pages = context.pages().filter(isChat);
     for (const page of pages) {
+      const kind = await managedKindFromPage(page);
+      if (!kind) continue;
       try {
         if (await rateLimitVisible(page)) {
           const key = page.url();
           const now = Date.now();
+          recordSessionHealth(kind, page, { state: "rate-limited", issue: SESSION_ISSUE.RATE_LIMIT, action: SESSION_ACTION.RATE_LIMIT_COORDINATOR });
           if (now - Number(rateLimitReportedAt.get(key) || 0) > 30000) {
-            const kind = managedKindFromUrl(key);
             const rl = await reportRateLimit(kind, "ChatGPT UI: too many requests / requests too quickly");
             rateLimitReportedAt.set(key, now);
             const until = rl.blockedUntil || rl.probeLeaseUntil || null;
@@ -522,6 +757,7 @@ async function main() {
         }
 
         if (await sendTimeoutVisible(page)) {
+          recordSessionHealth(kind, page, { state: "send-timeout", issue: SESSION_ISSUE.SEND_TIMEOUT, action: SESSION_ACTION.CLICK_RETRY });
           await recoverSendTimeout(page);
           continue;
         } else {
@@ -533,13 +769,29 @@ async function main() {
         }
 
         if (await interruptionVisible(page)) {
+          recordSessionHealth(kind, page, { state: "interrupted", issue: SESSION_ISSUE.INTERRUPTION, action: SESSION_ACTION.REFRESH_VERIFY });
           await recover(page);
+          continue;
         } else {
           const key = page.url();
           interruptionSince.delete(key);
           interruptionSamples.delete(key);
         }
+
+        const hit = await visibleGenericIssue(page);
+        if (hit.issue !== SESSION_ISSUE.NONE) {
+          await recoverGenericIssue(page, kind, hit);
+          continue;
+        }
+
+        clearGenericIssueTracking(page.url());
+        recordSessionHealth(kind, page, {
+          state: await activeAssistantWork(page) ? "active" : "ready",
+          issue: SESSION_ISSUE.NONE,
+          action: SESSION_ACTION.WAIT
+        });
       } catch (error) {
+        recordSessionHealth(kind, page, { state: "guard-error", issue: SESSION_ISSUE.NONE, action: SESSION_ACTION.WAIT, detail: error?.message || String(error) });
         console.log(`[INTERRUPT] Recovery scan error: ${error?.message || error}`);
       }
     }
