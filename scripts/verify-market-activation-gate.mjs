@@ -79,8 +79,8 @@ async function loadRuntime() {
       SOURCE_PATH,
       "--ignoreConfig",
       "--target", "ES2022",
-      "--module", "CommonJS",
-      "--moduleResolution", "Node",
+      "--module", "Node16",
+      "--moduleResolution", "Node16",
       "--skipLibCheck",
       "--outDir", tempDir,
       "--pretty", "false"
