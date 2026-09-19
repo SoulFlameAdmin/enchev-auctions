@@ -680,9 +680,21 @@ async function runPrompt(context, page, state, prompt, kind) {
 async function main() {
   const { chromium } = await import("playwright-core");
   console.log(`[APP2] Connecting to shared Edge CDP ${CDP_URL}`);
-  const browser = await chromium.connectOverCDP(CDP_URL, { timeout: 120000 });
-  const context = browser.contexts()[0];
-  if (!context) throw new Error("No Chromium context on APP2 port");
+  let browser = null;
+  let context = null;
+  while (!context) {
+    try {
+      browser = await chromium.connectOverCDP(CDP_URL, { timeout: 120000 });
+      context = browser.contexts()[0] || null;
+      if (!context) throw new Error("No Chromium context on APP2 port");
+    } catch (error) {
+      console.log(`[APP2] CDP not ready: ${error?.message || error}. WAIT 5s -> reconnect. Worker stays alive.`);
+      try { await browser?.close(); } catch {}
+      browser = null;
+      context = null;
+      await sleep(5000);
+    }
+  }
   const state = loadState();
   if (/ChatGPT platform: (?:global )?rate limit/i.test(String(state.problem || ""))) {
     state.problem = null;
