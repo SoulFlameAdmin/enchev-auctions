@@ -4,7 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
-import { waitForGlobalSendPermit, reportProbeSuccess } from "./chatgpt-rate-limit-coordinator.mjs";
+import { waitForGlobalSendPermit, reportProbeSuccess, markProbeSendStarted } from "./chatgpt-rate-limit-coordinator.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(HERE, "..", "..");
@@ -545,6 +545,7 @@ async function runPrompt(context, page, state, prompt, kind) {
       await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
       await sleep(2500);
     }
+    if (permit.mode === "probe") await markProbeSendStarted("DESIGN");
     await fillAndSend(page, outgoingPrompt);
     let started = await waitStart(context, page, base, state); page = started.page;
     syncActiveChatUrl(page, state);
