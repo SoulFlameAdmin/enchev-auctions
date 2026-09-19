@@ -9,6 +9,8 @@ const page=read("app/page.tsx");
 const layout=read("app/layout.tsx");
 const messages=read("app/home-featured-messages.ts");
 const keys=JSON.parse(read("locales/translation-keys.json")).keys;
+const visualCapture=read("scripts/capture-dp2-07-featured-cli.mjs");
+const workflow=read(".github/workflows/verify-enchev-web.yml");
 
 assert(component.includes('data-design-task="DP2-07"'),"DP2-07 marker missing");
 for(const state of ['state:"upcoming"','state:"live"','state:"buy-now"','state:"sold"']) assert(component.includes(state),"DP2-07 missing state "+state);
@@ -41,5 +43,8 @@ for(const key of [
   assert(messages.includes(key),"DP2-07 message catalog missing "+key);
 }
 assert(messages.includes('"bg-BG"') && messages.includes('"en-US"'),"DP2-07 requires BG/EN copy coverage");
+assert(visualCapture.includes("360,390,430,1366,1440,1920") || (visualCapture.includes("360")&&visualCapture.includes("1920")),"DP2-07 visual capture width matrix missing");
+assert(visualCapture.includes('new URL("/#inventory",baseUrl)'),"DP2-07 visual capture must anchor to the featured section");
+assert(workflow.includes("capture-dp2-07-featured-cli.mjs") && workflow.includes("dp2-07-featured-chrome") && workflow.includes("dp2-07-featured-edge"),"DP2-07 Chrome/Edge visual workflow wiring missing");
 
 console.log("DP2_07_HOME_FEATURED PASS cards=4 states=upcoming,live,buy-now,sold money=intl date=intl responsive=360,390,430,1366,1440,1920");
