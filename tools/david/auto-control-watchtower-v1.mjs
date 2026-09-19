@@ -168,32 +168,43 @@ async function waitForComposer(page, state, maxMs = COMPOSER_WAIT_MS) {
 }
 
 async function fillComposer(composer, text) {
-  await composer.click({ timeout: 5000 }).catch(() => {});
   const tag = await composer.evaluate((el) => el.tagName.toLowerCase()).catch(() => "div");
-  if (tag === "textarea") {
-    await composer.fill(text);
+  try {
+    await composer.fill(text, { timeout: 5000 });
     return;
-  }
-  await composer.fill(text).catch(async () => {
-    await composer.press("Control+A").catch(() => {});
-    await composer.press("Backspace").catch(() => {});
-    await composer.evaluate((el, value) => {
-      el.textContent = value;
-      el.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: value }));
-    }, text);
-  });
+  } catch {}
+  await composer.focus({ timeout: 3000 }).catch(() => {});
+  await composer.evaluate((el, value) => {
+    el.focus();
+    if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) el.value = value;
+    else el.textContent = value;
+    el.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: value }));
+  }, text);
 }
 
 async function sendComposer(page, composer) {
   for (const sel of ['[data-testid="send-button"]','button[aria-label*="Send"]','button[aria-label*="Изпрати"]']) {
     const b = page.locator(sel).last();
     if (await b.isVisible().catch(() => false) && await b.isEnabled().catch(() => false)) {
-      await b.click({ timeout: 4000 });
-      return "button";
+      try {
+        await b.click({ timeout: 2000 });
+        return "button";
+      } catch {}
     }
   }
-  await composer.press("Enter");
-  return "enter";
+  try {
+    await composer.focus({ timeout: 2000 });
+    await composer.press("Enter", { timeout: 3000 });
+    return "enter";
+  } catch {}
+  for (const sel of ['[data-testid="send-button"]','button[aria-label*="Send"]','button[aria-label*="Изпрати"]']) {
+    const b = page.locator(sel).last();
+    if (await b.isVisible().catch(() => false) && await b.isEnabled().catch(() => false)) {
+      await b.click({ force: true, timeout: 3000 });
+      return "force-button";
+    }
+  }
+  throw new Error("CONTROL send failed after pointer-safe fallbacks");
 }
 
 function conversationLimitText(text) {
