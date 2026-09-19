@@ -308,7 +308,7 @@ async function detectManagedKind(page) {
       .then((xs) => xs.slice(-60).join("\n"))
       .catch(() => "");
     if (/\[DAVID_RELAY_ENCHEV_V5\]/.test(text)) return "SYSTEM";
-    if (/\[DAVID_RELAY_ENCHEV_DESIGN_V1\]/.test(text)) return "DESIGN";
+    if (/\[(?:DAVID_RELAY_ENCHEV_DESIGN_V1|DAVID_RELAY_ENCHEV_DESIGN_PROCESS_2)\]/.test(text)) return "DESIGN";
     if (/\[DAVID_APP2_AUTOPILOT_V2\]/.test(text)) return "APP2";
     if (/\[DAVID_RELAY_APK_V1\]/.test(text)) return "APK";
     if (/\[DAVID_CONTROL_WATCHTOWER_V1\]/.test(text)) return "CONTROL";
