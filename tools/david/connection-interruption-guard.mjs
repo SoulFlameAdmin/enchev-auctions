@@ -196,8 +196,9 @@ async function rateLimitVisible(page) {
         return s.display !== "none" && s.visibility !== "hidden" && Number(s.opacity || 1) > 0 && r.width > 0 && r.height > 0;
       };
       const re = /(твърде много заявки|правите заявки прекалено бързо|изчакайте няколко минути|too many requests|requests too quickly|please wait a few minutes|rate limit)/i;
-      for (const el of document.querySelectorAll('[role="dialog"],[role="alert"],[aria-live="assertive"],[data-testid*="error" i],div,section,p,span')) {
+      for (const el of document.querySelectorAll('[role="dialog"],[role="alert"],[aria-live="assertive"],[aria-live="polite"],[data-testid*="error" i],[data-testid*="toast" i],[data-testid*="banner" i]')) {
         if (!visible(el)) continue;
+        if (el.closest('[data-message-author-role], article[data-testid^="conversation-turn-"]')) continue;
         const text = (el.textContent || "").replace(/\s+/g, " ").trim();
         if (text && text.length < 600 && re.test(text)) return true;
       }
@@ -252,9 +253,9 @@ async function sendTimeoutVisible(page) {
         return s.display !== "none" && s.visibility !== "hidden" && Number(s.opacity || 1) > 0 && r.width > 0 && r.height > 0;
       };
       const re = /(изпращането на съобщението изтече по време|message sending timed out|sending the message timed out|message send timed out|sending timed out|съобщението не можа да бъде изпратено навреме)/i;
-      for (const el of document.querySelectorAll('[role="alert"],[aria-live="assertive"],[data-testid*="error" i],div,section,p,span')) {
+      for (const el of document.querySelectorAll('[role="dialog"],[role="alert"],[aria-live="assertive"],[aria-live="polite"],[data-testid*="error" i],[data-testid*="toast" i],[data-testid*="banner" i]')) {
         if (!visible(el)) continue;
-        if (el.closest('[data-message-author-role="assistant"]')) continue;
+        if (el.closest('[data-message-author-role], article[data-testid^="conversation-turn-"]')) continue;
         const text = (el.textContent || "").replace(/\s+/g, " ").trim();
         if (text && text.length < 360 && re.test(text)) return true;
       }
