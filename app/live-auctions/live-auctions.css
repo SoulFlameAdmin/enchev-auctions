@@ -5,3 +5,17 @@
 @media(max-width:680px){.liveSoldTransition{top:17%;min-width:min(240px,calc(100% - 32px));padding:11px 13px}}
 @media(prefers-reduced-motion:reduce){.liveSoldTransition{animation:none}}
 @media(forced-colors:active){.liveSoldTransition{border-color:CanvasText;background:Canvas;color:CanvasText}}
+
+.liveBidFeedback{display:grid;gap:4px;margin:0 0 12px;padding:11px 12px;border:1px solid rgba(255,255,255,.09);border-radius:11px;background:#080c0a}
+.liveBidFeedback b{font-size:10px;letter-spacing:.08em}
+.liveBidFeedback span{color:#7f8d84;font-size:10px;line-height:1.45}
+.liveBidFeedback.is-accepted{border-color:rgba(96,185,255,.3);background:rgba(72,136,199,.08)}
+.liveBidFeedback.is-accepted b{color:#bfe0ff}
+.liveBidFeedback.is-leading{border-color:rgba(39,239,130,.34);background:rgba(39,239,130,.08)}
+.liveBidFeedback.is-leading b{color:#bff8d0}
+.liveBidFeedback.is-outbid{border-color:rgba(255,190,92,.34);background:rgba(255,190,92,.08)}
+.liveBidFeedback.is-outbid b{color:#ffd9a0}
+.liveBidFeedback.is-rejected{border-color:rgba(255,105,120,.34);background:rgba(255,105,120,.08)}
+.liveBidFeedback.is-rejected b{color:#ffc0c8}
+@media(max-width:680px){.liveBidFeedback{padding:10px 11px}.liveBidFeedback b{font-size:9px}}
+@media(forced-colors:active){.liveBidFeedback{border-color:CanvasText;background:Canvas;color:CanvasText}.liveBidFeedback b,.liveBidFeedback span{color:CanvasText}}
