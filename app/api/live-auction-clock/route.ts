@@ -6,10 +6,14 @@ export const revalidate = 0;
 const COOKIE_NAME = "enchev_live_demo_v2";
 const LOT_DURATION_MS = 10_000;
 const LOT_IDS = ["EA-10511", "EA-10539", "EA-10603", "EA-10627"] as const;
+const BID_FEEDBACK_SEQUENCE = ["accepted", "leading", "outbid", "rejected"] as const;
+
+type BidFeedback = (typeof BID_FEEDBACK_SEQUENCE)[number];
 
 type SessionClockState = {
   lotIndex: number;
   roundEndsAt: number;
+  bidSequence: number;
 };
 
 function decodeState(value?: string): SessionClockState | null {
@@ -19,26 +23,35 @@ function decodeState(value?: string): SessionClockState | null {
     if (!Number.isInteger(parsed.lotIndex) || typeof parsed.roundEndsAt !== "number") return null;
     const lotIndex = Number(parsed.lotIndex);
     if (lotIndex < 0 || lotIndex >= LOT_IDS.length || !Number.isFinite(parsed.roundEndsAt)) return null;
-    return { lotIndex, roundEndsAt: parsed.roundEndsAt };
+    const bidSequence = Number.isInteger(parsed.bidSequence) && Number(parsed.bidSequence) >= 0
+      ? Number(parsed.bidSequence)
+      : 0;
+    return { lotIndex, roundEndsAt: parsed.roundEndsAt, bidSequence };
   } catch {
     return null;
   }
 }
 
 function normalizeState(input: SessionClockState | null, serverNow: number): SessionClockState {
-  let state = input ?? { lotIndex: 0, roundEndsAt: serverNow + LOT_DURATION_MS };
+  let state = input ?? { lotIndex: 0, roundEndsAt: serverNow + LOT_DURATION_MS, bidSequence: 0 };
 
   while (state.roundEndsAt <= serverNow) {
     state = {
       lotIndex: (state.lotIndex + 1) % LOT_IDS.length,
       roundEndsAt: state.roundEndsAt + LOT_DURATION_MS,
+      bidSequence: 0,
     };
   }
 
   return state;
 }
 
-function payload(state: SessionClockState, serverNow: number) {
+function payload(
+  state: SessionClockState,
+  serverNow: number,
+  bidFeedback: BidFeedback | null = null,
+  priceDelta = 0,
+) {
   return {
     serverNow,
     roundEndsAt: state.roundEndsAt,
@@ -47,6 +60,8 @@ function payload(state: SessionClockState, serverNow: number) {
     lotId: LOT_IDS[state.lotIndex],
     scope: "server-issued-browser-session-demo",
     auctionAuthority: false,
+    bidFeedback,
+    priceDelta,
   };
 }
 
@@ -85,11 +100,17 @@ export async function POST(request: Request) {
   const store = await cookies();
   const serverNow = Date.now();
   const current = normalizeState(decodeState(store.get(COOKIE_NAME)?.value), serverNow);
-  const state = { ...current, roundEndsAt: serverNow + LOT_DURATION_MS };
+  const feedback = BID_FEEDBACK_SEQUENCE[current.bidSequence % BID_FEEDBACK_SEQUENCE.length];
+  const priceDelta = feedback === "rejected" ? 0 : 100;
+  const state: SessionClockState = {
+    ...current,
+    roundEndsAt: serverNow + LOT_DURATION_MS,
+    bidSequence: current.bidSequence + 1,
+  };
 
   store.set(COOKIE_NAME, encodeURIComponent(JSON.stringify(state)), cookieOptions);
 
-  return Response.json(payload(state, serverNow), {
+  return Response.json(payload(state, serverNow, feedback, priceDelta), {
     headers: { "Cache-Control": "no-store, max-age=0" },
   });
 }
