@@ -91,7 +91,7 @@ function validateFoundation(css, layout, capture, workflow) {
   }
   assert(capture.includes("expected 30 screenshots"), "DP2-03 visual capture must require 30 screenshots");
   assert(workflow.includes("chrome.count!==30||edge.count!==30"), "DP2-03 CI must require 30 Chrome + 30 Edge screenshots");
-  assert(workflow.includes('widths!=="360,390,430,1366,1440,1920"'), "DP2-03 CI must enforce the full responsive width set");
+  assert(workflow.includes("chrome.entries.map(e=>e.width)"), "DP2-03 CI must read width from the visual manifest entry schema");\n  assert(workflow.includes('widths!=="360,390,430,1366,1440,1920"'), "DP2-03 CI must enforce the full responsive width set");
 }
 
 function validateEvidence(data) {
@@ -221,7 +221,7 @@ function selfTest() {
     '@media(max-width:360px){}@media(max-width:390px){}@media(max-width:430px){}' +
     '@media(min-width:1366px){}@media(min-width:1440px){}@media(min-width:1920px){}';
   const captureFixture='width:360 width:390 width:430 width:1366 width:1440 width:1920 expected 30 screenshots';
-  const workflowFixture='chrome.count!==30||edge.count!==30 widths!=="360,390,430,1366,1440,1920"';
+  const workflowFixture='chrome.count!==30||edge.count!==30 chrome.entries.map(e=>e.width) widths!=="360,390,430,1366,1440,1920"';
   validateFoundation(foundationFixture, 'import "./dp2-foundation.css";', captureFixture, workflowFixture);
 
   rejected = false;
