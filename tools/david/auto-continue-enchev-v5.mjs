@@ -6,7 +6,8 @@ import { waitForGlobalSendPermit, reportRateLimit, reportProbeSuccess, markGloba
 import { CHATGPT_ROOT, rotateOwnedChatPage } from "./chatgpt-session-rotation.mjs";
 
 const INITIAL_CHAT_URL = process.env.DAVID_CHAT_URL || "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71";
-let activeChatUrl = INITIAL_CHAT_URL;
+const FRESH_SESSION_ON_START = process.env.DAVID_FRESH_SESSIONS_ON_START === "1";
+let activeChatUrl = FRESH_SESSION_ON_START ? CHATGPT_ROOT : INITIAL_CHAT_URL;
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const MAX_TURNS = Number(process.env.DAVID_MAX_TURNS || 2147483647);
 const POLL_MS = Number(process.env.DAVID_POLL_MS || 800);
@@ -697,7 +698,9 @@ async function sendWithRecovery(context, page, state, text, kind) {
   const baselineHash = hashText(await latestAssistantText(page));
   const baselineCounts = await messageCounts(page);
   const outgoingText = state.justRolledOver
-    ? `AUTOMATIC CHAT ROLLOVER: The previous Enchev conversation reached its maximum length. Reconstruct the exact current state from GitHub, MASTER SYSTEM PLAN and evidence, then continue from the next unfinished dependency-safe task. Do NOT restart completed work.\n\n${text}`
+    ? state.freshStartPending
+      ? `AUTOMATIC FRESH RESTART HANDOFF: DAVID restarted cleanly into a new ChatGPT conversation. Reconstruct the exact current state from GitHub, MASTER SYSTEM PLAN and evidence, then continue from the next unfinished dependency-safe task. Do NOT restart completed work.\n\n${text}`
+      : `AUTOMATIC CHAT ROLLOVER: The previous Enchev conversation reached its maximum length. Reconstruct the exact current state from GitHub, MASTER SYSTEM PLAN and evidence, then continue from the next unfinished dependency-safe task. Do NOT restart completed work.\n\n${text}`
     : text;
   const outgoingHash = hashText(outgoingText);
 
@@ -844,6 +847,7 @@ async function runPrompt(context, page, state, prompt, kind) {
         state.lastAssistantHash = result.hash;
         state.problem = null;
         if (state.justRolledOver) state.justRolledOver = false;
+        if (state.freshStartPending) state.freshStartPending = false;
         syncActiveChatUrl(page, state);
         await reportProbeSuccess("SYSTEM");
         delete state.problemRetryAt;
@@ -894,7 +898,18 @@ async function main() {
     state.watchdog = "global-rate-limit-state-sanitized";
     saveState(state, "Cleared stale ChatGPT rate-limit problem from SYSTEM project state; coordinator owns cooldown");
   }
-  activeChatUrl = state.chatUrl || INITIAL_CHAT_URL;
+  if (FRESH_SESSION_ON_START) {
+    state.previousChatUrl = cleanConversationUrl(state.chatUrl) || state.previousChatUrl || null;
+    state.chatUrl = CHATGPT_ROOT;
+    state.pendingNewChat = true;
+    state.justRolledOver = true;
+    state.freshStartPending = true;
+    state.watchdog = "fresh-session-boot";
+    activeChatUrl = CHATGPT_ROOT;
+    saveState(state, "FRESH SESSION BOOT: SYSTEM old chat URL ignored; project state preserved");
+  } else {
+    activeChatUrl = state.chatUrl || INITIAL_CHAT_URL;
+  }
   let page = await waitForSession(context, await ensureTargetPage(context), state);
   syncActiveChatUrl(page, state);
   if (state.previousChatUrl) await closeOldConversationTabs(context, state.previousChatUrl, page);
