@@ -3,13 +3,21 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { fileURLToPath } from "node:url";
 
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+const REPO_ROOT = path.resolve(HERE, "..", "..");
+const DESIGN_EVIDENCE_FILE = path.join(REPO_ROOT, "app", "design-plan-evidence.json");
 const INITIAL_CHAT_URL = process.env.DAVID_DESIGN_CHAT_URL || "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7";
 let activeChatUrl = INITIAL_CHAT_URL;
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const STATE_FILE = process.env.DAVID_DESIGN_STATE_FILE || path.join(process.cwd(), ".david-enchev-design-state.json");
 const POLL_MS = Number(process.env.DAVID_DESIGN_POLL_MS || 900);
 const START_TIMEOUT_MS = 15000;
+const READY_TIMEOUT_MS = Number(process.env.DAVID_DESIGN_READY_TIMEOUT_MS || 120000);
+const READY_REFRESH_LIMIT = Number(process.env.DAVID_DESIGN_READY_REFRESH_LIMIT || 2);
+const READY_BACKOFF_MS = Number(process.env.DAVID_DESIGN_READY_BACKOFF_MS || 15000);
+const IDLE_MONITOR_MS = Number(process.env.DAVID_DESIGN_IDLE_MONITOR_MS || 15000);
 const STALL_MS = Number(process.env.DAVID_DESIGN_STALL_MS || 600000);
 const COOLDOWN_MS = 1200;
 const COMPLETE_QUIET_MS = Number(process.env.DAVID_COMPLETE_QUIET_MS || 7000);
@@ -32,6 +40,7 @@ DAVID VERCEL DEPLOY LAW:
 - Record quota/rate-limit backoff only when Vercel gives a real retry time. Never invent one.
 `;
 const MARKER = "[DAVID_RELAY_ENCHEV_DESIGN_V1]";
+const COMPLETE_HANDOFF_MARKER = "[DAVID_DESIGN_COMPLETE_HANDOFF_V1]";
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const hash = (x) => createHash("sha256").update(String(x || "")).digest("hex");
 function cleanConversationUrl(url) {
@@ -54,6 +63,8 @@ const DESIGN_PROMPT = `@GitHub @Vercel @Supabase
 Приоритет: homepage → inventory/search/filters → vehicle detail → live auction → profile → mobile/accessibility/cross-browser/visual regression.
 Не променяй MASTER SYSTEM PLAN IDs и не добавяй pricing/payment/finance scope.
 
+Ако D01-D36 вече са 36/36 GREEN, НЕ създавай D37 или нов design scope. Докладвай DESIGN PLAN V1 COMPLETE / IDLE и последният ред да е само: OK
+
 Ако задачата е завършена, последният ред да е само: OK
 Външен blocker като Redis/Valkey/Vercel Marketplace/provider credential/permissions НЕ спира design плана: запиши го и премини към следващата независима D-задача.
 Използвай ${PROBLEM_PREFIX} само ако нов вътрешен технически дефект реално спира всяка безопасна design работа. Преди това опитай безопасна техническа алтернатива.
@@ -71,6 +82,51 @@ function save(state, action) {
   state.updatedAt = new Date().toISOString();
   fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2), "utf8");
 }
+function designPlanStatus() {
+  try {
+    const raw = JSON.parse(fs.readFileSync(DESIGN_EVIDENCE_FILE, "utf8"));
+    const tasks = Array.isArray(raw?.tasks) ? raw.tasks.filter((t) => /^D\d{2}$/i.test(String(t?.id || ""))) : [];
+    const green = tasks.filter((t) => String(t?.status || "").toLowerCase() === "green");
+    return {
+      total: tasks.length,
+      green: green.length,
+      complete: tasks.length === 36 && green.length === 36,
+      nonGreen: tasks.filter((t) => String(t?.status || "").toLowerCase() !== "green").map((t) => String(t.id))
+    };
+  } catch (error) {
+    return { total: 0, green: 0, complete: false, nonGreen: [], error: String(error?.message || error) };
+  }
+}
+
+function completeHandoffPrompt(status) {
+  return `AUTOMATIC DESIGN COMPLETION HANDOFF
+
+The previous Enchev Design conversation reached maximum length after the design plan was completed.
+
+Source of truth:
+- docs/DESIGN_PLAN_V1.md
+- app/design-plan-evidence.json
+- current GitHub main and applicable CI evidence
+
+Current local evidence summary: D01-D36 = ${status.green}/${status.total} GREEN.
+
+Verify the current source of truth. If all D01-D36 are GREEN:
+- do NOT invent D37 or any new design scope;
+- do NOT redo completed design tasks;
+- report DESIGN PLAN V1 COMPLETE / IDLE;
+- preserve external deployment lag/blockers as evidence only;
+- wait for a regression, a non-green D-task, or an explicit new user design request.
+
+If any D-task is no longer GREEN, identify only those task IDs and resume from the earliest affected task.
+
+Do not modify protected DAVID orchestrator files.
+Final non-empty line must be exactly:
+OK
+
+${COMPLETE_HANDOFF_MARKER}
+${MARKER}`;
+}
+
 function extractProblem(text) {
   const rows = String(text || "").split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
   for (let i = rows.length - 1; i >= 0; i--) {
@@ -320,15 +376,52 @@ async function waitSendTimeoutRecovery(context, page, state) {
 }
 
 async function waitReady(context, page, state) {
+  let windowStartedAt = Date.now();
+  let refreshes = 0;
+  let nextHeartbeatAt = 0;
+
   while (true) {
     page = await ensurePage(context, page);
-    if (page.url().includes("/login") || page.url().includes("/auth/")) { await sleep(1500); continue; }
+    if (page.url().includes("/login") || page.url().includes("/auth/")) {
+      state.watchdog = "design-login-wait";
+      save(state, "Design waiting for ChatGPT login/auth; no bypass");
+      await sleep(1500);
+      continue;
+    }
     if (await conversationLimitReached(page)) {
       page = await rolloverConversation(context, page, state);
+      windowStartedAt = Date.now();
+      refreshes = 0;
       continue;
     }
     syncActiveChatUrl(page, state);
     if (await composer(page) || await latestAssistant(page)) return page;
+
+    if (Date.now() >= nextHeartbeatAt) {
+      state.watchdog = "design-slow-load-wait";
+      save(state, `Design ChatGPT still loading; refreshes=${refreshes}/${READY_REFRESH_LIMIT}; WAIT`);
+      nextHeartbeatAt = Date.now() + 5000;
+    }
+
+    if (Date.now() - windowStartedAt >= READY_TIMEOUT_MS) {
+      if (refreshes < READY_REFRESH_LIMIT) {
+        refreshes += 1;
+        state.watchdog = "design-slow-load-refresh";
+        save(state, `Design slow-load timeout -> bounded refresh ${refreshes}/${READY_REFRESH_LIMIT}`);
+        console.log(`[DESIGN] Slow load -> bounded REFRESH ${refreshes}/${READY_REFRESH_LIMIT}.`);
+        await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+        await sleep(5000);
+        windowStartedAt = Date.now();
+        continue;
+      }
+
+      state.watchdog = "design-slow-load-backoff";
+      save(state, "Design still not interactive after bounded refreshes; backoff, no restart loop");
+      console.log("[DESIGN] Slow load persists -> BACKOFF. No restart loop.");
+      await sleep(READY_BACKOFF_MS);
+      windowStartedAt = Date.now();
+    }
+
     await sleep(1000);
   }
 }
@@ -383,7 +476,9 @@ async function runPrompt(context, page, state, prompt, kind) {
     state.relayAttempts = Number(state.relayAttempts || 0) + 1;
     save(state, kind === "fix" ? "Design: sending fix instruction" : "Design: sending next D-task");
     const outgoingPrompt = state.justRolledOver
-      ? `AUTOMATIC CHAT ROLLOVER: The previous Enchev Design conversation reached its maximum length. Reconstruct the exact design state from GitHub, docs/DESIGN_PLAN_V1.md and evidence, then continue from the next unfinished D-task. Do NOT restart completed work.\n\n${prompt}`
+      ? kind === "handoff"
+        ? prompt
+        : `AUTOMATIC CHAT ROLLOVER: The previous Enchev Design conversation reached its maximum length. Reconstruct the exact design state from GitHub, docs/DESIGN_PLAN_V1.md and evidence, then continue from the next unfinished D-task. Do NOT restart completed work.\n\n${prompt}`
       : prompt;
     await fillAndSend(page, outgoingPrompt);
     let started = await waitStart(context, page, base, state); page = started.page;
@@ -447,6 +542,58 @@ async function main() {
   save(state, "Design worker connected in shared Edge tab");
 
   while (true) {
+    const planStatus = designPlanStatus();
+
+    if (planStatus.complete) {
+      const rolloverNumber = Number(state.rolloverCount || 0);
+      const needsHandoff = Boolean(state.justRolledOver) && Number(state.completeHandoffRollover || -1) !== rolloverNumber;
+
+      if (needsHandoff) {
+        state.problem = null;
+        state.watchdog = "design-complete-handoff";
+        save(state, `Design 36/36 GREEN -> sending completion handoff for rollover #${rolloverNumber}`);
+        console.log(`[DESIGN] 36/36 GREEN. Sending ONE completion handoff for rollover #${rolloverNumber}.`);
+
+        const result = await runPrompt(context, page, state, completeHandoffPrompt(planStatus), "handoff");
+        page = result.page;
+        const handoffProblem = extractProblem(result.text);
+        if (handoffProblem) {
+          state.problem = handoffProblem;
+          state.watchdog = "design-problem";
+          save(state, `Completion handoff reported PROBLEM IN: ${handoffProblem}`);
+          continue;
+        }
+        if (!endsOk(result.text)) {
+          const terminal = await waitForTerminalMarker(page, state);
+          if (terminal.type === "problem") {
+            state.problem = terminal.problem;
+            state.watchdog = "design-problem";
+            save(state, `Completion handoff terminal marker became PROBLEM IN: ${terminal.problem}`);
+            continue;
+          }
+        }
+        state.completeHandoffRollover = rolloverNumber;
+        state.justRolledOver = false;
+        state.lastResult = "OK";
+        save(state, `Design completion handoff acknowledged for rollover #${rolloverNumber}`);
+      }
+
+      state.problem = null;
+      state.lastResult = "OK";
+      state.watchdog = "design-idle-complete";
+      save(state, "DESIGN PLAN V1 COMPLETE 36/36 GREEN -> IDLE / MONITOR");
+      await sleep(IDLE_MONITOR_MS);
+
+      page = await waitReady(context, page, state);
+      const recheck = designPlanStatus();
+      if (!recheck.complete) {
+        state.watchdog = "design-regression-detected";
+        save(state, `Design left idle: ${recheck.green}/${recheck.total} GREEN; non-green=${recheck.nonGreen.join(",") || "unknown"}`);
+        console.log(`[DESIGN] Regression/non-green detected: ${recheck.green}/${recheck.total}. Resuming plan.`);
+      }
+      continue;
+    }
+
     if (state.problem && isExternalBlocker(state.problem)) {
       const deferred = state.problem;
       state.deferredBlocker = deferred;
