@@ -95,282 +95,9 @@ function Get-DesignV1Progress {
   $path = Join-Path $Repo "app\design-plan-evidence.json"
   $j = Read-JsonSafe $path
   $tasks = @()
-  if ($j -and $j.tasks) { $tasks = @($j.tasks | Where-Object { ([string]$_.id) -match '^D\d{2}
-
-function Find-DppPlan {
-  $candidates = @(
-    (Join-Path $Root "DPPautopilot\docs\MASTER_AUTOPILOT_PLAN.md"),
-    (Join-Path $Root "dpp-autopilot\docs\MASTER_AUTOPILOT_PLAN.md"),
-    (Join-Path $Root "DPPAutopilot\docs\MASTER_AUTOPILOT_PLAN.md")
-  )
-  foreach ($p in $candidates) { if (Test-Path $p) { return $p } }
-  return $null
-}
-
-function Get-DppProgress {
-  $path = Find-DppPlan
-  if (-not $path) { return [pscustomobject]@{ Name="DPP"; Green=0; Total=0; Percent=$null } }
-  $lines = Get-Content -LiteralPath $path
-  $rows = @($lines | Where-Object { $_ -match '^\s*\|\s*[A-Z]\d{2}\s*\|' })
-  $green = @($rows | Where-Object { $_ -match '\|\s*GREEN\s*\|\s*$' }).Count
-  [pscustomobject]@{ Name="DPP"; Green=$green; Total=$rows.Count; Percent=(CalcPct $green $rows.Count) }
-}
-
-function Count-ProcessNeedle([string]$Needle, [string[]]$Names = @("node.exe")) {
-  $count = 0
-  try {
-    foreach ($p in Get-CimInstance Win32_Process) {
-      if ($Names -notcontains ([string]$p.Name).ToLowerInvariant()) { continue }
-      $cmd = [string]$p.CommandLine
-      if ($cmd -and $cmd -like "*$Needle*") { $count++ }
-    }
-  } catch {}
-  return $count
-}
-
-function Test-DavidCdp {
-  try {
-    $null = Invoke-RestMethod -Uri "http://127.0.0.1:9444/json/version" -TimeoutSec 1
-    return $true
-  } catch { return $false }
-}
-
-function Get-State([string]$Kind) {
-  switch ($Kind) {
-    "SYSTEM" { return Read-JsonSafe (Join-Path $DavidDir ".david-enchev-state.json") }
-    "DESIGN" { return Read-JsonSafe (Join-Path $DavidDir ".david-enchev-design-state.json") }
-    "APP2" {
-      $f = Get-ChildItem -LiteralPath $DavidDir -Filter ".david-app2-state*.json" | Sort-Object LastWriteTime -Descending | Select-Object -First 1
-      if ($f) { return Read-JsonSafe $f.FullName }
-      return $null
-    }
-    "APK" { return Read-JsonSafe (Join-Path $DavidDir ".david-apk-state.json") }
-    "CONTROL" { return Read-JsonSafe (Join-Path $DavidDir ".david-control-state.json") }
+  if ($j -and $j.tasks) {
+    $tasks = @($j.tasks | Where-Object { ([string]$_.id) -match '^D\d{2}$' })
   }
-}
-
-function Short([object]$Value, [int]$Max = 92) {
-  $s = [string]$Value
-  if ([string]::IsNullOrWhiteSpace($s)) { return "-" }
-  $s = ($s -replace '\s+',' ').Trim()
-  if ($s.Length -gt $Max) { return $s.Substring(0, $Max - 3) + "..." }
-  return $s
-}
-
-function Progress-Bar($Pct, [int]$Width = 42) {
-  if ($null -eq $Pct) { return "[" + ("?" * $Width) + "]" }
-  try { $value = [double]$Pct } catch { return "[" + ("?" * $Width) + "]" }
-  $filled = [int][math]::Round(($value / 100.0) * $Width)
-  if ($filled -lt 0) { $filled = 0 }
-  if ($filled -gt $Width) { $filled = $Width }
-  return "[" + ("#" * $filled) + ("-" * ($Width - $filled)) + "]"
-}
-
-function Format-Countdown([object]$UntilValue) {
-  if (-not $UntilValue) { return "00:00" }
-  try {
-    $delta = ([datetime]$UntilValue) - (Get-Date)
-    $seconds = [math]::Max(0,[math]::Ceiling($delta.TotalSeconds))
-    $hours = [math]::Floor($seconds / 3600)
-    $minutes = [math]::Floor(($seconds % 3600) / 60)
-    $secs = $seconds % 60
-    if ($hours -gt 0) { return ("{0:D2}:{1:D2}:{2:D2}" -f $hours,$minutes,$secs) }
-    return ("{0:D2}:{1:D2}" -f $minutes,$secs)
-  } catch { return "00:00" }
-}
-
-function Write-Fit([string]$Text, [ConsoleColor]$Color = [ConsoleColor]::Gray) {
-  $width = 120
-  try { $width = [math]::Max(80, [Console]::WindowWidth - 1) } catch {}
-  if ($Text.Length -gt $width) { $Text = $Text.Substring(0, $width) }
-  $line = $Text.PadRight($width)
-  Write-Host $line -ForegroundColor $Color -BackgroundColor Black
-}
-
-function Matrix-Fill {
-  try {
-    Clear-Host
-    $w = [math]::Max(80, [Console]::WindowWidth - 1)
-    $chars = "01DAVIDSOUL"
-    $sb = New-Object System.Text.StringBuilder
-    for ($x=0; $x -lt $w; $x++) {
-      [void]$sb.Append($chars[(Get-Random -Minimum 0 -Maximum $chars.Length)])
-    }
-    Write-Host $sb.ToString() -ForegroundColor DarkGreen -BackgroundColor Black
-  } catch {
-    Clear-Host
-  }
-}
-
-function Render-Worker([string]$Name, $State) {
-  if (-not $State) {
-    Write-Fit ("{0,-8} OFFLINE/NO STATE" -f $Name) Red
-    return
-  }
-  $watch = Short $State.watchdog 28
-  $action = Short $State.lastAction 70
-  $turns = if ($null -ne $State.turnsSent) { $State.turnsSent } else { 0 }
-  $problem = Short $State.problem 70
-  $color = if ($State.problem) { [ConsoleColor]::Red } elseif (($watch -match 'thinking|writing|sending|online|monitoring|complete')) { [ConsoleColor]::Green } else { [ConsoleColor]::Yellow }
-  Write-Fit ("{0,-8} watchdog={1,-28} turns={2,-6} action={3}" -f $Name,$watch,$turns,$action) $color
-  if ($State.problem) { Write-Fit ("          BLOCKER: " + $problem) Red }
-}
-
-while ($true) {
-  $system = Get-SystemProgress
-  $designV1 = Get-DesignV1Progress
-  $design2 = Get-Design2Progress
-  $dpp = Get-DppProgress
-
-  # Active-scope progress intentionally excludes archived/completed DESIGN V1
-  # so the old finite plan is not double-counted against Design Process 2.
-  $sumGreen = 0
-  $sumTotal = 0
-  foreach ($p in @($system,$design2,$dpp)) {
-    if ($p.Total -gt 0) { $sumGreen += $p.Green; $sumTotal += $p.Total }
-  }
-  $overall = CalcPct $sumGreen $sumTotal
-  if ($null -eq $overall) { $overall = 0.0 }
-
-  $sysState = Get-State "SYSTEM"
-  $desState = Get-State "DESIGN"
-  $appState = Get-State "APP2"
-  $apkState = Get-State "APK"
-  $controlState = Get-State "CONTROL"
-  $tabs = Read-JsonSafe (Join-Path $DavidDir ".david-tab-monitor.json")
-  $rateLimit = Read-JsonSafe (Join-Path $DavidDir ".david-global-chatgpt-rate-limit.json")
-
-  Matrix-Fill
-  Write-Fit "================================================================================================================" Green
-  Write-Fit "                                  D A V I D   //   MATRIX CONTROL" Green
-  Write-Fit "================================================================================================================" Green
-  Write-Fit ("  TOTAL VERIFIED PROGRESS: {0,6:N1}%    {1}" -f $overall,(Progress-Bar $overall 48)) Red
-  Write-Fit ("  GREEN EVIDENCE: {0} / {1} measurable plan items" -f $sumGreen,$sumTotal) White
-  Write-Fit ""
-  Write-Fit ("  SYSTEM    {0,6}  {1}  GREEN {2}/{3}" -f ($(if($null -ne $system.Percent){"$($system.Percent)%"}else{"N/A"})),(Progress-Bar $system.Percent 36),$system.Green,$system.Total) Cyan
-  Write-Fit ("  DESIGN V1 {0,6}  {1}  GREEN {2}/{3}  {4}" -f ($(if($null -ne $designV1.Percent){"$($designV1.Percent)%"}else{"N/A"})),(Progress-Bar $designV1.Percent 36),$designV1.Green,$designV1.Total,$(if($designV1.Complete){"COMPLETE"}else{"CHECK"})) $(if($designV1.Complete){[ConsoleColor]::Green}else{[ConsoleColor]::Yellow})
-  Write-Fit ("  DESIGN2   {0,6}  {1}  GREEN {2}/{3}  {4}" -f ($(if($null -ne $design2.Percent){"$($design2.Percent)%"}else{"N/A"})),(Progress-Bar $design2.Percent 36),$design2.Green,$design2.Total,$(if($design2.Complete){"COMPLETE"}else{"ACTIVE"})) Cyan
-  Write-Fit ("  DPP       {0,6}  {1}  GREEN {2}/{3}" -f ($(if($null -ne $dpp.Percent){"$($dpp.Percent)%"}else{"N/A"})),(Progress-Bar $dpp.Percent 36),$dpp.Green,$dpp.Total) Cyan
-  Write-Fit "  APK     plan%=N/A (no formal finite APK plan yet) -- live worker state shown below" Cyan
-  Write-Fit ""
-  Write-Fit "  ------------------------------ LIVE WORKERS ----------------------------------------------------" Green
-  Render-Worker "CONTROL" $controlState
-  Render-Worker "SYSTEM"  $sysState
-  Render-Worker "DESIGN"  $desState
-  Render-Worker "APP2"    $appState
-  Render-Worker "APK"     $apkState
-  Write-Fit ""
-  Write-Fit "  ------------------------------ TAB OWNERSHIP ----------------------------------------------------" Green
-  $tabStable = $false
-  if ($tabs -and $tabs.managed) {
-    $cc = @($tabs.managed.CONTROL).Count
-    $sc = @($tabs.managed.SYSTEM).Count
-    $dc = @($tabs.managed.DESIGN).Count
-    $ac = @($tabs.managed.APP2).Count
-    $kc = @($tabs.managed.APK).Count
-    $tabStable = ($cc -eq 1 -and $sc -eq 1 -and $dc -eq 1 -and $ac -eq 1 -and $kc -eq 1)
-    Write-Fit ("  CONTROL={0} SYSTEM={1} DESIGN={2} APP2={3} APK={4} ChatGPT tabs={5} => {6}" -f $cc,$sc,$dc,$ac,$kc,$tabs.totalChatGptTabs,$(if($tabStable){"TAB-STABLE"}else{"CHECK"})) $(if($tabStable){[ConsoleColor]::Green}else{[ConsoleColor]::Red})
-    if ($tabs.workerHealth) {
-      $ch = $tabs.workerHealth.CONTROL
-      $sh = $tabs.workerHealth.SYSTEM
-      $dh = $tabs.workerHealth.DESIGN
-      $ah = $tabs.workerHealth.APP2
-      $kh = $tabs.workerHealth.APK
-      $ccs = if ($null -ne $ch.heartbeatAgeMs) { [math]::Round(([double]$ch.heartbeatAgeMs)/1000) } else { "?" }
-      $ss = if ($null -ne $sh.heartbeatAgeMs) { [math]::Round(([double]$sh.heartbeatAgeMs)/1000) } else { "?" }
-      $dd = if ($null -ne $dh.heartbeatAgeMs) { [math]::Round(([double]$dh.heartbeatAgeMs)/1000) } else { "?" }
-      $aa = if ($null -ne $ah.heartbeatAgeMs) { [math]::Round(([double]$ah.heartbeatAgeMs)/1000) } else { "?" }
-      $kk = if ($null -ne $kh.heartbeatAgeMs) { [math]::Round(([double]$kh.heartbeatAgeMs)/1000) } else { "?" }
-      Write-Fit ("  HEARTBEAT age(s): CONTROL={0} SYSTEM={1} DESIGN={2} APP2={3} APK={4} | self-heal stale>600s / missing-tab>90s" -f $ccs,$ss,$dd,$aa,$kk) DarkCyan
-    }
-  } else {
-    Write-Fit "  Tab monitor state not available yet..." Yellow
-  }
-  Write-Fit ""
-  Write-Fit "  ------------------------------ RUNTIME INVARIANTS ----------------------------------------------" Green
-  $proc = [ordered]@{
-    SUPERVISOR = (Count-ProcessNeedle "dual-session-worker.mjs")
-    SYSTEM = (Count-ProcessNeedle "auto-continue-enchev-v5.mjs")
-    DESIGN = (Count-ProcessNeedle "auto-continue-design-v1.mjs")
-    APP2 = (Count-ProcessNeedle "auto-complete-app2-v1.mjs")
-    APK = (Count-ProcessNeedle "auto-continue-david-apk-v1.mjs")
-    CONTROL = (Count-ProcessNeedle "auto-control-watchtower-v1.mjs")
-    GUARD = (Count-ProcessNeedle "connection-interruption-guard.mjs")
-  }
-  $matrixCount = Count-ProcessNeedle "david-status-dashboard.ps1" @("powershell.exe","pwsh.exe")
-  $processStable = $true
-  foreach ($v in $proc.Values) { if ([int]$v -ne 1) { $processStable = $false } }
-  if ($matrixCount -ne 1) { $processStable = $false }
-  $cdpOnline = Test-DavidCdp
-  $runtimeStable = ($tabStable -and $processStable -and $cdpOnline)
-
-  Write-Fit ("  PROC SUP={0} SYS={1} DES={2} APP2={3} APK={4} CTRL={5} GUARD={6} MATRIX={7}" -f $proc.SUPERVISOR,$proc.SYSTEM,$proc.DESIGN,$proc.APP2,$proc.APK,$proc.CONTROL,$proc.GUARD,$matrixCount) $(if($processStable){[ConsoleColor]::Green}else{[ConsoleColor]::Red})
-  Write-Fit ("  CDP 9444={0} | TABS={1} | PROCESSES={2} | OVERALL RUNTIME => {3}" -f $(if($cdpOnline){"ONLINE"}else{"OFFLINE"}),$(if($tabStable){"PASS"}else{"FAIL"}),$(if($processStable){"PASS"}else{"FAIL"}),$(if($runtimeStable){"STABLE"}else{"CHECK"})) $(if($runtimeStable){[ConsoleColor]::Green}else{[ConsoleColor]::Red})
-
-  Write-Fit ""
-  Write-Fit "  ------------------------------ CHATGPT RATE LIMIT -----------------------------------------------" Green
-  if ($rateLimit) {
-    $rlStatus = [string]$rateLimit.status
-    $rlStage = [int]$rateLimit.stage
-    $rlOwner = [string]$rateLimit.probeOwner
-    $rlUntil = if ($rlStatus -eq "blocked") { [string]$rateLimit.blockedUntil } elseif ($rlStatus -eq "probe") { [string]$rateLimit.probeLeaseUntil } else { "" }
-    $rlStageText = if ($rlStage -lt 0) { "clear" } elseif ($rlStage -eq 0) { "10m" } elseif ($rlStage -eq 1) { "20m" } else { "40m" }
-    $rateCountdown = Format-Countdown $rlUntil
-    $nextSendCountdown = Format-Countdown ([string]$rateLimit.nextGlobalSendAt)
-    $intervalSec = if ($rateLimit.globalSendIntervalMs) { [math]::Round(([double]$rateLimit.globalSendIntervalMs)/1000) } else { 60 }
-    Write-Fit ("  STATUS={0}  STAGE={1}  RATE_LIMIT_TIMER={2}  PROBE_OWNER={3}" -f $rlStatus,$rlStageText,$rateCountdown,$(if($rlOwner){$rlOwner}else{"none"})) $(if($rlStatus -eq "clear"){[ConsoleColor]::Green}else{[ConsoleColor]::Yellow})
-    Write-Fit ("  GLOBAL SEND PACER: min interval={0}s  NEXT_SEND={1}  SLOT_OWNER={2}" -f $intervalSec,$nextSendCountdown,$(if($rateLimit.sendSlotOwner){$rateLimit.sendSlotOwner}else{"none"})) Cyan
-  } else {
-    Write-Fit "  STATUS=clear  STAGE=clear  RATE_LIMIT_TIMER=00:00  PROBE_OWNER=none" Green
-    Write-Fit "  GLOBAL SEND PACER: min interval=60s  NEXT_SEND=00:00  SLOT_OWNER=none" Cyan
-  }
-
-  Write-Fit ""
-  Write-Fit "  ------------------------------ DAVID LAWS -------------------------------------------------------" Green
-  Write-Fit "  CONTROL WATCHTOWER => ALLOWLISTED WAIT/REFRESH/RESTART/CLEAN_DUPLICATES ONLY" Magenta
-  Write-Fit "  FINAL GATE => NO EXACT FINAL OK = NO NEXT NORMAL PROMPT" Red
-  Write-Fit "  SEND TIMEOUT => CENTRAL GUARD OWNS RETRY | WORKERS WAIT | NO DUPLICATE SEND" Yellow
-  Write-Fit "  TOO MANY REQUESTS => AUTO-DISMISS POPUP + GLOBAL BLOCK 10m -> ONE PROBE -> 20m -> ONE PROBE -> 40m" Yellow
-  Write-Fit "  NORMAL SENDS => GLOBAL PACER >=60s BETWEEN NEW DAVID PROMPTS; NO 5-TAB BURSTS" Yellow
-  Write-Fit "  ACTIVE THINKING/TOOL WORK => WAIT | LONG NO-PROGRESS >600s => REFRESH/VERIFY/RESEND" Yellow
-  Write-Fit "  INTERRUPTED => CONFIRM + INACTIVE + NO PROGRESS => REFRESH/VERIFY/RESEND | NEVER STOP ACTIVE GPT" Yellow
-  Write-Fit "  EXTERNAL BLOCKER => DEFER + independent work | CAPTCHA/MFA/LOGIN/PERMISSION => NEVER BYPASS" Yellow
-  Write-Fit "  VERCEL => GLOBAL SUPABASE LEASE; ONLY ONE WORKER MAY DEPLOY AT A TIME" Yellow
-  Write-Fit ""
-  Write-Fit ("  Vercel coordinator: public.david_vercel_deploy_lease = ENABLED | refresh={0}s | {1}" -f $RefreshSeconds,(Get-Date -Format "yyyy-MM-dd HH:mm:ss")) Magenta
-  Write-Fit "  Ctrl+C closes only this MATRIX dashboard. DAVID workers continue in their own processes." DarkGray
-
-  $snapshot = [ordered]@{
-    updatedAt = (Get-Date).ToString("o")
-    overallPercent = $overall
-    system = $system
-    designV1 = $designV1
-    design2 = $design2
-    dpp = $dpp
-    workers = [ordered]@{
-      CONTROL = $controlState
-      SYSTEM = $sysState
-      DESIGN = $desState
-      APP2 = $appState
-      APK = $apkState
-    }
-    tabs = $tabs
-    chatgptRateLimit = $rateLimit
-    runtime = [ordered]@{
-      cdpOnline = $cdpOnline
-      tabStable = $tabStable
-      processStable = $processStable
-      overallStable = $runtimeStable
-      processes = $proc
-      matrixCount = $matrixCount
-    }
-    vercelCoordinator = "public.david_vercel_deploy_lease"
-  }
-  try { $snapshot | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $DashboardState -Encoding UTF8 } catch {}
-
-  Start-Sleep -Seconds ([math]::Max(1,$RefreshSeconds))
-}
- }) }
   $green = @($tasks | Where-Object { ([string]$_.status).ToLowerInvariant() -eq "green" }).Count
   [pscustomobject]@{
     Name="DESIGN V1"
@@ -517,12 +244,14 @@ function Render-Worker([string]$Name, $State) {
 
 while ($true) {
   $system = Get-SystemProgress
-  $design = Get-DesignProgress
+  $designV1 = Get-DesignV1Progress
+  $design2 = Get-Design2Progress
   $dpp = Get-DppProgress
 
+  # Active-scope total excludes completed DESIGN V1 to avoid double counting.
   $sumGreen = 0
   $sumTotal = 0
-  foreach ($p in @($system,$design,$dpp)) {
+  foreach ($p in @($system,$design2,$dpp)) {
     if ($p.Total -gt 0) { $sumGreen += $p.Green; $sumTotal += $p.Total }
   }
   $overall = CalcPct $sumGreen $sumTotal
@@ -543,9 +272,10 @@ while ($true) {
   Write-Fit ("  TOTAL VERIFIED PROGRESS: {0,6:N1}%    {1}" -f $overall,(Progress-Bar $overall 48)) Red
   Write-Fit ("  GREEN EVIDENCE: {0} / {1} measurable plan items" -f $sumGreen,$sumTotal) White
   Write-Fit ""
-  Write-Fit ("  SYSTEM  {0,6}  {1}  GREEN {2}/{3}" -f ($(if($null -ne $system.Percent){"$($system.Percent)%"}else{"N/A"})),(Progress-Bar $system.Percent 36),$system.Green,$system.Total) Cyan
-  Write-Fit ("  DESIGN2 {0,6}  {1}  GREEN {2}/{3}" -f ($(if($null -ne $design.Percent){"$($design.Percent)%"}else{"N/A"})),(Progress-Bar $design.Percent 36),$design.Green,$design.Total) Cyan
-  Write-Fit ("  DPP     {0,6}  {1}  GREEN {2}/{3}" -f ($(if($null -ne $dpp.Percent){"$($dpp.Percent)%"}else{"N/A"})),(Progress-Bar $dpp.Percent 36),$dpp.Green,$dpp.Total) Cyan
+  Write-Fit ("  SYSTEM    {0,6}  {1}  GREEN {2}/{3}" -f ($(if($null -ne $system.Percent){"$($system.Percent)%"}else{"N/A"})),(Progress-Bar $system.Percent 36),$system.Green,$system.Total) Cyan
+  Write-Fit ("  DESIGN V1 {0,6}  {1}  GREEN {2}/{3}  {4}" -f ($(if($null -ne $designV1.Percent){"$($designV1.Percent)%"}else{"N/A"})),(Progress-Bar $designV1.Percent 36),$designV1.Green,$designV1.Total,$(if($designV1.Complete){"COMPLETE"}else{"CHECK"})) $(if($designV1.Complete){[ConsoleColor]::Green}else{[ConsoleColor]::Yellow})
+  Write-Fit ("  DESIGN2   {0,6}  {1}  GREEN {2}/{3}  {4}" -f ($(if($null -ne $design2.Percent){"$($design2.Percent)%"}else{"N/A"})),(Progress-Bar $design2.Percent 36),$design2.Green,$design2.Total,$(if($design2.Complete){"COMPLETE"}else{"ACTIVE"})) Cyan
+  Write-Fit ("  DPP       {0,6}  {1}  GREEN {2}/{3}" -f ($(if($null -ne $dpp.Percent){"$($dpp.Percent)%"}else{"N/A"})),(Progress-Bar $dpp.Percent 36),$dpp.Green,$dpp.Total) Cyan
   Write-Fit "  APK     plan%=N/A (no formal finite APK plan yet) -- live worker state shown below" Cyan
   Write-Fit ""
   Write-Fit "  ------------------------------ LIVE WORKERS ----------------------------------------------------" Green
@@ -563,7 +293,7 @@ while ($true) {
     $dc = @($tabs.managed.DESIGN).Count
     $ac = @($tabs.managed.APP2).Count
     $kc = @($tabs.managed.APK).Count
-    $tabStable = ($cc -eq 1 -and $sc -eq 1 -and $dc -eq 1 -and $ac -eq 1 -and $kc -eq 1)
+    $tabStable = ($cc -eq 1 -and $sc -eq 1 -and $dc -eq 1 -and $ac -eq 1 -and $kc -eq 1 -and [int]$tabs.totalChatGptTabs -eq 5)
     Write-Fit ("  CONTROL={0} SYSTEM={1} DESIGN={2} APP2={3} APK={4} ChatGPT tabs={5} => {6}" -f $cc,$sc,$dc,$ac,$kc,$tabs.totalChatGptTabs,$(if($tabStable){"TAB-STABLE"}else{"CHECK"})) $(if($tabStable){[ConsoleColor]::Green}else{[ConsoleColor]::Red})
     if ($tabs.workerHealth) {
       $ch = $tabs.workerHealth.CONTROL
@@ -639,7 +369,8 @@ while ($true) {
     updatedAt = (Get-Date).ToString("o")
     overallPercent = $overall
     system = $system
-    design = $design
+    designV1 = $designV1
+    design2 = $design2
     dpp = $dpp
     workers = [ordered]@{
       CONTROL = $controlState
