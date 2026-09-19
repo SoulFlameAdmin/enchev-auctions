@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import { waitForGlobalSendPermit, reportRateLimit, reportProbeSuccess, markProbeSendStarted } from "./chatgpt-rate-limit-coordinator.mjs";
+import { waitForGlobalSendPermit, reportRateLimit, reportProbeSuccess, markGlobalSendStarted } from "./chatgpt-rate-limit-coordinator.mjs";
 
 const INITIAL_CHAT_URL = process.env.DAVID_CHAT_URL || "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71";
 let activeChatUrl = INITIAL_CHAT_URL;
@@ -724,7 +724,7 @@ async function sendWithRecovery(context, page, state, text, kind) {
 
     console.log(`[DAVID] Sending ${kind} attempt ${attempt}/${MAX_RECOVERY_ATTEMPTS}. rateMode=${permit.mode}`);
     await sendText(page, outgoingText);
-    if (permit.mode === "probe") await markProbeSendStarted("SYSTEM");
+    if (permit.mode === "probe") await markGlobalSendStarted("SYSTEM");
     const started = await waitForResponseStart(context, page, baselineHash, baselineCounts.user, outgoingHash, state);
     page = started.page;
     syncActiveChatUrl(page, state);
