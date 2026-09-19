@@ -12,7 +12,6 @@ import "./dp2-foundation.css";
 import "./dp2-app-shell.css";
 import "./dp2-home-hero.css";
 import "./dp2-home-discovery.css";
-import "./dp2-home-discovery.css";
 import MouseAura from "./components/MouseAura";
 import BackgroundSwitcher from "./components/BackgroundSwitcher";
 import VerifiedPlanEvidenceSync from "./components/VerifiedPlanEvidenceSync";
