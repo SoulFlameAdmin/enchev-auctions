@@ -6,7 +6,8 @@ import { waitForGlobalSendPermit, reportRateLimit, reportProbeSuccess, markGloba
 import { CHATGPT_ROOT, rotateOwnedChatPage } from "./chatgpt-session-rotation.mjs";
 
 const INITIAL_CHAT_URL = process.env.DAVID_APP2_CHAT_URL || "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4";
-let activeChatUrl = INITIAL_CHAT_URL;
+const FRESH_SESSION_ON_START = process.env.DAVID_FRESH_SESSIONS_ON_START === "1";
+let activeChatUrl = FRESH_SESSION_ON_START ? CHATGPT_ROOT : INITIAL_CHAT_URL;
 const CDP_URL = process.env.DAVID_APP2_CDP_URL || "http://127.0.0.1:9444";
 const STATE_FILE = process.env.DAVID_APP2_STATE_FILE || path.join(process.cwd(), ".david-app2-state.json");
 const POLL_MS = Number(process.env.DAVID_APP2_POLL_MS || 800);
@@ -553,7 +554,9 @@ async function runPrompt(context, page, state, prompt, kind) {
     save(state, `${kind} attempt ${attempt}`);
     console.log(`[APP2] Sending ${kind} attempt ${attempt}.`);
     const outgoingPrompt = state.justRolledOver
-      ? `AUTOMATIC CHAT ROLLOVER: The previous ChatGPT conversation reached its maximum length. Reconstruct the exact current project state from GitHub/source-of-truth/evidence and continue from the next unfinished dependency-safe task. Do NOT restart completed work.\n\n${prompt}`
+      ? state.freshStartPending
+        ? `AUTOMATIC FRESH RESTART HANDOFF: DAVID restarted cleanly into a new APP2/DPP ChatGPT conversation. Reconstruct the exact current project state from GitHub/source-of-truth/evidence and continue from the next unfinished dependency-safe task. Do NOT restart completed work.\n\n${prompt}`
+        : `AUTOMATIC CHAT ROLLOVER: The previous ChatGPT conversation reached its maximum length. Reconstruct the exact current project state from GitHub/source-of-truth/evidence and continue from the next unfinished dependency-safe task. Do NOT restart completed work.\n\n${prompt}`
       : prompt;
     const permit = await waitForGlobalSendPermit("APP2", async (decision) => {
       state.watchdog = "global-rate-limit-wait";
@@ -590,6 +593,7 @@ async function runPrompt(context, page, state, prompt, kind) {
           if (!doneAfterTimeout.retry) {
             state.lastAssistantHash = doneAfterTimeout.hash;
             if (state.justRolledOver) state.justRolledOver = false;
+            if (state.freshStartPending) state.freshStartPending = false;
             await reportProbeSuccess("APP2");
             delete state.problemRetryAt;
             return { page, text: doneAfterTimeout.text };
@@ -673,6 +677,7 @@ async function runPrompt(context, page, state, prompt, kind) {
     }
     state.lastAssistantHash = done.hash;
     if (state.justRolledOver) state.justRolledOver = false;
+    if (state.freshStartPending) state.freshStartPending = false;
     syncActiveChatUrl(page, state);
     await reportProbeSuccess("APP2");
     delete state.problemRetryAt;
@@ -706,7 +711,18 @@ async function main() {
     state.watchdog = "global-rate-limit-state-sanitized";
     save(state, "Cleared stale ChatGPT rate-limit problem from APP2 project state; coordinator owns cooldown");
   }
-  activeChatUrl = state.chatUrl || INITIAL_CHAT_URL;
+  if (FRESH_SESSION_ON_START) {
+    state.previousChatUrl = cleanConversationUrl(state.chatUrl) || state.previousChatUrl || null;
+    state.chatUrl = CHATGPT_ROOT;
+    state.pendingNewChat = true;
+    state.justRolledOver = true;
+    state.freshStartPending = true;
+    state.watchdog = "fresh-session-boot";
+    activeChatUrl = CHATGPT_ROOT;
+    save(state, "FRESH SESSION BOOT: APP2 old chat URL ignored; project state preserved");
+  } else {
+    activeChatUrl = state.chatUrl || INITIAL_CHAT_URL;
+  }
   let page = await waitReady(context, await ensurePage(context, null), state);
   syncActiveChatUrl(page, state);
   if (state.previousChatUrl) await closeOldConversationTabs(context, state.previousChatUrl, page);
