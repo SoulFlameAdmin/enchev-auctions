@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
-import { waitForGlobalSendPermit, reportProbeSuccess } from "./chatgpt-rate-limit-coordinator.mjs";
+import { waitForGlobalSendPermit, reportProbeSuccess, markProbeSendStarted } from "./chatgpt-rate-limit-coordinator.mjs";
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1"));
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
@@ -372,6 +372,7 @@ async function sendAndWait(context, page, state, prompt) {
       await sleep(2500);
     }
 
+    if (permit.mode === "probe") await markProbeSendStarted("CONTROL");
     await fillComposer(composer, prompt);
     await sendComposer(page, composer);
     state.turnsSent = Number(state.turnsSent || 0) + 1;
