@@ -601,9 +601,9 @@ async function refreshChat(context, page, state, attempt) {
 async function waitPlatform(context, page, state, blocker) {
   if (blocker === "rate limit") {
     const rl = await reportRateLimit("SYSTEM", "ChatGPT too many requests / rate limit");
-    state.problem = "ChatGPT platform: rate limit";
+    state.problem = null;
     state.problemRetryAt = rl.blockedUntil;
-    state.watchdog = "global-rate-limit";
+    state.watchdog = "global-rate-limit-wait";
     saveState(state, `GLOBAL RATE LIMIT: all sends blocked until ${rl.blockedUntil}; stage=${rl.stage}`);
     console.log(`[DAVID] GLOBAL RATE LIMIT stage=${rl.stage} until ${rl.blockedUntil}. All workers must WAIT.`);
     await sleep(1000);
@@ -711,7 +711,7 @@ async function sendWithRecovery(context, page, state, text, kind) {
     saveState(state, kind === "fix" ? "Sending problem-fix instruction" : `Sending development relay attempt ${attempt}`);
     const permit = await waitForGlobalSendPermit("SYSTEM", async (decision) => {
       state.watchdog = "global-rate-limit-wait";
-      state.problem = "ChatGPT platform: global rate limit";
+      state.problem = null;
       state.problemRetryAt = decision.state?.blockedUntil || decision.state?.probeLeaseUntil || null;
       saveState(state, `GLOBAL RATE LIMIT WAIT mode=${decision.mode}; owner=${decision.state?.probeOwner || "none"}`);
     });
