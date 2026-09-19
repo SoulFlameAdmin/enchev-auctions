@@ -206,9 +206,27 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url || "/", `http://${HOST}:${PORT}`);
   try {
     if (req.method === "GET" && (url.pathname === "/status" || url.pathname === "/health")) return json(req, res, 200, status());
-    if (req.method === "POST" && url.pathname === "/start") return json(req, res, 200, startWorker());
-    if (req.method === "POST" && url.pathname === "/restart") return json(req, res, 200, await restartWorker());
-    if (req.method === "POST" && url.pathname === "/stop") return json(req, res, 200, stopWorker());
+    if (req.method === "POST" && url.pathname === "/start") {
+      return json(req, res, 409, {
+        ok: false,
+        error: "legacy_start_disabled",
+        owner: "RESTART_DAVID_ALL_CLEAN.ps1 / START_DAVID_ALL.ps1"
+      });
+    }
+    if (req.method === "POST" && url.pathname === "/restart") {
+      return json(req, res, 409, {
+        ok: false,
+        error: "legacy_restart_disabled",
+        owner: "RESTART_DAVID_ALL_CLEAN.ps1"
+      });
+    }
+    if (req.method === "POST" && url.pathname === "/stop") {
+      return json(req, res, 409, {
+        ok: false,
+        error: "legacy_stop_disabled",
+        owner: "STOP_DAVID_ALL_CLEAN.ps1"
+      });
+    }
     return json(req, res, 404, { ok: false, error: "not_found" });
   } catch (error) {
     log(`[CONTROL] ${error?.stack || error}`);
