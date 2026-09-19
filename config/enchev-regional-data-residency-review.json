@@ -1,0 +1,88 @@
+{
+  "task": "21.14",
+  "name": "Regional data/residency review",
+  "review_version": 1,
+  "review_completed": true,
+  "legal_conclusion": false,
+  "residency_compliance_approved": false,
+  "market_activation_approval": false,
+  "data_planes": [
+    {
+      "id": "cdn-delivery",
+      "provider": "vercel",
+      "role": "public-edge-delivery",
+      "status": "global-delivery",
+      "region": null,
+      "residency_claim": false,
+      "evidence": [
+        "docs/21_13_REGIONAL_CDN_STRATEGY.md",
+        "packages/config/src/regional-cdn-strategy.ts"
+      ]
+    },
+    {
+      "id": "development-governance-db",
+      "provider": "supabase",
+      "role": "development-governance",
+      "status": "verified-region",
+      "region": "eu-west-1",
+      "residency_claim": false,
+      "evidence": [
+        "config/enchev-supabase-project.json",
+        "docs/01_05_SUPABASE_PROJECT.md"
+      ]
+    },
+    {
+      "id": "object-storage",
+      "provider": null,
+      "role": "future-document-storage",
+      "status": "not-configured",
+      "region": null,
+      "residency_claim": false,
+      "evidence": [
+        "docs/21_10_COUNTRY_SPECIFIC_DOCUMENT_PROFILE.md"
+      ]
+    },
+    {
+      "id": "redis-support",
+      "provider": null,
+      "role": "non-authoritative-cache-support",
+      "status": "provider-pending",
+      "region": null,
+      "residency_claim": false,
+      "evidence": [
+        "config/enchev-redis-environment.json",
+        "docs/01_06_REDIS_ENVIRONMENT.md"
+      ]
+    },
+    {
+      "id": "runtime-compute",
+      "provider": "vercel",
+      "role": "web-function-runtime",
+      "status": "region-unpinned",
+      "region": null,
+      "residency_claim": false,
+      "evidence": [
+        "vercel.json"
+      ]
+    },
+    {
+      "id": "runtime-observability",
+      "provider": "vercel",
+      "role": "runtime-observability",
+      "status": "unverified",
+      "region": null,
+      "residency_claim": false,
+      "evidence": [
+        "docs/21_14_REGIONAL_DATA_RESIDENCY_REVIEW.md"
+      ]
+    }
+  ],
+  "unresolved_requirements": [
+    "legal-compliance-sign-off",
+    "object-storage-provider-region",
+    "production-authoritative-database-region",
+    "redis-provider-region",
+    "runtime-compute-region-policy",
+    "runtime-observability-region-retention"
+  ]
+}
