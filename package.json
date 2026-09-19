@@ -44,7 +44,9 @@
     "verify:timezone-aware-display": "node scripts/verify-timezone-aware-display.mjs",
     "verify:timezone-aware-display:self-test": "node scripts/verify-timezone-aware-display.mjs --self-test",
     "verify:bg-locale": "node scripts/verify-bg-locale.mjs",
-    "verify:bg-locale:self-test": "node scripts/verify-bg-locale.mjs --self-test"
+    "verify:bg-locale:self-test": "node scripts/verify-bg-locale.mjs --self-test",
+    "verify:en-locale": "node scripts/verify-en-locale.mjs",
+    "verify:en-locale:self-test": "node scripts/verify-en-locale.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
