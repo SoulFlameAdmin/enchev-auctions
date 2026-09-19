@@ -710,8 +710,8 @@ async function sendWithRecovery(context, page, state, text, kind) {
     }
 
     console.log(`[DAVID] Sending ${kind} attempt ${attempt}/${MAX_RECOVERY_ATTEMPTS}. rateMode=${permit.mode}`);
-    if (permit.mode === "probe") await markProbeSendStarted("SYSTEM");
     await sendText(page, outgoingText);
+    if (permit.mode === "probe") await markProbeSendStarted("SYSTEM");
     const started = await waitForResponseStart(context, page, baselineHash, baselineCounts.user, outgoingHash, state);
     page = started.page;
     syncActiveChatUrl(page, state);
