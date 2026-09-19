@@ -150,6 +150,10 @@ jobs:
         run: node scripts/verify-translation-key-architecture.mjs
       - name: 21.07 Translation key architecture self-tests
         run: node scripts/verify-translation-key-architecture.mjs --self-test
+      - name: 21.08 Country-specific KYC profile
+        run: node scripts/verify-country-kyc-profile.mjs
+      - name: 21.08 Country-specific KYC profile self-tests
+        run: node scripts/verify-country-kyc-profile.mjs --self-test
       - name: Redis environment contract invariant
         run: node scripts/verify-redis-environment.mjs
       - name: Redis environment contract self-tests
