@@ -276,10 +276,12 @@ Write-Host "[DAVID ALL] CONTROL WATCHTOWER: https://chatgpt.com/c/6aade2fa-e2a0-
 Write-Host "[DAVID ALL] CONTROL can request only allowlisted WAIT/REFRESH/RESTART/CLEAN_DUPLICATES actions after exact final OK." -ForegroundColor Magenta
 
 Write-Host "[DAVID ALL] FINAL GATE: exact final OK required before any next normal prompt." -ForegroundColor Red
+Write-Host "[DAVID ALL] SESSION RESILIENCE V1: tagged managed chats survive fresh URLs; central guard classifies Retry, interruption, timeout, rate-limit, network/model/service errors, auth/human gates and unavailable chats." -ForegroundColor Yellow
+Write-Host "[DAVID ALL] FAST RECOVERY LAW: active=WAIT; send-timeout=>Retry x2 -> Reload -> affected-worker Restart; no duplicate-send." -ForegroundColor Yellow
 Write-Host "[DAVID ALL] SEND TIMEOUT LAW: central managed guard owns bounded Retry; workers WAIT and never duplicate-send." -ForegroundColor Yellow
 Write-Host "[DAVID ALL] GLOBAL RATE LIMIT LAW: ALL SENDS STOP -> 60s -> ONE PROBE; if still limited, wait 60s again; never five-worker retry." -ForegroundColor Yellow
 Write-Host "[DAVID ALL] GLOBAL SEND PACER: minimum 10s between every DAVID ChatGPT relay, one session send at a time; confirmed rate-limit popups are auto-dismissed while cooldown remains active." -ForegroundColor Yellow
-Write-Host "[DAVID ALL] Recovery laws: active thinking/tool work=>WAIT; no-thinking=>refresh+resend; confirmed interruption=>refresh/verify+resend." -ForegroundColor Yellow
+Write-Host "[DAVID ALL] Recovery laws: active thinking/tool work=>WAIT; generic Retry=>bounded click; confirmed interruption=>refresh/verify/resend; unavailable/full chat=>same-tab fresh chat; CAPTCHA/MFA/login=>human gate." -ForegroundColor Yellow
 Write-Host "[DAVID ALL] Vercel deploy coordinator: Supabase global lease; one worker deploys at a time." -ForegroundColor Yellow
 Write-Host "[DAVID ALL] Matrix dashboard starts automatically with live progress + worker report." -ForegroundColor Yellow
 Write-Host "[DAVID ALL] 24/7 SELF-HEAL: stale heartbeat or missing managed tab restarts only the affected worker." -ForegroundColor Yellow
