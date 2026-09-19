@@ -295,12 +295,40 @@ async function platformBlock(page) {
         const t = (el.textContent || "").toLowerCase();
         if (/verify you are human|потвърдете, че сте човек/.test(t)) return "human verification";
         if (/rate limit|too many requests|достигнахте лимита/.test(t)) return "rate limit";
+        if (/изпращането на съобщението изтече по време|message sending timed out|sending the message timed out|message send timed out/.test(t)) return "send timeout";
         if (/network error|something went wrong|нещо се обърка/.test(t)) return "network error";
       }
       return null;
     });
   } catch { return null; }
 }
+async function waitSendTimeoutRecovery(context, page, state) {
+  state.problem = null;
+  state.watchdog = "send-timeout-wait-guard";
+  save(state, "Message send timeout detected; central guard owns bounded Retry. APP2 will not duplicate-send.");
+  console.log("[APP2] SEND TIMEOUT: waiting for central guard. NO DUPLICATE RESEND.");
+  const until = Date.now() + 60000;
+  while (Date.now() < until) {
+    await sleep(1000);
+    page = await ensurePage(context, page);
+    if (await generating(page)) {
+      state.watchdog = "gpt-thinking";
+      save(state, "Send-timeout retry accepted; GPT active");
+      return page;
+    }
+    const pb = await platformBlock(page);
+    if (pb !== "send timeout") {
+      state.watchdog = "send-timeout-recovered";
+      save(state, "Message send timeout cleared by central guard");
+      return page;
+    }
+  }
+  console.log("[APP2] SEND TIMEOUT still visible after 60s. Refreshing view only; no worker resend.");
+  await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  await sleep(2500);
+  return page;
+}
+
 async function waitReady(context, page, state) {
   while (true) {
     page = await ensurePage(context, page);
@@ -469,6 +497,24 @@ async function runPrompt(context, page, state, prompt, kind) {
     page = start.page;
     syncActiveChatUrl(page, state);
     if (start.blocker) {
+      if (start.blocker === "send timeout") {
+        page = await waitSendTimeoutRecovery(context, page, state);
+        const recoveredStart = await waitStart(context, page, baseHash, state);
+        page = recoveredStart.page;
+        if (recoveredStart.started) {
+          state.turnsSent = Number(state.turnsSent || 0) + 1;
+          state.recoveryAttempt = 0;
+          save(state, `GPT started cycle ${state.turnsSent} after send-timeout recovery`);
+          const doneAfterTimeout = await waitComplete(context, page, baseHash, state);
+          page = doneAfterTimeout.page;
+          if (!doneAfterTimeout.retry) {
+            state.lastAssistantHash = doneAfterTimeout.hash;
+            if (state.justRolledOver) state.justRolledOver = false;
+            return { page, text: doneAfterTimeout.text };
+          }
+        }
+        continue;
+      }
       state.problem = `ChatGPT platform: ${start.blocker}`;
       state.watchdog = "platform-block";
       save(state, `Platform block ${start.blocker}`);
@@ -489,7 +535,9 @@ async function runPrompt(context, page, state, prompt, kind) {
     const done = await waitComplete(context, page, baseHash, state);
     page = done.page;
     if (done.retry) {
-      if (done.reason === "connection-interrupted" || done.reason === "stalled-or-blank") {
+      if (done.reason === "send timeout") {
+        page = await waitSendTimeoutRecovery(context, page, state);
+      } else if (done.reason === "connection-interrupted" || done.reason === "stalled-or-blank") {
         page = await recoverActive(context, page, state, done.reason);
       } else {
         await sleep(10000);
