@@ -58,7 +58,7 @@ function matchesActiveChat(url) {
 
 const DESIGN_PROMPT = `@GitHub @Vercel @Supabase
 
-Продължи СЕГА следващата незавършена задача от docs/DESIGN_PROCESS_2.md за Enchev Auctions.
+Продължи СЕГА следващата незавършена задача от docs/DESIGN_PROCESS_2.md за Enchev Auctions.\n\nMANDATORY DESIGN SOURCES:\n- docs/GLOBAL_COMMERCE_UX_SPEC_V1.md — every applicable international control/state/locale requirement;\n- docs/MASTER_SYSTEM_EXPANSION_V2.md + app/master-system-expansion-v2/part-*.json — authoritative company/commercial/payment/tax/customs/logistics rules that UI must expose when applicable.
 
 DESIGN PROCESS 2 е новият world-class redesign процес за телефон и PC. Design Plan V1 (D01-D36) е frozen/complete и НЕ трябва да се променя или рестартира.
 
@@ -73,7 +73,7 @@ DESIGN PROCESS 2 е новият world-class redesign процес за теле
 
 Mobile acceptance минимум: 360px, 390px, 430px. Desktop acceptance: 1366px, 1440px и wide 1920-class, когато е приложимо.
 Не копирай чуждо logo, proprietary text, images, source code или точна визуална идентичност.
-Не добавяй pricing/payment/finance scope.
+Pricing/payment/finance/tax/customs/logistics UI е разрешен и задължителен, когато активната SYSTEM/Global Commerce спецификация го изисква. Не измисляй тарифи, данъци, settlement правила, legal conclusions или country policy — визуализирай само authoritative/configured rules и техните states.
 Не променяй frozen D01-D36 evidence.
 
 Ако DP2-01-DP2-30 вече са 30/30 GREEN, НЕ създавай DP2-31. Докладвай DESIGN PROCESS 2 COMPLETE / IDLE и последният ред да е само: OK
