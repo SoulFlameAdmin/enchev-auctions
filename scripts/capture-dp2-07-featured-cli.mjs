@@ -17,13 +17,19 @@ function findBrowser(){
   }
   fail("browser executable not found");
 }
-function pngOk(file){
-  if(!fs.existsSync(file))return false;
+function readPng(file){
+  if(!fs.existsSync(file))return null;
   const data=fs.readFileSync(file);
-  return data.length>5000&&data[0]===0x89&&data[1]===0x50&&data[2]===0x4e&&data[3]===0x47;
+  const signature=data.length>=24&&data[0]===0x89&&data[1]===0x50&&data[2]===0x4e&&data[3]===0x47;
+  if(!signature)return null;
+  return {bytes:data.length,width:data.readUInt32BE(16),height:data.readUInt32BE(20)};
 }
 
 const browser=findBrowser();
+const pageResponse=await fetch(new URL("/",baseUrl));
+if(!pageResponse.ok)fail("homepage HTTP "+pageResponse.status);
+const pageHtml=await pageResponse.text();
+if(!pageHtml.includes('data-design-task="DP2-07"')||!pageHtml.includes("eaFeaturedV2Card"))fail("DP2-07 featured DOM missing from built homepage");
 fs.mkdirSync(outputDir,{recursive:true});
 const entries=[];
 for(const width of widths){
@@ -43,8 +49,10 @@ for(const width of widths){
     target,
   ],{encoding:"utf8",timeout:30000});
   if(result.status!==0)fail("browser screenshot failed width="+width+" stderr="+String(result.stderr||"").slice(-800));
-  if(!pngOk(file))fail("invalid PNG width="+width);
-  entries.push({width,height,file:path.basename(file),bytes:fs.statSync(file).size});
+  const png=readPng(file);
+  if(!png)fail("invalid PNG width="+width);
+  if(png.width!==width||png.height!==height)fail("PNG dimensions mismatch requested="+width+"x"+height+" actual="+png.width+"x"+png.height);
+  entries.push({width,height,file:path.basename(file),bytes:png.bytes});
 }
 fs.writeFileSync(path.join(outputDir,"manifest.json"),JSON.stringify({version:1,browser,baseUrl,count:entries.length,entries},null,2)+"\n");
 console.log("DP2_07_FEATURED_VISUAL PASS browser="+browser+" screenshots="+entries.length+" widths="+widths.join(","));
