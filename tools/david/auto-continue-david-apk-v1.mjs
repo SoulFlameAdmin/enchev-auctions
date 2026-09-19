@@ -112,7 +112,7 @@ TRY TO MAKE THIS FIX YOURSELF NOW. Опит ${attempt}. Провери SoulFlame
 
 След успешен fix продължи следващата dependency-safe DAVID Phone/APK задача.
 
-${DEPLOY_LAW}
+${ORCHESTRATOR_LAW}\n\n${DEPLOY_LAW}
 ${MARKER}`;
 }
 
