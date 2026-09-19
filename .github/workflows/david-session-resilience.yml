@@ -5,7 +5,9 @@ on:
     paths:
       - "tools/david/**"
       - "START_DAVID_ALL.ps1"
+      - "START_DAVID_AUTONOMY.ps1"
       - "RESTART_DAVID_ALL_CLEAN.ps1"
+      - "RESTART_DAVID_AUTONOMY_CLEAN.ps1"
       - "STOP_DAVID_ALL_CLEAN.ps1"
       - ".github/workflows/david-session-resilience.yml"
   push:
@@ -14,7 +16,9 @@ on:
     paths:
       - "tools/david/**"
       - "START_DAVID_ALL.ps1"
+      - "START_DAVID_AUTONOMY.ps1"
       - "RESTART_DAVID_ALL_CLEAN.ps1"
+      - "RESTART_DAVID_AUTONOMY_CLEAN.ps1"
       - "STOP_DAVID_ALL_CLEAN.ps1"
       - ".github/workflows/david-session-resilience.yml"
 
@@ -43,16 +47,22 @@ jobs:
       - name: Verify Session Resilience V1
         run: npm run verify:resilience
 
+      - name: Verify scoped AUTONOMY profile
+        run: npm run verify:autonomy
+
       - name: Parse PowerShell launch and dashboard scripts
         shell: pwsh
         working-directory: .
         run: |
           $files = @(
             "START_DAVID_ALL.ps1",
+            "START_DAVID_AUTONOMY.ps1",
             "RESTART_DAVID_ALL_CLEAN.ps1",
+            "RESTART_DAVID_AUTONOMY_CLEAN.ps1",
             "STOP_DAVID_ALL_CLEAN.ps1",
             "tools/david/start-auto-continue.ps1",
-            "tools/david/david-status-dashboard.ps1"
+            "tools/david/david-status-dashboard.ps1",
+            "tools/david/david-autonomy-dashboard.ps1"
           )
           foreach ($file in $files) {
             $tokens = $null
