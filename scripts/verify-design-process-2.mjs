@@ -46,6 +46,54 @@ function validatePremiumTokens(css, layout) {
   assert(layout.includes('import "./dp2-design-tokens.css";'), "Root layout must import DP2 design tokens");
 }
 
+function validateFoundation(css, layout, capture, workflow) {
+  const tokens = [
+    "--ea-type-micro",
+    "--ea-type-label-lg",
+    "--ea-type-body",
+    "--ea-type-body-lg",
+    "--ea-type-section",
+    "--ea-type-page",
+    "--ea-type-display",
+    "--ea-space-1",
+    "--ea-space-4",
+    "--ea-space-8",
+    "--ea-space-16",
+    "--ea-space-24",
+    "--ea-density-compact",
+    "--ea-density-standard",
+    "--ea-density-comfortable",
+    "--ea-page-gutter",
+    "--ea-grid-gap",
+    "--ea-layout-standard",
+    "--ea-grid-card-min"
+  ];
+  for (const token of tokens) {
+    assert(css.includes(`${token}:`), `DP2-03 missing foundation token ${token}`);
+  }
+
+  for (const width of [360,390,430]) {
+    assert(css.includes(`@media(max-width:${width}px)`), `DP2-03 missing phone breakpoint ${width}px`);
+  }
+  for (const width of [1366,1440,1920]) {
+    assert(css.includes(`@media(min-width:${width}px)`), `DP2-03 missing desktop breakpoint ${width}px`);
+  }
+
+  for (const selector of [".eaHeroInner", ".inventoryShell", ".lotWrap", ".liveStage", ".profileRouteMain", ".navigationRouteMain"]) {
+    assert(css.includes(selector), `DP2-03 foundation missing layout coverage for ${selector}`);
+  }
+
+  assert(css.includes("repeat(auto-fit,minmax("), "DP2-03 must use responsive auto-fit grid primitives");
+  assert(layout.includes('import "./dp2-foundation.css";'), "Root layout must import DP2 foundation layer");
+
+  for (const width of [360,390,430,1366,1440,1920]) {
+    assert(capture.includes(`width:${width}`), `DP2-03 visual matrix missing ${width}px`);
+  }
+  assert(capture.includes("expected 30 screenshots"), "DP2-03 visual capture must require 30 screenshots");
+  assert(workflow.includes("chrome.count!==30||edge.count!==30"), "DP2-03 CI must require 30 Chrome + 30 Edge screenshots");
+  assert(workflow.includes('widths!=="360,390,430,1366,1440,1920"'), "DP2-03 CI must enforce the full responsive width set");
+}
+
 function validateEvidence(data) {
   assert(data && data.version === "2.0", "DP2 evidence version must be 2.0");
   assert(data.status === "active", "DP2 evidence status must be active");
@@ -75,6 +123,11 @@ function validateRepository() {
   const premiumTokens = read("app/dp2-design-tokens.css");
   const rootLayout = read("app/layout.tsx");
   validatePremiumTokens(premiumTokens, rootLayout);
+
+  const foundation = read("app/dp2-foundation.css");
+  const capture = read("scripts/capture-visual-regression.mjs");
+  const workflow = read(".github/workflows/verify-enchev-web.yml");
+  validateFoundation(foundation, rootLayout, capture, workflow);
 
   const plan = read("docs/DESIGN_PROCESS_2.md");
   assert(plan.includes("DP2-01") && plan.includes("DP2-30"), "DP2 plan must define DP2-01 and DP2-30");
@@ -153,6 +206,31 @@ function selfTest() {
     rejected = true;
   }
   assert(rejected, "DP2 self-test must reject a missing semantic LIVE token");
+
+  const foundationFixture =
+    ':root{' +
+    [
+      "--ea-type-micro","--ea-type-label-lg","--ea-type-body","--ea-type-body-lg",
+      "--ea-type-section","--ea-type-page","--ea-type-display","--ea-space-1",
+      "--ea-space-4","--ea-space-8","--ea-space-16","--ea-space-24",
+      "--ea-density-compact","--ea-density-standard","--ea-density-comfortable",
+      "--ea-page-gutter","--ea-grid-gap","--ea-layout-standard","--ea-grid-card-min"
+    ].map(token=>`${token}:x;`).join("") +
+    '}.eaHeroInner,.inventoryShell,.lotWrap,.liveStage,.profileRouteMain,.navigationRouteMain{}' +
+    '.grid{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}' +
+    '@media(max-width:360px){}@media(max-width:390px){}@media(max-width:430px){}' +
+    '@media(min-width:1366px){}@media(min-width:1440px){}@media(min-width:1920px){}';
+  const captureFixture='width:360 width:390 width:430 width:1366 width:1440 width:1920 expected 30 screenshots';
+  const workflowFixture='chrome.count!==30||edge.count!==30 widths!=="360,390,430,1366,1440,1920"';
+  validateFoundation(foundationFixture, 'import "./dp2-foundation.css";', captureFixture, workflowFixture);
+
+  rejected = false;
+  try {
+    validateFoundation(foundationFixture.replace("@media(max-width:360px){}", ""), 'import "./dp2-foundation.css";', captureFixture, workflowFixture);
+  } catch {
+    rejected = true;
+  }
+  assert(rejected, "DP2 self-test must reject a missing required acceptance breakpoint");
 
   console.log("DESIGN_PROCESS_2_SELF_TEST PASS");
 }
