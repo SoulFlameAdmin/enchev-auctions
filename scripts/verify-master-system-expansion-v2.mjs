@@ -97,6 +97,7 @@ function verifyDependencyGraph(phases) {
     for (const dep of phase.dependsOn || []) {
       if (!(String(dep) in waveMap)) fail(`${phase.id}: dependency ${dep} has no known phase`);
       if (waveMap[String(dep)] > phase.wave) fail(`${phase.id}: dependency ${dep} is in later wave ${waveMap[String(dep)]}`);
+      if (waveMap[String(dep)] === phase.wave && Number(dep) > Number(phase.id)) fail(`${phase.id}: same-wave dependency ${dep} must sort earlier by immutable phase ID`);
     }
   }
 
