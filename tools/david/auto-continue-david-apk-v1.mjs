@@ -16,6 +16,13 @@ const COMPLETE_STABLE_SAMPLES = Number(process.env.DAVID_COMPLETE_STABLE_SAMPLES
 const COMPLETE_SAMPLE_MS = Number(process.env.DAVID_COMPLETE_SAMPLE_MS || 1200);
 const PROBLEM_PREFIX = "PROBLEM IN:";
 const MARKER = "[DAVID_RELAY_APK_V1]";
+const ORCHESTRATOR_LAW = `
+DAVID ORCHESTRATOR IMMUTABILITY LAW:
+- During normal SYSTEM/DESIGN/DPP/APK project work, NEVER modify the DAVID infrastructure files in SoulFlameAdmin/enchev-auctions:
+  tools/david/*, START_DAVID_ALL.ps1, STOP_DAVID_ALL_CLEAN.ps1, RESTART_DAVID_ALL_CLEAN.ps1, RESTART_DAVID_ALL.cmd.
+- Those files may be changed only when the current user task explicitly requests DAVID infrastructure/worker/supervisor maintenance.
+- Do not revert, rewrite, format, regenerate or "clean up" those protected files incidentally.
+`;
 const DEPLOY_LAW = `
 DAVID VERCEL DEPLOY LAW:
 - Before ANY Vercel create/update/redeploy, claim the global Supabase lease:
@@ -50,7 +57,7 @@ DAVID APK UPGRADE LAW:
 Ако стъпката е успешно завършена и доказана, последният ред да е: OK
 Ако има реален blocker, последният ред да е: ${PROBLEM_PREFIX} <точният проблем>
 
-${DEPLOY_LAW}
+${ORCHESTRATOR_LAW}\n\n${DEPLOY_LAW}
 
 ${MARKER}`;
 
