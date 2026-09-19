@@ -52,7 +52,9 @@
     "verify:design-process-2": "node scripts/verify-design-process-2.mjs",
     "verify:design-process-2:self-test": "node scripts/verify-design-process-2.mjs --self-test",
     "verify:country-kyc-profile": "node scripts/verify-country-kyc-profile.mjs",
-    "verify:country-kyc-profile:self-test": "node scripts/verify-country-kyc-profile.mjs --self-test"
+    "verify:country-kyc-profile:self-test": "node scripts/verify-country-kyc-profile.mjs --self-test",
+    "verify:country-legal-profile": "node scripts/verify-country-legal-profile.mjs",
+    "verify:country-legal-profile:self-test": "node scripts/verify-country-legal-profile.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",

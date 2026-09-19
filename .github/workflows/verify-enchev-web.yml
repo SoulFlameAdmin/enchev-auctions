@@ -154,6 +154,10 @@ jobs:
         run: node scripts/verify-country-kyc-profile.mjs
       - name: 21.08 Country-specific KYC profile self-tests
         run: node scripts/verify-country-kyc-profile.mjs --self-test
+      - name: 21.09 Country-specific legal profile
+        run: node scripts/verify-country-legal-profile.mjs
+      - name: 21.09 Country-specific legal profile self-tests
+        run: node scripts/verify-country-legal-profile.mjs --self-test
       - name: Redis environment contract invariant
         run: node scripts/verify-redis-environment.mjs
       - name: Redis environment contract self-tests
