@@ -211,13 +211,13 @@ async function sendTimeoutVisible(page) {
 }
 
 async function clickSendTimeoutRetry(page) {
-  const labels = [/^Опитайте отново$/i, /^Try again$/i, /^Retry$/i];
+  const labels = [/^\\s*Опитайте\\s+отново\\s*$/i, /^\\s*Try\\s+again\\s*$/i, /^\\s*Retry\\s*$/i];
   for (const label of labels) {
     try {
       const buttons = page.getByRole("button", { name: label });
       for (let i = (await buttons.count()) - 1; i >= 0; i--) {
         const b = buttons.nth(i);
-        if (!await b.isVisible().catch(() => false) || !await b.isEnabled().catch(() => false)) continue;
+        if (!await b.isVisible().catch(() => false)) continue;
         try {
           await b.click({ timeout: 1500 });
           return true;
@@ -229,6 +229,52 @@ async function clickSendTimeoutRetry(page) {
       }
     } catch {}
   }
+
+  // ChatGPT occasionally renders the send-timeout action with a visible label
+  // that does not expose the same accessible name immediately. Fall back to a
+  // DOM/text click, but only on a visible button-like control with an exact
+  // retry label inside an already-confirmed managed DAVID chat.
+  try {
+    return await page.evaluate(() => {
+      const visible = (el) => {
+        const s = getComputedStyle(el);
+        const r = el.getBoundingClientRect();
+        return s.display !== "none" && s.visibility !== "hidden" &&
+          Number(s.opacity || 1) > 0 && r.width > 0 && r.height > 0;
+      };
+      const retry = /^(опитайте\\s+отново|try\\s+again|retry)$/i;
+      const candidates = [...document.querySelectorAll('button,[role="button"]')];
+      for (let i = candidates.length - 1; i >= 0; i--) {
+        const el = candidates[i];
+        if (!visible(el)) continue;
+        const text = [
+          el.getAttribute("aria-label") || "",
+          el.getAttribute("title") || "",
+          el.textContent || ""
+        ].join(" ").replace(/\\s+/g, " ").trim();
+        if (!retry.test(text)) continue;
+        try {
+          el.scrollIntoView({ block: "center", inline: "center" });
+          el.click();
+          return true;
+        } catch {}
+      }
+      return false;
+    });
+  } catch {}
+
+  try {
+    const fallback = page.locator('button,[role="button"]').filter({ hasText: /Опитайте\\s+отново|Try\\s+again|Retry/i });
+    for (let i = (await fallback.count()) - 1; i >= 0; i--) {
+      const b = fallback.nth(i);
+      if (!await b.isVisible().catch(() => false)) continue;
+      try {
+        await b.click({ force: true, timeout: 1500 });
+        return true;
+      } catch {}
+    }
+  } catch {}
+
   return false;
 }
 
