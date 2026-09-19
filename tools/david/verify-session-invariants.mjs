@@ -125,6 +125,27 @@ if (!coordinatorSource.includes("releaseWorkerLeases")) {
   throw new Error("Rate-limit coordinator must release dead worker leases");
 }
 
+const supervisorPrewarm = read("dual-session-worker.mjs");
+for (const required of [
+  "FRESH_SESSION_ON_START",
+  "prewarmFreshManagedTabs",
+  "Promise.all(tasks)",
+  "5 ChatGPT worker tabs prewarmed in parallel",
+  "resetFreshBootTransientState"
+]) {
+  if (!supervisorPrewarm.includes(required)) throw new Error(`Fresh startup prewarm invariant missing: ${required}`);
+}
+
+const coordinatorFresh = read("chatgpt-rate-limit-coordinator.mjs");
+if (!coordinatorFresh.includes("resetFreshBootTransientState")) {
+  throw new Error("Fresh restart must clear stale transient probe/send ownership");
+}
+
+const controlSource = read("auto-control-watchtower-v1.mjs");
+if (!controlSource.includes("focus({ timeout: 3000 })") || !controlSource.includes("force: true")) {
+  throw new Error("CONTROL pointer-safe send fallback missing");
+}
+
 const supervisor = read("dual-session-worker.mjs");
 for (const required of [
   "STRICT_CHATGPT_TAB_TARGET",
@@ -140,4 +161,4 @@ if (/allFiveOwned/.test(supervisor)) {
   throw new Error("Unmanaged-tab cleanup must not depend on all five workers already being healthy");
 }
 
-console.log("DAVID_SESSION_INVARIANTS PASS same_tab_rollover=5 project_ok_rotation=4 strict_tab_budget=5 active_work_protected=1 fresh_restart_wiring=5 pointer_safe_send=4 stale_timeout_retry=1 dead_worker_lease_release=1");
+console.log("DAVID_SESSION_INVARIANTS PASS same_tab_rollover=5 project_ok_rotation=4 strict_tab_budget=5 active_work_protected=1 fresh_restart_wiring=5 pointer_safe_send=5 stale_timeout_retry=1 dead_worker_lease_release=1 fresh_parallel_prewarm=5 transient_probe_reset=1");

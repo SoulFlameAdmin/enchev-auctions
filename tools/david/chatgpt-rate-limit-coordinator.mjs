@@ -84,6 +84,25 @@ function msUntil(iso) {
 export function getRateLimitState() {
   return readStateRaw();
 }
+export async function resetFreshBootTransientState(reason = "fresh-restart") {
+  return withLock(async () => {
+    const st = readStateRaw();
+    return writeStateRaw({
+      ...st,
+      status: "clear",
+      blockedUntil: null,
+      probeOwner: null,
+      probeLeaseUntil: null,
+      probeSendStartedAt: null,
+      sendSlotOwner: null,
+      sendSlotLeaseUntil: null,
+      nextGlobalSendAt: null,
+      lastSuccessAt: st.lastSuccessAt,
+      lastSuccessBy: st.lastSuccessBy,
+      lastEvidence: `${st.lastEvidence || "rate-limit-state"}; transient coordinator state reset on ${reason}`
+    });
+  });
+}
 export function rateLimitRemainingMs(state = readStateRaw()) {
   if (state.status === "blocked") return msUntil(state.blockedUntil);
   if (state.status === "probe") return msUntil(state.probeLeaseUntil);

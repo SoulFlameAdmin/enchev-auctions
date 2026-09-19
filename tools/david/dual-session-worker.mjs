@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { chromium } from "playwright-core";
-import { releaseWorkerLeases } from "./chatgpt-rate-limit-coordinator.mjs";
+import { releaseWorkerLeases, resetFreshBootTransientState } from "./chatgpt-rate-limit-coordinator.mjs";
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1"));
 const SYSTEM = path.join(HERE, "auto-continue-enchev-v5.mjs");
@@ -27,6 +27,7 @@ const CONTROL_HEARTBEAT_STALE_MS = Number(process.env.DAVID_CONTROL_HEARTBEAT_ST
 const CONTROL_TAB_MISSING_MS = Number(process.env.DAVID_CONTROL_TAB_MISSING_MS || 180000);
 const STRICT_CHATGPT_TAB_TARGET = Number(process.env.DAVID_CHATGPT_TAB_TARGET || 5);
 const DEDICATED_DAVID_PROFILE = process.env.DAVID_DEDICATED_PROFILE !== "0";
+const FRESH_SESSION_ON_START = process.env.DAVID_FRESH_SESSIONS_ON_START === "1";
 let shuttingDown = false;
 let monitorBrowser = null;
 let monitorContext = null;
@@ -554,6 +555,55 @@ async function cleanupUnknownChatGptTabs(context) {
   return closed;
 }
 
+async function prewarmFreshManagedTabs() {
+  if (!FRESH_SESSION_ON_START) return;
+
+  const context = await getMonitorContext();
+  if (!context) throw new Error("Fresh-session prewarm could not connect to browser context");
+
+  await resetFreshBootTransientState("DAVID full fresh restart");
+  console.log("[DUAL] FRESH BOOT: stale rate-limit probe/send leases cleared; 10s global send pacer remains active.");
+
+  const roles = [
+    ["CONTROL", "DAVID_CONTROL_PENDING_V1"],
+    ["SYSTEM", "DAVID_SYSTEM_PENDING_V1"],
+    ["DESIGN", "DAVID_DESIGN_PENDING_V1"],
+    ["APP2", "DAVID_APP2_PENDING_V1"],
+    ["APK", "DAVID_APK_PENDING_V1"]
+  ];
+
+  const existing = context.pages().filter((p) => p && !p.isClosed() && p.url().startsWith("https://chatgpt.com"));
+  const used = new Set();
+
+  async function tagPage(page, tag) {
+    await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+    await page.evaluate((v) => { window.name = v; }, tag).catch(() => {});
+    return page;
+  }
+
+  const tasks = roles.map(async ([kind, tag], index) => {
+    let page = null;
+    if (index === 0) {
+      page = existing.find((p) => !used.has(p)) || null;
+      if (page) used.add(page);
+    }
+    if (!page) page = await context.newPage();
+    await tagPage(page, tag);
+    return { kind, page };
+  });
+
+  await Promise.all(tasks);
+
+  for (const page of existing) {
+    if (used.has(page) || page.isClosed()) continue;
+    let tag = "";
+    try { tag = await page.evaluate(() => window.name || ""); } catch {}
+    if (!tag) await page.close({ runBeforeUnload: false }).catch(() => {});
+  }
+
+  console.log("[DUAL] FRESH BOOT: 5 ChatGPT worker tabs prewarmed in parallel and tagged before worker launch.");
+}
+
 console.log("[DUAL] DAVID multi-session mode ON.");
 console.log("[DUAL] SYSTEM tab: 6aab44e1-385c-83eb-b122-c4ae9836cb71");
 console.log("[DUAL] DESIGN tab: 6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7");
@@ -651,6 +701,9 @@ async function monitorManagedTabs() {
   }
 }
 
+if (FRESH_SESSION_ON_START) {
+  await prewarmFreshManagedTabs();
+}
 await cleanupManagedTabs();
 await monitorManagedTabs();
 specs.forEach(launch);
