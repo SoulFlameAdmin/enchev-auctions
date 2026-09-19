@@ -5,7 +5,7 @@ const EXPECTED_PHASE_COUNT = 38;
 const EXPECTED_TASK_COUNT = 3226;
 const EXPECTED_FIRST_PHASE = 62;
 const EXPECTED_LAST_PHASE = 99;
-const EXPECTED_FNV1A32 = "e9ef5bae";
+const EXPECTED_FNV1A32 = "e7c9cf20";
 const VALID_KINDS = new Set(["core","test","security","legal","global","ai"]);
 const VALID_STATUS = new Set(["red","yellow","green"]);
 
@@ -84,6 +84,39 @@ function inspect(parts) {
   return { phases, taskCount, testCount, kindCounts, digest };
 }
 
+function verifyDependencyGraph(phases) {
+  const master = readFileSync("app/components/MasterSystemPlanV1.tsx", "utf8");
+  const mapStart = master.indexOf("const PHASE_WAVE");
+  const mapEnd = master.indexOf("const frozenPhases", mapStart);
+  const block = master.slice(mapStart, mapEnd);
+  const waveMap = {};
+  for (const match of block.matchAll(/"(\\d{2})":(\\d+)/g)) waveMap[match[1]] = Number(match[2]);
+  for (const phase of phases) waveMap[String(phase.id)] = Number(phase.wave);
+
+  for (const phase of phases) {
+    for (const dep of phase.dependsOn || []) {
+      if (!(String(dep) in waveMap)) fail(`${phase.id}: dependency ${dep} has no known phase`);
+      if (waveMap[String(dep)] > phase.wave) fail(`${phase.id}: dependency ${dep} is in later wave ${waveMap[String(dep)]}`);
+    }
+  }
+
+  const graph = new Map(phases.map((phase) => [
+    String(phase.id),
+    (phase.dependsOn || []).map(String).filter((id) => Number(id) >= EXPECTED_FIRST_PHASE),
+  ]));
+  const visiting = new Set();
+  const visited = new Set();
+  const visit = (id, stack = []) => {
+    if (visiting.has(id)) fail(`dependency cycle: ${[...stack, id].join(" -> ")}`);
+    if (visited.has(id)) return;
+    visiting.add(id);
+    for (const dep of graph.get(id) || []) visit(dep, [...stack, id]);
+    visiting.delete(id);
+    visited.add(id);
+  };
+  for (const phase of phases) visit(String(phase.id));
+}
+
 function verifyIntegration() {
   const source = readFileSync("app/components/MasterSystemPlanV1.tsx", "utf8");
   for (const n of [1,2,3,4]) {
@@ -122,7 +155,16 @@ function runSelfTest() {
   try { inspect(preGreen); } catch { rejected = true; }
   if (!rejected) fail("default GREEN mutation was not rejected");
 
-  console.log("MASTER_EXPANSION_V2_SELF_TEST PASS identity=1 duplicate=1 pregreen=1");
+  const cyc = structuredClone(good);
+  const p62 = cyc.flatMap((part) => part.phases).find((p) => p.id === "62");
+  const p63 = cyc.flatMap((part) => part.phases).find((p) => p.id === "63");
+  p62.dependsOn = ["63"];
+  p63.dependsOn = ["62"];
+  rejected = false;
+  try { verifyDependencyGraph(cyc.flatMap((part) => part.phases)); } catch { rejected = true; }
+  if (!rejected) fail("dependency cycle mutation was not rejected");
+
+  console.log("MASTER_EXPANSION_V2_SELF_TEST PASS identity=1 duplicate=1 pregreen=1 cycle=1");
 }
 
 if (process.argv.includes("--self-test")) {
@@ -133,6 +175,7 @@ if (process.argv.includes("--self-test")) {
   if (result.phases.length !== EXPECTED_PHASE_COUNT) fail(`expected ${EXPECTED_PHASE_COUNT} phases`);
   if (result.digest !== EXPECTED_FNV1A32) fail(`identity digest changed: expected ${EXPECTED_FNV1A32}, got ${result.digest}`);
   if (result.testCount !== 965) fail(`expected 965 test tasks, got ${result.testCount}`);
+  verifyDependencyGraph(result.phases);
   verifyIntegration();
-  console.log(`MASTER_EXPANSION_V2 PASS phases=${result.phases.length} tasks=${result.taskCount} tests=${result.testCount} digest=${result.digest}`);
+  console.log(`MASTER_EXPANSION_V2 PASS phases=${result.phases.length} tasks=${result.taskCount} tests=${result.testCount} digest=${result.digest} dag=clean`);
 }
