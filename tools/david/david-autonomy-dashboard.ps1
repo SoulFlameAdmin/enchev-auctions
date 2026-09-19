@@ -3,7 +3,7 @@ $ErrorActionPreference="SilentlyContinue"
 $Repo=Join-Path $Root "enchev-auctions"
 $DavidDir=Join-Path $Repo "tools\david"
 function J([string]$p){try{if(Test-Path $p){return Get-Content -Raw $p|ConvertFrom-Json}}catch{};return $null}
-function C([string]$n){try{return @(Get-CimInstance Win32_Process|Where-Object{([string]$_.CommandLine)-like "*$n*"}).Count}catch{return 0}}
+function C([string]$n,[string[]]$names=@("node.exe")){try{return @(Get-CimInstance Win32_Process|Where-Object{$names-contains([string]$_.Name).ToLowerInvariant()-and([string]$_.CommandLine)-like "*$n*"}).Count}catch{return 0}}
 function S([string]$n){switch($n){"SYSTEM"{J(Join-Path $DavidDir ".david-enchev-state.json")}"APP2"{J(Join-Path $DavidDir ".david-app2-state-6aac2dbb.json")}"APK"{J(Join-Path $DavidDir ".david-apk-state.json")}"CONTROL"{J(Join-Path $DavidDir ".david-control-state.json")}}}
 try{$Host.UI.RawUI.WindowTitle="DAVID AUTONOMY // SYSTEM + DPP + APK"}catch{}
 while($true){
