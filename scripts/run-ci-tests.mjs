@@ -45,7 +45,8 @@ const cases = [
   ["scripts/verify-country-legal-profile.mjs", "--self-test"],
   ["scripts/verify-country-document-profile.mjs", "--self-test"],
   ["scripts/verify-market-activation-gate.mjs", "--self-test"],
-  ["scripts/verify-country-2-without-core-rewrite.mjs", "--self-test"]
+  ["scripts/verify-country-2-without-core-rewrite.mjs", "--self-test"],
+  ["scripts/verify-regional-cdn-strategy.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of cases) {
