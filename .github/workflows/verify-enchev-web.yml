@@ -361,6 +361,10 @@ jobs:
           mv artifacts/visual-regression artifacts/visual-regression-edge
           mv artifacts/visual-regression-chrome artifacts/visual-regression
 
+          node scripts/capture-dp2-07-featured-cli.mjs http://127.0.0.1:3011 artifacts/dp2-07-featured-chrome
+          CHROME_BIN="$(command -v microsoft-edge)" node scripts/capture-dp2-07-featured-cli.mjs http://127.0.0.1:3011 artifacts/dp2-07-featured-edge
+          node -e 'const fs=require("fs"); for(const dir of ["artifacts/dp2-07-featured-chrome","artifacts/dp2-07-featured-edge"]){const m=JSON.parse(fs.readFileSync(dir+"/manifest.json","utf8")); const widths=m.entries.map(e=>e.width).join(","); if(m.count!==6||widths!=="360,390,430,1366,1440,1920") process.exit(1);} console.log("DP2_07_FEATURED_BROWSER_MATRIX PASS chrome=6 edge=6 widths=360,390,430,1366,1440,1920");'
+
           node -e 'const fs=require("fs"); const chrome=JSON.parse(fs.readFileSync("artifacts/visual-regression/manifest.json","utf8")); const edge=JSON.parse(fs.readFileSync("artifacts/visual-regression-edge/manifest.json","utf8")); if(chrome.count!==30||edge.count!==30) process.exit(1); if(!/edge/i.test(edge.browserExecutable)) process.exit(1); const widths=[...new Set(chrome.entries.map(e=>e.width))].sort((a,b)=>a-b).join(","); if(widths!=="360,390,430,1366,1440,1920") process.exit(1); console.log("DP2_RESPONSIVE_BROWSER_MATRIX PASS chrome=30 edge=30 widths="+widths);'
       - name: Upload Chrome and Edge visual regression artifact
         uses: actions/upload-artifact@v4
@@ -369,6 +373,8 @@ jobs:
           path: |
             artifacts/visual-regression
             artifacts/visual-regression-edge
+            artifacts/dp2-07-featured-chrome
+            artifacts/dp2-07-featured-edge
           if-no-files-found: error
           retention-days: 14
 

@@ -1,0 +1,98 @@
+/* ENCHEV AUCTIONS — DESIGN PROCESS 2 / DP2-07
+   Featured vehicle cards and explicit auction-state hierarchy. */
+
+.eaFeaturedV2Section{
+  width:min(var(--ea-layout-wide),calc(100% - (var(--ea-page-gutter) * 2)));
+  margin:0 auto;
+  padding:clamp(56px,6vw,88px) 0;
+}
+.eaFeaturedV2Head{display:flex;align-items:flex-end;justify-content:space-between;gap:28px;margin-bottom:24px}
+.eaFeaturedV2Head>div{max-width:780px}
+.eaFeaturedV2Eyebrow{display:block;margin-bottom:8px;color:var(--ea-brand);font-size:var(--ea-type-label);font-weight:900;letter-spacing:.16em}
+.eaFeaturedV2Head h2{margin:0;color:var(--ea-text-primary);font-size:clamp(2rem,3.6vw,3.45rem);line-height:1;letter-spacing:-.045em}
+.eaFeaturedV2Head p{max-width:720px;margin:10px 0 0;color:var(--ea-text-secondary);font-size:var(--ea-type-body);line-height:1.55}
+.eaFeaturedV2All{min-height:44px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;padding:0 16px;border:1px solid var(--ea-border-default);border-radius:var(--ea-radius-control);color:var(--ea-text-primary);background:var(--ea-action-secondary);text-decoration:none;font-size:var(--ea-type-label-lg);font-weight:850}
+.eaFeaturedV2All:hover,.eaFeaturedV2All:focus-visible{border-color:var(--ea-border-interactive);background:var(--ea-brand-soft)}
+
+.eaFeaturedV2Grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
+.eaFeaturedV2Card{
+  --ea-card-state:var(--ea-state-info);
+  --ea-card-state-soft:var(--ea-state-info-soft);
+  --ea-card-state-border:rgba(114,169,255,.34);
+  min-width:0;
+  overflow:hidden;
+  border:1px solid var(--ea-border-default);
+  border-top:2px solid var(--ea-card-state);
+  border-radius:var(--ea-radius-card);
+  background:linear-gradient(180deg,var(--ea-surface-2),var(--ea-surface-1));
+  box-shadow:var(--ea-elevation-1);
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+.eaFeaturedV2Card[data-auction-state="live"]{--ea-card-state:var(--ea-state-live);--ea-card-state-soft:var(--ea-state-live-soft);--ea-card-state-border:var(--ea-state-live-border);box-shadow:var(--ea-elevation-2),var(--ea-elevation-live)}
+.eaFeaturedV2Card[data-auction-state="buy-now"]{--ea-card-state:var(--ea-state-success);--ea-card-state-soft:var(--ea-state-success-soft);--ea-card-state-border:rgba(99,216,148,.34)}
+.eaFeaturedV2Card[data-auction-state="sold"]{--ea-card-state:var(--ea-state-sold);--ea-card-state-soft:var(--ea-state-sold-soft);--ea-card-state-border:rgba(152,163,156,.30)}
+.eaFeaturedV2Card:hover{transform:translateY(-3px);border-color:var(--ea-card-state-border);box-shadow:var(--ea-elevation-2)}
+.eaFeaturedV2Media{position:relative;aspect-ratio:16/10;min-height:190px;overflow:hidden;background:var(--ea-surface-3)}
+.eaFeaturedV2Media:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(4,7,5,.02) 38%,rgba(4,7,5,.62) 100%);pointer-events:none}
+.eaFeaturedV2Media img{display:block;width:100%;height:100%;object-fit:cover;filter:saturate(.88) contrast(1.03);transition:transform .24s ease}
+.eaFeaturedV2Card:hover .eaFeaturedV2Media img{transform:scale(1.02)}
+.eaFeaturedV2State{position:absolute;z-index:2;top:12px;left:12px;min-height:32px;display:inline-flex;align-items:center;gap:7px;padding:0 10px;border:1px solid var(--ea-card-state-border);border-radius:999px;color:var(--ea-text-primary);background:var(--ea-card-state-soft);backdrop-filter:blur(10px);font-size:.7rem;font-weight:950;letter-spacing:.08em}
+.eaFeaturedV2State i{width:7px;height:7px;border-radius:50%;background:var(--ea-card-state)}
+.eaFeaturedV2Lot{position:absolute;z-index:2;right:12px;bottom:12px;padding:6px 8px;border-radius:8px;color:#ecf4ef;background:rgba(4,8,6,.78);font-size:.68rem;font-weight:900;letter-spacing:.08em}
+.eaFeaturedV2Body{display:flex;min-height:310px;flex-direction:column;padding:16px}
+.eaFeaturedV2Trust{display:flex;align-items:center;justify-content:space-between;gap:10px;color:var(--ea-text-tertiary);font-size:.72rem;font-weight:750}
+.eaFeaturedV2Trust span:first-child{color:var(--ea-text-secondary)}
+.eaFeaturedV2Body h3{margin:9px 0 5px;color:var(--ea-text-primary);font-size:clamp(1.05rem,1.35vw,1.28rem);line-height:1.14;letter-spacing:-.025em}
+.eaFeaturedV2Spec{margin:0;color:var(--ea-text-tertiary);font-size:.78rem;line-height:1.45}
+.eaFeaturedV2StateLine{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;margin-top:15px;padding:12px 0;border-top:1px solid var(--ea-border-subtle);border-bottom:1px solid var(--ea-border-subtle)}
+.eaFeaturedV2StateLine>strong{align-self:center;color:var(--ea-text-primary);font-size:.8rem;line-height:1.35}
+.eaFeaturedV2StateLine>span{display:flex;flex-direction:column;align-items:flex-end;text-align:right}
+.eaFeaturedV2StateLine small{color:var(--ea-text-tertiary);font-size:.62rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+.eaFeaturedV2StateLine time{margin-top:3px;color:var(--ea-text-secondary);font-size:.72rem;font-weight:750}
+.eaFeaturedV2Commerce{display:grid;grid-template-columns:minmax(0,1fr);gap:9px;margin-top:13px}
+.eaFeaturedV2Price,.eaFeaturedV2BuyNow{min-width:0}
+.eaFeaturedV2Price small,.eaFeaturedV2BuyNow small{display:block;color:var(--ea-text-tertiary);font-size:.68rem}
+.eaFeaturedV2Price small b,.eaFeaturedV2BuyNow small b{color:var(--ea-text-secondary);letter-spacing:.06em}
+.eaFeaturedV2Price strong{display:block;margin-top:2px;color:var(--ea-text-primary);font-size:1.38rem;line-height:1.1}
+.eaFeaturedV2BuyNow{padding:9px 10px;border:1px solid rgba(99,216,148,.20);border-radius:10px;background:var(--ea-state-success-soft)}
+.eaFeaturedV2BuyNow strong{display:block;margin-top:2px;color:#d8f8e3;font-size:1rem}
+.eaFeaturedV2Action{min-height:46px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:auto;padding:0 13px;border:1px solid var(--ea-card-state-border);border-radius:var(--ea-radius-control);color:var(--ea-text-primary);background:var(--ea-card-state-soft);text-decoration:none;font-size:.79rem;font-weight:900}
+.eaFeaturedV2Action:hover,.eaFeaturedV2Action:focus-visible{border-color:var(--ea-card-state);background:var(--ea-card-state-soft)}
+.eaFeaturedV2Action b{font-size:1rem}
+
+@media(max-width:1180px){
+  .eaFeaturedV2Grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:720px){
+  .eaFeaturedV2Head{align-items:flex-start;flex-direction:column;gap:14px}
+  .eaFeaturedV2All{width:100%}
+  .eaFeaturedV2Grid{grid-template-columns:1fr}
+  .eaFeaturedV2Body{min-height:0}
+}
+@media(max-width:430px){
+  .eaFeaturedV2Section{padding:52px 0}
+  .eaFeaturedV2Grid{gap:13px}
+  .eaFeaturedV2Media{min-height:200px}
+  .eaFeaturedV2Body{padding:14px}
+  .eaFeaturedV2StateLine{grid-template-columns:1fr}
+  .eaFeaturedV2StateLine>span{align-items:flex-start;text-align:left}
+  .eaFeaturedV2Action{min-height:48px}
+}
+@media(max-width:360px){
+  .eaFeaturedV2Head h2{font-size:1.9rem}
+  .eaFeaturedV2Trust{align-items:flex-start;flex-direction:column;gap:4px}
+  .eaFeaturedV2Media{min-height:184px}
+}
+@media(min-width:1920px){
+  .eaFeaturedV2Grid{gap:18px}
+  .eaFeaturedV2Body{padding:18px;min-height:322px}
+  .eaFeaturedV2Media{min-height:224px}
+}
+@media(prefers-reduced-motion:reduce){
+  .eaFeaturedV2Card,.eaFeaturedV2Media img{transition:none}
+  .eaFeaturedV2Card:hover{transform:none}
+}
+@media(forced-colors:active){
+  .eaFeaturedV2Card,.eaFeaturedV2State,.eaFeaturedV2Action,.eaFeaturedV2BuyNow{border-color:CanvasText}
+  .eaFeaturedV2State i{background:CanvasText}
+}
