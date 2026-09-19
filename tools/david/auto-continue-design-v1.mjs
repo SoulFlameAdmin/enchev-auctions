@@ -159,7 +159,13 @@ function isExternalBlocker(problem) {
   return /(redis|valkey|upstash|vercel|marketplace|environment-secret|environment secret|provider credential|credential|permission|authorization|rate limit|quota|billing|plan limit|external access|legal sign-off|customer data|deployment.*queued|deployment.*initializing)/i.test(String(problem || ""));
 }
 function blockerKey(problem) {
-  return String(problem || "").toLowerCase().replace(/\s+/g, " ").replace(/опит\s*\d+|attempt\s*\d+/g, "").trim();
+  return String(problem || "")
+    .toLowerCase()
+    .replace(/[-_/]+/g, " ")
+    .replace(/[^a-zа-я0-9\s]+/gi, " ")
+    .replace(/\s+/g, " ")
+    .replace(/опит\s*\d+|attempt\s*\d+/g, "")
+    .trim();
 }
 function sameBlocker(a, b) {
   const x = blockerKey(a), y = blockerKey(b);
