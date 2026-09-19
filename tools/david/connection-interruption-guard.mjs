@@ -35,7 +35,8 @@ function managedConversationUrls() {
     [path.join(HERE, ".david-enchev-state.json"), "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71"],
     [path.join(HERE, ".david-enchev-design-state.json"), "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7"],
     [path.join(HERE, ".david-app2-state-6aac2dbb.json"), "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4"],
-    [path.join(HERE, ".david-apk-state.json"), null]
+    [path.join(HERE, ".david-apk-state.json"), null],
+    [path.join(HERE, ".david-control-state.json"), "https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e"]
   ];
   const urls = new Set();
   for (const [file, fallback] of defs) {
@@ -380,7 +381,7 @@ async function main() {
   const browser = await chromium.connectOverCDP(CDP_URL);
   const context = browser.contexts()[0];
   if (!context) throw new Error("No active Chromium context on CDP port.");
-  console.log("[INTERRUPT] Managed-only ChatGPT guard ON. Watches SYSTEM/DESIGN/APP2/APK owned URLs only.");
+  console.log("[INTERRUPT] Managed-only ChatGPT guard ON. Watches CONTROL/SYSTEM/DESIGN/APP2/APK owned URLs only.");
 
   while (true) {
     const pages = context.pages().filter(isManagedChat);
