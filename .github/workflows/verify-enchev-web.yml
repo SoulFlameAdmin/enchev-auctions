@@ -122,6 +122,10 @@ jobs:
         run: node scripts/verify-architecture-decision-records.mjs
       - name: architecture decision records self-tests
         run: node scripts/verify-architecture-decision-records.mjs --self-test
+      - name: 21.01 CountryProfile configuration model
+        run: node scripts/verify-country-profile-model.mjs
+      - name: 21.01 CountryProfile configuration model self-tests
+        run: node scripts/verify-country-profile-model.mjs --self-test
       - name: Redis environment contract invariant
         run: node scripts/verify-redis-environment.mjs
       - name: Redis environment contract self-tests

@@ -12,3 +12,5 @@ export type ConfigPackageBoundary = Readonly<{
   secretFree: true;
   runtimeEnvReads: false;
 }>;
+
+export * from "./country-profile";
