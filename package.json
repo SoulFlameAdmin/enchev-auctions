@@ -38,7 +38,9 @@
     "verify:country-profile-model": "node scripts/verify-country-profile-model.mjs",
     "verify:country-profile-model:self-test": "node scripts/verify-country-profile-model.mjs --self-test",
     "verify:no-country-hardcoding": "node scripts/verify-no-country-hardcoding.mjs",
-    "verify:no-country-hardcoding:self-test": "node scripts/verify-no-country-hardcoding.mjs --self-test"
+    "verify:no-country-hardcoding:self-test": "node scripts/verify-no-country-hardcoding.mjs --self-test",
+    "verify:locale-aware-dates": "node scripts/verify-locale-aware-dates.mjs",
+    "verify:locale-aware-dates:self-test": "node scripts/verify-locale-aware-dates.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
