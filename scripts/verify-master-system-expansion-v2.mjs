@@ -138,7 +138,9 @@ function verifyIntegration() {
   if (!source.includes('expansionState!=="ready"')) fail("FINAL gate must wait for expansion registry load");
   if (!source.includes('const EXPANSION_VERSION = "2.0 APPEND-ONLY"')) fail("expansion version UI binding missing");
   if (!source.includes("dependsOn: Array.isArray(phase.dependsOn)")) fail("Command Center dependency graph mapping missing");
-  if (!source.includes(']}),[open]);') && !source.includes('});\n  },[open]);')) fail("lazy loader must not self-cancel on expansionState transition");
+  if (!source.includes('},[open]);')) fail("lazy loader effect must be keyed only by open state");
+  if (source.includes('[open,expansionState]')) fail("lazy loader must not self-cancel on expansionState transition");
+  if (!source.includes('expansionState==="loading"||expansionState==="ready"')) fail("lazy loader retry/duplicate-load guard missing");
   if (!source.includes("...gaps].filter")) fail("FINAL 100% gate must include append-only GAP tasks");
 
   const docs = readFileSync("docs/MASTER_SYSTEM_EXPANSION_V2.md", "utf8");
