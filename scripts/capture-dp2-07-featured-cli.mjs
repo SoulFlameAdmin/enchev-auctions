@@ -79,7 +79,7 @@ async function waitForFeatured(call){
   }
   await call("Runtime.evaluate",{
     awaitPromise:true,
-    expression:"(async()=>{if(document.fonts?.ready){try{await document.fonts.ready}catch{}};await Promise.all([...document.images].map(img=>img.complete?Promise.resolve():new Promise(r=>{img.addEventListener('load',r,{once:true});img.addEventListener('error',r,{once:true});setTimeout(r,2500)})));const section=document.querySelector('.eaFeaturedV2Section');if(!section)throw new Error('featured section missing before scroll');section.scrollIntoView({block:'start',inline:'nearest'});await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));return true})()",
+    expression:"(async()=>{if(document.fonts?.ready){try{await document.fonts.ready}catch{}};await Promise.all([...document.images].map(img=>img.complete?Promise.resolve():new Promise(r=>{img.addEventListener('load',r,{once:true});img.addEventListener('error',r,{once:true});setTimeout(r,2500)})));const section=document.querySelector('.eaFeaturedV2Section');if(!section)throw new Error('featured section missing before scroll');const shell=document.querySelector('.eaAppShell');const scroller=document.scrollingElement||document.documentElement;scroller.style.scrollBehavior='auto';const shellHeight=shell?.getBoundingClientRect().height||0;scroller.scrollTop=Math.max(0,section.getBoundingClientRect().top+scroller.scrollTop-shellHeight);await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));return true})()",
     returnByValue:true,
   });
 }
