@@ -10,7 +10,7 @@ Identity digest: `FNV1a32 e7c9cf20`
 
 Extend the frozen 1,054-point technical plan into a company-level operating system for a real international vehicle-auction and cross-border vehicle-trading business.
 
-The frozen plan remains immutable. Expansion v2 adds 38 phases (62–99) and 3,226 new evidence-gated system points. Combined baseline: **4,280 system points**, before manually discovered GAP items.
+The frozen plan remains immutable. Expansion v2 adds 38 phases (62–99) and 3,226 new evidence-gated system points. Frozen + expansion baseline is **4,280 system points**. The existing append-only GAP registry currently contains **94 tasks**, so the unified SYSTEM tracker contains **4,374 system points**.
 
 This is not a claim that every jurisdiction has identical legal, tax, customs, payment or consumer rules. Country-specific activation always requires the configured country profile, authoritative external data/providers where applicable, and qualified legal/tax/compliance sign-off where the task requires it.
 
@@ -31,7 +31,9 @@ This is not a claim that every jurisdiction has identical legal, tax, customs, p
 
 - Frozen system tasks: **1,054**
 - Expansion v2 tasks: **3,226**
-- Combined baseline: **4,280**
+- Frozen + expansion baseline: **4,280**
+- Existing append-only GAP tasks: **94**
+- Unified SYSTEM tracker: **4,374**
 - Frozen + expansion test tasks: **1,201**
 - Expansion test tasks: **965**
 - Expansion security tasks: **192**
