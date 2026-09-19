@@ -5,7 +5,7 @@ const EXPECTED_PHASE_COUNT = 38;
 const EXPECTED_TASK_COUNT = 3226;
 const EXPECTED_FIRST_PHASE = 62;
 const EXPECTED_LAST_PHASE = 99;
-const EXPECTED_FNV1A32 = "6276d44d";
+const EXPECTED_FNV1A32 = "e9ef5bae";
 const VALID_KINDS = new Set(["core","test","security","legal","global","ai"]);
 const VALID_STATUS = new Set(["red","yellow","green"]);
 
@@ -49,6 +49,13 @@ function inspect(parts) {
     phaseSeen.add(phase.id);
     if (!String(phase.title || "").trim()) fail(`${phase.id}: missing title`);
     if (!Number.isInteger(phase.wave) || phase.wave < 0 || phase.wave > 14) fail(`${phase.id}: invalid wave`);
+    if (!Array.isArray(phase.dependsOn)) fail(`${phase.id}: dependsOn must be an array`);
+    for (const dep of phase.dependsOn) {
+      if (!/^\\d{2}$/.test(String(dep))) fail(`${phase.id}: invalid dependency ${dep}`);
+      if (String(dep) === String(phase.id)) fail(`${phase.id}: self dependency is forbidden`);
+      const depNum = Number(dep);
+      if (depNum > EXPECTED_LAST_PHASE) fail(`${phase.id}: dependency ${dep} is outside known phase range`);
+    }
     if (!Array.isArray(phase.tasks) || phase.tasks.length < 60 || phase.tasks.length > 99) fail(`${phase.id}: expected 60-99 tasks, got ${phase.tasks?.length}`);
 
     const localLabels = new Set();
@@ -69,7 +76,7 @@ function inspect(parts) {
       kindCounts[task.kind] = (kindCounts[task.kind] || 0) + 1;
       if (task.kind === "test") testCount += 1;
       taskCount += 1;
-      records.push(`${phase.id}|${phase.wave}|${phase.title}|${taskId}|${label}|${task.kind}`);
+      records.push(`${phase.id}|${phase.wave}|${phase.dependsOn.join(",")}|${phase.title}|${taskId}|${label}|${task.kind}`);
     });
   }
 
@@ -85,9 +92,12 @@ function verifyIntegration() {
   if (!source.includes("const expansionPhases: Phase[]")) fail("Command Center expansion phase mapping missing");
   if (!source.includes("[...frozenPhases, ...expansionPhases]")) fail("frozen + expansion merge missing");
   if (!source.includes('const EXPANSION_VERSION = "2.0 APPEND-ONLY"')) fail("expansion version UI binding missing");
+  if (!source.includes("dependsOn: Array.isArray(phase.dependsOn)")) fail("Command Center dependency graph mapping missing");
+  if (!source.includes("...gaps].filter")) fail("FINAL 100% gate must include append-only GAP tasks");
 
   const worker = readFileSync("tools/david/auto-continue-enchev-v5.mjs", "utf8");
   if (!worker.includes("MASTER SYSTEM EXPANSION v2.0 APPEND-ONLY")) fail("SYSTEM worker does not know the expansion source");
+  if (!worker.includes("dependsOn")) fail("SYSTEM worker must obey expansion dependency graph");
   if (worker.includes("не добавяй pricing/payment/finance")) fail("obsolete pricing/payment/finance ban still present");
 }
 
