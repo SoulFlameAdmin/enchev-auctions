@@ -174,7 +174,7 @@ async function conversationLimitReached(page) {
         const s = getComputedStyle(el), r = el.getBoundingClientRect();
         return s.display !== "none" && s.visibility !== "hidden" && r.width > 0 && r.height > 0;
       };
-      const re = /(достигнахте максималната продължителност на този разговор|максималната продължителност на този разговор|maximum length for this conversation|conversation has reached (?:its )?maximum length)/i;
+      const re = /(достигнахте максималната продължителност на този разговор|максималната продължителност на този разговор|maximum length for this conversation|conversation has reached (?:its )?maximum length|maximum conversation length|conversation (?:is )?too long|conversation limit|start a new chat to continue|unable to load conversation|failed to load conversation|conversation not found|conversation unavailable|неуспешно зареждане на разговора|разговорът не е намерен|разговорът не е наличен|започнете нов чат)/i;
       for (const el of document.querySelectorAll("div,section,p,span")) {
         if (!visible(el)) continue;
         const t = (el.textContent || "").replace(/\s+/g, " ").trim();
