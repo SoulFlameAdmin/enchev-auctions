@@ -384,7 +384,7 @@ async function sendAndWait(context, page, state, prompt) {
 
     await fillComposer(composer, prompt);
     await sendComposer(page, composer);
-    if (permit.mode === "probe") await markGlobalSendStarted("CONTROL");
+    await markGlobalSendStarted("CONTROL");
     state.turnsSent = Number(state.turnsSent || 0) + 1;
     state.watchdog = "control-waiting-response";
     save(state, "CONTROL telemetry sent cycle " + state.turnsSent);
