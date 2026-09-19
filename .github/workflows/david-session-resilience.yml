@@ -42,3 +42,25 @@ jobs:
 
       - name: Verify Session Resilience V1
         run: npm run verify:resilience
+
+      - name: Parse PowerShell launch and dashboard scripts
+        shell: pwsh
+        working-directory: .
+        run: |
+          $files = @(
+            "START_DAVID_ALL.ps1",
+            "RESTART_DAVID_ALL_CLEAN.ps1",
+            "STOP_DAVID_ALL_CLEAN.ps1",
+            "tools/david/start-auto-continue.ps1",
+            "tools/david/david-status-dashboard.ps1"
+          )
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file), [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error "$file: $($_.Message)" }
+              exit 1
+            }
+          }
+          Write-Host "DAVID_POWERSHELL_PARSE PASS scripts=$($files.Count)"
