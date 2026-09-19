@@ -16,6 +16,13 @@ const COMPLETE_QUIET_MS = Number(process.env.DAVID_COMPLETE_QUIET_MS || 7000);
 const COMPLETE_STABLE_SAMPLES = Number(process.env.DAVID_COMPLETE_STABLE_SAMPLES || 5);
 const COMPLETE_SAMPLE_MS = Number(process.env.DAVID_COMPLETE_SAMPLE_MS || 1200);
 const PROBLEM_PREFIX = "PROBLEM IN:";
+const ORCHESTRATOR_LAW = `
+DAVID ORCHESTRATOR IMMUTABILITY LAW:
+- During normal SYSTEM/DESIGN/DPP/APK project work, NEVER modify the DAVID infrastructure files in SoulFlameAdmin/enchev-auctions:
+  tools/david/*, START_DAVID_ALL.ps1, STOP_DAVID_ALL_CLEAN.ps1, RESTART_DAVID_ALL_CLEAN.ps1, RESTART_DAVID_ALL.cmd.
+- Those files may be changed only when the current user task explicitly requests DAVID infrastructure/worker/supervisor maintenance.
+- Do not revert, rewrite, format, regenerate or "clean up" those protected files incidentally.
+`;
 const DEPLOY_LAW = `
 DAVID VERCEL DEPLOY LAW:
 - Before ANY Vercel create/update/redeploy, claim the global Supabase lease:
@@ -51,7 +58,7 @@ const DESIGN_PROMPT = `@GitHub @Vercel @Supabase
 Външен blocker като Redis/Valkey/Vercel Marketplace/provider credential/permissions НЕ спира design плана: запиши го и премини към следващата независима D-задача.
 Използвай ${PROBLEM_PREFIX} само ако нов вътрешен технически дефект реално спира всяка безопасна design работа. Преди това опитай безопасна техническа алтернатива.
 
-${DEPLOY_LAW}
+${ORCHESTRATOR_LAW}\n\n${DEPLOY_LAW}
 
 ${MARKER}`;
 
