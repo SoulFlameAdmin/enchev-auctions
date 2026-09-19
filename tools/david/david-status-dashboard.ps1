@@ -1,5 +1,6 @@
 param(
   [int]$RefreshSeconds = 3,
+  [int]$LiveTimerTickMs = 16,
   [string]$Root = "D:\ASI"
 )
 
@@ -193,21 +194,20 @@ function Progress-Bar($Pct, [int]$Width = 42) {
 }
 
 function Format-Countdown([object]$UntilValue) {
-  if (-not $UntilValue) { return "00:00" }
+  if (-not $UntilValue) { return "00:00:00.000" }
   try {
     $until = [DateTimeOffset]::Parse(
       [string]$UntilValue,
       [System.Globalization.CultureInfo]::InvariantCulture,
       [System.Globalization.DateTimeStyles]::RoundtripKind
-    )
-    $now = [DateTimeOffset]::UtcNow
-    $seconds = [math]::Max(0,[math]::Ceiling(($until.ToUniversalTime() - $now).TotalSeconds))
-    $hours = [math]::Floor($seconds / 3600)
-    $minutes = [math]::Floor(($seconds % 3600) / 60)
-    $secs = $seconds % 60
-    if ($hours -gt 0) { return ("{0:D2}:{1:D2}:{2:D2}" -f $hours,$minutes,$secs) }
-    return ("{0:D2}:{1:D2}" -f $minutes,$secs)
-  } catch { return "00:00" }
+    ).ToUniversalTime()
+    $remainingMs = [int64][math]::Max(0,[math]::Ceiling(($until - [DateTimeOffset]::UtcNow).TotalMilliseconds))
+    $hours = [int64][math]::Floor($remainingMs / 3600000)
+    $minutes = [int64][math]::Floor(($remainingMs % 3600000) / 60000)
+    $seconds = [int64][math]::Floor(($remainingMs % 60000) / 1000)
+    $millis = [int64]($remainingMs % 1000)
+    return ("{0:D2}:{1:D2}:{2:D2}.{3:D3}" -f $hours,$minutes,$seconds,$millis)
+  } catch { return "00:00:00.000" }
 }
 
 function Format-LocalTime([object]$UntilValue) {
@@ -229,19 +229,37 @@ function Write-Fit([string]$Text, [ConsoleColor]$Color = [ConsoleColor]::Gray) {
   Write-Host $line -ForegroundColor $Color -BackgroundColor Black
 }
 
+function Write-FitAtRow(
+  [int]$Row,
+  [string]$Text,
+  [ConsoleColor]$Color = [ConsoleColor]::Gray,
+  [int]$RestoreRow = -1
+) {
+  if ($Row -lt 0) { return }
+  try {
+    $width = [math]::Max(80, [Console]::WindowWidth - 1)
+    if ($Text.Length -gt $width) { $Text = $Text.Substring(0, $width) }
+    $line = $Text.PadRight($width)
+    [Console]::SetCursorPosition(0, $Row)
+    Write-Host $line -NoNewline -ForegroundColor $Color -BackgroundColor Black
+    if ($RestoreRow -ge 0) {
+      [Console]::SetCursorPosition(0, $RestoreRow)
+    }
+  } catch {}
+}
+
 function Matrix-Fill {
   try {
-    Clear-Host
+    # Repaint in-place instead of Clear-Host so the live timer never blinks.
+    [Console]::SetCursorPosition(0, 0)
     $w = [math]::Max(80, [Console]::WindowWidth - 1)
     $chars = "01DAVIDSOUL"
     $sb = New-Object System.Text.StringBuilder
     for ($x=0; $x -lt $w; $x++) {
       [void]$sb.Append($chars[(Get-Random -Minimum 0 -Maximum $chars.Length)])
     }
-    Write-Host $sb.ToString() -ForegroundColor DarkGreen -BackgroundColor Black
-  } catch {
-    Clear-Host
-  }
+    Write-Host $sb.ToString().PadRight($w) -ForegroundColor DarkGreen -BackgroundColor Black
+  } catch {}
 }
 
 function Render-Worker([string]$Name, $State) {
@@ -350,6 +368,8 @@ while ($true) {
 
   Write-Fit ""
   Write-Fit "  ------------------------------ CHATGPT RATE LIMIT -----------------------------------------------" Green
+  $rateLimitTimerRow = -1
+  $sendPacerRow = -1
   if ($rateLimit) {
     $rlStatus = [string]$rateLimit.status
     $rlStage = [int]$rateLimit.stage
@@ -360,11 +380,15 @@ while ($true) {
     $nextSendCountdown = Format-Countdown ([string]$rateLimit.nextGlobalSendAt)
     $intervalSec = if ($rateLimit.globalSendIntervalMs) { [math]::Round(([double]$rateLimit.globalSendIntervalMs)/1000) } else { 60 }
     $untilLocal = Format-LocalTime $rlUntil
+    try { $rateLimitTimerRow = [Console]::CursorTop } catch {}
     Write-Fit ("  STATUS={0}  STAGE={1}  RATE_LIMIT_TIMER={2}  UNTIL_LOCAL={3}  PROBE_OWNER={4}" -f $rlStatus,$rlStageText,$rateCountdown,$untilLocal,$(if($rlOwner){$rlOwner}else{"none"})) $(if($rlStatus -eq "clear"){[ConsoleColor]::Green}else{[ConsoleColor]::Yellow})
+    try { $sendPacerRow = [Console]::CursorTop } catch {}
     Write-Fit ("  GLOBAL SEND PACER: min interval={0}s  NEXT_SEND={1}  SLOT_OWNER={2}" -f $intervalSec,$nextSendCountdown,$(if($rateLimit.sendSlotOwner){$rateLimit.sendSlotOwner}else{"none"})) Cyan
   } else {
-    Write-Fit "  STATUS=clear  STAGE=clear  RATE_LIMIT_TIMER=00:00  PROBE_OWNER=none" Green
-    Write-Fit "  GLOBAL SEND PACER: min interval=60s  NEXT_SEND=00:00  SLOT_OWNER=none" Cyan
+    try { $rateLimitTimerRow = [Console]::CursorTop } catch {}
+    Write-Fit "  STATUS=clear  STAGE=clear  RATE_LIMIT_TIMER=00:00:00.000  UNTIL_LOCAL=-  PROBE_OWNER=none" Green
+    try { $sendPacerRow = [Console]::CursorTop } catch {}
+    Write-Fit "  GLOBAL SEND PACER: min interval=60s  NEXT_SEND=00:00:00.000  SLOT_OWNER=none" Cyan
   }
 
   Write-Fit ""
@@ -410,5 +434,25 @@ while ($true) {
   }
   try { $snapshot | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $DashboardState -Encoding UTF8 } catch {}
 
-  Start-Sleep -Seconds ([math]::Max(1,$RefreshSeconds))
+  # Heavy Matrix data refresh remains slow, but countdown rows tick independently
+  # at ~60 Hz with millisecond precision and no screen clear/flicker.
+  $frameUntil = [DateTimeOffset]::UtcNow.AddSeconds([math]::Max(1,$RefreshSeconds))
+  $tickMs = [math]::Max(10,$LiveTimerTickMs)
+  $restoreRow = -1
+  try { $restoreRow = [Console]::CursorTop } catch {}
+
+  while ([DateTimeOffset]::UtcNow -lt $frameUntil) {
+    if ($rateLimit -and $rateLimitTimerRow -ge 0) {
+      $liveRateCountdown = Format-Countdown $rlUntil
+      $liveRateLine = ("  STATUS={0}  STAGE={1}  RATE_LIMIT_TIMER={2}  UNTIL_LOCAL={3}  PROBE_OWNER={4}" -f $rlStatus,$rlStageText,$liveRateCountdown,$untilLocal,$(if($rlOwner){$rlOwner}else{"none"}))
+      Write-FitAtRow $rateLimitTimerRow $liveRateLine $(if($rlStatus -eq "clear"){[ConsoleColor]::Green}else{[ConsoleColor]::Yellow}) $restoreRow
+
+      if ($sendPacerRow -ge 0) {
+        $liveNextSend = Format-Countdown ([string]$rateLimit.nextGlobalSendAt)
+        $livePacerLine = ("  GLOBAL SEND PACER: min interval={0}s  NEXT_SEND={1}  SLOT_OWNER={2}" -f $intervalSec,$liveNextSend,$(if($rateLimit.sendSlotOwner){$rateLimit.sendSlotOwner}else{"none"}))
+        Write-FitAtRow $sendPacerRow $livePacerLine Cyan $restoreRow
+      }
+    }
+    Start-Sleep -Milliseconds $tickMs
+  }
 }
