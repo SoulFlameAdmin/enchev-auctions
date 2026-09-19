@@ -18,6 +18,8 @@ const COMPLETE_SAMPLE_MS = Number(process.env.DAVID_COMPLETE_SAMPLE_MS || 1200);
 const PROBLEM_PREFIX = "PROBLEM IN:";
 const DONE_MARKER = "PROJECT_100_PERCENT_COMPLETE";
 const RELAY_MARKER = "[DAVID_APP2_AUTOPILOT_V2]";
+const TAB_NAME = "DAVID_APP2_MANAGED_V1";
+const PENDING_TAB_NAME = "DAVID_APP2_PENDING_V1";
 const ORCHESTRATOR_LAW = `
 DAVID ORCHESTRATOR IMMUTABILITY LAW:
 - During normal SYSTEM/DESIGN/DPP/APK project work, NEVER modify the DAVID infrastructure files in SoulFlameAdmin/enchev-auctions:
@@ -124,19 +126,53 @@ function deferPrompt(problem, repeat = 1) {
   return `@GitHub @Vercel @Supabase\n\nВъншният blocker е записан и се ОТЛАГА, не го опитвай отново сега:\n${problem}\n\nТова НЕ е причина да спираш DPP Autopilot. F08 може да остане BLOCKED. Веднага отвори source of truth и изпълни най-ранната независима dependency-safe задача. За текущото състояние приоритетът е D01 -> D14. Ако D01 е RED, реализирай D01 сега, пусни приложимите тестове, запиши evidence/status и продължи. Това е defer опит ${repeat}.\n\nНе завършвай с PROBLEM IN само заради същия външен blocker. Ако завършиш реален блок работа: OK. PROBLEM IN е позволено само за нов вътрешен технически дефект, който спира всяка безопасна независима работа.\n\n${ORCHESTRATOR_LAW}\n\n${DEPLOY_LAW}\n\n${RELAY_MARKER}`;
 }
 
+async function pageTag(page) {
+  try { return await page.evaluate(() => window.name || ""); }
+  catch { return ""; }
+}
+
+async function setPageTag(page, value) {
+  try { await page.evaluate((v) => { window.name = v; }, value); }
+  catch {}
+}
+
+async function findTaggedPage(context, names = [TAB_NAME, PENDING_TAB_NAME]) {
+  for (const page of [...context.pages()].reverse()) {
+    if (!page || page.isClosed()) continue;
+    const tag = await pageTag(page);
+    if (names.includes(tag)) return page;
+  }
+  return null;
+}
+
 async function ensurePage(context, current) {
   if (current && !current.isClosed()) {
     const currentUrl = current.url();
-    if (matchesActiveChat(currentUrl)) return current;
-    if (activeChatUrl === "https://chatgpt.com/" && currentUrl.startsWith("https://chatgpt.com/")) return current;
+    if (matchesActiveChat(currentUrl) || (activeChatUrl === "https://chatgpt.com/" && currentUrl.startsWith("https://chatgpt.com/"))) {
+      await setPageTag(current, TAB_NAME);
+      return current;
+    }
   }
+
+  const tagged = await findTaggedPage(context);
+  if (tagged) {
+    await setPageTag(tagged, TAB_NAME);
+    return tagged;
+  }
+
   let page = activeChatUrl === "https://chatgpt.com/"
     ? null
     : context.pages().find((p) => !p.isClosed() && matchesActiveChat(p.url()));
-  if (!page) page = await context.newPage();
+
+  if (!page) {
+    page = await context.newPage();
+    await setPageTag(page, activeChatUrl === "https://chatgpt.com/" ? PENDING_TAB_NAME : TAB_NAME);
+  }
+
   if (!matchesActiveChat(page.url())) {
     await page.goto(activeChatUrl, { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
   }
+  await setPageTag(page, TAB_NAME);
   return page;
 }
 async function conversationLimitReached(page) {
@@ -162,6 +198,7 @@ function syncActiveChatUrl(page, state) {
   activeChatUrl = u;
   state.chatUrl = u;
   state.pendingNewChat = false;
+  void setPageTag(page, TAB_NAME);
   state.lastConversationUrl = u;
   const history = Array.isArray(state.rolloverHistory) ? state.rolloverHistory : [];
   for (let i = history.length - 1; i >= 0; i--) {
@@ -211,18 +248,26 @@ async function rolloverConversation(context, page, state) {
   };
   state.rolloverHistory = [...(Array.isArray(state.rolloverHistory) ? state.rolloverHistory : []), event].slice(-50);
 
-  const newPage = await context.newPage();
-  await newPage.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
   activeChatUrl = "https://chatgpt.com/";
   state.chatUrl = activeChatUrl;
+  save(state, `APP2 rollover #${state.rolloverCount} reserved; adopting/creating one pending tab`);
 
-  if (oldPage && !oldPage.isClosed()) {
+  let newPage = await findTaggedPage(context, [PENDING_TAB_NAME]);
+  if (!newPage || newPage === oldPage || newPage.isClosed()) {
+    newPage = await context.newPage();
+    await setPageTag(newPage, PENDING_TAB_NAME);
+    await newPage.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  }
+  await setPageTag(newPage, TAB_NAME);
+
+  if (oldPage && !oldPage.isClosed() && oldPage !== newPage) {
+    await setPageTag(oldPage, "");
     await oldPage.close({ runBeforeUnload: false }).catch(() => {});
     event.oldTabClosedAt = new Date().toISOString();
   }
   await closeOldConversationTabs(context, oldUrl, newPage);
-  save(state, `Conversation max length -> new tab #${state.rolloverCount}; old tab closed`);
-  console.log(`[APP2] Conversation max length -> NEW TAB #${state.rolloverCount}; OLD TAB CLOSED.`);
+  save(state, `Conversation max length -> single new tab #${state.rolloverCount}; old tab closed`);
+  console.log(`[APP2] Conversation max length -> SINGLE NEW TAB #${state.rolloverCount}; OLD TAB CLOSED.`);
   await sleep(1200);
   return newPage;
 }
