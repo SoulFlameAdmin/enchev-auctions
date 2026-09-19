@@ -1,0 +1,66 @@
+name: DAVID Session Resilience
+
+on:
+  pull_request:
+    paths:
+      - "tools/david/**"
+      - "START_DAVID_ALL.ps1"
+      - "RESTART_DAVID_ALL_CLEAN.ps1"
+      - "STOP_DAVID_ALL_CLEAN.ps1"
+      - ".github/workflows/david-session-resilience.yml"
+  push:
+    branches:
+      - main
+    paths:
+      - "tools/david/**"
+      - "START_DAVID_ALL.ps1"
+      - "RESTART_DAVID_ALL_CLEAN.ps1"
+      - "STOP_DAVID_ALL_CLEAN.ps1"
+      - ".github/workflows/david-session-resilience.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: tools/david
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+
+      - name: Install DAVID automation dependency
+        run: npm install --no-audit --no-fund
+
+      - name: Verify Session Resilience V1
+        run: npm run verify:resilience
+
+      - name: Parse PowerShell launch and dashboard scripts
+        shell: pwsh
+        working-directory: .
+        run: |
+          $files = @(
+            "START_DAVID_ALL.ps1",
+            "RESTART_DAVID_ALL_CLEAN.ps1",
+            "STOP_DAVID_ALL_CLEAN.ps1",
+            "tools/david/start-auto-continue.ps1",
+            "tools/david/david-status-dashboard.ps1"
+          )
+          foreach ($file in $files) {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file), [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) {
+              $errors | ForEach-Object { Write-Error "$file: $($_.Message)" }
+              exit 1
+            }
+          }
+          Write-Host "DAVID_POWERSHELL_PARSE PASS scripts=$($files.Count)"
