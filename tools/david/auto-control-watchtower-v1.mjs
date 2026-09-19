@@ -377,9 +377,7 @@ async function sendAndWait(context, page, state, prompt) {
     }
     if (permit.mode === "probe") {
       state.watchdog = "control-global-rate-limit-probe";
-      save(state, "CONTROL owns the single post-cooldown probe send");
-      await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
-      await sleep(2500);
+      save(state, "CONTROL owns the single post-cooldown probe send; no refresh required");
     }
 
     await fillComposer(composer, prompt);
