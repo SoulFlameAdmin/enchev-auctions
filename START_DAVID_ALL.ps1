@@ -102,7 +102,6 @@ if ($codeUpdated) {
 }
 
 $mainLauncher = Join-Path $Repo "tools\david\start-auto-continue.ps1"
-$app2Launcher = Join-Path $Repo "tools\david\start-app2-autopilot.ps1"
 $dashboard = Join-Path $Repo "tools\david\david-status-dashboard.ps1"
 $pwsh = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
 
@@ -129,16 +128,16 @@ $cdpReady = Test-Cdp -P $Port
 $mainRunning = ($mainNodes.Count -gt 0 -and $cdpReady)
 
 if ($mainNodes.Count -gt 0 -and -not $cdpReady) {
-  Write-Host "[DAVID ALL] Stale SYSTEM/DESIGN/APK supervisor detected without CDP. Killing stale process..." -ForegroundColor Yellow
+  Write-Host "[DAVID ALL] Stale SYSTEM/DESIGN/APP2/APK supervisor detected without CDP. Killing stale process..." -ForegroundColor Yellow
   Stop-MatchingProcesses -Names @("node.exe") -Needles @("dual-session-worker.mjs")
   Start-Sleep -Seconds 1
   $mainRunning = $false
 }
 
 if ($mainRunning) {
-  Write-Host "[DAVID ALL] SYSTEM + DESIGN + APK supervisor healthy. Reusing it." -ForegroundColor Green
+  Write-Host "[DAVID ALL] SYSTEM + DESIGN + APP2 + APK supervisor healthy. Reusing it." -ForegroundColor Green
 } else {
-  Write-Host "[DAVID ALL] Starting SYSTEM + DESIGN + APK supervisor..." -ForegroundColor Cyan
+  Write-Host "[DAVID ALL] Starting SYSTEM + DESIGN + APP2 + APK supervisor..." -ForegroundColor Cyan
   Start-Process -FilePath $pwsh -ArgumentList @(
     "-NoProfile",
     "-ExecutionPolicy", "Bypass",
@@ -148,60 +147,22 @@ if ($mainRunning) {
   )
 
   $mainHealthy = $false
-  for ($i = 0; $i -lt 80; $i++) {
+  for ($i = 0; $i -lt 120; $i++) {
     Start-Sleep -Milliseconds 500
-    $nodes = @(Get-MatchingProcesses -Names @("node.exe") -Needles @("dual-session-worker.mjs"))
-    if ($nodes.Count -gt 0 -and (Test-Cdp -P $Port)) {
+    $supervisorNodes = @(Get-MatchingProcesses -Names @("node.exe") -Needles @("dual-session-worker.mjs"))
+    $app2Nodes = @(Get-MatchingProcesses -Names @("node.exe") -Needles @("auto-complete-app2-v1.mjs"))
+    if ($supervisorNodes.Count -gt 0 -and $app2Nodes.Count -gt 0 -and (Test-Cdp -P $Port)) {
       $mainHealthy = $true
       break
     }
   }
   if (-not $mainHealthy) {
-    throw "SYSTEM + DESIGN + APK supervisor failed health check: dual-session-worker.mjs and CDP $Port were not both ready."
+    throw "Unified DAVID supervisor failed health check: supervisor + APP2 child + CDP $Port were not all ready."
   }
-  Write-Host "[DAVID ALL] SYSTEM + DESIGN + APK supervisor health check PASS." -ForegroundColor Green
+  Write-Host "[DAVID ALL] Unified SYSTEM + DESIGN + APP2 + APK supervisor health check PASS." -ForegroundColor Green
 }
 
 Start-Sleep -Seconds 2
-
-$app2Nodes = @(
-  @(Get-MatchingProcesses -Names @("node.exe") -Needles @(".auto-complete-app2-runtime.mjs")) +
-  @(Get-MatchingProcesses -Names @("node.exe") -Needles @("auto-complete-app2-v1.mjs"))
-)
-$app2Running = ($app2Nodes.Count -gt 0 -and (Test-Cdp -P $Port))
-if ($app2Running) {
-  Write-Host "[DAVID ALL] DPP/APP2 worker healthy. Reusing it." -ForegroundColor Green
-} else {
-  if ($app2Nodes.Count -gt 0) {
-    Write-Host "[DAVID ALL] Stale APP2 process detected. Cleaning it before restart..." -ForegroundColor Yellow
-    Stop-MatchingProcesses -Names @("node.exe") -Needles @(".auto-complete-app2-runtime.mjs")
-    Stop-MatchingProcesses -Names @("node.exe") -Needles @("auto-complete-app2-v1.mjs")
-  }
-  Write-Host "[DAVID ALL] Starting DPP/APP2 worker..." -ForegroundColor Cyan
-  Start-Process -FilePath $pwsh -ArgumentList @(
-    "-NoProfile",
-    "-ExecutionPolicy", "Bypass",
-    "-File", $app2Launcher,
-    "-Port", "$Port"
-  )
-
-  $app2Healthy = $false
-  for ($i = 0; $i -lt 80; $i++) {
-    Start-Sleep -Milliseconds 500
-    $nodes = @(
-      @(Get-MatchingProcesses -Names @("node.exe") -Needles @(".auto-complete-app2-runtime.mjs")) +
-      @(Get-MatchingProcesses -Names @("node.exe") -Needles @("auto-complete-app2-v1.mjs"))
-    )
-    if ($nodes.Count -gt 0 -and (Test-Cdp -P $Port)) {
-      $app2Healthy = $true
-      break
-    }
-  }
-  if (-not $app2Healthy) {
-    throw "DPP/APP2 worker failed health check: APP2 node and CDP $Port were not both ready."
-  }
-  Write-Host "[DAVID ALL] DPP/APP2 health check PASS." -ForegroundColor Green
-}
 
 $dashboardRunning = @(Get-MatchingProcesses -Names @("powershell.exe","pwsh.exe") -Needles @("david-status-dashboard.ps1")).Count -gt 0
 if ($dashboardRunning) {
@@ -225,9 +186,10 @@ Write-Host "  4. DAVID PHONE / APK"
 Write-Host ""
 Write-Host "[DAVID ALL] APK worker auto-discovers a unique recent DAVID Phone / SoulFlame Twins / DAVID APK chat when no exact URL is configured." -ForegroundColor Green
 Write-Host "[DAVID ALL] On max-length rollover the worker opens a new ChatGPT tab, closes the old managed tab, records the new URL/history, and continues there." -ForegroundColor Green
-Write-Host "[DAVID ALL] Duplicate worker launches are blocked by process detection." -ForegroundColor Green
+Write-Host "[DAVID ALL] One unified supervisor owns SYSTEM + DESIGN + APP2 + APK; duplicate launches are blocked." -ForegroundColor Green
 
 Write-Host "[DAVID ALL] FINAL GATE: exact final OK required before any next normal prompt." -ForegroundColor Red
 Write-Host "[DAVID ALL] Recovery laws: active thinking/tool work=>WAIT; no-thinking=>refresh+resend; confirmed interruption=>refresh/verify+resend." -ForegroundColor Yellow
 Write-Host "[DAVID ALL] Vercel deploy coordinator: Supabase global lease; one worker deploys at a time." -ForegroundColor Yellow
 Write-Host "[DAVID ALL] Matrix dashboard starts automatically with live progress + worker report." -ForegroundColor Yellow
+Write-Host "[DAVID ALL] 24/7 SELF-HEAL: stale heartbeat or missing managed tab restarts only the affected worker." -ForegroundColor Yellow
