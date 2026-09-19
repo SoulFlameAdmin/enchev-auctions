@@ -629,6 +629,58 @@ async function settlePage(call,route){
   });
 }
 
+
+export function validateRtlCapabilityRuntime(snapshot,viewport){
+  if(!snapshot||!viewport)fail("21.17 RTL runtime snapshot missing");
+  const tolerance=3;
+  if(snapshot.scrollWidth>snapshot.viewportWidth+tolerance)fail(`21.17 ${viewport.name} horizontal overflow`);
+  if(snapshot.ltr.direction!=="ltr")fail(`21.17 ${viewport.name} LTR direction mismatch`);
+  if(snapshot.rtl.direction!=="rtl")fail(`21.17 ${viewport.name} RTL direction mismatch`);
+  if(!(snapshot.ltr.leadX<snapshot.ltr.tailX))fail(`21.17 ${viewport.name} LTR rail order invalid`);
+  if(!(snapshot.rtl.leadX>snapshot.rtl.tailX))fail(`21.17 ${viewport.name} RTL rail did not mirror`);
+  if(!(snapshot.ltr.borderLeft>snapshot.ltr.borderRight))fail(`21.17 ${viewport.name} LTR border-inline-start mismatch`);
+  if(!(snapshot.rtl.borderRight>snapshot.rtl.borderLeft))fail(`21.17 ${viewport.name} RTL border-inline-start mismatch`);
+  if(!(snapshot.ltr.markerX<snapshot.ltr.centerX))fail(`21.17 ${viewport.name} LTR inset-inline-start mismatch`);
+  if(!(snapshot.rtl.markerX>snapshot.rtl.centerX))fail(`21.17 ${viewport.name} RTL inset-inline-start did not mirror`);
+  return true;
+}
+
+async function verifyRtlCapabilityPage({port,baseUrl,viewport}){
+  const target=await openTarget(port);
+  const {ws,call}=await createCdpClient(target.webSocketDebuggerUrl);
+  try{
+    await call("Page.enable");
+    await call("Runtime.enable");
+    await call("Emulation.setDeviceMetricsOverride",{
+      width:viewport.width,height:viewport.height,deviceScaleFactor:1,mobile:viewport.mobile,
+      screenWidth:viewport.width,screenHeight:viewport.height,
+    });
+
+    const url=new URL("/rtl-capability",baseUrl).toString();
+    const navigation=await call("Page.navigate",{url});
+    if(navigation.errorText)fail(`21.17 ${viewport.name} navigation failed: ${navigation.errorText}`);
+
+    for(let attempt=0;attempt<80;attempt++){
+      const ready=await call("Runtime.evaluate",{
+        expression:"document.readyState==='complete'&&Boolean(document.querySelector('[data-rtl-capability-page]'))",
+        returnByValue:true,
+      });
+      if(ready?.result?.value===true)break;
+      if(attempt===79)fail(`21.17 ${viewport.name} RTL acceptance page not ready`);
+      await sleep(100);
+    }
+
+    const result=await call("Runtime.evaluate",{
+      expression:`(()=>{const ltr=document.querySelector('[data-rtl-probe="ltr"]');const rtl=document.querySelector('[data-rtl-probe="rtl"]');if(!ltr||!rtl)return null;const read=(el)=>{const lead=el.querySelector('[data-rail-item="lead"]');const tail=el.querySelector('[data-rail-item="tail"]');const marker=el.querySelector('[data-inline-marker]');const er=el.getBoundingClientRect();const lr=lead.getBoundingClientRect();const tr=tail.getBoundingClientRect();const mr=marker.getBoundingClientRect();const cs=getComputedStyle(el);return {direction:cs.direction,borderLeft:parseFloat(cs.borderLeftWidth)||0,borderRight:parseFloat(cs.borderRightWidth)||0,leadX:lr.left+lr.width/2,tailX:tr.left+tr.width/2,markerX:mr.left+mr.width/2,centerX:er.left+er.width/2};};return {viewportWidth:innerWidth,scrollWidth:document.documentElement.scrollWidth,ltr:read(ltr),rtl:read(rtl)};})()`,
+      returnByValue:true,
+    });
+    validateRtlCapabilityRuntime(result?.result?.value,viewport);
+  }finally{
+    try{ws.close();}catch{}
+    await closeTarget(port,target.id);
+  }
+}
+
 async function captureOne({port,baseUrl,route,viewport,outputDir}){
   const target=await openTarget(port);
   const {ws,call}=await createCdpClient(target.webSocketDebuggerUrl);
@@ -736,6 +788,9 @@ export async function captureScreenshots(baseUrl,outputDir="artifacts/visual-reg
   try{
     await waitForDevTools(port,browser,stderrRef);
     const entries=[];
+    for(const viewport of VIEWPORTS){
+      await verifyRtlCapabilityPage({port,baseUrl,viewport});
+    }
     for(const route of ROUTES){
       for(const viewport of VIEWPORTS){
         entries.push(await captureOne({port,baseUrl,route,viewport,outputDir}));
@@ -801,7 +856,18 @@ if(process.argv.includes("--self-test")){
   try{validateD24Runtime({...d24Mobile,panel:{...d24Mobile.panel,top:760}},{name:"mobile",mobile:true});}catch{rejected=true;}
   if(!rejected)fail("D24 negative self-test did not reject mobile current/next overlap");
 
-  console.log("VISUAL_REGRESSION_CAPTURE_SELF_TEST PASS matrix=5x6 widths=360,390,430,1366,1440,1920 negative_cases=6 d23_runtime=desktop+mobile d24_runtime=desktop+mobile protocol=cdp");
+  const rtlSnapshot={viewportWidth:390,scrollWidth:390,ltr:{direction:"ltr",borderLeft:4,borderRight:1,leadX:60,tailX:180,markerX:30,centerX:195},rtl:{direction:"rtl",borderLeft:1,borderRight:4,leadX:330,tailX:210,markerX:360,centerX:195}};
+  validateRtlCapabilityRuntime(rtlSnapshot,{name:"mobile",mobile:true});
+
+  rejected=false;
+  try{validateRtlCapabilityRuntime({...rtlSnapshot,rtl:{...rtlSnapshot.rtl,leadX:150,tailX:260}},{name:"mobile",mobile:true});}catch{rejected=true;}
+  if(!rejected)fail("21.17 negative self-test did not reject non-mirrored RTL rail");
+
+  rejected=false;
+  try{validateRtlCapabilityRuntime({...rtlSnapshot,scrollWidth:450},{name:"mobile",mobile:true});}catch{rejected=true;}
+  if(!rejected)fail("21.17 negative self-test did not reject RTL overflow");
+
+  console.log("VISUAL_REGRESSION_CAPTURE_SELF_TEST PASS matrix=5x6 widths=360,390,430,1366,1440,1920 negative_cases=8 d23_runtime=desktop+mobile d24_runtime=desktop+mobile rtl_runtime=ltr+rtl protocol=cdp");
 }else{
   const baseUrl=process.argv[2]||"http://127.0.0.1:3011";
   await captureScreenshots(baseUrl);
