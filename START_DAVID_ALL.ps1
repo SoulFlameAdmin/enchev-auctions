@@ -165,6 +165,7 @@ if ($mainRunning) {
 }
 
 $tabStateFile = Join-Path $Repo "tools\david\.david-tab-monitor.json"
+$tabHealthStartedAt = Get-Date
 $tabsHealthy = $false
 $lastTabStatus = "monitor-not-ready"
 for ($i = 0; $i -lt 180; $i++) {
@@ -173,6 +174,10 @@ for ($i = 0; $i -lt 180; $i++) {
     if (-not (Test-Path $tabStateFile)) { continue }
     $tabState = Get-Content -Raw -LiteralPath $tabStateFile | ConvertFrom-Json
     if (-not $tabState.managed) { continue }
+    try {
+      $checkedAt = [datetime]$tabState.checkedAt
+      if ($checkedAt -lt $tabHealthStartedAt.AddSeconds(-2)) { continue }
+    } catch { continue }
     $sc = @($tabState.managed.SYSTEM).Count
     $dc = @($tabState.managed.DESIGN).Count
     $ac = @($tabState.managed.APP2).Count
