@@ -108,3 +108,17 @@ Do not invent secrets, results, deployments or test evidence.
 - Project blockers are not session-health failures: Redis/Valkey/provider credentials, Vercel quota/deploy blockers, failing tests, and ordinary PROBLEM IN project work normally require WAIT, not refresh/restart.
 - The local supervisor independently rejects CONTROL REFRESH/RESTART commands when the target watchdog or browser UI shows active thinking, writing, tool work, final-OK waiting, sending, settling, or send-timeout recovery.
 - CONTROL suggestions never override CAPTCHA/MFA/login/permission restrictions, exact-final-OK laws, deploy coordination, or worker-specific safety laws.
+
+
+## 7. Finite-plan completion law
+- When a finite project plan is fully verified complete, DAVID must not invent new numbered scope just to keep a worker busy.
+- For Enchev DESIGN specifically, app/design-plan-evidence.json is the local completion source: D01-D36 must be exactly 36/36 GREEN.
+- If the completed DESIGN conversation reaches maximum length:
+  1. open one replacement DESIGN chat;
+  2. close the old managed DESIGN tab;
+  3. send exactly one completion handoff into the replacement chat;
+  4. require final exact OK;
+  5. enter design-idle-complete / monitor state.
+- While DESIGN remains 36/36 GREEN, the worker sends no new normal design prompts.
+- If a D-task later becomes non-green, DESIGN leaves idle automatically and resumes from the earliest affected task.
+- Slow loading of the replacement chat is not a restart condition: wait up to the configured ready window, use only bounded refresh attempts, then back off while keeping heartbeat alive.
