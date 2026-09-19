@@ -466,9 +466,23 @@ async function main() {
   save(state, "CONTROL starting");
 
   const { chromium } = await import("playwright-core");
-  const browser = await chromium.connectOverCDP(CDP_URL, { timeout: 60000 });
-  const context = browser.contexts()[0];
-  if (!context) throw new Error("CONTROL: no shared Edge context");
+  let browser = null;
+  let context = null;
+  while (!context) {
+    try {
+      browser = await chromium.connectOverCDP(CDP_URL, { timeout: 120000 });
+      context = browser.contexts()[0] || null;
+      if (!context) throw new Error("CONTROL: no shared Edge context");
+    } catch (error) {
+      state.watchdog = "control-cdp-wait";
+      save(state, `CONTROL CDP not ready: ${error?.message || error}; WAIT 5s -> reconnect`);
+      console.log(`[CONTROL] CDP not ready: ${error?.message || error}. WAIT 5s -> reconnect. Worker stays alive.`);
+      try { await browser?.close(); } catch {}
+      browser = null;
+      context = null;
+      await sleep(5000);
+    }
+  }
   let page = await ensurePage(context, null, state);
   console.log("[CONTROL] Session ready: " + page.url());
 
