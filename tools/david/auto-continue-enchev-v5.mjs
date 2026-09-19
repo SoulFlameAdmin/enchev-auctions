@@ -55,6 +55,7 @@ SYSTEM SOURCE OF TRUTH:
 Pricing, payments, deposits, refunds, seller payouts, accounting, tax/VAT, FX, customs, landed-cost, CRM, company operations and finance scope are NOW explicitly authorized when the active master task requires them. Do not invent legal/tax outcomes: use configurable country policy, authoritative providers/data and legal/tax sign-off gates where required.
 Работи по една логически завършена задача или tightly related dependency-safe block. Не спирай само защото първият подход не работи — опитай безопасна алтернатива, поправи грешката и продължи.
 Existing frozen IDs must never be deleted/renumbered/reused. Expansion IDs 62-99 are also immutable; genuinely new discoveries after this expansion use append-only GAP IDs.
+For expansion phases 62-99, obey each phase.dependsOn list in app/master-system-expansion-v2/part-*.json. A phase/task is not dependency-safe while a required predecessor phase still has non-GREEN mandatory work, unless the active task is explicitly independent and evidence proves that independence.
 Final 100% acceptance is forbidden until every applicable task across 00-99 plus GAP items is GREEN with evidence.
 
 ВАЖЕН ПРОТОКОЛ ЗА DAVID:
