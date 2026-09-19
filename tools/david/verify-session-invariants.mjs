@@ -101,13 +101,38 @@ for (const required of [
   if (!designSource.includes(required)) throw new Error(`DESIGN response helper missing after session refactor: ${required}`);
 }
 
+const guardSource = read("connection-interruption-guard.mjs");
+for (const required of [
+  "SEND_TIMEOUT_STALE_ACTIVE_MS",
+  "sendTimeoutFirstSeenAt",
+  "sendTimeoutLastProgressAt",
+  "Retry UI now takes precedence",
+  "focus({ timeout: 3000 })",
+  "force: true"
+]) {
+  if (!guardSource.includes(required)) throw new Error(`Guard recovery invariant missing: ${required}`);
+}
+
+for (const file of ["auto-continue-enchev-v5.mjs","auto-continue-design-v1.mjs","auto-complete-app2-v1.mjs","auto-continue-david-apk-v1.mjs"]) {
+  const source = read(file);
+  if (!source.includes("focus({ timeout: 3000 })") || !source.includes("force: true")) {
+    throw new Error(`Pointer-safe ChatGPT composer fallback missing: ${file}`);
+  }
+}
+
+const coordinatorSource = read("chatgpt-rate-limit-coordinator.mjs");
+if (!coordinatorSource.includes("releaseWorkerLeases")) {
+  throw new Error("Rate-limit coordinator must release dead worker leases");
+}
+
 const supervisor = read("dual-session-worker.mjs");
 for (const required of [
   "STRICT_CHATGPT_TAB_TARGET",
   "DEDICATED_DAVID_PROFILE",
   "cleanupUnknownChatGptTabs",
   "snapshot.totalChatGptTabs > STRICT_CHATGPT_TAB_TARGET",
-  "pageShowsActiveWork"
+  "pageShowsActiveWork",
+  "releaseWorkerLeases(spec.name, \"exited\")"
 ]) {
   if (!supervisor.includes(required)) throw new Error(`Supervisor missing invariant: ${required}`);
 }
@@ -115,4 +140,4 @@ if (/allFiveOwned/.test(supervisor)) {
   throw new Error("Unmanaged-tab cleanup must not depend on all five workers already being healthy");
 }
 
-console.log("DAVID_SESSION_INVARIANTS PASS same_tab_rollover=5 project_ok_rotation=4 strict_tab_budget=5 active_work_protected=1 fresh_restart_wiring=5");
+console.log("DAVID_SESSION_INVARIANTS PASS same_tab_rollover=5 project_ok_rotation=4 strict_tab_budget=5 active_work_protected=1 fresh_restart_wiring=5 pointer_safe_send=4 stale_timeout_retry=1 dead_worker_lease_release=1");
