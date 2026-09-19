@@ -124,7 +124,9 @@ try{
       const snapshot=runtime?.result?.value;
       if(!snapshot||snapshot.scrollWidth>snapshot.viewportWidth+3)fail("responsive overflow width="+width);
       if(snapshot.states.join(",")!=="upcoming,buy-now,live,sold")fail("auction state order mismatch width="+width);
-      const anchorCeiling=Math.max(4,(snapshot.shellBottom||0)+4);\n      if(snapshot.sectionTop<-4||snapshot.sectionTop>anchorCeiling)fail("featured section did not anchor near viewport top width="+width+" top="+snapshot.sectionTop+" shellBottom="+snapshot.shellBottom+" scrollY="+snapshot.scrollY);\n      if(snapshot.sectionBottom<=anchorCeiling)fail("featured section is not visible after anchor width="+width);
+      const anchorCeiling=Math.max(4,(snapshot.shellBottom||0)+4);
+      if(snapshot.sectionTop<-4||snapshot.sectionTop>anchorCeiling)fail("featured section did not anchor near viewport top width="+width+" top="+snapshot.sectionTop+" shellBottom="+snapshot.shellBottom+" scrollY="+snapshot.scrollY);
+      if(snapshot.sectionBottom<=anchorCeiling)fail("featured section is not visible after anchor width="+width);
       for(const card of snapshot.visible){
         if(card.left<-3||card.right>width+3)fail("card escapes viewport width="+width);
       }
