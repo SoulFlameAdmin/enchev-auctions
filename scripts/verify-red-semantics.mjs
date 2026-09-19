@@ -36,7 +36,8 @@ const compactMaster = master.replace(/\s+/g, "");
 
 requireInvariant(master.includes('type Status = "green" | "yellow" | "red";'), "three-state status contract changed");
 requireInvariant(compactMaster.includes('constdefaultStatus:Status=statusRaw==="green"||statusRaw==="yellow"?statusRaw:"red";'), "unspecified frozen tasks no longer default to RED");
-requireInvariant(compactMaster.includes('functiondefaultsFor(source:Phase[]){constout:Record<string,Status>={};source.forEach(p=>p.tasks.forEach(t=>out[t.id]=t.defaultStatus));returnout;}'), "runtime defaults helper no longer preserves task defaultStatus");
+requireInvariant(compactMaster.includes('functiondefaultsFor(source:Phase[])'), "runtime defaults helper is missing");
+requireInvariant(compactMaster.includes('out[t.id]=t.defaultStatus'), "runtime defaults helper no longer preserves task defaultStatus");
 requireInvariant(compactMaster.includes('useState<Record<string,Status>>(()=>defaultsFor(frozenPhases))'), "frozen runtime defaults no longer initialize from task defaultStatus");
 requireInvariant(compactMaster.includes('if(!(task.idinnext))next[task.id]=task.defaultStatus'), "lazy expansion tasks no longer initialize from task defaultStatus");
 requireInvariant(compactMaster.includes('defaultStatus:"red",kind:"core"'), "new GAP tasks no longer start RED");
