@@ -110,7 +110,10 @@ function assertEnchevIdentity(sources){
   }
 
   const home=sources["app/page.tsx"];
-  if(!/className="eaBrand"[\s\S]*?<strong>ENCHEV<\/strong>[\s\S]*?<span>AUCTIONS<\/span>/.test(home)){
+  const appShell=sources["app/components/EnchevAppShell.tsx"]||"";
+  const legacyHomeBrand=/className="eaBrand"[\s\S]*?<strong>ENCHEV<\/strong>[\s\S]*?<span>AUCTIONS<\/span>/.test(home);
+  const unifiedShellBrand=/className="eaAppBrand"[\s\S]*?<strong>ENCHEV<\/strong>[\s\S]*?<span>AUCTIONS<\/span>/.test(appShell);
+  if(!legacyHomeBrand&&!unifiedShellBrand){
     fail("homepage ENCHEV AUCTIONS brand lockup missing");
   }
 
