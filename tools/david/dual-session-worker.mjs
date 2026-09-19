@@ -3,6 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { chromium } from "playwright-core";
+import { releaseWorkerLeases } from "./chatgpt-rate-limit-coordinator.mjs";
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1"));
 const SYSTEM = path.join(HERE, "auto-continue-enchev-v5.mjs");
@@ -174,6 +175,13 @@ function launch(spec) {
 
     console.log(`[DUAL] ${spec.name} exited code=${code} signal=${signal || "none"} generation=${generation}`);
     if (!shuttingDown && current === child) {
+      void releaseWorkerLeases(spec.name, "exited").then((st) => {
+        if (st?.probeOwner !== spec.name && st?.sendSlotOwner !== spec.name) {
+          console.log(`[DUAL] ${spec.name} global send/probe leases released after exit.`);
+        }
+      }).catch((error) => {
+        console.log(`[DUAL] ${spec.name} lease release skipped: ${error?.message || error}`);
+      });
       scheduleRestart(spec, 3000, "owned worker exit");
     }
   });
