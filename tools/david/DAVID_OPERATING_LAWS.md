@@ -70,3 +70,13 @@ Project keys:
 ## 4. Evidence and safety
 GREEN requires implementation + applicable PASS test + concrete evidence.
 Do not invent secrets, results, deployments or test evidence.
+
+
+## 5. 24/7 supervisor health
+- One unified supervisor owns SYSTEM, DESIGN, DPP/APP2 and DAVID APK.
+- Startup is successful only after all four managed ChatGPT tabs are present exactly once: SYSTEM=1, DESIGN=1, APP2=1, APK=1.
+- Worker state files act as heartbeats.
+- A stale worker heartbeat or a missing owned tab triggers restart of only the affected worker.
+- Tab ownership is persisted by current chat URL; relay markers are fallback discovery only.
+- Duplicate managed tabs are cleaned automatically.
+- A clean restart preserves profile/login/state and must not report success if stop/start health checks fail.
