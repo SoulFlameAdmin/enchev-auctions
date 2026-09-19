@@ -248,7 +248,7 @@ while ($true) {
   Write-Fit ""
   Write-Fit "  ------------------------------ DAVID LAWS -------------------------------------------------------" Green
   Write-Fit "  FINAL GATE => NO EXACT FINAL OK = NO NEXT NORMAL PROMPT" Red
-  Write-Fit "  STOPS THINKING/WRITING => bounded RESEND | NO THINKING START => REFRESH + RESEND" Yellow
+  Write-Fit "  ACTIVE THINKING/TOOL WORK => WAIT | LONG NO-PROGRESS >600s => REFRESH/VERIFY/RESEND" Yellow
   Write-Fit "  INTERRUPTED => CONFIRM + INACTIVE + NO PROGRESS => REFRESH/VERIFY/RESEND | NEVER STOP ACTIVE GPT" Yellow
   Write-Fit "  EXTERNAL BLOCKER => DEFER + independent work | CAPTCHA/MFA/LOGIN/PERMISSION => NEVER BYPASS" Yellow
   Write-Fit "  VERCEL => GLOBAL SUPABASE LEASE; ONLY ONE WORKER MAY DEPLOY AT A TIME" Yellow
