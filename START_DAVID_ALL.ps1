@@ -159,8 +159,33 @@ if ($mainRunning) {
   if (-not $mainHealthy) {
     throw "Unified DAVID supervisor failed health check: supervisor + APP2 child + CDP $Port were not all ready."
   }
-  Write-Host "[DAVID ALL] Unified SYSTEM + DESIGN + APP2 + APK supervisor health check PASS." -ForegroundColor Green
+  Write-Host "[DAVID ALL] Unified process/CDP health check PASS." -ForegroundColor Green
 }
+
+$tabStateFile = Join-Path $Repo "tools\david\.david-tab-monitor.json"
+$tabsHealthy = $false
+$lastTabStatus = "monitor-not-ready"
+for ($i = 0; $i -lt 180; $i++) {
+  Start-Sleep -Seconds 1
+  try {
+    if (-not (Test-Path $tabStateFile)) { continue }
+    $tabState = Get-Content -Raw -LiteralPath $tabStateFile | ConvertFrom-Json
+    if (-not $tabState.managed) { continue }
+    $sc = @($tabState.managed.SYSTEM).Count
+    $dc = @($tabState.managed.DESIGN).Count
+    $ac = @($tabState.managed.APP2).Count
+    $kc = @($tabState.managed.APK).Count
+    $lastTabStatus = "SYSTEM=$sc DESIGN=$dc APP2=$ac APK=$kc ChatGPT=$($tabState.totalChatGptTabs)"
+    if ($sc -eq 1 -and $dc -eq 1 -and $ac -eq 1 -and $kc -eq 1) {
+      $tabsHealthy = $true
+      break
+    }
+  } catch {}
+}
+if (-not $tabsHealthy) {
+  throw "DAVID managed-tab health check failed after 180s: $lastTabStatus"
+}
+Write-Host "[DAVID ALL] 4/4 managed GPT tabs health check PASS: $lastTabStatus" -ForegroundColor Green
 
 Start-Sleep -Seconds 2
 
