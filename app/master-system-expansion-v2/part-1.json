@@ -390,6 +390,12 @@
           "kind": "test",
           "defaultStatus": "red"
         }
+      ],
+      "dependsOn": [
+        "00",
+        "02",
+        "04",
+        "32"
       ]
     },
     {
@@ -811,6 +817,12 @@
           "kind": "global",
           "defaultStatus": "red"
         }
+      ],
+      "dependsOn": [
+        "15",
+        "54",
+        "59",
+        "62"
       ]
     },
     {
@@ -1263,6 +1275,11 @@
           "kind": "security",
           "defaultStatus": "red"
         }
+      ],
+      "dependsOn": [
+        "21",
+        "63",
+        "67"
       ]
     },
     {
@@ -1715,6 +1732,17 @@
           "kind": "security",
           "defaultStatus": "red"
         }
+      ],
+      "dependsOn": [
+        "04",
+        "05",
+        "16",
+        "24",
+        "52",
+        "63",
+        "64",
+        "67",
+        "69"
       ]
     },
     {
@@ -2167,6 +2195,13 @@
           "kind": "legal",
           "defaultStatus": "red"
         }
+      ],
+      "dependsOn": [
+        "03",
+        "24",
+        "64",
+        "65",
+        "67"
       ]
     },
     {
@@ -2609,6 +2644,12 @@
           "kind": "global",
           "defaultStatus": "red"
         }
+      ],
+      "dependsOn": [
+        "15",
+        "21",
+        "54",
+        "63"
       ]
     },
     {
@@ -3061,6 +3102,11 @@
           "kind": "legal",
           "defaultStatus": "red"
         }
+      ],
+      "dependsOn": [
+        "65",
+        "66",
+        "67"
       ]
     },
     {
@@ -3503,6 +3549,14 @@
           "kind": "global",
           "defaultStatus": "red"
         }
+      ],
+      "dependsOn": [
+        "05",
+        "52",
+        "53",
+        "54",
+        "63",
+        "65"
       ]
     },
     {
@@ -3950,6 +4004,15 @@
           "kind": "global",
           "defaultStatus": "red"
         }
+      ],
+      "dependsOn": [
+        "21",
+        "39",
+        "46",
+        "54",
+        "60",
+        "63",
+        "67"
       ]
     },
     {
@@ -4397,6 +4460,14 @@
           "kind": "global",
           "defaultStatus": "red"
         }
+      ],
+      "dependsOn": [
+        "06",
+        "21",
+        "39",
+        "54",
+        "60",
+        "70"
       ]
     }
   ]
