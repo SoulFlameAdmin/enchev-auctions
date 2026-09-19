@@ -1,5 +1,8 @@
 import fs from "node:fs";
-import * as ts from "typescript";
+import os from "node:os";
+import path from "node:path";
+import { spawnSync } from "node:child_process";
+import { pathToFileURL } from "node:url";
 
 const SOURCE_PATH = "packages/config/src/country-profile.ts";
 const INDEX_PATH = "packages/config/src/index.ts";
@@ -29,23 +32,45 @@ function verifySourceContract(source, indexSource, docSource) {
   if (!docSource.includes("market activation logic")) fail("documentation must preserve downstream market-gate ownership");
 }
 
-async function loadRuntime(source) {
-  const result = ts.transpileModule(source, {
-    compilerOptions: {
-      target: ts.ScriptTarget.ES2022,
-      module: ts.ModuleKind.ES2022
-    },
-    reportDiagnostics: true
-  });
-
-  const diagnostics = result.diagnostics || [];
-  const errors = diagnostics.filter((item) => item.category === ts.DiagnosticCategory.Error);
-  if (errors.length > 0) {
-    fail("TypeScript transpilation produced diagnostics");
+function findCompiledModule(dir) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      const nested = findCompiledModule(full);
+      if (nested) return nested;
+    } else if (entry.isFile() && entry.name === "country-profile.js") {
+      return full;
+    }
   }
+  return null;
+}
 
-  const encoded = Buffer.from(result.outputText, "utf8").toString("base64");
-  return import(`data:text/javascript;base64,${encoded}`);
+async function loadRuntime() {
+  const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "enchev-country-profile-"));
+  try {
+    const tscPath = path.resolve("node_modules/typescript/bin/tsc");
+    const result = spawnSync(process.execPath, [
+      tscPath,
+      SOURCE_PATH,
+      "--target", "ES2022",
+      "--module", "ES2022",
+      "--moduleResolution", "Bundler",
+      "--skipLibCheck",
+      "--outDir", tempDir,
+      "--pretty", "false"
+    ], { encoding: "utf8" });
+
+    if (result.status !== 0) {
+      fail(`TypeScript compile failed: ${(result.stderr || result.stdout || "").trim()}`);
+    }
+
+    const compiled = findCompiledModule(tempDir);
+    if (!compiled) fail("compiled CountryProfile runtime module was not produced");
+
+    return await import(`${pathToFileURL(compiled).href}?v=${Date.now()}`);
+  } finally {
+    fs.rmSync(tempDir, { recursive: true, force: true });
+  }
 }
 
 function expectInvalid(validateCountryProfile, label, fixture) {
@@ -59,7 +84,7 @@ const docSource = fs.readFileSync(DOC_PATH, "utf8");
 
 verifySourceContract(source, indexSource, docSource);
 
-const runtime = await loadRuntime(source);
+const runtime = await loadRuntime();
 if (runtime.COUNTRY_PROFILE_MODEL_VERSION !== 1) fail("runtime model version drift");
 if (typeof runtime.validateCountryProfile !== "function") fail("runtime validator export missing");
 
