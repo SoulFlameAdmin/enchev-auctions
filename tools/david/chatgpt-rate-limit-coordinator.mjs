@@ -21,6 +21,7 @@ function defaultState() {
     blockedUntil: null,
     probeOwner: null,
     probeLeaseUntil: null,
+    probeSendStartedAt: null,
     lastRateLimitAt: null,
     lastRateLimitBy: null,
     lastSuccessAt: null,
@@ -85,9 +86,9 @@ export async function reportRateLimit(worker, evidence = "too many requests") {
     const st = readStateRaw();
     const now = Date.now();
 
-    // Repeated observations during the same active block are evidence echoes,
-    // not new escalation events.
-    if (st.status === "blocked" && msUntil(st.blockedUntil) > 0) {
+    // Repeated observations during a block, even if its timer just expired,
+    // are UI echoes. They must never escalate 10 -> 20 -> 40 by themselves.
+    if (st.status === "blocked") {
       st.lastRateLimitAt = nowIso();
       st.lastRateLimitBy = worker;
       st.lastEvidence = evidence;
@@ -96,6 +97,14 @@ export async function reportRateLimit(worker, evidence = "too many requests") {
 
     let nextStage = 0;
     if (st.status === "probe") {
+      // Escalate only after the single probe owner has actually begun a new
+      // post-cooldown send. A stale popup seen before that is not a new event.
+      if (!st.probeSendStartedAt) {
+        st.lastRateLimitAt = nowIso();
+        st.lastRateLimitBy = worker;
+        st.lastEvidence = evidence + " (stale-before-probe-send)";
+        return writeStateRaw(st);
+      }
       nextStage = Math.min(2, Math.max(0, Number(st.stage || 0) + 1));
     } else if (Number(st.stage) >= 0 && st.lastSuccessAt == null) {
       nextStage = Math.min(2, Number(st.stage) + 1);
@@ -109,6 +118,7 @@ export async function reportRateLimit(worker, evidence = "too many requests") {
       blockedUntil: new Date(now + waitMs).toISOString(),
       probeOwner: null,
       probeLeaseUntil: null,
+      probeSendStartedAt: null,
       lastRateLimitAt: nowIso(),
       lastRateLimitBy: worker,
       lastEvidence: evidence,
@@ -138,6 +148,7 @@ export async function waitForGlobalSendPermit(worker, onWait = null) {
           status: "probe",
           probeOwner: worker,
           probeLeaseUntil: new Date(now + PROBE_LEASE_MS).toISOString(),
+          probeSendStartedAt: null,
           blockedUntil: null
         });
         return { allow: true, mode: "probe", state: probe };
@@ -152,7 +163,8 @@ export async function waitForGlobalSendPermit(worker, onWait = null) {
           const probe = writeStateRaw({
             ...st,
             probeOwner: worker,
-            probeLeaseUntil: new Date(now + PROBE_LEASE_MS).toISOString()
+            probeLeaseUntil: new Date(now + PROBE_LEASE_MS).toISOString(),
+            probeSendStartedAt: null
           });
           return { allow: true, mode: "probe", state: probe };
         }
@@ -170,6 +182,17 @@ export async function waitForGlobalSendPermit(worker, onWait = null) {
     await sleep(Math.min(POLL_MS, Math.max(1000, decision.waitMs || POLL_MS)));
   }
 }
+export async function markProbeSendStarted(worker) {
+  return withLock(async () => {
+    const st = readStateRaw();
+    if (st.status !== "probe" || st.probeOwner !== worker) return st;
+    return writeStateRaw({
+      ...st,
+      probeSendStartedAt: nowIso()
+    });
+  });
+}
+
 export async function reportProbeSuccess(worker) {
   return withLock(async () => {
     const st = readStateRaw();
@@ -193,6 +216,7 @@ export function formatRateLimitState(state = readStateRaw()) {
     blockedUntil: state.blockedUntil,
     probeOwner: state.probeOwner,
     probeLeaseUntil: state.probeLeaseUntil,
+    probeSendStartedAt: state.probeSendStartedAt,
     lastRateLimitBy: state.lastRateLimitBy,
     lastRateLimitAt: state.lastRateLimitAt,
     lastSuccessBy: state.lastSuccessBy,
