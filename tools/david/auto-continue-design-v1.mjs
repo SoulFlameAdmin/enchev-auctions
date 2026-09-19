@@ -109,11 +109,11 @@ ${problem}
 
 Не завършвай с PROBLEM IN само заради същия външен blocker. PROBLEM IN е само за нов вътрешен технически дефект, който спира всяка безопасна design работа.
 
-${DEPLOY_LAW}
+${ORCHESTRATOR_LAW}\n\n${DEPLOY_LAW}
 ${MARKER}`;
 }
 function fixPrompt(problem, attempt) {
-  return `@GitHub @Vercel @Supabase\n\nDESIGN PROBLEM:\n${problem}\n\nTRY TO MAKE THIS FIX YOURSELF NOW. Опит ${attempt}. Провери repo/deployment и приложи безопасен fix или алтернатива. Не измисляй evidence. Не заобикаляй CAPTCHA/MFA/login/permissions и не прави destructive действие без разрешение.\n\nАко fix-ът е доказан: OK\nАко още е блокирано: ${PROBLEM_PREFIX} <точният оставащ проблем>\n\nСлед успешен fix продължи следващата D-задача от docs/DESIGN_PLAN_V1.md.\n\n${DEPLOY_LAW}\n${MARKER}`;
+  return `@GitHub @Vercel @Supabase\n\nDESIGN PROBLEM:\n${problem}\n\nTRY TO MAKE THIS FIX YOURSELF NOW. Опит ${attempt}. Провери repo/deployment и приложи безопасен fix или алтернатива. Не измисляй evidence. Не заобикаляй CAPTCHA/MFA/login/permissions и не прави destructive действие без разрешение.\n\nАко fix-ът е доказан: OK\nАко още е блокирано: ${PROBLEM_PREFIX} <точният оставащ проблем>\n\nСлед успешен fix продължи следващата D-задача от docs/DESIGN_PLAN_V1.md.\n\n${ORCHESTRATOR_LAW}\n\n${DEPLOY_LAW}\n${MARKER}`;
 }
 
 async function ensurePage(context, current) {
