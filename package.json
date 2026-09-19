@@ -42,7 +42,9 @@
     "verify:locale-aware-dates": "node scripts/verify-locale-aware-dates.mjs",
     "verify:locale-aware-dates:self-test": "node scripts/verify-locale-aware-dates.mjs --self-test",
     "verify:timezone-aware-display": "node scripts/verify-timezone-aware-display.mjs",
-    "verify:timezone-aware-display:self-test": "node scripts/verify-timezone-aware-display.mjs --self-test"
+    "verify:timezone-aware-display:self-test": "node scripts/verify-timezone-aware-display.mjs --self-test",
+    "verify:bg-locale": "node scripts/verify-bg-locale.mjs",
+    "verify:bg-locale:self-test": "node scripts/verify-bg-locale.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
