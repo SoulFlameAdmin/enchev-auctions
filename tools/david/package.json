@@ -1,10 +1,11 @@
 {
   "name": "enchev-david-auto-continue",
-  "version": "1.5.1",
+  "version": "1.5.2",
   "private": true,
   "type": "module",
   "scripts": {
-    "start": "node dual-session-worker.mjs"
+    "start": "node dual-session-worker.mjs",
+    "verify:sessions": "node verify-session-invariants.mjs"
   },
   "dependencies": {
     "playwright-core": "1.63.0"
