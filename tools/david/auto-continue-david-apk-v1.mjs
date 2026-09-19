@@ -9,6 +9,7 @@ import { CHATGPT_ROOT, rotateOwnedChatPage } from "./chatgpt-session-rotation.mj
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const STATE_FILE = process.env.DAVID_APK_STATE_FILE || path.join(process.cwd(), ".david-apk-state.json");
 const ENV_CHAT_URL = process.env.DAVID_APK_CHAT_URL || "";
+const FRESH_SESSION_ON_START = process.env.DAVID_FRESH_SESSIONS_ON_START === "1";
 const POLL_MS = Number(process.env.DAVID_APK_POLL_MS || 900);
 const START_TIMEOUT_MS = Number(process.env.DAVID_APK_START_TIMEOUT_MS || 60000);
 const STALL_MS = Number(process.env.DAVID_APK_STALL_MS || 600000);
@@ -155,6 +156,7 @@ async function discoverApkChat(context) {
 }
 
 async function ensureApkUrl(context, state) {
+  if (FRESH_SESSION_ON_START && activeChatUrl === CHATGPT_ROOT) return null;
   const fromEnv = cleanConversationUrl(ENV_CHAT_URL);
   const fromState = cleanConversationUrl(state.chatUrl);
   activeChatUrl = fromEnv || fromState || activeChatUrl;
@@ -193,7 +195,7 @@ async function findTaggedPage(context, names = [TAB_NAME, PENDING_TAB_NAME]) {
 }
 
 async function ensurePage(context, current, state) {
-  const target = await ensureApkUrl(context, state);
+  const target = (FRESH_SESSION_ON_START && activeChatUrl === CHATGPT_ROOT) ? null : await ensureApkUrl(context, state);
   if (!target && activeChatUrl !== "https://chatgpt.com/") return null;
 
   if (current && !current.isClosed()) {
@@ -448,15 +450,19 @@ async function waitSendTimeoutRecovery(context, page, state) {
 
 async function waitReady(context, page, state) {
   while (true) {
-    if (!activeChatUrl || activeChatUrl === "https://chatgpt.com/") {
-      if (activeChatUrl === "https://chatgpt.com/" && page && !page.isClosed()) {
-        if (await composer(page)) return page;
-      } else {
-        const found = await ensureApkUrl(context, state);
-        if (!found) { await sleep(3000); continue; }
+    if (FRESH_SESSION_ON_START && activeChatUrl === CHATGPT_ROOT) {
+      page = await ensurePage(context, page, state);
+    } else {
+      if (!activeChatUrl || activeChatUrl === "https://chatgpt.com/") {
+        if (activeChatUrl === "https://chatgpt.com/" && page && !page.isClosed()) {
+          if (await composer(page)) return page;
+        } else {
+          const found = await ensureApkUrl(context, state);
+          if (!found) { await sleep(3000); continue; }
+        }
       }
+      page = await ensurePage(context, page, state);
     }
-    page = await ensurePage(context, page, state);
     if (!page) { await sleep(3000); continue; }
     if (page.url().includes("/login") || page.url().includes("/auth/")) { await sleep(1500); continue; }
     if (await conversationLimitReached(page)) {
@@ -494,7 +500,9 @@ async function runPrompt(context, page, state, prompt, kind) {
     page = await waitReady(context, page, state);
     const base = hash(await latestAssistant(page));
     const outgoing = state.justRolledOver
-      ? `AUTOMATIC CHAT ROLLOVER: The previous DAVID Phone/APK conversation reached its maximum length. Reconstruct the exact current state from SoulFlameAdmin/soulflame-twins, PR #111, branch history and CI evidence. Continue from the next unfinished dependency-safe task. Do NOT restart completed work.\n\n${prompt}`
+      ? state.freshStartPending
+        ? `AUTOMATIC FRESH RESTART HANDOFF: DAVID restarted cleanly into a new DAVID Phone/APK ChatGPT conversation. Reconstruct the exact current state from SoulFlameAdmin/soulflame-twins, PR #111, branch history and CI evidence. Continue from the next unfinished dependency-safe task. Do NOT restart completed work.\n\n${prompt}`
+        : `AUTOMATIC CHAT ROLLOVER: The previous DAVID Phone/APK conversation reached its maximum length. Reconstruct the exact current state from SoulFlameAdmin/soulflame-twins, PR #111, branch history and CI evidence. Continue from the next unfinished dependency-safe task. Do NOT restart completed work.\n\n${prompt}`
       : prompt;
     state.watchdog = kind === "fix" ? "apk-fixing-problem" : "apk-sending-relay";
     save(state, kind === "fix" ? "APK: sending fix instruction" : "APK: sending next task");
@@ -573,6 +581,7 @@ async function runPrompt(context, page, state, prompt, kind) {
         if (h !== last) { last = h; lastActivity = Date.now(); }
         if (await complete(page, base)) {
           if (state.justRolledOver) state.justRolledOver = false;
+          if (state.freshStartPending) state.freshStartPending = false;
           syncChatUrl(page, state);
           state.lastAssistantHash = h;
           await reportProbeSuccess("APK");
@@ -627,7 +636,18 @@ async function main() {
     state.watchdog = "global-rate-limit-state-sanitized";
     save(state, "Cleared stale ChatGPT rate-limit problem from APK project state; coordinator owns cooldown");
   }
-  activeChatUrl = cleanConversationUrl(ENV_CHAT_URL) || cleanConversationUrl(state.chatUrl) || "";
+  if (FRESH_SESSION_ON_START) {
+    state.previousChatUrl = cleanConversationUrl(state.chatUrl) || state.previousChatUrl || null;
+    state.chatUrl = CHATGPT_ROOT;
+    state.pendingNewChat = true;
+    state.justRolledOver = true;
+    state.freshStartPending = true;
+    state.watchdog = "apk-fresh-session-boot";
+    activeChatUrl = CHATGPT_ROOT;
+    save(state, "FRESH SESSION BOOT: APK old chat URL ignored; project state preserved");
+  } else {
+    activeChatUrl = cleanConversationUrl(ENV_CHAT_URL) || cleanConversationUrl(state.chatUrl) || "";
+  }
   let page = await waitReady(context, null, state);
   if (state.previousChatUrl) await closeOldConversationTabs(context, state.previousChatUrl, page);
   console.log(`[APK] Session ready: ${page.url()}`);

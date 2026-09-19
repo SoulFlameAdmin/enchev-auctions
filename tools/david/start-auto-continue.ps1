@@ -1,7 +1,8 @@
 param(
   [int]$Port = 9444,
   [int]$MaxTurns = 30,
-  [switch]$ResumeOnStart
+  [switch]$ResumeOnStart,
+  [switch]$FreshSessions
 )
 
 $ErrorActionPreference = "Stop"
@@ -9,6 +10,8 @@ $ChatUrl = "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71"
 $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Root = if (Test-Path "D:\ASI") { "D:\ASI" } else { Join-Path $env:LOCALAPPDATA "DAVID" }
 $ProfileDir = Join-Path $Root "DAVID_CHATGPT_PROFILE"
+$FreshMode = $FreshSessions -or ($env:DAVID_FRESH_SESSIONS_ON_START -eq "1")
+$LaunchUrl = if ($FreshMode) { "https://chatgpt.com/" } else { $ChatUrl }
 
 # Keep this file ASCII-only so Windows PowerShell 5.1 cannot corrupt UTF-8 text.
 $PortableGit = "D:\ASI\tools\PortableGit"
@@ -76,7 +79,7 @@ if (-not (Test-Cdp -P $Port)) {
     "--user-data-dir=$ProfileDir",
     "--no-first-run",
     "--no-default-browser-check",
-    $ChatUrl
+    $LaunchUrl
   )
   $ok = $false
   for ($i = 0; $i -lt 40; $i++) {
@@ -107,9 +110,11 @@ try {
   $env:DAVID_CDP_URL = "http://127.0.0.1:$Port"
   $env:DAVID_CHAT_URL = $ChatUrl
   $env:DAVID_MAX_TURNS = "$MaxTurns"
+  if ($FreshMode) { $env:DAVID_FRESH_SESSIONS_ON_START = "1" } else { Remove-Item Env:DAVID_FRESH_SESSIONS_ON_START -ErrorAction SilentlyContinue }
 
   Write-Host ""
-  Write-Host "[DAVID] TARGET: $ChatUrl" -ForegroundColor Green
+  Write-Host "[DAVID] TARGET: $LaunchUrl" -ForegroundColor Green
+  if ($FreshMode) { Write-Host "[DAVID] FRESH SESSION MODE: old conversation URLs ignored for this boot; profile/login/project state preserved." -ForegroundColor Magenta }
   Write-Host "[DAVID] Continuous mode: GPT reports PROBLEM IN or OK; DAVID keeps working." -ForegroundColor Green
   Write-Host "[DAVID] Ctrl+C manually stops the local process." -ForegroundColor Yellow
   Write-Host ""

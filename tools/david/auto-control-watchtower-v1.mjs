@@ -7,6 +7,7 @@ import { CHATGPT_ROOT, rotateOwnedChatPage } from "./chatgpt-session-rotation.mj
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1"));
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const INITIAL_CHAT_URL = process.env.DAVID_CONTROL_CHAT_URL || "https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e";
+const FRESH_SESSION_ON_START = process.env.DAVID_FRESH_SESSIONS_ON_START === "1";
 const STATE_FILE = process.env.DAVID_CONTROL_STATE_FILE || path.join(HERE, ".david-control-state.json");
 const MONITOR_FILE = path.join(HERE, ".david-tab-monitor.json");
 const COMMAND_FILE = path.join(HERE, ".david-control-command.json");
@@ -25,7 +26,7 @@ const LOAD_RETRY_BACKOFF_MS = Number(process.env.DAVID_CONTROL_LOAD_RETRY_BACKOF
 const DECISION_WARMUP_MS = Number(process.env.DAVID_CONTROL_DECISION_WARMUP_MS || 180000);
 const TELEMETRY_MAX_AGE_MS = Number(process.env.DAVID_CONTROL_TELEMETRY_MAX_AGE_MS || 60000);
 
-let activeChatUrl = INITIAL_CHAT_URL;
+let activeChatUrl = FRESH_SESSION_ON_START ? CHATGPT_ROOT : INITIAL_CHAT_URL;
 
 function sleep(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
 function nowIso() { return new Date().toISOString(); }
@@ -41,7 +42,7 @@ function saveJson(file, value) {
 }
 function loadState() {
   const st = readJson(STATE_FILE) || {};
-  if (cleanConversationUrl(st.chatUrl)) activeChatUrl = cleanConversationUrl(st.chatUrl);
+  if (!FRESH_SESSION_ON_START && cleanConversationUrl(st.chatUrl)) activeChatUrl = cleanConversationUrl(st.chatUrl);
   return st;
 }
 function save(state, action) {
@@ -460,6 +461,15 @@ async function sendAndWait(context, page, state, prompt) {
 
 async function main() {
   const state = loadState();
+  if (FRESH_SESSION_ON_START) {
+    state.previousChatUrl = cleanConversationUrl(state.chatUrl) || state.previousChatUrl || null;
+    state.pendingNewChat = true;
+    state.freshStartPending = true;
+    activeChatUrl = CHATGPT_ROOT;
+    state.chatUrl = CHATGPT_ROOT;
+    state.watchdog = "control-fresh-session-boot";
+    save(state, "FRESH SESSION BOOT: CONTROL old chat URL ignored; watchtower state preserved");
+  }
   if (/ChatGPT platform: (?:global )?rate limit/i.test(String(state.problem || ""))) {
     state.problem = null;
     delete state.problemRetryAt;

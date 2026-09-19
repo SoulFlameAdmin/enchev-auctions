@@ -11,7 +11,8 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(HERE, "..", "..");
 const DESIGN_EVIDENCE_FILE = path.join(REPO_ROOT, "app", "design-process-2-evidence.json");
 const INITIAL_CHAT_URL = process.env.DAVID_DESIGN_CHAT_URL || "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7";
-let activeChatUrl = INITIAL_CHAT_URL;
+const FRESH_SESSION_ON_START = process.env.DAVID_FRESH_SESSIONS_ON_START === "1";
+let activeChatUrl = FRESH_SESSION_ON_START ? CHATGPT_ROOT : INITIAL_CHAT_URL;
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const STATE_FILE = process.env.DAVID_DESIGN_STATE_FILE || path.join(process.cwd(), ".david-enchev-design-state.json");
 const POLL_MS = Number(process.env.DAVID_DESIGN_POLL_MS || 900);
@@ -559,7 +560,9 @@ async function runPrompt(context, page, state, prompt, kind) {
     const outgoingPrompt = state.justRolledOver
       ? kind === "handoff"
         ? prompt
-        : `AUTOMATIC CHAT ROLLOVER: The previous Enchev Design conversation reached its maximum length. Reconstruct the exact design state from GitHub, docs/DESIGN_PROCESS_2.md and evidence, then continue from the next unfinished D-task. Do NOT restart completed work.\n\n${prompt}`
+        : state.freshStartPending
+          ? `AUTOMATIC FRESH RESTART HANDOFF: DAVID restarted cleanly into a new Enchev Design ChatGPT conversation. Reconstruct exact design state from GitHub, docs/DESIGN_PROCESS_2.md and evidence, then continue from the next unfinished D-task. Do NOT restart completed work.\n\n${prompt}`
+          : `AUTOMATIC CHAT ROLLOVER: The previous Enchev Design conversation reached its maximum length. Reconstruct the exact design state from GitHub, docs/DESIGN_PROCESS_2.md and evidence, then continue from the next unfinished D-task. Do NOT restart completed work.\n\n${prompt}`
       : prompt;
     const permit = await waitForGlobalSendPermit("DESIGN", async (decision) => {
       state.watchdog = "global-rate-limit-wait";
@@ -594,6 +597,7 @@ async function runPrompt(context, page, state, prompt, kind) {
           if (!doneAfterTimeout.blocker && !doneAfterTimeout.stalled) {
             state.lastAssistantHash = hash(doneAfterTimeout.text);
             if (state.justRolledOver) state.justRolledOver = false;
+            if (state.freshStartPending) state.freshStartPending = false;
             syncActiveChatUrl(page, state);
             await reportProbeSuccess("DESIGN");
             delete state.problemRetryAt;
@@ -676,6 +680,7 @@ async function runPrompt(context, page, state, prompt, kind) {
     if (done.stalled) { state.watchdog = "design-stalled-resend"; save(state, "LAW: Design GPT stopped thinking/writing -> resend"); console.log("[DESIGN] LAW: stopped thinking/writing -> RESEND."); await sleep(800); continue; }
     state.lastAssistantHash = hash(done.text);
     if (state.justRolledOver) state.justRolledOver = false;
+            if (state.freshStartPending) state.freshStartPending = false;
     syncActiveChatUrl(page, state);
     await reportProbeSuccess("DESIGN");
     delete state.problemRetryAt;
@@ -708,7 +713,18 @@ async function main() {
     state.watchdog = "global-rate-limit-state-sanitized";
     save(state, "Cleared stale ChatGPT rate-limit problem from DESIGN project state; coordinator owns cooldown");
   }
-  activeChatUrl = state.chatUrl || INITIAL_CHAT_URL;
+  if (FRESH_SESSION_ON_START) {
+    state.previousChatUrl = cleanConversationUrl(state.chatUrl) || state.previousChatUrl || null;
+    state.chatUrl = CHATGPT_ROOT;
+    state.pendingNewChat = true;
+    state.justRolledOver = true;
+    state.freshStartPending = true;
+    state.watchdog = "design-fresh-session-boot";
+    activeChatUrl = CHATGPT_ROOT;
+    save(state, "FRESH SESSION BOOT: DESIGN old chat URL ignored; project state preserved");
+  } else {
+    activeChatUrl = state.chatUrl || INITIAL_CHAT_URL;
+  }
   let page = await waitReady(context, await ensurePage(context, null), state);
   syncActiveChatUrl(page, state);
   if (state.previousChatUrl) await closeOldConversationTabs(context, state.previousChatUrl, page);

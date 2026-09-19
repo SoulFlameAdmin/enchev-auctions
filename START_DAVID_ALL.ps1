@@ -1,6 +1,7 @@
 param(
   [int]$Port = 9444,
-  [switch]$ForceRestart
+  [switch]$ForceRestart,
+  [switch]$FreshSessions
 )
 
 $ErrorActionPreference = "Stop"
@@ -133,13 +134,18 @@ if ($mainRunning) {
   Write-Host "[DAVID ALL] CONTROL + SYSTEM + DESIGN PROCESS 2 + APP2 + APK supervisor healthy. Reusing it." -ForegroundColor Green
 } else {
   Write-Host "[DAVID ALL] Starting CONTROL + SYSTEM + DESIGN PROCESS 2 + APP2 + APK supervisor..." -ForegroundColor Cyan
-  Start-Process -FilePath $pwsh -ArgumentList @(
+  $launcherArgs = @(
     "-NoProfile",
     "-ExecutionPolicy", "Bypass",
     "-File", $mainLauncher,
     "-Port", "$Port",
     "-MaxTurns", "2147483647"
   )
+  if ($FreshSessions) {
+    $launcherArgs += "-FreshSessions"
+    Write-Host "[DAVID ALL] FRESH SESSION MODE requested: CONTROL + SYSTEM + DESIGN + APP2 + APK will each create/adopt a new ChatGPT conversation." -ForegroundColor Magenta
+  }
+  Start-Process -FilePath $pwsh -ArgumentList $launcherArgs
 
   $mainHealthy = $false
   for ($i = 0; $i -lt 120; $i++) {
@@ -259,8 +265,12 @@ Write-Host "  3. ENCHEV DESIGN PROCESS 2"
 Write-Host "  4. DPP / APP2"
 Write-Host "  5. DAVID PHONE / APK"
 Write-Host ""
-Write-Host "[DAVID ALL] APK worker auto-discovers a unique recent DAVID Phone / SoulFlame Twins / DAVID APK chat when no exact URL is configured." -ForegroundColor Green
-Write-Host "[DAVID ALL] On max-length rollover the worker opens a new ChatGPT tab, closes the old managed tab, records the new URL/history, and continues there." -ForegroundColor Green
+if ($FreshSessions) {
+  Write-Host "[DAVID ALL] FRESH SESSION MODE: old GPT conversation URLs are ignored for this boot; source-of-truth/project state remains preserved." -ForegroundColor Magenta
+} else {
+  Write-Host "[DAVID ALL] APK worker auto-discovers a unique recent DAVID Phone / SoulFlame Twins / DAVID APK chat when no exact URL is configured." -ForegroundColor Green
+}
+Write-Host "[DAVID ALL] Session rollover stays in the same owned browser tab, waits for a ready composer, and then continues in a fresh ChatGPT conversation." -ForegroundColor Green
 Write-Host "[DAVID ALL] One unified supervisor owns CONTROL + SYSTEM + DESIGN + APP2 + APK; duplicate launches are blocked." -ForegroundColor Green
 Write-Host "[DAVID ALL] CONTROL WATCHTOWER: https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e" -ForegroundColor Magenta
 Write-Host "[DAVID ALL] CONTROL can request only allowlisted WAIT/REFRESH/RESTART/CLEAN_DUPLICATES actions after exact final OK." -ForegroundColor Magenta

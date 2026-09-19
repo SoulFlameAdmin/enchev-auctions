@@ -70,6 +70,24 @@ for (const [name, file, rotateAfterOk] of workerFiles) {
   }
 }
 
+for (const [name, file] of workerFiles) {
+  const source = read(file);
+  for (const required of ["DAVID_FRESH_SESSIONS_ON_START", "FRESH_SESSION_ON_START"]) {
+    if (!source.includes(required)) throw new Error(`${name} fresh-session boot missing invariant: ${required}`);
+  }
+}
+const repoRoot = path.resolve(HERE, "..", "..");
+for (const [file, required] of [
+  ["RESTART_DAVID_ALL_CLEAN.ps1", ["FreshSessions", "FRESH SESSION MODE"]],
+  ["START_DAVID_ALL.ps1", ["FreshSessions", "FRESH SESSION MODE"]],
+  [path.join("tools", "david", "start-auto-continue.ps1"), ["FreshSessions", "DAVID_FRESH_SESSIONS_ON_START", "https://chatgpt.com/"]]
+]) {
+  const source = fs.readFileSync(path.join(repoRoot, file), "utf8");
+  for (const token of required) {
+    if (!source.includes(token)) throw new Error(`Fresh restart wiring missing in ${file}: ${token}`);
+  }
+}
+
 const designSource = read("auto-continue-design-v1.mjs");
 for (const required of [
   "async function composer(page)",
@@ -97,4 +115,4 @@ if (/allFiveOwned/.test(supervisor)) {
   throw new Error("Unmanaged-tab cleanup must not depend on all five workers already being healthy");
 }
 
-console.log("DAVID_SESSION_INVARIANTS PASS same_tab_rollover=5 project_ok_rotation=4 strict_tab_budget=5 active_work_protected=1");
+console.log("DAVID_SESSION_INVARIANTS PASS same_tab_rollover=5 project_ok_rotation=4 strict_tab_budget=5 active_work_protected=1 fresh_restart_wiring=5");
