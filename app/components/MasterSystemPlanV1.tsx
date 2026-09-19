@@ -2,10 +2,6 @@
 
 import { useEffect, useMemo, useState } from "react";
 import DesignProcess2 from "./DesignProcess2";
-import expansionPart1 from "../master-system-expansion-v2/part-1.json";
-import expansionPart2 from "../master-system-expansion-v2/part-2.json";
-import expansionPart3 from "../master-system-expansion-v2/part-3.json";
-import expansionPart4 from "../master-system-expansion-v2/part-4.json";
 
 type Status = "green" | "yellow" | "red";
 type Kind = "core" | "test" | "security" | "legal" | "global" | "ai";
@@ -129,22 +125,34 @@ const frozenPhases: Phase[] = raw.map(([id,title,items]) => ({ id, title, wave: 
   return { id: `${id}.${String(index+1).padStart(2,"0")}`, label, defaultStatus, kind };
 }) }));
 
-const expansionParts = [expansionPart1, expansionPart2, expansionPart3, expansionPart4];
-const expansionPhases: Phase[] = expansionParts.flatMap((part) => part.phases.map((phase) => ({
-  id: String(phase.id),
-  title: String(phase.title),
-  wave: Number(phase.wave),
-  dependsOn: Array.isArray(phase.dependsOn) ? phase.dependsOn.map(String) : [],
-  tasks: phase.tasks.map((task,index) => ({
-    id: `${phase.id}.${String(index+1).padStart(2,"0")}`,
-    label: String(task.label),
-    defaultStatus: task.defaultStatus as Status,
-    kind: task.kind as Kind
-  }))
-})));
+type ExpansionPart = {
+  phases: Array<{
+    id: string;
+    title: string;
+    wave: number;
+    dependsOn?: string[];
+    tasks: Array<{ label: string; defaultStatus: Status; kind: Kind }>;
+  }>;
+};
 
-const phases: Phase[] = [...frozenPhases, ...expansionPhases]
-  .sort((a,b)=>a.wave-b.wave || a.id.localeCompare(b.id,undefined,{numeric:true}));
+function mapExpansionParts(parts: ExpansionPart[]): Phase[] {
+  return parts.flatMap((part) => part.phases.map((phase) => ({
+    id: String(phase.id),
+    title: String(phase.title),
+    wave: Number(phase.wave),
+    dependsOn: Array.isArray(phase.dependsOn) ? phase.dependsOn.map(String) : [],
+    tasks: phase.tasks.map((task,index) => ({
+      id: `${phase.id}.${String(index+1).padStart(2,"0")}`,
+      label: String(task.label),
+      defaultStatus: task.defaultStatus as Status,
+      kind: task.kind as Kind
+    }))
+  })));
+}
+
+function sortPhases(items: Phase[]): Phase[] {
+  return [...items].sort((a,b)=>a.wave-b.wave || a.id.localeCompare(b.id,undefined,{numeric:true}));
+}
 
 const VERIFIED_EVIDENCE: Record<string,string> = {
   "01.01": "GitHub repository verified: SoulFlameAdmin/enchev-auctions",
@@ -154,12 +162,38 @@ const VERIFIED_EVIDENCE: Record<string,string> = {
 };
 
 const SK="enchev-system-status-v5", NK="enchev-system-notes-v5", GK="enchev-system-gaps-v5", CK="enchev-system-realtime-v5";
-function defaults(){ const out:Record<string,Status>={}; phases.forEach(p=>p.tasks.forEach(t=>out[t.id]=t.defaultStatus)); return out; }
+function defaultsFor(source:Phase[]){ const out:Record<string,Status>={}; source.forEach(p=>p.tasks.forEach(t=>out[t.id]=t.defaultStatus)); return out; }
 
 export default function MasterSystemPlanV1(){
-  const [menu,setMenu]=useState(false), [open,setOpen]=useState(false), [design2Open,setDesign2Open]=useState(false), [statuses,setStatuses]=useState<Record<string,Status>>(defaults), [notes,setNotes]=useState<Notes>({}), [gaps,setGaps]=useState<Task[]>([]), [filter,setFilter]=useState<"all"|Status>("all"), [query,setQuery]=useState(""), [gapText,setGapText]=useState(""), [now,setNow]=useState(new Date());
+  const [menu,setMenu]=useState(false), [open,setOpen]=useState(false), [design2Open,setDesign2Open]=useState(false);
+  const [expansionPhases,setExpansionPhases]=useState<Phase[]>([]);
+  const [expansionState,setExpansionState]=useState<"idle"|"loading"|"ready"|"error">("idle");
+  const phases=useMemo(()=>sortPhases([...frozenPhases,...expansionPhases]),[expansionPhases]);
+  const [statuses,setStatuses]=useState<Record<string,Status>>(()=>defaultsFor(frozenPhases)), [notes,setNotes]=useState<Notes>({}), [gaps,setGaps]=useState<Task[]>([]), [filter,setFilter]=useState<"all"|Status>("all"), [query,setQuery]=useState(""), [gapText,setGapText]=useState(""), [now,setNow]=useState(new Date());
 
   useEffect(()=>{ try{ const s=localStorage.getItem(SK),n=localStorage.getItem(NK),g=localStorage.getItem(GK); if(s)setStatuses(c=>({...c,...JSON.parse(s)})); if(n)setNotes(JSON.parse(n)); if(g)setGaps(JSON.parse(g)); }catch{} },[]);
+  useEffect(()=>{
+    if((!menu&&!open)||expansionState!=="idle") return;
+    let cancelled=false;
+    setExpansionState("loading");
+    Promise.all([
+      import("../master-system-expansion-v2/part-1.json"),
+      import("../master-system-expansion-v2/part-2.json"),
+      import("../master-system-expansion-v2/part-3.json"),
+      import("../master-system-expansion-v2/part-4.json")
+    ]).then((mods)=>{
+      if(cancelled)return;
+      const mapped=mapExpansionParts(mods.map((mod)=>mod.default as unknown as ExpansionPart));
+      setExpansionPhases(mapped);
+      setStatuses((previous)=>{
+        const next={...previous};
+        for(const phase of mapped) for(const task of phase.tasks) if(!(task.id in next)) next[task.id]=task.defaultStatus;
+        return next;
+      });
+      setExpansionState("ready");
+    }).catch(()=>{ if(!cancelled)setExpansionState("error"); });
+    return()=>{cancelled=true;};
+  },[menu,open,expansionState]);
   useEffect(()=>{ const x=window.setInterval(()=>setNow(new Date()),1000); return()=>window.clearInterval(x); },[]);
   useEffect(()=>{ const c=new BroadcastChannel(CK); c.onmessage=e=>{ if(e.data?.type!=="state")return; if(e.data.statuses)setStatuses(x=>({...x,...e.data.statuses})); if(e.data.notes)setNotes(e.data.notes); if(e.data.gaps)setGaps(e.data.gaps); }; return()=>c.close(); },[]);
 
@@ -173,6 +207,10 @@ export default function MasterSystemPlanV1(){
         return;
       }
       if(id.startsWith(`${FINAL_PHASE}.`)){
+        if(expansionState!=="ready"){
+          persist({...statuses,[id]:"yellow"},{...notes,[id]:{...notes[id],blocker:"FINAL GREEN блокиран: international company expansion registry още не е зареден.",updatedAt:stamp}});
+          return;
+        }
         const blockers=[...phases.filter(p=>p.id!==FINAL_PHASE).flatMap(p=>p.tasks),...gaps].filter(t=>(statuses[t.id]||t.defaultStatus)!=="green");
         if(blockers.length){
           persist({...statuses,[id]:"yellow"},{...notes,[id]:{...notes[id],blocker:`FINAL GREEN блокиран: ${blockers.length} точки извън Етап ${FINAL_PHASE} още не са GREEN.`,updatedAt:stamp}});
@@ -185,16 +223,16 @@ export default function MasterSystemPlanV1(){
   function setNote(id:string,field:"evidence"|"blocker",value:string){ persist(statuses,{...notes,[id]:{...notes[id],[field]:value,updatedAt:new Date().toISOString()}}); }
   function addGap(){ const label=gapText.trim();if(!label)return;const id=`GAP.${Date.now()}`,g:Task={id,label,defaultStatus:"red",kind:"core"};setGapText("");persist({...statuses,[id]:"red"},notes,[...gaps,g]); }
 
-  const all=useMemo(()=>[...phases.flatMap(p=>p.tasks),...gaps],[gaps]);
+  const all=useMemo(()=>[...phases.flatMap(p=>p.tasks),...gaps],[phases,gaps]);
   const totals=useMemo(()=>{ const x:Record<Status,number>={green:0,yellow:0,red:0};all.forEach(t=>x[statuses[t.id]||t.defaultStatus]++);return x; },[all,statuses]);
   const progress=all.length?Math.round(totals.green/all.length*100):0;
   const next=phases.flatMap(p=>p.tasks).find(t=>(statuses[t.id]||t.defaultStatus)!=="green") || gaps.find(t=>(statuses[t.id]||t.defaultStatus)!=="green");
   const nextPhase=next?phases.find(p=>p.tasks.some(t=>t.id===next.id)):undefined;
-  const preFinalOpen=useMemo(()=>[...phases.filter(p=>p.id!==FINAL_PHASE).flatMap(p=>p.tasks),...gaps].filter(t=>(statuses[t.id]||t.defaultStatus)!=="green").length,[statuses,gaps]);
-  const visible=useMemo(()=>{ const q=query.trim().toLowerCase(), src:Phase[]=gaps.length?[...phases,{id:"GAP",title:"Открити пропуски",wave:99,tasks:gaps}]:phases; return src.map(p=>({...p,tasks:p.tasks.filter(t=>{const s=statuses[t.id]||t.defaultStatus;return(filter==="all"||s===filter)&&(!q||`${t.id} ${t.label} ${p.title}`.toLowerCase().includes(q));})})).filter(p=>p.tasks.length); },[gaps,query,filter,statuses]);
+  const preFinalOpen=useMemo(()=>[...phases.filter(p=>p.id!==FINAL_PHASE).flatMap(p=>p.tasks),...gaps].filter(t=>(statuses[t.id]||t.defaultStatus)!=="green").length,[phases,statuses,gaps]);
+  const visible=useMemo(()=>{ const q=query.trim().toLowerCase(), src:Phase[]=gaps.length?[...phases,{id:"GAP",title:"Открити пропуски",wave:99,tasks:gaps}]:phases; return src.map(p=>({...p,tasks:p.tasks.filter(t=>{const s=statuses[t.id]||t.defaultStatus;return(filter==="all"||s===filter)&&(!q||`${t.id} ${t.label} ${p.title}`.toLowerCase().includes(q));})})).filter(p=>p.tasks.length); },[phases,gaps,query,filter,statuses]);
 
   return <>
-    <button className="burgerButton" aria-label="Отвори меню" onClick={()=>setMenu(true)}><span/><span/><span/></button>{menu&&<div className="menuShade" onClick={()=>setMenu(false)}/>}<aside className={`sidePanel ${menu?"sideOpen":""}`}><div className="sidePanelTop"><div><div className="miniLabel">ENCHEV AUCTIONS</div><strong>System Command Center</strong></div><button className="iconButton" onClick={()=>setMenu(false)}>×</button></div><button className="sideMenuItem" onClick={()=>{setOpen(true);setMenu(false);}}><span className="sideMenuIcon">◫</span><span><b>Етапи</b><small>Master System Plan v{PLAN_VERSION} + Expansion v{EXPANSION_VERSION} · 0 → 100%</small></span><span>›</span></button><button className="sideMenuItem" onClick={()=>{setDesign2Open(true);setMenu(false);}}><span className="sideMenuIcon">✦</span><span><b>Design Process 2</b><small>World-class mobile + desktop redesign · DAVID</small></span><span>›</span></button><div className="sideStatusBox"><div className="liveLine"><i/> LOCAL REALTIME · CLOUD NEXT</div><span>Системен прогрес</span><b>{progress}%</b><div className="miniProgress"><i style={{width:`${progress}%`}}/></div><small>{totals.green} работят · {totals.yellow} тест/грешка · {totals.red} липсват</small></div></aside>
+    <button className="burgerButton" aria-label="Отвори меню" onClick={()=>setMenu(true)}><span/><span/><span/></button>{menu&&<div className="menuShade" onClick={()=>setMenu(false)}/>}<aside className={`sidePanel ${menu?"sideOpen":""}`}><div className="sidePanelTop"><div><div className="miniLabel">ENCHEV AUCTIONS</div><strong>System Command Center</strong></div><button className="iconButton" onClick={()=>setMenu(false)}>×</button></div><button className="sideMenuItem" onClick={()=>{setOpen(true);setMenu(false);}}><span className="sideMenuIcon">◫</span><span><b>Етапи</b><small>Master System Plan v{PLAN_VERSION} + Expansion v{EXPANSION_VERSION} · 0 → 100%</small></span><span>›</span></button><button className="sideMenuItem" onClick={()=>{setDesign2Open(true);setMenu(false);}}><span className="sideMenuIcon">✦</span><span><b>Design Process 2</b><small>World-class mobile + desktop redesign · DAVID</small></span><span>›</span></button><div className="sideStatusBox"><div className="liveLine"><i/> {expansionState==="ready"?"SYSTEM 00–99 LOADED":expansionState==="error"?"EXPANSION LOAD ERROR":"SYSTEM EXPANSION LAZY"}</div><span>Системен прогрес</span><b>{progress}%</b><div className="miniProgress"><i style={{width:`${progress}%`}}/></div><small>{totals.green} работят · {totals.yellow} тест/грешка · {totals.red} липсват</small></div></aside>
     {open&&<section className="controlOverlay"><header className="controlHeader"><div><div className="eyebrow">MASTER SYSTEM PLAN v{PLAN_VERSION} + INTERNATIONAL COMPANY EXPANSION v{EXPANSION_VERSION} · SOURCE OF TRUTH · 0 → 100%</div><h1>Enchev Auctions — Етапи</h1><p>Frozen 00–61 остават immutable; append-only 62–99 разширяват системата до реална международна компания: corporate/commercial → payments/tax/customs → logistics/operations → CRM/support → finance/BI → country launch → final operating acceptance.</p></div><button className="closeControl" onClick={()=>setOpen(false)}>×</button></header>
       <div className="controlKpis"><div><span>ПРОГРЕС</span><b>{progress}%</b><small>{all.length} системни точки</small></div><div className="kGreen"><span>РАБОТИ</span><b>{totals.green}</b><small>доказано</small></div><div className="kYellow"><span>ТЕСТ / ГРЕШКА</span><b>{totals.yellow}</b><small>не е приключено</small></div><div className="kRed"><span>ЛИПСВА</span><b>{totals.red}</b><small>не е построено</small></div><div><span>LIVE</span><b className="clockText">{now.toLocaleTimeString("bg-BG")}</b><small>локален realtime</small></div></div>
       <div className="nextGrid"><div className="nextCard"><span>NEXT SYSTEM BLOCKER</span><b>{next?`${next.id} · ${next.label}`:"Всичко е GREEN"}</b></div><div className="nextCard"><span>EXECUTION WAVE</span><b>{nextPhase?`WAVE ${nextPhase.wave} · ${WAVE_LABELS[nextPhase.wave]}`:"FINAL COMPLETE"}</b></div><div className="nextCard"><span>FINAL 100% GATE</span><b>{preFinalOpen===0?"Готов за Етап 47":`${preFinalOpen} точки извън финалния етап остават`}</b></div></div>
