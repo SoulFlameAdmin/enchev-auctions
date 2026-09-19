@@ -124,7 +124,8 @@ if (Test-Path $runtime) {
 foreach ($ephemeral in @(
   (Join-Path $DavidDir ".david-control-command.json"),
   (Join-Path $DavidDir ".david-control-result.json"),
-  (Join-Path $DavidDir ".david-tab-monitor.json")
+  (Join-Path $DavidDir ".david-tab-monitor.json"),
+  (Join-Path $DavidDir ".david-session-health.json")
 )) {
   if (Test-Path $ephemeral) {
     Remove-Item $ephemeral -Force -ErrorAction SilentlyContinue
