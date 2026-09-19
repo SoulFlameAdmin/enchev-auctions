@@ -73,7 +73,8 @@ DESIGN PROCESS 2 е новият world-class redesign процес за теле
 
 Mobile acceptance минимум: 360px, 390px, 430px. Desktop acceptance: 1366px, 1440px и wide 1920-class, когато е приложимо.
 Не копирай чуждо logo, proprietary text, images, source code или точна визуална идентичност.
-Не добавяй pricing/payment/finance scope.
+Задължителен international UX scope: docs/GLOBAL_COMMERCE_UX_SPEC_V1.md.
+Company/commercial context: docs/MASTER_SYSTEM_EXPANSION_V2.md. DP2 не измисля правни/данъчни правила, а проектира приложимия UX върху конфигурирани и доказани SYSTEM правила.
 Не променяй frozen D01-D36 evidence.
 
 Ако DP2-01-DP2-30 вече са 30/30 GREEN, НЕ създавай DP2-31. Докладвай DESIGN PROCESS 2 COMPLETE / IDLE и последният ред да е само: OK
