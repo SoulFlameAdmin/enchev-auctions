@@ -1,0 +1,23 @@
+{
+  "taskId": "25.01",
+  "name": "Unit-test strategy",
+  "scope": ["pure-domain-logic", "contract-validation", "configuration-validation", "failure-boundaries"],
+  "principles": {
+    "deterministic": true,
+    "isolated": true,
+    "fast": true,
+    "noNetworkByDefault": true,
+    "noProductionData": true,
+    "negativeCasesRequired": true
+  },
+  "execution": {
+    "aggregateRunner": "scripts/run-ci-tests.mjs",
+    "ciCommand": "npm test",
+    "dedicatedSelfTestFlag": "--self-test"
+  },
+  "acceptance": {
+    "newCriticalLogicRequiresTests": true,
+    "failingTestBlocksGreen": true,
+    "flakyPassDoesNotCountAsEvidence": true
+  }
+}

@@ -83,6 +83,8 @@
     "verify:runtime-environments:self-test": "node scripts/verify-runtime-environments.mjs --self-test",
     "verify:openapi-api-specification": "node scripts/verify-openapi-api-specification.mjs",
     "verify:openapi-api-specification:self-test": "node scripts/verify-openapi-api-specification.mjs --self-test",
+    "verify:unit-test-strategy": "node scripts/verify-unit-test-strategy.mjs",
+    "verify:unit-test-strategy:self-test": "node scripts/verify-unit-test-strategy.mjs --self-test",
     "verify:integration-test-strategy": "node scripts/verify-integration-test-strategy.mjs",
     "verify:integration-test-strategy:self-test": "node scripts/verify-integration-test-strategy.mjs --self-test"
   },
