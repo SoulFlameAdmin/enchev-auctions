@@ -7,6 +7,7 @@ import { chromium } from "playwright-core";
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1"));
 const SYSTEM = path.join(HERE, "auto-continue-enchev-v5.mjs");
 const DESIGN = path.join(HERE, "auto-continue-design-v1.mjs");
+const APP2 = path.join(HERE, "auto-complete-app2-v1.mjs");
 const APK = path.join(HERE, "auto-continue-david-apk-v1.mjs");
 const INTERRUPT_GUARD = path.join(HERE, "connection-interruption-guard.mjs");
 const NODE = process.execPath;
@@ -14,16 +15,22 @@ const children = new Map();
 const MONITOR_FILE = path.join(HERE, ".david-tab-monitor.json");
 const MONITOR_MS = Number(process.env.DAVID_TAB_MONITOR_MS || 15000);
 const MONITOR_CONNECT_TIMEOUT_MS = Number(process.env.DAVID_TAB_MONITOR_CONNECT_TIMEOUT_MS || 60000);
+const WORKER_START_GRACE_MS = Number(process.env.DAVID_WORKER_START_GRACE_MS || 120000);
+const WORKER_HEARTBEAT_STALE_MS = Number(process.env.DAVID_WORKER_HEARTBEAT_STALE_MS || 600000);
+const WORKER_TAB_MISSING_MS = Number(process.env.DAVID_WORKER_TAB_MISSING_MS || 90000);
 let shuttingDown = false;
 let monitorBrowser = null;
 let monitorContext = null;
 let monitorBusy = false;
 let lastMonitorSignature = "";
+const launchedAt = new Map();
+const missingTabSince = new Map();
 
 const specs = [
   {
     name: "SYSTEM",
     script: SYSTEM,
+    stateFile: path.join(HERE, ".david-enchev-state.json"),
     env: {
       DAVID_CHAT_URL: "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71",
       DAVID_STATE_FILE: path.join(HERE, ".david-enchev-state.json")
@@ -32,14 +39,26 @@ const specs = [
   {
     name: "DESIGN",
     script: DESIGN,
+    stateFile: path.join(HERE, ".david-enchev-design-state.json"),
     env: {
       DAVID_DESIGN_CHAT_URL: "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7",
       DAVID_DESIGN_STATE_FILE: path.join(HERE, ".david-enchev-design-state.json")
     }
   },
   {
+    name: "APP2",
+    script: APP2,
+    stateFile: path.join(HERE, ".david-app2-state-6aac2dbb.json"),
+    env: {
+      DAVID_APP2_CHAT_URL: "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4",
+      DAVID_APP2_CDP_URL: process.env.DAVID_CDP_URL || "http://127.0.0.1:9444",
+      DAVID_APP2_STATE_FILE: path.join(HERE, ".david-app2-state-6aac2dbb.json")
+    }
+  },
+  {
     name: "APK",
     script: APK,
+    stateFile: path.join(HERE, ".david-apk-state.json"),
     env: {
       DAVID_APK_STATE_FILE: path.join(HERE, ".david-apk-state.json")
     }
@@ -49,7 +68,7 @@ const specs = [
     script: INTERRUPT_GUARD,
     env: {
       DAVID_INTERRUPT_POLL_MS: "500",
-      DAVID_INTERRUPT_RETRY_COOLDOWN_MS: "8000"
+      DAVID_INTERRUPT_RETRY_COOLDOWN_MS: "15000"
     }
   }
 ];
@@ -78,11 +97,13 @@ function launch(spec) {
     stdio: ["ignore", "pipe", "pipe"]
   });
   children.set(spec.name, child);
+  launchedAt.set(spec.name, Date.now());
   console.log(`[DUAL] ${spec.name} worker started pid=${child.pid}`);
   pipe(spec.name, child.stdout, process.stdout);
   pipe(spec.name, child.stderr, process.stderr);
   child.on("exit", (code, signal) => {
     children.delete(spec.name);
+    launchedAt.delete(spec.name);
     console.log(`[DUAL] ${spec.name} exited code=${code} signal=${signal || "none"}`);
     if (!shuttingDown) {
       console.log(`[DUAL] Restarting ${spec.name} in 3000ms...`);
@@ -97,6 +118,29 @@ function shutdown() {
     try { child.kill("SIGTERM"); } catch {}
   }
   setTimeout(() => process.exit(0), 1000);
+}
+
+function restartWorker(name, reason) {
+  if (shuttingDown) return;
+  const spec = specs.find((x) => x.name === name);
+  if (!spec) return;
+  const child = children.get(name);
+  console.log(`[DUAL] SELF-HEAL ${name}: ${reason}`);
+  missingTabSince.delete(name);
+  launchedAt.set(name, Date.now());
+  if (child) {
+    try { child.kill("SIGTERM"); } catch {}
+  } else {
+    launch(spec);
+  }
+}
+
+function stateHeartbeatAgeMs(spec) {
+  if (!spec?.stateFile) return null;
+  const st = readState(spec.stateFile);
+  const ts = Date.parse(st.updatedAt || "");
+  if (!Number.isFinite(ts)) return null;
+  return Date.now() - ts;
 }
 
 function cleanConversationUrl(url) {
@@ -222,10 +266,11 @@ async function cleanupManagedTabs() {
 console.log("[DUAL] DAVID multi-session mode ON.");
 console.log("[DUAL] SYSTEM tab: 6aab44e1-385c-83eb-b122-c4ae9836cb71");
 console.log("[DUAL] DESIGN tab: 6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7");
+console.log("[DUAL] APP2 tab: 6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4");
 console.log("[DUAL] APK tab: auto-discover DAVID Phone / SoulFlame Twins / DAVID APK session; exact DAVID_APK_CHAT_URL wins when provided.");
-console.log("[DUAL] INTERRUPTION GUARD: watches every ChatGPT conversation tab in this DAVID Edge profile.");
-console.log("[DUAL] If ChatGPT shows connection interrupted: STOP response -> paste last user prompt -> SEND again.");
-console.log("[DUAL] SYSTEM + DESIGN + APK share the same Edge CDP/profile on port 9444. APP2/DPP may run beside them in the same profile.");
+console.log("[DUAL] INTERRUPTION GUARD: watches every managed ChatGPT conversation in this DAVID Edge profile.");
+console.log("[DUAL] 24/7 law: active GPT/tool work => WAIT; confirmed frozen interruption => refresh/verify/resend; workers self-heal by heartbeat/tab ownership.");
+console.log("[DUAL] SYSTEM + DESIGN + APP2 + APK share the same Edge CDP/profile on port 9444.");
 async function monitorManagedTabs() {
   if (shuttingDown || monitorBusy) return;
   monitorBusy = true;
@@ -245,8 +290,40 @@ async function monitorManagedTabs() {
       const u = cleanConversationUrl(page.url());
       if (kind && u) snapshot.managed[kind].push(u);
     }
-    fs.writeFileSync(MONITOR_FILE, JSON.stringify(snapshot, null, 2), "utf8");
     const counts = Object.fromEntries(Object.entries(snapshot.managed).map(([kind, urls]) => [kind, urls.length]));
+
+    snapshot.workerHealth = {};
+    for (const spec of specs.filter((x) => x.name !== "INTERRUPT")) {
+      const ageMs = stateHeartbeatAgeMs(spec);
+      const launchAge = Date.now() - Number(launchedAt.get(spec.name) || Date.now());
+      const processAlive = Boolean(children.get(spec.name));
+      const tabCount = Number(counts[spec.name] || 0);
+      snapshot.workerHealth[spec.name] = { processAlive, heartbeatAgeMs: ageMs, tabCount };
+
+      if (tabCount > 0) {
+        missingTabSince.delete(spec.name);
+      } else if (launchAge > WORKER_START_GRACE_MS) {
+        const since = Number(missingTabSince.get(spec.name) || Date.now());
+        if (!missingTabSince.has(spec.name)) missingTabSince.set(spec.name, Date.now());
+        if (Date.now() - since > WORKER_TAB_MISSING_MS) {
+          restartWorker(spec.name, `managed tab missing for >${WORKER_TAB_MISSING_MS}ms`);
+          continue;
+        }
+      }
+
+      if (
+        processAlive &&
+        ageMs !== null &&
+        ageMs > WORKER_HEARTBEAT_STALE_MS &&
+        launchAge > WORKER_START_GRACE_MS
+      ) {
+        restartWorker(spec.name, `heartbeat stale for ${ageMs}ms`);
+      } else if (!processAlive && launchAge > 5000) {
+        launch(spec);
+      }
+    }
+    fs.writeFileSync(MONITOR_FILE, JSON.stringify(snapshot, null, 2), "utf8");
+
     const signature = JSON.stringify(counts);
     if (signature !== lastMonitorSignature) {
       lastMonitorSignature = signature;
