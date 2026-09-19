@@ -52,6 +52,7 @@ async function loadRuntime() {
     const result = spawnSync(process.execPath, [
       tscPath,
       SOURCE_PATH,
+      "--ignoreConfig",
       "--target", "ES2022",
       "--module", "ES2022",
       "--moduleResolution", "Bundler",
