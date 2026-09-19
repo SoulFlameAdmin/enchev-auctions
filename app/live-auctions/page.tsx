@@ -5,6 +5,8 @@ import "./live-auctions.css";
 import "./live-d24.css";
 
 const LOT_SECONDS=10;
+const RESYNC_INTERVAL_MS=3000;
+const STALE_AFTER_MS=4500;
 const lots=[
   {lot:"EA-10511",title:"2021 Mercedes-Benz GLC",location:"Munich, DE",damage:"Front end",mileage:"64 900 km",price:18400,image:"https://images.unsplash.com/photo-1612280782903-d34dcdc10107?auto=format&fit=crop&w=1500&q=86"},
   {lot:"EA-10539",title:"2022 Audi RS3 Sportback",location:"Crewe, UK",damage:"Minor scratches",mileage:"41 280 km",price:21900,image:"https://images.unsplash.com/photo-1655283733642-f1d813b40616?auto=format&fit=crop&w=1500&q=86"},
@@ -13,6 +15,7 @@ const lots=[
 ];
 
 type BidFeedback="accepted"|"leading"|"outbid"|"rejected";
+type ConnectionState="syncing"|"connected"|"reconnecting"|"stale";
 
 type LiveClockPayload={
   serverNow:number;
@@ -34,6 +37,8 @@ export default function LiveAuctionsPage(){
   const [clockMode,setClockMode]=useState<"syncing"|"server">("syncing");
   const [soldNotice,setSoldNotice]=useState<string|null>(null);
   const [bidFeedback,setBidFeedback]=useState<BidFeedback|null>(null);
+  const [connectionState,setConnectionState]=useState<ConnectionState>("syncing");
+  const [connectionAgeSeconds,setConnectionAgeSeconds]=useState(0);
 
   const deadlineRef=useRef<number|null>(null);
   const serverOffsetRef=useRef(0);
@@ -41,6 +46,12 @@ export default function LiveAuctionsPage(){
   const syncInFlightRef=useRef(false);
   const activeRef=useRef(0);
   const soldNoticeTimerRef=useRef<number|null>(null);
+  const lastSuccessfulSyncRef=useRef(0);
+
+  const markConnectionFailure=(now=Date.now())=>{
+    const lastSuccess=lastSuccessfulSyncRef.current;
+    setConnectionState(lastSuccess>0&&now-lastSuccess>=STALE_AFTER_MS?"stale":"reconnecting");
+  };
 
   const applyClock=(data:LiveClockPayload,sentAt:number,receivedAt:number)=>{
     if(
@@ -72,6 +83,9 @@ export default function LiveAuctionsPage(){
     setActive(data.lotIndex);
     setRemaining(Math.max(0,Math.ceil((data.roundEndsAt-(Date.now()+offset))/1000)));
     setClockMode("server");
+    lastSuccessfulSyncRef.current=receivedAt;
+    setConnectionAgeSeconds(0);
+    setConnectionState("connected");
     return true;
   };
 
@@ -81,9 +95,11 @@ export default function LiveAuctionsPage(){
     const sentAt=Date.now();
     try{
       const response=await fetch("/api/live-auction-clock",{cache:"no-store"});
-      if(!response.ok)return;
+      if(!response.ok)throw new Error(`live-clock-http-${response.status}`);
       const data=await response.json() as LiveClockPayload;
-      applyClock(data,sentAt,Date.now());
+      if(!applyClock(data,sentAt,Date.now()))throw new Error("live-clock-invalid-payload");
+    }catch{
+      markConnectionFailure();
     }finally{
       syncInFlightRef.current=false;
     }
@@ -102,13 +118,31 @@ export default function LiveAuctionsPage(){
       if(nextRemaining===0)void syncClock();
     },200);
 
-    const resyncId=window.setInterval(()=>void syncClock(),3000);
+    const resyncId=window.setInterval(()=>void syncClock(),RESYNC_INTERVAL_MS);
+    const connectionMonitorId=window.setInterval(()=>{
+      const lastSuccess=lastSuccessfulSyncRef.current;
+      if(lastSuccess===0)return;
+      const age=Date.now()-lastSuccess;
+      setConnectionAgeSeconds(Math.floor(age/1000));
+      if(age>=STALE_AFTER_MS)setConnectionState("stale");
+    },250);
+    const handleOffline=()=>markConnectionFailure();
+    const handleOnline=()=>{
+      setConnectionState("reconnecting");
+      void syncClock();
+    };
+    window.addEventListener("offline",handleOffline);
+    window.addEventListener("online",handleOnline);
+
     return()=>{
       window.clearInterval(tickId);
       window.clearInterval(resyncId);
+      window.clearInterval(connectionMonitorId);
+      window.removeEventListener("offline",handleOffline);
+      window.removeEventListener("online",handleOnline);
       if(soldNoticeTimerRef.current!==null)window.clearTimeout(soldNoticeTimerRef.current);
     };
-  // D25 uses a server-issued browser-session demo clock; D28 owns reconnect/stale UI.
+  // D25-D28 use only the server-issued browser-session demo endpoint; auctionAuthority remains false.
   // eslint-disable-next-line react-hooks/exhaustive-deps
   },[]);
 
@@ -140,9 +174,11 @@ export default function LiveAuctionsPage(){
         window.setTimeout(()=>setBidFlash(false),650);
       }
     }catch{
-      // D28 adds explicit connection/reconnect/stale-state feedback.
+      markConnectionFailure();
     }
   };
+  const connectionLabel=connectionState==="connected"?"СВЪРЗАН":connectionState==="reconnecting"?"ПОВТОРНО СВЪРЗВАНЕ":connectionState==="stale"?"ДАННИТЕ СА ОСТАРЕЛИ":"СИНХРОНИЗИРАНЕ";
+  const connectionDetail=connectionState==="connected"?`Последна синхронизация преди ${connectionAgeSeconds}s`:connectionState==="reconnecting"?"Възстановяване на server-session връзката":connectionState==="stale"?`Без потвърден server state от ${connectionAgeSeconds}s`:"Изчакване на първи server state";
   const fmt=(v:number)=>`00:${String(v).padStart(2,"0")}`;
 
   return <main id="main-content" className="livePage">
@@ -155,7 +191,20 @@ export default function LiveAuctionsPage(){
 
     <section className="liveHero">
       <div><span className="liveEyebrow">● LIVE AUCTION ROOM</span><h1>Наддавай в реално време</h1><p>10-секундният demo брояч се води от ENCHEV server session clock. При потвърдена demo оферта сървърът задава нов краен момент; при изтичане клиентът взема актуалния lot state от сървъра.</p></div>
-      <div className="liveHeroClock" data-design-task="D25" data-clock-mode={clockMode} data-auction-authority="false" role="timer" aria-label={`Остават ${remaining} секунди за лот ${current.lot}`}><small>{clockMode==="server"?"SERVER SYNC":"СИНХРОНИЗИРАНЕ"}</small><b>{fmt(remaining)}</b><span>LOT {current.lot}</span></div>
+      <div className="liveHeroStatusStack">
+        <div
+          className={`liveConnectionState is-${connectionState}`}
+          data-design-task="D28"
+          data-connection-state={connectionState}
+          data-auction-authority="false"
+          role="status"
+          aria-live="polite"
+        >
+          <i aria-hidden="true"/>
+          <div><b>{connectionLabel}</b><small>{connectionDetail}</small></div>
+        </div>
+        <div className="liveHeroClock" data-design-task="D25" data-clock-mode={clockMode} data-auction-authority="false" role="timer" aria-label={`Остават ${remaining} секунди за лот ${current.lot}`}><small>{clockMode==="server"?"SERVER SYNC":"СИНХРОНИЗИРАНЕ"}</small><b>{fmt(remaining)}</b><span>LOT {current.lot}</span></div>
+      </div>
     </section>
 
     <section className="liveStage" data-design-task="D24" data-auto-advance-task="D26" aria-label="Live auction room: текущ и следващ лот">
