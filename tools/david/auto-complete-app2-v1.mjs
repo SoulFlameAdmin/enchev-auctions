@@ -570,7 +570,7 @@ async function runPrompt(context, page, state, prompt, kind) {
       await sleep(2500);
     }
     await fillAndSend(page, outgoingPrompt);
-    if (permit.mode === "probe") await markGlobalSendStarted("APP2");
+    await markGlobalSendStarted("APP2");
     const start = await waitStart(context, page, baseHash, state);
     page = start.page;
     syncActiveChatUrl(page, state);
