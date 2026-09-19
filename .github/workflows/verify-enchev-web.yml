@@ -90,6 +90,10 @@ jobs:
         run: node scripts/verify-runtime-environments.mjs
       - name: 01.07 Local / staging / production environments self-tests
         run: node scripts/verify-runtime-environments.mjs --self-test
+      - name: 24.01 OpenAPI / API specification
+        run: node scripts/verify-openapi-api-specification.mjs
+      - name: 24.01 OpenAPI / API specification self-tests
+        run: node scripts/verify-openapi-api-specification.mjs --self-test
       - name: Environment variable contract invariant
         run: node scripts/verify-environment-variables.mjs
       - name: Environment variable contract self-tests
