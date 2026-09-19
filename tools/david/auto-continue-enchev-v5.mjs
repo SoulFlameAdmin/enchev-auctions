@@ -459,6 +459,7 @@ async function visiblePlatformBlock(page) {
         if (/verify you are human|потвърдете, че сте човек/.test(text)) return 'human verification';
         if (/too many requests|rate limit|твърде много заявки/.test(text)) return 'rate limit';
         if (/you(?:'ve| have) reached your limit|достигнахте лимита/.test(text)) return 'limit';
+        if (/изпращането на съобщението изтече по време|message sending timed out|sending the message timed out|message send timed out/.test(text)) return 'send timeout';
         if (/network error|нещо се обърка|something went wrong/.test(text)) return 'network error';
       }
       return null;
@@ -539,6 +540,28 @@ async function refreshChat(context, page, state, attempt) {
 }
 
 async function waitPlatform(context, page, state, blocker) {
+  if (blocker === "send timeout") {
+    state.problem = null;
+    state.watchdog = "send-timeout-wait-guard";
+    saveState(state, "Message send timeout detected; central guard owns bounded Retry. Worker will not duplicate-send.");
+    console.log("[DAVID] SEND TIMEOUT: waiting for central guard. NO DUPLICATE RESEND.");
+    const until = Date.now() + 60000;
+    while (Date.now() < until) {
+      await sleep(1000);
+      page = await waitForSession(context, page, state);
+      const current = await visiblePlatformBlock(page);
+      if (current !== "send timeout") {
+        state.watchdog = "send-timeout-recovered";
+        saveState(state, "Message send timeout cleared by central guard");
+        return page;
+      }
+    }
+    console.log("[DAVID] SEND TIMEOUT still visible after 60s. Refreshing view only; central guard remains recovery owner.");
+    if (usable(page)) await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+    await sleep(REFRESH_SETTLE_MS);
+    return waitForSession(context, page, state);
+  }
+
   const human = blocker === "captcha" || blocker === "human verification";
   const waitMs = human ? 30000 : blocker === "network error" ? 10000 : PLATFORM_BACKOFF_MS;
   state.problem = `ChatGPT platform: ${blocker}`;
