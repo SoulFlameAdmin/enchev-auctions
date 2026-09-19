@@ -158,6 +158,13 @@ async function waitForTerminalMarker(page, state) {
 function isExternalBlocker(problem) {
   return /(redis|valkey|upstash|vercel|marketplace|environment-secret|environment secret|provider credential|credential|permission|authorization|rate limit|quota|billing|plan limit|external access|legal sign-off|customer data|deployment.*queued|deployment.*initializing)/i.test(String(problem || ""));
 }
+function blockerKey(problem) {
+  return String(problem || "").toLowerCase().replace(/\s+/g, " ").replace(/опит\s*\d+|attempt\s*\d+/g, "").trim();
+}
+function sameBlocker(a, b) {
+  const x = blockerKey(a), y = blockerKey(b);
+  return Boolean(x && y && (x === y || x.includes(y) || y.includes(x)));
+}
 function deferPrompt(problem, repeat = 1) {
   return `@GitHub @Vercel @Supabase
 
@@ -666,38 +673,71 @@ async function main() {
 
     if (state.problem && isExternalBlocker(state.problem)) {
       const deferred = state.problem;
-      state.deferredBlocker = deferred;
-      state.deferredBlockerCount = Number(state.deferredBlockerCount || 0) + 1;
+      const alreadyDeferred = Boolean(state.deferredBlockerAcknowledged) && sameBlocker(state.deferredBlocker, deferred);
+
       state.problem = null;
       state.problemAttempts = 0;
-      state.watchdog = "design-external-blocker-deferred";
-      save(state, `Design external blocker deferred: ${deferred}`);
-      console.log(`[DESIGN] External blocker deferred; continuing independent D-task: ${deferred}`);
-      const result = await runPrompt(context, page, state, deferPrompt(deferred, state.deferredBlockerCount), "work");
-      page = result.page;
-      const nextProblem = extractProblem(result.text);
-      if (nextProblem) {
-        if (isExternalBlocker(nextProblem)) {
-          state.deferredBlocker = nextProblem;
-          state.problem = null;
-          save(state, `Design external blocker still deferred: ${nextProblem}`);
+
+      if (alreadyDeferred) {
+        state.watchdog = "design-external-blocker-already-deferred";
+        save(state, `Design external blocker already deferred; skipping relay and continuing independent work: ${deferred}`);
+        console.log(`[DESIGN] BLOCKER ALREADY DEFERRED -> CONTINUE WORK: ${deferred}`);
+      } else {
+        state.deferredBlocker = deferred;
+        state.deferredBlockerAcknowledged = false;
+        state.deferredBlockerCount = Number(state.deferredBlockerCount || 0) + 1;
+        state.watchdog = "design-external-blocker-deferred";
+        save(state, `Design external blocker deferred once: ${deferred}`);
+        console.log(`[DESIGN] NEW EXTERNAL BLOCKER -> ONE DEFER RELAY: ${deferred}`);
+
+        const result = await runPrompt(context, page, state, deferPrompt(deferred, state.deferredBlockerCount), "work");
+        page = result.page;
+        const nextProblem = extractProblem(result.text);
+
+        if (nextProblem) {
+          if (isExternalBlocker(nextProblem)) {
+            if (sameBlocker(deferred, nextProblem)) {
+              state.deferredBlocker = deferred;
+              state.deferredBlockerAcknowledged = true;
+              state.problem = null;
+              state.watchdog = "design-external-blocker-already-deferred";
+              save(state, `Same DESIGN blocker repeated after one defer; forcing independent work: ${nextProblem}`);
+            } else {
+              state.deferredBlocker = nextProblem;
+              state.deferredBlockerAcknowledged = false;
+              state.problem = nextProblem;
+              save(state, `Different DESIGN external blocker discovered: ${nextProblem}`);
+            }
+            await sleep(COOLDOWN_MS);
+            continue;
+          }
+
+          state.problem = nextProblem;
+          save(state, `Design new internal problem: ${nextProblem}`);
           await sleep(COOLDOWN_MS);
           continue;
         }
-        state.problem = nextProblem;
-        save(state, `Design new internal problem: ${nextProblem}`);
-        await sleep(COOLDOWN_MS);
-        continue;
-      }
-      if (!endsOk(result.text)) {
-        const terminal = await waitForTerminalMarker(page, state);
-        if (terminal.type === "problem") {
-          state.problem = terminal.problem;
-          save(state, `Design terminal marker became PROBLEM IN: ${terminal.problem}`);
-          continue;
+
+        if (!endsOk(result.text)) {
+          const terminal = await waitForTerminalMarker(page, state);
+          if (terminal.type === "problem") {
+            if (isExternalBlocker(terminal.problem) && sameBlocker(deferred, terminal.problem)) {
+              state.deferredBlockerAcknowledged = true;
+              state.problem = null;
+              state.watchdog = "design-external-blocker-already-deferred";
+              save(state, `Same DESIGN terminal blocker repeated after one defer; forcing independent work: ${terminal.problem}`);
+            } else {
+              state.problem = terminal.problem;
+              save(state, `Design terminal marker became PROBLEM IN: ${terminal.problem}`);
+            }
+            continue;
+          }
         }
+
+        state.deferredBlockerAcknowledged = true;
+        state.lastResult = "OK";
+        save(state, "One DESIGN defer relay completed; same blocker will not receive another relay");
       }
-      state.lastResult = "OK";
       save(state, "Design independent task completed with final OK");
       await sleep(COOLDOWN_MS);
       continue;
