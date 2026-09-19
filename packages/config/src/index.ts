@@ -23,3 +23,4 @@ export * from "./country-document-profile";
 export * from "./market-activation-gate";
 export * from "./country-market-bundle";
 export * from "./regional-cdn-strategy";
+export * from "./unicode-normalization";
