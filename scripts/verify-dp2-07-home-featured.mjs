@@ -45,7 +45,7 @@ for(const key of [
 }
 assert(messages.includes('"bg-BG"') && messages.includes('"en-US"'),"DP2-07 requires BG/EN copy coverage");
 assert(visualCapture.includes("360,390,430,1366,1440,1920") || (visualCapture.includes("360")&&visualCapture.includes("1920")),"DP2-07 visual capture width matrix missing");
-assert(visualCapture.includes('new URL("/#inventory",baseUrl)'),"DP2-07 visual capture must anchor to the featured section");
+assert(visualCapture.includes("scrollIntoView") && visualCapture.includes("Page.captureScreenshot"),"DP2-07 visual capture must anchor to the featured section and capture through CDP");
 assert(workflow.includes("capture-dp2-07-featured-cli.mjs") && workflow.includes("dp2-07-featured-chrome") && workflow.includes("dp2-07-featured-edge"),"DP2-07 Chrome/Edge visual workflow wiring missing");
 
 console.log("DP2_07_HOME_FEATURED PASS cards=4 states=upcoming,live,buy-now,sold money=intl date=intl responsive=360,390,430,1366,1440,1920");
