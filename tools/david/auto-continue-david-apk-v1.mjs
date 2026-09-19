@@ -507,8 +507,8 @@ async function runPrompt(context, page, state, prompt, kind) {
       await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
       await sleep(2500);
     }
-    if (permit.mode === "probe") await markProbeSendStarted("APK");
     await fillAndSend(page, outgoing);
+    if (permit.mode === "probe") await markProbeSendStarted("APK");
 
     let startEnd = Date.now() + START_TIMEOUT_MS;
     let started = false;
