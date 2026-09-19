@@ -68,7 +68,9 @@
     "verify:regional-data-residency-review": "node scripts/verify-regional-data-residency-review.mjs",
     "verify:regional-data-residency-review:self-test": "node scripts/verify-regional-data-residency-review.mjs --self-test",
     "verify:unicode-normalization": "node scripts/verify-unicode-normalization.mjs",
-    "verify:unicode-normalization:self-test": "node scripts/verify-unicode-normalization.mjs --self-test"
+    "verify:unicode-normalization:self-test": "node scripts/verify-unicode-normalization.mjs --self-test",
+    "verify:locale-fallback-chain": "node scripts/verify-locale-fallback-chain.mjs",
+    "verify:locale-fallback-chain:self-test": "node scripts/verify-locale-fallback-chain.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
