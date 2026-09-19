@@ -98,6 +98,42 @@ async function rateLimitVisible(page) {
   } catch { return false; }
 }
 
+async function clickRateLimitAcknowledge(page) {
+  const labels = [/^Разбрано$/i, /^Got it$/i, /^Understood$/i, /^Okay$/i];
+  try {
+    const dialogs = page.locator('[role="dialog"]');
+    for (let d = (await dialogs.count()) - 1; d >= 0; d--) {
+      const dialog = dialogs.nth(d);
+      if (!await dialog.isVisible().catch(() => false)) continue;
+      const text = (await dialog.innerText().catch(() => "")).replace(/\s+/g, " ").trim();
+      if (!/(твърде много заявки|правите заявки прекалено бързо|too many requests|requests too quickly|rate limit)/i.test(text)) continue;
+      for (const label of labels) {
+        const buttons = dialog.getByRole("button", { name: label });
+        for (let i = (await buttons.count()) - 1; i >= 0; i--) {
+          const b = buttons.nth(i);
+          if (await b.isVisible().catch(() => false) && await b.isEnabled().catch(() => false)) {
+            await b.click({ timeout: 4000 });
+            return true;
+          }
+        }
+      }
+    }
+
+    // Fallback: only after rateLimitVisible() has already confirmed the popup.
+    for (const label of labels) {
+      const buttons = page.getByRole("button", { name: label });
+      for (let i = (await buttons.count()) - 1; i >= 0; i--) {
+        const b = buttons.nth(i);
+        if (await b.isVisible().catch(() => false) && await b.isEnabled().catch(() => false)) {
+          await b.click({ timeout: 4000 });
+          return true;
+        }
+      }
+    }
+  } catch {}
+  return false;
+}
+
 async function sendTimeoutVisible(page) {
   if (!isManagedChat(page)) return false;
   try {
@@ -435,6 +471,11 @@ async function main() {
             const rl = await reportRateLimit(kind, "ChatGPT UI: too many requests / requests too quickly");
             rateLimitReportedAt.set(key, now);
             console.log(`[INTERRUPT] GLOBAL RATE LIMIT detected by ${kind}; stage=${rl.stage}; blockedUntil=${rl.blockedUntil}`);
+          }
+
+          const dismissed = await clickRateLimitAcknowledge(page);
+          if (dismissed) {
+            console.log(`[INTERRUPT] Rate-limit popup acknowledged automatically on ${key}. Cooldown remains active.`);
           }
           continue;
         }
