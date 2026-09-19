@@ -1,12 +1,16 @@
 import { layoutDirectionAttributes } from "../../packages/config/src/rtl-layout-capability";
 import styles from "./rtl-capability.module.css";
 
-const ltr = layoutDirectionAttributes({ locale: "und", direction: "ltr" });
-const rtl = layoutDirectionAttributes({ locale: "und", direction: "rtl" });
-
-if (!ltr || !rtl) {
-  throw new Error("RTL capability fixture failed to resolve");
+function requireDirection(direction: "ltr" | "rtl") {
+  const attributes = layoutDirectionAttributes({ locale: "und", direction });
+  if (!attributes) {
+    throw new Error("RTL capability fixture failed to resolve");
+  }
+  return attributes;
 }
+
+const ltr = requireDirection("ltr");
+const rtl = requireDirection("rtl");
 
 function Probe({ direction, lang }: { direction: "ltr" | "rtl"; lang: string }) {
   return (
