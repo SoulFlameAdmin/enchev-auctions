@@ -36,10 +36,10 @@
       "id": "DP2-04",
       "group": "Foundation",
       "title": "Unified responsive app shell and navigation",
-      "status": "red",
-      "evidence": "",
+      "status": "green",
+      "evidence": "GREEN PASS. Unified responsive buyer app shell implemented in app/components/EnchevAppShell.tsx with styling in app/dp2-app-shell.css and mounted globally from app/layout.tsx. It consolidates ENCHEV brand, global vehicle search, primary navigation, account actions and a purpose-built mobile drawer while visually retiring duplicated route-specific headers without deleting their underlying route code. Mobile drawer behavior includes 44px+ trigger, focus handoff to close control, Escape close, body scroll lock, backdrop close and responsive account/search actions; support/transport/history now expose the same main-content skip target as the other buyer routes. scripts/verify-design-process-2.mjs enforces the shell contract and scripts/capture-visual-regression.mjs runtime-verifies sticky shell presence, desktop nav/search/account visibility, mobile trigger sizing, drawer bounds, focus handoff and Escape-close behavior on every core route/acceptance viewport. Verify Enchev Web run 35426709811 on head 531810ff6bea71c0ec99ff13a0f93dd701bc8770 completed SUCCESS: DP2 invariant/self-tests, mobile-first, accessibility, cross-browser/originality, aggregate CI suite, TypeScript, production build, built health smoke, Edge installation, expanded Chrome+Edge 5-route x 6-width visual regression plus DP2-04 interaction runtime checks all passed. Artifact 10579591400 (enchev-cross-browser-visual-5a987b38c8b48b4d0a2d291c55bc351acd2ca699, digest sha256:00acc17b510c38f41dbdcb6aaa0d2618ba8de1e9b45515a807f3d0f022e4be2c) contains the fresh 60-screenshot browser matrix. Vercel status reported external build-rate-limit with no retry time; no manual Vercel create/update/redeploy was attempted, so no Supabase deploy lease was required. Frozen D01-D36 evidence and protected DAVID orchestrator files were not modified.",
       "blocker": "",
-      "updatedAt": null
+      "updatedAt": "2026-09-19T06:32:21Z"
     },
     {
       "id": "DP2-05",

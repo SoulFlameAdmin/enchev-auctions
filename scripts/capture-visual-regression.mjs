@@ -76,6 +76,34 @@ async function d23Snapshot(call){
   return result?.result?.value;
 }
 
+async function verifyDP204AppShell(call,viewport){
+  const read=async()=>{const r=await call("Runtime.evaluate",{expression:`(()=>{const shell=document.querySelector('.eaAppShell');const desktop=document.querySelector('.eaAppDesktopNav');const menu=document.querySelector('.eaAppMenuButton');const account=document.querySelector('.eaAppAccount');const search=document.querySelector('.eaAppSearch');const layer=document.querySelector('.eaAppMobileLayer');const drawer=document.querySelector('.eaAppMobileDrawer');const links=[...document.querySelectorAll('.eaAppDesktopNav a')];const mobileLinks=[...document.querySelectorAll('.eaAppMobileNav a')];const mr=menu?.getBoundingClientRect();const dr=drawer?.getBoundingClientRect();return {viewportWidth:innerWidth,scrollWidth:document.documentElement.scrollWidth,shellPosition:shell?getComputedStyle(shell).position:'',desktopDisplay:desktop?getComputedStyle(desktop).display:'none',menuDisplay:menu?getComputedStyle(menu).display:'none',accountDisplay:account?getComputedStyle(account).display:'none',searchDisplay:search?getComputedStyle(search).display:'none',layerVisibility:layer?getComputedStyle(layer).visibility:'hidden',shellOpen:shell?.getAttribute('data-shell-open')||'',expanded:menu?.getAttribute('aria-expanded')||'',navLinks:links.length,mobileLinks:mobileLinks.length,menu:{width:mr?.width||0,height:mr?.height||0},drawer:{left:dr?.left||0,right:dr?.right||0,width:dr?.width||0},focusedClass:document.activeElement?.className||''};})()`,returnByValue:true});return r?.result?.value;};
+  const before=await read();
+  if(!before)fail("DP2-04 app shell snapshot missing");
+  if(before.scrollWidth>before.viewportWidth+3)fail(`DP2-04 ${viewport.name} horizontal overflow`);
+  if(before.shellPosition!=="sticky")fail(`DP2-04 shell must be sticky, got ${before.shellPosition}`);
+  if(before.navLinks!==6||before.mobileLinks!==6)fail(`DP2-04 navigation link count mismatch desktop=${before.navLinks} mobile=${before.mobileLinks}`);
+  if(viewport.mobile){
+    if(before.desktopDisplay!=="none")fail(`DP2-04 ${viewport.name} desktop nav must be hidden`);
+    if(before.menuDisplay==="none"||before.menu.width<44||before.menu.height<44)fail(`DP2-04 ${viewport.name} menu trigger is not visible/touch sized`);
+    await call("Runtime.evaluate",{expression:"document.querySelector('.eaAppMenuButton')?.click()"});
+    await sleep(120);
+    const open=await read();
+    if(open.shellOpen!=="true"||open.expanded!=="true"||open.layerVisibility!=="visible")fail(`DP2-04 ${viewport.name} mobile drawer did not open`);
+    if(open.drawer.left<0||open.drawer.right>open.viewportWidth+3||open.drawer.width<280)fail(`DP2-04 ${viewport.name} drawer escapes viewport`);
+    if(!String(open.focusedClass).includes("eaAppMobileClose"))fail(`DP2-04 ${viewport.name} drawer close control did not receive focus`);
+    await call("Runtime.evaluate",{expression:"window.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'}))"});
+    await sleep(100);
+    const closed=await read();
+    if(closed.shellOpen!=="false"||closed.expanded!=="false")fail(`DP2-04 ${viewport.name} Escape did not close drawer`);
+  }else{
+    if(before.desktopDisplay==="none")fail(`DP2-04 ${viewport.name} desktop nav missing`);
+    if(before.menuDisplay!=="none")fail(`DP2-04 ${viewport.name} mobile trigger must be hidden`);
+    if(before.accountDisplay==="none"||before.searchDisplay==="none")fail(`DP2-04 ${viewport.name} desktop account/search actions missing`);
+  }
+  return true;
+}
+
 async function verifyD23StickyActions(call,viewport){
   if(viewport.mobile){
     await call("Runtime.evaluate",{expression:"document.documentElement.style.scrollBehavior='auto';window.scrollTo(0,document.documentElement.scrollHeight)"});
@@ -604,6 +632,7 @@ async function captureOne({port,baseUrl,route,viewport,outputDir}){
     if(navigation.errorText)fail(`${route.name} navigation failed: ${navigation.errorText}`);
 
     await settlePage(call,route);
+    await verifyDP204AppShell(call,viewport);
 
     if(route.name==="lot-ea-10539"){
       await verifyD23StickyActions(call,viewport);

@@ -95,6 +95,35 @@ function validateFoundation(css, layout, capture, workflow) {
   assert(workflow.includes('widths!=="360,390,430,1366,1440,1920"'), "DP2-03 CI must enforce the full responsive width set");
 }
 
+function validateAppShell(component, css, layout, capture) {
+  for (const needle of [
+    "data-design-task=\"DP2-04\"",
+    "eaAppDesktopNav",
+    "eaAppMenuButton",
+    "eaAppMobileDrawer",
+    "aria-controls=\"ea-mobile-navigation\"",
+    "window.addEventListener(\"keydown\",onKey)"
+  ]) assert(component.includes(needle), `DP2-04 shell missing ${needle}`);
+
+  for (const needle of [
+    ".eaAppShell",
+    ".eaAppDesktopNav",
+    ".eaAppMobileLayer",
+    ".eaAppMobileDrawer",
+    "@media(max-width:1050px)",
+    ".inventoryPage>.inventoryHeader",
+    ".lotPage>.lotHeader",
+    ".livePage>.liveHeader",
+    ".navigationPage>.navigationRouteHeader"
+  ]) assert(css.includes(needle), `DP2-04 shell CSS missing ${needle}`);
+
+  assert(layout.includes('import "./dp2-app-shell.css";'), "Root layout must import DP2 app shell CSS");
+  assert(layout.includes("<EnchevAppShell />"), "Root layout must mount unified app shell");
+  assert(capture.includes("verifyDP204AppShell"), "DP2-04 visual capture runtime verification missing");
+  assert(capture.includes("drawer close control did not receive focus"), "DP2-04 mobile focus runtime assertion missing");
+  assert(capture.includes("Escape did not close drawer"), "DP2-04 Escape-close runtime assertion missing");
+}
+
 function validateEvidence(data) {
   assert(data && data.version === "2.0", "DP2 evidence version must be 2.0");
   assert(data.status === "active", "DP2 evidence status must be active");
@@ -129,6 +158,10 @@ function validateRepository() {
   const capture = read("scripts/capture-visual-regression.mjs");
   const workflow = read(".github/workflows/verify-enchev-web.yml");
   validateFoundation(foundation, rootLayout, capture, workflow);
+
+  const appShell = read("app/components/EnchevAppShell.tsx");
+  const appShellCss = read("app/dp2-app-shell.css");
+  validateAppShell(appShell, appShellCss, rootLayout, capture);
 
   const plan = read("docs/DESIGN_PROCESS_2.md");
   assert(plan.includes("DP2-01") && plan.includes("DP2-30"), "DP2 plan must define DP2-01 and DP2-30");
@@ -232,6 +265,16 @@ function selfTest() {
     rejected = true;
   }
   assert(rejected, "DP2 self-test must reject a missing required acceptance breakpoint");
+
+  const shellFixture='data-design-task="DP2-04" eaAppDesktopNav eaAppMenuButton eaAppMobileDrawer aria-controls="ea-mobile-navigation" window.addEventListener("keydown",onKey)';
+  const shellCssFixture='.eaAppShell .eaAppDesktopNav .eaAppMobileLayer .eaAppMobileDrawer @media(max-width:1050px) .inventoryPage>.inventoryHeader .lotPage>.lotHeader .livePage>.liveHeader .navigationPage>.navigationRouteHeader';
+  const shellLayoutFixture='import "./dp2-app-shell.css"; <EnchevAppShell />';
+  const shellCaptureFixture='verifyDP204AppShell drawer close control did not receive focus Escape did not close drawer';
+  validateAppShell(shellFixture,shellCssFixture,shellLayoutFixture,shellCaptureFixture);
+
+  rejected=false;
+  try{ validateAppShell(shellFixture.replace("eaAppMobileDrawer",""),shellCssFixture,shellLayoutFixture,shellCaptureFixture); }catch{ rejected=true; }
+  assert(rejected,"DP2 self-test must reject missing mobile drawer contract");
 
   console.log("DESIGN_PROCESS_2_SELF_TEST PASS");
 }

@@ -1,0 +1,205 @@
+/* ENCHEV AUCTIONS — DESIGN PROCESS 2 / DP2-04
+   Unified buyer app shell + responsive navigation. */
+
+.eaAppShell{
+  position:sticky;
+  top:0;
+  z-index:90;
+  width:100%;
+  background:rgba(5,7,6,.92);
+  border-bottom:1px solid var(--ea-border-subtle);
+  box-shadow:0 14px 38px rgba(0,0,0,.18);
+  -webkit-backdrop-filter:blur(18px);
+  backdrop-filter:blur(18px);
+}
+.eaAppUtility{
+  min-height:30px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  padding:0 var(--ea-page-gutter);
+  border-bottom:1px solid var(--ea-border-subtle);
+  background:rgba(2,4,3,.74);
+  color:var(--ea-text-tertiary);
+  font-size:var(--ea-type-micro);
+  line-height:1.2;
+  letter-spacing:.07em;
+}
+.eaAppUtilityLive,.eaAppUtilityMeta{display:flex;align-items:center;gap:10px;min-width:0}
+.eaAppUtilityLive i{
+  width:7px;height:7px;flex:0 0 auto;border-radius:50%;
+  background:var(--ea-state-live);box-shadow:0 0 13px rgba(255,107,95,.48);
+}
+.eaAppUtilityLive strong{color:#ffd1cc;font-size:inherit;letter-spacing:.09em}
+.eaAppUtilityMeta a{color:inherit;text-decoration:none}
+.eaAppUtilityMeta a:hover{color:var(--ea-text-primary)}
+
+.eaAppHeader{
+  min-height:74px;
+  display:grid;
+  grid-template-columns:auto minmax(170px,230px) minmax(0,1fr) auto;
+  align-items:center;
+  gap:clamp(14px,1.55vw,26px);
+  padding:0 var(--ea-page-gutter);
+  max-width:var(--ea-layout-wide);
+  margin:0 auto;
+}
+.eaAppBrand{
+  display:flex;flex-direction:column;width:max-content;color:var(--ea-text-primary);
+  text-decoration:none;line-height:1;
+}
+.eaAppBrand strong{font-size:27px;line-height:.88;letter-spacing:-.055em}
+.eaAppBrand span{margin-top:7px;color:var(--ea-text-secondary);font-size:8px;letter-spacing:.52em}
+
+.eaAppSearch,.eaAppMobileSearch{
+  display:grid;align-items:center;border:1px solid var(--ea-border-default);
+  background:rgba(246,250,247,.035);border-radius:var(--ea-radius-control);
+}
+.eaAppSearch{grid-template-columns:28px minmax(0,1fr);min-height:42px;padding:0 10px}
+.eaAppSearch span,.eaAppMobileSearch span{color:var(--ea-text-tertiary);font-size:15px}
+.eaAppSearch input,.eaAppMobileSearch input{
+  width:100%;min-width:0;border:0;outline:0;background:transparent;color:var(--ea-text-primary);font:inherit;
+}
+.eaAppSearch input{font-size:12px}
+.eaAppSearch input::placeholder,.eaAppMobileSearch input::placeholder{color:var(--ea-text-tertiary)}
+
+.eaAppDesktopNav{display:flex;align-items:center;justify-content:center;gap:clamp(12px,1.25vw,22px);min-width:0}
+.eaAppDesktopNav a{
+  position:relative;display:inline-flex;align-items:center;min-height:44px;
+  color:var(--ea-text-secondary);text-decoration:none;white-space:nowrap;
+  font-size:11px;font-weight:800;letter-spacing:.015em;
+}
+.eaAppDesktopNav a:hover,.eaAppDesktopNav a[aria-current="page"]{color:var(--ea-text-primary)}
+.eaAppDesktopNav a[aria-current="page"]:after{
+  content:"";position:absolute;left:0;right:0;bottom:0;height:2px;border-radius:999px;background:var(--ea-brand);
+}
+.eaAppDesktopNav a.is-live:before{
+  content:"";width:6px;height:6px;margin-right:6px;border-radius:50%;background:var(--ea-state-live);
+  box-shadow:0 0 10px rgba(255,107,95,.45);
+}
+
+.eaAppAccount{display:flex;align-items:center;gap:8px}
+.eaAppAccount a{
+  min-height:42px;display:inline-flex;align-items:center;justify-content:center;
+  padding:0 13px;border-radius:var(--ea-radius-control);text-decoration:none;font-size:11px;font-weight:900;
+}
+.eaAppAccountGhost{border:1px solid var(--ea-border-default);background:rgba(246,250,247,.035);color:var(--ea-text-primary)}
+.eaAppAccountPrimary{background:linear-gradient(135deg,var(--ea-action-primary),var(--ea-brand-strong));color:var(--ea-text-inverse)}
+.eaAppMenuButton{display:none}
+.eaAppMobileLayer{display:none}
+
+/* DP2-04 retires route-specific duplicated headers without deleting legacy code. */
+.eaHome .eaTopbar,.eaHome .eaMainnav,
+.inventoryPage>.inv2TopUtility,.inventoryPage>.inventoryHeader,.inventoryPage>.inventoryNav,
+.lotPage>.lotHeader,
+.livePage>.liveUtility,.livePage>.liveHeader,
+.navigationPage>.navigationRouteHeader,
+.transportPage>.transportHeader,
+.historyPage>.historyHeader{
+  display:none!important;
+}
+
+/* Existing sticky buyer panels should clear the unified shell. */
+.lotBidPanel,.liveBidPanel,.profileAccountRail{scroll-margin-top:118px}
+
+@media(max-width:1180px){
+  .eaAppHeader{grid-template-columns:auto minmax(160px,220px) minmax(0,1fr) auto}
+  .eaAppDesktopNav{gap:12px}
+  .eaAppDesktopNav a{font-size:10px}
+  .eaAppAccountPrimary{display:none!important}
+}
+
+@media(max-width:1050px){
+  .eaAppUtility{min-height:28px}
+  .eaAppUtilityLive span,.eaAppUtilityMeta span:last-child{display:none}
+  .eaAppHeader{min-height:68px;grid-template-columns:auto minmax(0,1fr) auto;gap:14px}
+  .eaAppSearch{max-width:360px;justify-self:end;width:100%}
+  .eaAppDesktopNav,.eaAppAccount{display:none}
+  .eaAppMenuButton{
+    width:46px;height:46px;display:grid;place-content:center;gap:5px;padding:0;
+    border:1px solid var(--ea-border-default);border-radius:13px;background:var(--ea-surface-1);
+    cursor:pointer;
+  }
+  .eaAppMenuButton span{display:block;width:19px;height:2px;border-radius:999px;background:var(--ea-text-primary)}
+  .eaAppMobileLayer{
+    display:block;position:fixed;inset:0;z-index:100;visibility:hidden;pointer-events:none;
+  }
+  .eaAppMobileLayer.is-open{visibility:visible;pointer-events:auto}
+  .eaAppMobileBackdrop{
+    position:absolute;inset:0;border:0;background:rgba(0,0,0,.66);opacity:0;transition:opacity .2s ease;cursor:pointer;
+  }
+  .eaAppMobileLayer.is-open .eaAppMobileBackdrop{opacity:1}
+  .eaAppMobileDrawer{
+    position:absolute;top:0;right:0;bottom:0;width:min(420px,92vw);overflow:auto;
+    padding:18px;background:linear-gradient(180deg,var(--ea-surface-2),var(--ea-canvas));
+    border-left:1px solid var(--ea-border-default);box-shadow:-24px 0 70px rgba(0,0,0,.42);
+    transform:translateX(104%);transition:transform .22s var(--ea-ease);
+  }
+  .eaAppMobileLayer.is-open .eaAppMobileDrawer{transform:translateX(0)}
+  .eaAppMobileTop{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:4px 0 18px}
+  .eaAppMobileClose{
+    width:46px;height:46px;border:1px solid var(--ea-border-default);border-radius:13px;
+    background:var(--ea-action-secondary);color:var(--ea-text-primary);font-size:28px;line-height:1;cursor:pointer;
+  }
+  .eaAppMobileSearch{
+    grid-template-columns:28px minmax(0,1fr) auto;min-height:50px;padding:0 8px 0 12px;
+  }
+  .eaAppMobileSearch input{font-size:14px}
+  .eaAppMobileSearch button{
+    min-height:38px;padding:0 13px;border:0;border-radius:9px;background:var(--ea-brand-soft);
+    color:#c8f6d6;font-weight:900;cursor:pointer;
+  }
+  .eaAppMobileLive{
+    display:grid;grid-template-columns:10px minmax(0,1fr);gap:11px;align-items:center;
+    margin:16px 0;padding:13px;border:1px solid var(--ea-state-live-border);
+    border-radius:13px;background:var(--ea-state-live-soft);
+  }
+  .eaAppMobileLive i{width:8px;height:8px;border-radius:50%;background:var(--ea-state-live);box-shadow:0 0 12px rgba(255,107,95,.5)}
+  .eaAppMobileLive strong,.eaAppMobileLive span{display:block}
+  .eaAppMobileLive strong{color:#ffd0cb;font-size:10px;letter-spacing:.1em}
+  .eaAppMobileLive span{margin-top:3px;color:var(--ea-text-secondary);font-size:11px}
+  .eaAppMobileNav{display:grid;border-top:1px solid var(--ea-border-subtle)}
+  .eaAppMobileNav a{
+    min-height:58px;display:grid;grid-template-columns:32px minmax(0,1fr) 24px;align-items:center;gap:10px;
+    border-bottom:1px solid var(--ea-border-subtle);color:var(--ea-text-secondary);text-decoration:none;
+  }
+  .eaAppMobileNav a span{color:var(--ea-text-tertiary);font-size:9px;letter-spacing:.08em}
+  .eaAppMobileNav a b{font-size:13px}
+  .eaAppMobileNav a i{font-style:normal;color:var(--ea-text-tertiary);text-align:right}
+  .eaAppMobileNav a[aria-current="page"]{color:var(--ea-text-primary)}
+  .eaAppMobileNav a[aria-current="page"] b{color:#c8f6d6}
+  .eaAppMobileNav a.is-live b{color:#ffb2aa}
+  .eaAppMobileAccount{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}
+  .eaAppMobileAccount a{
+    min-height:48px;display:grid;place-items:center;border-radius:11px;text-decoration:none;font-size:12px;font-weight:900;
+  }
+  .eaAppMobileAccount a:first-child{border:1px solid var(--ea-border-default);color:var(--ea-text-primary)}
+  .eaAppMobileAccount a:last-child{background:linear-gradient(135deg,var(--ea-action-primary),var(--ea-brand-strong));color:var(--ea-text-inverse)}
+  .eaAppMobileFoot{display:flex;justify-content:space-between;gap:10px;margin-top:22px;padding-top:15px;border-top:1px solid var(--ea-border-subtle);font-size:10px;color:var(--ea-text-tertiary)}
+  .eaAppMobileFoot a{color:inherit;text-decoration:none}
+}
+
+@media(max-width:640px){
+  .eaAppUtility{padding:0 12px}
+  .eaAppUtilityMeta span:first-child{display:none}
+  .eaAppHeader{padding:0 12px;grid-template-columns:auto 1fr auto}
+  .eaAppSearch{display:none}
+  .eaAppBrand strong{font-size:25px}
+}
+
+@media(max-width:390px){
+  .eaAppMobileDrawer{width:100%;padding:16px 14px}
+  .eaAppMobileAccount{grid-template-columns:1fr}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .eaAppMobileBackdrop,.eaAppMobileDrawer{transition:none}
+}
+
+@media(forced-colors:active){
+  .eaAppShell,.eaAppHeader,.eaAppMobileDrawer,.eaAppMenuButton,.eaAppMobileClose,.eaAppMobileSearch,.eaAppMobileNav a{
+    border-color:CanvasText;
+  }
+  .eaAppDesktopNav a[aria-current="page"]:after{background:Highlight}
+}

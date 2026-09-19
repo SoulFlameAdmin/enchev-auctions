@@ -12,7 +12,7 @@ export default function TransportPage(){
   const [destination,setDestination]=useState("София");
   const estimate=useMemo(()=>baseByOrigin[origin]+typeExtra[vehicle]+(destination==="Варна"?120:destination==="Сливен"?90:0),[origin,vehicle,destination]);
 
-  return <main className="transportPage">
+  return <main id="main-content" className="transportPage">
     <header className="transportHeader"><a href="/" className="transportLogo"><strong>ENCHEV</strong><span>AUCTIONS</span></a><nav><a href="/inventory">Инвентар</a><a href="/live-auctions">LIVE търгове</a><a className="active" href="/transport">Транспорт</a><a href="/#how">Как да купя</a></nav><div><button>Вход</button><button className="transportGreen">Регистрация</button></div></header>
 
     <section className="transportHero"><div><span>ENCHEV SHIPPING</span><h1>Транспорт от търга до България</h1><p>Един flow за вземане от площадката, вътрешен транспорт, пристанище, международен превоз и доставка до избран град.</p><div className="transportHeroActions"><a href="#calculator">Изчисли ориентировъчна цена</a><a className="ghost" href="/inventory">Избери автомобил</a></div></div><div className="transportRouteCard"><div><span>01</span><b>Аукционна площадка</b></div><i>→</i><div><span>02</span><b>Порт / терминал</b></div><i>→</i><div><span>03</span><b>България</b></div><i>→</i><div><span>04</span><b>До адрес</b></div></div></section>
