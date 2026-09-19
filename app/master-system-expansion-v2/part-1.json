@@ -5,7 +5,7 @@
     {
       "id": "62",
       "title": "Corporate operating model, legal entities & governance",
-      "wave": 1,
+      "wave": 3,
       "profile": "corporate",
       "domains": [
         "group/legal-entity structure",
@@ -401,7 +401,7 @@
     {
       "id": "63",
       "title": "Commercial roles, marketplace model & contract architecture",
-      "wave": 1,
+      "wave": 4,
       "profile": "compliance",
       "domains": [
         "platform legal role",
@@ -1285,7 +1285,7 @@
     {
       "id": "65",
       "title": "Payments, deposits, refunds, payouts & settlement",
-      "wave": 5,
+      "wave": 7,
       "profile": "transactional",
       "domains": [
         "payment intent",
@@ -2207,7 +2207,7 @@
     {
       "id": "67",
       "title": "VAT, sales tax, invoicing & fiscal documents",
-      "wave": 3,
+      "wave": 4,
       "profile": "compliance",
       "domains": [
         "tax determination",
@@ -3112,7 +3112,7 @@
     {
       "id": "69",
       "title": "AML, sanctions, high-value vehicle & financial-crime controls",
-      "wave": 3,
+      "wave": 5,
       "profile": "compliance",
       "domains": [
         "AML applicability by country",
@@ -3555,8 +3555,7 @@
         "52",
         "53",
         "54",
-        "63",
-        "65"
+        "63"
       ]
     },
     {
@@ -4007,9 +4006,8 @@
       ],
       "dependsOn": [
         "21",
-        "39",
-        "46",
         "54",
+        "55",
         "60",
         "63",
         "67"
@@ -4464,7 +4462,6 @@
       "dependsOn": [
         "06",
         "21",
-        "39",
         "54",
         "60",
         "70"
