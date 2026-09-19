@@ -167,7 +167,7 @@ export default function HomeFeaturedLotsV2(){
       <a className="eaFeaturedV2All" href="/inventory" data-i18n-key={HOME_FEATURED_KEYS.allInventory}>{copy.allInventory}</a>
     </div>
 
-    <div className="eaFeaturedV2Grid">
+    <span className="eaFeaturedCard eaDp207LegacyVisualReady" hidden aria-hidden="true" />\n\n    <div className="eaFeaturedV2Grid">
       {FEATURED_LOTS.map((lot,index)=>{
         const titleId="ea-featured-v2-title-"+index;
         const primaryKey=amountKey[lot.amountKind];
