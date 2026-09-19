@@ -269,7 +269,9 @@ function currentOwnedUrls() {
   const byUrl = new Map();
   for (const [kind, file, fallback] of defs) {
     const st = readState(file);
-    const u = cleanConversationUrl(st.chatUrl) || cleanConversationUrl(fallback);
+    const raw = String(st.chatUrl || "");
+    const pending = Boolean(st.pendingNewChat) || raw === "https://chatgpt.com/" || raw === "https://chatgpt.com";
+    const u = cleanConversationUrl(st.chatUrl) || (!pending ? cleanConversationUrl(fallback) : null);
     if (u) byUrl.set(u, kind);
   }
   return byUrl;
@@ -277,6 +279,21 @@ function currentOwnedUrls() {
 
 async function detectManagedKind(page) {
   try {
+    const tag = await page.evaluate(() => window.name || "").catch(() => "");
+    const tagMap = {
+      DAVID_SYSTEM_MANAGED_V1: "SYSTEM",
+      DAVID_SYSTEM_PENDING_V1: "SYSTEM",
+      DAVID_DESIGN_MANAGED_V1: "DESIGN",
+      DAVID_DESIGN_PENDING_V1: "DESIGN",
+      DAVID_APP2_MANAGED_V1: "APP2",
+      DAVID_APP2_PENDING_V1: "APP2",
+      DAVID_APK_MANAGED_V1: "APK",
+      DAVID_APK_PENDING_V1: "APK",
+      DAVID_CONTROL_MANAGED_V1: "CONTROL",
+      DAVID_CONTROL_PENDING_V1: "CONTROL"
+    };
+    if (tagMap[tag]) return tagMap[tag];
+
     const u = cleanConversationUrl(page.url());
     if (!u) return null;
 
@@ -416,7 +433,9 @@ async function cleanupManagedTabs() {
 
   for (const spec of stateSpecs) {
     const st = readState(spec.file);
-    const cur = cleanConversationUrl(st.chatUrl) || cleanConversationUrl(spec.fallback);
+    const raw = String(st.chatUrl || "");
+    const pending = Boolean(st.pendingNewChat) || raw === "https://chatgpt.com/" || raw === "https://chatgpt.com";
+    const cur = cleanConversationUrl(st.chatUrl) || (!pending ? cleanConversationUrl(spec.fallback) : null);
     if (cur) preferredByKind.set(spec.kind, cur);
     const prev = cleanConversationUrl(st.previousChatUrl);
     if (prev) stale.add(prev);
@@ -434,10 +453,11 @@ async function cleanupManagedTabs() {
     const managed = [];
     for (const page of context.pages()) {
       if (!page || page.isClosed()) continue;
-      const u = cleanConversationUrl(page.url());
-      if (!u) continue;
       const kind = await detectManagedKind(page);
-      if (kind) managed.push({ page, url: u, kind });
+      if (!kind) continue;
+      const u = cleanConversationUrl(page.url());
+      const locator = u || ("pending:" + kind);
+      managed.push({ page, url: locator, conversationUrl: u, kind });
     }
 
     let closed = 0;
@@ -499,7 +519,7 @@ async function monitorManagedTabs() {
       if (page.url().startsWith("https://chatgpt.com/")) snapshot.totalChatGptTabs += 1;
       const kind = await detectManagedKind(page);
       const u = cleanConversationUrl(page.url());
-      if (kind && u) snapshot.managed[kind].push(u);
+      if (kind) snapshot.managed[kind].push(u || ("pending:" + kind));
     }
     const counts = Object.fromEntries(Object.entries(snapshot.managed).map(([kind, urls]) => [kind, urls.length]));
 
