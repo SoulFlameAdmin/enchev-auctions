@@ -120,6 +120,17 @@ function isDone(text) { return lastLine(text) === DONE_MARKER; }
 function isExternalBlocker(problem) {
   return /(vercel|build-rate-limit|rate limit|quota|hobby|billing|plan limit|netlify|github pages|vendor credential|credential|permission|legal sign-off|customer data|external access|production url|deployment capacity)/i.test(String(problem || ""));
 }
+function blockerKey(problem) {
+  return String(problem || "")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .replace(/опит\s*\d+|attempt\s*\d+/g, "")
+    .trim();
+}
+function sameBlocker(a, b) {
+  const x = blockerKey(a), y = blockerKey(b);
+  return Boolean(x && y && (x === y || x.includes(y) || y.includes(x)));
+}
 function fixPrompt(problem, attempt) {
   return `@GitHub @Vercel @Supabase\n\nВътрешен технически проблем за поправка:\n${problem}\n\nОпит ${attempt}. Опитай сам безопасен fix, провери кода/логовете/config, тествай пак и запиши evidence. Не заобикаляй permissions/login/MFA/CAPTCHA.\n\nАко е оправено: OK\nАко същият вътрешен дефект реално още блокира всяка безопасна работа: ${PROBLEM_PREFIX} <точният проблем>\nАко целият план е доказано завършен: ${DONE_MARKER}\n\n${ORCHESTRATOR_LAW}\n\n${DEPLOY_LAW}\n\n${RELAY_MARKER}`;
 }
@@ -634,6 +645,8 @@ async function main() {
     return;
   }
   if (state.problem && isExternalBlocker(state.problem)) {
+    const sameAsRecorded = sameBlocker(state.deferredBlocker, state.problem);
+    if (!sameAsRecorded) state.deferredBlockerAcknowledged = false;
     state.deferredBlocker = state.problem;
     state.problem = null;
     state.problemAttempts = 0;
@@ -642,7 +655,7 @@ async function main() {
   save(state, "APP2 autonomous worker online");
   console.log("[APP2] AUTOPILOT ON. External blockers are deferred; independent work continues.");
 
-  let mode = state.deferredBlocker ? "defer" : (state.problem ? "fix" : "work");
+  let mode = state.deferredBlocker && !state.deferredBlockerAcknowledged ? "defer" : (state.problem ? "fix" : "work");
   let deferRepeats = 0;
 
   while (!state.complete) {
@@ -673,13 +686,29 @@ async function main() {
     const problem = extractProblem(result.text);
     if (problem) {
       if (isExternalBlocker(problem)) {
-        state.deferredBlocker = problem;
-        state.problem = null;
-        state.problemAttempts = 0;
-        state.watchdog = "external-blocker-deferred";
-        save(state, `Deferred external blocker: ${problem}`);
-        console.log(`[APP2] DEFERRED EXTERNAL BLOCKER: ${problem}`);
-        mode = "defer";
+        const repeatedCurrentDefer = mode === "defer" && sameBlocker(state.deferredBlocker, problem);
+        const alreadyDeferred = Boolean(state.deferredBlockerAcknowledged) && sameBlocker(state.deferredBlocker, problem);
+
+        if (repeatedCurrentDefer || alreadyDeferred) {
+          state.deferredBlocker = state.deferredBlocker || problem;
+          state.deferredBlockerAcknowledged = true;
+          state.problem = null;
+          state.problemAttempts = 0;
+          state.watchdog = "external-blocker-already-deferred";
+          save(state, `External blocker already deferred; forcing WORK mode: ${problem}`);
+          console.log(`[APP2] BLOCKER ALREADY DEFERRED -> WORK MODE: ${problem}`);
+          mode = "work";
+          deferRepeats = 0;
+        } else {
+          state.deferredBlocker = problem;
+          state.deferredBlockerAcknowledged = false;
+          state.problem = null;
+          state.problemAttempts = 0;
+          state.watchdog = "external-blocker-deferred";
+          save(state, `Deferred new external blocker once: ${problem}`);
+          console.log(`[APP2] NEW EXTERNAL BLOCKER -> ONE DEFER RELAY: ${problem}`);
+          mode = "defer";
+        }
       } else {
         state.problem = problem;
         state.watchdog = "internal-problem";
@@ -705,11 +734,27 @@ async function main() {
       if (terminal.type === "problem") {
         const problem2 = terminal.problem;
         if (isExternalBlocker(problem2)) {
-          state.deferredBlocker = problem2;
-          state.problem = null;
-          state.problemAttempts = 0;
-          state.watchdog = "external-blocker-deferred";
-          mode = "defer";
+          const repeatedCurrentDefer = mode === "defer" && sameBlocker(state.deferredBlocker, problem2);
+          const alreadyDeferred = Boolean(state.deferredBlockerAcknowledged) && sameBlocker(state.deferredBlocker, problem2);
+
+          if (repeatedCurrentDefer || alreadyDeferred) {
+            state.deferredBlocker = state.deferredBlocker || problem2;
+            state.deferredBlockerAcknowledged = true;
+            state.problem = null;
+            state.problemAttempts = 0;
+            state.watchdog = "external-blocker-already-deferred";
+            mode = "work";
+            deferRepeats = 0;
+            save(state, `Terminal external blocker already deferred; forcing WORK mode: ${problem2}`);
+          } else {
+            state.deferredBlocker = problem2;
+            state.deferredBlockerAcknowledged = false;
+            state.problem = null;
+            state.problemAttempts = 0;
+            state.watchdog = "external-blocker-deferred";
+            mode = "defer";
+            save(state, `Terminal new external blocker deferred once: ${problem2}`);
+          }
         } else {
           state.problem = problem2;
           state.watchdog = "internal-problem";
@@ -724,8 +769,14 @@ async function main() {
     state.problem = null;
     state.problemAttempts = 0;
     state.lastResult = "OK";
-    state.watchdog = "block-complete";
-    save(state, "Final OK received; continuing master plan");
+    if (mode === "defer") {
+      state.deferredBlockerAcknowledged = true;
+      state.watchdog = "external-blocker-deferred-once";
+      save(state, "One defer relay completed; forcing WORK mode from now on for the same blocker");
+    } else {
+      state.watchdog = "block-complete";
+      save(state, "Final OK received; continuing master plan");
+    }
     mode = "work";
     deferRepeats = 0;
     await sleep(COOLDOWN_MS);
@@ -743,6 +794,9 @@ function runSelfTest() {
   if (!conversationLimitText("Достигнахте максималната продължителност на този разговор, но можете да продължите да говорите, като започнете нов чат.")) throw new Error("APP2 rollover self-test: BG limit text not detected");
   if (!conversationLimitText("You've reached the maximum length for this conversation, but you can keep talking by starting a new chat.")) throw new Error("APP2 rollover self-test: EN limit text not detected");
   if (conversationLimitText("Normal assistant response")) throw new Error("APP2 rollover self-test: false positive");
+  if (!sameBlocker("Vercel build-rate-limit blocked", "Vercel build rate limit blocked")) {
+    throw new Error("APP2 defer self-test: equivalent external blocker should be recognized as the same blocker");
+  }
   console.log("APP2_RESPONSE_WATCHDOG_SELF_TEST PASS progress=2 stall=2 recovery_single_send=1 rollover=3");
 }
 
