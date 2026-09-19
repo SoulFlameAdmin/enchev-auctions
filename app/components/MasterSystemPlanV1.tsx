@@ -173,7 +173,7 @@ export default function MasterSystemPlanV1(){
 
   useEffect(()=>{ try{ const s=localStorage.getItem(SK),n=localStorage.getItem(NK),g=localStorage.getItem(GK); if(s)setStatuses(c=>({...c,...JSON.parse(s)})); if(n)setNotes(JSON.parse(n)); if(g)setGaps(JSON.parse(g)); }catch{} },[]);
   useEffect(()=>{
-    if((!menu&&!open)||expansionState!=="idle") return;
+    if(!open||expansionState!=="idle") return;
     let cancelled=false;
     setExpansionState("loading");
     Promise.all([
@@ -193,7 +193,7 @@ export default function MasterSystemPlanV1(){
       setExpansionState("ready");
     }).catch(()=>{ if(!cancelled)setExpansionState("error"); });
     return()=>{cancelled=true;};
-  },[menu,open,expansionState]);
+  },[open]);
   useEffect(()=>{ const x=window.setInterval(()=>setNow(new Date()),1000); return()=>window.clearInterval(x); },[]);
   useEffect(()=>{ const c=new BroadcastChannel(CK); c.onmessage=e=>{ if(e.data?.type!=="state")return; if(e.data.statuses)setStatuses(x=>({...x,...e.data.statuses})); if(e.data.notes)setNotes(e.data.notes); if(e.data.gaps)setGaps(e.data.gaps); }; return()=>c.close(); },[]);
 
