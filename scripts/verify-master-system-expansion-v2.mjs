@@ -51,7 +51,7 @@ function inspect(parts) {
     if (!Number.isInteger(phase.wave) || phase.wave < 0 || phase.wave > 14) fail(`${phase.id}: invalid wave`);
     if (!Array.isArray(phase.dependsOn)) fail(`${phase.id}: dependsOn must be an array`);
     for (const dep of phase.dependsOn) {
-      if (!/^\\d{2}$/.test(String(dep))) fail(`${phase.id}: invalid dependency ${dep}`);
+      if (!/^\d{2}$/.test(String(dep))) fail(`${phase.id}: invalid dependency ${dep}`);
       if (String(dep) === String(phase.id)) fail(`${phase.id}: self dependency is forbidden`);
       const depNum = Number(dep);
       if (depNum > EXPECTED_LAST_PHASE) fail(`${phase.id}: dependency ${dep} is outside known phase range`);
@@ -90,7 +90,7 @@ function verifyDependencyGraph(phases) {
   const mapEnd = master.indexOf("const frozenPhases", mapStart);
   const block = master.slice(mapStart, mapEnd);
   const waveMap = {};
-  for (const match of block.matchAll(/"(\\d{2})":(\\d+)/g)) waveMap[match[1]] = Number(match[2]);
+  for (const match of block.matchAll(/"(\d{2})":(\d+)/g)) waveMap[match[1]] = Number(match[2]);
   for (const phase of phases) waveMap[String(phase.id)] = Number(phase.wave);
 
   for (const phase of phases) {
@@ -131,11 +131,19 @@ function verifyIntegration() {
   for (const n of [1,2,3,4]) {
     if (!source.includes(`master-system-expansion-v2/part-${n}.json`)) fail(`Command Center missing expansion part ${n}`);
   }
-  if (!source.includes("const expansionPhases: Phase[]")) fail("Command Center expansion phase mapping missing");
-  if (!source.includes("[...frozenPhases, ...expansionPhases]")) fail("frozen + expansion merge missing");
+  if (!source.includes("function mapExpansionParts(parts: ExpansionPart[])")) fail("Command Center expansion mapper missing");
+  if (!source.includes("const [expansionPhases,setExpansionPhases]=useState<Phase[]>([])")) fail("Command Center lazy expansion state missing");
+  if (!source.includes("sortPhases([...frozenPhases,...expansionPhases])")) fail("frozen + lazy expansion merge missing");
+  if (!source.includes("Promise.all([") || !source.includes("import(\"../master-system-expansion-v2/part-1.json\")")) fail("lazy expansion imports missing");
+  if (!source.includes('expansionState!=="ready"')) fail("FINAL gate must wait for expansion registry load");
   if (!source.includes('const EXPANSION_VERSION = "2.0 APPEND-ONLY"')) fail("expansion version UI binding missing");
   if (!source.includes("dependsOn: Array.isArray(phase.dependsOn)")) fail("Command Center dependency graph mapping missing");
+  if (!source.includes(']}),[open]);') && !source.includes('});\n  },[open]);')) fail("lazy loader must not self-cancel on expansionState transition");
   if (!source.includes("...gaps].filter")) fail("FINAL 100% gate must include append-only GAP tasks");
+
+  const docs = readFileSync("docs/MASTER_SYSTEM_EXPANSION_V2.md", "utf8");
+  if (!docs.includes("**4,280 system points**")) fail("expansion documentation combined task count missing");
+  if (!docs.includes("FNV1a32 e7c9cf20")) fail("expansion documentation identity digest mismatch");
 
   const worker = readFileSync("tools/david/auto-continue-enchev-v5.mjs", "utf8");
   if (!worker.includes("MASTER SYSTEM EXPANSION v2.0 APPEND-ONLY")) fail("SYSTEM worker does not know the expansion source");
