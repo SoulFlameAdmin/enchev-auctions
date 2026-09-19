@@ -38,9 +38,15 @@ function validateRepository() {
   const evidence = JSON.parse(read("app/design-process-2-evidence.json"));
   validateEvidence(evidence);
 
+  const globalCommerce = read("docs/GLOBAL_COMMERCE_UX_SPEC_V1.md");
+  assert(globalCommerce.includes("GLOBAL COMMERCE UX SPEC V1"), "Global Commerce UX spec missing");
+  assert(globalCommerce.includes("Translation-key law"), "Global Commerce UX translation-key law missing");
+  assert(globalCommerce.includes("Certification rule"), "Global Commerce UX certification rule missing");
+
   const plan = read("docs/DESIGN_PROCESS_2.md");
   assert(plan.includes("DP2-01") && plan.includes("DP2-30"), "DP2 plan must define DP2-01 and DP2-30");
   assert(plan.includes("Do not invent DP2-31") || plan.includes("Do not invent DP2-31 automatically"), "DP2 plan must forbid automatic DP2-31 scope growth");
+  assert(plan.includes("GLOBAL_COMMERCE_UX_SPEC_V1.md"), "DP2 plan must bind the mandatory Global Commerce UX spec");
 
   const menu = read("app/components/MasterSystemPlanV1.tsx");
   assert(menu.includes("Design Process 2"), "Enchev command-center menu must expose Design Process 2");
@@ -66,7 +72,7 @@ function validateRepository() {
   const start = read("START_DAVID_ALL.ps1");
   assert(start.includes("ENCHEV DESIGN PROCESS 2"), "Startup summary must expose ENCHEV DESIGN PROCESS 2");
 
-  console.log("DESIGN_PROCESS_2_INVARIANT PASS tasks=30 menu=1 worker=1 matrix=1");
+  console.log("DESIGN_PROCESS_2_INVARIANT PASS tasks=30 menu=1 worker=1 matrix=1 global_commerce=1");
 }
 
 function selfTest() {
