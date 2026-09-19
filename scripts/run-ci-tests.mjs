@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 
 const cases = [
   ["scripts/verify-master-task-ids.mjs", "--self-test"],
+  ["scripts/verify-master-system-expansion-v2.mjs", "--self-test"],
   ["scripts/verify-green-requires-evidence.mjs", "--self-test"],
   ["scripts/verify-green-requires-passing-test.mjs", "--self-test"],
   ["scripts/verify-yellow-semantics.mjs", "--self-test"],
