@@ -10,6 +10,7 @@ const STATE_FILE = process.env.DAVID_CONTROL_STATE_FILE || path.join(HERE, ".dav
 const MONITOR_FILE = path.join(HERE, ".david-tab-monitor.json");
 const COMMAND_FILE = path.join(HERE, ".david-control-command.json");
 const RESULT_FILE = path.join(HERE, ".david-control-result.json");
+const RATE_LIMIT_FILE = path.join(HERE, ".david-global-chatgpt-rate-limit.json");
 const MARKER = "[DAVID_CONTROL_WATCHTOWER_V1]";
 const TAB_NAME = "DAVID_CONTROL_MANAGED_V1";
 const PENDING_TAB_NAME = "DAVID_CONTROL_PENDING_V1";
@@ -249,6 +250,7 @@ function compactWorkerState(file) {
 function buildTelemetry() {
   const monitor = readJson(MONITOR_FILE) || {};
   const result = readJson(RESULT_FILE) || null;
+  const rateLimit = readJson(RATE_LIMIT_FILE) || { status: "clear", stage: -1 };
   return {
     checkedAt: monitor.checkedAt || nowIso(),
     managed: monitor.managed || {},
@@ -260,7 +262,8 @@ function buildTelemetry() {
       APP2: compactWorkerState(".david-app2-state-6aac2dbb.json"),
       APK: compactWorkerState(".david-apk-state.json")
     },
-    lastControlResult: result
+    lastControlResult: result,
+    globalChatGptRateLimit: rateLimit
   };
 }
 
@@ -315,6 +318,7 @@ function controlPrompt(t, reason) {
     "- CLEAN_DUPLICATES only when a managed worker has more than one owned tab.\n" +
     "- Project PROBLEM IN, Redis/Valkey/Vercel/provider credentials, quota, deploy blockers and test failures are NOT session-health failures: normally WAIT.\n" +
     "- If central guard is already handling connection interruption or send timeout, WAIT unless the worker/tab/heartbeat is actually dead.\n" +
+    "- If TELEMETRY.globalChatGptRateLimit.status is blocked or probe, normally ACTION WAIT. Do not REFRESH/RESTART workers merely for rate-limit waiting.\n" +
     "- Do not command actions outside the allowlist.\n\n" +
     "ALLOWLISTED OUTPUT:\n" +
     "ACTION WAIT\n" +
