@@ -497,7 +497,7 @@ async function runPrompt(context, page, state, prompt, kind) {
     save(state, kind === "fix" ? "APK: sending fix instruction" : "APK: sending next task");
     const permit = await waitForGlobalSendPermit("APK", async (decision) => {
       state.watchdog = "global-rate-limit-wait";
-      state.problem = "ChatGPT platform: global rate limit";
+      state.problem = null;
       state.problemRetryAt = decision.state?.blockedUntil || decision.state?.probeLeaseUntil || null;
       save(state, `GLOBAL RATE LIMIT WAIT mode=${decision.mode}; owner=${decision.state?.probeOwner || "none"}`);
     });
