@@ -91,7 +91,8 @@ function validateFoundation(css, layout, capture, workflow) {
   }
   assert(capture.includes("expected 30 screenshots"), "DP2-03 visual capture must require 30 screenshots");
   assert(workflow.includes("chrome.count!==30||edge.count!==30"), "DP2-03 CI must require 30 Chrome + 30 Edge screenshots");
-  assert(workflow.includes("chrome.entries.map(e=>e.width)"), "DP2-03 CI must read width from the visual manifest entry schema");\n  assert(workflow.includes('widths!=="360,390,430,1366,1440,1920"'), "DP2-03 CI must enforce the full responsive width set");
+  assert(workflow.includes("chrome.entries.map(e=>e.width)"), "DP2-03 CI must read width from the visual manifest entry schema");
+  assert(workflow.includes('widths!=="360,390,430,1366,1440,1920"'), "DP2-03 CI must enforce the full responsive width set");
 }
 
 function validateEvidence(data) {
