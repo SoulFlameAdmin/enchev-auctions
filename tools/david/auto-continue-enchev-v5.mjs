@@ -10,7 +10,7 @@ const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const MAX_TURNS = Number(process.env.DAVID_MAX_TURNS || 2147483647);
 const POLL_MS = Number(process.env.DAVID_POLL_MS || 800);
 const COOLDOWN_MS = Number(process.env.DAVID_COOLDOWN_MS || 1000);
-const RESPONSE_START_TIMEOUT_MS = Number(process.env.DAVID_RESPONSE_START_TIMEOUT_MS || 12000);
+const RESPONSE_START_TIMEOUT_MS = Number(process.env.DAVID_RESPONSE_START_TIMEOUT_MS || 60000);
 const STALL_TIMEOUT_MS = Number(process.env.DAVID_STALL_TIMEOUT_MS || 600000);
 const REFRESH_SETTLE_MS = Number(process.env.DAVID_REFRESH_SETTLE_MS || 3000);
 const MAX_RECOVERY_ATTEMPTS = Number(process.env.DAVID_MAX_RECOVERY_ATTEMPTS || 4);
@@ -723,9 +723,7 @@ async function sendWithRecovery(context, page, state, text, kind) {
     }
     if (permit.mode === "probe") {
       state.watchdog = "global-rate-limit-probe";
-      saveState(state, "SYSTEM owns the single post-cooldown probe send");
-      await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
-      await sleep(2500);
+      saveState(state, "SYSTEM owns the single post-cooldown probe send; no refresh required");
     }
 
     console.log(`[DAVID] Sending ${kind} attempt ${attempt}/${MAX_RECOVERY_ATTEMPTS}. rateMode=${permit.mode}`);
