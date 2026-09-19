@@ -285,12 +285,40 @@ async function platformBlock(page) {
         const t = (el.textContent || "").toLowerCase();
         if (/verify you are human|потвърдете, че сте човек/.test(t)) return "human verification";
         if (/rate limit|too many requests|достигнахте лимита/.test(t)) return "rate limit";
+        if (/изпращането на съобщението изтече по време|message sending timed out|sending the message timed out|message send timed out/.test(t)) return "send timeout";
         if (/network error|something went wrong|нещо се обърка/.test(t)) return "network error";
       }
       return null;
     });
   } catch { return null; }
 }
+async function waitSendTimeoutRecovery(context, page, state) {
+  state.problem = null;
+  state.watchdog = "design-send-timeout-wait-guard";
+  save(state, "Message send timeout detected; central guard owns bounded Retry. DESIGN will not duplicate-send.");
+  console.log("[DESIGN] SEND TIMEOUT: waiting for central guard. NO DUPLICATE RESEND.");
+  const until = Date.now() + 60000;
+  while (Date.now() < until) {
+    await sleep(1000);
+    page = await ensurePage(context, page);
+    if (await generating(page)) {
+      state.watchdog = "design-thinking";
+      save(state, "Send-timeout retry accepted; GPT active");
+      return page;
+    }
+    const pb = await platformBlock(page);
+    if (pb !== "send timeout") {
+      state.watchdog = "design-send-timeout-recovered";
+      save(state, "Message send timeout cleared by central guard");
+      return page;
+    }
+  }
+  console.log("[DESIGN] SEND TIMEOUT still visible after 60s. Refreshing view only; no worker resend.");
+  await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  await sleep(2500);
+  return page;
+}
+
 async function waitReady(context, page, state) {
   while (true) {
     page = await ensurePage(context, page);
@@ -361,6 +389,25 @@ async function runPrompt(context, page, state, prompt, kind) {
     let started = await waitStart(context, page, base, state); page = started.page;
     syncActiveChatUrl(page, state);
     if (started.blocker) {
+      if (started.blocker === "send timeout") {
+        page = await waitSendTimeoutRecovery(context, page, state);
+        started = await waitStart(context, page, base, state);
+        page = started.page;
+        if (started.started) {
+          state.turnsSent = Number(state.turnsSent || 0) + 1;
+          save(state, `Design GPT started cycle ${state.turnsSent} after send-timeout recovery`);
+          const doneAfterTimeout = await waitCompletion(context, page, base, state);
+          page = doneAfterTimeout.page;
+          if (!doneAfterTimeout.blocker && !doneAfterTimeout.stalled) {
+            state.lastAssistantHash = hash(doneAfterTimeout.text);
+            if (state.justRolledOver) state.justRolledOver = false;
+            syncActiveChatUrl(page, state);
+            save(state, "Design response complete after send-timeout recovery");
+            return { page, text: doneAfterTimeout.text };
+          }
+        }
+        continue;
+      }
       state.problem = `ChatGPT platform: ${started.blocker}`; state.watchdog = "design-platform-backoff"; save(state, `Design platform blocker: ${started.blocker}`);
       await sleep(started.blocker === "human verification" ? 30000 : 15000);
       await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
@@ -369,7 +416,13 @@ async function runPrompt(context, page, state, prompt, kind) {
     if (!started.started) { state.watchdog = "design-refreshing"; save(state, "LAW: Design GPT did not start -> refresh -> resend"); console.log("[DESIGN] LAW: no thinking -> REFRESH -> RESEND."); await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {}); await sleep(2500); continue; }
     state.turnsSent = Number(state.turnsSent || 0) + 1; save(state, `Design GPT started cycle ${state.turnsSent}`);
     const done = await waitCompletion(context, page, base, state); page = done.page;
-    if (done.blocker) { state.watchdog = "design-refreshing"; save(state, `Design blocker ${done.blocker}`); await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {}); await sleep(2500); continue; }
+    if (done.blocker) {
+      if (done.blocker === "send timeout") {
+        page = await waitSendTimeoutRecovery(context, page, state);
+        continue;
+      }
+      state.watchdog = "design-refreshing"; save(state, `Design blocker ${done.blocker}`); await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {}); await sleep(2500); continue;
+    }
     if (done.stalled) { state.watchdog = "design-stalled-resend"; save(state, "LAW: Design GPT stopped thinking/writing -> resend"); console.log("[DESIGN] LAW: stopped thinking/writing -> RESEND."); await sleep(800); continue; }
     state.lastAssistantHash = hash(done.text);
     if (state.justRolledOver) state.justRolledOver = false;
