@@ -104,11 +104,10 @@ function startWorker() {
   child.stderr.on("data", (d) => String(d).split(/\r?\n/).forEach((x) => log(`[stderr] ${x}`)));
   child.on("exit", (code, signal) => {
     lastExit = { code, signal, at: new Date().toISOString() };
-    log(`[CONTROL] Worker exited code=${code} signal=${signal || "none"}`);
+    log(`[CONTROL] Legacy child exited code=${code} signal=${signal || "none"}`);
     child = null;
     if (!intentionalStop) {
-      log("[CONTROL] Worker is not supposed to stop. Auto-restart in 3s.");
-      setTimeout(() => startWorker(), 3000);
+      log("[CONTROL] Legacy auto-restart disabled. Unified DAVID orchestrator is the sole owner.");
     }
   });
 
@@ -154,6 +153,9 @@ function status() {
   return {
     online: true,
     mode: "local-pc-chatgpt-dual-worker",
+    ownerMode: "passive-bridge",
+    autoStart: false,
+    autoRestart: false,
     workerVersion: pkg.version || null,
     workerScript: pkg?.scripts?.start || null,
     workerRunning: workerRunning(),
@@ -216,7 +218,7 @@ const server = http.createServer(async (req, res) => {
 
 server.listen(PORT, HOST, () => {
   log(`[CONTROL] DAVID bridge online at http://${HOST}:${PORT}`);
-  setTimeout(() => startWorker(), 900);
+  log("[CONTROL] Passive bridge mode. Auto-start disabled; unified DAVID orchestrator is the sole owner.");
 });
 
 process.on("SIGINT", () => { intentionalStop = true; stopWorker(); server.close(() => process.exit(0)); });
