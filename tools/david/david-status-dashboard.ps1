@@ -92,7 +92,7 @@ function Get-SystemProgress {
 }
 
 function Get-DesignProgress {
-  $path = Join-Path $Repo "app\design-plan-evidence.json"
+  $path = Join-Path $Repo "app\design-process-2-evidence.json"
   $j = Read-JsonSafe $path
   $tasks = @()
   if ($j -and $j.tasks) { $tasks = @($j.tasks) }
