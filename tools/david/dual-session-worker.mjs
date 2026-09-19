@@ -19,6 +19,7 @@ const CONTROL_COMMAND_FILE = path.join(HERE, ".david-control-command.json");
 const CONTROL_RESULT_FILE = path.join(HERE, ".david-control-result.json");
 const RECOVERY_REQUEST_FILE = path.join(HERE, ".david-recovery-request.json");
 const RECOVERY_RESULT_FILE = path.join(HERE, ".david-recovery-result.json");
+const SESSION_HEALTH_FILE = path.join(HERE, ".david-session-health.json");
 const MONITOR_MS = Number(process.env.DAVID_TAB_MONITOR_MS || 2000);
 const MONITOR_CONNECT_TIMEOUT_MS = Number(process.env.DAVID_TAB_MONITOR_CONNECT_TIMEOUT_MS || 60000);
 const WORKER_START_GRACE_MS = Number(process.env.DAVID_WORKER_START_GRACE_MS || 45000);
@@ -100,7 +101,11 @@ const specs = [
       DAVID_SEND_TIMEOUT_COOLDOWN_MS: "3000",
       DAVID_SEND_TIMEOUT_MAX_RETRIES: "2",
       DAVID_SEND_TIMEOUT_STALE_ACTIVE_MS: "8000",
-      DAVID_SEND_TIMEOUT_RELOAD_SETTLE_MS: "2500"
+      DAVID_SEND_TIMEOUT_RELOAD_SETTLE_MS: "2500",
+      DAVID_GENERIC_ERROR_CONFIRM_MS: "6000",
+      DAVID_GENERIC_ERROR_CONFIRM_SAMPLES: "4",
+      DAVID_GENERIC_RETRY_COOLDOWN_MS: "15000",
+      DAVID_GENERIC_MAX_RETRIES: "2"
     }
   }
 ];
@@ -363,6 +368,13 @@ async function controlActionProtected(target, context) {
   const watchdog = String(st?.watchdog || "");
   if (/(thinking|writing|tool|active|settling|awaiting-final-ok|waiting-response|sending|send-timeout|global-rate-limit)/i.test(watchdog)) {
     return { protected: true, reason: "worker watchdog protected: " + watchdog };
+  }
+
+  const sessionHealth = readState(SESSION_HEALTH_FILE);
+  const workerSession = sessionHealth?.workers?.[target] || null;
+  const sessionState = String(workerSession?.state || "");
+  if (/(active|rate-limited|send-timeout|interrupted|platform-problem)/i.test(sessionState)) {
+    return { protected: true, reason: "central session guard owns recovery: " + sessionState };
   }
 
   const owned = currentOwnedUrls();
@@ -682,7 +694,7 @@ console.log("[DUAL] DESIGN tab: 6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7");
 console.log("[DUAL] APP2 tab: 6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4");
 console.log("[DUAL] APK tab: auto-discover DAVID Phone / SoulFlame Twins / DAVID APK session; exact DAVID_APK_CHAT_URL wins when provided.");
 console.log("[DUAL] CONTROL tab: 6aade2fa-e2a0-83ed-96af-702c0430d49e");
-console.log("[DUAL] INTERRUPTION GUARD: watches every managed ChatGPT conversation in this DAVID Edge profile.");
+console.log("[DUAL] SESSION RESILIENCE V1: central guard classifies managed ChatGPT UI states, preserves the fast FSM, and writes live session health.");
 console.log("[DUAL] FAST RECOVERY: WAIT(active) -> RETRY -> RETRY -> RELOAD -> affected-worker RESTART; NEW CHAT only at safe rollover/final OK.");
 console.log("[DUAL] 24/7 law: active GPT/tool work => WAIT; confirmed frozen interruption => refresh/verify/resend; workers self-heal by heartbeat/tab ownership.");
 console.log("[DUAL] CONTROL law: GPT WATCHTOWER may request only allowlisted REFRESH/RESTART/CLEAN_DUPLICATES actions after exact final OK.");
@@ -700,7 +712,8 @@ async function monitorManagedTabs() {
       totalChatGptTabs: 0,
       tabBudgetTarget: STRICT_CHATGPT_TAB_TARGET,
       dedicatedProfile: DEDICATED_DAVID_PROFILE,
-      managed: { SYSTEM: [], DESIGN: [], APP2: [], APK: [], CONTROL: [] }
+      managed: { SYSTEM: [], DESIGN: [], APP2: [], APK: [], CONTROL: [] },
+      sessionHealth: readState(SESSION_HEALTH_FILE)
     };
     for (const page of context.pages()) {
       if (!page || page.isClosed()) continue;
