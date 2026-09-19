@@ -2,6 +2,10 @@
 
 import { useEffect, useMemo, useState } from "react";
 import DesignProcess2 from "./DesignProcess2";
+import expansionPart1 from "../master-system-expansion-v2/part-1.json";
+import expansionPart2 from "../master-system-expansion-v2/part-2.json";
+import expansionPart3 from "../master-system-expansion-v2/part-3.json";
+import expansionPart4 from "../master-system-expansion-v2/part-4.json";
 
 type Status = "green" | "yellow" | "red";
 type Kind = "core" | "test" | "security" | "legal" | "global" | "ai";
@@ -11,6 +15,7 @@ type Notes = Record<string, { evidence?: string; blocker?: string; updatedAt?: s
 type RawPhase = [string, string, string[]];
 
 const PLAN_VERSION = "1.0 FROZEN";
+const EXPANSION_VERSION = "2.0 APPEND-ONLY";
 const FINAL_PHASE = "47";
 
 const raw: RawPhase[] = [
@@ -116,13 +121,29 @@ const PHASE_WAVE: Record<string,number> = {
   "47":15
 };
 
-const phases: Phase[] = raw.map(([id,title,items]) => ({ id, title, wave: PHASE_WAVE[id] ?? 99, tasks: items.map((entry,index) => {
+const frozenPhases: Phase[] = raw.map(([id,title,items]) => ({ id, title, wave: PHASE_WAVE[id] ?? 99, tasks: items.map((entry,index) => {
   const [label,statusRaw,kindRaw] = entry.split("|");
   const defaultStatus: Status = statusRaw === "green" || statusRaw === "yellow" ? statusRaw : "red";
   const validKinds: Kind[] = ["core","test","security","legal","global","ai"];
   const kind: Kind = validKinds.includes(kindRaw as Kind) ? kindRaw as Kind : "core";
   return { id: `${id}.${String(index+1).padStart(2,"0")}`, label, defaultStatus, kind };
-}) })).sort((a,b)=>a.wave-b.wave || a.id.localeCompare(b.id,undefined,{numeric:true}));
+}) }));
+
+const expansionParts = [expansionPart1, expansionPart2, expansionPart3, expansionPart4];
+const expansionPhases: Phase[] = expansionParts.flatMap((part) => part.phases.map((phase) => ({
+  id: String(phase.id),
+  title: String(phase.title),
+  wave: Number(phase.wave),
+  tasks: phase.tasks.map((task,index) => ({
+    id: `${phase.id}.${String(index+1).padStart(2,"0")}`,
+    label: String(task.label),
+    defaultStatus: task.defaultStatus as Status,
+    kind: task.kind as Kind
+  }))
+})));
+
+const phases: Phase[] = [...frozenPhases, ...expansionPhases]
+  .sort((a,b)=>a.wave-b.wave || a.id.localeCompare(b.id,undefined,{numeric:true}));
 
 const VERIFIED_EVIDENCE: Record<string,string> = {
   "01.01": "GitHub repository verified: SoulFlameAdmin/enchev-auctions",
@@ -172,8 +193,8 @@ export default function MasterSystemPlanV1(){
   const visible=useMemo(()=>{ const q=query.trim().toLowerCase(), src:Phase[]=gaps.length?[...phases,{id:"GAP",title:"Открити пропуски",wave:99,tasks:gaps}]:phases; return src.map(p=>({...p,tasks:p.tasks.filter(t=>{const s=statuses[t.id]||t.defaultStatus;return(filter==="all"||s===filter)&&(!q||`${t.id} ${t.label} ${p.title}`.toLowerCase().includes(q));})})).filter(p=>p.tasks.length); },[gaps,query,filter,statuses]);
 
   return <>
-    <button className="burgerButton" aria-label="Отвори меню" onClick={()=>setMenu(true)}><span/><span/><span/></button>{menu&&<div className="menuShade" onClick={()=>setMenu(false)}/>}<aside className={`sidePanel ${menu?"sideOpen":""}`}><div className="sidePanelTop"><div><div className="miniLabel">ENCHEV AUCTIONS</div><strong>System Command Center</strong></div><button className="iconButton" onClick={()=>setMenu(false)}>×</button></div><button className="sideMenuItem" onClick={()=>{setOpen(true);setMenu(false);}}><span className="sideMenuIcon">◫</span><span><b>Етапи</b><small>Master System Plan v{PLAN_VERSION} · 0 → 100%</small></span><span>›</span></button><button className="sideMenuItem" onClick={()=>{setDesign2Open(true);setMenu(false);}}><span className="sideMenuIcon">✦</span><span><b>Design Process 2</b><small>World-class mobile + desktop redesign · DAVID</small></span><span>›</span></button><div className="sideStatusBox"><div className="liveLine"><i/> LOCAL REALTIME · CLOUD NEXT</div><span>Системен прогрес</span><b>{progress}%</b><div className="miniProgress"><i style={{width:`${progress}%`}}/></div><small>{totals.green} работят · {totals.yellow} тест/грешка · {totals.red} липсват</small></div></aside>
-    {open&&<section className="controlOverlay"><header className="controlHeader"><div><div className="eyebrow">MASTER SYSTEM PLAN v{PLAN_VERSION} · SOURCE OF TRUTH · 0 → 100%</div><h1>Enchev Auctions — Етапи</h1><p>Единният план е запазен с постоянни IDs, но UI го показва по реални execution waves: foundation → data/security → auction core → realtime → product → certification → launch → international proof → final acceptance.</p></div><button className="closeControl" onClick={()=>setOpen(false)}>×</button></header>
+    <button className="burgerButton" aria-label="Отвори меню" onClick={()=>setMenu(true)}><span/><span/><span/></button>{menu&&<div className="menuShade" onClick={()=>setMenu(false)}/>}<aside className={`sidePanel ${menu?"sideOpen":""}`}><div className="sidePanelTop"><div><div className="miniLabel">ENCHEV AUCTIONS</div><strong>System Command Center</strong></div><button className="iconButton" onClick={()=>setMenu(false)}>×</button></div><button className="sideMenuItem" onClick={()=>{setOpen(true);setMenu(false);}}><span className="sideMenuIcon">◫</span><span><b>Етапи</b><small>Master System Plan v{PLAN_VERSION} + Expansion v{EXPANSION_VERSION} · 0 → 100%</small></span><span>›</span></button><button className="sideMenuItem" onClick={()=>{setDesign2Open(true);setMenu(false);}}><span className="sideMenuIcon">✦</span><span><b>Design Process 2</b><small>World-class mobile + desktop redesign · DAVID</small></span><span>›</span></button><div className="sideStatusBox"><div className="liveLine"><i/> LOCAL REALTIME · CLOUD NEXT</div><span>Системен прогрес</span><b>{progress}%</b><div className="miniProgress"><i style={{width:`${progress}%`}}/></div><small>{totals.green} работят · {totals.yellow} тест/грешка · {totals.red} липсват</small></div></aside>
+    {open&&<section className="controlOverlay"><header className="controlHeader"><div><div className="eyebrow">MASTER SYSTEM PLAN v{PLAN_VERSION} + INTERNATIONAL COMPANY EXPANSION v{EXPANSION_VERSION} · SOURCE OF TRUTH · 0 → 100%</div><h1>Enchev Auctions — Етапи</h1><p>Frozen 00–61 остават immutable; append-only 62–99 разширяват системата до реална международна компания: corporate/commercial → payments/tax/customs → logistics/operations → CRM/support → finance/BI → country launch → final operating acceptance.</p></div><button className="closeControl" onClick={()=>setOpen(false)}>×</button></header>
       <div className="controlKpis"><div><span>ПРОГРЕС</span><b>{progress}%</b><small>{all.length} системни точки</small></div><div className="kGreen"><span>РАБОТИ</span><b>{totals.green}</b><small>доказано</small></div><div className="kYellow"><span>ТЕСТ / ГРЕШКА</span><b>{totals.yellow}</b><small>не е приключено</small></div><div className="kRed"><span>ЛИПСВА</span><b>{totals.red}</b><small>не е построено</small></div><div><span>LIVE</span><b className="clockText">{now.toLocaleTimeString("bg-BG")}</b><small>локален realtime</small></div></div>
       <div className="nextGrid"><div className="nextCard"><span>NEXT SYSTEM BLOCKER</span><b>{next?`${next.id} · ${next.label}`:"Всичко е GREEN"}</b></div><div className="nextCard"><span>EXECUTION WAVE</span><b>{nextPhase?`WAVE ${nextPhase.wave} · ${WAVE_LABELS[nextPhase.wave]}`:"FINAL COMPLETE"}</b></div><div className="nextCard"><span>FINAL 100% GATE</span><b>{preFinalOpen===0?"Готов за Етап 47":`${preFinalOpen} точки извън финалния етап остават`}</b></div></div>
       <div className="controlTools"><div className="filterGroup">{(["all","green","yellow","red"] as const).map(v=><button key={v} className={filter===v?"active":""} onClick={()=>setFilter(v)}>{v==="all"?"Всички":v==="green"?"Работи":v==="yellow"?"Тест/грешка":"Липсва"}</button>)}</div><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Търси функция, тест, етап..."/></div>
