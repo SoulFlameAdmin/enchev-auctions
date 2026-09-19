@@ -36,7 +36,9 @@
     "verify:architecture-decision-records": "node scripts/verify-architecture-decision-records.mjs",
     "verify:architecture-decision-records:self-test": "node scripts/verify-architecture-decision-records.mjs --self-test",
     "verify:country-profile-model": "node scripts/verify-country-profile-model.mjs",
-    "verify:country-profile-model:self-test": "node scripts/verify-country-profile-model.mjs --self-test"
+    "verify:country-profile-model:self-test": "node scripts/verify-country-profile-model.mjs --self-test",
+    "verify:no-country-hardcoding": "node scripts/verify-no-country-hardcoding.mjs",
+    "verify:no-country-hardcoding:self-test": "node scripts/verify-no-country-hardcoding.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
