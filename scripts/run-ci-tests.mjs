@@ -39,7 +39,8 @@ const cases = [
   ["scripts/verify-timezone-aware-display.mjs", "--self-test"],
   ["scripts/verify-bg-locale.mjs", "--self-test"],
   ["scripts/verify-en-locale.mjs", "--self-test"],
-  ["scripts/verify-translation-key-architecture.mjs", "--self-test"]
+  ["scripts/verify-translation-key-architecture.mjs", "--self-test"],
+  ["scripts/verify-country-kyc-profile.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of cases) {
