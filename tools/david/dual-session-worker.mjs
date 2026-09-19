@@ -21,6 +21,9 @@ const MONITOR_CONNECT_TIMEOUT_MS = Number(process.env.DAVID_TAB_MONITOR_CONNECT_
 const WORKER_START_GRACE_MS = Number(process.env.DAVID_WORKER_START_GRACE_MS || 120000);
 const WORKER_HEARTBEAT_STALE_MS = Number(process.env.DAVID_WORKER_HEARTBEAT_STALE_MS || 600000);
 const WORKER_TAB_MISSING_MS = Number(process.env.DAVID_WORKER_TAB_MISSING_MS || 90000);
+const CONTROL_START_GRACE_MS = Number(process.env.DAVID_CONTROL_START_GRACE_MS || 300000);
+const CONTROL_HEARTBEAT_STALE_MS = Number(process.env.DAVID_CONTROL_HEARTBEAT_STALE_MS || 900000);
+const CONTROL_TAB_MISSING_MS = Number(process.env.DAVID_CONTROL_TAB_MISSING_MS || 180000);
 let shuttingDown = false;
 let monitorBrowser = null;
 let monitorContext = null;
@@ -443,15 +446,19 @@ async function monitorManagedTabs() {
       const launchAge = Date.now() - Number(launchedAt.get(spec.name) || Date.now());
       const processAlive = Boolean(children.get(spec.name));
       const tabCount = Number(counts[spec.name] || 0);
-      snapshot.workerHealth[spec.name] = { processAlive, heartbeatAgeMs: ageMs, tabCount };
+      const isControl = spec.name === "CONTROL";
+      const startGraceMs = isControl ? CONTROL_START_GRACE_MS : WORKER_START_GRACE_MS;
+      const heartbeatStaleMs = isControl ? CONTROL_HEARTBEAT_STALE_MS : WORKER_HEARTBEAT_STALE_MS;
+      const tabMissingMs = isControl ? CONTROL_TAB_MISSING_MS : WORKER_TAB_MISSING_MS;
+      snapshot.workerHealth[spec.name] = { processAlive, heartbeatAgeMs: ageMs, tabCount, startGraceMs, heartbeatStaleMs, tabMissingMs };
 
       if (tabCount > 0) {
         missingTabSince.delete(spec.name);
-      } else if (launchAge > WORKER_START_GRACE_MS) {
+      } else if (launchAge > startGraceMs) {
         const since = Number(missingTabSince.get(spec.name) || Date.now());
         if (!missingTabSince.has(spec.name)) missingTabSince.set(spec.name, Date.now());
-        if (Date.now() - since > WORKER_TAB_MISSING_MS) {
-          restartWorker(spec.name, `managed tab missing for >${WORKER_TAB_MISSING_MS}ms`);
+        if (Date.now() - since > tabMissingMs) {
+          restartWorker(spec.name, `managed tab missing for >${tabMissingMs}ms`);
           continue;
         }
       }
@@ -459,8 +466,8 @@ async function monitorManagedTabs() {
       if (
         processAlive &&
         ageMs !== null &&
-        ageMs > WORKER_HEARTBEAT_STALE_MS &&
-        launchAge > WORKER_START_GRACE_MS
+        ageMs > heartbeatStaleMs &&
+        launchAge > startGraceMs
       ) {
         restartWorker(spec.name, `heartbeat stale for ${ageMs}ms`);
       } else if (!processAlive && launchAge > 5000) {
