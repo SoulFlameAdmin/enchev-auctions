@@ -17,6 +17,8 @@ const COMPLETE_SAMPLE_MS = Number(process.env.DAVID_COMPLETE_SAMPLE_MS || 1200);
 const START_TIMEOUT_MS = Number(process.env.DAVID_CONTROL_START_TIMEOUT_MS || 120000);
 const COMPOSER_WAIT_MS = Number(process.env.DAVID_CONTROL_COMPOSER_WAIT_MS || 120000);
 const LOAD_RETRY_BACKOFF_MS = Number(process.env.DAVID_CONTROL_LOAD_RETRY_BACKOFF_MS || 15000);
+const DECISION_WARMUP_MS = Number(process.env.DAVID_CONTROL_DECISION_WARMUP_MS || 180000);
+const TELEMETRY_MAX_AGE_MS = Number(process.env.DAVID_CONTROL_TELEMETRY_MAX_AGE_MS || 60000);
 
 let activeChatUrl = INITIAL_CHAT_URL;
 
@@ -221,6 +223,16 @@ function telemetrySignature(t) {
   return hashText(JSON.stringify(compact));
 }
 
+function telemetryReady(t) {
+  const checkedAt = Date.parse(String(t?.checkedAt || ""));
+  if (!Number.isFinite(checkedAt) || Date.now() - checkedAt > TELEMETRY_MAX_AGE_MS) return false;
+  for (const n of ["SYSTEM","DESIGN","APP2","APK"]) {
+    if (!Array.isArray(t?.managed?.[n])) return false;
+    if (!t?.workerHealth?.[n]) return false;
+  }
+  return true;
+}
+
 function anomaly(t) {
   for (const n of ["SYSTEM","DESIGN","APP2","APK"]) {
     if ((Array.isArray(t.managed && t.managed[n]) ? t.managed[n].length : 0) !== 1) return true;
@@ -378,6 +390,7 @@ async function main() {
   let lastSignature = state.lastTelemetrySignature || "";
   let lastReportAt = Number(state.lastReportAt || 0);
   let first = true;
+  const processStartedAt = Date.now();
 
   while (true) {
     if (page.isClosed()) page = await ensurePage(context, null, state);
@@ -392,9 +405,20 @@ async function main() {
 
     const telemetry = buildTelemetry();
     const sig = telemetrySignature(telemetry);
-    const unhealthy = anomaly(telemetry);
+    const ready = telemetryReady(telemetry);
+    const warmingUp = Date.now() - processStartedAt < DECISION_WARMUP_MS;
+    const unhealthy = ready ? anomaly(telemetry) : false;
     const periodic = Date.now() - lastReportAt >= HEARTBEAT_REPORT_MS;
     const changed = sig !== lastSignature;
+
+    if (!ready || warmingUp) {
+      state.watchdog = !ready ? "control-waiting-fresh-telemetry" : "control-startup-warmup";
+      save(state, !ready
+        ? "CONTROL waiting for fresh complete telemetry; no action allowed"
+        : "CONTROL startup warm-up; monitoring only, no recovery commands");
+      await sleep(POLL_MS);
+      continue;
+    }
 
     if (first || (unhealthy && changed) || periodic) {
       const reason = first ? "startup" : unhealthy ? "health-state-change" : "periodic-heartbeat";
@@ -444,7 +468,11 @@ if (process.argv.includes("--self-test")) {
   if (conversationLimitText("Start a new chat")) {
     throw new Error("CONTROL self-test: generic Start a new chat UI text caused false rollover");
   }
-  console.log("DAVID_CONTROL_WATCHTOWER_SELF_TEST PASS allowlist=1 final_ok_gate=1 arbitrary_command_rejected=1 rollover_false_positive=0 slow_load_tolerant=1");
+  const staleTelemetry = { checkedAt: new Date(Date.now() - TELEMETRY_MAX_AGE_MS - 1000).toISOString(), managed: {}, workerHealth: {} };
+  if (telemetryReady(staleTelemetry)) {
+    throw new Error("CONTROL self-test: stale/incomplete telemetry incorrectly accepted");
+  }
+  console.log("DAVID_CONTROL_WATCHTOWER_SELF_TEST PASS allowlist=1 final_ok_gate=1 arbitrary_command_rejected=1 rollover_false_positive=0 slow_load_tolerant=1 warmup_guard=1");
   process.exit(0);
 }
 
