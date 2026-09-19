@@ -345,6 +345,51 @@ async function complete(page, baseHash = null) {
   return false;
 }
 
+async function sendTimeoutVisible(page) {
+  try {
+    return await page.evaluate(() => {
+      const visible = (el) => {
+        const s = getComputedStyle(el), r = el.getBoundingClientRect();
+        return s.display !== "none" && s.visibility !== "hidden" && Number(s.opacity || 1) > 0 && r.width > 0 && r.height > 0;
+      };
+      const re = /(изпращането на съобщението изтече по време|message sending timed out|sending the message timed out|message send timed out)/i;
+      for (const el of document.querySelectorAll('[role="alert"],[aria-live="assertive"],[data-testid*="error" i],div,section,p,span')) {
+        if (!visible(el)) continue;
+        if (el.closest('[data-message-author-role="assistant"]')) continue;
+        const text = (el.textContent || "").replace(/\s+/g, " ").trim();
+        if (text && text.length < 360 && re.test(text)) return true;
+      }
+      return false;
+    });
+  } catch { return false; }
+}
+
+async function waitSendTimeoutRecovery(context, page, state) {
+  state.problem = null;
+  state.watchdog = "apk-send-timeout-wait-guard";
+  save(state, "Message send timeout detected; central guard owns bounded Retry. APK will not duplicate-send.");
+  console.log("[APK] SEND TIMEOUT: waiting for central guard. NO DUPLICATE RESEND.");
+  const until = Date.now() + 60000;
+  while (Date.now() < until) {
+    await sleep(1000);
+    page = await ensurePage(context, page, state);
+    if (await generating(page)) {
+      state.watchdog = "apk-thinking";
+      save(state, "Send-timeout retry accepted; GPT active");
+      return page;
+    }
+    if (!await sendTimeoutVisible(page)) {
+      state.watchdog = "apk-send-timeout-recovered";
+      save(state, "Message send timeout cleared by central guard");
+      return page;
+    }
+  }
+  console.log("[APK] SEND TIMEOUT still visible after 60s. Refreshing view only; no worker resend.");
+  await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  await sleep(2500);
+  return page;
+}
+
 async function waitReady(context, page, state) {
   while (true) {
     if (!activeChatUrl || activeChatUrl === "https://chatgpt.com/") {
@@ -399,9 +444,14 @@ async function runPrompt(context, page, state, prompt, kind) {
     save(state, kind === "fix" ? "APK: sending fix instruction" : "APK: sending next task");
     await fillAndSend(page, outgoing);
 
-    const startEnd = Date.now() + START_TIMEOUT_MS;
+    let startEnd = Date.now() + START_TIMEOUT_MS;
     let started = false;
     while (Date.now() < startEnd) {
+      if (await sendTimeoutVisible(page)) {
+        page = await waitSendTimeoutRecovery(context, page, state);
+        startEnd = Date.now() + START_TIMEOUT_MS;
+        continue;
+      }
       if (await generating(page)) { started = true; break; }
       const text = await latestAssistant(page);
       if (text && hash(text) !== base) { started = true; break; }
@@ -421,6 +471,12 @@ async function runPrompt(context, page, state, prompt, kind) {
     let last = base, lastActivity = Date.now();
     while (true) {
       page = await waitReady(context, page, state);
+      if (await sendTimeoutVisible(page)) {
+        page = await waitSendTimeoutRecovery(context, page, state);
+        lastActivity = Date.now();
+        await sleep(POLL_MS);
+        continue;
+      }
       const text = await latestAssistant(page);
       const h = hash(text);
       if (await generating(page)) {
