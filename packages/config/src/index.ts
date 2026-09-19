@@ -14,3 +14,4 @@ export type ConfigPackageBoundary = Readonly<{
 }>;
 
 export * from "./country-profile";
+export * from "./locale-aware-date";

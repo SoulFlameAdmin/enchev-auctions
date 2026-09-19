@@ -34,7 +34,8 @@ const cases = [
   ["scripts/verify-database-migrations-structure.mjs", "--self-test"],
   ["scripts/verify-architecture-decision-records.mjs", "--self-test"],
   ["scripts/verify-country-profile-model.mjs", "--self-test"],
-  ["scripts/verify-no-country-hardcoding.mjs", "--self-test"]
+  ["scripts/verify-no-country-hardcoding.mjs", "--self-test"],
+  ["scripts/verify-locale-aware-dates.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of cases) {
