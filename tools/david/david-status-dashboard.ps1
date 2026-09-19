@@ -231,6 +231,17 @@ while ($true) {
     $kc = @($tabs.managed.APK).Count
     $stable = ($sc -eq 1 -and $dc -eq 1 -and $ac -eq 1 -and $kc -eq 1)
     Write-Fit ("  SYSTEM={0}  DESIGN={1}  APP2={2}  APK={3}  ChatGPT tabs={4}  => {5}" -f $sc,$dc,$ac,$kc,$tabs.totalChatGptTabs,$(if($stable){"STABLE"}else{"CHECK"})) $(if($stable){[ConsoleColor]::Green}else{[ConsoleColor]::Red})
+    if ($tabs.workerHealth) {
+      $sh = $tabs.workerHealth.SYSTEM
+      $dh = $tabs.workerHealth.DESIGN
+      $ah = $tabs.workerHealth.APP2
+      $kh = $tabs.workerHealth.APK
+      $ss = if ($null -ne $sh.heartbeatAgeMs) { [math]::Round(([double]$sh.heartbeatAgeMs)/1000) } else { "?" }
+      $dd = if ($null -ne $dh.heartbeatAgeMs) { [math]::Round(([double]$dh.heartbeatAgeMs)/1000) } else { "?" }
+      $aa = if ($null -ne $ah.heartbeatAgeMs) { [math]::Round(([double]$ah.heartbeatAgeMs)/1000) } else { "?" }
+      $kk = if ($null -ne $kh.heartbeatAgeMs) { [math]::Round(([double]$kh.heartbeatAgeMs)/1000) } else { "?" }
+      Write-Fit ("  HEARTBEAT age(s): SYSTEM={0} DESIGN={1} APP2={2} APK={3} | self-heal stale>600s / missing-tab>90s" -f $ss,$dd,$aa,$kk) DarkCyan
+    }
   } else {
     Write-Fit "  Tab monitor state not available yet..." Yellow
   }
@@ -238,7 +249,7 @@ while ($true) {
   Write-Fit "  ------------------------------ DAVID LAWS -------------------------------------------------------" Green
   Write-Fit "  FINAL GATE => NO EXACT FINAL OK = NO NEXT NORMAL PROMPT" Red
   Write-Fit "  STOPS THINKING/WRITING => bounded RESEND | NO THINKING START => REFRESH + RESEND" Yellow
-  Write-Fit "  CONNECTION INTERRUPTED => STOP + recover prompt + RESEND | MAX CHAT => NEW TAB + CLOSE OLD TAB" Yellow
+  Write-Fit "  INTERRUPTED => CONFIRM + INACTIVE + NO PROGRESS => REFRESH/VERIFY/RESEND | NEVER STOP ACTIVE GPT" Yellow
   Write-Fit "  EXTERNAL BLOCKER => DEFER + independent work | CAPTCHA/MFA/LOGIN/PERMISSION => NEVER BYPASS" Yellow
   Write-Fit "  VERCEL => GLOBAL SUPABASE LEASE; ONLY ONE WORKER MAY DEPLOY AT A TIME" Yellow
   Write-Fit ""
