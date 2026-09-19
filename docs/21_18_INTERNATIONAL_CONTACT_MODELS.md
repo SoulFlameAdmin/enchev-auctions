@@ -38,6 +38,8 @@ The generic model does not infer a country, dialing prefix, carrier, line type, 
 - change pricing, payments, finance, tax, VAT, FX or accounting;
 - require Vercel create/update/redeploy.
 
+This task does not require Vercel create/update/redeploy.
+
 21.19 continues to own translation completeness and 21.20 continues to own cross-script search tests.
 
 ## Acceptance
