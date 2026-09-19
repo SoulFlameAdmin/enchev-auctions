@@ -10,6 +10,17 @@ $Pwsh = "$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
 $Stop = Join-Path $Repo "STOP_DAVID_ALL_CLEAN.ps1"
 $Start = Join-Path $Repo "START_DAVID_ALL.ps1"
 
+$MutexName = "Global\DAVID_ORCHESTRATION_V1"
+$Mutex = New-Object System.Threading.Mutex($false, $MutexName)
+$MutexAcquired = $false
+try {
+  try { $MutexAcquired = $Mutex.WaitOne(0) }
+  catch [System.Threading.AbandonedMutexException] { $MutexAcquired = $true }
+  if (-not $MutexAcquired) {
+    throw "Another DAVID START/RESTART operation is already running. Wait for it to finish; parallel orchestration is forbidden."
+  }
+  $env:DAVID_ORCHESTRATION_LOCK_HELD = "1"
+
 Write-Host ""
 Write-Host "============================================================" -ForegroundColor DarkGreen
 Write-Host " DAVID CLEAN RESTART // FULL STACK" -ForegroundColor Green
@@ -39,3 +50,11 @@ Write-Host "[RESTART] DAVID clean restart launched." -ForegroundColor Green
 Write-Host "[RESTART] Expected: CONTROL + SYSTEM + DESIGN + APP2/DPP + APK + MATRIX." -ForegroundColor Green
 Write-Host "[RESTART] APK continues from saved state/session and keeps upgrading with GPT." -ForegroundColor Green
 Write-Host "[RESTART] Profile/login/session state preserved." -ForegroundColor Green
+}
+finally {
+  Remove-Item Env:DAVID_ORCHESTRATION_LOCK_HELD -ErrorAction SilentlyContinue
+  if ($MutexAcquired) {
+    try { $Mutex.ReleaseMutex() | Out-Null } catch {}
+  }
+  try { $Mutex.Dispose() } catch {}
+}
