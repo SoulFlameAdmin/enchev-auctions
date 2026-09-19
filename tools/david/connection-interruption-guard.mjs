@@ -10,11 +10,15 @@ const POLL_MS = Number(process.env.DAVID_INTERRUPT_POLL_MS || 500);
 const RETRY_COOLDOWN_MS = Number(process.env.DAVID_INTERRUPT_RETRY_COOLDOWN_MS || 15000);
 const CONFIRM_MS = Number(process.env.DAVID_INTERRUPT_CONFIRM_MS || 12000);
 const CONFIRM_SAMPLES = Number(process.env.DAVID_INTERRUPT_CONFIRM_SAMPLES || 6);
+const SEND_TIMEOUT_COOLDOWN_MS = Number(process.env.DAVID_SEND_TIMEOUT_COOLDOWN_MS || 15000);
+const SEND_TIMEOUT_MAX_RETRIES = Number(process.env.DAVID_SEND_TIMEOUT_MAX_RETRIES || 2);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const recoveredAt = new Map();
 const interruptionSince = new Map();
 const interruptionSamples = new Map();
+const sendTimeoutRecoveredAt = new Map();
+const sendTimeoutAttempts = new Map();
 
 function cleanConversationUrl(url) {
   const m = String(url || "").match(/^https:\/\/chatgpt\.com\/c\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?=[/?#]|$)/i);
@@ -51,6 +55,103 @@ function isManagedChat(page) {
 function isChat(page) {
   try { return !page.isClosed() && /^https:\/\/chatgpt\.com\/c\//i.test(page.url()); }
   catch { return false; }
+}
+
+async function sendTimeoutVisible(page) {
+  if (!isManagedChat(page)) return false;
+  try {
+    return await page.evaluate(() => {
+      const visible = (el) => {
+        const s = getComputedStyle(el);
+        const r = el.getBoundingClientRect();
+        return s.display !== "none" && s.visibility !== "hidden" && Number(s.opacity || 1) > 0 && r.width > 0 && r.height > 0;
+      };
+      const re = /(изпращането на съобщението изтече по време|моля, опитайте отново|message sending timed out|sending the message timed out|message send timed out|please try again)/i;
+      for (const el of document.querySelectorAll('[role="alert"],[aria-live="assertive"],[data-testid*="error" i],div,section,p,span')) {
+        if (!visible(el)) continue;
+        if (el.closest('[data-message-author-role="assistant"]')) continue;
+        const text = (el.textContent || "").replace(/\s+/g, " ").trim();
+        if (text && text.length < 360 && re.test(text)) return true;
+      }
+      return false;
+    });
+  } catch { return false; }
+}
+
+async function clickSendTimeoutRetry(page) {
+  const labels = [/^Опитайте отново$/i, /^Try again$/i, /^Retry$/i];
+  for (const label of labels) {
+    try {
+      const buttons = page.getByRole("button", { name: label });
+      for (let i = (await buttons.count()) - 1; i >= 0; i--) {
+        const b = buttons.nth(i);
+        if (await b.isVisible().catch(() => false) && await b.isEnabled().catch(() => false)) {
+          await b.click({ timeout: 4000 });
+          return true;
+        }
+      }
+    } catch {}
+  }
+  return false;
+}
+
+async function recoverSendTimeout(page) {
+  const url = page.url();
+  const now = Date.now();
+  if (now - Number(sendTimeoutRecoveredAt.get(url) || 0) < SEND_TIMEOUT_COOLDOWN_MS) return;
+
+  if (await activeAssistantWork(page)) {
+    console.log(`[INTERRUPT] Send-timeout UI on ${url}, but GPT is active. WAIT / NO RETRY.`);
+    return;
+  }
+
+  const attempt = Number(sendTimeoutAttempts.get(url) || 0) + 1;
+  if (attempt > SEND_TIMEOUT_MAX_RETRIES) {
+    sendTimeoutAttempts.set(url, 0);
+    sendTimeoutRecoveredAt.set(url, now);
+    console.log(`[INTERRUPT] Send-timeout retries exhausted on ${url}. Backoff; worker remains blocked from duplicate resend.`);
+    return;
+  }
+
+  sendTimeoutAttempts.set(url, attempt);
+  sendTimeoutRecoveredAt.set(url, now);
+  console.log(`[INTERRUPT] SEND TIMEOUT confirmed on ${url}. Retry button attempt ${attempt}/${SEND_TIMEOUT_MAX_RETRIES}.`);
+
+  const clicked = await clickSendTimeoutRetry(page);
+  if (clicked) {
+    await sleep(3000);
+    if (await activeAssistantWork(page)) {
+      sendTimeoutAttempts.delete(url);
+      console.log("[INTERRUPT] Timed-out message retry accepted; GPT became active.");
+      return;
+    }
+    if (!await sendTimeoutVisible(page)) {
+      sendTimeoutAttempts.delete(url);
+      console.log("[INTERRUPT] Timed-out message error cleared after Retry. Waiting for worker completion gate.");
+      return;
+    }
+  }
+
+  console.log("[INTERRUPT] Send-timeout Retry did not clear the error. REFRESH -> VERIFY.");
+  await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  await sleep(2500);
+
+  if (await activeAssistantWork(page) || !await sendTimeoutVisible(page)) {
+    sendTimeoutAttempts.delete(url);
+    console.log("[INTERRUPT] Send-timeout recovered after refresh. No duplicate resend.");
+    return;
+  }
+
+  if (attempt < SEND_TIMEOUT_MAX_RETRIES) {
+    const clickedAfterRefresh = await clickSendTimeoutRetry(page);
+    if (clickedAfterRefresh) {
+      await sleep(3000);
+      if (await activeAssistantWork(page) || !await sendTimeoutVisible(page)) {
+        sendTimeoutAttempts.delete(url);
+        console.log("[INTERRUPT] Send-timeout recovered by bounded Retry after refresh.");
+      }
+    }
+  }
 }
 
 async function interruptionVisible(page) {
@@ -285,6 +386,13 @@ async function main() {
     const pages = context.pages().filter(isManagedChat);
     for (const page of pages) {
       try {
+        if (await sendTimeoutVisible(page)) {
+          await recoverSendTimeout(page);
+          continue;
+        } else {
+          sendTimeoutAttempts.delete(page.url());
+        }
+
         if (await interruptionVisible(page)) {
           await recover(page);
         } else {
