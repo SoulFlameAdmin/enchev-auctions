@@ -164,3 +164,14 @@ Do not invent secrets, results, deployments or test evidence.
 - If GPT repeats the same already-deferred blocker without new evidence, DAVID records it as already deferred and does not send another defer prompt.
 - A different new external blocker may receive one new defer relay.
 - External blockers never justify an endless relay/defer loop.
+
+
+## 11. Global send pacing law
+- Confirmed ChatGPT rate-limit popups may be acknowledged automatically only with exact informational buttons such as `Разбрано`, `Got it`, or `Understood`.
+- Dismissing the popup never clears or shortens the global cooldown.
+- All normal CONTROL/SYSTEM/DESIGN/APP2/APK message sends share one atomic global send pacer.
+- Default minimum interval between new DAVID ChatGPT sends is 60 seconds account-wide, configurable with DAVID_GLOBAL_SEND_INTERVAL_MS.
+- Only one worker may reserve the next send slot at a time.
+- The global pacer prevents five-tab burst sends even when no explicit rate-limit popup is visible.
+- Matrix must show both the active rate-limit countdown and the next normal send countdown.
+- The 60-second interval is a DAVID safety policy, not a published OpenAI ChatGPT requests-per-minute entitlement.
