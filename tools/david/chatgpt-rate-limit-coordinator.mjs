@@ -6,9 +6,10 @@ const HERE = path.dirname(fileURLToPath(import.meta.url));
 export const RATE_LIMIT_STATE_FILE = path.join(HERE, ".david-global-chatgpt-rate-limit.json");
 const RATE_LIMIT_LOCK_FILE = path.join(HERE, ".david-global-chatgpt-rate-limit.lock");
 
-const BACKOFF_MS = [10 * 60_000, 20 * 60_000, 40 * 60_000];
+const RATE_LIMIT_COOLDOWN_MS = Number(process.env.DAVID_RATE_LIMIT_COOLDOWN_MS || 60_000);
+const BACKOFF_MS = [RATE_LIMIT_COOLDOWN_MS, RATE_LIMIT_COOLDOWN_MS, RATE_LIMIT_COOLDOWN_MS];
 const PROBE_LEASE_MS = Number(process.env.DAVID_PROBE_LEASE_MS || 3 * 60_000);
-const GLOBAL_SEND_INTERVAL_MS = Number(process.env.DAVID_GLOBAL_SEND_INTERVAL_MS || 60_000);
+const GLOBAL_SEND_INTERVAL_MS = Number(process.env.DAVID_GLOBAL_SEND_INTERVAL_MS || 10_000);
 const SEND_SLOT_LEASE_MS = Number(process.env.DAVID_GLOBAL_SEND_SLOT_LEASE_MS || 20_000);
 const LOCK_STALE_MS = 30_000;
 const POLL_MS = 5_000;
@@ -164,7 +165,20 @@ export async function waitForGlobalSendPermit(worker, onWait = null) {
       }
 
       if (st.status === "blocked") {
-        const remaining = msUntil(st.blockedUntil);
+        let remaining = msUntil(st.blockedUntil);
+
+        // Migrate legacy 10m/20m/40m persisted cooldowns to the current
+        // fixed 60s DAVID policy so old state cannot keep workers blocked.
+        if (remaining > RATE_LIMIT_COOLDOWN_MS) {
+          const migrated = writeStateRaw({
+            ...st,
+            blockedUntil: new Date(now + RATE_LIMIT_COOLDOWN_MS).toISOString(),
+            lastEvidence: (st.lastEvidence || "rate limit") + " (legacy cooldown capped to current policy)"
+          });
+          remaining = RATE_LIMIT_COOLDOWN_MS;
+          return { allow: false, waitMs: remaining, mode: "blocked", state: migrated };
+        }
+
         if (remaining > 0) return { allow: false, waitMs: remaining, mode: "blocked", state: st };
 
         // Cooldown ended. Exactly one process atomically becomes the probe owner.
@@ -293,7 +307,7 @@ export function formatRateLimitState(state = readStateRaw()) {
 if (process.argv.includes("--self-test")) {
   const s = defaultState();
   if (s.status !== "clear" || s.stage !== -1) throw new Error("rate-limit self-test: bad default");
-  if (BACKOFF_MS.join(",") !== [600000,1200000,2400000].join(",")) throw new Error("rate-limit self-test: backoff law mismatch");
-  if (GLOBAL_SEND_INTERVAL_MS !== 60000 && !process.env.DAVID_GLOBAL_SEND_INTERVAL_MS) throw new Error("rate-limit self-test: default send interval must be 60s");
-  console.log("DAVID_RATE_LIMIT_COORDINATOR_SELF_TEST PASS backoff=10,20,40 probe_owner=1 probe_lease_s=" + Math.round(PROBE_LEASE_MS/1000) + " global_send_interval_s=" + Math.round(GLOBAL_SEND_INTERVAL_MS/1000));
+  if (BACKOFF_MS.join(",") !== [RATE_LIMIT_COOLDOWN_MS,RATE_LIMIT_COOLDOWN_MS,RATE_LIMIT_COOLDOWN_MS].join(",")) throw new Error("rate-limit self-test: fixed cooldown law mismatch");
+  if (GLOBAL_SEND_INTERVAL_MS !== 10000 && !process.env.DAVID_GLOBAL_SEND_INTERVAL_MS) throw new Error("rate-limit self-test: default send interval must be 10s");
+  console.log("DAVID_RATE_LIMIT_COORDINATOR_SELF_TEST PASS cooldown_s=" + Math.round(RATE_LIMIT_COOLDOWN_MS/1000) + " probe_owner=1 probe_lease_s=" + Math.round(PROBE_LEASE_MS/1000) + " global_send_interval_s=" + Math.round(GLOBAL_SEND_INTERVAL_MS/1000));
 }
