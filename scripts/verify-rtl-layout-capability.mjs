@@ -9,12 +9,13 @@ const INDEX_PATH = "packages/config/src/index.ts";
 const PAGE_PATH = "app/rtl-capability/page.tsx";
 const CSS_PATH = "app/rtl-capability/rtl-capability.module.css";
 const DOC_PATH = "docs/21_17_RTL_LAYOUT_CAPABILITY.md";
+const VISUAL_PATH = "scripts/capture-visual-regression.mjs";
 
 function fail(message) {
   throw new Error(`RTL_LAYOUT_CAPABILITY FAIL: ${message}`);
 }
 
-function verifySourceContract(source, indexSource, pageSource, cssSource, docSource) {
+function verifySourceContract(source, indexSource, pageSource, cssSource, docSource, visualSource) {
   if (!indexSource.includes('export * from "./rtl-layout-capability";')) {
     fail("packages/config public entrypoint must export rtl-layout-capability");
   }
@@ -66,6 +67,14 @@ function verifySourceContract(source, indexSource, pageSource, cssSource, docSou
   }
 
   for (const token of [
+    "validateRtlCapabilityRuntime",
+    "verifyRtlCapabilityPage",
+    "/rtl-capability"
+  ]) {
+    if (!visualSource.includes(token)) fail(`browser RTL proof missing token: ${token}`);
+  }
+
+  for (const token of [
     "identical layout markup twice",
     "not a production locale",
     "does not claim that every legacy component",
@@ -108,8 +117,9 @@ const indexSource = fs.readFileSync(INDEX_PATH,"utf8");
 const pageSource = fs.readFileSync(PAGE_PATH,"utf8");
 const cssSource = fs.readFileSync(CSS_PATH,"utf8");
 const docSource = fs.readFileSync(DOC_PATH,"utf8");
+const visualSource = fs.readFileSync(VISUAL_PATH,"utf8");
 
-verifySourceContract(source,indexSource,pageSource,cssSource,docSource);
+verifySourceContract(source,indexSource,pageSource,cssSource,docSource,visualSource);
 
 const runtime = await loadRuntime();
 if (runtime.RTL_LAYOUT_CAPABILITY_MODEL_VERSION !== 1) fail("runtime model version drift");
@@ -137,19 +147,19 @@ for (const [label, fixture] of [
 
 if (process.argv.includes("--self-test")) {
   let rejected = false;
-  try { verifySourceContract(source + "\nconst x=process.env.SECRET;\n",indexSource,pageSource,cssSource,docSource); } catch { rejected = true; }
+  try { verifySourceContract(source + "\nconst x=process.env.SECRET;\n",indexSource,pageSource,cssSource,docSource,visualSource); } catch { rejected = true; }
   if (!rejected) fail("source guard did not reject env access");
 
   rejected = false;
-  try { verifySourceContract(source + '\nconst x="ar";\n',indexSource,pageSource,cssSource,docSource); } catch { rejected = true; }
+  try { verifySourceContract(source + '\nconst x="ar";\n',indexSource,pageSource,cssSource,docSource,visualSource); } catch { rejected = true; }
   if (!rejected) fail("source guard did not reject hardcoded RTL locale");
 
   rejected = false;
-  try { verifySourceContract(source,indexSource,pageSource,cssSource + "\n.x{margin-left:1px}\n",docSource); } catch { rejected = true; }
+  try { verifySourceContract(source,indexSource,pageSource,cssSource + "\n.x{margin-left:1px}\n",docSource,visualSource); } catch { rejected = true; }
   if (!rejected) fail("CSS guard did not reject physical inline property");
 
   rejected = false;
-  try { verifySourceContract(source,indexSource.replace('export * from "./rtl-layout-capability";',""),pageSource,cssSource,docSource); } catch { rejected = true; }
+  try { verifySourceContract(source,indexSource.replace('export * from "./rtl-layout-capability";',""),pageSource,cssSource,docSource,visualSource); } catch { rejected = true; }
   if (!rejected) fail("source guard did not reject missing public export");
 
   console.log("RTL_LAYOUT_CAPABILITY_SELF_TEST PASS runtime_negative_cases=5 source_negative_cases=4 directions=ltr+rtl logical_css=true");
