@@ -17,6 +17,7 @@ const children = new Map();
 const MONITOR_FILE = path.join(HERE, ".david-tab-monitor.json");
 const CONTROL_COMMAND_FILE = path.join(HERE, ".david-control-command.json");
 const CONTROL_RESULT_FILE = path.join(HERE, ".david-control-result.json");
+const SESSION_HEALTH_FILE = path.join(HERE, ".david-session-health.json");
 const MONITOR_MS = Number(process.env.DAVID_TAB_MONITOR_MS || 5000);
 const MONITOR_CONNECT_TIMEOUT_MS = Number(process.env.DAVID_TAB_MONITOR_CONNECT_TIMEOUT_MS || 60000);
 const WORKER_START_GRACE_MS = Number(process.env.DAVID_WORKER_START_GRACE_MS || 120000);
@@ -356,6 +357,13 @@ async function controlActionProtected(target, context) {
     return { protected: true, reason: "worker watchdog protected: " + watchdog };
   }
 
+  const sessionHealth = readState(SESSION_HEALTH_FILE);
+  const workerSession = sessionHealth?.workers?.[target] || null;
+  const sessionState = String(workerSession?.state || "");
+  if (/(active|rate-limited|send-timeout|interrupted|platform-problem|human-required)/i.test(sessionState)) {
+    return { protected: true, reason: "central session guard owns recovery: " + sessionState };
+  }
+
   const owned = currentOwnedUrls();
   let targetUrl = null;
   for (const [url, kind] of owned.entries()) if (kind === target) targetUrl = url;
@@ -610,7 +618,7 @@ console.log("[DUAL] DESIGN tab: 6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7");
 console.log("[DUAL] APP2 tab: 6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4");
 console.log("[DUAL] APK tab: auto-discover DAVID Phone / SoulFlame Twins / DAVID APK session; exact DAVID_APK_CHAT_URL wins when provided.");
 console.log("[DUAL] CONTROL tab: 6aade2fa-e2a0-83ed-96af-702c0430d49e");
-console.log("[DUAL] INTERRUPTION GUARD: watches every managed ChatGPT conversation in this DAVID Edge profile.");
+console.log("[DUAL] SESSION RESILIENCE V1: central guard classifies/recoveries managed ChatGPT UI errors and writes live session health.");
 console.log("[DUAL] 24/7 law: active GPT/tool work => WAIT; confirmed frozen interruption => refresh/verify/resend; workers self-heal by heartbeat/tab ownership.");
 console.log("[DUAL] CONTROL law: GPT WATCHTOWER may request only allowlisted REFRESH/RESTART/CLEAN_DUPLICATES actions after exact final OK.");
 console.log("[DUAL] CONTROL + SYSTEM + DESIGN + APP2 + APK share the same Edge CDP/profile on port 9444.");
@@ -627,7 +635,8 @@ async function monitorManagedTabs() {
       totalChatGptTabs: 0,
       tabBudgetTarget: STRICT_CHATGPT_TAB_TARGET,
       dedicatedProfile: DEDICATED_DAVID_PROFILE,
-      managed: { SYSTEM: [], DESIGN: [], APP2: [], APK: [], CONTROL: [] }
+      managed: { SYSTEM: [], DESIGN: [], APP2: [], APK: [], CONTROL: [] },
+      sessionHealth: readState(SESSION_HEALTH_FILE)
     };
     for (const page of context.pages()) {
       if (!page || page.isClosed()) continue;
