@@ -14,7 +14,7 @@ export type CrossScriptSearchDocument = Readonly<{
 export function foldCrossScriptSearchText(value: string): string {
   if (typeof value !== "string") return "";
 
-  const nfc = value.normalize("NFC").toLocaleLowerCase("bg-BG");
+  const nfc = value.normalize("NFC").toLowerCase();
   let transliterated = "";
 
   for (const character of nfc) {
