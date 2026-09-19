@@ -233,6 +233,45 @@ async function detectManagedKind(page) {
   } catch { return null; }
 }
 
+async function pageShowsActiveWork(page) {
+  if (!page || page.isClosed()) return false;
+  for (const sel of [
+    '[data-testid="stop-button"]',
+    '[data-testid*="stop" i]',
+    'button[aria-label*="Stop"]',
+    'button[aria-label*="stop"]',
+    'button[aria-label*="Спри"]',
+    'button:has-text("Stop generating")',
+    'button:has-text("Stop thinking")',
+    'button:has-text("Спри да мисли")',
+    'button:has-text("Спри отговора")'
+  ]) {
+    try {
+      const n = page.locator(sel).last();
+      if (await n.isVisible().catch(() => false)) return true;
+    } catch {}
+  }
+  return false;
+}
+
+async function controlActionProtected(target, context) {
+  const spec = specs.find((x) => x.name === target);
+  const st = spec?.stateFile ? readState(spec.stateFile) : {};
+  const watchdog = String(st?.watchdog || "");
+  if (/(thinking|writing|tool|active|settling|awaiting-final-ok|waiting-response|sending|send-timeout)/i.test(watchdog)) {
+    return { protected: true, reason: "worker watchdog protected: " + watchdog };
+  }
+
+  const owned = currentOwnedUrls();
+  let targetUrl = null;
+  for (const [url, kind] of owned.entries()) if (kind === target) targetUrl = url;
+  const page = targetUrl ? context.pages().find((p) => !p.isClosed() && cleanConversationUrl(p.url()) === targetUrl) : null;
+  if (page && await pageShowsActiveWork(page)) {
+    return { protected: true, reason: "owned ChatGPT tab shows active generation" };
+  }
+  return { protected: false, page, targetUrl };
+}
+
 async function executeControlCommand(context) {
   if (!lastControlCommandId) {
     const previous = readState(CONTROL_RESULT_FILE);
@@ -262,16 +301,19 @@ async function executeControlCommand(context) {
     }
 
     if ((type === "REFRESH" || type === "RESTART") && allowedWorkers.has(target)) {
+      const guard = await controlActionProtected(target, context);
+      if (guard.protected) {
+        results.push({ type, target, ok: false, detail: "REJECTED: " + guard.reason });
+        continue;
+      }
+
       if (type === "RESTART") {
         restartWorker(target, "CONTROL command " + command.id);
         results.push({ type, target, ok: true, detail: "worker restart requested" });
         continue;
       }
 
-      const owned = currentOwnedUrls();
-      let targetUrl = null;
-      for (const [url, kind] of owned.entries()) if (kind === target) targetUrl = url;
-      const page = targetUrl ? context.pages().find((p) => !p.isClosed() && cleanConversationUrl(p.url()) === targetUrl) : null;
+      const page = guard.page;
       if (page) {
         await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
         results.push({ type, target, ok: true, detail: "owned tab refreshed" });
