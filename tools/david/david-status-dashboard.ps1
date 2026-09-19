@@ -119,6 +119,25 @@ function Get-DppProgress {
   [pscustomobject]@{ Name="DPP"; Green=$green; Total=$rows.Count; Percent=(CalcPct $green $rows.Count) }
 }
 
+function Count-ProcessNeedle([string]$Needle, [string[]]$Names = @("node.exe")) {
+  $count = 0
+  try {
+    foreach ($p in Get-CimInstance Win32_Process) {
+      if ($Names -notcontains ([string]$p.Name).ToLowerInvariant()) { continue }
+      $cmd = [string]$p.CommandLine
+      if ($cmd -and $cmd -like "*$Needle*") { $count++ }
+    }
+  } catch {}
+  return $count
+}
+
+function Test-DavidCdp {
+  try {
+    $null = Invoke-RestMethod -Uri "http://127.0.0.1:9444/json/version" -TimeoutSec 1
+    return $true
+  } catch { return $false }
+}
+
 function Get-State([string]$Kind) {
   switch ($Kind) {
     "SYSTEM" { return Read-JsonSafe (Join-Path $DavidDir ".david-enchev-state.json") }
@@ -227,14 +246,15 @@ while ($true) {
   Render-Worker "APK"     $apkState
   Write-Fit ""
   Write-Fit "  ------------------------------ TAB OWNERSHIP ----------------------------------------------------" Green
+  $tabStable = $false
   if ($tabs -and $tabs.managed) {
     $cc = @($tabs.managed.CONTROL).Count
     $sc = @($tabs.managed.SYSTEM).Count
     $dc = @($tabs.managed.DESIGN).Count
     $ac = @($tabs.managed.APP2).Count
     $kc = @($tabs.managed.APK).Count
-    $stable = ($cc -eq 1 -and $sc -eq 1 -and $dc -eq 1 -and $ac -eq 1 -and $kc -eq 1)
-    Write-Fit ("  CONTROL={0} SYSTEM={1} DESIGN={2} APP2={3} APK={4} ChatGPT tabs={5} => {6}" -f $cc,$sc,$dc,$ac,$kc,$tabs.totalChatGptTabs,$(if($stable){"STABLE"}else{"CHECK"})) $(if($stable){[ConsoleColor]::Green}else{[ConsoleColor]::Red})
+    $tabStable = ($cc -eq 1 -and $sc -eq 1 -and $dc -eq 1 -and $ac -eq 1 -and $kc -eq 1)
+    Write-Fit ("  CONTROL={0} SYSTEM={1} DESIGN={2} APP2={3} APK={4} ChatGPT tabs={5} => {6}" -f $cc,$sc,$dc,$ac,$kc,$tabs.totalChatGptTabs,$(if($tabStable){"TAB-STABLE"}else{"CHECK"})) $(if($tabStable){[ConsoleColor]::Green}else{[ConsoleColor]::Red})
     if ($tabs.workerHealth) {
       $ch = $tabs.workerHealth.CONTROL
       $sh = $tabs.workerHealth.SYSTEM
@@ -251,6 +271,27 @@ while ($true) {
   } else {
     Write-Fit "  Tab monitor state not available yet..." Yellow
   }
+  Write-Fit ""
+  Write-Fit "  ------------------------------ RUNTIME INVARIANTS ----------------------------------------------" Green
+  $proc = [ordered]@{
+    SUPERVISOR = (Count-ProcessNeedle "dual-session-worker.mjs")
+    SYSTEM = (Count-ProcessNeedle "auto-continue-enchev-v5.mjs")
+    DESIGN = (Count-ProcessNeedle "auto-continue-design-v1.mjs")
+    APP2 = (Count-ProcessNeedle "auto-complete-app2-v1.mjs")
+    APK = (Count-ProcessNeedle "auto-continue-david-apk-v1.mjs")
+    CONTROL = (Count-ProcessNeedle "auto-control-watchtower-v1.mjs")
+    GUARD = (Count-ProcessNeedle "connection-interruption-guard.mjs")
+  }
+  $matrixCount = Count-ProcessNeedle "david-status-dashboard.ps1" @("powershell.exe","pwsh.exe")
+  $processStable = $true
+  foreach ($v in $proc.Values) { if ([int]$v -ne 1) { $processStable = $false } }
+  if ($matrixCount -ne 1) { $processStable = $false }
+  $cdpOnline = Test-DavidCdp
+  $runtimeStable = ($tabStable -and $processStable -and $cdpOnline)
+
+  Write-Fit ("  PROC SUP={0} SYS={1} DES={2} APP2={3} APK={4} CTRL={5} GUARD={6} MATRIX={7}" -f $proc.SUPERVISOR,$proc.SYSTEM,$proc.DESIGN,$proc.APP2,$proc.APK,$proc.CONTROL,$proc.GUARD,$matrixCount) $(if($processStable){[ConsoleColor]::Green}else{[ConsoleColor]::Red})
+  Write-Fit ("  CDP 9444={0} | TABS={1} | PROCESSES={2} | OVERALL RUNTIME => {3}" -f $(if($cdpOnline){"ONLINE"}else{"OFFLINE"}),$(if($tabStable){"PASS"}else{"FAIL"}),$(if($processStable){"PASS"}else{"FAIL"}),$(if($runtimeStable){"STABLE"}else{"CHECK"})) $(if($runtimeStable){[ConsoleColor]::Green}else{[ConsoleColor]::Red})
+
   Write-Fit ""
   Write-Fit "  ------------------------------ DAVID LAWS -------------------------------------------------------" Green
   Write-Fit "  CONTROL WATCHTOWER => ALLOWLISTED WAIT/REFRESH/RESTART/CLEAN_DUPLICATES ONLY" Magenta
@@ -278,6 +319,14 @@ while ($true) {
       APK = $apkState
     }
     tabs = $tabs
+    runtime = [ordered]@{
+      cdpOnline = $cdpOnline
+      tabStable = $tabStable
+      processStable = $processStable
+      overallStable = $runtimeStable
+      processes = $proc
+      matrixCount = $matrixCount
+    }
     vercelCoordinator = "public.david_vercel_deploy_lease"
   }
   try { $snapshot | ConvertTo-Json -Depth 12 | Set-Content -LiteralPath $DashboardState -Encoding UTF8 } catch {}
