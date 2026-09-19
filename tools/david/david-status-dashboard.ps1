@@ -375,7 +375,7 @@ while ($true) {
     $rlStage = [int]$rateLimit.stage
     $rlOwner = [string]$rateLimit.probeOwner
     $rlUntil = if ($rlStatus -eq "blocked") { [string]$rateLimit.blockedUntil } elseif ($rlStatus -eq "probe") { [string]$rateLimit.probeLeaseUntil } else { "" }
-    $rlStageText = if ($rlStage -lt 0) { "clear" } elseif ($rlStage -eq 0) { "10m" } elseif ($rlStage -eq 1) { "20m" } else { "40m" }
+    $rlStageText = if ($rlStage -lt 0) { "clear" } else { "60s" }
     $rateCountdown = Format-Countdown $rlUntil
     $nextSendCountdown = Format-Countdown ([string]$rateLimit.nextGlobalSendAt)
     $intervalSec = if ($rateLimit.globalSendIntervalMs) { [math]::Round(([double]$rateLimit.globalSendIntervalMs)/1000) } else { 60 }
@@ -388,7 +388,7 @@ while ($true) {
     try { $rateLimitTimerRow = [Console]::CursorTop } catch {}
     Write-Fit "  STATUS=clear  STAGE=clear  RATE_LIMIT_TIMER=00:00:00.000  UNTIL_LOCAL=-  PROBE_OWNER=none" Green
     try { $sendPacerRow = [Console]::CursorTop } catch {}
-    Write-Fit "  GLOBAL SEND PACER: min interval=60s  NEXT_SEND=00:00:00.000  SLOT_OWNER=none" Cyan
+    Write-Fit "  GLOBAL SEND PACER: min interval=10s  NEXT_SEND=00:00:00.000  SLOT_OWNER=none" Cyan
   }
 
   Write-Fit ""
@@ -396,8 +396,8 @@ while ($true) {
   Write-Fit "  CONTROL WATCHTOWER => ALLOWLISTED WAIT/REFRESH/RESTART/CLEAN_DUPLICATES ONLY" Magenta
   Write-Fit "  FINAL GATE => NO EXACT FINAL OK = NO NEXT NORMAL PROMPT" Red
   Write-Fit "  SEND TIMEOUT => CENTRAL GUARD OWNS RETRY | WORKERS WAIT | NO DUPLICATE SEND" Yellow
-  Write-Fit "  TOO MANY REQUESTS => AUTO-DISMISS POPUP + GLOBAL BLOCK 10m -> ONE PROBE -> 20m -> ONE PROBE -> 40m" Yellow
-  Write-Fit "  NORMAL SENDS => GLOBAL PACER >=60s BETWEEN NEW DAVID PROMPTS; NO 5-TAB BURSTS" Yellow
+  Write-Fit "  TOO MANY REQUESTS => AUTO-DISMISS POPUP + GLOBAL BLOCK 60s -> ONE PROBE -> repeat 60s if still limited" Yellow
+  Write-Fit "  NORMAL SENDS => GLOBAL PACER >=10s BETWEEN EVERY DAVID RELAY; ONE SESSION SEND AT A TIME" Yellow
   Write-Fit "  ACTIVE THINKING/TOOL WORK => WAIT | LONG NO-PROGRESS >600s => REFRESH/VERIFY/RESEND" Yellow
   Write-Fit "  INTERRUPTED => CONFIRM + INACTIVE + NO PROGRESS => REFRESH/VERIFY/RESEND | NEVER STOP ACTIVE GPT" Yellow
   Write-Fit "  EXTERNAL BLOCKER => DEFER + independent work | CAPTCHA/MFA/LOGIN/PERMISSION => NEVER BYPASS" Yellow
