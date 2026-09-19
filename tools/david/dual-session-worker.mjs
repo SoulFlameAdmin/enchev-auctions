@@ -492,6 +492,31 @@ async function cleanupManagedTabs() {
   }
 }
 
+async function cleanupUnknownChatGptTabs(context) {
+  const owned = [];
+  const unknown = [];
+  for (const page of context.pages()) {
+    if (!page || page.isClosed()) continue;
+    if (!page.url().startsWith("https://chatgpt.com/")) continue;
+    const kind = await detectManagedKind(page);
+    if (kind) owned.push({ page, kind });
+    else unknown.push(page);
+  }
+
+  const counts = {};
+  for (const { kind } of owned) counts[kind] = Number(counts[kind] || 0) + 1;
+  const allFiveOwned = ["CONTROL","SYSTEM","DESIGN","APP2","APK"].every((k) => counts[k] === 1);
+  if (!allFiveOwned || !unknown.length) return 0;
+
+  let closed = 0;
+  for (const page of unknown) {
+    await page.close({ runBeforeUnload: false }).catch(() => {});
+    closed++;
+  }
+  if (closed) console.log(`[DUAL] Closed ${closed} unmanaged ChatGPT tab(s); dedicated DAVID profile target is exactly 5.`);
+  return closed;
+}
+
 console.log("[DUAL] DAVID multi-session mode ON.");
 console.log("[DUAL] SYSTEM tab: 6aab44e1-385c-83eb-b122-c4ae9836cb71");
 console.log("[DUAL] DESIGN tab: 6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7");
@@ -572,6 +597,17 @@ async function monitorManagedTabs() {
     if (duplicates.length) {
       console.log(`[DUAL] Tab monitor found duplicates: ${duplicates.join(", ")}. Cleaning...`);
       await cleanupManagedTabs();
+    }
+
+    if (
+      counts.CONTROL === 1 &&
+      counts.SYSTEM === 1 &&
+      counts.DESIGN === 1 &&
+      counts.APP2 === 1 &&
+      counts.APK === 1 &&
+      snapshot.totalChatGptTabs > 5
+    ) {
+      await cleanupUnknownChatGptTabs(context);
     }
   } catch (e) {
     monitorBrowser = null;
