@@ -182,6 +182,64 @@ async function verifyD25ServerClock(call,viewport){
   if(remainingMs<6500||remainingMs>10000)fail(`D25 ${viewport.name} server deadline window invalid: ${remainingMs}ms`);
 }
 
+
+async function verifyD26SoldAdvance(call,viewport){
+  await call("Network.enable");
+  const originResult=await call("Runtime.evaluate",{expression:"location.origin",returnByValue:true});
+  const origin=originResult?.result?.value;
+  if(typeof origin!=="string"||!origin.startsWith("http"))fail(`D26 ${viewport.name} origin missing`);
+
+  const seededState=encodeURIComponent(JSON.stringify({lotIndex:0,roundEndsAt:Date.now()+2200}));
+  const cookie=await call("Network.setCookie",{
+    name:"enchev_live_demo_v2",
+    value:seededState,
+    url:origin,
+    path:"/",
+    httpOnly:true,
+    secure:false,
+    sameSite:"Lax",
+  });
+  if(cookie?.success!==true)fail(`D26 ${viewport.name} could not seed server-session state`);
+
+  await call("Page.reload",{ignoreCache:true});
+  await sleep(250);
+
+  const read=async()=>{
+    const result=await call("Runtime.evaluate",{expression:`(()=>{const stage=document.querySelector('.liveStage[data-auto-advance-task="D26"]');const current=document.querySelector('.liveVisual[data-live-slot="current"]');const next=document.querySelector('.liveNextPreview[data-live-slot="next"]');const notice=document.querySelector('.liveSoldTransition[data-design-task="D26"]');const timer=document.querySelector('.liveHeroClock[data-design-task="D25"]');if(!stage||!current||!next||!timer)return null;const nr=notice?.getBoundingClientRect();return {currentLot:current.getAttribute('data-lot-id')||'',nextLot:next.getAttribute('data-lot-id')||'',clockMode:timer.getAttribute('data-clock-mode')||'',soldLot:notice?.getAttribute('data-sold-lot')||'',noticeText:notice?.textContent||'',noticeVisible:Boolean(notice&&nr&&nr.width>0&&nr.height>0),scrollWidth:document.documentElement.scrollWidth,viewportWidth:innerWidth};})()`,returnByValue:true});
+    return result?.result?.value;
+  };
+
+  let before=null;
+  for(let attempt=0;attempt<20;attempt++){
+    before=await read();
+    if(before?.clockMode==="server"&&before.currentLot==="EA-10511")break;
+    await sleep(100);
+  }
+  if(!before||before.clockMode!=="server"||before.currentLot!=="EA-10511")fail(`D26 ${viewport.name} seeded lot did not become active`);
+  if(before.nextLot!=="EA-10539")fail(`D26 ${viewport.name} seeded next lot mismatch: ${before.nextLot}`);
+
+  let after=null;
+  for(let attempt=0;attempt<45;attempt++){
+    after=await read();
+    if(after?.currentLot==="EA-10539"&&after?.soldLot==="EA-10511"&&after?.noticeVisible)break;
+    await sleep(100);
+  }
+  if(!after)fail(`D26 ${viewport.name} post-expiry state missing`);
+  if(after.currentLot!=="EA-10539")fail(`D26 ${viewport.name} did not auto-advance to next lot: ${after.currentLot}`);
+  if(after.nextLot!=="EA-10603")fail(`D26 ${viewport.name} next-lot preview did not advance: ${after.nextLot}`);
+  if(after.soldLot!=="EA-10511"||!after.noticeVisible||!after.noticeText.includes("SOLD"))fail(`D26 ${viewport.name} SOLD transition notice missing`);
+  if(after.scrollWidth>after.viewportWidth+3)fail(`D26 ${viewport.name} horizontal overflow after transition`);
+
+  const endpoint=await call("Runtime.evaluate",{
+    expression:"fetch('/api/live-auction-clock',{cache:'no-store'}).then(async r=>({status:r.status,body:await r.json()}))",
+    awaitPromise:true,
+    returnByValue:true,
+  });
+  const response=endpoint?.result?.value;
+  if(response?.status!==200||response?.body?.lotId!=="EA-10539")fail(`D26 ${viewport.name} DOM/server lot mismatch after auto-advance`);
+  if(response?.body?.auctionAuthority!==false)fail(`D26 ${viewport.name} must remain auctionAuthority=false`);
+}
+
 async function verifyD29Watchlist(call,viewport){
   const before=await call("Runtime.evaluate",{expression:`(()=>{const s=document.querySelector('.profileWatchlist[data-design-task="D29"]');const summary=s?.querySelector('.profileWatchlistSummary');const grid=s?.querySelector('.profileWatchlistGrid');const cards=[...(s?.querySelectorAll('.profileWatchlistCard')||[])];const first=cards[0];const remove=first?.querySelector('.profileWatchlistRemove');if(!s||!summary||!grid||!first||!remove)return null;remove.focus({preventScroll:true});const rr=remove.getBoundingClientRect();const states=cards.map(x=>x.getAttribute('data-auction-state')||'');const ids=cards.map(x=>x.getAttribute('data-lot-id')||'');return {viewportWidth:innerWidth,scrollWidth:document.documentElement.scrollWidth,columns:getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length,count:cards.length,saved:Number(summary.getAttribute('data-saved-count')),live:Number(summary.getAttribute('data-live-count')),states,ids,focused:document.activeElement===remove,removeWidth:rr.width,removeHeight:rr.height,lotLinks:cards.every((x,i)=>x.querySelector('.profileWatchlistActions a:first-child')?.getAttribute('href')==='/lot/'+ids[i]),liveLinks:cards.every(x=>x.querySelector('.profileWatchlistActions a:last-child')?.getAttribute('href')==='/live-auctions')};})()`,returnByValue:true});
   const b=before?.result?.value;
@@ -423,6 +481,7 @@ async function captureOne({port,baseUrl,route,viewport,outputDir}){
 
     if(route.name==="live-auctions"){
       await verifyD25ServerClock(call,viewport);
+      await verifyD26SoldAdvance(call,viewport);
     }
     if(route.name==="profile"){
       await verifyD29Watchlist(call,viewport);
