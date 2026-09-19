@@ -5,7 +5,7 @@
     {
       "id": "62",
       "title": "Corporate operating model, legal entities & governance",
-      "wave": 0,
+      "wave": 1,
       "profile": "corporate",
       "domains": [
         "group/legal-entity structure",
@@ -395,7 +395,7 @@
     {
       "id": "63",
       "title": "Commercial roles, marketplace model & contract architecture",
-      "wave": 0,
+      "wave": 1,
       "profile": "compliance",
       "domains": [
         "platform legal role",
