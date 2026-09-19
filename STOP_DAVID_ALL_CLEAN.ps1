@@ -24,7 +24,10 @@ $workerPatterns = @(
   "start-app2-autopilot.ps1",
   ".auto-complete-app2-runtime.mjs",
   "auto-complete-app2-v1.mjs",
-  "david-status-dashboard.ps1"
+  "david-status-dashboard.ps1",
+  "worker-control.mjs",
+  "run-worker-control.cmd",
+  "launch-worker-control.vbs"
 )
 
 function Get-ManagedWorkers {
