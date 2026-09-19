@@ -501,6 +501,12 @@ async function runPrompt(context, page, state, prompt, kind) {
       state.problemRetryAt = decision.state?.blockedUntil || decision.state?.probeLeaseUntil || null;
       save(state, `GLOBAL RATE LIMIT WAIT mode=${decision.mode}; owner=${decision.state?.probeOwner || "none"}`);
     });
+    if (/ChatGPT platform: (?:global )?rate limit/i.test(String(state.problem || ""))) {
+      state.problem = null;
+      delete state.problemRetryAt;
+      state.watchdog = "apk-send-permit";
+      save(state, "ChatGPT platform rate-limit wait cleared by global coordinator; no project defer relay");
+    }
     if (permit.mode === "probe") {
       state.watchdog = "global-rate-limit-probe";
       save(state, "APK owns the single post-cooldown probe send");
