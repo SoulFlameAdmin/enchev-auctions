@@ -70,39 +70,13 @@ Write-Host "[DAVID ALL] Updating orchestrator..." -ForegroundColor Cyan
 & $git -C $Repo pull --ff-only
 if ($LASTEXITCODE -ne 0) { throw "git pull failed with exit code $LASTEXITCODE" }
 $afterHead = (& $git -C $Repo rev-parse HEAD 2>$null | Select-Object -First 1)
-$codeUpdated = $ForceRestart -or ($beforeHead -and $afterHead -and $beforeHead -ne $afterHead)
+$codeUpdated = ($beforeHead -and $afterHead -and $beforeHead -ne $afterHead)
 
-if ($codeUpdated) {
-  Write-Host "[DAVID ALL] New worker code detected. Restarting managed DAVID workers once..." -ForegroundColor Yellow
-  $patterns = @(
-    "dual-session-worker.mjs",
-    "start-auto-continue.ps1",
-    "start-app2-autopilot.ps1",
-    ".auto-complete-app2-runtime.mjs",
-    "auto-complete-app2-v1.mjs",
-    "auto-continue-enchev-v5.mjs",
-    "auto-continue-design-v1.mjs",
-    "auto-continue-david-apk-v1.mjs",
-    "auto-control-watchtower-v1.mjs",
-    "connection-interruption-guard.mjs",
-    "david-status-dashboard.ps1"
-  )
-  try {
-    $managed = Get-CimInstance Win32_Process | Where-Object {
-      $cmd = [string]$_.CommandLine
-      if (-not $cmd) { return $false }
-      foreach ($p in $patterns) {
-        if ($cmd -like "*$p*") { return $true }
-      }
-      return $false
-    }
-    foreach ($p in $managed) {
-      Stop-Process -Id $p.ProcessId -Force -ErrorAction SilentlyContinue
-    }
-    Start-Sleep -Seconds 2
-  } catch {
-    Write-Host "[DAVID ALL] Could not fully stop an old managed worker; duplicate guard will still apply." -ForegroundColor Yellow
-  }
+# HARD LAW: START never performs an in-place partial worker restart.
+# RESTART_DAVID_ALL_CLEAN.ps1 is the only hard-restart owner.
+# This prevents old/new supervisor process trees from overlapping.
+if ($ForceRestart) {
+  throw "Do not use START_DAVID_ALL.ps1 -ForceRestart. Use RESTART_DAVID_ALL_CLEAN.ps1 so the full process/browser tree is stopped before start."
 }
 
 $mainLauncher = Join-Path $Repo "tools\david\start-auto-continue.ps1"
@@ -131,21 +105,11 @@ $mainNodes = @(Get-MatchingProcesses -Names @("node.exe") -Needles @("dual-sessi
 $cdpReady = Test-Cdp -P $Port
 
 if ($mainNodes.Count -gt 1) {
-  Write-Host "[DAVID ALL] DUPLICATE supervisors detected ($($mainNodes.Count)). Cleaning the full managed node set before start..." -ForegroundColor Red
-  foreach ($needle in @(
-    "dual-session-worker.mjs",
-    "auto-continue-enchev-v5.mjs",
-    "auto-continue-design-v1.mjs",
-    "auto-complete-app2-v1.mjs",
-    "auto-continue-david-apk-v1.mjs",
-    "auto-control-watchtower-v1.mjs",
-    "connection-interruption-guard.mjs"
-  )) {
-    Stop-MatchingProcesses -Names @("node.exe") -Needles @($needle)
-  }
-  Start-Sleep -Seconds 2
-  $mainNodes = @()
-  $cdpReady = Test-Cdp -P $Port
+  throw "Duplicate DAVID supervisors detected ($($mainNodes.Count)). Refusing partial cleanup/start. Run RESTART_DAVID_ALL_CLEAN.ps1."
+}
+
+if ($codeUpdated -and $mainNodes.Count -eq 1) {
+  throw "DAVID worker code changed while a supervisor is already running. Run RESTART_DAVID_ALL_CLEAN.ps1 to apply it atomically."
 }
 
 $mainRunning = ($mainNodes.Count -eq 1 -and $cdpReady)
@@ -173,9 +137,28 @@ if ($mainRunning) {
   for ($i = 0; $i -lt 120; $i++) {
     Start-Sleep -Milliseconds 500
     $supervisorNodes = @(Get-MatchingProcesses -Names @("node.exe") -Needles @("dual-session-worker.mjs"))
+    $systemNodes = @(Get-MatchingProcesses -Names @("node.exe") -Needles @("auto-continue-enchev-v5.mjs"))
+    $designNodes = @(Get-MatchingProcesses -Names @("node.exe") -Needles @("auto-continue-design-v1.mjs"))
     $app2Nodes = @(Get-MatchingProcesses -Names @("node.exe") -Needles @("auto-complete-app2-v1.mjs"))
+    $apkNodes = @(Get-MatchingProcesses -Names @("node.exe") -Needles @("auto-continue-david-apk-v1.mjs"))
     $controlNodes = @(Get-MatchingProcesses -Names @("node.exe") -Needles @("auto-control-watchtower-v1.mjs"))
-    if ($supervisorNodes.Count -gt 0 -and $app2Nodes.Count -gt 0 -and $controlNodes.Count -gt 0 -and (Test-Cdp -P $Port)) {
+    $guardNodes = @(Get-MatchingProcesses -Names @("node.exe") -Needles @("connection-interruption-guard.mjs"))
+
+    $counts = @($supervisorNodes.Count,$systemNodes.Count,$designNodes.Count,$app2Nodes.Count,$apkNodes.Count,$controlNodes.Count,$guardNodes.Count)
+    if (($counts | Where-Object { $_ -gt 1 }).Count -gt 0) {
+      throw "Duplicate DAVID child process detected during startup. Run RESTART_DAVID_ALL_CLEAN.ps1."
+    }
+
+    if (
+      $supervisorNodes.Count -eq 1 -and
+      $systemNodes.Count -eq 1 -and
+      $designNodes.Count -eq 1 -and
+      $app2Nodes.Count -eq 1 -and
+      $apkNodes.Count -eq 1 -and
+      $controlNodes.Count -eq 1 -and
+      $guardNodes.Count -eq 1 -and
+      (Test-Cdp -P $Port)
+    ) {
       $mainHealthy = $true
       break
     }
@@ -206,7 +189,7 @@ for ($i = 0; $i -lt 180; $i++) {
     $kc = @($tabState.managed.APK).Count
     $cc = @($tabState.managed.CONTROL).Count
     $lastTabStatus = "CONTROL=$cc SYSTEM=$sc DESIGN=$dc APP2=$ac APK=$kc ChatGPT=$($tabState.totalChatGptTabs)"
-    if ($cc -eq 1 -and $sc -eq 1 -and $dc -eq 1 -and $ac -eq 1 -and $kc -eq 1) {
+    if ($cc -eq 1 -and $sc -eq 1 -and $dc -eq 1 -and $ac -eq 1 -and $kc -eq 1 -and [int]$tabState.totalChatGptTabs -eq 5) {
       $tabsHealthy = $true
       break
     }
