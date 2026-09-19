@@ -80,8 +80,11 @@ if ($codeUpdated) {
     "start-app2-autopilot.ps1",
     ".auto-complete-app2-runtime.mjs",
     "auto-complete-app2-v1.mjs",
+    "auto-continue-enchev-v5.mjs",
+    "auto-continue-design-v1.mjs",
     "auto-continue-david-apk-v1.mjs",
     "auto-control-watchtower-v1.mjs",
+    "connection-interruption-guard.mjs",
     "david-status-dashboard.ps1"
   )
   try {
@@ -126,7 +129,26 @@ try {
 
 $mainNodes = @(Get-MatchingProcesses -Names @("node.exe") -Needles @("dual-session-worker.mjs"))
 $cdpReady = Test-Cdp -P $Port
-$mainRunning = ($mainNodes.Count -gt 0 -and $cdpReady)
+
+if ($mainNodes.Count -gt 1) {
+  Write-Host "[DAVID ALL] DUPLICATE supervisors detected ($($mainNodes.Count)). Cleaning the full managed node set before start..." -ForegroundColor Red
+  foreach ($needle in @(
+    "dual-session-worker.mjs",
+    "auto-continue-enchev-v5.mjs",
+    "auto-continue-design-v1.mjs",
+    "auto-complete-app2-v1.mjs",
+    "auto-continue-david-apk-v1.mjs",
+    "auto-control-watchtower-v1.mjs",
+    "connection-interruption-guard.mjs"
+  )) {
+    Stop-MatchingProcesses -Names @("node.exe") -Needles @($needle)
+  }
+  Start-Sleep -Seconds 2
+  $mainNodes = @()
+  $cdpReady = Test-Cdp -P $Port
+}
+
+$mainRunning = ($mainNodes.Count -eq 1 -and $cdpReady)
 
 if ($mainNodes.Count -gt 0 -and -not $cdpReady) {
   Write-Host "[DAVID ALL] Stale CONTROL/SYSTEM/DESIGN/APP2/APK supervisor detected without CDP. Killing stale process..." -ForegroundColor Yellow
@@ -195,9 +217,37 @@ if (-not $tabsHealthy) {
 }
 Write-Host "[DAVID ALL] 5/5 managed GPT tabs health check PASS: $lastTabStatus" -ForegroundColor Green
 
+$expectedNodeProcesses = [ordered]@{
+  "SUPERVISOR" = "dual-session-worker.mjs"
+  "SYSTEM"     = "auto-continue-enchev-v5.mjs"
+  "DESIGN"     = "auto-continue-design-v1.mjs"
+  "APP2"       = "auto-complete-app2-v1.mjs"
+  "APK"        = "auto-continue-david-apk-v1.mjs"
+  "CONTROL"    = "auto-control-watchtower-v1.mjs"
+  "GUARD"      = "connection-interruption-guard.mjs"
+}
+$processStatus = @()
+$processInvariantOk = $true
+foreach ($entry in $expectedNodeProcesses.GetEnumerator()) {
+  $count = @(Get-MatchingProcesses -Names @("node.exe") -Needles @([string]$entry.Value)).Count
+  $processStatus += "$($entry.Key)=$count"
+  if ($count -ne 1) { $processInvariantOk = $false }
+}
+if (-not $processInvariantOk) {
+  throw "DAVID process invariant failed: $($processStatus -join ' ')"
+}
+Write-Host "[DAVID ALL] PROCESS INVARIANT PASS: $($processStatus -join ' ')" -ForegroundColor Green
+
 Start-Sleep -Seconds 2
 
-$dashboardRunning = @(Get-MatchingProcesses -Names @("powershell.exe","pwsh.exe") -Needles @("david-status-dashboard.ps1")).Count -gt 0
+$dashboardProcesses = @(Get-MatchingProcesses -Names @("powershell.exe","pwsh.exe") -Needles @("david-status-dashboard.ps1"))
+if ($dashboardProcesses.Count -gt 1) {
+  Write-Host "[DAVID ALL] Duplicate Matrix dashboards detected ($($dashboardProcesses.Count)). Restarting one clean dashboard..." -ForegroundColor Yellow
+  Stop-MatchingProcesses -Names @("powershell.exe","pwsh.exe") -Needles @("david-status-dashboard.ps1")
+  Start-Sleep -Seconds 1
+  $dashboardProcesses = @()
+}
+$dashboardRunning = ($dashboardProcesses.Count -eq 1)
 if ($dashboardRunning) {
   Write-Host "[DAVID ALL] Matrix dashboard already running. Reusing it." -ForegroundColor Green
 } else {
