@@ -212,6 +212,10 @@ jobs:
         run: node scripts/verify-translation-completeness.mjs
       - name: 21.19 Translation completeness checks self-tests
         run: node scripts/verify-translation-completeness.mjs --self-test
+      - name: 21.20 Cross-script search tests
+        run: node scripts/verify-cross-script-search.mjs
+      - name: 21.20 Cross-script search tests self-tests
+        run: node scripts/verify-cross-script-search.mjs --self-test
       - name: Redis environment contract invariant
         run: node scripts/verify-redis-environment.mjs
       - name: Redis environment contract self-tests

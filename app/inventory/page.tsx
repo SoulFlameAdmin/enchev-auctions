@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { accountNavigation, primaryNavigation } from "../site-navigation";
+import { matchesCrossScriptSearch } from "../../packages/config/src/cross-script-search";
 import "./inventory.css";
 import "./inventory-v2.css";
 import "./inventory-d13.css";
@@ -150,8 +151,10 @@ export default function InventoryPage(){
 
   const filtered=useMemo(()=>{
     let list=auctionCars.filter(car=>{
-      const q=query.trim().toLowerCase();
-      const matchesQuery=!q||`${car.title} ${car.brand} ${car.model} ${car.vin} ${car.lot} ${car.location} ${car.damage} ${car.titleStatus}`.toLowerCase().includes(q);
+      const matchesQuery=matchesCrossScriptSearch(query,{
+        text:[car.title,car.brand,car.model,car.location,car.damage,car.titleStatus],
+        identifiers:[car.vin,car.lot]
+      });
       const matchesBrand=brand==="Всички"||car.brand===brand;
       const matchesModel=model==="Всички"||car.model===model;
       const matchesRegion=region==="Всички"||car.region===region;

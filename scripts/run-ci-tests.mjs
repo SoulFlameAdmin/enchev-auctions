@@ -53,7 +53,8 @@ const cases = [
   ["scripts/verify-locale-fallback-chain.mjs", "--self-test"],
   ["scripts/verify-rtl-layout-capability.mjs", "--self-test"],
   ["scripts/verify-international-contact-models.mjs", "--self-test"],
-  ["scripts/verify-translation-completeness.mjs", "--self-test"]
+  ["scripts/verify-translation-completeness.mjs", "--self-test"],
+  ["scripts/verify-cross-script-search.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of cases) {

@@ -27,3 +27,4 @@ export * from "./unicode-normalization";
 export * from "./locale-fallback-chain";
 export * from "./rtl-layout-capability";
 export * from "./international-contact-models";
+export * from "./cross-script-search";
