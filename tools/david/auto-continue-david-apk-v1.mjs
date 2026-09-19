@@ -611,7 +611,6 @@ async function main() {
       if (!context) throw new Error("No shared Edge context");
     } catch (error) {
       console.log(`[APK] CDP not ready: ${error?.message || error}. WAIT 5s -> reconnect. Worker stays alive.`);
-      try { await browser?.close(); } catch {}
       browser = null;
       context = null;
       await sleep(5000);
