@@ -510,16 +510,53 @@ async function waitReady(context, page, state) {
 async function fillAndSend(page, text) {
   const c = await composer(page);
   if (!c) throw new Error("Design ChatGPT composer not found");
-  try { await c.fill(text); } catch {
-    await c.click();
-    await c.evaluate((el, value) => { el.textContent = value; el.dispatchEvent(new InputEvent("input", { bubbles: true, data: value })); }, text);
+
+  let filled = false;
+  try {
+    await c.fill(text, { timeout: 5000 });
+    filled = true;
+  } catch {}
+
+  if (!filled) {
+    await c.focus({ timeout: 3000 }).catch(() => {});
+    await c.evaluate((el, value) => {
+      el.focus();
+      if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) {
+        el.value = value;
+      } else {
+        el.textContent = value;
+      }
+      el.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: value }));
+    }, text);
   }
+
   await sleep(250);
+
   for (const s of ['button[data-testid="send-button"]','button[aria-label*="Send"]','button[aria-label*="Изпрати"]']) {
     const b = page.locator(s).last();
-    if (await b.count() && await b.isVisible().catch(() => false) && await b.isEnabled().catch(() => false)) { await b.click(); return; }
+    if (!await b.count()) continue;
+    if (!await b.isVisible().catch(() => false) || !await b.isEnabled().catch(() => false)) continue;
+    try {
+      await b.click({ timeout: 2000 });
+      return;
+    } catch {}
   }
-  await c.press("Enter");
+
+  try {
+    await c.focus({ timeout: 2000 });
+    await c.press("Enter", { timeout: 3000 });
+    return;
+  } catch {}
+
+  for (const s of ['button[data-testid="send-button"]','button[aria-label*="Send"]','button[aria-label*="Изпрати"]']) {
+    const b = page.locator(s).last();
+    if (await b.count() && await b.isVisible().catch(() => false) && await b.isEnabled().catch(() => false)) {
+      await b.click({ force: true, timeout: 3000 });
+      return;
+    }
+  }
+
+  throw new Error("Design ChatGPT send failed after pointer-safe fallbacks");
 }
 async function waitStart(context, page, base, state) {
   const end = Date.now() + START_TIMEOUT_MS;
