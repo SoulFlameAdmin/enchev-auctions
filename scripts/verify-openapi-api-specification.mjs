@@ -79,8 +79,8 @@ export function validateSpec(spec, discovered) {
   }
 
   const demo = spec.paths["/api/live-auction-clock"];
-  const serializedDemo = JSON.stringify(demo);
-  if (!serializedDemo.includes('"auctionAuthority"') || !serializedDemo.includes('"const":false')) {
+  const demoSchema = spec.components && spec.components.schemas && spec.components.schemas.LiveAuctionDemoClock;
+  if (!demo || !demoSchema || !demoSchema.properties || !demoSchema.properties.auctionAuthority || demoSchema.properties.auctionAuthority.const !== false) {
     fail("live-auction demo must remain explicitly non-authoritative");
   }
   return { operations: actual.length, paths: Object.keys(spec.paths).length };
