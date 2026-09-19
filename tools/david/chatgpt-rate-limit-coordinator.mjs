@@ -8,6 +8,8 @@ const RATE_LIMIT_LOCK_FILE = path.join(HERE, ".david-global-chatgpt-rate-limit.l
 
 const BACKOFF_MS = [10 * 60_000, 20 * 60_000, 40 * 60_000];
 const PROBE_LEASE_MS = 15 * 60_000;
+const GLOBAL_SEND_INTERVAL_MS = Number(process.env.DAVID_GLOBAL_SEND_INTERVAL_MS || 60_000);
+const SEND_SLOT_LEASE_MS = Number(process.env.DAVID_GLOBAL_SEND_SLOT_LEASE_MS || 20_000);
 const LOCK_STALE_MS = 30_000;
 const POLL_MS = 5_000;
 
@@ -22,6 +24,11 @@ function defaultState() {
     probeOwner: null,
     probeLeaseUntil: null,
     probeSendStartedAt: null,
+    sendSlotOwner: null,
+    sendSlotLeaseUntil: null,
+    lastGlobalSendAt: null,
+    nextGlobalSendAt: null,
+    globalSendIntervalMs: GLOBAL_SEND_INTERVAL_MS,
     lastRateLimitAt: null,
     lastRateLimitBy: null,
     lastSuccessAt: null,
@@ -119,6 +126,8 @@ export async function reportRateLimit(worker, evidence = "too many requests") {
       probeOwner: null,
       probeLeaseUntil: null,
       probeSendStartedAt: null,
+      sendSlotOwner: null,
+      sendSlotLeaseUntil: null,
       lastRateLimitAt: nowIso(),
       lastRateLimitBy: worker,
       lastEvidence: evidence,
@@ -135,7 +144,23 @@ export async function waitForGlobalSendPermit(worker, onWait = null) {
       const now = Date.now();
 
       if (st.status === "clear") {
-        return { allow: true, mode: "normal", state: st };
+        const nextRemaining = msUntil(st.nextGlobalSendAt);
+        const leaseRemaining = msUntil(st.sendSlotLeaseUntil);
+
+        if (st.sendSlotOwner && st.sendSlotOwner !== worker && leaseRemaining > 0) {
+          return { allow: false, waitMs: leaseRemaining, mode: "pacer-slot", state: st };
+        }
+        if (nextRemaining > 0) {
+          return { allow: false, waitMs: nextRemaining, mode: "pacer", state: st };
+        }
+
+        const reserved = writeStateRaw({
+          ...st,
+          sendSlotOwner: worker,
+          sendSlotLeaseUntil: new Date(now + SEND_SLOT_LEASE_MS).toISOString(),
+          globalSendIntervalMs: GLOBAL_SEND_INTERVAL_MS
+        });
+        return { allow: true, mode: "normal", state: reserved };
       }
 
       if (st.status === "blocked") {
@@ -149,6 +174,8 @@ export async function waitForGlobalSendPermit(worker, onWait = null) {
           probeOwner: worker,
           probeLeaseUntil: new Date(now + PROBE_LEASE_MS).toISOString(),
           probeSendStartedAt: null,
+          sendSlotOwner: worker,
+          sendSlotLeaseUntil: new Date(now + SEND_SLOT_LEASE_MS).toISOString(),
           blockedUntil: null
         });
         return { allow: true, mode: "probe", state: probe };
@@ -164,7 +191,9 @@ export async function waitForGlobalSendPermit(worker, onWait = null) {
             ...st,
             probeOwner: worker,
             probeLeaseUntil: new Date(now + PROBE_LEASE_MS).toISOString(),
-            probeSendStartedAt: null
+            probeSendStartedAt: null,
+            sendSlotOwner: worker,
+            sendSlotLeaseUntil: new Date(now + SEND_SLOT_LEASE_MS).toISOString()
           });
           return { allow: true, mode: "probe", state: probe };
         }
@@ -182,15 +211,29 @@ export async function waitForGlobalSendPermit(worker, onWait = null) {
     await sleep(Math.min(POLL_MS, Math.max(1000, decision.waitMs || POLL_MS)));
   }
 }
-export async function markProbeSendStarted(worker) {
+export async function markGlobalSendStarted(worker) {
   return withLock(async () => {
     const st = readStateRaw();
-    if (st.status !== "probe" || st.probeOwner !== worker) return st;
+    const now = Date.now();
+    const probeOwnerMatches = st.status === "probe" && st.probeOwner === worker;
+    const slotOwnerMatches = st.sendSlotOwner === worker;
+
+    if (!probeOwnerMatches && !slotOwnerMatches) return st;
+
     return writeStateRaw({
       ...st,
-      probeSendStartedAt: nowIso()
+      probeSendStartedAt: probeOwnerMatches ? nowIso() : st.probeSendStartedAt,
+      sendSlotOwner: null,
+      sendSlotLeaseUntil: null,
+      lastGlobalSendAt: nowIso(),
+      nextGlobalSendAt: new Date(now + GLOBAL_SEND_INTERVAL_MS).toISOString(),
+      globalSendIntervalMs: GLOBAL_SEND_INTERVAL_MS
     });
   });
+}
+
+export async function markProbeSendStarted(worker) {
+  return markGlobalSendStarted(worker);
 }
 
 export async function reportProbeSuccess(worker) {
@@ -199,13 +242,25 @@ export async function reportProbeSuccess(worker) {
     if (st.status !== "probe" || st.probeOwner !== worker) return st;
     return writeStateRaw({
       ...defaultState(),
+      lastGlobalSendAt: st.lastGlobalSendAt,
+      nextGlobalSendAt: st.nextGlobalSendAt,
+      globalSendIntervalMs: GLOBAL_SEND_INTERVAL_MS,
       lastSuccessAt: nowIso(),
       lastSuccessBy: worker
     });
   });
 }
 export async function clearRateLimitState(reason = "manual-clear") {
-  return withLock(async () => writeStateRaw({ ...defaultState(), clearedReason: reason }));
+  return withLock(async () => {
+    const st = readStateRaw();
+    return writeStateRaw({
+      ...defaultState(),
+      lastGlobalSendAt: st.lastGlobalSendAt,
+      nextGlobalSendAt: st.nextGlobalSendAt,
+      globalSendIntervalMs: GLOBAL_SEND_INTERVAL_MS,
+      clearedReason: reason
+    });
+  });
 }
 export function formatRateLimitState(state = readStateRaw()) {
   const remaining = rateLimitRemainingMs(state);
@@ -217,6 +272,12 @@ export function formatRateLimitState(state = readStateRaw()) {
     probeOwner: state.probeOwner,
     probeLeaseUntil: state.probeLeaseUntil,
     probeSendStartedAt: state.probeSendStartedAt,
+    sendSlotOwner: state.sendSlotOwner,
+    sendSlotLeaseUntil: state.sendSlotLeaseUntil,
+    lastGlobalSendAt: state.lastGlobalSendAt,
+    nextGlobalSendAt: state.nextGlobalSendAt,
+    globalSendIntervalMs: state.globalSendIntervalMs,
+    nextSendWaitSeconds: Math.ceil(msUntil(state.nextGlobalSendAt) / 1000),
     lastRateLimitBy: state.lastRateLimitBy,
     lastRateLimitAt: state.lastRateLimitAt,
     lastSuccessBy: state.lastSuccessBy,
@@ -228,5 +289,6 @@ if (process.argv.includes("--self-test")) {
   const s = defaultState();
   if (s.status !== "clear" || s.stage !== -1) throw new Error("rate-limit self-test: bad default");
   if (BACKOFF_MS.join(",") !== [600000,1200000,2400000].join(",")) throw new Error("rate-limit self-test: backoff law mismatch");
-  console.log("DAVID_RATE_LIMIT_COORDINATOR_SELF_TEST PASS backoff=10,20,40 probe_owner=1");
+  if (GLOBAL_SEND_INTERVAL_MS !== 60000 && !process.env.DAVID_GLOBAL_SEND_INTERVAL_MS) throw new Error("rate-limit self-test: default send interval must be 60s");
+  console.log("DAVID_RATE_LIMIT_COORDINATOR_SELF_TEST PASS backoff=10,20,40 probe_owner=1 global_send_interval_s=" + Math.round(GLOBAL_SEND_INTERVAL_MS/1000));
 }
