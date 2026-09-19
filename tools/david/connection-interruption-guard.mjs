@@ -12,7 +12,7 @@ const RETRY_COOLDOWN_MS = Number(process.env.DAVID_INTERRUPT_RETRY_COOLDOWN_MS |
 const CONFIRM_MS = Number(process.env.DAVID_INTERRUPT_CONFIRM_MS || 12000);
 const CONFIRM_SAMPLES = Number(process.env.DAVID_INTERRUPT_CONFIRM_SAMPLES || 6);
 const SEND_TIMEOUT_COOLDOWN_MS = Number(process.env.DAVID_SEND_TIMEOUT_COOLDOWN_MS || 15000);
-const SEND_TIMEOUT_MAX_RETRIES = Number(process.env.DAVID_SEND_TIMEOUT_MAX_RETRIES || 2);
+const SEND_TIMEOUT_MAX_RETRIES = Number(process.env.DAVID_SEND_TIMEOUT_MAX_RETRIES || 3);
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const recoveredAt = new Map();
@@ -209,26 +209,13 @@ async function recoverSendTimeout(page) {
     }
   }
 
-  console.log("[INTERRUPT] Send-timeout Retry did not clear the error. REFRESH -> VERIFY.");
-  await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
-  await sleep(2500);
-
-  if (await activeAssistantWork(page) || !await sendTimeoutVisible(page)) {
-    sendTimeoutAttempts.delete(url);
-    console.log("[INTERRUPT] Send-timeout recovered after refresh. No duplicate resend.");
+  if (attempt < SEND_TIMEOUT_MAX_RETRIES) {
+    console.log("[INTERRUPT] Retry did not clear send-timeout yet. NO REFRESH. Backoff and retry button on next guard cycle.");
     return;
   }
 
-  if (attempt < SEND_TIMEOUT_MAX_RETRIES) {
-    const clickedAfterRefresh = await clickSendTimeoutRetry(page);
-    if (clickedAfterRefresh) {
-      await sleep(3000);
-      if (await activeAssistantWork(page) || !await sendTimeoutVisible(page)) {
-        sendTimeoutAttempts.delete(url);
-        console.log("[INTERRUPT] Send-timeout recovered by bounded Retry after refresh.");
-      }
-    }
-  }
+  sendTimeoutAttempts.set(url, 0);
+  console.log("[INTERRUPT] Send-timeout Retry attempts exhausted. NO REFRESH / NO DUPLICATE SEND. Leave worker waiting for the next clean UI state.");
 }
 
 async function interruptionVisible(page) {
@@ -454,9 +441,21 @@ async function recover(page) {
 
 async function main() {
   console.log(`[INTERRUPT] Connecting to shared Edge CDP ${CDP_URL}`);
-  const browser = await chromium.connectOverCDP(CDP_URL);
-  const context = browser.contexts()[0];
-  if (!context) throw new Error("No active Chromium context on CDP port.");
+  let browser = null;
+  let context = null;
+  while (!context) {
+    try {
+      browser = await chromium.connectOverCDP(CDP_URL, { timeout: 120000 });
+      context = browser.contexts()[0] || null;
+      if (!context) throw new Error("No active Chromium context on CDP port.");
+    } catch (error) {
+      console.log(`[INTERRUPT] CDP not ready: ${error?.message || error}. WAIT 5s -> reconnect. Guard stays alive.`);
+      try { await browser?.close(); } catch {}
+      browser = null;
+      context = null;
+      await sleep(5000);
+    }
+  }
   console.log("[INTERRUPT] Managed-only ChatGPT guard ON. Watches CONTROL/SYSTEM/DESIGN/APP2/APK owned URLs only.");
 
   while (true) {
