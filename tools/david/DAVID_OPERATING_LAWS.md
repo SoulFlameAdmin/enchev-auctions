@@ -128,15 +128,17 @@ Do not invent secrets, results, deployments or test evidence.
 
 ## 7. Finite-plan completion law
 - When a finite project plan is fully verified complete, DAVID must not invent new numbered scope just to keep a worker busy.
-- For Enchev DESIGN specifically, app/design-plan-evidence.json is the local completion source: D01-D36 must be exactly 36/36 GREEN.
-- If the completed DESIGN conversation reaches maximum length:
+- Enchev Design Plan V1 is frozen historical evidence: app/design-plan-evidence.json remains D01-D36 = 36/36 GREEN and is never reset by Process 2.
+- The active DESIGN source is docs/DESIGN_PROCESS_2.md plus app/design-process-2-evidence.json, executed strictly DP2-01 -> DP2-30.
+- If the active DESIGN conversation reaches maximum length:
   1. open one replacement DESIGN chat;
   2. close the old managed DESIGN tab;
-  3. send exactly one completion handoff into the replacement chat;
+  3. send exactly one Process 2 handoff into the replacement chat;
   4. require final exact OK;
-  5. enter design-idle-complete / monitor state.
-- While DESIGN remains 36/36 GREEN, the worker sends no new normal design prompts.
-- If a D-task later becomes non-green, DESIGN leaves idle automatically and resumes from the earliest affected task.
+  5. continue from the earliest non-GREEN DP2 task, or enter design-idle-complete only when DP2-01 through DP2-30 are all GREEN.
+- While Process 2 has non-GREEN tasks, DESIGN remains active and continues dependency-safe work.
+- When DP2-01 through DP2-30 are 30/30 GREEN, the worker sends no new normal design prompts and must not invent DP2-31.
+- If a completed DP2 task later regresses to non-GREEN, DESIGN leaves idle automatically and resumes from the earliest affected DP2 task.
 - Slow loading of the replacement chat is not a restart condition: wait up to the configured ready window, use only bounded refresh attempts, then back off while keeping heartbeat alive.
 
 

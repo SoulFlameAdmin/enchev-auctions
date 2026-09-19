@@ -47,7 +47,7 @@ if ($LASTEXITCODE -ne 0) { throw "DAVID clean start failed with exit code $LASTE
 
 Write-Host ""
 Write-Host "[RESTART] DAVID clean restart launched." -ForegroundColor Green
-Write-Host "[RESTART] Expected: CONTROL + SYSTEM + DESIGN + APP2/DPP + APK + MATRIX." -ForegroundColor Green
+Write-Host "[RESTART] Expected: CONTROL + SYSTEM + DESIGN PROCESS 2 + APP2/DPP + APK + MATRIX." -ForegroundColor Green
 Write-Host "[RESTART] APK continues from saved state/session and keeps upgrading with GPT." -ForegroundColor Green
 Write-Host "[RESTART] Profile/login/session state preserved." -ForegroundColor Green
 }

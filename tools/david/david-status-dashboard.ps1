@@ -92,12 +92,12 @@ function Get-SystemProgress {
 }
 
 function Get-DesignProgress {
-  $path = Join-Path $Repo "app\design-plan-evidence.json"
+  $path = Join-Path $Repo "app\design-process-2-evidence.json"
   $j = Read-JsonSafe $path
   $tasks = @()
   if ($j -and $j.tasks) { $tasks = @($j.tasks) }
   $green = @($tasks | Where-Object { ([string]$_.status).ToLowerInvariant() -eq "green" }).Count
-  [pscustomobject]@{ Name="DESIGN"; Green=$green; Total=$tasks.Count; Percent=(CalcPct $green $tasks.Count) }
+  [pscustomobject]@{ Name="DESIGN2"; Green=$green; Total=$tasks.Count; Percent=(CalcPct $green $tasks.Count) }
 }
 
 function Find-DppPlan {
@@ -235,7 +235,7 @@ while ($true) {
   Write-Fit ("  GREEN EVIDENCE: {0} / {1} measurable plan items" -f $sumGreen,$sumTotal) White
   Write-Fit ""
   Write-Fit ("  SYSTEM  {0,6}  {1}  GREEN {2}/{3}" -f ($(if($null -ne $system.Percent){"$($system.Percent)%"}else{"N/A"})),(Progress-Bar $system.Percent 36),$system.Green,$system.Total) Cyan
-  Write-Fit ("  DESIGN  {0,6}  {1}  GREEN {2}/{3}" -f ($(if($null -ne $design.Percent){"$($design.Percent)%"}else{"N/A"})),(Progress-Bar $design.Percent 36),$design.Green,$design.Total) Cyan
+  Write-Fit ("  DESIGN2 {0,6}  {1}  GREEN {2}/{3}" -f ($(if($null -ne $design.Percent){"$($design.Percent)%"}else{"N/A"})),(Progress-Bar $design.Percent 36),$design.Green,$design.Total) Cyan
   Write-Fit ("  DPP     {0,6}  {1}  GREEN {2}/{3}" -f ($(if($null -ne $dpp.Percent){"$($dpp.Percent)%"}else{"N/A"})),(Progress-Bar $dpp.Percent 36),$dpp.Green,$dpp.Total) Cyan
   Write-Fit "  APK     plan%=N/A (no formal finite APK plan yet) -- live worker state shown below" Cyan
   Write-Fit ""
