@@ -138,3 +138,27 @@ Do not invent secrets, results, deployments or test evidence.
 - While DESIGN remains 36/36 GREEN, the worker sends no new normal design prompts.
 - If a D-task later becomes non-green, DESIGN leaves idle automatically and resumes from the earliest affected task.
 - Slow loading of the replacement chat is not a restart condition: wait up to the configured ready window, use only bounded refresh attempts, then back off while keeping heartbeat alive.
+
+
+## 8. Single-owner restart law
+- RESTART_DAVID_ALL_CLEAN.ps1 is the only hard-restart owner for the full DAVID stack.
+- START_DAVID_ALL.ps1 must never perform an in-place partial worker restart.
+- START must fail fast if it sees duplicate supervisors, a supervisor with dead CDP, or worker code changed while an old supervisor is still running.
+- A global Windows orchestration mutex prevents concurrent START/RESTART operations.
+- Clean STOP terminates the full managed process trees and the dedicated DAVID browser tree, then verifies zero managed workers and CDP offline before START is allowed.
+
+## 9. Exact browser/process invariant
+- The dedicated DAVID Edge profile has exactly five managed ChatGPT tabs:
+  CONTROL=1, SYSTEM=1, DESIGN=1, APP2=1, APK=1.
+- Once all five owned tabs exist, any additional unmanaged ChatGPT tab in the dedicated DAVID profile is closed automatically.
+- Startup is not healthy when total ChatGPT tabs is greater than five.
+- Runtime process invariant is exactly one each:
+  SUPERVISOR=1, SYSTEM=1, DESIGN=1, APP2=1, APK=1, CONTROL=1, GUARD=1, MATRIX=1.
+- Any count greater than one is a fault, never a healthy/reusable state.
+
+## 10. One-defer law
+- The same external blocker may receive at most one defer relay per worker.
+- After that relay, the worker must return to independent WORK mode.
+- If GPT repeats the same already-deferred blocker without new evidence, DAVID records it as already deferred and does not send another defer prompt.
+- A different new external blocker may receive one new defer relay.
+- External blockers never justify an endless relay/defer loop.
