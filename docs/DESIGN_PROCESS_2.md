@@ -11,6 +11,10 @@ Rebuild the public ENCHEV buyer experience to a world-class product-design stand
 
 Research may use established vehicle-auction and marketplace products as UX/information-architecture references, but ENCHEV must keep original branding, code, copy, assets and visual identity.
 
+## Mandatory global-commerce scope
+
+`docs/GLOBAL_COMMERCE_UX_SPEC_V1.md` is mandatory under Process 2. It defines the complete international UX/action/locale/state acceptance surface. It does not create DP2-31; applicable requirements are verified inside DP2-01 through DP2-30, and DP2-30 cannot be GREEN while an applicable Global Commerce UX requirement remains missing, hardcoded, inaccessible or untranslated.
+
 ## Execution law
 
 - Execute strictly DP2-01 → DP2-30 unless a dependency requires a tightly related block.
@@ -21,7 +25,7 @@ Research may use established vehicle-auction and marketplace products as UX/info
 - RED means not implemented.
 - Update `app/design-process-2-evidence.json` after each proven task.
 - Validate both mobile and desktop. Minimum mobile acceptance: 360px, 390px and 430px widths. Desktop acceptance: 1366px, 1440px and wide 1920px class layouts where applicable.
-- Do not add pricing/payment/finance scope.
+- Pricing/payment/finance UI is in scope when required by an active MASTER SYSTEM EXPANSION task. Design must consume authoritative business rules and must not invent fees, tax outcomes, settlement rules or legal conclusions.
 - Do not modify DAVID orchestration files during normal DP2 design execution.
 - Before any Vercel create/update/redeploy, obey the existing global Supabase deployment lease.
 - A task is not complete because code compiles. It must be visually and functionally verified.
@@ -88,4 +92,4 @@ Research may use established vehicle-auction and marketplace products as UX/info
 
 ## Completion gate
 
-DESIGN PROCESS 2 is complete only when DP2-01 through DP2-30 are all GREEN with concrete evidence and the production candidate is visually/functionally verified on mobile and desktop. Do not invent DP2-31 automatically. New scope requires an explicit user request or a documented regression.
+DESIGN PROCESS 2 is complete only when DP2-01 through DP2-30 are all GREEN with concrete evidence, the production candidate is visually/functionally verified on mobile and desktop, and all applicable requirements in `docs/GLOBAL_COMMERCE_UX_SPEC_V1.md` are satisfied. DP2-30 MUST remain non-GREEN if any applicable control/state is missing, hardcoded, inaccessible, untranslated, locale-incorrect, or lacks required permission/confirmation/error handling. Do not invent DP2-31 automatically. New scope requires an explicit user request or a documented regression.

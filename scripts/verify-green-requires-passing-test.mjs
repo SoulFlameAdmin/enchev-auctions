@@ -7,6 +7,7 @@ const LAYOUT_PATH = "app/layout.tsx";
 const SYNC_PATH = "app/components/VerifiedPlanEvidenceSync.tsx";
 const PACKAGE_PATH = "package.json";
 const WORKFLOW_PATH = ".github/workflows/verify-enchev-web.yml";
+const EXPANSION_PATHS = [1,2,3,4].map((n) => `app/master-system-expansion-v2/part-${n}.json`);
 
 const PASS_RE = /\b(PASS|PASSED|SUCCESS|SUCCEEDED)\b/i;
 const NON_PASS_RE = /\b(FAIL|FAILED|ERROR|PENDING|CANCELLED|CANCELED|BLOCKED)\b/i;
@@ -93,6 +94,19 @@ for (const [phaseId, , items] of raw) {
   });
 }
 
+for (const path of EXPANSION_PATHS) {
+  const part = JSON.parse(readFileSync(path, "utf8"));
+  for (const phase of part.phases || []) {
+    (phase.tasks || []).forEach((task, index) => {
+      if (task?.kind === "test") {
+        const id = `${phase.id}.${String(index + 1).padStart(2, "0")}`;
+        expectedTestIds.push(id);
+        if (task.defaultStatus === "green") defaultGreenTests.push(id);
+      }
+    });
+  }
+}
+
 const generatedMatch = generatedSource.match(/MASTER_TEST_TASK_IDS\s*=\s*(\[[\s\S]*\])\s+as const;/);
 if (!generatedMatch) {
   console.error("GREEN_TEST_PASS FAILED: generated test ID registry is missing or malformed.");
@@ -142,4 +156,4 @@ for (const [ok, message] of runtimeChecks) {
   }
 }
 
-console.log(`GREEN_TEST_PASS PASS: ${expectedTestIds.length} frozen test tasks governed; runtime and CI enforcement present.`);
+console.log(`GREEN_TEST_PASS PASS: ${expectedTestIds.length} frozen+expansion test tasks governed; runtime and CI enforcement present.`);

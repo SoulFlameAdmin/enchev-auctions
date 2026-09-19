@@ -1,0 +1,4117 @@
+{
+  "version": "2.0 APPEND-ONLY",
+  "part": 2,
+  "phases": [
+    {
+      "id": "72",
+      "title": "Title, ownership transfer, registration & post-sale documents",
+      "wave": 7,
+      "profile": "operational",
+      "domains": [
+        "ownership evidence",
+        "title/document type",
+        "title authenticity review",
+        "lien/encumbrance check",
+        "power of attorney",
+        "bill of sale",
+        "sale certificate",
+        "release document",
+        "export certificate",
+        "registration packet",
+        "document courier",
+        "document dispute"
+      ],
+      "tasks": [
+        {
+          "label": "ownership evidence — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "ownership evidence — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "ownership evidence — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "ownership evidence — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "title/document type — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "title/document type — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "title/document type — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "title/document type — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "title authenticity review — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "title authenticity review — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "title authenticity review — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "title authenticity review — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "lien/encumbrance check — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "lien/encumbrance check — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "lien/encumbrance check — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "lien/encumbrance check — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "power of attorney — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "power of attorney — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "power of attorney — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "power of attorney — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "bill of sale — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "bill of sale — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "bill of sale — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "bill of sale — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "sale certificate — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "sale certificate — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "sale certificate — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "sale certificate — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "release document — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "release document — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "release document — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "release document — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "export certificate — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "export certificate — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "export certificate — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "export certificate — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "registration packet — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "registration packet — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "registration packet — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "registration packet — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "document courier — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "document courier — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "document courier — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "document courier — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "document dispute — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "document dispute — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "document dispute — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "document dispute — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Source-of-truth data model defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Domain invariants documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Lifecycle/state machine defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Ownership and service boundary assigned",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "API/command contract defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Event/audit contract defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Role/permission matrix enforced",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "High-risk action approval rules defined",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Idempotency/duplicate protection defined",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Validation and impossible-state rejection defined",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Data classification and sensitivity review",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Retention/deletion/archive policy mapped",
+          "kind": "legal",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Country/market configuration boundary",
+          "kind": "global",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Locale/currency/timezone/unit behavior where applicable",
+          "kind": "global",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Observability metrics and structured logs",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Operational dashboard and alert thresholds",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Timeout/retry/backoff behavior",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "External-provider outage/degraded behavior",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Manual exception and recovery path",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Security threat/abuse review",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Happy-path integration test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Negative/permission test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Concurrency/idempotency test where applicable",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Failure/recovery test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Load/capacity test where applicable",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Runbook/SOP documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Support/escalation ownership documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "KPI/quality metric defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Evidence package required before GREEN",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Production acceptance gate",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Queue/backlog visibility",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "SLA/aging rules",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Shift/handover procedure",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Bulk-operation safety",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Manual fallback procedure",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Capacity planning",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Operational quality sampling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Exception trend review",
+          "kind": "core",
+          "defaultStatus": "red"
+        }
+      ],
+      "dependsOn": [
+        "06",
+        "13",
+        "60",
+        "70",
+        "71"
+      ]
+    },
+    {
+      "id": "73",
+      "title": "International freight, ports, carriers & delivery orchestration",
+      "wave": 7,
+      "profile": "operational",
+      "domains": [
+        "pickup order",
+        "road carrier",
+        "port/terminal",
+        "ocean freight",
+        "rail freight",
+        "container/RoRo mode",
+        "booking reference",
+        "bill of lading/transport document",
+        "ETA/ETD milestones",
+        "last-mile delivery",
+        "proof of delivery",
+        "carrier exception"
+      ],
+      "tasks": [
+        {
+          "label": "pickup order — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "pickup order — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "pickup order — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "pickup order — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "road carrier — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "road carrier — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "road carrier — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "road carrier — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "port/terminal — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "port/terminal — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "port/terminal — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "port/terminal — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "ocean freight — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "ocean freight — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "ocean freight — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "ocean freight — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "rail freight — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "rail freight — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "rail freight — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "rail freight — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "container/RoRo mode — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "container/RoRo mode — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "container/RoRo mode — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "container/RoRo mode — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "booking reference — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "booking reference — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "booking reference — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "booking reference — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "bill of lading/transport document — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "bill of lading/transport document — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "bill of lading/transport document — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "bill of lading/transport document — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "ETA/ETD milestones — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "ETA/ETD milestones — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "ETA/ETD milestones — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "ETA/ETD milestones — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "last-mile delivery — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "last-mile delivery — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "last-mile delivery — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "last-mile delivery — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "proof of delivery — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "proof of delivery — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "proof of delivery — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "proof of delivery — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "carrier exception — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "carrier exception — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "carrier exception — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "carrier exception — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Source-of-truth data model defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Domain invariants documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Lifecycle/state machine defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Ownership and service boundary assigned",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "API/command contract defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Event/audit contract defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Role/permission matrix enforced",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "High-risk action approval rules defined",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Idempotency/duplicate protection defined",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Validation and impossible-state rejection defined",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Data classification and sensitivity review",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Retention/deletion/archive policy mapped",
+          "kind": "legal",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Country/market configuration boundary",
+          "kind": "global",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Locale/currency/timezone/unit behavior where applicable",
+          "kind": "global",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Observability metrics and structured logs",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Operational dashboard and alert thresholds",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Timeout/retry/backoff behavior",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "External-provider outage/degraded behavior",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Manual exception and recovery path",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Security threat/abuse review",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Happy-path integration test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Negative/permission test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Concurrency/idempotency test where applicable",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Failure/recovery test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Load/capacity test where applicable",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Runbook/SOP documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Support/escalation ownership documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "KPI/quality metric defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Evidence package required before GREEN",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Production acceptance gate",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Queue/backlog visibility",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "SLA/aging rules",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Shift/handover procedure",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Bulk-operation safety",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Manual fallback procedure",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Capacity planning",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Operational quality sampling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Exception trend review",
+          "kind": "core",
+          "defaultStatus": "red"
+        }
+      ],
+      "dependsOn": [
+        "13",
+        "55",
+        "60",
+        "70",
+        "71",
+        "72"
+      ]
+    },
+    {
+      "id": "74",
+      "title": "Insurance, cargo risk, claims & loss handling",
+      "wave": 7,
+      "profile": "operational",
+      "domains": [
+        "cargo insurance option",
+        "coverage eligibility",
+        "policy/certificate",
+        "declared value",
+        "damage in transit",
+        "total loss",
+        "theft/loss",
+        "claim notice",
+        "claim evidence",
+        "carrier liability",
+        "insurer decision",
+        "claim settlement"
+      ],
+      "tasks": [
+        {
+          "label": "cargo insurance option — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "cargo insurance option — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "cargo insurance option — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "cargo insurance option — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "coverage eligibility — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "coverage eligibility — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "coverage eligibility — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "coverage eligibility — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "policy/certificate — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "policy/certificate — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "policy/certificate — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "policy/certificate — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "declared value — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "declared value — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "declared value — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "declared value — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "damage in transit — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "damage in transit — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "damage in transit — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "damage in transit — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "total loss — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "total loss — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "total loss — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "total loss — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "theft/loss — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "theft/loss — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "theft/loss — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "theft/loss — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "claim notice — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "claim notice — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "claim notice — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "claim notice — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "claim evidence — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "claim evidence — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "claim evidence — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "claim evidence — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "carrier liability — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "carrier liability — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "carrier liability — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "carrier liability — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "insurer decision — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "insurer decision — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "insurer decision — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "insurer decision — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "claim settlement — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "claim settlement — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "claim settlement — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "claim settlement — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Source-of-truth data model defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Domain invariants documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Lifecycle/state machine defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Ownership and service boundary assigned",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "API/command contract defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Event/audit contract defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Role/permission matrix enforced",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "High-risk action approval rules defined",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Idempotency/duplicate protection defined",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Validation and impossible-state rejection defined",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Data classification and sensitivity review",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Retention/deletion/archive policy mapped",
+          "kind": "legal",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Country/market configuration boundary",
+          "kind": "global",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Locale/currency/timezone/unit behavior where applicable",
+          "kind": "global",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Observability metrics and structured logs",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Operational dashboard and alert thresholds",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Timeout/retry/backoff behavior",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "External-provider outage/degraded behavior",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Manual exception and recovery path",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Security threat/abuse review",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Happy-path integration test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Negative/permission test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Concurrency/idempotency test where applicable",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Failure/recovery test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Load/capacity test where applicable",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Runbook/SOP documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Support/escalation ownership documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "KPI/quality metric defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Evidence package required before GREEN",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Production acceptance gate",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Queue/backlog visibility",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "SLA/aging rules",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Shift/handover procedure",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Bulk-operation safety",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Manual fallback procedure",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Capacity planning",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Operational quality sampling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Exception trend review",
+          "kind": "core",
+          "defaultStatus": "red"
+        }
+      ],
+      "dependsOn": [
+        "55",
+        "73"
+      ]
+    },
+    {
+      "id": "75",
+      "title": "Seller/dealer acquisition, CRM & account management",
+      "wave": 7,
+      "profile": "growth",
+      "domains": [
+        "seller lead",
+        "dealer lead",
+        "lead source",
+        "sales owner",
+        "qualification",
+        "KYB readiness",
+        "commercial proposal",
+        "contract negotiation",
+        "onboarding",
+        "inventory pipeline",
+        "seller performance",
+        "renewal/retention"
+      ],
+      "tasks": [
+        {
+          "label": "seller lead — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "seller lead — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "seller lead — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "seller lead — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "dealer lead — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "dealer lead — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "dealer lead — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "dealer lead — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "lead source — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "lead source — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "lead source — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "lead source — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "sales owner — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "sales owner — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "sales owner — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "sales owner — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "qualification — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "qualification — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "qualification — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "qualification — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "KYB readiness — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "KYB readiness — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "KYB readiness — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "KYB readiness — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "commercial proposal — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "commercial proposal — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "commercial proposal — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "commercial proposal — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "contract negotiation — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "contract negotiation — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "contract negotiation — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "contract negotiation — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "onboarding — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "onboarding — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "onboarding — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "onboarding — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "inventory pipeline — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "inventory pipeline — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "inventory pipeline — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "inventory pipeline — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "seller performance — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "seller performance — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "seller performance — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "seller performance — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "renewal/retention — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "renewal/retention — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "renewal/retention — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "renewal/retention — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Source-of-truth data model defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Domain invariants documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Lifecycle/state machine defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Ownership and service boundary assigned",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "API/command contract defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Event/audit contract defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Role/permission matrix enforced",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "High-risk action approval rules defined",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Idempotency/duplicate protection defined",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Validation and impossible-state rejection defined",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Data classification and sensitivity review",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Retention/deletion/archive policy mapped",
+          "kind": "legal",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Country/market configuration boundary",
+          "kind": "global",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Locale/currency/timezone/unit behavior where applicable",
+          "kind": "global",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Observability metrics and structured logs",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Operational dashboard and alert thresholds",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Timeout/retry/backoff behavior",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "External-provider outage/degraded behavior",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Manual exception and recovery path",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Security threat/abuse review",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Happy-path integration test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Negative/permission test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Concurrency/idempotency test where applicable",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Failure/recovery test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Load/capacity test where applicable",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Runbook/SOP documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Support/escalation ownership documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "KPI/quality metric defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Evidence package required before GREEN",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Production acceptance gate",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Consent/marketing-permission enforcement",
+          "kind": "legal",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Attribution/source integrity",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Suppression/opt-out enforcement",
+          "kind": "legal",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Country/language campaign configuration",
+          "kind": "global",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Experiment guardrails",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Fraud/abuse controls",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Unit-economics measurement",
+          "kind": "core",
+          "defaultStatus": "red"
+        }
+      ],
+      "dependsOn": [
+        "05",
+        "35",
+        "59",
+        "63"
+      ]
+    },
+    {
+      "id": "76",
+      "title": "Buyer acquisition, CRM, lifecycle & sales operations",
+      "wave": 7,
+      "profile": "growth",
+      "domains": [
+        "buyer lead",
+        "individual buyer",
+        "business buyer",
+        "lead source",
+        "qualification",
+        "registration conversion",
+        "KYC readiness",
+        "first bid",
+        "first purchase",
+        "retention cohort",
+        "reactivation",
+        "key-account management"
+      ],
+      "tasks": [
+        {
+          "label": "buyer lead — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "buyer lead — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "buyer lead — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "buyer lead — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "individual buyer — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "individual buyer — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "individual buyer — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "individual buyer — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "business buyer — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "business buyer — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "business buyer — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "business buyer — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "lead source — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "lead source — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "lead source — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "lead source — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "qualification — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "qualification — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "qualification — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "qualification — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "registration conversion — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "registration conversion — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "registration conversion — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "registration conversion — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "KYC readiness — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "KYC readiness — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "KYC readiness — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "KYC readiness — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "first bid — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "first bid — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "first bid — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "first bid — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "first purchase — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "first purchase — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "first purchase — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "first purchase — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "retention cohort — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "retention cohort — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "retention cohort — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "retention cohort — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "reactivation — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "reactivation — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "reactivation — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "reactivation — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "key-account management — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "key-account management — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "key-account management — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "key-account management — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Source-of-truth data model defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Domain invariants documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Lifecycle/state machine defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Ownership and service boundary assigned",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "API/command contract defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Event/audit contract defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Role/permission matrix enforced",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "High-risk action approval rules defined",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Idempotency/duplicate protection defined",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Validation and impossible-state rejection defined",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Data classification and sensitivity review",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Retention/deletion/archive policy mapped",
+          "kind": "legal",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Country/market configuration boundary",
+          "kind": "global",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Locale/currency/timezone/unit behavior where applicable",
+          "kind": "global",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Observability metrics and structured logs",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Operational dashboard and alert thresholds",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Timeout/retry/backoff behavior",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "External-provider outage/degraded behavior",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Manual exception and recovery path",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Security threat/abuse review",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Happy-path integration test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Negative/permission test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Concurrency/idempotency test where applicable",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Failure/recovery test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Load/capacity test where applicable",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Runbook/SOP documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Support/escalation ownership documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "KPI/quality metric defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Evidence package required before GREEN",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Production acceptance gate",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Consent/marketing-permission enforcement",
+          "kind": "legal",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Attribution/source integrity",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Suppression/opt-out enforcement",
+          "kind": "legal",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Country/language campaign configuration",
+          "kind": "global",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Experiment guardrails",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Fraud/abuse controls",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Unit-economics measurement",
+          "kind": "core",
+          "defaultStatus": "red"
+        }
+      ],
+      "dependsOn": [
+        "04",
+        "05",
+        "33",
+        "59",
+        "63"
+      ]
+    },
+    {
+      "id": "77",
+      "title": "Customer service, multilingual contact center & SLA",
+      "wave": 7,
+      "profile": "operational",
+      "domains": [
+        "support ticket",
+        "contact reason",
+        "priority/severity",
+        "language routing",
+        "country routing",
+        "agent assignment",
+        "SLA clock",
+        "escalation",
+        "attachment/evidence",
+        "customer response",
+        "resolution code",
+        "CSAT/quality review"
+      ],
+      "tasks": [
+        {
+          "label": "support ticket — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "support ticket — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "support ticket — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "support ticket — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "contact reason — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "contact reason — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "contact reason — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "contact reason — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "priority/severity — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "priority/severity — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "priority/severity — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "priority/severity — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "language routing — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "language routing — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "language routing — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "language routing — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "country routing — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "country routing — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "country routing — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "country routing — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "agent assignment — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "agent assignment — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "agent assignment — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "agent assignment — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "SLA clock — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "SLA clock — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "SLA clock — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "SLA clock — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "escalation — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "escalation — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "escalation — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "escalation — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "attachment/evidence — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "attachment/evidence — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "attachment/evidence — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "attachment/evidence — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "customer response — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "customer response — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "customer response — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "customer response — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "resolution code — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "resolution code — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "resolution code — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "resolution code — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "CSAT/quality review — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "CSAT/quality review — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "CSAT/quality review — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "CSAT/quality review — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Source-of-truth data model defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Domain invariants documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Lifecycle/state machine defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Ownership and service boundary assigned",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "API/command contract defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Event/audit contract defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Role/permission matrix enforced",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "High-risk action approval rules defined",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Idempotency/duplicate protection defined",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Validation and impossible-state rejection defined",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Data classification and sensitivity review",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Retention/deletion/archive policy mapped",
+          "kind": "legal",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Country/market configuration boundary",
+          "kind": "global",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Locale/currency/timezone/unit behavior where applicable",
+          "kind": "global",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Observability metrics and structured logs",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Operational dashboard and alert thresholds",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Timeout/retry/backoff behavior",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "External-provider outage/degraded behavior",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Manual exception and recovery path",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Security threat/abuse review",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Happy-path integration test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Negative/permission test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Concurrency/idempotency test where applicable",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Failure/recovery test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Load/capacity test where applicable",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Runbook/SOP documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Support/escalation ownership documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "KPI/quality metric defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Evidence package required before GREEN",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Production acceptance gate",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Queue/backlog visibility",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "SLA/aging rules",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Shift/handover procedure",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Bulk-operation safety",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Manual fallback procedure",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Capacity planning",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Operational quality sampling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Exception trend review",
+          "kind": "core",
+          "defaultStatus": "red"
+        }
+      ],
+      "dependsOn": [
+        "12",
+        "14",
+        "21",
+        "57",
+        "63"
+      ]
+    },
+    {
+      "id": "78",
+      "title": "Disputes, cancellations, returns, reversals & chargebacks",
+      "wave": 7,
+      "profile": "compliance",
+      "domains": [
+        "auction dispute",
+        "listing misrepresentation claim",
+        "transport damage dispute",
+        "payment dispute",
+        "chargeback",
+        "cancellation request",
+        "withdrawal/right-of-withdrawal applicability",
+        "refund decision",
+        "result reversal",
+        "evidence bundle",
+        "appeal/escalation",
+        "case closure"
+      ],
+      "tasks": [
+        {
+          "label": "auction dispute — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "auction dispute — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "auction dispute — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "auction dispute — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "listing misrepresentation claim — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "listing misrepresentation claim — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "listing misrepresentation claim — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "listing misrepresentation claim — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "transport damage dispute — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "transport damage dispute — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "transport damage dispute — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "transport damage dispute — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "payment dispute — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "payment dispute — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "payment dispute — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "payment dispute — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "chargeback — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "chargeback — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "chargeback — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "chargeback — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "cancellation request — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "cancellation request — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "cancellation request — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "cancellation request — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "withdrawal/right-of-withdrawal applicability — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "withdrawal/right-of-withdrawal applicability — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "withdrawal/right-of-withdrawal applicability — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "withdrawal/right-of-withdrawal applicability — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "refund decision — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "refund decision — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "refund decision — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "refund decision — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "result reversal — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "result reversal — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "result reversal — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "result reversal — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "evidence bundle — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "evidence bundle — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "evidence bundle — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "evidence bundle — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "appeal/escalation — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "appeal/escalation — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "appeal/escalation — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "appeal/escalation — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "case closure — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "case closure — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "case closure — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "case closure — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Source-of-truth data model defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Domain invariants documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Lifecycle/state machine defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Ownership and service boundary assigned",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "API/command contract defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Event/audit contract defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Role/permission matrix enforced",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "High-risk action approval rules defined",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Idempotency/duplicate protection defined",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Validation and impossible-state rejection defined",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Data classification and sensitivity review",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Retention/deletion/archive policy mapped",
+          "kind": "legal",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Country/market configuration boundary",
+          "kind": "global",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Locale/currency/timezone/unit behavior where applicable",
+          "kind": "global",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Observability metrics and structured logs",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Operational dashboard and alert thresholds",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Timeout/retry/backoff behavior",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "External-provider outage/degraded behavior",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Manual exception and recovery path",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Security threat/abuse review",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Happy-path integration test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Negative/permission test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Concurrency/idempotency test where applicable",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Failure/recovery test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Load/capacity test where applicable",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Runbook/SOP documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Support/escalation ownership documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "KPI/quality metric defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Evidence package required before GREEN",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Production acceptance gate",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Jurisdiction applicability decision recorded",
+          "kind": "legal",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Legal/compliance counsel sign-off gate where required",
+          "kind": "legal",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Policy/rule versioning and effective dates",
+          "kind": "legal",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Regulatory evidence retention",
+          "kind": "legal",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Regulatory-change regression test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Country activation blocked without required sign-off",
+          "kind": "global",
+          "defaultStatus": "red"
+        }
+      ],
+      "dependsOn": [
+        "14",
+        "15",
+        "37",
+        "54",
+        "63",
+        "65",
+        "72",
+        "73",
+        "74"
+      ]
+    },
+    {
+      "id": "79",
+      "title": "Procurement, supplier management & third-party commercial governance",
+      "wave": 12,
+      "profile": "operational",
+      "domains": [
+        "supplier registry",
+        "supplier due diligence",
+        "RFP/RFQ",
+        "commercial quote",
+        "purchase order",
+        "contract",
+        "SLA",
+        "invoice approval",
+        "supplier performance",
+        "renewal",
+        "termination/exit",
+        "critical supplier contingency"
+      ],
+      "tasks": [
+        {
+          "label": "supplier registry — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "supplier registry — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "supplier registry — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "supplier registry — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "supplier due diligence — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "supplier due diligence — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "supplier due diligence — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "supplier due diligence — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "RFP/RFQ — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "RFP/RFQ — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "RFP/RFQ — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "RFP/RFQ — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "commercial quote — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "commercial quote — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "commercial quote — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "commercial quote — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "purchase order — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "purchase order — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "purchase order — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "purchase order — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "contract — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "contract — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "contract — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "contract — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "SLA — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "SLA — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "SLA — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "SLA — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "invoice approval — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "invoice approval — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "invoice approval — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "invoice approval — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "supplier performance — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "supplier performance — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "supplier performance — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "supplier performance — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "renewal — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "renewal — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "renewal — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "renewal — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "termination/exit — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "termination/exit — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "termination/exit — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "termination/exit — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "critical supplier contingency — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "critical supplier contingency — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "critical supplier contingency — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "critical supplier contingency — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Source-of-truth data model defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Domain invariants documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Lifecycle/state machine defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Ownership and service boundary assigned",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "API/command contract defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Event/audit contract defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Role/permission matrix enforced",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "High-risk action approval rules defined",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Idempotency/duplicate protection defined",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Validation and impossible-state rejection defined",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Data classification and sensitivity review",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Retention/deletion/archive policy mapped",
+          "kind": "legal",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Country/market configuration boundary",
+          "kind": "global",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Locale/currency/timezone/unit behavior where applicable",
+          "kind": "global",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Observability metrics and structured logs",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Operational dashboard and alert thresholds",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Timeout/retry/backoff behavior",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "External-provider outage/degraded behavior",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Manual exception and recovery path",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Security threat/abuse review",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Happy-path integration test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Negative/permission test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Concurrency/idempotency test where applicable",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Failure/recovery test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Load/capacity test where applicable",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Runbook/SOP documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Support/escalation ownership documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "KPI/quality metric defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Evidence package required before GREEN",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Production acceptance gate",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Queue/backlog visibility",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "SLA/aging rules",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Shift/handover procedure",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Bulk-operation safety",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Manual fallback procedure",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Capacity planning",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Operational quality sampling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Exception trend review",
+          "kind": "core",
+          "defaultStatus": "red"
+        }
+      ],
+      "dependsOn": [
+        "20",
+        "55",
+        "58",
+        "63",
+        "66"
+      ]
+    },
+    {
+      "id": "80",
+      "title": "Yard, warehouse, parking, fleet & capacity operations",
+      "wave": 7,
+      "profile": "operational",
+      "domains": [
+        "yard capacity",
+        "parking slot",
+        "vehicle location",
+        "gate appointment",
+        "vehicle movement",
+        "key custody",
+        "equipment/forklift/tow asset",
+        "yard staffing",
+        "storage aging",
+        "inventory count",
+        "security incident",
+        "site capacity forecast"
+      ],
+      "tasks": [
+        {
+          "label": "yard capacity — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "yard capacity — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "yard capacity — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "yard capacity — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "parking slot — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "parking slot — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "parking slot — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "parking slot — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "vehicle location — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "vehicle location — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "vehicle location — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "vehicle location — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "gate appointment — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "gate appointment — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "gate appointment — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "gate appointment — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "vehicle movement — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "vehicle movement — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "vehicle movement — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "vehicle movement — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "key custody — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "key custody — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "key custody — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "key custody — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "equipment/forklift/tow asset — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "equipment/forklift/tow asset — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "equipment/forklift/tow asset — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "equipment/forklift/tow asset — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "yard staffing — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "yard staffing — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "yard staffing — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "yard staffing — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "storage aging — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "storage aging — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "storage aging — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "storage aging — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "inventory count — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "inventory count — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "inventory count — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "inventory count — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "security incident — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "security incident — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "security incident — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "security incident — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "site capacity forecast — Canonical schema/entity model",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "site capacity forecast — Lifecycle/workflow states and transitions",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "site capacity forecast — Business rules and validation",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "site capacity forecast — Exception, reversal and recovery handling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Source-of-truth data model defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Domain invariants documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Lifecycle/state machine defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Ownership and service boundary assigned",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "API/command contract defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Event/audit contract defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Role/permission matrix enforced",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "High-risk action approval rules defined",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Idempotency/duplicate protection defined",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Validation and impossible-state rejection defined",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Data classification and sensitivity review",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Retention/deletion/archive policy mapped",
+          "kind": "legal",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Country/market configuration boundary",
+          "kind": "global",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Locale/currency/timezone/unit behavior where applicable",
+          "kind": "global",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Observability metrics and structured logs",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Operational dashboard and alert thresholds",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Timeout/retry/backoff behavior",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "External-provider outage/degraded behavior",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Manual exception and recovery path",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Security threat/abuse review",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Happy-path integration test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Negative/permission test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Concurrency/idempotency test where applicable",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Failure/recovery test",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Load/capacity test where applicable",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Runbook/SOP documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Support/escalation ownership documented",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "KPI/quality metric defined",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Evidence package required before GREEN",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Production acceptance gate",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Queue/backlog visibility",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "SLA/aging rules",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Shift/handover procedure",
+          "kind": "core",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Bulk-operation safety",
+          "kind": "security",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Manual fallback procedure",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Capacity planning",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Operational quality sampling",
+          "kind": "test",
+          "defaultStatus": "red"
+        },
+        {
+          "label": "Exception trend review",
+          "kind": "core",
+          "defaultStatus": "red"
+        }
+      ],
+      "dependsOn": [
+        "13",
+        "60",
+        "72",
+        "73"
+      ]
+    }
+  ]
+}
