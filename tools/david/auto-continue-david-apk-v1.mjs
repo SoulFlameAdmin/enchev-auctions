@@ -9,7 +9,7 @@ const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const STATE_FILE = process.env.DAVID_APK_STATE_FILE || path.join(process.cwd(), ".david-apk-state.json");
 const ENV_CHAT_URL = process.env.DAVID_APK_CHAT_URL || "";
 const POLL_MS = Number(process.env.DAVID_APK_POLL_MS || 900);
-const START_TIMEOUT_MS = Number(process.env.DAVID_APK_START_TIMEOUT_MS || 15000);
+const START_TIMEOUT_MS = Number(process.env.DAVID_APK_START_TIMEOUT_MS || 60000);
 const STALL_MS = Number(process.env.DAVID_APK_STALL_MS || 600000);
 const COOLDOWN_MS = Number(process.env.DAVID_APK_COOLDOWN_MS || 1200);
 const COMPLETE_QUIET_MS = Number(process.env.DAVID_COMPLETE_QUIET_MS || 7000);
@@ -509,9 +509,7 @@ async function runPrompt(context, page, state, prompt, kind) {
     }
     if (permit.mode === "probe") {
       state.watchdog = "global-rate-limit-probe";
-      save(state, "APK owns the single post-cooldown probe send");
-      await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
-      await sleep(2500);
+      save(state, "APK owns the single post-cooldown probe send; no refresh required");
     }
     await fillAndSend(page, outgoing);
     await markGlobalSendStarted("APK");
