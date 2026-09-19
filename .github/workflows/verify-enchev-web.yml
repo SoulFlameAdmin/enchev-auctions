@@ -307,7 +307,7 @@ jobs:
           mv artifacts/visual-regression artifacts/visual-regression-edge
           mv artifacts/visual-regression-chrome artifacts/visual-regression
 
-          node -e 'const fs=require("fs"); const chrome=JSON.parse(fs.readFileSync("artifacts/visual-regression/manifest.json","utf8")); const edge=JSON.parse(fs.readFileSync("artifacts/visual-regression-edge/manifest.json","utf8")); if(chrome.count!==10||edge.count!==10) process.exit(1); if(!/edge/i.test(edge.browserExecutable)) process.exit(1); console.log("D34_BROWSER_MATRIX PASS chrome=10 edge=10 desktop=1440x1200 mobile=390x844");'
+          node -e 'const fs=require("fs"); const chrome=JSON.parse(fs.readFileSync("artifacts/visual-regression/manifest.json","utf8")); const edge=JSON.parse(fs.readFileSync("artifacts/visual-regression-edge/manifest.json","utf8")); if(chrome.count!==30||edge.count!==30) process.exit(1); if(!/edge/i.test(edge.browserExecutable)) process.exit(1); const widths=[...new Set(chrome.entries.map(e=>e.viewport.width))].sort((a,b)=>a-b).join(","); if(widths!=="360,390,430,1366,1440,1920") process.exit(1); console.log("DP2_RESPONSIVE_BROWSER_MATRIX PASS chrome=30 edge=30 widths="+widths);'
       - name: Upload Chrome and Edge visual regression artifact
         uses: actions/upload-artifact@v4
         with:
