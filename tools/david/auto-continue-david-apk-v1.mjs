@@ -528,12 +528,27 @@ async function runPrompt(context, page, state, prompt, kind) {
       await sleep(POLL_MS);
     }
     if (!started) {
-      state.watchdog = "apk-no-thinking-refresh";
-      save(state, "LAW: APK GPT did not start thinking -> refresh -> resend");
-      console.log("[APK] LAW: no thinking -> REFRESH -> RESEND.");
-      await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
-      await sleep(1800);
-      continue;
+      state.watchdog = "apk-no-start-grace";
+      save(state, "APK GPT did not start yet; WAIT 30s and verify same turn before any refresh");
+      console.log("[APK] No start yet -> WAIT 30s, verify same turn. NO REFRESH.");
+      const graceEnd = Date.now() + 30000;
+      while (Date.now() < graceEnd) {
+        if (await sendTimeoutVisible(page)) {
+          page = await waitSendTimeoutRecovery(context, page, state);
+        }
+        if (await generating(page)) { started = true; break; }
+        const graceText = await latestAssistant(page);
+        if (graceText && hash(graceText) !== base) { started = true; break; }
+        await sleep(POLL_MS);
+      }
+      if (!started) {
+        state.watchdog = "apk-no-start-bounded-refresh";
+        save(state, "APK still inactive after extended grace -> one bounded refresh");
+        console.log("[APK] Still inactive after grace -> one bounded REFRESH.");
+        await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+        await sleep(1800);
+        continue;
+      }
     }
 
     state.turnsSent = Number(state.turnsSent || 0) + 1;
