@@ -86,6 +86,10 @@ jobs:
         run: node scripts/verify-supabase-project-binding.mjs --self-test
       - name: Supabase project live endpoint
         run: node scripts/verify-supabase-project-binding.mjs --live
+      - name: 01.07 Local / staging / production environments
+        run: node scripts/verify-runtime-environments.mjs
+      - name: 01.07 Local / staging / production environments self-tests
+        run: node scripts/verify-runtime-environments.mjs --self-test
       - name: Environment variable contract invariant
         run: node scripts/verify-environment-variables.mjs
       - name: Environment variable contract self-tests
