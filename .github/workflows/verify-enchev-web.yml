@@ -216,6 +216,10 @@ jobs:
           else
             echo "REDIS_ENV_LIVE SKIP no Redis binding secret configured"
           fi
+      - name: Design Process 2 invariant
+        run: node scripts/verify-design-process-2.mjs
+      - name: Design Process 2 self-tests
+        run: node scripts/verify-design-process-2.mjs --self-test
       - name: Mobile-first design invariant
         run: node scripts/verify-mobile-first-design.mjs
       - name: Mobile-first design self-tests
