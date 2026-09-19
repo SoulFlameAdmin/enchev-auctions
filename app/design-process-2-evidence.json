@@ -18,10 +18,10 @@
       "id": "DP2-02",
       "group": "Foundation",
       "title": "Premium ENCHEV design tokens",
-      "status": "yellow",
-      "evidence": "Implemented premium semantic token layer in app/dp2-design-tokens.css through commit 4dbae993396887290c73eeeb9f4c427a87bfd0d6 and imported globally from app/layout.tsx. DP2-02 now separates canvas/surface/border/elevation/radius/interaction roles and splits LIVE/info/success/warning/danger/sold semantics away from ENCHEV brand/action green across the five buyer-route families. scripts/verify-design-process-2.mjs now enforces the required token contract, five-route coverage and global import. YELLOW pending fresh PR CI, production build and Chrome+Edge visual regression proof.",
-      "blocker": "Pending fresh branch CI/visual regression proof.",
-      "updatedAt": "2026-09-19T05:46:45Z"
+      "status": "green",
+      "evidence": "GREEN PASS. Premium semantic token layer implemented in app/dp2-design-tokens.css through commit 4dbae993396887290c73eeeb9f4c427a87bfd0d6 and imported globally from app/layout.tsx. Tokens now define distinct canvas/surface/border/elevation/radius/focus/action roles and separate LIVE/info/success/warning/danger/sold semantics from ENCHEV brand green across the five buyer route families. scripts/verify-design-process-2.mjs enforces required token roles, five-route coverage, dedicated LIVE/action mappings and the root-layout import with a negative self-test. PR #71 Verify Enchev Web run 35424877483 initially reached all static/build gates but its first browser step failed before visual assertions because the runner Chrome DevTools endpoint did not start (DBus/browser startup flake). A safe rerun of the same exact head 4bff7ea5c30cecd0a6b8965809d97c0a31880752 completed SUCCESS: DP2 invariant/self-tests, mobile-first, accessibility, cross-browser contract, originality, aggregate CI suite, TypeScript, production build, built health smoke, Microsoft Edge installation, Chrome+Edge visual regression and artifact upload all passed. Artifact 10578868570 (enchev-cross-browser-visual-34b1256da8863682c05125fffbd5bd3b2edd8d6a, digest sha256:6b09b4a22ac3b3af4fab1824a858afbe8ee4847969cca9e74ec5b2da6db07438) contains the fresh cross-browser core-route matrix. GitHub Vercel status for the PR reports external build-rate-limit with no retry time; no manual Vercel create/update/redeploy was attempted, so no Supabase deploy lease was required. Frozen D01-D36 evidence and protected DAVID orchestrator files were not modified.",
+      "blocker": "",
+      "updatedAt": "2026-09-19T05:50:27Z"
     },
     {
       "id": "DP2-03",
