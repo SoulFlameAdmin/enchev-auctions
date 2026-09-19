@@ -5,6 +5,7 @@ const FILES = {
   accessibility: "app/accessibility-quality.css",
   home: "app/page.tsx",
   homeHero: "app/components/HomeHeroV2.tsx",
+  homeDiscovery: "app/components/HomeDiscoveryV2.tsx",
   inventory: "app/inventory/page.tsx",
   lot: "app/lot/[id]/page.tsx",
   live: "app/live-auctions/page.tsx",
@@ -40,7 +41,7 @@ export function validateAccessibilityContract(sources) {
   need(sources.accessibility, /outline:3px solid Highlight!important/, "forced-colors focus indicator missing");
   need(sources.accessibility, /@media\(prefers-reduced-motion:reduce\)/, "reduced-motion fallback missing");
 
-  need(`${sources.home}\n${sources.homeHero}`, /role="search"/, "homepage search landmark missing");
+  need(`${sources.home}\n${sources.homeHero}\n${sources.homeDiscovery}`, /role="search"/, "homepage search landmark missing");
   need(sources.inventory, /aria-pressed=\{viewMode===/, "inventory view switch pressed-state semantics missing");
   need(sources.lot, /role="dialog"/, "lot image viewer dialog semantics missing");
   need(sources.live, /aria-label="Наддаване и следващ лот"/, "live bid-panel accessible label missing");

@@ -1,0 +1,63 @@
+/* ENCHEV AUCTIONS — DESIGN PROCESS 2 / DP2-06
+   Homepage search, quick discovery and category shortcuts. */
+
+.eaHomeDiscoveryV2{
+  position:relative;
+  z-index:3;
+  width:min(var(--ea-layout-standard),calc(100% - (var(--ea-page-gutter) * 2)));
+  margin:36px auto 0;
+  padding:clamp(18px,2vw,28px);
+  border:1px solid var(--ea-border-default);
+  border-radius:24px 24px 0 0;
+  background:linear-gradient(135deg,rgba(10,18,13,.94),rgba(5,11,8,.88));
+  box-shadow:0 -18px 54px rgba(0,0,0,.18);
+  backdrop-filter:blur(20px);
+}
+.eaHomeDiscoveryHead{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;padding-bottom:18px;border-bottom:1px solid rgba(255,255,255,.07)}
+.eaHomeDiscoveryHead>div{min-width:0;max-width:760px}
+.eaHomeDiscoveryKicker{display:block;color:var(--ea-brand);font-size:var(--ea-type-label);font-weight:900;letter-spacing:.15em}
+.eaHomeDiscoveryHead h2{margin:7px 0 6px;color:var(--ea-text-primary);font-size:clamp(1.55rem,2.2vw,2.15rem);line-height:1.05;letter-spacing:-.035em}
+.eaHomeDiscoveryHead p{margin:0;color:var(--ea-text-secondary);font-size:var(--ea-type-body-sm);line-height:1.55}
+.eaHomeDiscoveryAdvanced{min-height:44px;display:inline-flex;align-items:center;justify-content:center;flex:0 0 auto;padding:0 15px;border:1px solid var(--ea-border-default);border-radius:var(--ea-radius-control);color:var(--ea-text-primary);background:rgba(255,255,255,.035);text-decoration:none;font-size:var(--ea-type-label-lg);font-weight:850}
+.eaHomeDiscoverySearch{margin-top:18px}
+.eaHomeDiscoverySearch>label{display:block;margin-bottom:8px;color:#dce9e1;font-size:var(--ea-type-label-lg);font-weight:850}
+.eaHomeDiscoverySearchRow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
+.eaHomeDiscoverySearchRow input{width:100%;min-width:0;min-height:54px;padding:0 16px;border:1px solid var(--ea-border-default);border-radius:var(--ea-radius-control);outline:none;color:var(--ea-text-primary);background:rgba(255,255,255,.045);font:inherit}
+.eaHomeDiscoverySearchRow input::placeholder{color:#75847c}
+.eaHomeDiscoverySearchRow input:focus-visible{border-color:var(--ea-border-interactive);box-shadow:var(--ea-focus-ring)}
+.eaHomeDiscoverySearchRow button{min-width:138px;min-height:54px;padding:0 18px;border:0;border-radius:var(--ea-radius-control);cursor:pointer;color:var(--ea-text-inverse);background:linear-gradient(135deg,var(--ea-action-primary),var(--ea-brand-strong));font-weight:900}
+.eaHomeDiscoveryGroups{display:grid;grid-template-columns:minmax(0,.72fr) minmax(0,1.28fr);gap:14px;margin-top:18px}
+.eaHomeDiscoveryGroup{min-width:0;padding:14px;border:1px solid rgba(255,255,255,.065);border-radius:var(--ea-radius-card);background:rgba(255,255,255,.025)}
+.eaHomeDiscoveryGroup>span{display:block;margin-bottom:9px;color:#7f9086;font-size:var(--ea-type-micro);font-weight:900;letter-spacing:.11em;text-transform:uppercase}
+.eaHomeDiscoveryGroup nav{display:flex;flex-wrap:wrap;gap:8px}
+.eaHomeDiscoveryGroup a{min-height:44px;display:inline-flex;align-items:center;justify-content:center;padding:0 13px;border:1px solid var(--ea-border-default);border-radius:999px;color:#dce8e0;background:rgba(255,255,255,.035);text-decoration:none;font-size:var(--ea-type-label-lg);font-weight:800}
+.eaHomeDiscoveryGroup a:hover,.eaHomeDiscoveryGroup a:focus-visible,.eaHomeDiscoveryAdvanced:hover,.eaHomeDiscoveryAdvanced:focus-visible{border-color:var(--ea-border-interactive);background:rgba(39,239,130,.07)}
+.eaHomeDiscoverySearchRow button:focus-visible,.eaHomeDiscoveryGroup a:focus-visible,.eaHomeDiscoveryAdvanced:focus-visible{outline:none;box-shadow:var(--ea-focus-ring)}
+
+@media(max-width:820px){
+  .eaHomeDiscoveryHead{align-items:flex-start;flex-direction:column;gap:14px}
+  .eaHomeDiscoveryAdvanced{width:100%}
+  .eaHomeDiscoveryGroups{grid-template-columns:1fr}
+}
+@media(max-width:430px){
+  .eaHomeDiscoveryV2{margin-top:28px;padding:14px;border-radius:18px 18px 0 0}
+  .eaHomeDiscoverySearchRow{grid-template-columns:1fr}
+  .eaHomeDiscoverySearchRow input,.eaHomeDiscoverySearchRow button{min-height:52px;width:100%}
+  .eaHomeDiscoveryGroup{padding:12px}
+  .eaHomeDiscoveryGroup nav{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .eaHomeDiscoveryGroup a{width:100%;padding:0 8px;text-align:center}
+}
+@media(max-width:360px){
+  .eaHomeDiscoveryV2{padding:12px}
+  .eaHomeDiscoveryHead h2{font-size:1.45rem}
+}
+@media(min-width:1920px){
+  .eaHomeDiscoveryV2{padding:30px}
+  .eaHomeDiscoverySearchRow input,.eaHomeDiscoverySearchRow button{min-height:58px}
+}
+@media(prefers-reduced-motion:reduce){
+  .eaHomeDiscoveryGroup a,.eaHomeDiscoveryAdvanced,.eaHomeDiscoverySearchRow button{transition:none}
+}
+@media(forced-colors:active){
+  .eaHomeDiscoveryV2,.eaHomeDiscoveryGroup,.eaHomeDiscoveryGroup a,.eaHomeDiscoveryAdvanced,.eaHomeDiscoverySearchRow input{border-color:CanvasText}
+}
