@@ -32,7 +32,9 @@
     "verify:packages-providers": "node scripts/verify-packages-providers.mjs",
     "verify:packages-providers:self-test": "node scripts/verify-packages-providers.mjs --self-test",
     "verify:database-migrations-structure": "node scripts/verify-database-migrations-structure.mjs",
-    "verify:database-migrations-structure:self-test": "node scripts/verify-database-migrations-structure.mjs --self-test"
+    "verify:database-migrations-structure:self-test": "node scripts/verify-database-migrations-structure.mjs --self-test",
+    "verify:architecture-decision-records": "node scripts/verify-architecture-decision-records.mjs",
+    "verify:architecture-decision-records:self-test": "node scripts/verify-architecture-decision-records.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",

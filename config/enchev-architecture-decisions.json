@@ -1,0 +1,11 @@
+{
+  "task": "02.10",
+  "adr_root": "docs/adr",
+  "naming": "NNNN-kebab-case.md",
+  "status_values": ["Proposed", "Accepted", "Deprecated", "Superseded"],
+  "implementation_state": "structure-established",
+  "append_only": true,
+  "required_sections": ["Status", "Context", "Decision", "Consequences"],
+  "index": "docs/adr/README.md",
+  "template": "docs/adr/0000-template.md"
+}
