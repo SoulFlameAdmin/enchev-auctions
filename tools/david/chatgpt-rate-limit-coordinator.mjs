@@ -7,7 +7,7 @@ export const RATE_LIMIT_STATE_FILE = path.join(HERE, ".david-global-chatgpt-rate
 const RATE_LIMIT_LOCK_FILE = path.join(HERE, ".david-global-chatgpt-rate-limit.lock");
 
 const BACKOFF_MS = [10 * 60_000, 20 * 60_000, 40 * 60_000];
-const PROBE_LEASE_MS = 15 * 60_000;
+const PROBE_LEASE_MS = Number(process.env.DAVID_PROBE_LEASE_MS || 3 * 60_000);
 const GLOBAL_SEND_INTERVAL_MS = Number(process.env.DAVID_GLOBAL_SEND_INTERVAL_MS || 60_000);
 const SEND_SLOT_LEASE_MS = Number(process.env.DAVID_GLOBAL_SEND_SLOT_LEASE_MS || 20_000);
 const LOCK_STALE_MS = 30_000;
@@ -182,11 +182,11 @@ export async function waitForGlobalSendPermit(worker, onWait = null) {
       }
 
       if (st.status === "probe") {
-        if (st.probeOwner === worker) {
-          return { allow: true, mode: "probe", state: st };
-        }
         const leaseRemaining = msUntil(st.probeLeaseUntil);
-        if (leaseRemaining <= 0) {
+
+        // Repair legacy/missing/expired probe leases before honoring ownership.
+        // This prevents owner=X with TIMER=00:00 from blocking every other worker.
+        if (!st.probeLeaseUntil || leaseRemaining <= 0) {
           const probe = writeStateRaw({
             ...st,
             probeOwner: worker,
@@ -197,6 +197,11 @@ export async function waitForGlobalSendPermit(worker, onWait = null) {
           });
           return { allow: true, mode: "probe", state: probe };
         }
+
+        if (st.probeOwner === worker) {
+          return { allow: true, mode: "probe", state: st };
+        }
+
         return { allow: false, waitMs: leaseRemaining, mode: "probe-wait", state: st };
       }
 
@@ -290,5 +295,5 @@ if (process.argv.includes("--self-test")) {
   if (s.status !== "clear" || s.stage !== -1) throw new Error("rate-limit self-test: bad default");
   if (BACKOFF_MS.join(",") !== [600000,1200000,2400000].join(",")) throw new Error("rate-limit self-test: backoff law mismatch");
   if (GLOBAL_SEND_INTERVAL_MS !== 60000 && !process.env.DAVID_GLOBAL_SEND_INTERVAL_MS) throw new Error("rate-limit self-test: default send interval must be 60s");
-  console.log("DAVID_RATE_LIMIT_COORDINATOR_SELF_TEST PASS backoff=10,20,40 probe_owner=1 global_send_interval_s=" + Math.round(GLOBAL_SEND_INTERVAL_MS/1000));
+  console.log("DAVID_RATE_LIMIT_COORDINATOR_SELF_TEST PASS backoff=10,20,40 probe_owner=1 probe_lease_s=" + Math.round(PROBE_LEASE_MS/1000) + " global_send_interval_s=" + Math.round(GLOBAL_SEND_INTERVAL_MS/1000));
 }
