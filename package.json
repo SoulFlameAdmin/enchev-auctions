@@ -58,7 +58,9 @@
     "verify:country-document-profile": "node scripts/verify-country-document-profile.mjs",
     "verify:country-document-profile:self-test": "node scripts/verify-country-document-profile.mjs --self-test",
     "verify:market-activation-gate": "node scripts/verify-market-activation-gate.mjs",
-    "verify:market-activation-gate:self-test": "node scripts/verify-market-activation-gate.mjs --self-test"
+    "verify:market-activation-gate:self-test": "node scripts/verify-market-activation-gate.mjs --self-test",
+    "verify:master-expansion-v2": "node scripts/verify-master-system-expansion-v2.mjs",
+    "verify:master-expansion-v2:self-test": "node scripts/verify-master-system-expansion-v2.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
