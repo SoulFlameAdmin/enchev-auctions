@@ -204,6 +204,10 @@ jobs:
         run: node scripts/verify-rtl-layout-capability.mjs
       - name: 21.17 RTL layout capability self-tests
         run: node scripts/verify-rtl-layout-capability.mjs --self-test
+      - name: 21.18 International names, address and phone models
+        run: node scripts/verify-international-contact-models.mjs
+      - name: 21.18 International names, address and phone models self-tests
+        run: node scripts/verify-international-contact-models.mjs --self-test
       - name: Redis environment contract invariant
         run: node scripts/verify-redis-environment.mjs
       - name: Redis environment contract self-tests
