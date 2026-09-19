@@ -4,6 +4,7 @@ import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
 import { fileURLToPath } from "node:url";
+import { waitForGlobalSendPermit, reportProbeSuccess } from "./chatgpt-rate-limit-coordinator.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(HERE, "..", "..");
@@ -532,6 +533,18 @@ async function runPrompt(context, page, state, prompt, kind) {
         ? prompt
         : `AUTOMATIC CHAT ROLLOVER: The previous Enchev Design conversation reached its maximum length. Reconstruct the exact design state from GitHub, docs/DESIGN_PLAN_V1.md and evidence, then continue from the next unfinished D-task. Do NOT restart completed work.\n\n${prompt}`
       : prompt;
+    const permit = await waitForGlobalSendPermit("DESIGN", async (decision) => {
+      state.watchdog = "global-rate-limit-wait";
+      state.problem = "ChatGPT platform: global rate limit";
+      state.problemRetryAt = decision.state?.blockedUntil || decision.state?.probeLeaseUntil || null;
+      save(state, `GLOBAL RATE LIMIT WAIT mode=${decision.mode}; owner=${decision.state?.probeOwner || "none"}`);
+    });
+    if (permit.mode === "probe") {
+      state.watchdog = "global-rate-limit-probe";
+      save(state, "DESIGN owns the single post-cooldown probe send");
+      await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+      await sleep(2500);
+    }
     await fillAndSend(page, outgoingPrompt);
     let started = await waitStart(context, page, base, state); page = started.page;
     syncActiveChatUrl(page, state);
@@ -549,6 +562,8 @@ async function runPrompt(context, page, state, prompt, kind) {
             state.lastAssistantHash = hash(doneAfterTimeout.text);
             if (state.justRolledOver) state.justRolledOver = false;
             syncActiveChatUrl(page, state);
+            await reportProbeSuccess("DESIGN");
+            delete state.problemRetryAt;
             save(state, "Design response complete after send-timeout recovery");
             return { page, text: doneAfterTimeout.text };
           }
@@ -574,6 +589,8 @@ async function runPrompt(context, page, state, prompt, kind) {
     state.lastAssistantHash = hash(done.text);
     if (state.justRolledOver) state.justRolledOver = false;
     syncActiveChatUrl(page, state);
+    await reportProbeSuccess("DESIGN");
+    delete state.problemRetryAt;
     save(state, "Design response complete");
     return { page, text: done.text };
   }
