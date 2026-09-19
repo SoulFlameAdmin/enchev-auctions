@@ -64,7 +64,9 @@
     "verify:country-2-without-core-rewrite": "node scripts/verify-country-2-without-core-rewrite.mjs",
     "verify:country-2-without-core-rewrite:self-test": "node scripts/verify-country-2-without-core-rewrite.mjs --self-test",
     "verify:regional-cdn-strategy": "node scripts/verify-regional-cdn-strategy.mjs",
-    "verify:regional-cdn-strategy:self-test": "node scripts/verify-regional-cdn-strategy.mjs --self-test"
+    "verify:regional-cdn-strategy:self-test": "node scripts/verify-regional-cdn-strategy.mjs --self-test",
+    "verify:regional-data-residency-review": "node scripts/verify-regional-data-residency-review.mjs",
+    "verify:regional-data-residency-review:self-test": "node scripts/verify-regional-data-residency-review.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
