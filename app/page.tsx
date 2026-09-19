@@ -2,9 +2,8 @@ import MasterSystemPlanV1 from "./components/MasterSystemPlanV1";
 import SeedAuditGaps from "./components/SeedAuditGaps";
 import BulgarianStageLabels from "./components/BulgarianStageLabels";
 import DesignPlanExtension from "./components/DesignPlanExtension";
-import HomeLiveSpotlight from "./components/HomeLiveSpotlight";
 import HomeTrustSupport from "./components/HomeTrustSupport";
-import { accountNavigation, primaryNavigation } from "./site-navigation";
+import HomeHeroV2 from "./components/HomeHeroV2";
 
 const featuredCars = [
   { lot:"EA-10482", title:"2018 BMW M4 F82", spec:"3.0 бензин · Автоматик · 82 410 км", location:"София, България", time:"Търг след 2ч 18м", price:"€12 750", state:"upcoming", stateLabel:"UPCOMING", bidLabel:"Текуща ставка", image:"https://images.unsplash.com/photo-1658558195433-1af533e3309c?auto=format&fit=crop&w=1200&q=82" },
@@ -20,38 +19,8 @@ export default function Home(){
     <BulgarianStageLabels />
     <DesignPlanExtension />
 
-    <section className="eaHero" id="top">
-      <div className="eaTopbar">
-        <div className="eaTopbarLeft"><span className="eaDot"/><strong>LIVE MARKET</strong><span>Европа · САЩ · Канада</span></div>
-        <div className="eaTopbarRight"><span>BG · EUR</span><a href="/support">Помощ</a><span>+359 000 000 000</span></div>
-      </div>
+    <HomeHeroV2 />
 
-      <header className="eaMainnav">
-        <a href="#top" className="eaBrand"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
-        <nav className="eaNavlinks" aria-label="Основна навигация">
-          {primaryNavigation.map(item=><a key={item.key} href={item.href}>{item.label}</a>)}
-        </nav>
-        <div className="eaNavactions">
-          <form action={accountNavigation.profile}><button className="eaBtnGhost" type="submit">Вход</button></form>
-          <form action={accountNavigation.register}><button className="eaBtnPrimary" type="submit">Регистрация</button></form>
-        </div>
-      </header>
-
-      <div className="eaHeroInner">
-        <div className="eaHeroCopy">
-          <div className="eaEyebrow"><i/>АВТОМОБИЛНИ ТЪРГОВЕ БЕЗ ГРАНИЦИ</div>
-          <h1><span>НАМЕРИ.</span><span>НАДДАВАЙ.</span><em>СПЕЧЕЛИ.</em></h1>
-          <p className="eaHeroLead">Търси автомобили от международни търгове, следи LIVE наддаванията и управлявай целия процес от една ENCHEV платформа.</p>
-          <form className="eaSearch" action="/inventory" role="search"><input type="search" name="q" aria-label="Търси по марка, модел, VIN или LOT номер" autoComplete="off" spellCheck={false} enterKeyHint="search" placeholder="Марка, модел, VIN или LOT номер..."/><button type="submit" aria-label="Търси автомобили">→</button></form>
-          <nav className="eaHeroQuick" aria-label="Популярни категории"><a href="/inventory?q=BMW">BMW</a><a href="/inventory?q=Mercedes">Mercedes</a><a href="/inventory?q=Audi">Audi</a><a href="/inventory?q=Porsche">Porsche</a><a href="/inventory?q=USA">САЩ</a><a href="/inventory?q=Front%20end">Front end</a></nav>
-          <div className="eaHeroStats"><div className="eaHeroStat"><b>10K+</b><span>активни лота</span></div><div className="eaHeroStat"><b>24/7</b><span>наблюдение на търгове</span></div><div className="eaHeroStat"><b>1 платформа</b><span>оферта → транспорт</span></div></div>
-        </div>
-
-        <HomeLiveSpotlight />
-      </div>
-
-      <div className="eaHeroFoot"><strong>DRIVE A BETTER TOMORROW</strong><span>ENCHEV AUCTIONS · INTERNATIONAL MARKETPLACE</span></div>
-    </section>
 
     <section className="eaSection" id="inventory" aria-labelledby="featured-inventory-heading">
       <div className="eaSectionHead"><div><span>ПОДБРАНИ ЛОТОВЕ</span><h2 id="featured-inventory-heading">Автомобили в търг</h2><p>LIVE, Buy Now, предстоящи и приключили лотове в един изглед.</p></div><a href="/inventory">Виж целия инвентар →</a></div>
