@@ -9,10 +9,13 @@ const SYSTEM = path.join(HERE, "auto-continue-enchev-v5.mjs");
 const DESIGN = path.join(HERE, "auto-continue-design-v1.mjs");
 const APP2 = path.join(HERE, "auto-complete-app2-v1.mjs");
 const APK = path.join(HERE, "auto-continue-david-apk-v1.mjs");
+const CONTROL = path.join(HERE, "auto-control-watchtower-v1.mjs");
 const INTERRUPT_GUARD = path.join(HERE, "connection-interruption-guard.mjs");
 const NODE = process.execPath;
 const children = new Map();
 const MONITOR_FILE = path.join(HERE, ".david-tab-monitor.json");
+const CONTROL_COMMAND_FILE = path.join(HERE, ".david-control-command.json");
+const CONTROL_RESULT_FILE = path.join(HERE, ".david-control-result.json");
 const MONITOR_MS = Number(process.env.DAVID_TAB_MONITOR_MS || 15000);
 const MONITOR_CONNECT_TIMEOUT_MS = Number(process.env.DAVID_TAB_MONITOR_CONNECT_TIMEOUT_MS || 60000);
 const WORKER_START_GRACE_MS = Number(process.env.DAVID_WORKER_START_GRACE_MS || 120000);
@@ -25,6 +28,7 @@ let monitorBusy = false;
 let lastMonitorSignature = "";
 const launchedAt = new Map();
 const missingTabSince = new Map();
+let lastControlCommandId = null;
 
 const specs = [
   {
@@ -61,6 +65,15 @@ const specs = [
     stateFile: path.join(HERE, ".david-apk-state.json"),
     env: {
       DAVID_APK_STATE_FILE: path.join(HERE, ".david-apk-state.json")
+    }
+  },
+  {
+    name: "CONTROL",
+    script: CONTROL,
+    stateFile: path.join(HERE, ".david-control-state.json"),
+    env: {
+      DAVID_CONTROL_CHAT_URL: "https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e",
+      DAVID_CONTROL_STATE_FILE: path.join(HERE, ".david-control-state.json")
     }
   },
   {
@@ -184,7 +197,8 @@ function currentOwnedUrls() {
     ["SYSTEM", path.join(HERE, ".david-enchev-state.json"), "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71"],
     ["DESIGN", path.join(HERE, ".david-enchev-design-state.json"), "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7"],
     ["APP2", path.join(HERE, ".david-app2-state-6aac2dbb.json"), "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4"],
-    ["APK", path.join(HERE, ".david-apk-state.json"), null]
+    ["APK", path.join(HERE, ".david-apk-state.json"), null],
+    ["CONTROL", path.join(HERE, ".david-control-state.json"), "https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e"]
   ];
   const byUrl = new Map();
   for (const [kind, file, fallback] of defs) {
@@ -214,8 +228,67 @@ async function detectManagedKind(page) {
     if (/\[DAVID_RELAY_ENCHEV_DESIGN_V1\]/.test(text)) return "DESIGN";
     if (/\[DAVID_APP2_AUTOPILOT_V2\]/.test(text)) return "APP2";
     if (/\[DAVID_RELAY_APK_V1\]/.test(text)) return "APK";
+    if (/\[DAVID_CONTROL_WATCHTOWER_V1\]/.test(text)) return "CONTROL";
     return null;
   } catch { return null; }
+}
+
+async function executeControlCommand(context) {
+  const command = readState(CONTROL_COMMAND_FILE);
+  if (!command?.id || command.id === lastControlCommandId) return;
+  lastControlCommandId = command.id;
+
+  const allowedWorkers = new Set(["SYSTEM","DESIGN","APP2","APK"]);
+  const actions = Array.isArray(command.actions) ? command.actions.slice(0, 4) : [];
+  const results = [];
+
+  for (const action of actions) {
+    const type = String(action?.type || "").toUpperCase();
+    const target = String(action?.target || "").toUpperCase();
+
+    if (type === "WAIT") {
+      results.push({ type, ok: true, detail: "no-op" });
+      continue;
+    }
+
+    if (type === "CLEAN_DUPLICATES") {
+      await cleanupManagedTabs();
+      results.push({ type, ok: true, detail: "cleanup invoked" });
+      continue;
+    }
+
+    if ((type === "REFRESH" || type === "RESTART") && allowedWorkers.has(target)) {
+      if (type === "RESTART") {
+        restartWorker(target, "CONTROL command " + command.id);
+        results.push({ type, target, ok: true, detail: "worker restart requested" });
+        continue;
+      }
+
+      const owned = currentOwnedUrls();
+      let targetUrl = null;
+      for (const [url, kind] of owned.entries()) if (kind === target) targetUrl = url;
+      const page = targetUrl ? context.pages().find((p) => !p.isClosed() && cleanConversationUrl(p.url()) === targetUrl) : null;
+      if (page) {
+        await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+        results.push({ type, target, ok: true, detail: "owned tab refreshed" });
+      } else {
+        restartWorker(target, "CONTROL refresh fallback: owned tab missing");
+        results.push({ type, target, ok: true, detail: "tab missing; worker restart requested" });
+      }
+      continue;
+    }
+
+    results.push({ type, target: target || null, ok: false, detail: "rejected by allowlist" });
+  }
+
+  const result = {
+    id: command.id,
+    executedAt: new Date().toISOString(),
+    sourceChatUrl: command.sourceChatUrl || null,
+    results
+  };
+  try { fs.writeFileSync(CONTROL_RESULT_FILE, JSON.stringify(result, null, 2), "utf8"); } catch {}
+  console.log("[DUAL] CONTROL command " + command.id + " executed: " + JSON.stringify(results));
 }
 
 async function cleanupManagedTabs() {
@@ -223,7 +296,8 @@ async function cleanupManagedTabs() {
     { kind: "SYSTEM", file: path.join(HERE, ".david-enchev-state.json"), fallback: "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71" },
     { kind: "DESIGN", file: path.join(HERE, ".david-enchev-design-state.json"), fallback: "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7" },
     { kind: "APP2", file: path.join(HERE, ".david-app2-state-6aac2dbb.json"), fallback: "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4" },
-    { kind: "APK", file: path.join(HERE, ".david-apk-state.json"), fallback: null }
+    { kind: "APK", file: path.join(HERE, ".david-apk-state.json"), fallback: null },
+    { kind: "CONTROL", file: path.join(HERE, ".david-control-state.json"), fallback: "https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e" }
   ];
   const preferredByKind = new Map();
   const stale = new Set();
@@ -264,7 +338,7 @@ async function cleanupManagedTabs() {
       }
     }
 
-    for (const kind of ["SYSTEM","DESIGN","APP2","APK"]) {
+    for (const kind of ["SYSTEM","DESIGN","APP2","APK","CONTROL"]) {
       const tabs = managed.filter((x) => x.kind === kind && !x.page.isClosed());
       if (tabs.length <= 1) continue;
       const preferred = preferredByKind.get(kind);
@@ -277,7 +351,7 @@ async function cleanupManagedTabs() {
     }
 
     const remaining = {};
-    for (const kind of ["SYSTEM","DESIGN","APP2","APK"]) {
+    for (const kind of ["SYSTEM","DESIGN","APP2","APK","CONTROL"]) {
       remaining[kind] = managed.filter((x) => x.kind === kind && !x.page.isClosed()).length;
     }
     console.log(`[DUAL] Managed tab cleanup complete. closed=${closed} remaining=${JSON.stringify(remaining)}`);
@@ -291,9 +365,11 @@ console.log("[DUAL] SYSTEM tab: 6aab44e1-385c-83eb-b122-c4ae9836cb71");
 console.log("[DUAL] DESIGN tab: 6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7");
 console.log("[DUAL] APP2 tab: 6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4");
 console.log("[DUAL] APK tab: auto-discover DAVID Phone / SoulFlame Twins / DAVID APK session; exact DAVID_APK_CHAT_URL wins when provided.");
+console.log("[DUAL] CONTROL tab: 6aade2fa-e2a0-83ed-96af-702c0430d49e");
 console.log("[DUAL] INTERRUPTION GUARD: watches every managed ChatGPT conversation in this DAVID Edge profile.");
 console.log("[DUAL] 24/7 law: active GPT/tool work => WAIT; confirmed frozen interruption => refresh/verify/resend; workers self-heal by heartbeat/tab ownership.");
-console.log("[DUAL] SYSTEM + DESIGN + APP2 + APK share the same Edge CDP/profile on port 9444.");
+console.log("[DUAL] CONTROL law: GPT WATCHTOWER may request only allowlisted REFRESH/RESTART/CLEAN_DUPLICATES actions after exact final OK.");
+console.log("[DUAL] CONTROL + SYSTEM + DESIGN + APP2 + APK share the same Edge CDP/profile on port 9444.");
 async function monitorManagedTabs() {
   if (shuttingDown || monitorBusy) return;
   monitorBusy = true;
@@ -304,7 +380,7 @@ async function monitorManagedTabs() {
       checkedAt: new Date().toISOString(),
       totalBrowserTabs: context.pages().filter((p) => !p.isClosed()).length,
       totalChatGptTabs: 0,
-      managed: { SYSTEM: [], DESIGN: [], APP2: [], APK: [] }
+      managed: { SYSTEM: [], DESIGN: [], APP2: [], APK: [], CONTROL: [] }
     };
     for (const page of context.pages()) {
       if (!page || page.isClosed()) continue;
@@ -350,8 +426,10 @@ async function monitorManagedTabs() {
     const signature = JSON.stringify(counts);
     if (signature !== lastMonitorSignature) {
       lastMonitorSignature = signature;
-      console.log(`[DUAL] TRACK SYSTEM=${counts.SYSTEM} DESIGN=${counts.DESIGN} APP2=${counts.APP2} APK=${counts.APK} chatgptTabs=${snapshot.totalChatGptTabs}`);
+      console.log(`[DUAL] TRACK CONTROL=${counts.CONTROL} SYSTEM=${counts.SYSTEM} DESIGN=${counts.DESIGN} APP2=${counts.APP2} APK=${counts.APK} chatgptTabs=${snapshot.totalChatGptTabs}`);
     }
+    await executeControlCommand(context);
+
     const duplicates = Object.entries(snapshot.managed)
       .filter(([, urls]) => urls.length > 1)
       .map(([kind, urls]) => `${kind}=${urls.length}`);
