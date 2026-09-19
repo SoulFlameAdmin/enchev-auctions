@@ -79,7 +79,7 @@ async function waitForFeatured(call){
   }
   await call("Runtime.evaluate",{
     awaitPromise:true,
-    expression:"(async()=>{if(document.fonts?.ready){try{await document.fonts.ready}catch{}};await Promise.all([...document.images].map(img=>img.complete?Promise.resolve():new Promise(r=>{img.addEventListener('load',r,{once:true});img.addEventListener('error',r,{once:true});setTimeout(r,2500)})));document.querySelector('#inventory')?.scrollIntoView({block:'start'});await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));return true})()",
+    expression:"(async()=>{if(document.fonts?.ready){try{await document.fonts.ready}catch{}};await Promise.all([...document.images].map(img=>img.complete?Promise.resolve():new Promise(r=>{img.addEventListener('load',r,{once:true});img.addEventListener('error',r,{once:true});setTimeout(r,2500)})));const section=document.querySelector('.eaFeaturedV2Section');if(!section)throw new Error('featured section missing before scroll');section.scrollIntoView({block:'start',inline:'nearest'});await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));return true})()",
     returnByValue:true,
   });
 }
@@ -118,13 +118,13 @@ try{
       if(navigation.errorText)fail("navigation failed "+navigation.errorText);
       await waitForFeatured(call);
       const runtime=await call("Runtime.evaluate",{
-        expression:"(()=>{const cards=[...document.querySelectorAll('.eaFeaturedV2Card[data-auction-state]')];const section=document.querySelector('.eaFeaturedV2Section');if(!section)return null;const sr=section.getBoundingClientRect();return {scrollWidth:document.documentElement.scrollWidth,viewportWidth:innerWidth,sectionTop:sr.top,states:cards.map(c=>c.getAttribute('data-auction-state')),visible:cards.map(c=>{const r=c.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom}})}})()",
+        expression:"(()=>{const cards=[...document.querySelectorAll('.eaFeaturedV2Card[data-auction-state]')];const section=document.querySelector('.eaFeaturedV2Section');if(!section)return null;const shell=document.querySelector('.eaAppShell');const sr=section.getBoundingClientRect();const shellBottom=shell?.getBoundingClientRect().bottom||0;return {scrollWidth:document.documentElement.scrollWidth,viewportWidth:innerWidth,scrollY,sectionTop:sr.top,sectionBottom:sr.bottom,shellBottom,states:cards.map(c=>c.getAttribute('data-auction-state')),visible:cards.map(c=>{const r=c.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom}})}})()",
         returnByValue:true,
       });
       const snapshot=runtime?.result?.value;
       if(!snapshot||snapshot.scrollWidth>snapshot.viewportWidth+3)fail("responsive overflow width="+width);
       if(snapshot.states.join(",")!=="upcoming,buy-now,live,sold")fail("auction state order mismatch width="+width);
-      if(Math.abs(snapshot.sectionTop)>4)fail("featured section did not anchor to viewport width="+width+" top="+snapshot.sectionTop);
+      const anchorCeiling=Math.max(4,(snapshot.shellBottom||0)+4);\n      if(snapshot.sectionTop<-4||snapshot.sectionTop>anchorCeiling)fail("featured section did not anchor near viewport top width="+width+" top="+snapshot.sectionTop+" shellBottom="+snapshot.shellBottom+" scrollY="+snapshot.scrollY);\n      if(snapshot.sectionBottom<=anchorCeiling)fail("featured section is not visible after anchor width="+width);
       for(const card of snapshot.visible){
         if(card.left<-3||card.right>width+3)fail("card escapes viewport width="+width);
       }
