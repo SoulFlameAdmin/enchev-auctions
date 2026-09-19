@@ -23,6 +23,13 @@ const PLATFORM_BACKOFF_MS = Number(process.env.DAVID_PLATFORM_BACKOFF_MS || 1800
 const STATE_FILE = process.env.DAVID_STATE_FILE || path.join(process.cwd(), ".david-enchev-state.json");
 const RELAY_MARKER = "[DAVID_RELAY_ENCHEV_V5]";
 const PROBLEM_PREFIX = "PROBLEM IN:";
+const ORCHESTRATOR_LAW = `
+DAVID ORCHESTRATOR IMMUTABILITY LAW:
+- During normal SYSTEM/DESIGN/DPP/APK project work, NEVER modify the DAVID infrastructure files in SoulFlameAdmin/enchev-auctions:
+  tools/david/*, START_DAVID_ALL.ps1, STOP_DAVID_ALL_CLEAN.ps1, RESTART_DAVID_ALL_CLEAN.ps1, RESTART_DAVID_ALL.cmd.
+- Those files may be changed only when the current user task explicitly requests DAVID infrastructure/worker/supervisor maintenance.
+- Do not revert, rewrite, format, regenerate or "clean up" those protected files incidentally.
+`;
 const DEPLOY_LAW = `
 DAVID VERCEL DEPLOY LAW:
 - Before ANY Vercel create/update/redeploy, atomically claim the global Supabase lease with:
@@ -46,7 +53,7 @@ const CONTINUE_PROMPT = `@GitHub @Vercel @Supabase
 - Преди PROBLEM IN опитай сам разумните безопасни варианти.
 - Не заобикаляй CAPTCHA/MFA/login/permissions, не измисляй secrets и не прави destructive действие без разрешение.
 
-${DEPLOY_LAW}
+${ORCHESTRATOR_LAW}\n\n${DEPLOY_LAW}
 
 ${RELAY_MARKER}`;
 
