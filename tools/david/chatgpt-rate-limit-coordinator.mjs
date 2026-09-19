@@ -255,6 +255,34 @@ export async function markProbeSendStarted(worker) {
   return markGlobalSendStarted(worker);
 }
 
+export async function releaseWorkerLeases(worker, reason = "worker-exit") {
+  return withLock(async () => {
+    const st = readStateRaw();
+    const now = Date.now();
+    let changed = false;
+    const next = { ...st };
+
+    if (st.sendSlotOwner === worker) {
+      next.sendSlotOwner = null;
+      next.sendSlotLeaseUntil = null;
+      changed = true;
+    }
+
+    if (st.status === "probe" && st.probeOwner === worker) {
+      const probeHadStarted = Boolean(st.probeSendStartedAt);
+      next.status = "blocked";
+      next.blockedUntil = new Date(now + (probeHadStarted ? RATE_LIMIT_COOLDOWN_MS : 0)).toISOString();
+      next.probeOwner = null;
+      next.probeLeaseUntil = null;
+      next.probeSendStartedAt = null;
+      next.lastEvidence = `${st.lastEvidence || "probe"}; lease released because ${worker} ${reason}`;
+      changed = true;
+    }
+
+    return changed ? writeStateRaw(next) : st;
+  });
+}
+
 export async function reportProbeSuccess(worker) {
   return withLock(async () => {
     const st = readStateRaw();
