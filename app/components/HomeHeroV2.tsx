@@ -21,12 +21,12 @@ export default function HomeHeroV2(){
 
         <p className="eaHeroV2Lead" data-i18n-key={HOME_HERO_KEYS.lead}>{copy.lead}</p>
 
-        <div className="eaHeroV2Actions" aria-label="Основни действия">
+        <div className="eaHeroV2Actions" aria-label={copy.actionsLabel} data-i18n-key={HOME_HERO_KEYS.actionsLabel}>
           <a className="eaHeroV2Primary" href="/inventory" data-i18n-key={HOME_HERO_KEYS.browse}>{copy.browse}</a>
           <a className="eaHeroV2Secondary" href="/live-auctions" data-i18n-key={HOME_HERO_KEYS.live}><i aria-hidden="true"/>{copy.live}</a>
         </div>
 
-        <div className="eaHeroV2Proof" aria-label="Ключови възможности">
+        <div className="eaHeroV2Proof" aria-label={copy.proofLabel} data-i18n-key={HOME_HERO_KEYS.proofLabel}>
           <article>
             <span>01</span>
             <div><b data-i18n-key={HOME_HERO_KEYS.proofStatus}>{copy.proofStatus}</b><small data-i18n-key={HOME_HERO_KEYS.proofStatusDetail}>{copy.proofStatusDetail}</small></div>
@@ -68,8 +68,8 @@ export default function HomeHeroV2(){
         <a href="/inventory?q=Mercedes">Mercedes</a>
         <a href="/inventory?q=Audi">Audi</a>
         <a href="/inventory?q=Porsche">Porsche</a>
-        <a href="/inventory?live=1">LIVE</a>
-        <a href="/inventory?buyNow=1">Buy Now</a>
+        <a href="/inventory?live=1" data-i18n-key={HOME_HERO_KEYS.shortcutLive}>{copy.shortcutLive}</a>
+        <a href="/inventory?buyNow=1" data-i18n-key={HOME_HERO_KEYS.shortcutBuyNow}>{copy.shortcutBuyNow}</a>
       </nav>
     </div>
 
