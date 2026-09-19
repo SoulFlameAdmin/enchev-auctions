@@ -50,6 +50,15 @@ jobs:
       - name: Verify scoped AUTONOMY profile
         run: npm run verify:autonomy
 
+      - name: Verify SYSTEM semantic terminal
+        run: node auto-continue-enchev-v5.mjs --self-test
+
+      - name: Verify DPP semantic terminal
+        run: node auto-complete-app2-v1.mjs --self-test
+
+      - name: Verify APK semantic terminal
+        run: node auto-continue-david-apk-v1.mjs --self-test
+
       - name: Parse PowerShell launch and dashboard scripts
         shell: pwsh
         working-directory: .

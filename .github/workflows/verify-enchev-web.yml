@@ -254,7 +254,9 @@ jobs:
       - name: DAVID APP2 response watchdog self-tests
         run: node tools/david/auto-complete-app2-v1.mjs --self-test
       - name: DAVID APK response watchdog self-tests
-        run: node tools/david/auto-continue-david-apk-v1.mjs --self-test
+        run: |
+          npm --prefix tools/david install --no-audit --no-fund
+          node tools/david/auto-continue-david-apk-v1.mjs --self-test
       - name: DAVID CONTROL watchtower self-tests
         run: node tools/david/auto-control-watchtower-v1.mjs --self-test
       - name: DAVID ChatGPT rate-limit coordinator self-tests
