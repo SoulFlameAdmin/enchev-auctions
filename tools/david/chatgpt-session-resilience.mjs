@@ -1,3 +1,4 @@
+// DAVID SESSION RESILIENCE V1: deterministic classifier and recovery policy for managed ChatGPT sessions.
 import process from "node:process";
 
 export const SESSION_ISSUE = Object.freeze({
