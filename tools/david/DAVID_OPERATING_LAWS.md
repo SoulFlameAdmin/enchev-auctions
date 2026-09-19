@@ -28,6 +28,14 @@ These rules are mandatory for SYSTEM, DESIGN, DPP/APP2 and DAVID APK workers.
    - refresh the owned tab and verify the state;
    - if the response recovered to OK / PROBLEM IN / new progress, do not resend;
    - otherwise resend the latest owned prompt once as a stranded-turn recovery.
+5. Message send timeout:
+   - the explicit ChatGPT error "Изпращането на съобщението изтече по време / Message sending timed out" has one recovery owner: the central managed guard;
+   - project workers wait and do not issue their own duplicate resend while the timeout card is visible;
+   - if GPT is active, do nothing;
+   - otherwise click the timeout card's Retry / Опитайте отново button in a bounded flow;
+   - if Retry does not clear the error, refresh the owned tab, verify, and allow at most the bounded retry count;
+   - never paste a duplicate project prompt while explicit send-timeout recovery is active.
+
 5. CAPTCHA, MFA, login and explicit permission gates are never bypassed.
 6. Maximum-length conversation:
    - open a new ChatGPT tab;
