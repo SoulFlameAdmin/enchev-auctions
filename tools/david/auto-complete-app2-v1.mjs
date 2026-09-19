@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
+import { waitForGlobalSendPermit, reportProbeSuccess } from "./chatgpt-rate-limit-coordinator.mjs";
 
 const INITIAL_CHAT_URL = process.env.DAVID_APP2_CHAT_URL || "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4";
 let activeChatUrl = INITIAL_CHAT_URL;
@@ -537,6 +538,18 @@ async function runPrompt(context, page, state, prompt, kind) {
     const outgoingPrompt = state.justRolledOver
       ? `AUTOMATIC CHAT ROLLOVER: The previous ChatGPT conversation reached its maximum length. Reconstruct the exact current project state from GitHub/source-of-truth/evidence and continue from the next unfinished dependency-safe task. Do NOT restart completed work.\n\n${prompt}`
       : prompt;
+    const permit = await waitForGlobalSendPermit("APP2", async (decision) => {
+      state.watchdog = "global-rate-limit-wait";
+      state.problem = "ChatGPT platform: global rate limit";
+      state.problemRetryAt = decision.state?.blockedUntil || decision.state?.probeLeaseUntil || null;
+      save(state, `GLOBAL RATE LIMIT WAIT mode=${decision.mode}; owner=${decision.state?.probeOwner || "none"}`);
+    });
+    if (permit.mode === "probe") {
+      state.watchdog = "global-rate-limit-probe";
+      save(state, "APP2 owns the single post-cooldown probe send");
+      await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+      await sleep(2500);
+    }
     await fillAndSend(page, outgoingPrompt);
     const start = await waitStart(context, page, baseHash, state);
     page = start.page;
@@ -555,6 +568,8 @@ async function runPrompt(context, page, state, prompt, kind) {
           if (!doneAfterTimeout.retry) {
             state.lastAssistantHash = doneAfterTimeout.hash;
             if (state.justRolledOver) state.justRolledOver = false;
+            await reportProbeSuccess("APP2");
+            delete state.problemRetryAt;
             return { page, text: doneAfterTimeout.text };
           }
         }
@@ -592,6 +607,8 @@ async function runPrompt(context, page, state, prompt, kind) {
     state.lastAssistantHash = done.hash;
     if (state.justRolledOver) state.justRolledOver = false;
     syncActiveChatUrl(page, state);
+    await reportProbeSuccess("APP2");
+    delete state.problemRetryAt;
     save(state, "Assistant response complete");
     return { page, text: done.text };
   }
