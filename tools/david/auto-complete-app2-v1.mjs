@@ -650,6 +650,18 @@ async function runPrompt(context, page, state, prompt, kind) {
         page = await waitSendTimeoutRecovery(context, page, state);
       } else if (done.reason === "connection-interrupted" || done.reason === "stalled-or-blank") {
         page = await recoverActive(context, page, state, done.reason);
+      } else if (done.reason === "rate limit") {
+        const rl = await reportRateLimit("APP2", "ChatGPT UI/completion: rate limit");
+        state.problem = null;
+        state.problemRetryAt = rl.blockedUntil;
+        state.watchdog = "global-rate-limit-wait";
+        save(state, `GLOBAL RATE LIMIT during APP2 completion; stage=${rl.stage} until=${rl.blockedUntil}; NO REFRESH`);
+        await sleep(1000);
+      } else if (done.reason === "human verification") {
+        state.problem = "ChatGPT platform: human verification";
+        state.watchdog = "human-blocked";
+        save(state, "APP2 waiting for human verification; NO REFRESH / NO BYPASS");
+        await sleep(30000);
       } else {
         await sleep(10000);
       }
