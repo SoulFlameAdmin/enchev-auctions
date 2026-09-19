@@ -119,6 +119,15 @@ function verifyDependencyGraph(phases) {
 
 function verifyIntegration() {
   const source = readFileSync("app/components/MasterSystemPlanV1.tsx", "utf8");
+  const expansionDoc = readFileSync("docs/MASTER_SYSTEM_EXPANSION_V2.md", "utf8");
+  const globalCommerce = readFileSync("docs/GLOBAL_COMMERCE_UX_SPEC_V1.md", "utf8");
+  const designPlan = readFileSync("docs/DESIGN_PROCESS_2.md", "utf8");
+  if (!expansionDoc.includes("4,280 system points")) fail("expansion source-of-truth must declare combined 4,280-point baseline");
+  if (!expansionDoc.includes("FNV1a32 e7c9cf20")) fail("expansion source-of-truth digest mismatch");
+  if (!expansionDoc.includes("phases 62–99")) fail("expansion source-of-truth must define phases 62-99");
+  if (!globalCommerce.includes("GLOBAL COMMERCE UX SPEC V1")) fail("Global Commerce UX source missing");
+  if (!designPlan.includes("GLOBAL_COMMERCE_UX_SPEC_V1.md")) fail("Design Process 2 must bind Global Commerce UX");
+  if (designPlan.includes("Do not add pricing/payment/finance scope")) fail("obsolete DP2 commercial-scope ban still present");
   for (const n of [1,2,3,4]) {
     if (!source.includes(`master-system-expansion-v2/part-${n}.json`)) fail(`Command Center missing expansion part ${n}`);
   }
@@ -132,6 +141,10 @@ function verifyIntegration() {
   if (!worker.includes("MASTER SYSTEM EXPANSION v2.0 APPEND-ONLY")) fail("SYSTEM worker does not know the expansion source");
   if (!worker.includes("dependsOn")) fail("SYSTEM worker must obey expansion dependency graph");
   if (worker.includes("не добавяй pricing/payment/finance")) fail("obsolete pricing/payment/finance ban still present");
+  const designWorker = readFileSync("tools/david/auto-continue-design-v1.mjs", "utf8");
+  if (!designWorker.includes("GLOBAL_COMMERCE_UX_SPEC_V1.md")) fail("DESIGN worker must consume Global Commerce UX spec");
+  if (!designWorker.includes("MASTER_SYSTEM_EXPANSION_V2.md")) fail("DESIGN worker must consume company expansion rules");
+  if (designWorker.includes("Не добавяй pricing/payment/finance scope")) fail("obsolete DESIGN worker commercial-scope ban still present");
 }
 
 function runSelfTest() {
