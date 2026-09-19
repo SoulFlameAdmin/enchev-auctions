@@ -267,8 +267,8 @@ Write-Host "[DAVID ALL] CONTROL can request only allowlisted WAIT/REFRESH/RESTAR
 
 Write-Host "[DAVID ALL] FINAL GATE: exact final OK required before any next normal prompt." -ForegroundColor Red
 Write-Host "[DAVID ALL] SEND TIMEOUT LAW: central managed guard owns bounded Retry; workers WAIT and never duplicate-send." -ForegroundColor Yellow
-Write-Host "[DAVID ALL] GLOBAL RATE LIMIT LAW: ALL SENDS STOP -> 10m -> ONE PROBE -> 20m -> ONE PROBE -> 40m; never five-worker retry." -ForegroundColor Yellow
-Write-Host "[DAVID ALL] GLOBAL SEND PACER: minimum 60s between new DAVID ChatGPT sends; confirmed rate-limit popups are auto-dismissed while cooldown remains active." -ForegroundColor Yellow
+Write-Host "[DAVID ALL] GLOBAL RATE LIMIT LAW: ALL SENDS STOP -> 60s -> ONE PROBE; if still limited, wait 60s again; never five-worker retry." -ForegroundColor Yellow
+Write-Host "[DAVID ALL] GLOBAL SEND PACER: minimum 10s between every DAVID ChatGPT relay, one session send at a time; confirmed rate-limit popups are auto-dismissed while cooldown remains active." -ForegroundColor Yellow
 Write-Host "[DAVID ALL] Recovery laws: active thinking/tool work=>WAIT; no-thinking=>refresh+resend; confirmed interruption=>refresh/verify+resend." -ForegroundColor Yellow
 Write-Host "[DAVID ALL] Vercel deploy coordinator: Supabase global lease; one worker deploys at a time." -ForegroundColor Yellow
 Write-Host "[DAVID ALL] Matrix dashboard starts automatically with live progress + worker report." -ForegroundColor Yellow
