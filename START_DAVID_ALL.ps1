@@ -130,9 +130,9 @@ if ($mainNodes.Count -gt 0 -and -not $cdpReady) {
 }
 
 if ($mainRunning) {
-  Write-Host "[DAVID ALL] CONTROL + SYSTEM + DESIGN + APP2 + APK supervisor healthy. Reusing it." -ForegroundColor Green
+  Write-Host "[DAVID ALL] CONTROL + SYSTEM + DESIGN PROCESS 2 + APP2 + APK supervisor healthy. Reusing it." -ForegroundColor Green
 } else {
-  Write-Host "[DAVID ALL] Starting CONTROL + SYSTEM + DESIGN + APP2 + APK supervisor..." -ForegroundColor Cyan
+  Write-Host "[DAVID ALL] Starting CONTROL + SYSTEM + DESIGN PROCESS 2 + APP2 + APK supervisor..." -ForegroundColor Cyan
   Start-Process -FilePath $pwsh -ArgumentList @(
     "-NoProfile",
     "-ExecutionPolicy", "Bypass",
@@ -255,7 +255,7 @@ Write-Host ""
 Write-Host "[DAVID ALL] Expected managed ChatGPT sessions:" -ForegroundColor Green
 Write-Host "  1. DAVID CONTROL / WATCHTOWER"
 Write-Host "  2. ENCHEV SYSTEM"
-Write-Host "  3. ENCHEV DESIGN"
+Write-Host "  3. ENCHEV DESIGN PROCESS 2"
 Write-Host "  4. DPP / APP2"
 Write-Host "  5. DAVID PHONE / APK"
 Write-Host ""
