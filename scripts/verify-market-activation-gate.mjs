@@ -70,19 +70,47 @@ function findCompiledModule(dir) {
   return null;
 }
 
+function node16CompatibleSource(source) {
+  return source
+    .replaceAll('"./country-profile"', '"./country-profile.js"')
+    .replaceAll('"./country-kyc-profile"', '"./country-kyc-profile.js"')
+    .replaceAll('"./country-legal-profile"', '"./country-legal-profile.js"')
+    .replaceAll('"./country-document-profile"', '"./country-document-profile.js"');
+}
+
 async function loadRuntime() {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), "enchev-market-activation-gate-"));
   try {
+    const sourceDir = path.join(tempDir, "src");
+    const outDir = path.join(tempDir, "out");
+    fs.mkdirSync(sourceDir, { recursive: true });
+
+    for (const sourcePath of [
+      "packages/config/src/country-profile.ts",
+      "packages/config/src/country-kyc-profile.ts",
+      "packages/config/src/country-legal-profile.ts",
+      "packages/config/src/country-document-profile.ts",
+      SOURCE_PATH
+    ]) {
+      const sourceText = fs.readFileSync(sourcePath, "utf8");
+      fs.writeFileSync(
+        path.join(sourceDir, path.basename(sourcePath)),
+        node16CompatibleSource(sourceText),
+        "utf8"
+      );
+    }
+
     const tscPath = path.resolve("node_modules/typescript/bin/tsc");
+    const tempSourcePath = path.join(sourceDir, "market-activation-gate.ts");
     const result = spawnSync(process.execPath, [
       tscPath,
-      SOURCE_PATH,
+      tempSourcePath,
       "--ignoreConfig",
       "--target", "ES2022",
       "--module", "Node16",
       "--moduleResolution", "Node16",
       "--skipLibCheck",
-      "--outDir", tempDir,
+      "--outDir", outDir,
       "--pretty", "false"
     ], { encoding: "utf8" });
 
@@ -90,7 +118,7 @@ async function loadRuntime() {
       fail(`TypeScript compile failed: ${(result.stderr || result.stdout || "").trim()}`);
     }
 
-    const compiled = findCompiledModule(tempDir);
+    const compiled = findCompiledModule(outDir);
     if (!compiled) fail("compiled market activation gate runtime module was not produced");
 
     return await import(`${pathToFileURL(compiled).href}?v=${Date.now()}`);
