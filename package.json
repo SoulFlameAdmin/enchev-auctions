@@ -50,7 +50,9 @@
     "verify:translation-key-architecture": "node scripts/verify-translation-key-architecture.mjs",
     "verify:translation-key-architecture:self-test": "node scripts/verify-translation-key-architecture.mjs --self-test",
     "verify:design-process-2": "node scripts/verify-design-process-2.mjs",
-    "verify:design-process-2:self-test": "node scripts/verify-design-process-2.mjs --self-test"
+    "verify:design-process-2:self-test": "node scripts/verify-design-process-2.mjs --self-test",
+    "verify:master-expansion-v2": "node scripts/verify-master-system-expansion-v2.mjs",
+    "verify:master-expansion-v2:self-test": "node scripts/verify-master-system-expansion-v2.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
