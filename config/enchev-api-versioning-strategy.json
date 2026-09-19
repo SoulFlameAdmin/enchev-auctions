@@ -1,0 +1,33 @@
+{
+  "taskId": "24.02",
+  "name": "API versioning strategy",
+  "currentContractVersion": "0.1.0",
+  "currentRoutingMode": "unversioned-current-contract",
+  "currentBasePath": "/api",
+  "futureBreakingVersionPathTemplate": "/api/v{major}",
+  "rules": {
+    "noSilentBreakingChanges": true,
+    "breakingChangeRequiresNewContractVersion": true,
+    "breakingChangeRequiresCompatibilityPlan": true,
+    "breakingChangeRequiresDeprecationWindow": true,
+    "existingUnversionedRoutesRemainStable": true,
+    "versionSelectionMustBeExplicitForFutureMajorRoutes": true,
+    "authoritySemanticsCannotChangeByVersionNegotiation": true
+  },
+  "compatibility": {
+    "additiveChangeDefault": "same-contract-version-when-backward-compatible",
+    "breakingChangeDefault": "new-versioned-contract-and-explicit-migration",
+    "deprecationRequires": [
+      "replacement-version",
+      "migration-notice",
+      "sunset-gate"
+    ],
+    "unsupportedVersionBehavior": "fail-closed"
+  },
+  "boundaries": {
+    "doesNotCreateNewEndpoints": true,
+    "doesNotChangeAuctionAuthority": true,
+    "doesNotDeprecateCurrentRoutes": true,
+    "doesNotClaimPublicStableV1": true
+  }
+}
