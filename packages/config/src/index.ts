@@ -25,3 +25,4 @@ export * from "./country-market-bundle";
 export * from "./regional-cdn-strategy";
 export * from "./unicode-normalization";
 export * from "./locale-fallback-chain";
+export * from "./rtl-layout-capability";
