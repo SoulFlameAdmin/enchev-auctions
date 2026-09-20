@@ -11,8 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout
+      - name: Checkout exact source commit
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
       - name: Setup Node 24
         uses: actions/setup-node@v4
         with:
@@ -27,7 +29,7 @@ jobs:
       - name: Upload exact-head SBOM
         uses: actions/upload-artifact@v4
         with:
-          name: enchev-sbom-${{ github.sha }}
+          name: enchev-sbom-${{ github.event.pull_request.head.sha || github.sha }}
           path: artifacts/enchev-sbom.cdx.json
           if-no-files-found: error
           retention-days: 14
