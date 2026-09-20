@@ -11,7 +11,7 @@
     "verify:env:self-test": "node scripts/verify-environment-variables.mjs --self-test",
     "lint": "node scripts/lint-repository.mjs",
     "typecheck": "tsc --noEmit",
-    "test": "node scripts/verify-production-smoke-suite.mjs --self-test && node scripts/verify-failure-injection-harness.mjs --self-test && node scripts/run-ci-tests.mjs",
+    "test": "node scripts/run-system-test-pre-gates.mjs && node scripts/run-ci-tests.mjs",
     "ci:verify": "npm run lint && npm test && npm run typecheck && npm run build",
     "verify:health": "node scripts/verify-health-endpoints.mjs",
     "verify:health:self-test": "node scripts/verify-health-endpoints.mjs --self-test",
