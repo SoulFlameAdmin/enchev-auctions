@@ -340,12 +340,28 @@ async function recoverSendTimeout(page) {
         console.log("[INTERRUPT] Try again cleared the send-timeout UI.");
         return;
       }
-      if (await activeAssistantWork(page)) {
-        console.log("[INTERRUPT] Try again clicked; GPT now active. WAIT for response, no duplicate send.");
+      if (await realStopControlVisible(page)) {
+        console.log("[INTERRUPT] Try again clicked; real Stop control is active. WAIT for response, no duplicate send.");
+        return;
+      }
+
+      // The explicit timeout banner survived Retry and there is no real Stop
+      // control. Restore/resend the last relay immediately instead of waiting
+      // for Reload or worker restart.
+      const resent = await sendInterruptedDraftImmediately(page, "SEND TIMEOUT");
+      if (resent) {
+        clearSendTimeoutTracking(url);
+        console.log("[INTERRUPT] SEND TIMEOUT recovered by immediate relay resend.");
         return;
       }
     } else {
-      console.log("[INTERRUPT] Try again button was expected but click did not land; next 400ms scan retries immediately.");
+      console.log("[INTERRUPT] Try again button was expected but click did not land; attempting direct relay resend now.");
+      const resent = await sendInterruptedDraftImmediately(page, "SEND TIMEOUT");
+      if (resent) {
+        clearSendTimeoutTracking(url);
+        console.log("[INTERRUPT] SEND TIMEOUT recovered by immediate relay resend after Retry click miss.");
+        return;
+      }
     }
 
     if (attempt < SEND_TIMEOUT_MAX_RETRIES) return;
@@ -599,12 +615,12 @@ async function sendComposer(page, composer) {
   throw new Error("Guard send failed after pointer-safe fallbacks");
 }
 
-async function sendInterruptedDraftImmediately(page) {
+async function sendInterruptedDraftImmediately(page, reasonLabel = "CONNECTION INTERRUPTED") {
   // On the explicit connection-interrupted banner, stale "Thinking/Мислене"
   // text is not authoritative. Only a real visible Stop control proves that
   // the accepted turn is still actively running.
   if (await realStopControlVisible(page)) {
-    console.log("[INTERRUPT] Explicit interruption visible but real Stop control is active. WAIT; no duplicate relay.");
+    console.log("[INTERRUPT] " + reasonLabel + " visible but real Stop control is active. WAIT; no duplicate relay.");
     return false;
   }
 
@@ -634,9 +650,9 @@ async function sendInterruptedDraftImmediately(page) {
     if (!draft) {
       await fillComposer(composer, latestRelay);
       await sleep(200);
-      console.log("[INTERRUPT] CONNECTION INTERRUPTED: restored latest relay into composer. chars=" + latestRelay.length);
+      console.log("[INTERRUPT] " + reasonLabel + ": restored latest relay into composer. chars=" + latestRelay.length);
     } else {
-      console.log("[INTERRUPT] CONNECTION INTERRUPTED: ready draft already in composer. chars=" + latestRelay.length);
+      console.log("[INTERRUPT] " + reasonLabel + ": ready draft already in composer. chars=" + latestRelay.length);
     }
   } catch (error) {
     directComposerSendAt.delete(url);
