@@ -22,7 +22,7 @@ export function validate(config, captureSource, workflowSource, runnerSource, pa
   if (browsers.some(b => b.required !== true)) fail("both browsers must be required");
   if (browsers[0].engine !== "Blink" || browsers[1].engine !== "Blink") fail("browser engine metadata drift");
 
-  const expectedRoutes = ["home","browse","lot-ea-10539","live-auctions","profile"];
+  const expectedRoutes = ["home","inventory","lot-ea-10539","live-auctions","profile"];
   if (JSON.stringify(config.routes) !== JSON.stringify(expectedRoutes)) fail("route matrix drift");
   const expectedWidths = [360,390,430,1366,1440,1920];
   if (JSON.stringify(config.viewportWidths) !== JSON.stringify(expectedWidths)) fail("viewport matrix drift");
