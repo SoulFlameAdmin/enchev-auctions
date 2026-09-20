@@ -112,10 +112,16 @@ for (const required of [
 ]) {
   if (!guardSource.includes(required)) throw new Error(`Guard recovery invariant missing: ${required}`);
 }
+if (!guardSource.includes("Reconnecting without process exit")) throw new Error("Guard must reconnect after CDP/context loss without exiting");
 
 for (const file of ["auto-continue-enchev-v5.mjs","auto-continue-design-v1.mjs","auto-complete-app2-v1.mjs","auto-continue-david-apk-v1.mjs"]) {
   const source = read(file);
-  if (!source.includes("focus({ timeout: 3000 })") || !source.includes("force: true")) {
+  const legacyPointerSafe = source.includes("focus({ timeout: 3000 })") && source.includes("force: true");
+  const reacquirePointerSafe =
+    source.includes("await composer(page)") &&
+    source.includes("page.keyboard.insertText(text)") &&
+    source.includes("force: true");
+  if (!legacyPointerSafe && !reacquirePointerSafe) {
     throw new Error(`Pointer-safe ChatGPT composer fallback missing: ${file}`);
   }
 }
