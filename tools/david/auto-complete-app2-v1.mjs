@@ -18,6 +18,7 @@ const MAX_RETRIES = Number(process.env.DAVID_APP2_MAX_RETRIES || 5);
 const COMPLETE_QUIET_MS = Number(process.env.DAVID_COMPLETE_QUIET_MS || 7000);
 const COMPLETE_STABLE_SAMPLES = Number(process.env.DAVID_COMPLETE_STABLE_SAMPLES || 5);
 const COMPLETE_SAMPLE_MS = Number(process.env.DAVID_COMPLETE_SAMPLE_MS || 1200);
+const SEMANTIC_TERMINAL_QUIET_MS = Number(process.env.DAVID_SEMANTIC_TERMINAL_QUIET_MS || 15000);
 const PROBLEM_PREFIX = "PROBLEM IN:";
 const DONE_MARKER = "PROJECT_100_PERCENT_COMPLETE";
 const RELAY_MARKER = "[DAVID_APP2_AUTOPILOT_V2]";
@@ -104,17 +105,56 @@ function extractProblem(text) {
   return null;
 }
 function endsOk(text) { return /^OK$/i.test(lastLine(text)); }
+function humanTerminalGate(text) {
+  return /(captcha|verify you are human|mfa|two-factor|2fa|log in|login required|sign in|permission required|authorization required|approve access|manual approval|потвърдете, че сте човек|влезте|вход.*необходим|двуфактор|разрешение.*необходимо|ръчно одобрение)/i.test(String(text || ""));
+}
+function semanticTerminalCandidate(text) {
+  const value = String(text || "").trim();
+  if (value.length < 40 || humanTerminalGate(value)) return false;
+  if (/(still running|in progress|queued|pending|waiting for|please wait|will continue|i['’]ll continue|not complete|not finished|still working|още се изпълнява|в процес|изчаквам|чакам|ще продължа|не е завършен|не е готов)/i.test(value)) return false;
+  if (/(tests?\s+(?:are\s+)?fail(?:ed|ing)|build\s+fail(?:ed|ure)|workflow\s+fail(?:ed|ure)|ci\s+fail(?:ed|ure)|тест(?:ът|овете)?\s+.*неуспеш|билд.*неуспеш)/i.test(value)) return false;
+  return /(\bPASS\b|\bSUCCESS\b|\bGREEN\b|completed|complete|done|finished|implemented|merged|commit|pull request|artifact|evidence|tests?|готов|завърш|успеш|реализир|обединен|комит|доказател)/i.test(value);
+}
 async function waitForTerminalMarker(page, state) {
+  let semanticText = "";
+  let semanticSince = 0;
   while (true) {
     const text = await latestAssistant(page);
     const problem = extractProblem(text);
-    if (problem) return { type: "problem", text, problem };
-    if (isDone(text)) return { type: "done", text };
-    if (endsOk(text)) return { type: "ok", text };
-    state.watchdog = "awaiting-final-ok";
-    state.lastResult = "waiting-for-final-ok";
-    save(state, "LAW: no new APP2 prompt until final line is exactly OK, PROBLEM IN, or project-complete marker");
-    console.log("[APP2] LAW: waiting for final OK. NO NEW PROMPT.");
+    if (problem) {
+      state.lastTerminalMode = "problem";
+      return { type: "problem", text, problem };
+    }
+    if (isDone(text)) { state.lastTerminalMode = "done"; return { type: "done", text }; }
+    if (endsOk(text)) {
+      state.lastTerminalMode = "ok";
+      return { type: "ok", text };
+    }
+
+    const humanGate = humanTerminalGate(text);
+    const semanticReady = semanticTerminalCandidate(text) && !await generating(page);
+    if (semanticReady) {
+      if (text !== semanticText) {
+        semanticText = text;
+        semanticSince = Date.now();
+      } else if (Date.now() - semanticSince >= SEMANTIC_TERMINAL_QUIET_MS) {
+        state.lastTerminalMode = "semantic";
+        state.lastResult = "SEMANTIC_COMPLETE";
+        save(state, "Stable response accepted by semantic terminal fallback; no exact OK required");
+        console.log("[APP2] Stable semantic completion accepted. NO duplicate prompt.");
+        return { type: "ok", text, semantic: true };
+      }
+    } else {
+      semanticText = "";
+      semanticSince = 0;
+    }
+
+    state.watchdog = humanGate ? "human-terminal-gate" : "awaiting-terminal-evidence";
+    state.lastResult = humanGate ? "human-action-required" : "waiting-for-terminal-evidence";
+    save(state, humanGate
+      ? "Human gate detected in assistant response; autonomy paused safely"
+      : "Waiting for exact OK/PROBLEM IN or conservative stable semantic completion");
+    console.log("[APP2] Waiting for terminal evidence. NO NEW PROMPT.");
     await sleep(3000);
   }
 }
@@ -408,24 +448,43 @@ async function waitReady(context, page, state) {
   }
 }
 async function fillAndSend(page, text) {
-  const c = await composer(page);
-  if (!c) throw new Error("ChatGPT composer not found");
-
+  let c = null;
   let filled = false;
-  try {
-    await c.fill(text, { timeout: 5000 });
-    filled = true;
-  } catch {}
 
-  if (!filled) {
-    await c.focus({ timeout: 3000 }).catch(() => {});
-    await c.evaluate((el, value) => {
-      el.focus();
-      if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) el.value = value;
-      else el.textContent = value;
-      el.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: value }));
-    }, text);
+  // ChatGPT may replace #prompt-textarea while the page settles. Never hold a
+  // stale locator for 30s: reacquire the visible composer on every bounded try.
+  for (let attempt = 1; attempt <= 10 && !filled; attempt++) {
+    c = await composer(page);
+    if (!c) {
+      await sleep(400);
+      continue;
+    }
+
+    try {
+      await c.fill(text, { timeout: 1800 });
+      filled = true;
+      break;
+    } catch {}
+
+    // Pointer-safe fallback: reacquire before focusing, then type through the
+    // page keyboard so locator.evaluate cannot hang on a detached node.
+    c = await composer(page);
+    if (!c) {
+      await sleep(400);
+      continue;
+    }
+    try {
+      await c.focus({ timeout: 1200 });
+      await page.keyboard.press("Control+A");
+      await page.keyboard.insertText(text);
+      filled = true;
+      break;
+    } catch {}
+
+    await sleep(400);
   }
+
+  if (!filled || !c) throw new Error("ChatGPT composer unavailable after bounded reacquire");
 
   await sleep(250);
 
@@ -914,7 +973,10 @@ function runSelfTest() {
   if (!sameBlocker("Vercel build-rate-limit blocked", "Vercel build rate limit blocked")) {
     throw new Error("APP2 defer self-test: equivalent external blocker should be recognized as the same blocker");
   }
-  console.log("APP2_RESPONSE_WATCHDOG_SELF_TEST PASS progress=2 stall=2 recovery_single_send=1 rollover=3");
+  if (!semanticTerminalCandidate("DPP block completed. 132/132 tests PASS and evidence was recorded.")) throw new Error("APP2 self-test: proven stable completion should allow semantic fallback");
+  if (semanticTerminalCandidate("Workflow is queued and still running; waiting for CI.")) throw new Error("APP2 self-test: queued work must not auto-continue");
+  if (semanticTerminalCandidate("Login required. Please approve MFA.")) throw new Error("APP2 self-test: human gate must pause");
+  console.log("APP2_RESPONSE_WATCHDOG_SELF_TEST PASS progress=2 stall=2 recovery_single_send=1 rollover=3 semantic_terminal=3");
 }
 
 if (process.argv.includes("--self-test")) {

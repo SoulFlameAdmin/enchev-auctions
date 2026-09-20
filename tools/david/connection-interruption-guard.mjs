@@ -16,6 +16,11 @@ const SEND_TIMEOUT_MAX_RETRIES = Number(process.env.DAVID_SEND_TIMEOUT_MAX_RETRI
 const SEND_TIMEOUT_STALE_ACTIVE_MS = Number(process.env.DAVID_SEND_TIMEOUT_STALE_ACTIVE_MS || 8000);
 const SEND_TIMEOUT_RELOAD_SETTLE_MS = Number(process.env.DAVID_SEND_TIMEOUT_RELOAD_SETTLE_MS || 2500);
 const RECOVERY_REQUEST_FILE = path.join(HERE, ".david-recovery-request.json");
+const ACTIVE_MANAGED_KINDS = new Set(
+  String(process.env.DAVID_ACTIVE_WORKERS || "SYSTEM,DESIGN,APP2,APK,CONTROL")
+    .split(",").map((x) => x.trim().toUpperCase()).filter(Boolean)
+);
+ACTIVE_MANAGED_KINDS.add("CONTROL");
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const recoveredAt = new Map();
@@ -29,6 +34,8 @@ const sendTimeoutLastProgressAt = new Map();
 const sendTimeoutReloaded = new Map();
 const sendTimeoutRecoveryRequestedAt = new Map();
 const rateLimitReportedAt = new Map();
+const directComposerSendAt = new Map();
+const directComposerSendHash = new Map();
 
 function cleanConversationUrl(url) {
   const m = String(url || "").match(/^https:\/\/chatgpt\.com\/c\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?=[/?#]|$)/i);
@@ -84,14 +91,14 @@ function clearSendTimeoutTracking(url) {
 
 function managedConversationUrls() {
   const defs = [
-    [path.join(HERE, ".david-enchev-state.json"), "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71"],
-    [path.join(HERE, ".david-enchev-design-state.json"), "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7"],
-    [path.join(HERE, ".david-app2-state-6aac2dbb.json"), "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4"],
-    [path.join(HERE, ".david-apk-state.json"), null],
-    [path.join(HERE, ".david-control-state.json"), "https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e"]
-  ];
+    ["SYSTEM", path.join(HERE, ".david-enchev-state.json"), "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71"],
+    ["DESIGN", path.join(HERE, ".david-enchev-design-state.json"), "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7"],
+    ["APP2", path.join(HERE, ".david-app2-state-6aac2dbb.json"), "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4"],
+    ["APK", path.join(HERE, ".david-apk-state.json"), null],
+    ["CONTROL", path.join(HERE, ".david-control-state.json"), "https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e"]
+  ].filter(([kind]) => ACTIVE_MANAGED_KINDS.has(kind));
   const urls = new Set();
-  for (const [file, fallback] of defs) {
+  for (const [, file, fallback] of defs) {
     const st = readState(file);
     const u = cleanConversationUrl(st.chatUrl) || cleanConversationUrl(fallback);
     if (u) urls.add(u);
@@ -119,7 +126,7 @@ function managedKindFromUrl(url) {
     ["APP2", path.join(HERE, ".david-app2-state-6aac2dbb.json"), "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4"],
     ["APK", path.join(HERE, ".david-apk-state.json"), null],
     ["CONTROL", path.join(HERE, ".david-control-state.json"), "https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e"]
-  ];
+  ].filter(([kind]) => ACTIVE_MANAGED_KINDS.has(kind));
   for (const [kind, file, fallback] of defs) {
     const st = readState(file);
     const current = cleanConversationUrl(st.chatUrl) || cleanConversationUrl(fallback);
@@ -137,11 +144,16 @@ async function rateLimitVisible(page) {
         const r = el.getBoundingClientRect();
         return s.display !== "none" && s.visibility !== "hidden" && Number(s.opacity || 1) > 0 && r.width > 0 && r.height > 0;
       };
-      const re = /(твърде много заявки|правите заявки прекалено бързо|изчакайте няколко минути|too many requests|requests too quickly|please wait a few minutes|rate limit)/i;
-      for (const el of document.querySelectorAll('[role="dialog"],[role="alert"],[aria-live="assertive"],[data-testid*="error" i],div,section,p,span')) {
+      const rateRe = /(твърде много заявки|правите заявки прекалено бързо|изчакайте няколко минути|too many requests|requests too quickly|please wait a few minutes|rate limit)/i;
+      const timeoutRe = /(изпращането на съобщението изтече по време|моля, опитайте отново|message sending timed out|sending the message timed out|message send timed out|please try again)/i;
+      for (const el of document.querySelectorAll('[role="dialog"],[role="alert"],[aria-live="assertive"],[data-testid*="toast" i],[data-testid*="error" i],div,section,p,span')) {
         if (!visible(el)) continue;
+        if (el.closest('[data-message-author-role], article[data-testid^="conversation-turn-"]')) continue;
+        if (el.querySelector?.('[data-message-author-role], article[data-testid^="conversation-turn-"]')) continue;
         const text = (el.textContent || "").replace(/\s+/g, " ").trim();
-        if (text && text.length < 600 && re.test(text)) return true;
+        if (!text || text.length >= 600) continue;
+        if (timeoutRe.test(text)) continue;
+        if (rateRe.test(text)) return true;
       }
       return false;
     });
@@ -205,14 +217,40 @@ async function sendTimeoutVisible(page) {
   } catch { return false; }
 }
 
+async function sendTimeoutRetryButtonVisible(page) {
+  try {
+    return await page.evaluate(() => {
+      const visible = (el) => {
+        const s = getComputedStyle(el);
+        const r = el.getBoundingClientRect();
+        return s.display !== "none" && s.visibility !== "hidden" &&
+          Number(s.opacity || 1) > 0 && r.width > 0 && r.height > 0;
+      };
+      const retry = /^(опитайте\s+отново|try\s+again|retry)$/i;
+      for (const el of document.querySelectorAll('button,[role="button"]')) {
+        if (!visible(el)) continue;
+        const values = [
+          el.getAttribute("aria-label") || "",
+          el.getAttribute("title") || "",
+          el.textContent || ""
+        ].map((x) => x.replace(/\s+/g, " ").trim()).filter(Boolean);
+        if (values.some((x) => retry.test(x))) return true;
+      }
+      return false;
+    });
+  } catch {
+    return false;
+  }
+}
+
 async function clickSendTimeoutRetry(page) {
-  const labels = [/^Опитайте отново$/i, /^Try again$/i, /^Retry$/i];
+  const labels = [/^\s*Опитайте\s+отново\s*$/i, /^\s*Try\s+again\s*$/i, /^\s*Retry\s*$/i];
   for (const label of labels) {
     try {
       const buttons = page.getByRole("button", { name: label });
       for (let i = (await buttons.count()) - 1; i >= 0; i--) {
         const b = buttons.nth(i);
-        if (!await b.isVisible().catch(() => false) || !await b.isEnabled().catch(() => false)) continue;
+        if (!await b.isVisible().catch(() => false)) continue;
         try {
           await b.click({ timeout: 1500 });
           return true;
@@ -224,6 +262,52 @@ async function clickSendTimeoutRetry(page) {
       }
     } catch {}
   }
+
+  // ChatGPT occasionally renders the send-timeout action with a visible label
+  // that does not expose the same accessible name immediately. Fall back to a
+  // DOM/text click, but only on a visible button-like control with an exact
+  // retry label inside an already-confirmed managed DAVID chat.
+  try {
+    return await page.evaluate(() => {
+      const visible = (el) => {
+        const s = getComputedStyle(el);
+        const r = el.getBoundingClientRect();
+        return s.display !== "none" && s.visibility !== "hidden" &&
+          Number(s.opacity || 1) > 0 && r.width > 0 && r.height > 0;
+      };
+      const retry = /^(опитайте\s+отново|try\s+again|retry)$/i;
+      const candidates = [...document.querySelectorAll('button,[role="button"]')];
+      for (let i = candidates.length - 1; i >= 0; i--) {
+        const el = candidates[i];
+        if (!visible(el)) continue;
+        const values = [
+          el.getAttribute("aria-label") || "",
+          el.getAttribute("title") || "",
+          el.textContent || ""
+        ].map((x) => x.replace(/\s+/g, " ").trim()).filter(Boolean);
+        if (!values.some((x) => retry.test(x))) continue;
+        try {
+          el.scrollIntoView({ block: "center", inline: "center" });
+          el.click();
+          return true;
+        } catch {}
+      }
+      return false;
+    });
+  } catch {}
+
+  try {
+    const fallback = page.locator('button,[role="button"]').filter({ hasText: /Опитайте\s+отново|Try\s+again|Retry/i });
+    for (let i = (await fallback.count()) - 1; i >= 0; i--) {
+      const b = fallback.nth(i);
+      if (!await b.isVisible().catch(() => false)) continue;
+      try {
+        await b.click({ force: true, timeout: 1500 });
+        return true;
+      } catch {}
+    }
+  } catch {}
+
   return false;
 }
 
@@ -261,12 +345,28 @@ async function recoverSendTimeout(page) {
         console.log("[INTERRUPT] Try again cleared the send-timeout UI.");
         return;
       }
-      if (await activeAssistantWork(page)) {
-        console.log("[INTERRUPT] Try again clicked; GPT now active. WAIT for response, no duplicate send.");
+      if (await realStopControlVisible(page)) {
+        console.log("[INTERRUPT] Try again clicked; real Stop control is active. WAIT for response, no duplicate send.");
+        return;
+      }
+
+      // The explicit timeout banner survived Retry and there is no real Stop
+      // control. Restore/resend the last relay immediately instead of waiting
+      // for Reload or worker restart.
+      const resent = await sendInterruptedDraftImmediately(page, "SEND TIMEOUT");
+      if (resent) {
+        clearSendTimeoutTracking(url);
+        console.log("[INTERRUPT] SEND TIMEOUT recovered by immediate relay resend.");
         return;
       }
     } else {
-      console.log("[INTERRUPT] Try again button was expected but click did not land; next 400ms scan retries immediately.");
+      console.log("[INTERRUPT] Try again button was expected but click did not land; attempting direct relay resend now.");
+      const resent = await sendInterruptedDraftImmediately(page, "SEND TIMEOUT");
+      if (resent) {
+        clearSendTimeoutTracking(url);
+        console.log("[INTERRUPT] SEND TIMEOUT recovered by immediate relay resend after Retry click miss.");
+        return;
+      }
     }
 
     if (attempt < SEND_TIMEOUT_MAX_RETRIES) return;
@@ -343,6 +443,33 @@ async function interruptionVisible(page) {
   } catch { return false; }
 }
 
+async function realStopControlVisible(page) {
+  if (!isChat(page)) return false;
+  try {
+    return await page.evaluate(() => {
+      const visible = (el) => {
+        const s = getComputedStyle(el);
+        const r = el.getBoundingClientRect();
+        return s.display !== "none" && s.visibility !== "hidden" &&
+          Number(s.opacity || 1) > 0 && r.width > 0 && r.height > 0;
+      };
+      const selectors = [
+        '[data-testid="stop-button"]',
+        '[data-testid*="stop" i]',
+        'button[aria-label*="Stop"]',
+        'button[aria-label*="stop"]',
+        'button[aria-label*="Спри"]'
+      ];
+      for (const sel of selectors) {
+        for (const el of document.querySelectorAll(sel)) if (visible(el)) return true;
+      }
+      return false;
+    });
+  } catch {
+    return false;
+  }
+}
+
 async function activeAssistantWork(page) {
   if (!isChat(page)) return false;
   try {
@@ -399,6 +526,34 @@ async function latestUserText(page) {
     if (!count) return "";
     return (await nodes.last().innerText().catch(() => "")).trim();
   } catch { return ""; }
+}
+
+async function userMessageCount(page) {
+  try { return await page.locator('[data-message-author-role="user"]').count(); }
+  catch { return 0; }
+}
+
+async function composerText(composer) {
+  if (!composer) return "";
+  try {
+    return await composer.evaluate((el) => {
+      const raw = el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement
+        ? el.value
+        : (el.innerText || el.textContent || "");
+      return String(raw || "").replace(/\u00a0/g, " ").trim();
+    });
+  } catch {
+    return "";
+  }
+}
+
+function smallTextHash(text) {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return String(h >>> 0);
 }
 
 async function getComposer(page) {
@@ -463,6 +618,85 @@ async function sendComposer(page, composer) {
     }
   }
   throw new Error("Guard send failed after pointer-safe fallbacks");
+}
+
+async function sendInterruptedDraftImmediately(page, reasonLabel = "CONNECTION INTERRUPTED") {
+  // On the explicit connection-interrupted banner, stale "Thinking/Мислене"
+  // text is not authoritative. Only a real visible Stop control proves that
+  // the accepted turn is still actively running.
+  if (await realStopControlVisible(page)) {
+    console.log("[INTERRUPT] " + reasonLabel + " visible but real Stop control is active. WAIT; no duplicate relay.");
+    return false;
+  }
+
+  const composer = await getComposer(page);
+  if (!composer) return false;
+
+  const draft = await composerText(composer);
+  const latestRelay = draft || await latestUserText(page);
+  if (!latestRelay) return false;
+
+  const url = page.url();
+  const hash = smallTextHash(latestRelay);
+  const now = Date.now();
+  const lastHash = String(directComposerSendHash.get(url) || "");
+  const lastAt = Number(directComposerSendAt.get(url) || 0);
+
+  // Prevent the 400ms scan loop from sending the same relay twice.
+  if (lastHash === hash && now - lastAt < 15000) return true;
+
+  const beforeCount = await userMessageCount(page);
+  const beforeLatest = await latestUserText(page);
+
+  directComposerSendHash.set(url, hash);
+  directComposerSendAt.set(url, now);
+
+  try {
+    if (!draft) {
+      await fillComposer(composer, latestRelay);
+      await sleep(200);
+      console.log("[INTERRUPT] " + reasonLabel + ": restored latest relay into composer. chars=" + latestRelay.length);
+    } else {
+      console.log("[INTERRUPT] " + reasonLabel + ": ready draft already in composer. chars=" + latestRelay.length);
+    }
+  } catch (error) {
+    directComposerSendAt.delete(url);
+    console.log("[INTERRUPT] Could not restore interrupted relay into composer: " + (error?.message || error));
+    return false;
+  }
+
+  let via;
+  try {
+    via = await sendComposer(page, composer);
+  } catch (error) {
+    directComposerSendAt.delete(url);
+    console.log("[INTERRUPT] Direct relay resend failed; falling back to recovery ladder: " + (error?.message || error));
+    return false;
+  }
+
+  await sleep(900);
+
+  const nextComposer = await getComposer(page);
+  const remaining = await composerText(nextComposer);
+  const afterCount = await userMessageCount(page);
+  const afterLatest = await latestUserText(page);
+  const prefix = latestRelay.slice(0, Math.min(120, latestRelay.length));
+  const landed =
+    !remaining ||
+    afterCount > beforeCount ||
+    (afterLatest && afterLatest !== beforeLatest && afterLatest.includes(prefix));
+
+  if (landed) {
+    recoveredAt.set(url, Date.now());
+    interruptionSince.delete(url);
+    interruptionSamples.delete(url);
+    console.log("[INTERRUPT] Interrupted relay RESEND confirmed via " + via + ". No reload, no duplicate send.");
+    return true;
+  }
+
+  directComposerSendAt.delete(url);
+  console.log("[INTERRUPT] Direct relay resend was not confirmed; use normal recovery ladder.");
+  return false;
 }
 
 async function recover(page) {
@@ -560,27 +794,66 @@ async function recover(page) {
 }
 
 async function main() {
-  console.log(`[INTERRUPT] Connecting to shared Edge CDP ${CDP_URL}`);
   let browser = null;
   let context = null;
-  while (!context) {
-    try {
-      browser = await chromium.connectOverCDP(CDP_URL, { timeout: 120000 });
-      context = browser.contexts()[0] || null;
-      if (!context) throw new Error("No active Chromium context on CDP port.");
-    } catch (error) {
-      console.log(`[INTERRUPT] CDP not ready: ${error?.message || error}. WAIT 5s -> reconnect. Guard stays alive.`);
-      browser = null;
-      context = null;
-      await sleep(5000);
-    }
-  }
-  console.log("[INTERRUPT] Managed-only ChatGPT guard ON. Watches CONTROL/SYSTEM/DESIGN/APP2/APK owned URLs only.");
+  let announced = false;
 
   while (true) {
-    const pages = context.pages().filter(isManagedChat);
+    if (!context) {
+      console.log(`[INTERRUPT] Connecting to shared Edge CDP ${CDP_URL}`);
+      try {
+        browser = await chromium.connectOverCDP(CDP_URL, { timeout: 120000 });
+        context = browser.contexts()[0] || null;
+        if (!context) throw new Error("No active Chromium context on CDP port.");
+        announced = false;
+        browser.on("disconnected", () => {
+          browser = null;
+          context = null;
+        });
+      } catch (error) {
+        console.log(`[INTERRUPT] CDP not ready: ${error?.message || error}. WAIT 5s -> reconnect. Guard stays alive.`);
+        browser = null;
+        context = null;
+        await sleep(5000);
+        continue;
+      }
+    }
+
+    if (!announced) {
+      console.log("[INTERRUPT] Managed-only ChatGPT guard ON. Watches CONTROL/SYSTEM/DESIGN/APP2/APK owned URLs only.");
+      announced = true;
+    }
+
+    let pages;
+    try {
+      pages = context.pages().filter(isManagedChat);
+    } catch (error) {
+      console.log(`[INTERRUPT] CDP/context lost during scan: ${error?.message || error}. Reconnecting without process exit.`);
+      browser = null;
+      context = null;
+      await sleep(1000);
+      continue;
+    }
+
     for (const page of pages) {
       try {
+        // HARD PRIORITY: explicit message-send timeout / Try Again must be
+        // recovered before any global rate-limit classification. This prevents
+        // stale conversation text mentioning "rate limit" from swallowing the
+        // visible Retry banner.
+        const explicitRetry = await sendTimeoutRetryButtonVisible(page);
+        const timeoutVisible = explicitRetry || await sendTimeoutVisible(page);
+        if (timeoutVisible) {
+          if (explicitRetry) {
+            console.log(`[INTERRUPT] EXPLICIT TRY AGAIN visible url=${page.url()} -> timeout recovery has priority`);
+          }
+          await recoverSendTimeout(page);
+          continue;
+        } else {
+          const key = page.url();
+          clearSendTimeoutTracking(key);
+        }
+
         if (await rateLimitVisible(page)) {
           const key = page.url();
           const now = Date.now();
@@ -599,20 +872,15 @@ async function main() {
           continue;
         }
 
-        if (await sendTimeoutVisible(page)) {
-          await recoverSendTimeout(page);
-          continue;
-        } else {
-          const key = page.url();
-          clearSendTimeoutTracking(key);
-        }
-
         if (await interruptionVisible(page)) {
-          await recover(page);
+          const sentDirectly = await sendInterruptedDraftImmediately(page);
+          if (!sentDirectly) await recover(page);
         } else {
           const key = page.url();
           interruptionSince.delete(key);
           interruptionSamples.delete(key);
+          directComposerSendAt.delete(key);
+          directComposerSendHash.delete(key);
         }
       } catch (error) {
         console.log(`[INTERRUPT] Recovery scan error: ${error?.message || error}`);
@@ -622,7 +890,10 @@ async function main() {
   }
 }
 
-main().catch((error) => {
+main().catch(async (error) => {
+  // Only an unexpected top-level programming error should reach here. Normal
+  // CDP/browser loss is handled in-loop and must never kill the GUARD process.
   console.error("[INTERRUPT] FATAL", error?.stack || error);
+  await sleep(2000);
   process.exit(1);
 });

@@ -17,6 +17,7 @@ const COOLDOWN_MS = Number(process.env.DAVID_APK_COOLDOWN_MS || 1200);
 const COMPLETE_QUIET_MS = Number(process.env.DAVID_COMPLETE_QUIET_MS || 7000);
 const COMPLETE_STABLE_SAMPLES = Number(process.env.DAVID_COMPLETE_STABLE_SAMPLES || 5);
 const COMPLETE_SAMPLE_MS = Number(process.env.DAVID_COMPLETE_SAMPLE_MS || 1200);
+const SEMANTIC_TERMINAL_QUIET_MS = Number(process.env.DAVID_SEMANTIC_TERMINAL_QUIET_MS || 15000);
 const PROBLEM_PREFIX = "PROBLEM IN:";
 const MARKER = "[DAVID_RELAY_APK_V1]";
 const TAB_NAME = "DAVID_APK_MANAGED_V1";
@@ -91,16 +92,55 @@ function endsOk(text) {
   const rows = String(text || "").split(/\r?\n/).map((x) => x.trim()).filter(Boolean);
   return Boolean(rows.length && /^OK$/i.test(rows.at(-1)));
 }
+function humanTerminalGate(text) {
+  return /(captcha|verify you are human|mfa|two-factor|2fa|log in|login required|sign in|permission required|authorization required|approve access|manual approval|потвърдете, че сте човек|влезте|вход.*необходим|двуфактор|разрешение.*необходимо|ръчно одобрение)/i.test(String(text || ""));
+}
+function semanticTerminalCandidate(text) {
+  const value = String(text || "").trim();
+  if (value.length < 40 || humanTerminalGate(value)) return false;
+  if (/(still running|in progress|queued|pending|waiting for|please wait|will continue|i['’]ll continue|not complete|not finished|still working|още се изпълнява|в процес|изчаквам|чакам|ще продължа|не е завършен|не е готов)/i.test(value)) return false;
+  if (/(tests?\s+(?:are\s+)?fail(?:ed|ing)|build\s+fail(?:ed|ure)|workflow\s+fail(?:ed|ure)|ci\s+fail(?:ed|ure)|тест(?:ът|овете)?\s+.*неуспеш|билд.*неуспеш)/i.test(value)) return false;
+  return /(\bPASS\b|\bSUCCESS\b|\bGREEN\b|completed|complete|done|finished|implemented|merged|commit|pull request|artifact|evidence|tests?|готов|завърш|успеш|реализир|обединен|комит|доказател)/i.test(value);
+}
 async function waitForTerminalMarker(page, state) {
+  let semanticText = "";
+  let semanticSince = 0;
   while (true) {
     const text = await latestAssistant(page);
     const problem = extractProblem(text);
-    if (problem) return { type: "problem", text, problem };
-    if (endsOk(text)) return { type: "ok", text };
-    state.watchdog = "apk-awaiting-final-ok";
-    state.lastResult = "waiting-for-final-ok";
-    save(state, "LAW: no new APK prompt until final line is exactly OK or PROBLEM IN appears");
-    console.log("[APK] LAW: waiting for final OK. NO NEW PROMPT.");
+    if (problem) {
+      state.lastTerminalMode = "problem";
+      return { type: "problem", text, problem };
+    }
+    if (endsOk(text)) {
+      state.lastTerminalMode = "ok";
+      return { type: "ok", text };
+    }
+
+    const humanGate = humanTerminalGate(text);
+    const semanticReady = semanticTerminalCandidate(text) && !await generating(page);
+    if (semanticReady) {
+      if (text !== semanticText) {
+        semanticText = text;
+        semanticSince = Date.now();
+      } else if (Date.now() - semanticSince >= SEMANTIC_TERMINAL_QUIET_MS) {
+        state.lastTerminalMode = "semantic";
+        state.lastResult = "SEMANTIC_COMPLETE";
+        save(state, "Stable response accepted by semantic terminal fallback; no exact OK required");
+        console.log("[APK] Stable semantic completion accepted. NO duplicate prompt.");
+        return { type: "ok", text, semantic: true };
+      }
+    } else {
+      semanticText = "";
+      semanticSince = 0;
+    }
+
+    state.watchdog = humanGate ? "human-terminal-gate" : "awaiting-terminal-evidence";
+    state.lastResult = humanGate ? "human-action-required" : "waiting-for-terminal-evidence";
+    save(state, humanGate
+      ? "Human gate detected in assistant response; autonomy paused safely"
+      : "Waiting for exact OK/PROBLEM IN or conservative stable semantic completion");
+    console.log("[APK] Waiting for terminal evidence. NO NEW PROMPT.");
     await sleep(3000);
   }
 }
@@ -475,24 +515,41 @@ async function waitReady(context, page, state) {
   }
 }
 async function fillAndSend(page, text) {
-  const c = await composer(page);
-  if (!c) throw new Error("ChatGPT composer not found");
-
+  let c = null;
   let filled = false;
-  try {
-    await c.fill(text, { timeout: 5000 });
-    filled = true;
-  } catch {}
 
-  if (!filled) {
-    await c.focus({ timeout: 3000 }).catch(() => {});
-    await c.evaluate((el, value) => {
-      el.focus();
-      if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) el.value = value;
-      else el.textContent = value;
-      el.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: value }));
-    }, text);
+  // ChatGPT can replace the composer DOM node while the page settles. Reacquire
+  // it on each bounded attempt instead of evaluating a stale locator.
+  for (let attempt = 1; attempt <= 10 && !filled; attempt++) {
+    c = await composer(page);
+    if (!c) {
+      await sleep(400);
+      continue;
+    }
+
+    try {
+      await c.fill(text, { timeout: 1800 });
+      filled = true;
+      break;
+    } catch {}
+
+    c = await composer(page);
+    if (!c) {
+      await sleep(400);
+      continue;
+    }
+    try {
+      await c.focus({ timeout: 1200 });
+      await page.keyboard.press("Control+A");
+      await page.keyboard.insertText(text);
+      filled = true;
+      break;
+    } catch {}
+
+    await sleep(400);
   }
+
+  if (!filled || !c) throw new Error("ChatGPT composer unavailable after bounded reacquire");
 
   await sleep(250);
 
@@ -738,7 +795,18 @@ async function main() {
   }
 }
 
-main().catch((e) => {
-  console.error("[APK] FATAL", e?.stack || e);
-  process.exit(1);
-});
+function runSelfTest() {
+  if (!semanticTerminalCandidate("APK upgrade completed successfully. Build PASS. Artifact evidence is recorded.")) throw new Error("APK self-test: proven stable completion should allow semantic fallback");
+  if (semanticTerminalCandidate("Android CI is still running and pending. Please wait.")) throw new Error("APK self-test: pending CI must not auto-continue");
+  if (semanticTerminalCandidate("Please log in and approve MFA before continuing.")) throw new Error("APK self-test: human gate must pause");
+  console.log("DAVID_APK_RESPONSE_WATCHDOG_SELF_TEST PASS semantic_terminal=3");
+}
+
+if (process.argv.includes("--self-test")) {
+  runSelfTest();
+} else {
+  main().catch((e) => {
+    console.error("[APK] FATAL", e?.stack || e);
+    process.exit(1);
+  });
+}

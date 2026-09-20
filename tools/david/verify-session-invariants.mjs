@@ -112,10 +112,16 @@ for (const required of [
 ]) {
   if (!guardSource.includes(required)) throw new Error(`Guard recovery invariant missing: ${required}`);
 }
+if (!guardSource.includes("Reconnecting without process exit")) throw new Error("Guard must reconnect after CDP/context loss without exiting");
 
 for (const file of ["auto-continue-enchev-v5.mjs","auto-continue-design-v1.mjs","auto-complete-app2-v1.mjs","auto-continue-david-apk-v1.mjs"]) {
   const source = read(file);
-  if (!source.includes("focus({ timeout: 3000 })") || !source.includes("force: true")) {
+  const legacyPointerSafe = source.includes("focus({ timeout: 3000 })") && source.includes("force: true");
+  const reacquirePointerSafe =
+    source.includes("await composer(page)") &&
+    source.includes("page.keyboard.insertText(text)") &&
+    source.includes("force: true");
+  if (!legacyPointerSafe && !reacquirePointerSafe) {
     throw new Error(`Pointer-safe ChatGPT composer fallback missing: ${file}`);
   }
 }
@@ -130,7 +136,8 @@ for (const required of [
   "FRESH_SESSION_ON_START",
   "prewarmFreshManagedTabs",
   "Promise.all(tasks)",
-  "5 ChatGPT worker tabs prewarmed in parallel",
+  "roles.length",
+  "ACTIVE_MANAGED_KINDS",
   "resetFreshBootTransientState"
 ]) {
   if (!supervisorPrewarm.includes(required)) throw new Error(`Fresh startup prewarm invariant missing: ${required}`);
@@ -176,4 +183,4 @@ if (/allFiveOwned/.test(supervisor)) {
   throw new Error("Unmanaged-tab cleanup must not depend on all five workers already being healthy");
 }
 
-console.log("DAVID_SESSION_INVARIANTS PASS same_tab_rollover=5 project_ok_rotation=4 strict_tab_budget=5 active_work_protected=1 fresh_restart_wiring=5 pointer_safe_send=5 mandatory_immediate_try_again=1 retry_x3_reload_restart=1 dead_worker_lease_release=1 fresh_parallel_prewarm=5 transient_probe_reset=1 monitor_2s=1");
+console.log("DAVID_SESSION_INVARIANTS PASS same_tab_rollover=5 project_ok_rotation=4 dynamic_tab_budget=1 active_work_protected=1 fresh_restart_wiring=5 pointer_safe_send=5 mandatory_immediate_try_again=1 retry_x3_reload_restart=1 dead_worker_lease_release=1 dynamic_fresh_parallel_prewarm=1 transient_probe_reset=1 monitor_2s=1");
