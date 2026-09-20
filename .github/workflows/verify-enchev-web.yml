@@ -16,11 +16,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Dependency review (26.09)
-        if: github.event_name == 'pull_request'
-        uses: actions/dependency-review-action@v4
-        with:
-          fail-on-severity: high
       - name: Setup Node 24
         uses: actions/setup-node@v4
         with:
@@ -29,6 +24,9 @@ jobs:
           cache-dependency-path: package-lock.json
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
+      - name: Dependency review (26.09)
+        if: github.event_name == 'pull_request'
+        run: npm audit --package-lock-only --audit-level=high
       - name: Generate frozen test task registry
         run: node scripts/generate-master-test-task-ids.mjs
       - name: Repository lint
