@@ -4,11 +4,12 @@ const CONFIG_PATH="config/enchev-production-smoke-suite.json";
 const RUNTIME_PATH="config/enchev-runtime-environments.json";
 const HEALTH_PATH="config/enchev-health-endpoints.json";
 const PACKAGE_PATH="package.json";
+const PRE_GATE_PATH="scripts/run-system-test-pre-gates.mjs";
 
 function fail(message){throw new Error(`PRODUCTION_SMOKE_SUITE FAIL: ${message}`);}
 function same(a,b,label){if(JSON.stringify(a)!==JSON.stringify(b))fail(`${label} drift`);}
 
-export function validate(config,runtime,health,pkg){
+export function validate(config,runtime,health,pkg,preGateSource){
   if(config?.taskId!=="25.13")fail("taskId must be 25.13");
   if(config?.name!=="Production smoke suite"||config?.suiteVersion!==1)fail("identity drift");
   const env=config.environment;
@@ -38,7 +39,8 @@ export function validate(config,runtime,health,pkg){
   if(config.ownership?.runtimeEnvironmentTask!=="01.07"||config.ownership?.healthEndpointTask!=="01.10"||config.ownership?.stagingSmokeSuiteTask!=="25.12"||config.ownership?.failureInjectionHarnessTask!=="25.14")fail("ownership drift");
   if(pkg?.scripts?.["verify:production-smoke-suite"]!=="node scripts/verify-production-smoke-suite.mjs")fail("package verify script drift");
   if(pkg?.scripts?.["verify:production-smoke-suite:self-test"]!=="node scripts/verify-production-smoke-suite.mjs --self-test")fail("package self-test script drift");
-  if(pkg?.scripts?.test!=="node scripts/verify-production-smoke-suite.mjs --self-test && node scripts/run-ci-tests.mjs")fail("aggregate npm test must gate 25.13");
+  if(pkg?.scripts?.test!=="node scripts/run-system-test-pre-gates.mjs && node scripts/run-ci-tests.mjs")fail("aggregate npm test must use stable system pre-gates");
+  if(typeof preGateSource!=="string"||!preGateSource.includes('["scripts/verify-production-smoke-suite.mjs", "--self-test"]'))fail("system pre-gates must include 25.13 self-test");
   return {health:config.healthChecks.length,pages:config.pageChecks.length};
 }
 
@@ -86,11 +88,12 @@ const config=JSON.parse(fs.readFileSync(CONFIG_PATH,"utf8"));
 const runtime=JSON.parse(fs.readFileSync(RUNTIME_PATH,"utf8"));
 const health=JSON.parse(fs.readFileSync(HEALTH_PATH,"utf8"));
 const pkg=JSON.parse(fs.readFileSync(PACKAGE_PATH,"utf8"));
-const result=validate(config,runtime,health,pkg);
+const preGateSource=fs.readFileSync(PRE_GATE_PATH,"utf8");
+const result=validate(config,runtime,health,pkg,preGateSource);
 
 if(process.argv.includes("--self-test")){
   let cases=0;
-  const reject=(label,mutate)=>{const c=structuredClone(config);mutate(c);let bad=false;try{validate(c,runtime,health,pkg);}catch{bad=true;}if(!bad)fail(`negative self-test not rejected: ${label}`);cases+=1;};
+  const reject=(label,mutate)=>{const c=structuredClone(config);mutate(c);let bad=false;try{validate(c,runtime,health,pkg,preGateSource);}catch{bad=true;}if(!bad)fail(`negative self-test not rejected: ${label}`);cases+=1;};
   reject("preview environment",c=>{c.environment.platformEnvironment="preview";});
   reject("production loses authority",c=>{c.environment.productionAuthority=false;});
   reject("page removed",c=>{c.pageChecks.pop();});
