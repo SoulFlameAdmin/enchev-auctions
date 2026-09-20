@@ -37,14 +37,15 @@ function runSelfTest() {
     valid.replace("fetch-depth: 0", "fetch-depth: 1"),
     valid.replace(PIN, "trufflesecurity/trufflehog@main"),
     valid.replace(`version: '${VERSION}'`, "version: 'latest'"),
-    valid.replace("contents: read", "contents: write")
+    valid.replace("contents: read", "contents: write"),
+    valid.replace(" --fail", "")
   ];
 
   if (verifyWorkflow(valid).length !== 0) throw new Error("26.10 SELF_TEST valid fixture rejected");
   for (const sample of mutations) {
     if (verifyWorkflow(sample).length === 0) throw new Error("26.10 SELF_TEST unsafe mutation accepted");
   }
-  console.log("26.10 SECRET_SCAN_CONFIG SELF_TEST PASS cases=5");
+  console.log("26.10 SECRET_SCAN_CONFIG SELF_TEST PASS cases=6");
 }
 
 const workflow = readFileSync(WORKFLOW, "utf8");
