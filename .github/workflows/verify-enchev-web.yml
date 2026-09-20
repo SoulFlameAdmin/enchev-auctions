@@ -122,6 +122,10 @@ jobs:
         run: node scripts/verify-controlled-clock-time-test-utilities.mjs
       - name: 25.07 Controlled clock/time-test utilities self-tests
         run: node scripts/verify-controlled-clock-time-test-utilities.mjs --self-test
+      - name: 25.08 Flaky-test policy
+        run: node scripts/verify-flaky-test-policy.mjs
+      - name: 25.08 Flaky-test policy self-tests
+        run: node scripts/verify-flaky-test-policy.mjs --self-test
       - name: Environment variable contract invariant
         run: node scripts/verify-environment-variables.mjs
       - name: Environment variable contract self-tests

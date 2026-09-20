@@ -1,0 +1,51 @@
+{
+  "taskId": "25.08",
+  "name": "Flaky-test policy",
+  "principles": {
+    "failuresAreEvidence": true,
+    "blindRetriesForbidden": true,
+    "sameShaRetryOnly": true,
+    "originalFailureMustRemainVisible": true,
+    "retrySuccessDoesNotEraseFailureHistory": true,
+    "productDefectsMustNotBeClassifiedAsFlaky": true,
+    "deterministicRootCausePreferred": true
+  },
+  "classification": {
+    "allowedFlakeClasses": [
+      "runner-infrastructure-transient",
+      "external-service-transient",
+      "browser-process-startup-transient",
+      "network-transport-transient"
+    ],
+    "requiresConcreteLogs": true,
+    "requiresExactFailureSignature": true,
+    "requiresSameCommitShaForRetryEvidence": true
+  },
+  "retryPolicy": {
+    "automaticTestBodyRetries": 0,
+    "targetedWorkflowRetryMax": 1,
+    "targetedRetryRequiresClassification": true,
+    "targetedRetryRequiresUnchangedCode": true,
+    "targetedRetryRequiresRecordedFailure": true,
+    "retryOfProductAssertionFailure": "forbidden"
+  },
+  "recurrencePolicy": {
+    "sameSignatureThreshold": 2,
+    "actionAtThreshold": "open-root-cause-work-and-stop-treating-as-one-off",
+    "quarantineAllowed": true,
+    "quarantineRequiresOwner": true,
+    "quarantineRequiresTrackingReference": true,
+    "quarantineMustExpire": true,
+    "quarantinedCriticalPathMayBeGreen": false
+  },
+  "greenPolicy": {
+    "applicableDeterministicTestMustPass": true,
+    "knownUnresolvedProductFailureMayBeGreen": false,
+    "knownUnresolvedCriticalFlakeMayBeGreen": false,
+    "infrastructureRetryEvidenceMustIncludeInitialFailureAndSuccessfulRetry": true
+  },
+  "ownership": {
+    "controlledClockOwnedByTask": "25.07",
+    "coverageTargetOwnedByTask": "25.09"
+  }
+}
