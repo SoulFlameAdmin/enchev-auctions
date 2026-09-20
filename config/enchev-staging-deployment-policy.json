@@ -1,0 +1,27 @@
+{
+  "taskId": "26.04",
+  "name": "Staging deployment pipeline",
+  "status": "YELLOW",
+  "environment": "staging",
+  "source": {"exactShaRequired": true},
+  "deployment": {
+    "provider": "vercel",
+    "requiresGlobalLease": true,
+    "leaseOwner": "ENCHEV_SYSTEM",
+    "leaseProjectKey": "enchev-auctions",
+    "leaseSeconds": 900,
+    "claimRpc": "public.david_claim_vercel_deploy",
+    "markDeployingRpc": "public.david_mark_vercel_deploying",
+    "releaseRpc": "public.david_release_vercel_deploy",
+    "blockRpc": "public.david_block_vercel_deploys"
+  },
+  "postDeploy": {"requiredState": "READY", "smokePath": "/api/health/web"},
+  "greenAcceptance": [
+    "repository contract verifier PASS",
+    "exact-head CI PASS",
+    "global Vercel lease granted",
+    "staging deployment reaches READY",
+    "staging health smoke PASS",
+    "lease released"
+  ]
+}
