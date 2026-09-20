@@ -1,0 +1,20 @@
+{
+  "taskId": "26.09",
+  "name": "Dependency review",
+  "gateVersion": 1,
+  "workflow": ".github/workflows/verify-enchev-web.yml",
+  "action": "actions/dependency-review-action@v4",
+  "event": "pull_request",
+  "policy": {
+    "failOnSeverity": "high",
+    "blocksHighAndCritical": true,
+    "reviewOnlyChangedDependencies": true,
+    "lockfileEnforcementTask": "26.08",
+    "ciFailureBlocksGreen": true
+  },
+  "execution": {
+    "requiredCheckJob": "verify-web",
+    "preGateRunner": "scripts/run-system-test-pre-gates.mjs",
+    "localVerifier": "scripts/verify-dependency-review.mjs"
+  }
+}
