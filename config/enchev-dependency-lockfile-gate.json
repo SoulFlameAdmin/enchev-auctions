@@ -1,0 +1,23 @@
+{
+  "taskId": "26.08",
+  "name": "Dependency lockfile enforcement",
+  "gateVersion": 1,
+  "packageManager": "npm",
+  "lockfile": "package-lock.json",
+  "lockfileVersion": 3,
+  "nodeMajor": 24,
+  "rules": {
+    "rootLockfileRequired": true,
+    "singlePackageManager": true,
+    "npmCiRequiredInCi": true,
+    "npmInstallForbiddenInCi": true,
+    "lockfileManifestConsistencyRequired": true,
+    "lockfileIntegrityMetadataRequired": true,
+    "ciFailureBlocksGreen": true
+  },
+  "execution": {
+    "ciWorkflow": ".github/workflows/verify-enchev-web.yml",
+    "ciInstallCommand": "npm ci --no-audit --no-fund",
+    "preGateRunner": "scripts/run-system-test-pre-gates.mjs"
+  }
+}
