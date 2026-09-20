@@ -167,7 +167,7 @@ if (process.argv.includes("--self-test")) {
   rejectConfig("health check removed", c => { c.healthChecks.pop(); });
   rejectConfig("mutating requests allowed", c => { c.requestPolicy.mutatingRequestsForbidden = false; });
   rejectConfig("live evidence waived", c => { c.greenRules.liveSmokeEvidenceRequiredBeforeGreen = false; });
-  rejectPreGate("25.12 registration removed", preGateSource.replace('["scripts/verify-staging-smoke-suite-ci.mjs", "--self-test"],\\n', ""));
+  rejectPreGate("25.12 registration removed", preGateSource.replace('  ["scripts/verify-staging-smoke-suite-ci.mjs", "--self-test"],\n', ""));
   rejectUrl("production URL", runtimeConfig.canonical_production_url);
   rejectUrl("localhost", "https://localhost");
   rejectUrl("non-Vercel host", "https://staging.example.com");
