@@ -612,29 +612,42 @@ async function cleanupUnknownChatGptTabs(context) {
 
   const candidates = [];
   for (const page of unknown) {
-    const active = await pageShowsActiveWork(page);
-    if (active) continue;
     let url = "";
     try { url = page.url(); } catch {}
     const rootish = url === "https://chatgpt.com/" || url === "https://chatgpt.com" || url === "about:blank";
-    candidates.push({ page, url, rootish });
+    const active = await pageShowsActiveWork(page);
+
+    // Dedicated DAVID profile law: once the persisted state-owned tabs are
+    // protected, any remaining unknown ChatGPT tabs are overflow. They may be
+    // stale conversations that still render an old thinking/tool indicator,
+    // so "active-looking" alone must not let them accumulate forever.
+    candidates.push({ page, url, rootish, active });
   }
-  candidates.sort((a, b) => Number(b.rootish) - Number(a.rootish));
+
+  // Close clearly stale/idle conversation tabs first. Preserve a root/pending
+  // page until last because it may be a worker rollover before ownership tags land.
+  candidates.sort((a, b) => {
+    if (a.rootish !== b.rootish) return Number(a.rootish) - Number(b.rootish);
+    if (a.active !== b.active) return Number(a.active) - Number(b.active);
+    return 0;
+  });
 
   let closed = 0;
+  let closedActiveLooking = 0;
   for (const item of candidates) {
     if (excess <= 0) break;
     if (item.page.isClosed()) continue;
     await item.page.close({ runBeforeUnload: false }).catch(() => {});
     closed += 1;
+    if (item.active) closedActiveLooking += 1;
     excess -= 1;
   }
 
   if (closed) {
-    console.log(`[DUAL] Strict tab budget closed ${closed} unmanaged idle ChatGPT tab(s); target=${STRICT_CHATGPT_TAB_TARGET}.`);
+    console.log(`[DUAL] Strict tab budget closed ${closed} unmanaged ChatGPT overflow tab(s) (active-looking=${closedActiveLooking}); target=${STRICT_CHATGPT_TAB_TARGET}.`);
   }
   if (excess > 0) {
-    console.log(`[DUAL] Strict tab budget still has excess=${excess}, but remaining unmanaged tabs show active work; leaving them untouched.`);
+    console.log(`[DUAL] Strict tab budget still has excess=${excess}; no closable unknown tabs remain.`);
   }
   return closed;
 }
