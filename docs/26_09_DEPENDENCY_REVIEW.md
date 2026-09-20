@@ -2,17 +2,17 @@
 
 ## Goal
 
-Reject pull requests that introduce newly vulnerable dependencies at HIGH or CRITICAL severity while preserving the reproducible dependency baseline established by 26.08.
+Fail closed when the locked dependency graph contains HIGH or CRITICAL known vulnerabilities, while remaining independent of optional GitHub repository security settings.
 
 ## Contract
 
-- dependency review runs on `pull_request` inside the existing `verify-web` CI job;
-- the canonical action is `actions/dependency-review-action@v4`;
-- `fail-on-severity: high` blocks HIGH and CRITICAL newly introduced vulnerabilities;
-- push-to-main runs skip the PR-only review step but still execute the local contract verifier;
-- `package-lock.json` remains mandatory through 26.08, so review is based on deterministic dependency resolution;
-- any dependency-review or contract-verifier failure blocks GREEN.
+- npm is the canonical dependency-review engine for this repository;
+- CI runs `npm audit --package-lock-only --audit-level=high` against the deterministic `package-lock.json` established by 26.08;
+- the npm registry advisory service is the authoritative vulnerability data provider for this gate;
+- HIGH and CRITICAL findings fail the existing `verify-web` PR check;
+- the local contract verifier rejects weakened severity, missing lockfile ownership, or removal of the CI audit command;
+- dependency review does not modify packages automatically.
 
-## Safety boundary
+## Provider fallback evidence
 
-26.09 does not auto-update dependencies and does not silently accept vulnerable upgrades. Remediation remains an explicit code change reviewed through the same PR checks.
+The initial `actions/dependency-review-action@v4` attempt failed on exact-head CI because GitHub reported that Dependency Graph is not enabled for this repository. Enabling that repository setting is outside this code-only task and is not required for the npm advisory gate. The implementation therefore uses the supported npm registry audit path instead of bypassing permissions or fabricating provider state.
