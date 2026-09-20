@@ -1,0 +1,40 @@
+{
+  "taskId": "25.04",
+  "name": "Contract-test strategy",
+  "scope": [
+    "http-api-schema-compatibility",
+    "provider-adapter-contracts",
+    "event-payload-contracts",
+    "configuration-contracts"
+  ],
+  "principles": {
+    "consumerVisibleCompatibilityFirst": true,
+    "schemaDrivenWhereAvailable": true,
+    "deterministic": true,
+    "productionIndependent": true,
+    "backwardCompatibilityExplicit": true,
+    "negativeCompatibilityCasesRequired": true
+  },
+  "execution": {
+    "allowedEnvironments": ["local", "ci"],
+    "productionCalls": "forbidden",
+    "productionCredentials": "forbidden",
+    "liveProviderCalls": "forbidden",
+    "contractFixturesVersioned": true,
+    "breakingChangeRequiresExplicitVersionOrMigration": true
+  },
+  "ownership": {
+    "openApiOwnedByTask": "24.01",
+    "integrationBehaviorOwnedByTask": "25.02",
+    "endToEndBehaviorOwnedByTask": "25.03",
+    "crossBrowserOwnedByTask": "25.10"
+  },
+  "acceptance": {
+    "producerAndConsumerContractValidated": true,
+    "requiredFieldsAndTypesValidated": true,
+    "unknownOrBreakingShapeRejected": true,
+    "backwardCompatibleAdditionsAllowedWhenPolicyPermits": true,
+    "failingApplicableTestBlocksGreen": true,
+    "strategyDoesNotClaimProviderImplementation": true
+  }
+}
