@@ -34,6 +34,8 @@ const sendTimeoutLastProgressAt = new Map();
 const sendTimeoutReloaded = new Map();
 const sendTimeoutRecoveryRequestedAt = new Map();
 const rateLimitReportedAt = new Map();
+const directComposerSendAt = new Map();
+const directComposerSendHash = new Map();
 
 function cleanConversationUrl(url) {
   const m = String(url || "").match(/^https:\/\/chatgpt\.com\/c\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?=[/?#]|$)/i);
@@ -478,6 +480,34 @@ async function latestUserText(page) {
   } catch { return ""; }
 }
 
+async function userMessageCount(page) {
+  try { return await page.locator('[data-message-author-role="user"]').count(); }
+  catch { return 0; }
+}
+
+async function composerText(composer) {
+  if (!composer) return "";
+  try {
+    return await composer.evaluate((el) => {
+      const raw = el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement
+        ? el.value
+        : (el.innerText || el.textContent || "");
+      return String(raw || "").replace(/\u00a0/g, " ").trim();
+    });
+  } catch {
+    return "";
+  }
+}
+
+function smallTextHash(text) {
+  let h = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return String(h >>> 0);
+}
+
 async function getComposer(page) {
   const selectors = [
     "#prompt-textarea",
@@ -540,6 +570,65 @@ async function sendComposer(page, composer) {
     }
   }
   throw new Error("Guard send failed after pointer-safe fallbacks");
+}
+
+async function sendInterruptedDraftImmediately(page) {
+  if (await activeAssistantWork(page)) return false;
+
+  const composer = await getComposer(page);
+  if (!composer) return false;
+
+  const draft = await composerText(composer);
+  if (!draft) return false;
+
+  const url = page.url();
+  const hash = smallTextHash(draft);
+  const now = Date.now();
+  const lastHash = String(directComposerSendHash.get(url) || "");
+  const lastAt = Number(directComposerSendAt.get(url) || 0);
+
+  // Prevent the 400ms scan loop from sending the same visible draft twice.
+  if (lastHash === hash && now - lastAt < 15000) return true;
+
+  const beforeCount = await userMessageCount(page);
+  const beforeLatest = await latestUserText(page);
+
+  directComposerSendHash.set(url, hash);
+  directComposerSendAt.set(url, now);
+  console.log("[INTERRUPT] READY DRAFT on " + url + "; SEND NOW without refresh. chars=" + draft.length);
+
+  let via;
+  try {
+    via = await sendComposer(page, composer);
+  } catch (error) {
+    directComposerSendAt.delete(url);
+    console.log("[INTERRUPT] Direct draft send failed; falling back to recovery ladder: " + (error?.message || error));
+    return false;
+  }
+
+  await sleep(900);
+
+  const nextComposer = await getComposer(page);
+  const remaining = await composerText(nextComposer);
+  const afterCount = await userMessageCount(page);
+  const afterLatest = await latestUserText(page);
+  const prefix = draft.slice(0, Math.min(120, draft.length));
+  const landed =
+    !remaining ||
+    afterCount > beforeCount ||
+    (afterLatest && afterLatest !== beforeLatest && afterLatest.includes(prefix));
+
+  if (landed) {
+    recoveredAt.set(url, Date.now());
+    interruptionSince.delete(url);
+    interruptionSamples.delete(url);
+    console.log("[INTERRUPT] Direct interrupted draft SEND confirmed via " + via + ". No reload, no duplicate send.");
+    return true;
+  }
+
+  directComposerSendAt.delete(url);
+  console.log("[INTERRUPT] Direct draft click was not confirmed; use normal recovery ladder.");
+  return false;
 }
 
 async function recover(page) {
@@ -691,11 +780,14 @@ async function main() {
         }
 
         if (await interruptionVisible(page)) {
-          await recover(page);
+          const sentDirectly = await sendInterruptedDraftImmediately(page);
+          if (!sentDirectly) await recover(page);
         } else {
           const key = page.url();
           interruptionSince.delete(key);
           interruptionSamples.delete(key);
+          directComposerSendAt.delete(key);
+          directComposerSendHash.delete(key);
         }
       } catch (error) {
         console.log(`[INTERRUPT] Recovery scan error: ${error?.message || error}`);
