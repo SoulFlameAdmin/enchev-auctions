@@ -1,0 +1,34 @@
+{
+  "taskId": "26.06",
+  "name": "Deployment concurrency control",
+  "version": 1,
+  "globalLease": {
+    "provider": "supabase-postgres",
+    "table": "public.david_vercel_deploy_lease",
+    "leaseKey": "global",
+    "claimFunction": "public.david_claim_vercel_deploy",
+    "markDeployingFunction": "public.david_mark_vercel_deploying",
+    "releaseFunction": "public.david_release_vercel_deploy",
+    "blockFunction": "public.david_block_vercel_deploys",
+    "leaseSeconds": 900
+  },
+  "requiredFlow": [
+    "claim",
+    "if-not-granted-no-deploy",
+    "mark-deploying",
+    "exactly-one-intended-deployment",
+    "always-release"
+  ],
+  "safety": {
+    "noDeployWithoutLease": true,
+    "noParallelManualDeploys": true,
+    "quotaRetryTimeMustComeFromProvider": true,
+    "releaseRequiredOnSuccessOrFailure": true,
+    "productionAndPreviewShareGlobalLease": true
+  },
+  "githubCi": {
+    "verificationWorkflow": ".github/workflows/verify-enchev-web.yml",
+    "verificationConcurrencyGroup": "verify-enchev-web-${{ github.ref }}",
+    "cancelInProgress": true
+  }
+}
