@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "fixtures": {
+    "syntheticBuyer": {
+      "id": "00000000-0000-4000-8000-000000000101",
+      "displayName": "Synthetic Buyer 101",
+      "email": "buyer101@example.test"
+    },
+    "syntheticVehicle": {
+      "id": "00000000-0000-4000-8000-000000000201",
+      "vin": "TESTVIN00000000201",
+      "lotNumber": "TEST-LOT-0201",
+      "year": 2020
+    },
+    "syntheticAuction": {
+      "id": "00000000-0000-4000-8000-000000000301",
+      "startsAt": "2030-01-01T10:00:00.000Z",
+      "endsAt": "2030-01-01T10:05:00.000Z",
+      "currency": "XXX"
+    }
+  }
+}

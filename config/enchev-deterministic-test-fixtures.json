@@ -1,0 +1,39 @@
+{
+  "taskId": "25.06",
+  "name": "Deterministic test fixtures",
+  "scope": [
+    "stable-identifiers",
+    "stable-timestamps",
+    "stable-domain-values",
+    "synthetic-non-production-data"
+  ],
+  "principles": {
+    "deterministic": true,
+    "syntheticOnly": true,
+    "productionIndependent": true,
+    "explicitClockInputs": true,
+    "stableIdentifiers": true,
+    "minimalPurposeBuiltFixtures": true
+  },
+  "execution": {
+    "allowedEnvironments": ["local", "ci", "staging"],
+    "productionData": "forbidden",
+    "productionCredentials": "forbidden",
+    "wallClockReadsInFixtures": "forbidden",
+    "randomUnseededValues": "forbidden",
+    "fixtureMutationAcrossTests": "forbidden",
+    "sharedFixtureResetRequired": true
+  },
+  "ownership": {
+    "propertyStrategyOwnedByTask": "25.05",
+    "controlledClockUtilitiesOwnedByTask": "25.07"
+  },
+  "acceptance": {
+    "sameInputsProduceSameFixture": true,
+    "fixtureValuesAreSerializable": true,
+    "fixtureValuesAreReplayable": true,
+    "fixturesContainNoRealCustomerData": true,
+    "failingApplicableTestBlocksGreen": true,
+    "taskDoesNotClaimAllDomainFixturesImplemented": true
+  }
+}
