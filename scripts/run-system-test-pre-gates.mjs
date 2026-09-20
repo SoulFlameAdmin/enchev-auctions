@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 
 const gates = [
   ["scripts/verify-production-smoke-suite.mjs", "--self-test"],
+  ["scripts/verify-staging-smoke-suite-ci.mjs", "--self-test"],
   ["scripts/verify-failure-injection-harness.mjs", "--self-test"],
   ["scripts/verify-database-migration-gate.mjs", "--self-test"],
   ["scripts/verify-dependency-lockfile-enforcement.mjs", "--self-test"],
