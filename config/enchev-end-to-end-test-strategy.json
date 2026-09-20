@@ -1,0 +1,42 @@
+{
+  "taskId": "25.03",
+  "name": "End-to-end test strategy",
+  "scope": [
+    "buyer-critical-journeys",
+    "seller-admin-critical-journeys",
+    "auction-participation-journeys",
+    "release-logistics-critical-journeys"
+  ],
+  "principles": {
+    "userVisibleBehaviorFirst": true,
+    "blackBoxPreferred": true,
+    "deterministic": true,
+    "isolatedFromProduction": true,
+    "syntheticTestData": true,
+    "authoritativeOutcomeAssertions": true,
+    "failureAndRecoveryPathsRequired": true
+  },
+  "execution": {
+    "allowedEnvironments": ["local", "ci", "staging"],
+    "productionMutations": "forbidden",
+    "productionCredentials": "forbidden",
+    "browserAutomation": "required-for-browser-journeys",
+    "externalServices": "stub-or-approved-sandbox",
+    "stateResetRequired": true,
+    "controlledClockWhereTimeSensitive": true
+  },
+  "coverage": {
+    "representativeBrowserRequired": true,
+    "mobileViewportRequiredForCriticalBuyerJourney": true,
+    "crossBrowserMatrixOwnedByTask": "25.10",
+    "fullProductionSmokeOwnedByTask": "25.13"
+  },
+  "acceptance": {
+    "criticalJourneyHasHappyPath": true,
+    "criticalJourneyHasFailureOrRecoveryPath": true,
+    "assertUserVisibleAndAuthoritativeOutcome": true,
+    "testMustBeRepeatable": true,
+    "failingApplicableTestBlocksGreen": true,
+    "strategyDoesNotClaimJourneyImplementation": true
+  }
+}
