@@ -116,7 +116,9 @@
     "verify:dependency-review": "node scripts/verify-dependency-review.mjs",
     "verify:dependency-review:self-test": "node scripts/verify-dependency-review.mjs --self-test",
     "verify:sbom-generation": "node scripts/verify-sbom-generation.mjs",
-    "verify:sbom-generation:self-test": "node scripts/verify-sbom-generation.mjs --self-test"
+    "verify:sbom-generation:self-test": "node scripts/verify-sbom-generation.mjs --self-test",
+    "verify:build-provenance": "node scripts/verify-build-provenance.mjs",
+    "verify:build-provenance:self-test": "node scripts/verify-build-provenance.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",

@@ -6,7 +6,8 @@ const gates = [
   ["scripts/verify-database-migration-gate.mjs", "--self-test"],
   ["scripts/verify-dependency-lockfile-enforcement.mjs", "--self-test"],
   ["scripts/verify-dependency-review.mjs", "--self-test"],
-  ["scripts/verify-sbom-generation.mjs", "--self-test"]
+  ["scripts/verify-sbom-generation.mjs", "--self-test"],
+  ["scripts/verify-build-provenance.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of gates) {
