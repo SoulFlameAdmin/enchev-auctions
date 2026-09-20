@@ -1,0 +1,24 @@
+name: Generate package lock for 26.08
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  generate-lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Generate deterministic npm lockfile
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Verify npm ci accepts generated lockfile
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Upload generated lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-26-08-package-lock
+          path: package-lock.json
+          if-no-files-found: error
