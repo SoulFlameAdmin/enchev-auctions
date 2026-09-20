@@ -1,0 +1,48 @@
+{
+  "taskId": "25.13",
+  "name": "Production smoke suite",
+  "suiteVersion": 1,
+  "environment": {
+    "role": "production",
+    "platform": "vercel",
+    "platformEnvironment": "production",
+    "branchPolicy": "main-only",
+    "productionAuthority": true,
+    "baseUrlSource": "canonical-runtime-config"
+  },
+  "healthChecks": [
+    {"component":"web","path":"/api/health/web","httpStatus":200,"ready":true,"status":"healthy"},
+    {"component":"api","path":"/api/health/api","httpStatus":200,"ready":true,"status":"healthy"},
+    {"component":"realtime","path":"/api/health/realtime","httpStatus":503,"ready":false,"status":"service-pending"},
+    {"component":"worker","path":"/api/health/worker","httpStatus":503,"ready":false,"status":"service-pending"}
+  ],
+  "pageChecks": [
+    {"name":"home","path":"/","httpStatus":200},
+    {"name":"inventory","path":"/inventory","httpStatus":200},
+    {"name":"lot-ea-10539","path":"/lot/EA-10539","httpStatus":200},
+    {"name":"live-auctions","path":"/live-auctions","httpStatus":200},
+    {"name":"profile","path":"/profile","httpStatus":200}
+  ],
+  "requestPolicy": {
+    "method": "GET",
+    "redirect": "error",
+    "cache": "no-store",
+    "timeoutMs": 15000,
+    "mutatingRequestsForbidden": true
+  },
+  "greenRules": {
+    "canonicalProductionUrlOnly": true,
+    "allHealthChecksMustPass": true,
+    "allPageChecksMustPass": true,
+    "productionAuthorityMustRemainTrueOnlyForProduction": true,
+    "ciContractAndNegativeSelfTestsMustPass": true,
+    "liveProductionSmokeEvidenceRequiredBeforeGreen": true,
+    "liveEvidenceMustRecordObservedProductionDeployment": true
+  },
+  "ownership": {
+    "runtimeEnvironmentTask": "01.07",
+    "healthEndpointTask": "01.10",
+    "stagingSmokeSuiteTask": "25.12",
+    "failureInjectionHarnessTask": "25.14"
+  }
+}
