@@ -1,0 +1,55 @@
+{
+  "taskId": "25.10",
+  "name": "Cross-browser test matrix",
+  "matrixVersion": 1,
+  "browsers": [
+    {
+      "id": "chrome",
+      "engine": "Blink",
+      "channel": "GitHub-hosted runner Chrome/Chromium",
+      "required": true
+    },
+    {
+      "id": "edge",
+      "engine": "Blink",
+      "channel": "Microsoft Edge stable installed in CI",
+      "required": true
+    }
+  ],
+  "routes": [
+    "home",
+    "inventory",
+    "lot-ea-10539",
+    "live-auctions",
+    "profile"
+  ],
+  "viewportWidths": [360, 390, 430, 1366, 1440, 1920],
+  "expectedScreenshotsPerBrowser": 30,
+  "requiredChecks": {
+    "browserProcessLaunches": true,
+    "devToolsConnection": true,
+    "routeReadiness": true,
+    "responsiveGeometry": true,
+    "visualScreenshotCapture": true,
+    "manifestBrowserIdentity": true,
+    "artifactUpload": true
+  },
+  "greenRules": {
+    "allRequiredBrowsersMustPass": true,
+    "allRequiredRoutesMustPass": true,
+    "allRequiredViewportsMustPass": true,
+    "missingRequiredBrowserBlocksGreen": true,
+    "missingArtifactBlocksGreen": true,
+    "singleBrowserPassDoesNotSatisfyMatrix": true
+  },
+  "scopeTruth": {
+    "firefoxClaimed": false,
+    "safariClaimed": false,
+    "webkitClaimed": false,
+    "mobileBrowserMatrixOwnedByTask": "25.11"
+  },
+  "ownership": {
+    "criticalPathCoverageOwnedByTask": "25.09",
+    "mobileBrowserMatrixOwnedByTask": "25.11"
+  }
+}
