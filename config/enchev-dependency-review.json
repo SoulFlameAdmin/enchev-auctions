@@ -1,0 +1,23 @@
+{
+  "taskId": "26.09",
+  "name": "Dependency review",
+  "gateVersion": 2,
+  "engine": "npm-audit",
+  "advisoryProvider": "npm-registry",
+  "workflow": ".github/workflows/verify-enchev-web.yml",
+  "event": "pull_request",
+  "policy": {
+    "auditLevel": "high",
+    "blocksHighAndCritical": true,
+    "packageLockOnly": true,
+    "lockfileEnforcementTask": "26.08",
+    "githubDependencyGraphOptional": true,
+    "ciFailureBlocksGreen": true
+  },
+  "execution": {
+    "requiredCheckJob": "verify-web",
+    "ciCommand": "npm audit --package-lock-only --audit-level=high",
+    "preGateRunner": "scripts/run-system-test-pre-gates.mjs",
+    "localVerifier": "scripts/verify-dependency-review.mjs"
+  }
+}

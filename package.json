@@ -112,7 +112,9 @@
     "verify:database-migration-gate": "node scripts/verify-database-migration-gate.mjs",
     "verify:database-migration-gate:self-test": "node scripts/verify-database-migration-gate.mjs --self-test",
     "verify:dependency-lockfile-enforcement": "node scripts/verify-dependency-lockfile-enforcement.mjs",
-    "verify:dependency-lockfile-enforcement:self-test": "node scripts/verify-dependency-lockfile-enforcement.mjs --self-test"
+    "verify:dependency-lockfile-enforcement:self-test": "node scripts/verify-dependency-lockfile-enforcement.mjs --self-test",
+    "verify:dependency-review": "node scripts/verify-dependency-review.mjs",
+    "verify:dependency-review:self-test": "node scripts/verify-dependency-review.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
