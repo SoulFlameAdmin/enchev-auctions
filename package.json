@@ -120,7 +120,9 @@
     "verify:build-provenance": "node scripts/verify-build-provenance.mjs",
     "verify:build-provenance:self-test": "node scripts/verify-build-provenance.mjs --self-test",
     "verify:environment-scoped-ci-secrets": "node scripts/verify-environment-scoped-ci-secrets.mjs",
-    "verify:environment-scoped-ci-secrets:self-test": "node scripts/verify-environment-scoped-ci-secrets.mjs --self-test"
+    "verify:environment-scoped-ci-secrets:self-test": "node scripts/verify-environment-scoped-ci-secrets.mjs --self-test",
+    "verify:staging-smoke-suite": "node scripts/verify-staging-smoke-suite-ci.mjs",
+    "verify:staging-smoke-suite:self-test": "node scripts/verify-staging-smoke-suite-ci.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
