@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 const WORKFLOW = ".github/workflows/secret-scan.yml";
 const PIN = "trufflesecurity/trufflehog@f714bf454f350590f4a24c3ddb1aef02c35bf5b6";
 const VERSION = "3.97.5";
+const EXTRA = "extra_args: --results=verified,unknown --fail";
 
 export function verifyWorkflow(text) {
   const failures = [];
@@ -13,6 +14,7 @@ export function verifyWorkflow(text) {
   if (!text.includes("fetch-depth: 0")) failures.push("full git history checkout missing");
   if (!text.includes(`uses: ${PIN}`)) failures.push("scanner action pin mismatch");
   if (!text.includes(`version: '${VERSION}'`)) failures.push("scanner runtime version mismatch");
+  if (!text.includes(EXTRA)) failures.push("fail-closed scan arguments missing");
   return failures;
 }
 
@@ -26,11 +28,13 @@ function runSelfTest() {
     "permissions:",
     "  contents: read",
     "steps:",
-    "  - with:",
+    "  - uses: actions/checkout@v4",
+    "    with:",
     "      fetch-depth: 0",
     `  - uses: ${PIN}`,
     "    with:",
-    `      version: '${VERSION}'`
+    `      version: '${VERSION}'`,
+    `      ${EXTRA}`
   ].join("\n");
 
   const mutations = [
@@ -38,14 +42,17 @@ function runSelfTest() {
     valid.replace(PIN, "trufflesecurity/trufflehog@main"),
     valid.replace(`version: '${VERSION}'`, "version: 'latest'"),
     valid.replace("contents: read", "contents: write"),
-    valid.replace(" --fail", "")
+    valid.replace(" --fail", ""),
+    valid.replace("--results=verified,unknown", "--results=verified")
   ];
 
   if (verifyWorkflow(valid).length !== 0) throw new Error("26.10 SELF_TEST valid fixture rejected");
+  let rejected = 0;
   for (const sample of mutations) {
-    if (verifyWorkflow(sample).length === 0) throw new Error("26.10 SELF_TEST unsafe mutation accepted");
+    if (verifyWorkflow(sample).length > 0) rejected += 1;
   }
-  console.log("26.10 SECRET_SCAN_CONFIG SELF_TEST PASS cases=6");
+  if (rejected !== mutations.length) throw new Error(`26.10 SELF_TEST unsafe mutation accepted rejected=${rejected}/${mutations.length}`);
+  console.log(`26.10 SECRET_SCAN_CONFIG SELF_TEST PASS rejected=${rejected}`);
 }
 
 const workflow = readFileSync(WORKFLOW, "utf8");
