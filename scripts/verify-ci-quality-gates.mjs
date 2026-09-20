@@ -11,7 +11,7 @@ export function validateCiContract(pkg, workflow) {
   const expectedScripts = {
     lint: "node scripts/lint-repository.mjs",
     typecheck: "tsc --noEmit",
-    test: "node scripts/run-ci-tests.mjs",
+    test: "node scripts/verify-staging-smoke-suite-ci.mjs --self-test && node scripts/run-ci-tests.mjs",
     "ci:verify": "npm run lint && npm test && npm run typecheck && npm run build"
   };
 
