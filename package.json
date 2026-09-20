@@ -96,7 +96,9 @@
     "verify:deterministic-test-fixtures": "node scripts/verify-deterministic-test-fixtures.mjs",
     "verify:deterministic-test-fixtures:self-test": "node scripts/verify-deterministic-test-fixtures.mjs --self-test",
     "verify:controlled-clock-time-test-utilities": "node scripts/verify-controlled-clock-time-test-utilities.mjs",
-    "verify:controlled-clock-time-test-utilities:self-test": "node scripts/verify-controlled-clock-time-test-utilities.mjs --self-test"
+    "verify:controlled-clock-time-test-utilities:self-test": "node scripts/verify-controlled-clock-time-test-utilities.mjs --self-test",
+    "verify:flaky-test-policy": "node scripts/verify-flaky-test-policy.mjs",
+    "verify:flaky-test-policy:self-test": "node scripts/verify-flaky-test-policy.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
