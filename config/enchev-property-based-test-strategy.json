@@ -1,0 +1,40 @@
+{
+  "taskId": "25.05",
+  "name": "Property-based test strategy",
+  "scope": [
+    "domain-invariant-properties",
+    "serialization-roundtrip-properties",
+    "boundary-and-range-properties",
+    "state-transition-properties"
+  ],
+  "principles": {
+    "invariantDriven": true,
+    "generatedInputs": true,
+    "deterministicSeedSupport": true,
+    "shrinkingRequiredWhenSupported": true,
+    "productionIndependent": true,
+    "negativePropertyCasesRequired": true
+  },
+  "execution": {
+    "allowedEnvironments": ["local", "ci"],
+    "productionCalls": "forbidden",
+    "productionCredentials": "forbidden",
+    "seedMustBeReportable": true,
+    "counterexampleMustBeReproducible": true,
+    "boundedCaseCountRequired": true
+  },
+  "ownership": {
+    "unitStrategyOwnedByTask": "25.01",
+    "integrationStrategyOwnedByTask": "25.02",
+    "contractStrategyOwnedByTask": "25.04",
+    "deterministicFixturesOwnedByTask": "25.06"
+  },
+  "acceptance": {
+    "propertiesExpressStableInvariants": true,
+    "generatedInputsCoverBoundaries": true,
+    "failingCounterexampleIsReproducible": true,
+    "shrunkCounterexamplePreferredWhenAvailable": true,
+    "failingApplicableTestBlocksGreen": true,
+    "strategyDoesNotClaimGeneratorImplementation": true
+  }
+}
