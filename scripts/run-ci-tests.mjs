@@ -23,6 +23,7 @@ const cases = [
   ["scripts/verify-deterministic-test-fixtures.mjs", "--self-test"],
   ["scripts/verify-controlled-clock-time-test-utilities.mjs", "--self-test"],
   ["scripts/verify-flaky-test-policy.mjs", "--self-test"],
+  ["scripts/verify-critical-path-coverage-target.mjs", "--self-test"],
   ["scripts/verify-environment-variables.mjs", "--self-test"],
   ["scripts/verify-redis-environment.mjs", "--self-test"],
   ["scripts/verify-redis-production-gate.mjs", "--self-test"],

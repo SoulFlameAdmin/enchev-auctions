@@ -98,7 +98,9 @@
     "verify:controlled-clock-time-test-utilities": "node scripts/verify-controlled-clock-time-test-utilities.mjs",
     "verify:controlled-clock-time-test-utilities:self-test": "node scripts/verify-controlled-clock-time-test-utilities.mjs --self-test",
     "verify:flaky-test-policy": "node scripts/verify-flaky-test-policy.mjs",
-    "verify:flaky-test-policy:self-test": "node scripts/verify-flaky-test-policy.mjs --self-test"
+    "verify:flaky-test-policy:self-test": "node scripts/verify-flaky-test-policy.mjs --self-test",
+    "verify:critical-path-coverage-target": "node scripts/verify-critical-path-coverage-target.mjs",
+    "verify:critical-path-coverage-target:self-test": "node scripts/verify-critical-path-coverage-target.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
