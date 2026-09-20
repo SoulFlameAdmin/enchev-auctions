@@ -173,7 +173,7 @@ export default function MasterSystemPlanV1(){
 
   useEffect(()=>{ try{ const s=localStorage.getItem(SK),n=localStorage.getItem(NK),g=localStorage.getItem(GK); if(s)setStatuses(c=>({...c,...JSON.parse(s)})); if(n)setNotes(JSON.parse(n)); if(g)setGaps(JSON.parse(g)); }catch{} },[]);
   useEffect(()=>{
-    if(expansionState==="loading"||expansionState==="ready") return;
+    if(!open||expansionState==="loading"||expansionState==="ready") return;
     setExpansionState("loading");
     Promise.all([
       import("../master-system-expansion-v2/part-1.json"),
@@ -190,7 +190,7 @@ export default function MasterSystemPlanV1(){
       });
       setExpansionState("ready");
     }).catch(()=>setExpansionState("error"));
-  },[]);
+  },[open]);
   useEffect(()=>{ const x=window.setInterval(()=>setNow(new Date()),1000); return()=>window.clearInterval(x); },[]);
   useEffect(()=>{ const c=new BroadcastChannel(CK); c.onmessage=e=>{ if(e.data?.type!=="state")return; if(e.data.statuses)setStatuses(x=>({...x,...e.data.statuses})); if(e.data.notes)setNotes(e.data.notes); if(e.data.gaps)setGaps(e.data.gaps); }; return()=>c.close(); },[]);
 
