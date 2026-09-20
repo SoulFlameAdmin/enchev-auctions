@@ -1,0 +1,102 @@
+{
+  "taskId": "25.09",
+  "name": "Critical-path coverage target",
+  "targetVersion": 1,
+  "coverageModel": "scenario-and-invariant",
+  "targets": {
+    "registeredCriticalPathsPercent": 100,
+    "applicableScenarioDimensionsPercent": 100,
+    "criticalInvariantCoveragePercent": 100,
+    "minimumAutomatedScenariosPerApplicableDimension": 1
+  },
+  "requiredScenarioDimensions": [
+    "happy-path",
+    "authorization-or-eligibility-denial",
+    "validation-or-boundary-failure",
+    "idempotency-or-duplicate-protection",
+    "time-or-ordering-boundary",
+    "recovery-or-reconnect"
+  ],
+  "criticalPaths": [
+    {
+      "id": "CP-01",
+      "name": "identity-and-session-access",
+      "masterPhases": ["04"],
+      "requiredDimensions": ["happy-path","authorization-or-eligibility-denial","validation-or-boundary-failure","recovery-or-reconnect"]
+    },
+    {
+      "id": "CP-02",
+      "name": "seller-vehicle-submit-review-publish",
+      "masterPhases": ["05","06","14"],
+      "requiredDimensions": ["happy-path","authorization-or-eligibility-denial","validation-or-boundary-failure"]
+    },
+    {
+      "id": "CP-03",
+      "name": "buyer-eligibility-before-bid",
+      "masterPhases": ["05","09"],
+      "requiredDimensions": ["happy-path","authorization-or-eligibility-denial","validation-or-boundary-failure"]
+    },
+    {
+      "id": "CP-04",
+      "name": "prebid-and-private-max-bid",
+      "masterPhases": ["09"],
+      "requiredDimensions": ["happy-path","validation-or-boundary-failure","idempotency-or-duplicate-protection","time-or-ordering-boundary"]
+    },
+    {
+      "id": "CP-05",
+      "name": "live-bid-authoritative-state",
+      "masterPhases": ["10"],
+      "requiredDimensions": ["happy-path","authorization-or-eligibility-denial","validation-or-boundary-failure","idempotency-or-duplicate-protection","time-or-ordering-boundary","recovery-or-reconnect"]
+    },
+    {
+      "id": "CP-06",
+      "name": "auction-close-and-winner-finalization",
+      "masterPhases": ["11"],
+      "requiredDimensions": ["happy-path","validation-or-boundary-failure","idempotency-or-duplicate-protection","time-or-ordering-boundary","recovery-or-reconnect"]
+    },
+    {
+      "id": "CP-07",
+      "name": "result-notification-delivery",
+      "masterPhases": ["12"],
+      "requiredDimensions": ["happy-path","validation-or-boundary-failure","idempotency-or-duplicate-protection","recovery-or-reconnect"]
+    },
+    {
+      "id": "CP-08",
+      "name": "release-pickup-logistics-gate",
+      "masterPhases": ["13"],
+      "requiredDimensions": ["happy-path","authorization-or-eligibility-denial","validation-or-boundary-failure","idempotency-or-duplicate-protection"]
+    },
+    {
+      "id": "CP-09",
+      "name": "admin-high-risk-operation",
+      "masterPhases": ["14","16"],
+      "requiredDimensions": ["happy-path","authorization-or-eligibility-denial","validation-or-boundary-failure"]
+    },
+    {
+      "id": "CP-10",
+      "name": "production-health-and-rollback-readiness",
+      "masterPhases": ["17","23","26"],
+      "requiredDimensions": ["happy-path","validation-or-boundary-failure","recovery-or-reconnect"]
+    }
+  ],
+  "greenRules": {
+    "targetDefinitionMayBeGreenBeforeAllCriticalPathsAreImplemented": true,
+    "taskGreenDoesNotClaimCurrentProductCoverageMeetsTarget": true,
+    "productionAcceptanceRequiresTargetMet": true,
+    "missingApplicableDimensionBlocksProductionAcceptance": true,
+    "manualOnlyEvidenceDoesNotSatisfyAutomatedCoverageTarget": true,
+    "quarantinedCriticalPathDoesNotCountAsCovered": true
+  },
+  "measurement": {
+    "currentCoveragePercentageClaimed": false,
+    "lineCoverageTargetClaimed": false,
+    "branchCoverageTargetClaimed": false,
+    "futureMeasurementMustReferenceConcreteTests": true,
+    "futureMeasurementMustUseExactCommitEvidence": true
+  },
+  "ownership": {
+    "flakyTestPolicyOwnedByTask": "25.08",
+    "crossBrowserMatrixOwnedByTask": "25.10",
+    "mobileBrowserMatrixOwnedByTask": "25.11"
+  }
+}
