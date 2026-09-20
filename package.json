@@ -94,7 +94,9 @@
     "verify:property-based-test-strategy": "node scripts/verify-property-based-test-strategy.mjs",
     "verify:property-based-test-strategy:self-test": "node scripts/verify-property-based-test-strategy.mjs --self-test",
     "verify:deterministic-test-fixtures": "node scripts/verify-deterministic-test-fixtures.mjs",
-    "verify:deterministic-test-fixtures:self-test": "node scripts/verify-deterministic-test-fixtures.mjs --self-test"
+    "verify:deterministic-test-fixtures:self-test": "node scripts/verify-deterministic-test-fixtures.mjs --self-test",
+    "verify:controlled-clock-time-test-utilities": "node scripts/verify-controlled-clock-time-test-utilities.mjs",
+    "verify:controlled-clock-time-test-utilities:self-test": "node scripts/verify-controlled-clock-time-test-utilities.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
