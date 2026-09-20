@@ -3,12 +3,13 @@ import { createFailureHarness, FAILURE_INJECTION_HARNESS_VERSION } from "../test
 
 const CONFIG_PATH = "config/enchev-failure-injection-harness.json";
 const PACKAGE_PATH = "package.json";
+const PRE_GATE_PATH = "scripts/run-system-test-pre-gates.mjs";
 
 function fail(message) {
   throw new Error(`FAILURE_INJECTION_HARNESS FAIL: ${message}`);
 }
 
-export function validateConfig(config, pkg) {
+export function validateConfig(config, pkg, preGateSource) {
   if (config?.taskId !== "25.14") fail("taskId must be 25.14");
   if (config?.name !== "Failure-injection test harness") fail("name mismatch");
   if (config?.harnessVersion !== 1) fail("harnessVersion must be 1");
@@ -39,8 +40,11 @@ export function validateConfig(config, pkg) {
 
   if (pkg?.scripts?.["verify:failure-injection-harness"] !== "node scripts/verify-failure-injection-harness.mjs") fail("package verify script drift");
   if (pkg?.scripts?.["verify:failure-injection-harness:self-test"] !== "node scripts/verify-failure-injection-harness.mjs --self-test") fail("package self-test script drift");
-  if (pkg?.scripts?.test !== "node scripts/verify-production-smoke-suite.mjs --self-test && node scripts/verify-failure-injection-harness.mjs --self-test && node scripts/run-ci-tests.mjs") {
-    fail("aggregate npm test must gate 25.13 and 25.14 before canonical runner");
+  if (pkg?.scripts?.test !== "node scripts/run-system-test-pre-gates.mjs && node scripts/run-ci-tests.mjs") {
+    fail("aggregate npm test must use stable system pre-gates");
+  }
+  if (typeof preGateSource !== "string" || !preGateSource.includes('["scripts/verify-failure-injection-harness.mjs", "--self-test"]')) {
+    fail("system pre-gates must include 25.14 self-test");
   }
 }
 
@@ -74,7 +78,8 @@ export function runScenarioMatrix() {
 
 const config = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf8"));
 const pkg = JSON.parse(fs.readFileSync(PACKAGE_PATH, "utf8"));
-validateConfig(config, pkg);
+const preGateSource = fs.readFileSync(PRE_GATE_PATH, "utf8");
+validateConfig(config, pkg, preGateSource);
 const result = runScenarioMatrix();
 
 if (process.argv.includes("--self-test")) {
@@ -83,7 +88,7 @@ if (process.argv.includes("--self-test")) {
     const copy = structuredClone(config);
     mutate(copy);
     let rejected = false;
-    try { validateConfig(copy, pkg); } catch { rejected = true; }
+    try { validateConfig(copy, pkg, preGateSource); } catch { rejected = true; }
     if (!rejected) fail(`negative self-test not rejected: ${label}`);
     cases += 1;
   };
