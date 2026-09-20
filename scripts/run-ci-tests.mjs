@@ -19,7 +19,6 @@ const cases = [
   ["scripts/verify-integration-test-strategy.mjs", "--self-test"],
   ["scripts/verify-end-to-end-test-strategy.mjs", "--self-test"],
   ["scripts/verify-contract-test-strategy.mjs", "--self-test"],
-  ["scripts/verify-contract-test-strategy.mjs", "--self-test"],
   ["scripts/verify-environment-variables.mjs", "--self-test"],
   ["scripts/verify-redis-environment.mjs", "--self-test"],
   ["scripts/verify-redis-production-gate.mjs", "--self-test"],
