@@ -110,6 +110,10 @@ jobs:
         run: node scripts/verify-contract-test-strategy.mjs
       - name: 25.04 Contract-test strategy self-tests
         run: node scripts/verify-contract-test-strategy.mjs --self-test
+      - name: 25.05 Property-based test strategy
+        run: node scripts/verify-property-based-test-strategy.mjs
+      - name: 25.05 Property-based test strategy self-tests
+        run: node scripts/verify-property-based-test-strategy.mjs --self-test
       - name: Environment variable contract invariant
         run: node scripts/verify-environment-variables.mjs
       - name: Environment variable contract self-tests
