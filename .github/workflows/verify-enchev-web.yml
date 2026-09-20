@@ -126,6 +126,10 @@ jobs:
         run: node scripts/verify-flaky-test-policy.mjs
       - name: 25.08 Flaky-test policy self-tests
         run: node scripts/verify-flaky-test-policy.mjs --self-test
+      - name: 25.09 Critical-path coverage target
+        run: node scripts/verify-critical-path-coverage-target.mjs
+      - name: 25.09 Critical-path coverage target self-tests
+        run: node scripts/verify-critical-path-coverage-target.mjs --self-test
       - name: Environment variable contract invariant
         run: node scripts/verify-environment-variables.mjs
       - name: Environment variable contract self-tests
