@@ -448,24 +448,43 @@ async function waitReady(context, page, state) {
   }
 }
 async function fillAndSend(page, text) {
-  const c = await composer(page);
-  if (!c) throw new Error("ChatGPT composer not found");
-
+  let c = null;
   let filled = false;
-  try {
-    await c.fill(text, { timeout: 5000 });
-    filled = true;
-  } catch {}
 
-  if (!filled) {
-    await c.focus({ timeout: 3000 }).catch(() => {});
-    await c.evaluate((el, value) => {
-      el.focus();
-      if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) el.value = value;
-      else el.textContent = value;
-      el.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: value }));
-    }, text);
+  // ChatGPT may replace #prompt-textarea while the page settles. Never hold a
+  // stale locator for 30s: reacquire the visible composer on every bounded try.
+  for (let attempt = 1; attempt <= 10 && !filled; attempt++) {
+    c = await composer(page);
+    if (!c) {
+      await sleep(400);
+      continue;
+    }
+
+    try {
+      await c.fill(text, { timeout: 1800 });
+      filled = true;
+      break;
+    } catch {}
+
+    // Pointer-safe fallback: reacquire before focusing, then type through the
+    // page keyboard so locator.evaluate cannot hang on a detached node.
+    c = await composer(page);
+    if (!c) {
+      await sleep(400);
+      continue;
+    }
+    try {
+      await c.focus({ timeout: 1200 });
+      await page.keyboard.press("Control+A");
+      await page.keyboard.insertText(text);
+      filled = true;
+      break;
+    } catch {}
+
+    await sleep(400);
   }
+
+  if (!filled || !c) throw new Error("ChatGPT composer unavailable after bounded reacquire");
 
   await sleep(250);
 
