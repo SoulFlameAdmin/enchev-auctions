@@ -30,7 +30,7 @@ export function validate(strategy, runnerSource, packageJson) {
   const selfTests = [...runnerSource.matchAll(/"--self-test"/g)].length;
   if (selfTests < 20) fail(`expected substantial self-test coverage, found ${selfTests}`);
 
-  if (!packageJson?.scripts || packageJson.scripts.test !== "node scripts/run-ci-tests.mjs") fail("package test script must use canonical aggregate runner");
+  if (!packageJson?.scripts || packageJson.scripts.test !== "node scripts/verify-production-smoke-suite.mjs --self-test && node scripts/run-ci-tests.mjs") fail("package test script must preserve the 25.13 pre-gate and canonical aggregate runner");
   return { selfTests, scopeItems: strategy.scope?.length || 0 };
 }
 
