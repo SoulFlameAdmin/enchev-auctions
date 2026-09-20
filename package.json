@@ -108,7 +108,9 @@
     "verify:production-smoke-suite": "node scripts/verify-production-smoke-suite.mjs",
     "verify:production-smoke-suite:self-test": "node scripts/verify-production-smoke-suite.mjs --self-test",
     "verify:failure-injection-harness": "node scripts/verify-failure-injection-harness.mjs",
-    "verify:failure-injection-harness:self-test": "node scripts/verify-failure-injection-harness.mjs --self-test"
+    "verify:failure-injection-harness:self-test": "node scripts/verify-failure-injection-harness.mjs --self-test",
+    "verify:database-migration-gate": "node scripts/verify-database-migration-gate.mjs",
+    "verify:database-migration-gate:self-test": "node scripts/verify-database-migration-gate.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
