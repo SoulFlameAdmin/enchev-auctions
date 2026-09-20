@@ -118,7 +118,9 @@
     "verify:sbom-generation": "node scripts/verify-sbom-generation.mjs",
     "verify:sbom-generation:self-test": "node scripts/verify-sbom-generation.mjs --self-test",
     "verify:build-provenance": "node scripts/verify-build-provenance.mjs",
-    "verify:build-provenance:self-test": "node scripts/verify-build-provenance.mjs --self-test"
+    "verify:build-provenance:self-test": "node scripts/verify-build-provenance.mjs --self-test",
+    "verify:environment-scoped-ci-secrets": "node scripts/verify-environment-scoped-ci-secrets.mjs",
+    "verify:environment-scoped-ci-secrets:self-test": "node scripts/verify-environment-scoped-ci-secrets.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
