@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Verify 26.11 gate configuration
+        run: node scripts/verify-code-scanning-gate.mjs
       - name: Initialize CodeQL
         uses: github/codeql-action/init@977e6ceaea7361825998245d787fa3b4d6b9e5df
         with:
