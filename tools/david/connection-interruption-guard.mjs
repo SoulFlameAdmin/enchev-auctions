@@ -422,6 +422,33 @@ async function interruptionVisible(page) {
   } catch { return false; }
 }
 
+async function realStopControlVisible(page) {
+  if (!isChat(page)) return false;
+  try {
+    return await page.evaluate(() => {
+      const visible = (el) => {
+        const s = getComputedStyle(el);
+        const r = el.getBoundingClientRect();
+        return s.display !== "none" && s.visibility !== "hidden" &&
+          Number(s.opacity || 1) > 0 && r.width > 0 && r.height > 0;
+      };
+      const selectors = [
+        '[data-testid="stop-button"]',
+        '[data-testid*="stop" i]',
+        'button[aria-label*="Stop"]',
+        'button[aria-label*="stop"]',
+        'button[aria-label*="Спри"]'
+      ];
+      for (const sel of selectors) {
+        for (const el of document.querySelectorAll(sel)) if (visible(el)) return true;
+      }
+      return false;
+    });
+  } catch {
+    return false;
+  }
+}
+
 async function activeAssistantWork(page) {
   if (!isChat(page)) return false;
   try {
@@ -573,21 +600,28 @@ async function sendComposer(page, composer) {
 }
 
 async function sendInterruptedDraftImmediately(page) {
-  if (await activeAssistantWork(page)) return false;
+  // On the explicit connection-interrupted banner, stale "Thinking/Мислене"
+  // text is not authoritative. Only a real visible Stop control proves that
+  // the accepted turn is still actively running.
+  if (await realStopControlVisible(page)) {
+    console.log("[INTERRUPT] Explicit interruption visible but real Stop control is active. WAIT; no duplicate relay.");
+    return false;
+  }
 
   const composer = await getComposer(page);
   if (!composer) return false;
 
   const draft = await composerText(composer);
-  if (!draft) return false;
+  const latestRelay = draft || await latestUserText(page);
+  if (!latestRelay) return false;
 
   const url = page.url();
-  const hash = smallTextHash(draft);
+  const hash = smallTextHash(latestRelay);
   const now = Date.now();
   const lastHash = String(directComposerSendHash.get(url) || "");
   const lastAt = Number(directComposerSendAt.get(url) || 0);
 
-  // Prevent the 400ms scan loop from sending the same visible draft twice.
+  // Prevent the 400ms scan loop from sending the same relay twice.
   if (lastHash === hash && now - lastAt < 15000) return true;
 
   const beforeCount = await userMessageCount(page);
@@ -595,14 +629,27 @@ async function sendInterruptedDraftImmediately(page) {
 
   directComposerSendHash.set(url, hash);
   directComposerSendAt.set(url, now);
-  console.log("[INTERRUPT] READY DRAFT on " + url + "; SEND NOW without refresh. chars=" + draft.length);
+
+  try {
+    if (!draft) {
+      await fillComposer(composer, latestRelay);
+      await sleep(200);
+      console.log("[INTERRUPT] CONNECTION INTERRUPTED: restored latest relay into composer. chars=" + latestRelay.length);
+    } else {
+      console.log("[INTERRUPT] CONNECTION INTERRUPTED: ready draft already in composer. chars=" + latestRelay.length);
+    }
+  } catch (error) {
+    directComposerSendAt.delete(url);
+    console.log("[INTERRUPT] Could not restore interrupted relay into composer: " + (error?.message || error));
+    return false;
+  }
 
   let via;
   try {
     via = await sendComposer(page, composer);
   } catch (error) {
     directComposerSendAt.delete(url);
-    console.log("[INTERRUPT] Direct draft send failed; falling back to recovery ladder: " + (error?.message || error));
+    console.log("[INTERRUPT] Direct relay resend failed; falling back to recovery ladder: " + (error?.message || error));
     return false;
   }
 
@@ -612,7 +659,7 @@ async function sendInterruptedDraftImmediately(page) {
   const remaining = await composerText(nextComposer);
   const afterCount = await userMessageCount(page);
   const afterLatest = await latestUserText(page);
-  const prefix = draft.slice(0, Math.min(120, draft.length));
+  const prefix = latestRelay.slice(0, Math.min(120, latestRelay.length));
   const landed =
     !remaining ||
     afterCount > beforeCount ||
@@ -622,12 +669,12 @@ async function sendInterruptedDraftImmediately(page) {
     recoveredAt.set(url, Date.now());
     interruptionSince.delete(url);
     interruptionSamples.delete(url);
-    console.log("[INTERRUPT] Direct interrupted draft SEND confirmed via " + via + ". No reload, no duplicate send.");
+    console.log("[INTERRUPT] Interrupted relay RESEND confirmed via " + via + ". No reload, no duplicate send.");
     return true;
   }
 
   directComposerSendAt.delete(url);
-  console.log("[INTERRUPT] Direct draft click was not confirmed; use normal recovery ladder.");
+  console.log("[INTERRUPT] Direct relay resend was not confirmed; use normal recovery ladder.");
   return false;
 }
 
