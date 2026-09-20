@@ -110,7 +110,9 @@
     "verify:failure-injection-harness": "node scripts/verify-failure-injection-harness.mjs",
     "verify:failure-injection-harness:self-test": "node scripts/verify-failure-injection-harness.mjs --self-test",
     "verify:database-migration-gate": "node scripts/verify-database-migration-gate.mjs",
-    "verify:database-migration-gate:self-test": "node scripts/verify-database-migration-gate.mjs --self-test"
+    "verify:database-migration-gate:self-test": "node scripts/verify-database-migration-gate.mjs --self-test",
+    "verify:dependency-lockfile-enforcement": "node scripts/verify-dependency-lockfile-enforcement.mjs",
+    "verify:dependency-lockfile-enforcement:self-test": "node scripts/verify-dependency-lockfile-enforcement.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
