@@ -43,7 +43,8 @@ requireInvariant(compactMaster.includes('if(!(task.idinnext))next[task.id]=task.
 requireInvariant(compactMaster.includes('defaultStatus:"red",kind:"core"'), "new GAP tasks no longer start RED");
 requireInvariant(compactMaster.includes('persist({...statuses,[id]:"red"},notes,[...gaps,g])'), "new GAP runtime status no longer persists RED");
 requireInvariant(master.includes('"Още не е построено"'), "RED task explanation no longer means not implemented");
-requireInvariant(master.includes('<span>ЛИПСВА</span><b>{totals.red}</b><small>не е построено</small>'), "RED KPI no longer means missing/not implemented");
+requireInvariant(master.includes('const totalMissingLabel=expansionState==="ready"?String(totals.red):expansionState==="error"?"ERROR":"…";'), "grand missing KPI no longer derives from total RED count after full tracker load");
+requireInvariant(master.includes('<span>ОБЩО ЛИПСВАЩИ</span><b>{totalMissingLabel}</b>'), "RED KPI no longer exposes the grand missing/not-implemented total");
 requireInvariant(master.includes('RED = липсва.'), "footer no longer defines RED as missing");
 requireInvariant(compactMaster.includes('constprogress=all.length?Math.round(totals.green/all.length*100):0;'), "progress calculation changed so non-GREEN could count as complete");
 
