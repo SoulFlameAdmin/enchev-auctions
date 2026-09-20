@@ -1,0 +1,28 @@
+{
+  "taskId": "26.07",
+  "name": "Database migration gate",
+  "gateVersion": 1,
+  "migrationRoot": "supabase/migrations",
+  "baselineTask": "02.09",
+  "rules": {
+    "appendOnlyHistory": true,
+    "timestampedSnakeCaseNames": true,
+    "duplicateTimestampPrefixesForbidden": true,
+    "modifiedExistingSqlForbidden": true,
+    "deletedExistingSqlForbidden": true,
+    "newSqlMustPassStructureVerifier": true,
+    "ciFailureBlocksGreen": true
+  },
+  "execution": {
+    "ciCommand": "npm test",
+    "preGateRunner": "scripts/run-system-test-pre-gates.mjs",
+    "structureVerifier": "scripts/verify-database-migrations-structure.mjs",
+    "liveDatabaseMutationRequired": false
+  },
+  "greenRules": {
+    "contractSelfTestsPass": true,
+    "aggregateCiPasses": true,
+    "noDestructiveDbActionRequired": true,
+    "providerMigrationExecutionRemainsOwnedByTask": "03.02"
+  }
+}
