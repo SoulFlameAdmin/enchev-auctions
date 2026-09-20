@@ -17,7 +17,7 @@ export function verifyWorkflow(text) {
     ["artifact path", ARTIFACT],
     ["artifact validation", `node scripts/verify-sbom-generation.mjs --file ${ARTIFACT}`],
     ["artifact upload", "uses: actions/upload-artifact@v4"],
-    ["exact-head artifact name", "enchev-sbom-${{ github.sha }}"],
+    ["exact-head artifact name", "enchev-sbom-${{ github.event.pull_request.head.sha || github.sha }}"],
     ["fail if artifact absent", "if-no-files-found: error"]
   ];
   const missing = required.filter(([, token]) => !text.includes(token)).map(([name]) => name);
@@ -47,6 +47,9 @@ function runSelfTest() {
     "permissions:",
     "  contents: read",
     "steps:",
+    "  - uses: actions/checkout@v4",
+    "    with:",
+    "      ref: ${{ github.event.pull_request.head.sha || github.sha }}",
     "  - uses: actions/setup-node@v4",
     "    with:",
     "      node-version: '24'",
@@ -54,7 +57,7 @@ function runSelfTest() {
     `  - run: node scripts/verify-sbom-generation.mjs --file ${ARTIFACT}`,
     "  - uses: actions/upload-artifact@v4",
     "    with:",
-    "      name: enchev-sbom-${{ github.sha }}",
+    "      name: enchev-sbom-${{ github.event.pull_request.head.sha || github.sha }}",
     `      path: ${ARTIFACT}`,
     "      if-no-files-found: error"
   ].join("\n");
@@ -69,6 +72,7 @@ function runSelfTest() {
   verifySbom(goodSbom);
 
   const workflowMutations = [
+    goodWorkflow.replace("ref: ${{ github.event.pull_request.head.sha || github.sha }}", "ref: ${{ github.sha }}"),
     goodWorkflow.replace("--package-lock-only", ""),
     goodWorkflow.replace("--sbom-format=cyclonedx", "--sbom-format=spdx"),
     goodWorkflow.replace("--sbom-type=application", "--sbom-type=library"),
