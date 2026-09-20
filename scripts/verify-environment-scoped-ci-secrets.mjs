@@ -4,9 +4,9 @@ const CONFIG_PATH = "config/enchev-ci-secret-scopes.json";
 const EXPECTED_WORKFLOW = ".github/workflows/verify-enchev-web.yml";
 
 function jobSection(text, jobName) {
-  const marker = \`  \${jobName}:\n\`;
+  const marker = `  ${jobName}:\n`;
   const start = text.indexOf(marker);
-  if (start < 0) throw new Error(\`26.14 CI_SECRET_SCOPE FAIL missing-job=\${jobName}\`);
+  if (start < 0) throw new Error(`26.14 CI_SECRET_SCOPE FAIL missing-job=${jobName}`);
   const re = /^  ([A-Za-z0-9_-]+):\s*$/gm;
   re.lastIndex = start + marker.length;
   const next = re.exec(text);
@@ -37,7 +37,7 @@ export function verifyContract(workflow, config) {
     "secretValuesMustNeverBeLoggedOrReadByVerifier",
     "oidcPreferredForCloudSync"
   ]) {
-    if (rules[name] !== true) failures.push(\`config.rules.\${name}\`);
+    if (rules[name] !== true) failures.push(`config.rules.${name}`);
   }
 
   let verifyJob = "";
@@ -59,12 +59,12 @@ export function verifyContract(workflow, config) {
   if (secretJob) {
     if (!secretJob.includes("if: github.event_name == 'push' && github.ref == 'refs/heads/main'")) failures.push("secret-job-trusted-main-only");
     if (!secretJob.includes("needs: verify-web")) failures.push("secret-job-needs-verify-web");
-    if (!secretJob.includes(\`environment: \${config?.environment || ""}\`)) failures.push("secret-job-environment");
+    if (!secretJob.includes(`environment: ${config?.environment || ""}`)) failures.push("secret-job-environment");
     if (!/permissions:\n\s{6}contents: read/.test(secretJob)) failures.push("secret-job-read-only");
     if (secretJob.includes("id-token: write")) failures.push("secret-job-oidc");
     const present = new Set(secretRefs(secretJob));
-    for (const name of secretNames) if (!present.has(name)) failures.push(\`secret-job-missing-\${name}\`);
-    for (const name of present) if (!secretNames.includes(name)) failures.push(\`secret-job-unregistered-\${name}\`);
+    for (const name of secretNames) if (!present.has(name)) failures.push(`secret-job-missing-${name}`);
+    for (const name of present) if (!secretNames.includes(name)) failures.push(`secret-job-unregistered-${name}`);
   }
 
   const allRefs = secretRefs(workflow);
@@ -79,7 +79,7 @@ export function verifyContract(workflow, config) {
     if (!syncJob.includes("id-token: write")) failures.push("sync-plan-cloud-oidc");
   }
 
-  if (failures.length) throw new Error(\`26.14 CI_SECRET_SCOPE FAIL fields=\${[...new Set(failures)].join(",")}\`);
+  if (failures.length) throw new Error(`26.14 CI_SECRET_SCOPE FAIL fields=${[...new Set(failures)].join(",")}`);
   return { secretReferences: allRefs.length, secretNames: secretNames.length, environment: config.environment };
 }
 
@@ -89,7 +89,7 @@ function selfTest(workflow, config) {
   const mutations = [
     [workflow.replace("    environment: ci-verification\n", ""), config],
     [workflow.replace("if: github.event_name == 'push' && github.ref == 'refs/heads/main'", "if: github.event_name == 'pull_request'"), config],
-    [workflow.replace("    timeout-minutes: 15\n", \`    timeout-minutes: 15\n    env:\n      BAD_SCOPE: \${secretExpr}\n\`), config],
+    [workflow.replace("    timeout-minutes: 15\n", `    timeout-minutes: 15\n    env:\n      BAD_SCOPE: ${secretExpr}\n`), config],
     [workflow, { ...config, secretNames: config.secretNames.slice(0, -1) }],
     [workflow.replace("    permissions:\n      contents: read\n    steps:\n", "    permissions:\n      contents: read\n      id-token: write\n    steps:\n"), config]
   ];
@@ -97,12 +97,12 @@ function selfTest(workflow, config) {
   for (const [sampleWorkflow, sampleConfig] of mutations) {
     try { verifyContract(sampleWorkflow, sampleConfig); } catch { rejected += 1; }
   }
-  if (rejected !== mutations.length) throw new Error(\`26.14 CI_SECRET_SCOPE SELF_TEST FAIL rejected=\${rejected}/\${mutations.length}\`);
-  console.log(\`26.14 CI_SECRET_SCOPE SELF_TEST PASS rejected=\${rejected}\`);
+  if (rejected !== mutations.length) throw new Error(`26.14 CI_SECRET_SCOPE SELF_TEST FAIL rejected=${rejected}/${mutations.length}`);
+  console.log(`26.14 CI_SECRET_SCOPE SELF_TEST PASS rejected=${rejected}`);
 }
 
 const config = JSON.parse(readFileSync(CONFIG_PATH, "utf8"));
 const workflow = readFileSync(config.workflow || EXPECTED_WORKFLOW, "utf8");
 const result = verifyContract(workflow, config);
-console.log(\`26.14 CI_SECRET_SCOPE PASS environment=\${result.environment} names=\${result.secretNames} refs=\${result.secretReferences}\`);
+console.log(`26.14 CI_SECRET_SCOPE PASS environment=${result.environment} names=${result.secretNames} refs=${result.secretReferences}`);
 if (process.argv.includes("--self-test")) selfTest(workflow, config);
