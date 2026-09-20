@@ -1,0 +1,36 @@
+{
+  "taskId": "25.14",
+  "name": "Failure-injection test harness",
+  "harnessVersion": 1,
+  "execution": {
+    "mode": "deterministic-local-simulation",
+    "networkAccessRequired": false,
+    "productionMutationForbidden": true,
+    "realProviderFaultInjectionForbidden": true
+  },
+  "scenarios": [
+    {"id":"provider-timeout","expected":"retryable-failure"},
+    {"id":"provider-503","expected":"retryable-failure"},
+    {"id":"duplicate-delivery","expected":"idempotent-ignore"},
+    {"id":"sequence-gap","expected":"authoritative-resync-required"},
+    {"id":"malformed-event","expected":"reject"},
+    {"id":"controlled-clock-expiry","expected":"reject-late-operation"}
+  ],
+  "invariants": {
+    "failClosed": true,
+    "deterministic": true,
+    "noProductionData": true,
+    "noSecrets": true,
+    "retryBudgetBounded": true,
+    "duplicateProcessingForbidden": true,
+    "sequenceGapMustResync": true,
+    "browserClockNeverAuthoritative": true
+  },
+  "greenRules": {
+    "allScenariosMustPass": true,
+    "negativeSelfTestsMustPass": true,
+    "aggregateCiMustExecuteHarness": true,
+    "liveProductionFailureInjectionNotRequired": true,
+    "harnessMustNotClaimProviderOutageEvidence": true
+  }
+}
