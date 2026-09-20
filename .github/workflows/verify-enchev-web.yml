@@ -29,6 +29,8 @@ jobs:
         run: npm audit --package-lock-only --audit-level=high
       - name: Code scanning gate contract (26.11)
         run: node scripts/verify-code-scanning-gate.mjs
+      - name: SBOM generation gate contract (26.12)
+        run: node scripts/verify-sbom-generation.mjs
       - name: Generate frozen test task registry
         run: node scripts/generate-master-test-task-ids.mjs
       - name: Repository lint
