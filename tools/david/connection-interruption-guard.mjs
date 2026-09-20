@@ -726,25 +726,47 @@ async function recover(page) {
 }
 
 async function main() {
-  console.log(`[INTERRUPT] Connecting to shared Edge CDP ${CDP_URL}`);
   let browser = null;
   let context = null;
-  while (!context) {
-    try {
-      browser = await chromium.connectOverCDP(CDP_URL, { timeout: 120000 });
-      context = browser.contexts()[0] || null;
-      if (!context) throw new Error("No active Chromium context on CDP port.");
-    } catch (error) {
-      console.log(`[INTERRUPT] CDP not ready: ${error?.message || error}. WAIT 5s -> reconnect. Guard stays alive.`);
-      browser = null;
-      context = null;
-      await sleep(5000);
-    }
-  }
-  console.log("[INTERRUPT] Managed-only ChatGPT guard ON. Watches CONTROL/SYSTEM/DESIGN/APP2/APK owned URLs only.");
+  let announced = false;
 
   while (true) {
-    const pages = context.pages().filter(isManagedChat);
+    if (!context) {
+      console.log(`[INTERRUPT] Connecting to shared Edge CDP ${CDP_URL}`);
+      try {
+        browser = await chromium.connectOverCDP(CDP_URL, { timeout: 120000 });
+        context = browser.contexts()[0] || null;
+        if (!context) throw new Error("No active Chromium context on CDP port.");
+        announced = false;
+        browser.on("disconnected", () => {
+          browser = null;
+          context = null;
+        });
+      } catch (error) {
+        console.log(`[INTERRUPT] CDP not ready: ${error?.message || error}. WAIT 5s -> reconnect. Guard stays alive.`);
+        browser = null;
+        context = null;
+        await sleep(5000);
+        continue;
+      }
+    }
+
+    if (!announced) {
+      console.log("[INTERRUPT] Managed-only ChatGPT guard ON. Watches CONTROL/SYSTEM/DESIGN/APP2/APK owned URLs only.");
+      announced = true;
+    }
+
+    let pages;
+    try {
+      pages = context.pages().filter(isManagedChat);
+    } catch (error) {
+      console.log(`[INTERRUPT] CDP/context lost during scan: ${error?.message || error}. Reconnecting without process exit.`);
+      browser = null;
+      context = null;
+      await sleep(1000);
+      continue;
+    }
+
     for (const page of pages) {
       try {
         if (await rateLimitVisible(page)) {
@@ -797,7 +819,10 @@ async function main() {
   }
 }
 
-main().catch((error) => {
+main().catch(async (error) => {
+  // Only an unexpected top-level programming error should reach here. Normal
+  // CDP/browser loss is handled in-loop and must never kill the GUARD process.
   console.error("[INTERRUPT] FATAL", error?.stack || error);
+  await sleep(2000);
   process.exit(1);
 });
