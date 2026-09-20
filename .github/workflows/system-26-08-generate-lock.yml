@@ -16,6 +16,12 @@ jobs:
         run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
       - name: Verify npm ci accepts generated lockfile
         run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Emit generated lockfile for connector handoff
+        run: |
+          echo "LOCKFILE_B64_BEGIN"
+          base64 -w 0 package-lock.json
+          echo
+          echo "LOCKFILE_B64_END"
       - name: Upload generated lockfile
         uses: actions/upload-artifact@v4
         with:
