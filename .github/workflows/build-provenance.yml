@@ -1,0 +1,42 @@
+name: Build Provenance
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  provenance:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact source commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Build production output
+        run: npm run build
+      - name: Generate exact-head SLSA provenance statement
+        env:
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/verify-build-provenance.mjs --generate
+      - name: Validate provenance artifact
+        env:
+          SOURCE_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/verify-build-provenance.mjs --file artifacts/enchev-build-provenance.intoto.json
+      - name: Upload exact-head build provenance
+        uses: actions/upload-artifact@v4
+        with:
+          name: enchev-build-provenance-${{ github.event.pull_request.head.sha || github.sha }}
+          path: artifacts/enchev-build-provenance.intoto.json
+          if-no-files-found: error
+          retention-days: 14
