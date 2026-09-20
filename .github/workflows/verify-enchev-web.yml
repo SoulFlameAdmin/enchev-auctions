@@ -31,6 +31,8 @@ jobs:
         run: node scripts/verify-code-scanning-gate.mjs
       - name: SBOM generation gate contract (26.12)
         run: node scripts/verify-sbom-generation.mjs
+      - name: Build provenance gate contract (26.13)
+        run: node scripts/verify-build-provenance.mjs
       - name: Generate frozen test task registry
         run: node scripts/generate-master-test-task-ids.mjs
       - name: Repository lint
