@@ -1,0 +1,39 @@
+{
+  "taskId": "25.07",
+  "name": "Controlled clock/time-test utilities",
+  "utilityPath": "test/utils/controlled-clock.mjs",
+  "principles": {
+    "explicitDependencyInjection": true,
+    "deterministic": true,
+    "globalDateMonkeyPatch": false,
+    "realSleepRequired": false,
+    "wallClockReadRequired": false,
+    "timezone": "UTC"
+  },
+  "operations": [
+    "nowMs",
+    "nowDate",
+    "iso",
+    "set",
+    "advance",
+    "snapshot"
+  ],
+  "safety": {
+    "invalidTimestampRejected": true,
+    "negativeAdvanceRejected": true,
+    "overflowRejected": true,
+    "returnedDatesAreIndependentCopies": true,
+    "productionRuntimeDependency": false
+  },
+  "ownership": {
+    "deterministicFixturesOwnedByTask": "25.06",
+    "flakyTestPolicyOwnedByTask": "25.08"
+  },
+  "acceptance": {
+    "sameInitialTimeProducesSameSequence": true,
+    "explicitSetSupportsBoundaryTests": true,
+    "advanceSupportsDeterministicElapsedTimeTests": true,
+    "utilityIsExecutable": true,
+    "failingApplicableTestBlocksGreen": true
+  }
+}
