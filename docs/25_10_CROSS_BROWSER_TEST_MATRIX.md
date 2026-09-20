@@ -18,7 +18,7 @@ Both use the existing Chrome DevTools Protocol visual/runtime harness. A pass fr
 The harness covers these five acceptance routes:
 
 - home;
-- browse;
+- inventory;
 - lot EA-10539;
 - live auctions;
 - profile.
