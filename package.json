@@ -90,7 +90,9 @@
     "verify:end-to-end-test-strategy": "node scripts/verify-end-to-end-test-strategy.mjs",
     "verify:end-to-end-test-strategy:self-test": "node scripts/verify-end-to-end-test-strategy.mjs --self-test",
     "verify:contract-test-strategy": "node scripts/verify-contract-test-strategy.mjs",
-    "verify:contract-test-strategy:self-test": "node scripts/verify-contract-test-strategy.mjs --self-test"
+    "verify:contract-test-strategy:self-test": "node scripts/verify-contract-test-strategy.mjs --self-test",
+    "verify:property-based-test-strategy": "node scripts/verify-property-based-test-strategy.mjs",
+    "verify:property-based-test-strategy:self-test": "node scripts/verify-property-based-test-strategy.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
