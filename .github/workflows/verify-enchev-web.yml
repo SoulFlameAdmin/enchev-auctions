@@ -27,6 +27,10 @@ jobs:
       - name: Dependency review (26.09)
         if: github.event_name == 'pull_request'
         run: npm audit --package-lock-only --audit-level=high
+      - name: Staging deployment pipeline contract (26.04)
+        run: node scripts/verify-staging-deployment-pipeline.mjs
+      - name: Staging deployment pipeline self-tests (26.04)
+        run: node scripts/verify-staging-deployment-pipeline.mjs --self-test
       - name: Preview deployment per change gate contract (26.03)
         run: node scripts/verify-preview-deployment-per-change.mjs
       - name: Preview deployment per change self-tests (26.03)
