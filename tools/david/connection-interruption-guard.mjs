@@ -144,11 +144,16 @@ async function rateLimitVisible(page) {
         const r = el.getBoundingClientRect();
         return s.display !== "none" && s.visibility !== "hidden" && Number(s.opacity || 1) > 0 && r.width > 0 && r.height > 0;
       };
-      const re = /(твърде много заявки|правите заявки прекалено бързо|изчакайте няколко минути|too many requests|requests too quickly|please wait a few minutes|rate limit)/i;
-      for (const el of document.querySelectorAll('[role="dialog"],[role="alert"],[aria-live="assertive"],[data-testid*="error" i],div,section,p,span')) {
+      const rateRe = /(твърде много заявки|правите заявки прекалено бързо|изчакайте няколко минути|too many requests|requests too quickly|please wait a few minutes|rate limit)/i;
+      const timeoutRe = /(изпращането на съобщението изтече по време|моля, опитайте отново|message sending timed out|sending the message timed out|message send timed out|please try again)/i;
+      for (const el of document.querySelectorAll('[role="dialog"],[role="alert"],[aria-live="assertive"],[data-testid*="toast" i],[data-testid*="error" i],div,section,p,span')) {
         if (!visible(el)) continue;
+        if (el.closest('[data-message-author-role], article[data-testid^="conversation-turn-"]')) continue;
+        if (el.querySelector?.('[data-message-author-role], article[data-testid^="conversation-turn-"]')) continue;
         const text = (el.textContent || "").replace(/\s+/g, " ").trim();
-        if (text && text.length < 600 && re.test(text)) return true;
+        if (!text || text.length >= 600) continue;
+        if (timeoutRe.test(text)) continue;
+        if (rateRe.test(text)) return true;
       }
       return false;
     });
@@ -832,6 +837,23 @@ async function main() {
 
     for (const page of pages) {
       try {
+        // HARD PRIORITY: explicit message-send timeout / Try Again must be
+        // recovered before any global rate-limit classification. This prevents
+        // stale conversation text mentioning "rate limit" from swallowing the
+        // visible Retry banner.
+        const explicitRetry = await sendTimeoutRetryButtonVisible(page);
+        const timeoutVisible = explicitRetry || await sendTimeoutVisible(page);
+        if (timeoutVisible) {
+          if (explicitRetry) {
+            console.log(`[INTERRUPT] EXPLICIT TRY AGAIN visible url=${page.url()} -> timeout recovery has priority`);
+          }
+          await recoverSendTimeout(page);
+          continue;
+        } else {
+          const key = page.url();
+          clearSendTimeoutTracking(key);
+        }
+
         if (await rateLimitVisible(page)) {
           const key = page.url();
           const now = Date.now();
@@ -848,20 +870,6 @@ async function main() {
             console.log(`[INTERRUPT] Rate-limit popup acknowledged automatically on ${key}. Cooldown remains active.`);
           }
           continue;
-        }
-
-        if (await sendTimeoutRetryButtonVisible(page)) {
-          console.log(`[INTERRUPT] EXPLICIT TRY AGAIN visible url=${page.url()} -> immediate recovery click`);
-          await recoverSendTimeout(page);
-          continue;
-        }
-
-        if (await sendTimeoutVisible(page)) {
-          await recoverSendTimeout(page);
-          continue;
-        } else {
-          const key = page.url();
-          clearSendTimeoutTracking(key);
         }
 
         if (await interruptionVisible(page)) {
