@@ -9,6 +9,7 @@ export function verifyWorkflow(text) {
     ["push trigger", "push:"],
     ["main branch", "branches: [main]"],
     ["read-only contents permission", "contents: read"],
+    ["exact source checkout", "ref: ${{ github.event.pull_request.head.sha || github.sha }}"],
     ["Node 24", "node-version: '24'"],
     ["npm sbom", "npm sbom"],
     ["package-lock-only", "--package-lock-only"],
