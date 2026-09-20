@@ -1,0 +1,80 @@
+{
+  "taskId": "25.11",
+  "name": "Mobile-browser test matrix",
+  "matrixVersion": 1,
+  "executableCiBaseline": {
+    "channels": [
+      {
+        "id": "chrome-mobile-emulation",
+        "browser": "Chrome/Chromium",
+        "engine": "Blink",
+        "mode": "CDP mobile emulation",
+        "required": true
+      },
+      {
+        "id": "edge-mobile-emulation",
+        "browser": "Microsoft Edge stable",
+        "engine": "Blink",
+        "mode": "CDP mobile emulation",
+        "required": true
+      }
+    ],
+    "routes": [
+      "home",
+      "inventory",
+      "lot-ea-10539",
+      "live-auctions",
+      "profile"
+    ],
+    "viewports": [
+      {"name":"phone-360","width":360,"height":800},
+      {"name":"phone-390","width":390,"height":844},
+      {"name":"phone-430","width":430,"height":932}
+    ],
+    "expectedCapturesPerChannel": 15
+  },
+  "releaseTarget": {
+    "realOrPlatformBrowserChannels": [
+      {
+        "id": "android-chrome",
+        "platform": "Android",
+        "browser": "Chrome",
+        "requiredForFinalProductionAcceptance": true,
+        "currentExecutionClaimed": false
+      },
+      {
+        "id": "ios-safari",
+        "platform": "iOS",
+        "browser": "Safari",
+        "requiredForFinalProductionAcceptance": true,
+        "currentExecutionClaimed": false
+      }
+    ],
+    "externalDeviceLabOrApprovedSimulatorAllowed": true,
+    "evidenceMustReferenceExactReleaseCommit": true
+  },
+  "requiredMobileChecks": {
+    "touchEmulation": true,
+    "viewportGeometry": true,
+    "horizontalOverflow": true,
+    "mobileNavigation": true,
+    "stickyOrFixedActionSafety": true,
+    "focusVisibility": true,
+    "reconnectStateVisibility": true,
+    "visualCapture": true,
+    "artifactRetention": true
+  },
+  "greenRules": {
+    "taskGreenMeansMatrixContractAndExecutableCiBaselineVerified": true,
+    "taskGreenDoesNotClaimRealAndroidOrIosExecution": true,
+    "bothCiMobileChannelsMustPass": true,
+    "allThreeMobileViewportsMustPass": true,
+    "allFiveRoutesMustPass": true,
+    "missingMobileArtifactBlocksGreen": true,
+    "finalProductionAcceptanceRequiresReleaseTargetEvidence": true
+  },
+  "ownership": {
+    "crossBrowserMatrixOwnedByTask": "25.10",
+    "stagingSmokeSuiteOwnedByTask": "25.12"
+  }
+}
