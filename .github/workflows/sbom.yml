@@ -1,0 +1,33 @@
+name: SBOM Generation
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  sbom:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Generate CycloneDX SBOM from locked dependencies
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          npm sbom --package-lock-only --sbom-format=cyclonedx --sbom-type=application > artifacts/enchev-sbom.cdx.json
+      - name: Validate SBOM artifact
+        run: node scripts/verify-sbom-generation.mjs --file artifacts/enchev-sbom.cdx.json
+      - name: Upload exact-head SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: enchev-sbom-${{ github.sha }}
+          path: artifacts/enchev-sbom.cdx.json
+          if-no-files-found: error
+          retention-days: 14
