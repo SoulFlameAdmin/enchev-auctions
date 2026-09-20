@@ -134,6 +134,10 @@ jobs:
         run: node scripts/verify-cross-browser-test-matrix.mjs
       - name: 25.10 Cross-browser test matrix self-tests
         run: node scripts/verify-cross-browser-test-matrix.mjs --self-test
+      - name: 25.11 Mobile-browser test matrix
+        run: node scripts/verify-mobile-browser-test-matrix.mjs
+      - name: 25.11 Mobile-browser test matrix self-tests
+        run: node scripts/verify-mobile-browser-test-matrix.mjs --self-test
       - name: Environment variable contract invariant
         run: node scripts/verify-environment-variables.mjs
       - name: Environment variable contract self-tests
@@ -413,7 +417,7 @@ jobs:
           mv artifacts/visual-regression artifacts/visual-regression-edge
           mv artifacts/visual-regression-chrome artifacts/visual-regression
 
-          node -e 'const fs=require("fs"); const chrome=JSON.parse(fs.readFileSync("artifacts/visual-regression/manifest.json","utf8")); const edge=JSON.parse(fs.readFileSync("artifacts/visual-regression-edge/manifest.json","utf8")); if(chrome.count!==30||edge.count!==30) process.exit(1); if(!/edge/i.test(edge.browserExecutable)) process.exit(1); const widths=[...new Set(chrome.entries.map(e=>e.width))].sort((a,b)=>a-b).join(","); if(widths!=="360,390,430,1366,1440,1920") process.exit(1); console.log("DP2_RESPONSIVE_BROWSER_MATRIX PASS chrome=30 edge=30 widths="+widths);'
+          node -e 'const fs=require("fs"); const chrome=JSON.parse(fs.readFileSync("artifacts/visual-regression/manifest.json","utf8")); const edge=JSON.parse(fs.readFileSync("artifacts/visual-regression-edge/manifest.json","utf8")); if(chrome.count!==30||edge.count!==30) process.exit(1); if(!/edge/i.test(edge.browserExecutable)) process.exit(1); const widths=[...new Set(chrome.entries.map(e=>e.width))].sort((a,b)=>a-b).join(","); if(widths!=="360,390,430,1366,1440,1920") process.exit(1); const mobileWidths=[360,390,430]; const cm=chrome.entries.filter(e=>mobileWidths.includes(e.width)); const em=edge.entries.filter(e=>mobileWidths.includes(e.width)); const mw=[...new Set(cm.map(e=>e.width))].sort((a,b)=>a-b).join(","); const eroutes=[...new Set(em.map(e=>e.name))].sort().join(","); const croutes=[...new Set(cm.map(e=>e.name))].sort().join(","); if(cm.length!==15||em.length!==15||mw!=="360,390,430") process.exit(1); if(croutes!=="home,inventory,live-auctions,lot-ea-10539,profile"||eroutes!==croutes) process.exit(1); console.log("DP2_RESPONSIVE_BROWSER_MATRIX PASS chrome=30 edge=30 widths="+widths); console.log("DP2_MOBILE_BROWSER_MATRIX PASS chrome_mobile=15 edge_mobile=15 widths=360,390,430");'
       - name: Upload Chrome and Edge visual regression artifact
         uses: actions/upload-artifact@v4
         with:

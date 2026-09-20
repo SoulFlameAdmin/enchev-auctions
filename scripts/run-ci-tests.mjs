@@ -25,6 +25,7 @@ const cases = [
   ["scripts/verify-flaky-test-policy.mjs", "--self-test"],
   ["scripts/verify-critical-path-coverage-target.mjs", "--self-test"],
   ["scripts/verify-cross-browser-test-matrix.mjs", "--self-test"],
+  ["scripts/verify-mobile-browser-test-matrix.mjs", "--self-test"],
   ["scripts/verify-environment-variables.mjs", "--self-test"],
   ["scripts/verify-redis-environment.mjs", "--self-test"],
   ["scripts/verify-redis-production-gate.mjs", "--self-test"],

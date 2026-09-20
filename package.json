@@ -102,7 +102,9 @@
     "verify:critical-path-coverage-target": "node scripts/verify-critical-path-coverage-target.mjs",
     "verify:critical-path-coverage-target:self-test": "node scripts/verify-critical-path-coverage-target.mjs --self-test",
     "verify:cross-browser-test-matrix": "node scripts/verify-cross-browser-test-matrix.mjs",
-    "verify:cross-browser-test-matrix:self-test": "node scripts/verify-cross-browser-test-matrix.mjs --self-test"
+    "verify:cross-browser-test-matrix:self-test": "node scripts/verify-cross-browser-test-matrix.mjs --self-test",
+    "verify:mobile-browser-test-matrix": "node scripts/verify-mobile-browser-test-matrix.mjs",
+    "verify:mobile-browser-test-matrix:self-test": "node scripts/verify-mobile-browser-test-matrix.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
