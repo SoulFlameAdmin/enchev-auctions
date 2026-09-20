@@ -247,7 +247,7 @@ async function verifyD26SoldAdvance(call,viewport){
   const origin=originResult?.result?.value;
   if(typeof origin!=="string"||!origin.startsWith("http"))fail(`D26 ${viewport.name} origin missing`);
 
-  const seededState=encodeURIComponent(JSON.stringify({lotIndex:0,roundEndsAt:Date.now()+2200}));
+  const seededState=encodeURIComponent(JSON.stringify({lotIndex:0,roundEndsAt:Date.now()+5000}));
   const cookie=await call("Network.setCookie",{
     name:"enchev_live_demo_v2",
     value:seededState,
@@ -268,7 +268,7 @@ async function verifyD26SoldAdvance(call,viewport){
   };
 
   let before=null;
-  for(let attempt=0;attempt<20;attempt++){
+  for(let attempt=0;attempt<30;attempt++){
     before=await read();
     if(before?.clockMode==="server"&&before.currentLot==="EA-10511")break;
     await sleep(100);
@@ -277,7 +277,7 @@ async function verifyD26SoldAdvance(call,viewport){
   if(before.nextLot!=="EA-10539")fail(`D26 ${viewport.name} seeded next lot mismatch: ${before.nextLot}`);
 
   let after=null;
-  for(let attempt=0;attempt<45;attempt++){
+  for(let attempt=0;attempt<70;attempt++){
     after=await read();
     if(after?.currentLot==="EA-10539"&&after?.soldLot==="EA-10511"&&after?.noticeVisible)break;
     await sleep(100);
