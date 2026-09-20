@@ -114,7 +114,9 @@
     "verify:dependency-lockfile-enforcement": "node scripts/verify-dependency-lockfile-enforcement.mjs",
     "verify:dependency-lockfile-enforcement:self-test": "node scripts/verify-dependency-lockfile-enforcement.mjs --self-test",
     "verify:dependency-review": "node scripts/verify-dependency-review.mjs",
-    "verify:dependency-review:self-test": "node scripts/verify-dependency-review.mjs --self-test"
+    "verify:dependency-review:self-test": "node scripts/verify-dependency-review.mjs --self-test",
+    "verify:secret-scanning-gate": "node scripts/verify-secret-scanning-gate.mjs",
+    "verify:secret-scanning-gate:self-test": "node scripts/verify-secret-scanning-gate.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
