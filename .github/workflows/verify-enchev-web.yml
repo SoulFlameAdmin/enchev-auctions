@@ -27,6 +27,10 @@ jobs:
       - name: Dependency review (26.09)
         if: github.event_name == 'pull_request'
         run: npm audit --package-lock-only --audit-level=high
+      - name: Preview deployment per change gate contract (26.03)
+        run: node scripts/verify-preview-deployment-per-change.mjs
+      - name: Preview deployment per change self-tests (26.03)
+        run: node scripts/verify-preview-deployment-per-change.mjs --self-test
       - name: Code scanning gate contract (26.11)
         run: node scripts/verify-code-scanning-gate.mjs
       - name: SBOM generation gate contract (26.12)
