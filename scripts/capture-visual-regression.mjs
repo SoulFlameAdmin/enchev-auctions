@@ -522,17 +522,22 @@ function sleep(ms){
 }
 
 async function waitForDevTools(port,browser,stderrRef){
-  for(let attempt=0;attempt<100;attempt++){
+  const attempts=300;
+  let lastError="";
+  for(let attempt=0;attempt<attempts;attempt++){
     if(browser.exitCode!==null){
       fail(`Chrome exited before DevTools became ready: ${stderrRef.value.slice(-3000)}`);
     }
     try{
-      const response=await fetch(`http://127.0.0.1:${port}/json/version`);
+      const response=await fetch(`http://127.0.0.1:${port}/json/version`,{signal:AbortSignal.timeout(1000)});
       if(response.ok)return response.json();
-    }catch{}
+      lastError=`HTTP ${response.status}`;
+    }catch(error){
+      lastError=error instanceof Error ? error.message : String(error);
+    }
     await sleep(100);
   }
-  fail(`Chrome DevTools endpoint did not become ready: ${stderrRef.value.slice(-3000)}`);
+  fail(`Chrome DevTools endpoint did not become ready after ${attempts*100}ms; last_error=${lastError}: ${stderrRef.value.slice(-3000)}`);
 }
 
 async function openTarget(port){
