@@ -1,4 +1,10 @@
 import { cookies } from "next/headers";
+import {
+  assertContractResponse,
+  isApiErrorEnvelope,
+  isLiveAuctionDemoClockResponse,
+  parseLiveAuctionActionRequest,
+} from "@enchev/contracts";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -52,17 +58,30 @@ function payload(
   bidFeedback: BidFeedback | null = null,
   priceDelta = 0,
 ) {
-  return {
-    serverNow,
-    roundEndsAt: state.roundEndsAt,
-    durationMs: LOT_DURATION_MS,
-    lotIndex: state.lotIndex,
-    lotId: LOT_IDS[state.lotIndex],
-    scope: "server-issued-browser-session-demo",
-    auctionAuthority: false,
-    bidFeedback,
-    priceDelta,
-  };
+  return assertContractResponse(
+    "LiveAuctionDemoClock",
+    {
+      serverNow,
+      roundEndsAt: state.roundEndsAt,
+      durationMs: LOT_DURATION_MS,
+      lotIndex: state.lotIndex,
+      lotId: LOT_IDS[state.lotIndex],
+      scope: "server-issued-browser-session-demo" as const,
+      auctionAuthority: false as const,
+      bidFeedback,
+      priceDelta,
+    },
+    isLiveAuctionDemoClockResponse,
+  );
+}
+
+function errorResponse(error: string) {
+  const body = assertContractResponse(
+    "ErrorEnvelope",
+    { error },
+    isApiErrorEnvelope,
+  );
+  return Response.json(body, { status: 400 });
 }
 
 const cookieOptions = {
@@ -86,15 +105,16 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  let body: { action?: string };
+  let rawBody: unknown;
   try {
-    body = (await request.json()) as { action?: string };
+    rawBody = await request.json();
   } catch {
-    return Response.json({ error: "invalid-json" }, { status: 400 });
+    return errorResponse("invalid-json");
   }
 
-  if (body.action !== "bid") {
-    return Response.json({ error: "unsupported-action" }, { status: 400 });
+  const body = parseLiveAuctionActionRequest(rawBody);
+  if (!body) {
+    return errorResponse("unsupported-action");
   }
 
   const store = await cookies();
