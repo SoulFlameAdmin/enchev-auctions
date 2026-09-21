@@ -1,7 +1,7 @@
 {
   "taskId": "24.05",
   "name": "Request correlation ID contract",
-  "status": "YELLOW",
+  "status": "GREEN",
   "header": "X-Request-ID",
   "canonicalLowercaseHeader": "x-request-id",
   "acceptedPattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
@@ -16,5 +16,25 @@
   "runtimeBoundary": "proxy.ts matcher /api/:path*",
   "contractModule": "packages/contracts/src/http-schema.ts",
   "canonicalSpec": "packages/contracts/openapi/enchev-api.v1.json",
-  "authorityBoundary": "Correlation IDs are transport metadata only and never decide auction state, accepted bids, winner selection or final results."
+  "authorityBoundary": "Correlation IDs are transport metadata only and never decide auction state, accepted bids, winner selection or final results.",
+  "evidence": {
+    "implementationPr": "#163",
+    "exactHead": "296469b173c48467edfb9e739bba33ebd24d620a",
+    "mergedMain": "8c22d057e9ed38d8ceb5314ec5c8bfb43656e51a",
+    "exactHeadRuns": {
+      "verifyEnchevWeb": 35551204722,
+      "codeScan": 35551204743,
+      "sbom": 35551204725,
+      "secretScan": 35551204718,
+      "buildProvenance": 35551204755
+    },
+    "postMergeRuns": {
+      "verifyEnchevWeb": 35551462036,
+      "codeScan": 35551462037,
+      "sbom": 35551462019,
+      "secretScan": 35551462025,
+      "buildProvenance": 35551462021
+    },
+    "postMergeVisualArtifact": 10618502793
+  }
 }
