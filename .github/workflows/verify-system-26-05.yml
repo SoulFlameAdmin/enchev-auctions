@@ -1,0 +1,21 @@
+name: Verify SYSTEM 26.05
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  verify-production-approval-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify 26.05 contract
+        run: node scripts/verify-production-approval-gate.mjs
+      - name: Verify 26.05 negative self-tests
+        run: node scripts/verify-production-approval-gate.mjs --self-test
