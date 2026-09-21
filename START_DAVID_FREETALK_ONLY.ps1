@@ -45,6 +45,7 @@ $env:DAVID_FREE_B_CHAT_URL=$FreeBUrl
 $env:DAVID_FREE_TALK_RESUME_EXISTING="1"
 $env:DAVID_FREE_TALK_POLL_MS="250"
 $env:DAVID_FREE_TALK_QUIET_MS="700"
+$env:DAVID_REQUIRE_FRESH_EDGE_ON_START="1"
 
 Start-Process -FilePath $Pwsh -ArgumentList @("-NoProfile","-ExecutionPolicy","Bypass","-File",$Launcher,"-Port","$Port","-MaxTurns","2147483647") -WindowStyle Hidden
 
