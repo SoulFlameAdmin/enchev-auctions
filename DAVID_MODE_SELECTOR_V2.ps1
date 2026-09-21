@@ -3,6 +3,21 @@ $ErrorActionPreference="Stop"
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
+# Hard singleton: at most one DAVID Mode Center may exist.
+$CenterMutex=New-Object System.Threading.Mutex($false,"Global\DAVID_MODE_CENTER_V2_SINGLETON")
+$CenterMutexOwned=$false
+try{
+  try{$CenterMutexOwned=$CenterMutex.WaitOne(0)}catch [System.Threading.AbandonedMutexException]{$CenterMutexOwned=$true}
+  if(-not$CenterMutexOwned){
+    # Another center is already alive. Exit this duplicate immediately.
+    try{$CenterMutex.Dispose()}catch{}
+    exit 0
+  }
+}catch{
+  try{$CenterMutex.Dispose()}catch{}
+  throw
+}
+
 $Repo="D:\ASI\enchev-auctions"
 $DavidDir=Join-Path $Repo "tools\david"
 $Pwsh="$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
@@ -319,3 +334,8 @@ while(-not $script:Closing -and $form.Visible){
 try{
   if(-not $form.IsDisposed){$form.Dispose()}
 }catch{}
+
+if($CenterMutexOwned){
+  try{$CenterMutex.ReleaseMutex()|Out-Null}catch{}
+}
+try{$CenterMutex.Dispose()}catch{}
