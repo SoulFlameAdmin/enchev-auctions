@@ -138,7 +138,9 @@
     "verify:api-compatibility-policy": "node scripts/verify-api-compatibility-policy.mjs",
     "verify:api-compatibility-policy:self-test": "node scripts/verify-api-compatibility-policy.mjs --self-test",
     "verify:webhook-signatures": "node scripts/verify-webhook-signature-contract.mjs",
-    "verify:webhook-signatures:self-test": "node scripts/verify-webhook-signature-contract.mjs --self-test"
+    "verify:webhook-signatures:self-test": "node scripts/verify-webhook-signature-contract.mjs --self-test",
+    "verify:websocket-event-registry": "node scripts/verify-websocket-event-registry.mjs",
+    "verify:websocket-event-registry:self-test": "node scripts/verify-websocket-event-registry.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",

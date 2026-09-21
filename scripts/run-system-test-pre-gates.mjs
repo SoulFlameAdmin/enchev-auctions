@@ -17,7 +17,8 @@ const gates = [
   ["scripts/verify-rate-limit-response-contract.mjs", "--self-test"],
   ["scripts/verify-api-endpoint-inventory.mjs", "--self-test"],
   ["scripts/verify-api-compatibility-policy.mjs", "--self-test"],
-  ["scripts/verify-webhook-signature-contract.mjs", "--self-test"]
+  ["scripts/verify-webhook-signature-contract.mjs", "--self-test"],
+  ["scripts/verify-websocket-event-registry.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of gates) {

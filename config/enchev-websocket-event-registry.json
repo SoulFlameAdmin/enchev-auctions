@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "task": "24.12",
+  "title": "WebSocket event contract registry",
+  "envelopeVersion": 1,
+  "transportAuthority": false,
+  "sequenceScope": "auction-stream",
+  "gapPolicy": "Client must stop trusting incremental realtime state after a sequence gap and resync from an authoritative HTTP/PostgreSQL-backed snapshot before applying later events.",
+  "authorityBoundary": "WebSocket events are delivery hints and projections only. PostgreSQL remains authoritative for auction state, accepted bids, winner selection and final results.",
+  "requiredEnvelopeFields": [
+    "id",
+    "type",
+    "source",
+    "subject",
+    "time",
+    "sequence",
+    "schemaVersion",
+    "correlationId",
+    "data"
+  ],
+  "events": [
+    { "type": "enchev.auction.snapshot.v1", "schemaVersion": 1, "subjectPrefix": "auction/", "purpose": "Full recoverable auction projection after connect or resync." },
+    { "type": "enchev.bid.accepted.v1", "schemaVersion": 1, "subjectPrefix": "auction/", "purpose": "Projection that an authoritative bid transaction was accepted." },
+    { "type": "enchev.bid.rejected.v1", "schemaVersion": 1, "subjectPrefix": "auction/", "purpose": "Delivery of a non-sensitive rejection result to the requesting client." },
+    { "type": "enchev.auction.extended.v1", "schemaVersion": 1, "subjectPrefix": "auction/", "purpose": "Projection of an authoritative anti-sniping/extension decision." },
+    { "type": "enchev.auction.closed.v1", "schemaVersion": 1, "subjectPrefix": "auction/", "purpose": "Projection of authoritative finalization state." },
+    { "type": "enchev.resync.required.v1", "schemaVersion": 1, "subjectPrefix": "auction/", "purpose": "Explicit instruction to discard incremental assumptions and fetch authoritative state." }
+  ]
+}
