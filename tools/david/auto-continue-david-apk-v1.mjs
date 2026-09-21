@@ -526,7 +526,27 @@ async function waitReady(context, page, state) {
           const found = await ensureApkUrl(context, state);
           if (!found) {
             page = await ensurePendingApkPage(context, page, state);
-            await sleep(3000);
+
+            // A new dedicated Edge profile may not expose enough sidebar
+            // history for unique APK discovery. Never deadlock the APK worker:
+            // reuse this owned pending tab as a fresh conversation and rebuild
+            // exact project state from GitHub/PR/CI evidence in the work prompt.
+            activeChatUrl = CHATGPT_ROOT;
+            state.chatUrl = CHATGPT_ROOT;
+            state.pendingNewChat = true;
+            state.freshStartPending = true;
+            state.sessionSource = "fresh-owned-tab-after-discovery-miss";
+            state.watchdog = "apk-fresh-owned-tab-ready";
+            save(state, "No unique APK session discovered -> continue in owned fresh ChatGPT tab");
+            console.log("[APK] No unique prior APK session found. Using owned fresh tab and reconstructing from GitHub evidence.");
+
+            if (await composer(page)) {
+              const effort = await ensureChatGptEffortMode(page, "medium").catch(() => ({ ok: false }));
+              if (effort?.changed) console.log("[APK] ChatGPT effort forced to Medium.");
+              return page;
+            }
+
+            await sleep(POLL_MS);
             continue;
           }
         }
@@ -833,7 +853,8 @@ function runSelfTest() {
   if (!semanticTerminalCandidate("APK upgrade completed successfully. Build PASS. Artifact evidence is recorded.")) throw new Error("APK self-test: proven stable completion should allow semantic fallback");
   if (semanticTerminalCandidate("Android CI is still running and pending. Please wait.")) throw new Error("APK self-test: pending CI must not auto-continue");
   if (semanticTerminalCandidate("Please log in and approve MFA before continuing.")) throw new Error("APK self-test: human gate must pause");
-  console.log("DAVID_APK_RESPONSE_WATCHDOG_SELF_TEST PASS semantic_terminal=3");
+  if (!waitReady.toString().includes("fresh-owned-tab-after-discovery-miss")) throw new Error("APK self-test: discovery miss must auto-start owned fresh tab");
+  console.log("DAVID_APK_RESPONSE_WATCHDOG_SELF_TEST PASS semantic_terminal=3 discovery_miss_autostart=ON");
 }
 
 if (process.argv.includes("--self-test")) {

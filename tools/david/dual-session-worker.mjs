@@ -749,7 +749,7 @@ console.log(`[DUAL] ACTIVE MANAGED SCOPE: ${MANAGED_KINDS.join(" + ")}`);
 console.log("[DUAL] SYSTEM tab: 6aab44e1-385c-83eb-b122-c4ae9836cb71");
 console.log("[DUAL] DESIGN tab: 6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7");
 console.log("[DUAL] APP2 tab: 6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4");
-console.log("[DUAL] APK tab: auto-discover DAVID Phone / SoulFlame Twins / DAVID APK session; exact DAVID_APK_CHAT_URL wins when provided.");
+console.log("[DUAL] APK tab: exact URL/state wins; otherwise auto-discover; if discovery is ambiguous/missing, APK starts safely in its owned fresh tab and reconstructs from GitHub evidence.");
 console.log("[DUAL] CONTROL tab: 6aade2fa-e2a0-83ed-96af-702c0430d49e");
 console.log("[DUAL] INTERRUPTION GUARD: watches every managed ChatGPT conversation in this DAVID Edge profile.");
 console.log("[DUAL] FAST RECOVERY: explicit Try again => CLICK IMMEDIATELY (x3 max) -> RELOAD -> affected-worker RESTART; active normal GPT work still protected.");
