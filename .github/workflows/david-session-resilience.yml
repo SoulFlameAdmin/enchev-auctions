@@ -7,6 +7,9 @@ on:
       - "START_DAVID_ALL.ps1"
       - "START_DAVID_AUTONOMY.ps1"
       - "START_DAVID_EXPERIMENT_FREETALK.ps1"
+      - "START_DAVID_FREETALK_ONLY.ps1"
+      - "RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1"
+      - "DAVID_MODE_SELECTOR.ps1"
       - "RESTART_DAVID_ALL_CLEAN.ps1"
       - "RESTART_DAVID_AUTONOMY_CLEAN.ps1"
       - "RESTART_DAVID_EXPERIMENT_FREETALK_CLEAN.ps1"
@@ -19,6 +22,9 @@ on:
       - "tools/david/**"
       - "START_DAVID_ALL.ps1"
       - "START_DAVID_AUTONOMY.ps1"
+      - "START_DAVID_FREETALK_ONLY.ps1"
+      - "RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1"
+      - "DAVID_MODE_SELECTOR.ps1"
       - "RESTART_DAVID_ALL_CLEAN.ps1"
       - "RESTART_DAVID_AUTONOMY_CLEAN.ps1"
       - "RESTART_DAVID_EXPERIMENT_FREETALK_CLEAN.ps1"
@@ -81,11 +87,15 @@ jobs:
             "RESTART_DAVID_AUTONOMY_CLEAN.ps1",
             "START_DAVID_EXPERIMENT_FREETALK.ps1",
             "RESTART_DAVID_EXPERIMENT_FREETALK_CLEAN.ps1",
+            "START_DAVID_FREETALK_ONLY.ps1",
+            "RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1",
+            "DAVID_MODE_SELECTOR.ps1",
             "STOP_DAVID_ALL_CLEAN.ps1",
             "tools/david/start-auto-continue.ps1",
             "tools/david/david-status-dashboard.ps1",
             "tools/david/david-autonomy-dashboard.ps1",
-            "tools/david/david-freetalk-dashboard.ps1"
+            "tools/david/david-freetalk-dashboard.ps1",
+            "tools/david/david-freetalk-only-dashboard.ps1"
           )
           foreach ($file in $files) {
             $tokens = $null
