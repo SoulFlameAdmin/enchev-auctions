@@ -1,3 +1,4 @@
+import { assertContractResponse, isRedisHealthResponse } from "@enchev/contracts";
 import net from "node:net";
 import tls from "node:tls";
 
@@ -13,7 +14,8 @@ type ProbeResult = {
 };
 
 function json(body: Record<string, unknown>, status: number) {
-  return new Response(JSON.stringify(body), {
+  const validated = assertContractResponse("RedisHealth", body, isRedisHealthResponse);
+  return new Response(JSON.stringify(validated), {
     status,
     headers: {
       "content-type": "application/json; charset=utf-8",
