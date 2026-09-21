@@ -34,6 +34,9 @@ for (const [name, source] of [["SYSTEM", systemWorker], ["DPP", dppWorker], ["AP
     if (!source.includes(token)) throw new Error(name + " autonomy invariant missing: " + token);
   }
 }
+for (const token of ["ensurePendingApkPage", "DAVID_APK_PENDING_V1", "Pending ChatGPT tab created immediately"]) {
+  if (!apkWorker.includes(token)) throw new Error("APK fourth-tab invariant missing: " + token);
+}
 for (const token of ["ensureChatGptEffortMode", '"medium"']) {
   if (!control.includes(token)) throw new Error("CONTROL effort invariant missing: " + token);
 }
@@ -52,4 +55,4 @@ if (!restart.includes("STOP_DAVID_ALL_CLEAN.ps1") || !restart.includes("START_DA
   throw new Error("Restart must atomically stop old stack before AUTONOMY start");
 }
 
-console.log("DAVID_AUTONOMY_PROFILE PASS scope=SYSTEM+APP2+APK+CONTROL design=OFF strict_tabs=4 effort=MEDIUM guard=ON semantic_terminal=SYSTEM+DPP+APK");
+console.log("DAVID_AUTONOMY_PROFILE PASS scope=SYSTEM+APP2+APK+CONTROL design=OFF strict_tabs=4 apk_fourth_tab=GUARANTEED effort=MEDIUM guard=ON semantic_terminal=SYSTEM+DPP+APK");
