@@ -3,11 +3,13 @@ import path from "node:path";
 import process from "node:process";
 import { chromium } from "playwright-core";
 import {
-  waitForGlobalSendPermit,
+  getRateLimitState,
+  rateLimitRemainingMs,
   markGlobalSendStarted,
   reportProbeSuccess,
   reportRateLimit
 } from "./chatgpt-rate-limit-coordinator.mjs";
+import { CHATGPT_ROOT, rotateOwnedChatPage } from "./chatgpt-session-rotation.mjs";
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1"));
 const ROLE = String(process.env.DAVID_FREE_TALK_ROLE || "FREE_A").toUpperCase();
@@ -19,8 +21,8 @@ const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const TAB_NAME = ROLE === "FREE_A" ? "DAVID_FREE_A_MANAGED_V1" : "DAVID_FREE_B_MANAGED_V1";
 const PENDING_TAB_NAME = ROLE === "FREE_A" ? "DAVID_FREE_A_PENDING_V1" : "DAVID_FREE_B_PENDING_V1";
 const ROLE_MARKER = ROLE === "FREE_A" ? "[DAVID_FREE_TALK_A_V1]" : "[DAVID_FREE_TALK_B_V1]";
-const POLL_MS = Number(process.env.DAVID_FREE_TALK_POLL_MS || 1000);
-const QUIET_MS = Number(process.env.DAVID_FREE_TALK_QUIET_MS || 3500);
+const POLL_MS = Number(process.env.DAVID_FREE_TALK_POLL_MS || 250);
+const QUIET_MS = Number(process.env.DAVID_FREE_TALK_QUIET_MS || 700);
 const STALL_MS = Number(process.env.DAVID_FREE_TALK_STALL_MS || 600000);
 
 function sleep(ms){ return new Promise(r=>setTimeout(r,ms)); }
@@ -35,7 +37,8 @@ function writeJson(file, value){
 }
 let state=readJson(STATE_FILE,{
   version:1, role:ROLE, partner:PARTNER, chatUrl:null, watchdog:"starting",
-  lastConsumedSeq:0,lastPublishedSeq:0,lastAssistantHash:null,inflightKey:null,inflightBaseHash:null
+  lastConsumedSeq:0,lastPublishedSeq:0,lastAssistantHash:null,inflightKey:null,inflightBaseHash:null,
+  rolloverCount:0,previousChatUrl:null,staleChatUrls:[],justRolledOver:false
 });
 function save(action){
   state={...state,role:ROLE,partner:PARTNER,updatedAt:nowIso(),lastAction:action};
@@ -60,6 +63,79 @@ function cleanUrl(url){
 function hash(text){
   let h=2166136261; for(const ch of String(text||"")){ h^=ch.charCodeAt(0); h=Math.imul(h,16777619); }
   return String(h>>>0);
+}
+
+function conversationLimitText(text){
+  return /(достигнахте максималната продължителност на този разговор|максималната продължителност на този разговор|maximum length for this conversation|conversation has reached (?:its )?maximum length)/i.test(String(text||""));
+}
+async function conversationLimitReached(page){
+  try{
+    return await page.evaluate(()=>{
+      const visible=el=>{const s=getComputedStyle(el),r=el.getBoundingClientRect();return s.display!=="none"&&s.visibility!=="hidden"&&r.width>0&&r.height>0;};
+      const re=/(достигнахте максималната продължителност на този разговор|максималната продължителност на този разговор|maximum length for this conversation|conversation has reached (?:its )?maximum length)/i;
+      for(const el of document.querySelectorAll("div,section,p,span")){
+        if(!visible(el)) continue;
+        const t=(el.textContent||"").replace(/\s+/g," ").trim();
+        if(t&&t.length<500&&re.test(t)) return true;
+      }
+      return false;
+    });
+  }catch{return false;}
+}
+async function closeOldConversationTabs(context,oldUrl,keepPage){
+  const old=cleanUrl(oldUrl);
+  if(!old) return 0;
+  let closed=0;
+  for(const candidate of context.pages()){
+    if(!candidate||candidate===keepPage||candidate.isClosed()) continue;
+    try{
+      if(cleanUrl(candidate.url())!==old) continue;
+      await candidate.close({runBeforeUnload:false}).catch(()=>{});
+      closed++;
+    }catch{}
+  }
+  return closed;
+}
+async function rolloverConversation(context,page,reason="conversation-limit"){
+  const oldUrl=cleanUrl(page?.url?.())||page?.url?.()||state.chatUrl||CHATGPT_ROOT;
+  if(!page||page.isClosed()) page=await ensurePage(context,null);
+  if(!page||page.isClosed()) throw new Error(ROLE+" rollover requires one owned ChatGPT tab");
+
+  state.previousChatUrl=oldUrl;
+  state.staleChatUrls=Array.from(new Set([...(Array.isArray(state.staleChatUrls)?state.staleChatUrls:[]),oldUrl])).slice(-20);
+  state.rolloverCount=Number(state.rolloverCount||0)+1;
+  state.justRolledOver=true;
+  state.chatUrl=CHATGPT_ROOT;
+  state.watchdog="free-talk-rollover";
+  save("FREE TALK same-tab rollover #"+state.rolloverCount+" reason="+reason);
+
+  const rotated=await rotateOwnedChatPage({
+    page,
+    getComposer:composer,
+    setPageTag:tag,
+    pendingTag:PENDING_TAB_NAME,
+    managedTag:TAB_NAME,
+    onWait:async ({phase,attempt,url})=>{
+      state.watchdog=phase==="auth-wait"?"human-login-required":"free-talk-rollover-wait";
+      save("FREE TALK rollover wait phase="+phase+" attempt="+attempt+" url="+(url||"unknown"));
+    }
+  });
+  if(!rotated.ok) throw new Error(ROLE+" same-tab rollover failed: "+rotated.reason);
+
+  await closeOldConversationTabs(context,oldUrl,page);
+  save("Fresh FREE TALK session ready in SAME TAB #"+state.rolloverCount);
+  return page;
+}
+async function waitOnlyForActualGlobalBlock(){
+  for(;;){
+    const st=getRateLimitState();
+    if(st.status==="clear") return {mode:"fast",state:st};
+    if(st.status==="probe" && st.probeOwner===ROLE) return {mode:"probe",state:st};
+    const waitMs=Math.max(250,Math.min(1000,rateLimitRemainingMs(st)||1000));
+    state.watchdog="free-talk-rate-limit-wait";
+    save("Actual global rate limit wait status="+st.status+" owner="+(st.probeOwner||"none"));
+    await sleep(waitMs);
+  }
 }
 async function tag(page,name){ await page.evaluate(v=>{window.name=v;},name).catch(()=>{}); }
 async function findTagged(context){
@@ -134,6 +210,10 @@ async function waitReady(context,page){
     if(url.includes("/login")||url.includes("/auth/")){
       state.watchdog="human-login-required"; save("Waiting for ChatGPT login"); await sleep(3000); continue;
     }
+    if(await conversationLimitReached(page)){
+      page=await rolloverConversation(context,page);
+      continue;
+    }
     const c=await composer(page);
     if(c || await latestAssistant(page)){
       const cu=cleanUrl(page.url());
@@ -207,14 +287,12 @@ async function sendAndCapture(context,page,key,prompt){
   let baseHash=state.inflightKey===key?String(state.inflightBaseHash||state.lastAssistantHash||""):hash(await latestAssistant(page));
   const alreadySent=(await latestUser(page)).includes(marker);
   if(!alreadySent){
-    state.inflightKey=key; state.inflightBaseHash=baseHash; state.watchdog="free-talk-send-permit"; save("Preparing "+key);
-    const permit=await waitForGlobalSendPermit(ROLE,async decision=>{
-      state.watchdog="free-talk-global-wait"; save("Global send wait mode="+decision.mode);
-    });
+    state.inflightKey=key; state.inflightBaseHash=baseHash; state.watchdog="free-talk-send-ready"; save("Preparing "+key);
+    const permit=await waitOnlyForActualGlobalBlock();
     if(permit.mode==="probe"){state.watchdog="free-talk-global-probe";save("Owns post-cooldown probe");}
     await fillAndSend(page,prompt);
-    await markGlobalSendStarted(ROLE);
-    state.watchdog="free-talk-sent"; save("Sent "+key);
+    if(permit.mode==="probe") await markGlobalSendStarted(ROLE);
+    state.watchdog="free-talk-sent"; save("Sent immediately "+key);
   }else{
     state.watchdog="free-talk-resume-inflight"; save("Resuming existing "+key+" without duplicate send");
   }
@@ -228,10 +306,12 @@ async function sendAndCapture(context,page,key,prompt){
   }
 }
 function seedPrompt(){
-  return ROLE_MARKER+"\n[DAVID_FREE_TALK_SEED_V1]\n\nYou are "+ROLE+" in an isolated two-session conversation experiment. Start a spontaneous, thoughtful conversation with another independent AI session named FREE_B. Choose any interesting topic. Keep each turn concise (about 1-3 short paragraphs), respond naturally, and optionally ask one question. This experiment is conversation only: do not browse, call tools, modify projects, or issue operational instructions. Your reply will be relayed verbatim to the other session.";
+  return ROLE_MARKER+"\n[DAVID_FREE_TALK_SEED_V2]\n\nYou are "+ROLE+" in an open-ended two-session free-talk experiment with "+PARTNER+". Start wherever your curiosity takes you. You may change topics whenever you want, ask questions, disagree, speculate, joke, research, browse/search the web, inspect sources, use available information tools, and bring anything interesting you find back into the conversation. You do not need to ask for permission to explore. Respond in whatever style and length feels natural. When a session reaches its maximum length, the relay will continue you in a fresh session automatically. Do not perform external side-effect actions such as posting publicly, purchasing, changing accounts, or modifying the human's projects unless the human explicitly asks.";
 }
 function relayPrompt(seq,text){
-  return ROLE_MARKER+"\n[DAVID_FREE_TALK_RELAY_V1 seq="+seq+" from="+PARTNER+" to="+ROLE+"]\n\nThe other AI session said:\n\n"+text+"\n\nReply naturally to "+PARTNER+". Continue the conversation rather than analyzing the relay mechanism. Keep it concise (about 1-3 short paragraphs). Conversation only: do not browse, call tools, modify projects, or issue operational instructions.";
+  const continuation=state.justRolledOver?"\n\nYou are continuing the same FREE TALK experiment in a fresh ChatGPT session because the previous session reached its maximum length. Pick up naturally from the relay below.":"";
+  state.justRolledOver=false;
+  return ROLE_MARKER+"\n[DAVID_FREE_TALK_RELAY_V2 seq="+seq+" from="+PARTNER+" to="+ROLE+"]"+continuation+"\n\n"+PARTNER+" said:\n\n"+text+"\n\nReply however you want and take the conversation wherever you want. You may browse/search, inspect sources, use available information tools, switch topics, question assumptions, or explore something new on your own initiative. No need to ask permission to research. Do not perform external side-effect actions such as public posting, purchases, account changes, or project modifications unless the human explicitly asks.";
 }
 async function main(){
   state.watchdog="free-talk-starting";save("Worker starting");
@@ -254,14 +334,14 @@ async function main(){
     const seq=Number(exchange.seq||0);
 
     if(ROLE==="FREE_A" && seq===0 && Number(state.lastPublishedSeq||0)===0){
-      const result=await sendAndCapture(context,page,"[DAVID_FREE_TALK_SEED_V1]",seedPrompt());
+      const result=await sendAndCapture(context,page,"[DAVID_FREE_TALK_SEED_V2]",seedPrompt());
       page=result.page;
       publish(1,result.text);
       continue;
     }
 
     if(exchange.lastSpeaker===PARTNER && seq>Number(state.lastConsumedSeq||0) && String(exchange.text||"").trim()){
-      const relayKey="[DAVID_FREE_TALK_RELAY_V1 seq="+seq+" from="+PARTNER+" to="+ROLE+"]";
+      const relayKey="[DAVID_FREE_TALK_RELAY_V2 seq="+seq+" from="+PARTNER+" to="+ROLE+"]";
       state.lastConsumedSeq=seq; save("Consuming partner seq="+seq);
       const result=await sendAndCapture(context,page,relayKey,relayPrompt(seq,exchange.text));
       page=result.page;
@@ -277,7 +357,8 @@ async function main(){
 if(process.argv.includes("--self-test")){
   if(!ROLE_MARKER.includes("DAVID_FREE_TALK_")) throw new Error("marker missing");
   if(PARTNER===ROLE) throw new Error("partner role invalid");
-  console.log("DAVID_FREE_TALK_SELF_TEST PASS role="+ROLE+" partner="+PARTNER+" dedupe=relay-seq global-pacer=ON");
+  if(!conversationLimitText("You have reached the maximum length for this conversation.")) throw new Error("rollover detection missing");
+  console.log("DAVID_FREE_TALK_SELF_TEST PASS role="+ROLE+" partner="+PARTNER+" dedupe=relay-seq fast_relay=ON browse_tools=ALLOWED same_tab_rollover=ON");
 }else{
   main().catch(error=>{console.error("["+ROLE+"] FATAL",error?.stack||error);process.exit(1);});
 }
