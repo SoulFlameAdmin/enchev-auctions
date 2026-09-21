@@ -7,9 +7,7 @@ $Repo="D:\ASI\enchev-auctions"
 $DavidDir=Join-Path $Repo "tools\david"
 $Pwsh="$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
 $StopScript=Join-Path $Repo "STOP_DAVID_ALL_CLEAN.ps1"
-$SoulStart=Join-Path $Repo "START_DAVID_AUTONOMY.ps1"
 $SoulRestart=Join-Path $Repo "RESTART_DAVID_AUTONOMY_CLEAN.ps1"
-$AbStart=Join-Path $Repo "START_DAVID_FREETALK_ONLY.ps1"
 $AbRestart=Join-Path $Repo "RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1"
 $FreeAUrl="https://chatgpt.com/c/6ab08cb0-3738-83eb-b4bf-2ef8bf4933a8"
 $FreeBUrl="https://chatgpt.com/c/6ab08cab-006c-83eb-a753-2ea42567e22f"
@@ -66,7 +64,7 @@ $title.Location=New-Object System.Drawing.Point(28,20)
 $form.Controls.Add($title)
 
 $subtitle=New-Object System.Windows.Forms.Label
-$subtitle.Text="One active mode at a time. Switching is clean. Chat history and pinned A+B conversations stay preserved."
+$subtitle.Text="Choose a mode. Every selection performs a FULL CLEAN RESTART, then starts and verifies the selected stack."
 $subtitle.ForeColor=[System.Drawing.Color]::Silver
 $subtitle.Font=New-Object System.Drawing.Font("Segoe UI",9)
 $subtitle.Size=New-Object System.Drawing.Size(690,36)
@@ -158,23 +156,20 @@ $script:Busy=$false
 $script:Closing=$false
 $script:LastRefresh=[DateTime]::MinValue
 
-function Start-Mode([string]$Name,[string]$StartScript,[string]$RestartScript){
+function Start-Mode([string]$Name,[string]$RestartScript){
   if($script:Busy){return}
-  $snap=Get-Snapshot
-  $ScriptPath=if($snap.Mode-eq"STOPPED"){$StartScript}else{$RestartScript}
-  $verb=if($snap.Mode-eq"STOPPED"){"STARTING"}else{"SWITCHING"}
 
-  if(-not(Test-Path $ScriptPath)){
-    [System.Windows.Forms.MessageBox]::Show("Missing script:`r`n"+$ScriptPath,"DAVID MODE CENTER",[System.Windows.Forms.MessageBoxButtons]::OK,[System.Windows.Forms.MessageBoxIcon]::Error)|Out-Null
+  if(-not(Test-Path $RestartScript)){
+    [System.Windows.Forms.MessageBox]::Show("Missing restart script:`r`n"+$RestartScript,"DAVID MODE CENTER",[System.Windows.Forms.MessageBoxButtons]::OK,[System.Windows.Forms.MessageBoxIcon]::Error)|Out-Null
     return
   }
 
   $script:Busy=$true
   $script:ActionName=$Name
   $soul.Enabled=$false;$ab.Enabled=$false;$stop.Enabled=$false
-  $badge.Text=$verb+" -> "+$Name
+  $badge.Text="FULL CLEAN RESTART -> "+$Name
   $badge.BackColor=[System.Drawing.Color]::FromArgb(173,116,26)
-  $script:ActionProcess=Start-Process -FilePath $Pwsh -ArgumentList @("-NoProfile","-ExecutionPolicy","Bypass","-File",$ScriptPath,"-Port","$Port") -PassThru -WindowStyle Hidden
+  $script:ActionProcess=Start-Process -FilePath $Pwsh -ArgumentList @("-NoProfile","-ExecutionPolicy","Bypass","-File",$RestartScript,"-Port","$Port") -PassThru -WindowStyle Hidden
 }
 
 function Start-StopAll{
@@ -194,7 +189,7 @@ function Update-Ui{
     switch($s.Mode){
       "SOULFLAME"{$badge.Text="ACTIVE: SOULFLAME SYSTEM";$badge.BackColor=[System.Drawing.Color]::FromArgb(35,119,191);$soul.Enabled=$false;$ab.Enabled=$true;$stop.Enabled=$true}
       "AB"{$badge.Text="ACTIVE: DAVID A + B";$badge.BackColor=[System.Drawing.Color]::FromArgb(116,63,169);$soul.Enabled=$true;$ab.Enabled=$false;$stop.Enabled=$true}
-      "STOPPED"{$badge.Text="READY: CHOOSE SYSTEM OR DAVID A + B";$badge.BackColor=[System.Drawing.Color]::FromArgb(45,115,70);$soul.Enabled=$true;$ab.Enabled=$true;$stop.Enabled=$false}
+      "STOPPED"{$badge.Text="READY: CHOOSE MODE -> FULL CLEAN RESTART";$badge.BackColor=[System.Drawing.Color]::FromArgb(45,115,70);$soul.Enabled=$true;$ab.Enabled=$true;$stop.Enabled=$false}
       default{$badge.Text="CHECK / TRANSITION";$badge.BackColor=[System.Drawing.Color]::FromArgb(170,105,27);$soul.Enabled=$true;$ab.Enabled=$true;$stop.Enabled=$true}
     }
   }
@@ -208,8 +203,8 @@ function Update-Ui{
   $runtime.Text=("MODE={0}   ChatGPT tabs={1}`r`nSUP={2} GUARD={3} SYSTEM={4} DPP={5} APK={6} CTRL={7} FREE={8} DESIGN={9}`r`nTAB MAP: SYS={10} DPP={11} APK={12} CTRL={13} FREE_A={14} FREE_B={15}`r`nA={16}`r`nB={17}" -f $s.Mode,$s.Tabs,$s.Sup,$s.Guard,$s.System,$s.Dpp,$s.Apk,$s.Control,$s.Free,$s.Design,$s.TabSystem,$s.TabDpp,$s.TabApk,$s.TabControl,$s.FreeA,$s.FreeB,$s.AUrl,$s.BUrl)
 }
 
-$soul.Add_Click({Start-Mode "SOULFLAME SYSTEM" $SoulStart $SoulRestart})
-$ab.Add_Click({Start-Mode "DAVID A + B" $AbStart $AbRestart})
+$soul.Add_Click({Start-Mode "SOULFLAME SYSTEM" $SoulRestart})
+$ab.Add_Click({Start-Mode "DAVID A + B" $AbRestart})
 $stop.Add_Click({Start-StopAll})
 $refresh.Add_Click({Update-Ui})
 
