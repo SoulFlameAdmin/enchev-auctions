@@ -194,7 +194,7 @@ function Update-Ui{
     switch($s.Mode){
       "SOULFLAME"{$badge.Text="ACTIVE: SOULFLAME SYSTEM";$badge.BackColor=[System.Drawing.Color]::FromArgb(35,119,191);$soul.Enabled=$false;$ab.Enabled=$true;$stop.Enabled=$true}
       "AB"{$badge.Text="ACTIVE: DAVID A + B";$badge.BackColor=[System.Drawing.Color]::FromArgb(116,63,169);$soul.Enabled=$true;$ab.Enabled=$false;$stop.Enabled=$true}
-      "STOPPED"{$badge.Text="STOPPED";$badge.BackColor=[System.Drawing.Color]::FromArgb(88,88,96);$soul.Enabled=$true;$ab.Enabled=$true;$stop.Enabled=$false}
+      "STOPPED"{$badge.Text="READY: CHOOSE SYSTEM OR DAVID A + B";$badge.BackColor=[System.Drawing.Color]::FromArgb(45,115,70);$soul.Enabled=$true;$ab.Enabled=$true;$stop.Enabled=$false}
       default{$badge.Text="CHECK / TRANSITION";$badge.BackColor=[System.Drawing.Color]::FromArgb(170,105,27);$soul.Enabled=$true;$ab.Enabled=$true;$stop.Enabled=$true}
     }
   }
