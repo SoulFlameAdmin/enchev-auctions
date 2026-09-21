@@ -122,7 +122,9 @@
     "verify:environment-scoped-ci-secrets": "node scripts/verify-environment-scoped-ci-secrets.mjs",
     "verify:environment-scoped-ci-secrets:self-test": "node scripts/verify-environment-scoped-ci-secrets.mjs --self-test",
     "verify:request-response-schema-validation": "node scripts/verify-request-response-schema-validation.mjs",
-    "verify:request-response-schema-validation:self-test": "node scripts/verify-request-response-schema-validation.mjs --self-test"
+    "verify:request-response-schema-validation:self-test": "node scripts/verify-request-response-schema-validation.mjs --self-test",
+    "verify:standard-error-envelope": "node scripts/verify-standard-error-envelope.mjs",
+    "verify:standard-error-envelope:self-test": "node scripts/verify-standard-error-envelope.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
