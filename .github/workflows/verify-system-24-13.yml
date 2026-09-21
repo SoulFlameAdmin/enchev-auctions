@@ -1,0 +1,35 @@
+name: verify-system-24-13
+
+on:
+  pull_request:
+    paths:
+      - "config/enchev-schema-compatibility-baseline.json"
+      - "packages/contracts/openapi/enchev-api.v1.json"
+      - "scripts/verify-schema-compatibility-tests.mjs"
+      - "docs/24_13_SCHEMA_COMPATIBILITY_TESTS.md"
+      - ".github/workflows/verify-system-24-13.yml"
+  push:
+    paths:
+      - "config/enchev-schema-compatibility-baseline.json"
+      - "packages/contracts/openapi/enchev-api.v1.json"
+      - "scripts/verify-schema-compatibility-tests.mjs"
+      - "docs/24_13_SCHEMA_COMPATIBILITY_TESTS.md"
+      - ".github/workflows/verify-system-24-13.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  schema-compatibility:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Verify 24.13 invariant
+        run: node scripts/verify-schema-compatibility-tests.mjs
+      - name: Verify 24.13 negative self-tests
+        run: node scripts/verify-schema-compatibility-tests.mjs --self-test

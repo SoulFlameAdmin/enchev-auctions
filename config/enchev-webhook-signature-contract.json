@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "task": "24.11",
+  "title": "Webhooks contract + signatures",
+  "algorithm": "HMAC-SHA256",
+  "signatureVersion": "v1",
+  "signaturePrefix": "v1=",
+  "signedMessage": "<timestamp>.<deliveryId>.<rawBody>",
+  "headers": {
+    "deliveryId": "x-enchev-webhook-id",
+    "timestamp": "x-enchev-webhook-timestamp",
+    "signature": "x-enchev-webhook-signature"
+  },
+  "replayToleranceSeconds": 300,
+  "secretMinLength": 32,
+  "maxActiveSecrets": 2,
+  "deliveryIdFormat": "uuid",
+  "verificationRules": [
+    "Verify the exact raw HTTP body before JSON parsing or mutation.",
+    "Reject timestamps outside the replay window.",
+    "Reject malformed signatures and delivery identifiers.",
+    "Compare HMAC digests in constant time.",
+    "Allow at most current plus previous secret during controlled rotation.",
+    "Never log webhook secrets or full signature material.",
+    "Duplicate delivery handling must be idempotent by deliveryId at the consumer boundary."
+  ],
+  "authorityBoundary": "Webhook transport is non-authoritative. PostgreSQL remains authoritative for auction state, accepted bids, winner selection and final results."
+}
