@@ -1,0 +1,38 @@
+{
+  "taskId": "26.05",
+  "name": "Production approval gate",
+  "status": "YELLOW",
+  "environment": "production",
+  "source": {
+    "exactShaRequired": true,
+    "pullRequestEventAllowed": false
+  },
+  "approval": {
+    "explicitHumanApprovalRequired": true,
+    "approvalIdRequired": true,
+    "approverIdentityRequired": true,
+    "implicitApprovalForbidden": true
+  },
+  "preconditions": {
+    "requiredQualityGate": "Verify Enchev Web",
+    "databaseMigrationGateRequired": true,
+    "buildProvenanceRequired": true,
+    "secretScanRequired": true,
+    "codeScanRequired": true,
+    "sbomRequired": true
+  },
+  "deployment": {
+    "provider": "vercel",
+    "requiresGlobalLease": true,
+    "leaseOwner": "ENCHEV_SYSTEM",
+    "leaseProjectKey": "enchev-auctions",
+    "leaseSeconds": 900
+  },
+  "greenAcceptance": [
+    "repository contract verifier PASS",
+    "negative self-tests PASS",
+    "exact-head CI PASS",
+    "production approval metadata is explicit and auditable before any production deployment",
+    "production deployment remains separately subject to global Vercel lease"
+  ]
+}
