@@ -13,6 +13,7 @@ const dppWorker = read("tools/david/auto-complete-app2-v1.mjs");
 const apkWorker = read("tools/david/auto-continue-david-apk-v1.mjs");
 const start = read("START_DAVID_AUTONOMY.ps1");
 const restart = read("RESTART_DAVID_AUTONOMY_CLEAN.ps1");
+const abRestart = read("RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1");
 const effort = read("tools/david/chatgpt-effort-mode.mjs");
 
 for (const token of [
@@ -51,8 +52,11 @@ for (const token of [
   'ChatGPT=4'
 ]) if (!start.includes(token)) throw new Error("Launcher invariant missing: " + token);
 
-if (!restart.includes("STOP_DAVID_ALL_CLEAN.ps1") || !restart.includes("START_DAVID_AUTONOMY.ps1")) {
-  throw new Error("Restart must atomically stop old stack before AUTONOMY start");
+if (!restart.includes("STOP_DAVID_ALL_CLEAN.ps1") || !restart.includes("START_DAVID_AUTONOMY.ps1") || !restart.includes("WaitOne(90000)")) {
+  throw new Error("Restart must atomically stop old stack, wait for an active orchestration, then AUTONOMY start");
+}
+if (!abRestart.includes("STOP_DAVID_ALL_CLEAN.ps1") || !abRestart.includes("START_DAVID_FREETALK_ONLY.ps1") || !abRestart.includes("WaitOne(90000)")) {
+  throw new Error("A+B restart-first invariant missing");
 }
 
-console.log("DAVID_AUTONOMY_PROFILE PASS scope=SYSTEM+APP2+APK+CONTROL design=OFF strict_tabs=4 apk_fourth_tab=GUARANTEED effort=MEDIUM guard=ON semantic_terminal=SYSTEM+DPP+APK");
+console.log("DAVID_AUTONOMY_PROFILE PASS restart_first_wait=90s scope=SYSTEM+APP2+APK+CONTROL design=OFF strict_tabs=4 apk_fourth_tab=GUARANTEED effort=MEDIUM guard=ON semantic_terminal=SYSTEM+DPP+APK");
