@@ -6,8 +6,10 @@ on:
       - "tools/david/**"
       - "START_DAVID_ALL.ps1"
       - "START_DAVID_AUTONOMY.ps1"
+      - "START_DAVID_EXPERIMENT_FREETALK.ps1"
       - "RESTART_DAVID_ALL_CLEAN.ps1"
       - "RESTART_DAVID_AUTONOMY_CLEAN.ps1"
+      - "RESTART_DAVID_EXPERIMENT_FREETALK_CLEAN.ps1"
       - "STOP_DAVID_ALL_CLEAN.ps1"
       - ".github/workflows/david-session-resilience.yml"
   push:
@@ -19,6 +21,7 @@ on:
       - "START_DAVID_AUTONOMY.ps1"
       - "RESTART_DAVID_ALL_CLEAN.ps1"
       - "RESTART_DAVID_AUTONOMY_CLEAN.ps1"
+      - "RESTART_DAVID_EXPERIMENT_FREETALK_CLEAN.ps1"
       - "STOP_DAVID_ALL_CLEAN.ps1"
       - ".github/workflows/david-session-resilience.yml"
 
@@ -50,6 +53,9 @@ jobs:
       - name: Verify scoped AUTONOMY profile
         run: npm run verify:autonomy
 
+      - name: Verify FREE TALK experiment profile
+        run: npm run verify:freetalk
+
       - name: Verify SYSTEM semantic terminal
         run: node auto-continue-enchev-v5.mjs --self-test
 
@@ -68,10 +74,13 @@ jobs:
             "START_DAVID_AUTONOMY.ps1",
             "RESTART_DAVID_ALL_CLEAN.ps1",
             "RESTART_DAVID_AUTONOMY_CLEAN.ps1",
+            "START_DAVID_EXPERIMENT_FREETALK.ps1",
+            "RESTART_DAVID_EXPERIMENT_FREETALK_CLEAN.ps1",
             "STOP_DAVID_ALL_CLEAN.ps1",
             "tools/david/start-auto-continue.ps1",
             "tools/david/david-status-dashboard.ps1",
-            "tools/david/david-autonomy-dashboard.ps1"
+            "tools/david/david-autonomy-dashboard.ps1",
+            "tools/david/david-freetalk-dashboard.ps1"
           )
           foreach ($file in $files) {
             $tokens = $null

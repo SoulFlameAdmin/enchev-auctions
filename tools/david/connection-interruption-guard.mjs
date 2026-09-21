@@ -95,6 +95,8 @@ function managedConversationUrls() {
     ["DESIGN", path.join(HERE, ".david-enchev-design-state.json"), "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7"],
     ["APP2", path.join(HERE, ".david-app2-state-6aac2dbb.json"), "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4"],
     ["APK", path.join(HERE, ".david-apk-state.json"), null],
+    ["FREE_A", path.join(HERE, ".david-free-talk-a-state.json"), null],
+    ["FREE_B", path.join(HERE, ".david-free-talk-b-state.json"), null],
     ["CONTROL", path.join(HERE, ".david-control-state.json"), "https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e"]
   ].filter(([kind]) => ACTIVE_MANAGED_KINDS.has(kind));
   const urls = new Set();
@@ -125,6 +127,8 @@ function managedKindFromUrl(url) {
     ["DESIGN", path.join(HERE, ".david-enchev-design-state.json"), "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7"],
     ["APP2", path.join(HERE, ".david-app2-state-6aac2dbb.json"), "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4"],
     ["APK", path.join(HERE, ".david-apk-state.json"), null],
+    ["FREE_A", path.join(HERE, ".david-free-talk-a-state.json"), null],
+    ["FREE_B", path.join(HERE, ".david-free-talk-b-state.json"), null],
     ["CONTROL", path.join(HERE, ".david-control-state.json"), "https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e"]
   ].filter(([kind]) => ACTIVE_MANAGED_KINDS.has(kind));
   for (const [kind, file, fallback] of defs) {
@@ -820,7 +824,7 @@ async function main() {
     }
 
     if (!announced) {
-      console.log("[INTERRUPT] Managed-only ChatGPT guard ON. Watches CONTROL/SYSTEM/DESIGN/APP2/APK owned URLs only.");
+      console.log("[INTERRUPT] Managed-only ChatGPT guard ON. Watches every state-owned DAVID ChatGPT URL in the active profile.");
       announced = true;
     }
 

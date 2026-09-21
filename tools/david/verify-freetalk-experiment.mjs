@@ -1,0 +1,18 @@
+import fs from "node:fs";
+import path from "node:path";
+const HERE=path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/,"$1"));
+const ROOT=path.resolve(HERE,"..","..");
+const read=p=>fs.readFileSync(path.join(ROOT,p),"utf8");
+const dual=read("tools/david/dual-session-worker.mjs");
+const worker=read("tools/david/free-talk-session-v1.mjs");
+const normal=read("START_DAVID_AUTONOMY.ps1");
+const experiment=read("START_DAVID_EXPERIMENT_FREETALK.ps1");
+const restart=read("RESTART_DAVID_EXPERIMENT_FREETALK_CLEAN.ps1");
+const stop=read("STOP_DAVID_ALL_CLEAN.ps1");
+for(const token of ["FREE_A","FREE_B","ACTIVE_EXPERIMENT_WORKERS","DAVID_FREE_A_MANAGED_V1","DAVID_FREE_B_MANAGED_V1"]) if(!dual.includes(token)) throw new Error("FREE TALK supervisor invariant missing: "+token);
+for(const token of ["[DAVID_FREE_TALK_A_V1]","[DAVID_FREE_TALK_B_V1]","[DAVID_FREE_TALK_RELAY_V1 seq=","lastConsumedSeq","waitForGlobalSendPermit","page.keyboard.insertText(text)"]) if(!worker.includes(token)) throw new Error("FREE TALK worker invariant missing: "+token);
+for(const token of ['DAVID_ACTIVE_WORKERS = "SYSTEM,APP2,APK,FREE_A,FREE_B,CONTROL"','DAVID_CHATGPT_TAB_TARGET = "6"','FREE=2','ChatGPT=6']) if(!experiment.includes(token)) throw new Error("FREE TALK launcher invariant missing: "+token);
+for(const token of ['DAVID_ACTIVE_WORKERS = "SYSTEM,APP2,APK,CONTROL"','DAVID_CHATGPT_TAB_TARGET = "4"','ChatGPT=4']) if(!normal.includes(token)) throw new Error("Normal AUTONOMY profile changed unexpectedly: "+token);
+if(!restart.includes("STOP_DAVID_ALL_CLEAN.ps1")||!restart.includes("START_DAVID_EXPERIMENT_FREETALK.ps1")) throw new Error("FREE TALK restart is not atomic");
+if(!stop.includes("free-talk-session-v1.mjs")) throw new Error("Clean stop does not own FREE TALK workers");
+console.log("DAVID_FREE_TALK_EXPERIMENT PASS normal_tabs=4 experiment_tabs=6 free_sessions=2 design=OFF relay_dedupe=seq global_pacer=ON");

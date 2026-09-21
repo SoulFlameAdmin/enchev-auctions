@@ -12,6 +12,7 @@ const APP2 = path.join(HERE, "auto-complete-app2-v1.mjs");
 const APK = path.join(HERE, "auto-continue-david-apk-v1.mjs");
 const CONTROL = path.join(HERE, "auto-control-watchtower-v1.mjs");
 const INTERRUPT_GUARD = path.join(HERE, "connection-interruption-guard.mjs");
+const FREE_TALK = path.join(HERE, "free-talk-session-v1.mjs");
 const NODE = process.execPath;
 const children = new Map();
 const MONITOR_FILE = path.join(HERE, ".david-tab-monitor.json");
@@ -28,15 +29,18 @@ const CONTROL_START_GRACE_MS = Number(process.env.DAVID_CONTROL_START_GRACE_MS |
 const CONTROL_HEARTBEAT_STALE_MS = Number(process.env.DAVID_CONTROL_HEARTBEAT_STALE_MS || 900000);
 const CONTROL_TAB_MISSING_MS = Number(process.env.DAVID_CONTROL_TAB_MISSING_MS || 45000);
 const SUPPORTED_PROJECT_WORKERS = ["SYSTEM", "DESIGN", "APP2", "APK"];
+const SUPPORTED_EXPERIMENT_WORKERS = ["FREE_A", "FREE_B"];
+const SUPPORTED_MANAGED_WORKERS = [...SUPPORTED_PROJECT_WORKERS, ...SUPPORTED_EXPERIMENT_WORKERS];
 const requestedManagedKinds = String(
   process.env.DAVID_ACTIVE_WORKERS || "SYSTEM,DESIGN,APP2,APK,CONTROL"
 ).split(",").map((x) => x.trim().toUpperCase()).filter(Boolean);
 const ACTIVE_MANAGED_KINDS = new Set(
-  requestedManagedKinds.filter((x) => [...SUPPORTED_PROJECT_WORKERS, "CONTROL"].includes(x))
+  requestedManagedKinds.filter((x) => [...SUPPORTED_MANAGED_WORKERS, "CONTROL"].includes(x))
 );
 ACTIVE_MANAGED_KINDS.add("CONTROL");
 const ACTIVE_PROJECT_WORKERS = SUPPORTED_PROJECT_WORKERS.filter((x) => ACTIVE_MANAGED_KINDS.has(x));
-const MANAGED_KINDS = [...ACTIVE_PROJECT_WORKERS, "CONTROL"];
+const ACTIVE_EXPERIMENT_WORKERS = SUPPORTED_EXPERIMENT_WORKERS.filter((x) => ACTIVE_MANAGED_KINDS.has(x));
+const MANAGED_KINDS = [...ACTIVE_PROJECT_WORKERS, ...ACTIVE_EXPERIMENT_WORKERS, "CONTROL"];
 const STRICT_CHATGPT_TAB_TARGET = Number(process.env.DAVID_CHATGPT_TAB_TARGET || MANAGED_KINDS.length);
 const DEDICATED_DAVID_PROFILE = process.env.DAVID_DEDICATED_PROFILE !== "0";
 const FRESH_SESSION_ON_START = process.env.DAVID_FRESH_SESSIONS_ON_START === "1";
@@ -97,6 +101,26 @@ const allSpecs = [
     env: {
       DAVID_CONTROL_CHAT_URL: "https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e",
       DAVID_CONTROL_STATE_FILE: path.join(HERE, ".david-control-state.json")
+    }
+  },
+  {
+    name: "FREE_A",
+    script: FREE_TALK,
+    stateFile: path.join(HERE, ".david-free-talk-a-state.json"),
+    env: {
+      DAVID_FREE_TALK_ROLE: "FREE_A",
+      DAVID_FREE_TALK_STATE_FILE: path.join(HERE, ".david-free-talk-a-state.json"),
+      DAVID_FREE_TALK_EXCHANGE_FILE: path.join(HERE, ".david-free-talk-exchange.json")
+    }
+  },
+  {
+    name: "FREE_B",
+    script: FREE_TALK,
+    stateFile: path.join(HERE, ".david-free-talk-b-state.json"),
+    env: {
+      DAVID_FREE_TALK_ROLE: "FREE_B",
+      DAVID_FREE_TALK_STATE_FILE: path.join(HERE, ".david-free-talk-b-state.json"),
+      DAVID_FREE_TALK_EXCHANGE_FILE: path.join(HERE, ".david-free-talk-exchange.json")
     }
   },
   {
@@ -295,6 +319,8 @@ function currentOwnedUrls() {
     ["DESIGN", path.join(HERE, ".david-enchev-design-state.json"), "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7"],
     ["APP2", path.join(HERE, ".david-app2-state-6aac2dbb.json"), "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4"],
     ["APK", path.join(HERE, ".david-apk-state.json"), null],
+    ["FREE_A", path.join(HERE, ".david-free-talk-a-state.json"), null],
+    ["FREE_B", path.join(HERE, ".david-free-talk-b-state.json"), null],
     ["CONTROL", path.join(HERE, ".david-control-state.json"), "https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e"]
   ];
   const byUrl = new Map();
@@ -321,6 +347,10 @@ async function detectManagedKind(page) {
       DAVID_APP2_PENDING_V1: "APP2",
       DAVID_APK_MANAGED_V1: "APK",
       DAVID_APK_PENDING_V1: "APK",
+      DAVID_FREE_A_MANAGED_V1: "FREE_A",
+      DAVID_FREE_A_PENDING_V1: "FREE_A",
+      DAVID_FREE_B_MANAGED_V1: "FREE_B",
+      DAVID_FREE_B_PENDING_V1: "FREE_B",
       DAVID_CONTROL_MANAGED_V1: "CONTROL",
       DAVID_CONTROL_PENDING_V1: "CONTROL"
     };
@@ -343,6 +373,8 @@ async function detectManagedKind(page) {
     if (ACTIVE_MANAGED_KINDS.has("DESIGN") && /\[(?:DAVID_RELAY_ENCHEV_DESIGN_V1|DAVID_RELAY_ENCHEV_DESIGN_PROCESS_2)\]/.test(text)) return "DESIGN";
     if (ACTIVE_MANAGED_KINDS.has("APP2") && /\[DAVID_APP2_AUTOPILOT_V2\]/.test(text)) return "APP2";
     if (ACTIVE_MANAGED_KINDS.has("APK") && /\[DAVID_RELAY_APK_V1\]/.test(text)) return "APK";
+    if (ACTIVE_MANAGED_KINDS.has("FREE_A") && /\[DAVID_FREE_TALK_A_V1\]/.test(text)) return "FREE_A";
+    if (ACTIVE_MANAGED_KINDS.has("FREE_B") && /\[DAVID_FREE_TALK_B_V1\]/.test(text)) return "FREE_B";
     if (ACTIVE_MANAGED_KINDS.has("CONTROL") && /\[DAVID_CONTROL_WATCHTOWER_V1\]/.test(text)) return "CONTROL";
     return null;
   } catch { return null; }
@@ -521,6 +553,8 @@ async function cleanupManagedTabs() {
     { kind: "DESIGN", file: path.join(HERE, ".david-enchev-design-state.json"), fallback: "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7" },
     { kind: "APP2", file: path.join(HERE, ".david-app2-state-6aac2dbb.json"), fallback: "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4" },
     { kind: "APK", file: path.join(HERE, ".david-apk-state.json"), fallback: null },
+    { kind: "FREE_A", file: path.join(HERE, ".david-free-talk-a-state.json"), fallback: null },
+    { kind: "FREE_B", file: path.join(HERE, ".david-free-talk-b-state.json"), fallback: null },
     { kind: "CONTROL", file: path.join(HERE, ".david-control-state.json"), fallback: "https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e" }
   ].filter((spec) => ACTIVE_MANAGED_KINDS.has(spec.kind));
   const preferredByKind = new Map();
@@ -666,7 +700,9 @@ async function prewarmFreshManagedTabs() {
     ["SYSTEM", "DAVID_SYSTEM_PENDING_V1"],
     ["DESIGN", "DAVID_DESIGN_PENDING_V1"],
     ["APP2", "DAVID_APP2_PENDING_V1"],
-    ["APK", "DAVID_APK_PENDING_V1"]
+    ["APK", "DAVID_APK_PENDING_V1"],
+    ["FREE_A", "DAVID_FREE_A_PENDING_V1"],
+    ["FREE_B", "DAVID_FREE_B_PENDING_V1"]
   ].filter(([kind]) => ACTIVE_MANAGED_KINDS.has(kind));
 
   const existing = context.pages().filter((p) => p && !p.isClosed() && p.url().startsWith("https://chatgpt.com"));

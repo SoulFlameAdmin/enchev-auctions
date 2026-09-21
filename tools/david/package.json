@@ -1,13 +1,14 @@
 {
   "name": "enchev-david-auto-continue",
-  "version": "1.6.0",
+  "version": "1.7.0",
   "private": true,
   "type": "module",
   "scripts": {
     "start": "node dual-session-worker.mjs",
     "verify:sessions": "node verify-session-invariants.mjs",
     "verify:resilience": "node verify-session-invariants.mjs",
-    "verify:autonomy": "node verify-autonomy-profile.mjs"
+    "verify:autonomy": "node verify-autonomy-profile.mjs",
+    "verify:freetalk": "node verify-freetalk-experiment.mjs"
   },
   "dependencies": {
     "playwright-core": "1.63.0"
