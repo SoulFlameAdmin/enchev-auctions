@@ -6,6 +6,8 @@ import { waitForGlobalSendPermit, reportRateLimit, reportProbeSuccess, markGloba
 import { CHATGPT_ROOT, rotateOwnedChatPage } from "./chatgpt-session-rotation.mjs";
 import { ensureChatGptEffortMode } from "./chatgpt-effort-mode.mjs";
 
+const EFFORT_MODE = String(process.env.DAVID_PROJECT_EFFORT_MODE || "medium").toLowerCase();
+
 const INITIAL_CHAT_URL = process.env.DAVID_APP2_CHAT_URL || "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4";
 const FRESH_SESSION_ON_START = process.env.DAVID_FRESH_SESSIONS_ON_START === "1";
 let activeChatUrl = FRESH_SESSION_ON_START ? CHATGPT_ROOT : INITIAL_CHAT_URL;
@@ -445,8 +447,8 @@ async function waitReady(context, page, state) {
     }
     syncActiveChatUrl(page, state);
     if (await composer(page) || await latestAssistant(page)) {
-      const effort = await ensureChatGptEffortMode(page, "medium").catch(() => ({ ok: false }));
-      if (effort?.changed) console.log("[APP2] ChatGPT effort forced to Medium/Средно.");
+      const effort = await ensureChatGptEffortMode(page, EFFORT_MODE).catch(() => ({ ok: false }));
+      if (effort?.changed) console.log("[APP2] ChatGPT effort forced to "+EFFORT_MODE+".");
       return page;
     }
     await sleep(POLL_MS);
