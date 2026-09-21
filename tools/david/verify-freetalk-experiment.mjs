@@ -32,6 +32,9 @@ for(const token of [
 ]) if(!abOnly.includes(token)) throw new Error("A+B-only mode invariant missing: "+token);
 if(!abRestart.includes("STOP_DAVID_ALL_CLEAN.ps1")||!abRestart.includes("START_DAVID_FREETALK_ONLY.ps1")) throw new Error("A+B-only restart is not atomic");
 for(const token of ["SOULFLAME SYSTEM","DAVID A + B","RESTART_DAVID_AUTONOMY_CLEAN.ps1","RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1","$Modes"]) if(!selector.includes(token)) throw new Error("Mode selector invariant missing: "+token);
-for(const token of ["DAVID MODE CENTER V2","SOULFLAME SYSTEM","DAVID A + B","STOP ALL","PINNED SAME CHATS","REFRESH STATUS","RESTART_DAVID_AUTONOMY_CLEAN.ps1","RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1","STOP_DAVID_ALL_CLEAN.ps1"]) if(!selectorV2.includes(token)) throw new Error("Mode selector V2 invariant missing: "+token);
+for(const token of ["DAVID MODE CENTER V2.1","SOULFLAME SYSTEM","DAVID A + B","STOP ALL","PINNED SAME CHATS","REFRESH STATUS","RESTART_DAVID_AUTONOMY_CLEAN.ps1","RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1","STOP_DAVID_ALL_CLEAN.ps1","Application]::DoEvents","PipelineStoppedException","-WindowStyle Hidden"]) if(!selectorV2.includes(token)) throw new Error("Mode selector V2 invariant missing: "+token);
+if(selectorV2.includes("System.Windows.Forms.Timer")) throw new Error("Mode selector V2 must not use WinForms Timer; it can trigger PipelineStoppedException/JIT dialogs");
+if(!normal.includes("-WindowStyle Hidden")) throw new Error("SYSTEM launcher/dashboard shells must be hidden");
+if(!abOnly.includes("-WindowStyle Hidden")) throw new Error("A+B launcher/dashboard shells must be hidden");
 if(!selectorCmd.includes("DAVID_MODE_SELECTOR_V2.ps1")) throw new Error("Mode selector V2 CMD launcher missing target script");
-console.log("DAVID_FREE_TALK_EXPERIMENT PASS normal_tabs=4 experiment_tabs=6 ab_only_tabs=2 persistent_chats=2 selector_v2=ON live_status=ON stop_all=ON relay_dedupe=seq instant=FORCED rate_limit_auto_ack=ON rate_limit_auto_resume=ON same_tab_rollover=ON");
+console.log("DAVID_FREE_TALK_EXPERIMENT PASS normal_tabs=4 experiment_tabs=6 ab_only_tabs=2 persistent_chats=2 selector_v2_1=STABLE no_timer=ON hidden_shells=ON live_status=ON stop_all=ON relay_dedupe=seq instant=FORCED rate_limit_auto_ack=ON rate_limit_auto_resume=ON same_tab_rollover=ON");
