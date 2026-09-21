@@ -1,4 +1,4 @@
-"use client";
+  "24.02": "API versioning strategy · config/enchev-api-versioning-strategy.json + docs/24_02_API_VERSIONING_STRATEGY.md + scripts/verify-api-versioning-strategy.mjs · canonical OpenAPI packages/contracts/openapi/enchev-api.v1.json · pre-stable v1 contract with future /api/v{major} stable-major namespace · implementation merged via PR #157 at 2528f1c74e085064e4fb6bfe5f45b0f6dd277689 · exact PR head 94ee24b8209cb1544756f3bddbf743416d0d8ab5 · exact-head Verify Enchev Web 35547303461 SUCCESS + Verify SYSTEM 24.02 35547303464 SUCCESS + SBOM/Secret Scan/Build Provenance/Code Scan SUCCESS · post-merge main Verify Enchev Web 35548095449 SUCCESS + SBOM 35548095447 + Secret Scan 35548095331 + Build Provenance 35548095334 + Code Scan 35548095355 SUCCESS · Vercel preview quota externally blocked and non-gating for this repository contract task · no manual Vercel create/update/redeploy",\n"use client";
 
 import { useEffect } from "react";
 
