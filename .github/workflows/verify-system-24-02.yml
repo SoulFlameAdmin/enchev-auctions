@@ -1,0 +1,21 @@
+name: Verify SYSTEM 24.02
+on:
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  verify-api-versioning-strategy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify 24.02 contract
+        run: node scripts/verify-api-versioning-strategy.mjs
+      - name: Verify 24.02 negative self-test
+        run: node scripts/verify-api-versioning-strategy.mjs --self-test
