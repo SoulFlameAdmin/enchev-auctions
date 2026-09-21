@@ -264,3 +264,81 @@ export function decideIdempotencyAction(
   }
   return { action: "replay" };
 }
+
+
+export const RATE_LIMIT_STATUS = 429 as const;
+export const RETRY_AFTER_HEADER = "retry-after" as const;
+export const RATE_LIMIT_LIMIT_HEADER = "x-ratelimit-limit" as const;
+export const RATE_LIMIT_REMAINING_HEADER = "x-ratelimit-remaining" as const;
+export const RATE_LIMIT_RESET_HEADER = "x-ratelimit-reset" as const;
+
+export type RateLimitResponseContract = {
+  status: 429;
+  error: ApiErrorEnvelope;
+  headers: {
+    "retry-after": string;
+    "x-ratelimit-limit": string;
+    "x-ratelimit-remaining": string;
+    "x-ratelimit-reset": string;
+  };
+};
+
+function parseNonNegativeIntegerHeader(value: string): number | null {
+  if (!/^(0|[1-9][0-9]*)$/.test(value)) return null;
+  const parsed = Number(value);
+  return Number.isSafeInteger(parsed) ? parsed : null;
+}
+
+export function createRateLimitResponseContract(input: {
+  retryAfterSeconds: number;
+  limit: number;
+  remaining: number;
+  resetEpochSeconds: number;
+  code?: string;
+  message?: string;
+}): RateLimitResponseContract {
+  const { retryAfterSeconds, limit, remaining, resetEpochSeconds } = input;
+  if (!Number.isSafeInteger(retryAfterSeconds) || retryAfterSeconds < 0) throw new Error("RATE_LIMIT_INVALID_RETRY_AFTER");
+  if (!Number.isSafeInteger(limit) || limit < 1) throw new Error("RATE_LIMIT_INVALID_LIMIT");
+  if (!Number.isSafeInteger(remaining) || remaining < 0 || remaining > limit) throw new Error("RATE_LIMIT_INVALID_REMAINING");
+  if (!Number.isSafeInteger(resetEpochSeconds) || resetEpochSeconds < 0) throw new Error("RATE_LIMIT_INVALID_RESET");
+
+  return {
+    status: RATE_LIMIT_STATUS,
+    error: createApiErrorEnvelope(input.code ?? "RATE_LIMITED", input.message ?? "Too many requests."),
+    headers: {
+      "retry-after": String(retryAfterSeconds),
+      "x-ratelimit-limit": String(limit),
+      "x-ratelimit-remaining": String(remaining),
+      "x-ratelimit-reset": String(resetEpochSeconds),
+    },
+  };
+}
+
+export function isRateLimitResponseContract(value: unknown): value is RateLimitResponseContract {
+  if (!isRecord(value) || !hasOnlyKeys(value, ["status", "error", "headers"])) return false;
+  if (value.status !== RATE_LIMIT_STATUS || !isApiErrorEnvelope(value.error) || !isRecord(value.headers)) return false;
+  if (!hasOnlyKeys(value.headers, [
+    RETRY_AFTER_HEADER,
+    RATE_LIMIT_LIMIT_HEADER,
+    RATE_LIMIT_REMAINING_HEADER,
+    RATE_LIMIT_RESET_HEADER,
+  ])) return false;
+
+  const retryAfter = value.headers[RETRY_AFTER_HEADER];
+  const limit = value.headers[RATE_LIMIT_LIMIT_HEADER];
+  const remaining = value.headers[RATE_LIMIT_REMAINING_HEADER];
+  const reset = value.headers[RATE_LIMIT_RESET_HEADER];
+  if ([retryAfter, limit, remaining, reset].some((item) => typeof item !== "string")) return false;
+
+  const retryAfterValue = parseNonNegativeIntegerHeader(retryAfter as string);
+  const limitValue = parseNonNegativeIntegerHeader(limit as string);
+  const remainingValue = parseNonNegativeIntegerHeader(remaining as string);
+  const resetValue = parseNonNegativeIntegerHeader(reset as string);
+  return retryAfterValue !== null
+    && limitValue !== null
+    && limitValue >= 1
+    && remainingValue !== null
+    && remainingValue <= limitValue
+    && resetValue !== null;
+}
