@@ -66,11 +66,11 @@ try{
   }
 
   if(-not(Test-Path $Selector)){throw "Matrix selector missing: $Selector"}
-  Log("OPEN MATRIX VISIBLE")
+  Log("OPEN MATRIX VISIBLE OWN PROCESS")
   Write-Host "[DAVID] MATRIX READY - choose SOULFLAME SYSTEM or DAVID A+B" -ForegroundColor Green
-  & $Selector -Port $Port
-  if($LASTEXITCODE-ne 0){throw "DAVID Matrix selector exited with code $LASTEXITCODE"}
-  Log("MATRIX closed normally")
+  Start-Process -FilePath $Pwsh -ArgumentList @("-NoProfile","-ExecutionPolicy","Bypass","-File",$Selector,"-Port","$Port") -WindowStyle Normal
+  Log("MATRIX spawned in own PowerShell host; launcher exits")
+  exit 0
 }catch{
   Log("FATAL "+$_.Exception.Message)
   Add-Type -AssemblyName System.Windows.Forms
