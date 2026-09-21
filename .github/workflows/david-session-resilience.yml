@@ -56,6 +56,11 @@ jobs:
       - name: Verify FREE TALK experiment profile
         run: npm run verify:freetalk
 
+      - name: Verify FREE TALK worker runtime
+        run: |
+          DAVID_FREE_TALK_ROLE=FREE_A node free-talk-session-v1.mjs --self-test
+          DAVID_FREE_TALK_ROLE=FREE_B node free-talk-session-v1.mjs --self-test
+
       - name: Verify SYSTEM semantic terminal
         run: node auto-continue-enchev-v5.mjs --self-test
 
