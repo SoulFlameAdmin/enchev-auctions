@@ -131,6 +131,15 @@ export function validate(baseline, spec) {
     const currentSchema = body?.content?.[request.contentType]?.schema;
     if (!currentSchema) fail("request content schema removed: " + request.method + " " + request.path);
     assertCompatible(request.schema, currentSchema, request.method + " " + request.path + " request");
+
+    // Adding a newly-required request field is a breaking change for existing v1 clients.
+    const baselineRequired = new Set(Array.isArray(request.schema?.required) ? request.schema.required : []);
+    for (const field of Array.isArray(currentSchema.required) ? currentSchema.required : []) {
+      if (!baselineRequired.has(field)) {
+        fail("new required request field: " + request.method + " " + request.path + " " + field);
+      }
+    }
+
     requestCount += 1;
   }
   if (requestCount < 1) fail("request baseline incomplete");
