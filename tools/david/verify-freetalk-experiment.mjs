@@ -12,6 +12,8 @@ const stop=read("STOP_DAVID_ALL_CLEAN.ps1");
 const abOnly=read("START_DAVID_FREETALK_ONLY.ps1");
 const abRestart=read("RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1");
 const selector=read("DAVID_MODE_SELECTOR.ps1");
+const selectorV2=read("DAVID_MODE_SELECTOR_V2.ps1");
+const selectorCmd=read("DAVID_MODE_SELECTOR_V2.cmd");
 for(const token of ["FREE_A","FREE_B","ACTIVE_EXPERIMENT_WORKERS","DAVID_FREE_A_MANAGED_V1","DAVID_FREE_B_MANAGED_V1","CONTROL_ENABLED"]) if(!dual.includes(token)) throw new Error("FREE TALK supervisor invariant missing: "+token);
 for(const token of ["[DAVID_FREE_TALK_A_V1]","[DAVID_FREE_TALK_B_V1]","[DAVID_FREE_TALK_RELAY_V2 seq=","[DAVID_FREE_TALK_SEED_V2]","lastConsumedSeq","waitOnlyForActualGlobalBlock","waitForGlobalSendPermit","clickRateLimitAcknowledge","Разбрано","free-talk-rate-limit-resend","ensureInstantMode","Instant","INITIAL_CHAT_URL","RESUME_EXISTING","conversationLimitReached","rolloverConversation","rotateOwnedChatPage","browse/search","page.keyboard.insertText(text)"]) if(!worker.includes(token)) throw new Error("FREE TALK worker invariant missing: "+token);
 for(const token of ['DAVID_ACTIVE_WORKERS = "SYSTEM,APP2,APK,FREE_A,FREE_B,CONTROL"','DAVID_CHATGPT_TAB_TARGET = "6"','FREE=2','ChatGPT=6','.david-free-talk-exchange.json','lastConsumedSeq = 0','instantMode = "pending"']) if(!experiment.includes(token)) throw new Error("FREE TALK launcher invariant missing: "+token);
@@ -30,4 +32,6 @@ for(const token of [
 ]) if(!abOnly.includes(token)) throw new Error("A+B-only mode invariant missing: "+token);
 if(!abRestart.includes("STOP_DAVID_ALL_CLEAN.ps1")||!abRestart.includes("START_DAVID_FREETALK_ONLY.ps1")) throw new Error("A+B-only restart is not atomic");
 for(const token of ["SOULFLAME SYSTEM","DAVID A + B","RESTART_DAVID_AUTONOMY_CLEAN.ps1","RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1","$Modes"]) if(!selector.includes(token)) throw new Error("Mode selector invariant missing: "+token);
-console.log("DAVID_FREE_TALK_EXPERIMENT PASS normal_tabs=4 experiment_tabs=6 ab_only_tabs=2 persistent_chats=2 selector_buttons=2 relay_dedupe=seq instant=FORCED rate_limit_auto_ack=ON rate_limit_auto_resume=ON same_tab_rollover=ON");
+for(const token of ["DAVID MODE CENTER V2","SOULFLAME SYSTEM","DAVID A + B","STOP ALL","PINNED SAME CHATS","REFRESH STATUS","RESTART_DAVID_AUTONOMY_CLEAN.ps1","RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1","STOP_DAVID_ALL_CLEAN.ps1"]) if(!selectorV2.includes(token)) throw new Error("Mode selector V2 invariant missing: "+token);
+if(!selectorCmd.includes("DAVID_MODE_SELECTOR_V2.ps1")) throw new Error("Mode selector V2 CMD launcher missing target script");
+console.log("DAVID_FREE_TALK_EXPERIMENT PASS normal_tabs=4 experiment_tabs=6 ab_only_tabs=2 persistent_chats=2 selector_v2=ON live_status=ON stop_all=ON relay_dedupe=seq instant=FORCED rate_limit_auto_ack=ON rate_limit_auto_resume=ON same_tab_rollover=ON");
