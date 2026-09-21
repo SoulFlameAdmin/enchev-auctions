@@ -285,11 +285,32 @@ async function ensurePage(context,page){
   if(page && !page.isClosed()) return page;
   page=await findTagged(context);
   if(page) return page;
+
   const url=cleanUrl(state.chatUrl) || cleanUrl(INITIAL_CHAT_URL);
   if(url){
     page=context.pages().find(p=>!p.isClosed()&&cleanUrl(p.url())===url)||null;
-    if(page){ await tag(page,TAB_NAME); return page; }
+    if(page){
+      await tag(page,TAB_NAME);
+      return page;
+    }
+
+    // Persistent A+B mode must reopen the exact saved conversation after a
+    // clean browser shutdown. Never fall back to ChatGPT root when a pinned
+    // conversation URL exists.
+    page=await context.newPage();
+    await tag(page,PENDING_TAB_NAME);
+    await page.goto(url,{waitUntil:"domcontentloaded",timeout:60000}).catch(()=>{});
+    const opened=cleanUrl(page.url());
+    if(opened===url){
+      await tag(page,TAB_NAME);
+      state.chatUrl=url;
+      save("Reopened pinned FREE TALK conversation "+url);
+    }else{
+      save("Pinned FREE TALK navigation pending/redirected from "+url+" to "+page.url());
+    }
+    return page;
   }
+
   page=await context.newPage();
   await page.goto("https://chatgpt.com/",{waitUntil:"domcontentloaded",timeout:60000}).catch(()=>{});
   await tag(page,PENDING_TAB_NAME);
@@ -496,6 +517,7 @@ if(process.argv.includes("--self-test")){
   if(!conversationLimitText("You have reached the maximum length for this conversation.")) throw new Error("rollover detection missing");
   if(!ensureInstantMode.toString().includes("Instant")) throw new Error("instant mode forcing missing");
   if(!seedPrompt().includes(ROLE)) throw new Error("seed prompt role missing");
+  if(!ensurePage.toString().includes("Reopened pinned FREE TALK conversation")) throw new Error("pinned conversation reopen missing");
   if(!clickRateLimitAcknowledge.toString().includes("Разбрано")) throw new Error("rate-limit acknowledgement missing");
   if(!waitOnlyForActualGlobalBlock.toString().includes("waitForGlobalSendPermit")) throw new Error("rate-limit cooldown transition missing");
   console.log("DAVID_FREE_TALK_SELF_TEST PASS role="+ROLE+" partner="+PARTNER+" dedupe=relay-seq fast_relay=ON instant=FORCED persistent_chat=ON rate_limit_auto_resume=ON browse_tools=ALLOWED same_tab_rollover=ON");
