@@ -39,19 +39,23 @@ for (const [name, source] of [["SYSTEM", systemWorker], ["DPP", dppWorker], ["AP
 for (const token of ["ensurePendingApkPage", "DAVID_APK_PENDING_V1", "Pending ChatGPT tab created immediately", "fresh-owned-tab-after-discovery-miss", "No unique APK session discovered"]) {
   if (!apkWorker.includes(token)) throw new Error("APK fourth-tab invariant missing: " + token);
 }
-for (const token of ["ensureChatGptEffortMode", '"medium"']) {
-  if (!control.includes(token)) throw new Error("CONTROL effort invariant missing: " + token);
+for (const token of ["restartWorker", "workerHealth", "managed tab missing", "heartbeat stale"]) {
+  if (!dual.includes(token)) throw new Error("Background WATCH supervisor invariant missing: " + token);
+}
+for (const token of ["recoverSendTimeout", "requestWorkerRecovery", "activeAssistantWork"]) {
+  if (!guard.includes(token)) throw new Error("Background WATCH guard invariant missing: " + token);
 }
 for (const token of ["Medium", "Средно", "target=medium"]) {
   if (!effort.includes(token)) throw new Error("Shared effort-mode invariant missing: " + token);
 }
 for (const token of [
-  'DAVID_ACTIVE_WORKERS = "SYSTEM,APP2,APK,CONTROL"',
-  'DAVID_CHATGPT_TAB_TARGET = "4"',
+  'DAVID_ACTIVE_WORKERS = "SYSTEM,APP2,APK"',
+  'DAVID_CONTROL_ENABLED = "0"',
+  'DAVID_CHATGPT_TAB_TARGET = "3"',
   'DAVID_PROJECT_EFFORT_MODE = "medium"',
   'DAVID_REQUIRE_FRESH_EDGE_ON_START = "1"',
   'DESIGN=0',
-  'ChatGPT=4'
+  'ChatGPT=3'
 ]) if (!start.includes(token)) throw new Error("Launcher invariant missing: " + token);
 
 if (!restart.includes("STOP_DAVID_ALL_CLEAN.ps1") || !restart.includes("START_DAVID_AUTONOMY.ps1") || !restart.includes("WaitOne(90000)")) {
@@ -65,4 +69,4 @@ for (const token of ["DAVID_REQUIRE_FRESH_EDGE_ON_START","FRESH EDGE REQUIRED","
   if (!launcher.includes(token)) throw new Error("Fresh Edge launcher invariant missing: " + token);
 }
 
-console.log("DAVID_AUTONOMY_PROFILE PASS restart_first_wait=90s fresh_edge=VERIFIED scope=SYSTEM+APP2+APK+CONTROL design=OFF strict_tabs=4 apk_fourth_tab=GUARANTEED apk_discovery_miss_autostart=ON effort=MEDIUM guard=ON semantic_terminal=SYSTEM+DPP+APK");
+console.log("DAVID_AUTONOMY_PROFILE PASS restart_first_wait=90s fresh_edge=VERIFIED scope=SYSTEM+APP2+APK watch=BACKGROUND control_tab=OFF design=OFF strict_tabs=3 apk_fourth_tab=GUARANTEED apk_discovery_miss_autostart=ON effort=MEDIUM guard=ON semantic_terminal=SYSTEM+DPP+APK");
