@@ -5,6 +5,7 @@ const spec = JSON.parse(fs.readFileSync("packages/contracts/openapi/enchev-api.v
 
 function valid(s, o) {
   return s.taskId === "24.02"
+    && s.status === "GREEN"
     && s.contractSeries === "v1"
     && s.maturity === "pre-stable"
     && s.currentInfoVersion === "0.1.0"

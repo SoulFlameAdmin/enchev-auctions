@@ -1,6 +1,14 @@
 # 24.03 — Request/response schema validation
 
-Status: **YELLOW** until exact-head CI and post-merge main verification pass.
+Status: **GREEN** — exact-head verification, merge, and post-merge main verification all passed.
+
+## GREEN evidence
+
+- Implementation PR: #158, exact head `a4510e9ab08ad8197fe5189a7dc33ace9ed1c8cb`, merged to `main` as `2567e3869f551cf3fe339aca1db180b4aeeff78c`.
+- Exact-head GitHub Actions: Verify Enchev Web `35548428586` SUCCESS; Code Scan `35548428573` SUCCESS; SBOM `35548428591` SUCCESS; Secret Scan `35548428558` SUCCESS; Build Provenance `35548428545` SUCCESS. The Verify Enchev Web job includes the dedicated 24.03 invariant and negative self-tests, aggregate CI, TypeScript, production build, built health smoke, and Chrome/Edge visual regression.
+- Post-merge `main` verification: Verify Enchev Web `35548665348` SUCCESS; Code Scan `35548665356` SUCCESS; SBOM `35548665357` SUCCESS; Secret Scan `35548665372` SUCCESS; Build Provenance `35548665343` SUCCESS. Main-only secret binding verification and Supabase plan-state sync also completed successfully in run `35548665348`.
+- The Chrome/Edge matrix in post-merge run `35548665348` captured 30 Chrome + 30 Edge screenshots, passed desktop/mobile matrix checks, and uploaded artifact `10618011797`.
+- Vercel preview remained externally blocked by the free-tier deployment quota. The global Supabase deploy lease records retry-after `2026-09-22 00:40:18+00`; no manual Vercel create/update/redeploy was attempted by this evidence sync.
 
 ## Runtime implementation
 
@@ -31,9 +39,6 @@ These validators protect API shape only. They do not make the demo live-auction 
 4. fail-closed response assertions;
 5. rejection of unknown request fields and invalid response shapes.
 
-## GREEN evidence required
+## Acceptance
 
-- dedicated 24.03 verifier and negative self-tests PASS;
-- aggregate repository CI, TypeScript and production build PASS;
-- exact-head security/supply-chain checks PASS;
-- merged main descendant with post-merge verification PASS.
+The dedicated verifier and negative self-tests, aggregate CI, TypeScript, production build, security/supply-chain checks, merge, and post-merge verification are all satisfied by the evidence above.

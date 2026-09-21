@@ -21,7 +21,7 @@ function requireTrue(condition, message) {
 
 function verifyContractFiles() {
   requireTrue(config.taskId === "24.03", "taskId drift");
-  requireTrue(config.status === "YELLOW", "implementation evidence must remain YELLOW before verified merge");
+  requireTrue(config.status === "GREEN", "verified 24.03 evidence status must remain GREEN");
   requireTrue(config.canonicalSpec === "packages/contracts/openapi/enchev-api.v1.json", "canonicalSpec drift");
   requireTrue(config.runtimeContractModule === "packages/contracts/src/http-schema.ts", "runtimeContractModule drift");
   requireTrue(config.failClosed === true, "validation must fail closed");

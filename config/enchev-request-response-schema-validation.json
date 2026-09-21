@@ -1,7 +1,7 @@
 {
   "taskId": "24.03",
   "name": "Request/response schema validation",
-  "status": "YELLOW",
+  "status": "GREEN",
   "canonicalSpec": "packages/contracts/openapi/enchev-api.v1.json",
   "runtimeContractModule": "packages/contracts/src/http-schema.ts",
   "coverage": {
