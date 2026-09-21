@@ -1,0 +1,17 @@
+{
+  "taskId": "24.08",
+  "status": 429,
+  "errorCode": "RATE_LIMITED",
+  "headers": {
+    "Retry-After": "non-negative integer seconds",
+    "X-RateLimit-Limit": "positive integer request budget for the active window",
+    "X-RateLimit-Remaining": "non-negative integer not exceeding limit",
+    "X-RateLimit-Reset": "non-negative Unix epoch seconds"
+  },
+  "behavior": {
+    "retryAfterRequired": true,
+    "errorEnvelopeRequired": true,
+    "failClosedOnInvalidMetadata": true
+  },
+  "authority": "rate-limit metadata is transport/backpressure policy only and never decides auction state, bid ordering, eligibility, price, winner, or finalization"
+}
