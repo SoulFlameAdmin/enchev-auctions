@@ -4,6 +4,9 @@ const REDIS_STATUSES = ["pong", "redis-binding-ping-failed", "missing-redis-bind
 const REDIS_BINDINGS = ["tcp-url", "upstash-rest", "vercel-kv-rest"] as const;
 const BID_FEEDBACK = ["accepted", "leading", "outbid", "rejected"] as const;
 
+export const REQUEST_CORRELATION_HEADER = "x-request-id" as const;
+const REQUEST_CORRELATION_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
+
 export type HealthComponent = (typeof HEALTH_COMPONENTS)[number];
 export type HealthStatus = (typeof HEALTH_STATUSES)[number];
 export type BidFeedback = (typeof BID_FEEDBACK)[number];
@@ -125,6 +128,22 @@ export function isApiErrorEnvelope(value: unknown): value is ApiErrorEnvelope {
     && value.error.code.length > 0
     && typeof value.error.message === "string"
     && value.error.message.length > 0;
+}
+
+export function isRequestCorrelationId(value: unknown): value is string {
+  return typeof value === "string" && REQUEST_CORRELATION_ID_PATTERN.test(value);
+}
+
+export function resolveRequestCorrelationId(
+  candidate: string | null | undefined,
+  generate: () => string = () => crypto.randomUUID(),
+): string {
+  if (isRequestCorrelationId(candidate)) return candidate;
+  const generated = generate();
+  if (!isRequestCorrelationId(generated)) {
+    throw new Error("REQUEST_CORRELATION_ID_GENERATOR_INVALID");
+  }
+  return generated;
 }
 
 export function assertContractResponse<T>(
