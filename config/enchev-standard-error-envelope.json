@@ -1,0 +1,18 @@
+{
+  "taskId": "24.04",
+  "name": "Standard error envelope",
+  "status": "YELLOW",
+  "canonicalSpec": "packages/contracts/openapi/enchev-api.v1.json",
+  "runtimeContractModule": "packages/contracts/src/http-schema.ts",
+  "shape": {
+    "topLevelKeys": ["error"],
+    "errorKeys": ["code", "message"],
+    "code": "non-empty machine-readable string",
+    "message": "non-empty user-safe string"
+  },
+  "closedObjects": true,
+  "factoryRequired": true,
+  "runtimeValidationRequired": true,
+  "correlationIdDeferredToTask": "24.05",
+  "authorityBoundary": "Error formatting is transport metadata only and never decides auction state, accepted bids, winner selection or final results."
+}

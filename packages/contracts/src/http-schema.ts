@@ -31,7 +31,14 @@ export type LiveAuctionDemoClockResponse = {
   priceDelta: number;
 };
 
-export type ApiErrorEnvelope = { error: string };
+export type ApiError = {
+  code: string;
+  message: string;
+};
+
+export type ApiErrorEnvelope = {
+  error: ApiError;
+};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -103,11 +110,21 @@ export function isLiveAuctionDemoClockResponse(value: unknown): value is LiveAuc
   return isFiniteNumber(value.priceDelta);
 }
 
+export function createApiErrorEnvelope(code: string, message: string): ApiErrorEnvelope {
+  const value: ApiErrorEnvelope = { error: { code, message } };
+  if (!isApiErrorEnvelope(value)) {
+    throw new Error("API_ERROR_ENVELOPE_INVALID");
+  }
+  return value;
+}
+
 export function isApiErrorEnvelope(value: unknown): value is ApiErrorEnvelope {
-  return isRecord(value)
-    && hasOnlyKeys(value, ["error"])
-    && typeof value.error === "string"
-    && value.error.length > 0;
+  if (!isRecord(value) || !hasOnlyKeys(value, ["error"]) || !isRecord(value.error)) return false;
+  if (!hasOnlyKeys(value.error, ["code", "message"])) return false;
+  return typeof value.error.code === "string"
+    && value.error.code.length > 0
+    && typeof value.error.message === "string"
+    && value.error.message.length > 0;
 }
 
 export function assertContractResponse<T>(

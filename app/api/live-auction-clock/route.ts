@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import {
   assertContractResponse,
+  createApiErrorEnvelope,
   isApiErrorEnvelope,
   isLiveAuctionDemoClockResponse,
   parseLiveAuctionActionRequest,
@@ -75,10 +76,10 @@ function payload(
   );
 }
 
-function errorResponse(error: string) {
+function errorResponse(code: string, message: string) {
   const body = assertContractResponse(
     "ErrorEnvelope",
-    { error },
+    createApiErrorEnvelope(code, message),
     isApiErrorEnvelope,
   );
   return Response.json(body, { status: 400 });
@@ -109,12 +110,12 @@ export async function POST(request: Request) {
   try {
     rawBody = await request.json();
   } catch {
-    return errorResponse("invalid-json");
+    return errorResponse("invalid-json", "Request body must be valid JSON.");
   }
 
   const body = parseLiveAuctionActionRequest(rawBody);
   if (!body) {
-    return errorResponse("unsupported-action");
+    return errorResponse("unsupported-action", "Only the bid action is supported.");
   }
 
   const store = await cookies();
