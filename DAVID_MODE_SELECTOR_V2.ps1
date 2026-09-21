@@ -48,7 +48,7 @@ function Get-Snapshot{
 }
 
 $form=New-Object System.Windows.Forms.Form
-$form.Text="DAVID MODE CENTER V2"
+$form.Text="DAVID MODE CENTER V2.1 STABLE"
 $form.StartPosition="CenterScreen"
 $form.Size=New-Object System.Drawing.Size(760,560)
 $form.MinimumSize=New-Object System.Drawing.Size(760,560)
@@ -56,7 +56,7 @@ $form.MaximizeBox=$false
 $form.BackColor=[System.Drawing.Color]::FromArgb(18,20,26)
 
 $title=New-Object System.Windows.Forms.Label
-$title.Text="DAVID MODE CENTER V2"
+$title.Text="DAVID MODE CENTER V2.1"
 $title.ForeColor=[System.Drawing.Color]::White
 $title.Font=New-Object System.Drawing.Font("Segoe UI",20,[System.Drawing.FontStyle]::Bold)
 $title.AutoSize=$true
@@ -153,6 +153,8 @@ $form.Controls.Add($note)
 $script:ActionProcess=$null
 $script:ActionName=""
 $script:Busy=$false
+$script:Closing=$false
+$script:LastRefresh=[DateTime]::MinValue
 
 function Start-Action([string]$Name,[string]$ScriptPath){
   if($script:Busy){return}
@@ -165,7 +167,7 @@ function Start-Action([string]$Name,[string]$ScriptPath){
   $soul.Enabled=$false;$ab.Enabled=$false;$stop.Enabled=$false
   $badge.Text="SWITCHING -> "+$Name
   $badge.BackColor=[System.Drawing.Color]::FromArgb(173,116,26)
-  $script:ActionProcess=Start-Process -FilePath $Pwsh -ArgumentList @("-NoProfile","-ExecutionPolicy","Bypass","-File",$ScriptPath,"-Port","$Port") -PassThru
+  $script:ActionProcess=Start-Process -FilePath $Pwsh -ArgumentList @("-NoProfile","-ExecutionPolicy","Bypass","-File",$ScriptPath,"-Port","$Port") -PassThru -WindowStyle Hidden
 }
 
 function Update-Ui{
@@ -193,21 +195,53 @@ $ab.Add_Click({Start-Action "DAVID A + B" $AbScript})
 $stop.Add_Click({Start-Action "STOP ALL" $StopScript})
 $refresh.Add_Click({Update-Ui})
 
-$timer=New-Object System.Windows.Forms.Timer
-$timer.Interval=750
-$timer.Add_Tick({
-  if($script:Busy-and$script:ActionProcess-and$script:ActionProcess.HasExited){
-    $code=$script:ActionProcess.ExitCode
-    if($code-ne 0){
-      $badge.Text="FAILED: "+$script:ActionName+" (exit "+$code+")"
-      $badge.BackColor=[System.Drawing.Color]::FromArgb(170,45,45)
-    }
-    $script:ActionProcess=$null
-    $script:Busy=$false
-  }
-  Update-Ui
+# V2.1 STABLE: no WinForms Timer.
+# Timer.OnTick can invoke a PowerShell ScriptBlock after its pipeline is stopping,
+# causing .NET PipelineStoppedException/JIT dialogs. Keep the UI on one guarded loop.
+$form.Add_FormClosing({
+  $script:Closing=$true
 })
-$timer.Start()
-$form.Add_Shown({Update-Ui})
-$form.Add_FormClosed({$timer.Stop()})
-[void]$form.ShowDialog()
+
+$form.Show()
+Update-Ui
+
+while(-not $script:Closing -and $form.Visible){
+  try{
+    [System.Windows.Forms.Application]::DoEvents()
+
+    if($script:Busy -and $script:ActionProcess){
+      $exited=$false
+      try{$exited=$script:ActionProcess.HasExited}catch{$exited=$true}
+      if($exited){
+        $code=-1
+        try{$code=$script:ActionProcess.ExitCode}catch{}
+        if($code-ne 0){
+          $badge.Text="FAILED: "+$script:ActionName+" (exit "+$code+")"
+          $badge.BackColor=[System.Drawing.Color]::FromArgb(170,45,45)
+        }
+        $script:ActionProcess=$null
+        $script:Busy=$false
+        $script:LastRefresh=[DateTime]::MinValue
+      }
+    }
+
+    if(([DateTime]::UtcNow-$script:LastRefresh).TotalMilliseconds-ge 1000){
+      Update-Ui
+      $script:LastRefresh=[DateTime]::UtcNow
+    }
+
+    Start-Sleep -Milliseconds 60
+  }catch [System.Management.Automation.PipelineStoppedException]{
+    break
+  }catch{
+    try{
+      $badge.Text="UI STATUS ERROR - DAVID STILL RUNNING"
+      $badge.BackColor=[System.Drawing.Color]::FromArgb(170,45,45)
+    }catch{}
+    Start-Sleep -Milliseconds 250
+  }
+}
+
+try{
+  if(-not $form.IsDisposed){$form.Dispose()}
+}catch{}
