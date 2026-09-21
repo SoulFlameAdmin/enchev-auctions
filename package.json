@@ -128,7 +128,9 @@
     "verify:request-correlation-id": "node scripts/verify-request-correlation-id.mjs",
     "verify:request-correlation-id:self-test": "node scripts/verify-request-correlation-id.mjs --self-test",
     "verify:pagination-filter-sort-contract": "node scripts/verify-pagination-filter-sort-contract.mjs",
-    "verify:pagination-filter-sort-contract:self-test": "node scripts/verify-pagination-filter-sort-contract.mjs --self-test"
+    "verify:pagination-filter-sort-contract:self-test": "node scripts/verify-pagination-filter-sort-contract.mjs --self-test",
+    "verify:idempotency-key-contract": "node scripts/verify-idempotency-key-contract.mjs",
+    "verify:idempotency-key-contract:self-test": "node scripts/verify-idempotency-key-contract.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",

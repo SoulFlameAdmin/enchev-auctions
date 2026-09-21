@@ -12,7 +12,8 @@ const gates = [
   ["scripts/verify-build-provenance.mjs", "--self-test"],
   ["scripts/verify-environment-scoped-ci-secrets.mjs", "--self-test"],
   ["scripts/verify-standard-error-envelope.mjs", "--self-test"],
-  ["scripts/verify-request-correlation-id.mjs", "--self-test"]
+  ["scripts/verify-request-correlation-id.mjs", "--self-test"],
+  ["scripts/verify-idempotency-key-contract.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of gates) {

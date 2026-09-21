@@ -221,3 +221,46 @@ export function parseApiListQuery(
 
   return { page, pageSize, filters, sort };
 }
+
+
+export const IDEMPOTENCY_KEY_HEADER = "idempotency-key" as const;
+export const IDEMPOTENCY_KEY_MAX_LENGTH = 128 as const;
+const IDEMPOTENCY_KEY_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/;
+
+export type IdempotencyRecordState = "in-progress" | "completed";
+export type IdempotencyDecision =
+  | { action: "execute" }
+  | { action: "replay" }
+  | { action: "conflict"; code: "IDEMPOTENCY_KEY_REUSED_WITH_DIFFERENT_REQUEST" }
+  | { action: "in-progress"; code: "IDEMPOTENCY_REQUEST_IN_PROGRESS" };
+
+export type IdempotencyRecord = {
+  requestFingerprint: string;
+  state: IdempotencyRecordState;
+};
+
+export function isIdempotencyKey(value: unknown): value is string {
+  return typeof value === "string"
+    && value.length <= IDEMPOTENCY_KEY_MAX_LENGTH
+    && IDEMPOTENCY_KEY_PATTERN.test(value);
+}
+
+export function requireIdempotencyKey(value: string | null | undefined): string {
+  if (!isIdempotencyKey(value)) throw new Error("IDEMPOTENCY_KEY_INVALID");
+  return value;
+}
+
+export function decideIdempotencyAction(
+  existing: IdempotencyRecord | null | undefined,
+  requestFingerprint: string,
+): IdempotencyDecision {
+  if (!requestFingerprint) throw new Error("IDEMPOTENCY_FINGERPRINT_REQUIRED");
+  if (!existing) return { action: "execute" };
+  if (existing.requestFingerprint !== requestFingerprint) {
+    return { action: "conflict", code: "IDEMPOTENCY_KEY_REUSED_WITH_DIFFERENT_REQUEST" };
+  }
+  if (existing.state === "in-progress") {
+    return { action: "in-progress", code: "IDEMPOTENCY_REQUEST_IN_PROGRESS" };
+  }
+  return { action: "replay" };
+}
