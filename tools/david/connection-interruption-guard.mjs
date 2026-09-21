@@ -16,11 +16,13 @@ const SEND_TIMEOUT_MAX_RETRIES = Number(process.env.DAVID_SEND_TIMEOUT_MAX_RETRI
 const SEND_TIMEOUT_STALE_ACTIVE_MS = Number(process.env.DAVID_SEND_TIMEOUT_STALE_ACTIVE_MS || 8000);
 const SEND_TIMEOUT_RELOAD_SETTLE_MS = Number(process.env.DAVID_SEND_TIMEOUT_RELOAD_SETTLE_MS || 2500);
 const RECOVERY_REQUEST_FILE = path.join(HERE, ".david-recovery-request.json");
+const CONTROL_ENABLED = process.env.DAVID_CONTROL_ENABLED !== "0";
 const ACTIVE_MANAGED_KINDS = new Set(
   String(process.env.DAVID_ACTIVE_WORKERS || "SYSTEM,DESIGN,APP2,APK,CONTROL")
     .split(",").map((x) => x.trim().toUpperCase()).filter(Boolean)
 );
-ACTIVE_MANAGED_KINDS.add("CONTROL");
+if (CONTROL_ENABLED) ACTIVE_MANAGED_KINDS.add("CONTROL");
+else ACTIVE_MANAGED_KINDS.delete("CONTROL");
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 const recoveredAt = new Map();
