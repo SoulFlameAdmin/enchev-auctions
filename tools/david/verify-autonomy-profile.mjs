@@ -37,7 +37,7 @@ for (const [name, source] of [["SYSTEM", systemWorker], ["DPP", dppWorker], ["AP
   }
 }
 for (const token of ["ensurePendingApkPage", "DAVID_APK_PENDING_V1", "Pending ChatGPT tab created immediately", "fresh-owned-tab-after-discovery-miss", "No unique APK session discovered"]) {
-  if (!apkWorker.includes(token)) throw new Error("APK fourth-tab invariant missing: " + token);
+  if (!apkWorker.includes(token)) throw new Error("APK owned-tab invariant missing: " + token);
 }
 for (const token of ["restartWorker", "workerHealth", "managed tab missing", "heartbeat stale"]) {
   if (!dual.includes(token)) throw new Error("Background WATCH supervisor invariant missing: " + token);
@@ -69,4 +69,4 @@ for (const token of ["DAVID_REQUIRE_FRESH_EDGE_ON_START","FRESH EDGE REQUIRED","
   if (!launcher.includes(token)) throw new Error("Fresh Edge launcher invariant missing: " + token);
 }
 
-console.log("DAVID_AUTONOMY_PROFILE PASS restart_first_wait=90s fresh_edge=VERIFIED scope=SYSTEM+APP2+APK watch=BACKGROUND control_tab=OFF design=OFF strict_tabs=3 apk_fourth_tab=GUARANTEED apk_discovery_miss_autostart=ON effort=MEDIUM guard=ON semantic_terminal=SYSTEM+DPP+APK");
+console.log("DAVID_AUTONOMY_PROFILE PASS restart_first_wait=90s fresh_edge=VERIFIED scope=SYSTEM+APP2+APK watch=BACKGROUND control_tab=OFF design=OFF strict_tabs=3 apk_tab=GUARANTEED apk_discovery_miss_autostart=ON effort=MEDIUM guard=ON semantic_terminal=SYSTEM+DPP+APK");
