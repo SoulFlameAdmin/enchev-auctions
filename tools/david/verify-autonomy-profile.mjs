@@ -13,6 +13,7 @@ const dppWorker = read("tools/david/auto-complete-app2-v1.mjs");
 const apkWorker = read("tools/david/auto-continue-david-apk-v1.mjs");
 const start = read("START_DAVID_AUTONOMY.ps1");
 const restart = read("RESTART_DAVID_AUTONOMY_CLEAN.ps1");
+const effort = read("tools/david/chatgpt-effort-mode.mjs");
 
 for (const token of [
   "DAVID_ACTIVE_WORKERS",
@@ -29,13 +30,20 @@ for (const token of ["ACTIVE_MANAGED_KINDS", "DAVID_ACTIVE_WORKERS"]) {
   if (!guard.includes(token)) throw new Error("Guard autonomy invariant missing: " + token);
 }
 for (const [name, source] of [["SYSTEM", systemWorker], ["DPP", dppWorker], ["APK", apkWorker]]) {
-  for (const token of ["semanticTerminalCandidate", "SEMANTIC_TERMINAL_QUIET_MS", "human-terminal-gate"]) {
-    if (!source.includes(token)) throw new Error(name + " semantic terminal invariant missing: " + token);
+  for (const token of ["semanticTerminalCandidate", "SEMANTIC_TERMINAL_QUIET_MS", "human-terminal-gate", "ensureChatGptEffortMode", '"medium"']) {
+    if (!source.includes(token)) throw new Error(name + " autonomy invariant missing: " + token);
   }
+}
+for (const token of ["ensureChatGptEffortMode", '"medium"']) {
+  if (!control.includes(token)) throw new Error("CONTROL effort invariant missing: " + token);
+}
+for (const token of ["Medium", "Средно", "target=medium"]) {
+  if (!effort.includes(token)) throw new Error("Shared effort-mode invariant missing: " + token);
 }
 for (const token of [
   'DAVID_ACTIVE_WORKERS = "SYSTEM,APP2,APK,CONTROL"',
   'DAVID_CHATGPT_TAB_TARGET = "4"',
+  'DAVID_PROJECT_EFFORT_MODE = "medium"',
   'DESIGN=0',
   'ChatGPT=4'
 ]) if (!start.includes(token)) throw new Error("Launcher invariant missing: " + token);
@@ -44,4 +52,4 @@ if (!restart.includes("STOP_DAVID_ALL_CLEAN.ps1") || !restart.includes("START_DA
   throw new Error("Restart must atomically stop old stack before AUTONOMY start");
 }
 
-console.log("DAVID_AUTONOMY_PROFILE PASS scope=SYSTEM+APP2+APK+CONTROL design=OFF strict_tabs=4 guard=ON semantic_terminal=SYSTEM+DPP+APK");
+console.log("DAVID_AUTONOMY_PROFILE PASS scope=SYSTEM+APP2+APK+CONTROL design=OFF strict_tabs=4 effort=MEDIUM guard=ON semantic_terminal=SYSTEM+DPP+APK");
