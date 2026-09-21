@@ -167,7 +167,7 @@ async function rateLimitVisible(page) {
 }
 
 async function clickRateLimitAcknowledge(page) {
-  const labels = [/^Разбрано$/i, /^Got it$/i, /^Understood$/i, /^Okay$/i];
+  const labels = [/^Разбрано$/i, /^Got it$/i, /^Understood$/i, /^Okay$/i, /^OK$/i];
   try {
     const dialogs = page.locator('[role="dialog"]');
     for (let d = (await dialogs.count()) - 1; d >= 0; d--) {

@@ -5,6 +5,7 @@ import { chromium } from "playwright-core";
 import {
   getRateLimitState,
   rateLimitRemainingMs,
+  waitForGlobalSendPermit,
   markGlobalSendStarted,
   reportProbeSuccess,
   reportRateLimit
@@ -129,23 +130,22 @@ async function rolloverConversation(context,page,reason="conversation-limit"){
   return page;
 }
 async function waitOnlyForActualGlobalBlock(){
-  for(;;){
-    const st=getRateLimitState();
-    const source=String(st.lastRateLimitBy||"").toUpperCase();
+  const st=getRateLimitState();
+  const source=String(st.lastRateLimitBy||"").toUpperCase();
 
-    // FREE TALK must not be stalled by a SYSTEM/DPP/APK coordinator lease.
-    // If the project stack reported the rate limit, FREE_A/B are allowed one
-    // independent UI attempt. Their own visible rate-limit UI remains authoritative.
-    if(st.status==="clear" || !["FREE_A","FREE_B"].includes(source)){
-      return {mode:"fast",state:st};
-    }
-    if(st.status==="probe" && st.probeOwner===ROLE) return {mode:"probe",state:st};
-
-    const waitMs=Math.max(250,Math.min(1000,rateLimitRemainingMs(st)||1000));
-    state.watchdog="free-talk-rate-limit-wait";
-    save("FREE TALK own rate-limit wait status="+st.status+" owner="+(st.probeOwner||"none"));
-    await sleep(waitMs);
+  // Project-worker cooldowns never pause the independent A<->B experiment.
+  if(st.status==="clear" || !["FREE_A","FREE_B"].includes(source)){
+    return {mode:"fast",state:st};
   }
+
+  // For a FREE_A/FREE_B-owned rate limit, use the coordinator only for the
+  // actual cooldown/probe transition. This avoids the normal 10s send pacer
+  // while still ensuring a blocked state can never wait forever.
+  return await waitForGlobalSendPermit(ROLE,async decision=>{
+    state.watchdog="free-talk-rate-limit-wait";
+    const remaining=Math.ceil((decision.waitMs||rateLimitRemainingMs(decision.state)||0)/1000);
+    save("FREE TALK rate-limit cooldown; retry in ~"+remaining+"s mode="+decision.mode);
+  });
 }
 async function tag(page,name){ await page.evaluate(v=>{window.name=v;},name).catch(()=>{}); }
 async function findTagged(context){
@@ -197,6 +197,23 @@ async function rateLimitVisible(page){
       return false;
     });
   }catch{return false;}
+}
+async function clickRateLimitAcknowledge(page){
+  const labels=[/^Разбрано$/i,/^Got it$/i,/^Understood$/i,/^Okay$/i,/^OK$/i];
+  try{
+    for(const label of labels){
+      const buttons=page.getByRole("button",{name:label});
+      for(let i=(await buttons.count().catch(()=>0))-1;i>=0;i--){
+        const b=buttons.nth(i);
+        if(await b.isVisible().catch(()=>false)&&await b.isEnabled().catch(()=>false)){
+          await b.click({timeout:2500}).catch(()=>{});
+          console.log("["+ROLE+"] Rate-limit popup acknowledged automatically.");
+          return true;
+        }
+      }
+    }
+  }catch{}
+  return false;
 }
 
 async function ensureInstantMode(page){
@@ -335,8 +352,10 @@ async function waitComplete(context,page,baseHash){
     page=await waitReady(context,page);
     if(await rateLimitVisible(page)){
       const rl=await reportRateLimit(ROLE,"FREE TALK UI rate limit");
-      state.watchdog="free-talk-rate-limit-wait"; save("Rate limit until "+(rl.blockedUntil||rl.probeLeaseUntil||"unknown"));
-      return {page,retry:true};
+      await clickRateLimitAcknowledge(page);
+      state.watchdog="free-talk-rate-limit-wait";
+      save("Rate limit acknowledged; relay preserved; auto-retry after "+(rl.blockedUntil||rl.probeLeaseUntil||"coordinator cooldown"));
+      return {page,retry:true,reason:"rate-limit"};
     }
     const text=await latestAssistant(page);
     const h=text?hash(text):"";
@@ -376,6 +395,27 @@ async function sendAndCapture(context,page,key,prompt){
   for(;;){
     const done=await waitComplete(context,page,baseHash);
     page=done.page;
+
+    if(done.retry && done.reason==="rate-limit"){
+      const permit=await waitOnlyForActualGlobalBlock();
+      page=await waitReady(context,page);
+
+      // If the rejected turn actually resumed on its own, never duplicate it.
+      const currentHash=hash(await latestAssistant(page));
+      if(await stopVisible(page) || (currentHash && currentHash!==baseHash)){
+        state.watchdog="free-talk-rate-limit-resumed";
+        save("Rate-limit cleared and response progress already exists; no duplicate resend");
+        continue;
+      }
+
+      state.watchdog="free-talk-rate-limit-resend";
+      save("Rate-limit cooldown cleared -> resending preserved relay "+key);
+      await fillAndSend(page,prompt);
+      if(permit.mode==="probe") await markGlobalSendStarted(ROLE);
+      console.log("["+ROLE+"] Rate-limit cleared -> relay resent automatically: "+key);
+      continue;
+    }
+
     if(done.retry){await sleep(1500);continue;}
     state.inflightKey=null; state.inflightBaseHash=null; state.watchdog="free-talk-complete"; save("Completed "+key);
     await reportProbeSuccess(ROLE);
@@ -456,7 +496,9 @@ if(process.argv.includes("--self-test")){
   if(!conversationLimitText("You have reached the maximum length for this conversation.")) throw new Error("rollover detection missing");
   if(!ensureInstantMode.toString().includes("Instant")) throw new Error("instant mode forcing missing");
   if(!seedPrompt().includes(ROLE)) throw new Error("seed prompt role missing");
-  console.log("DAVID_FREE_TALK_SELF_TEST PASS role="+ROLE+" partner="+PARTNER+" dedupe=relay-seq fast_relay=ON instant=FORCED persistent_chat=ON browse_tools=ALLOWED same_tab_rollover=ON");
+  if(!clickRateLimitAcknowledge.toString().includes("Разбрано")) throw new Error("rate-limit acknowledgement missing");
+  if(!waitOnlyForActualGlobalBlock.toString().includes("waitForGlobalSendPermit")) throw new Error("rate-limit cooldown transition missing");
+  console.log("DAVID_FREE_TALK_SELF_TEST PASS role="+ROLE+" partner="+PARTNER+" dedupe=relay-seq fast_relay=ON instant=FORCED persistent_chat=ON rate_limit_auto_resume=ON browse_tools=ALLOWED same_tab_rollover=ON");
 }else{
   main().catch(error=>{console.error("["+ROLE+"] FATAL",error?.stack||error);process.exit(1);});
 }
