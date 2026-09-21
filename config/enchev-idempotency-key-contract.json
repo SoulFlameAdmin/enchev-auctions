@@ -1,0 +1,13 @@
+{
+  "taskId": "24.07",
+  "header": "Idempotency-Key",
+  "maxLength": 128,
+  "scope": ["authenticated actor", "operation/route", "idempotency key"],
+  "fingerprint": "canonical request intent including operation and mutation payload",
+  "states": ["in-progress", "completed"],
+  "sameFingerprintCompleted": "replay stored status and response without repeating side effects",
+  "sameFingerprintInProgress": "reject deterministically as request in progress",
+  "differentFingerprint": "conflict; never execute",
+  "storageRequirement": "critical mutations persist the idempotency record in the same authoritative transaction or an equivalently atomic boundary",
+  "authority": "idempotency metadata never decides auction winner, accepted bid ordering, eligibility, price, or finalization"
+}
