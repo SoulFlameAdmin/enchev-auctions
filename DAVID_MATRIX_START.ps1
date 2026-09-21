@@ -66,9 +66,11 @@ try{
   }
 
   if(-not(Test-Path $Selector)){throw "Matrix selector missing: $Selector"}
-  Log("OPEN MATRIX")
-  Start-Process -FilePath $Pwsh -ArgumentList @("-NoProfile","-ExecutionPolicy","Bypass","-File",$Selector,"-Port","$Port") -WindowStyle Hidden
-  Log("MATRIX opened")
+  Log("OPEN MATRIX VISIBLE")
+  Write-Host "[DAVID] MATRIX READY - choose SOULFLAME SYSTEM or DAVID A+B" -ForegroundColor Green
+  & $Selector -Port $Port
+  if($LASTEXITCODE-ne 0){throw "DAVID Matrix selector exited with code $LASTEXITCODE"}
+  Log("MATRIX closed normally")
 }catch{
   Log("FATAL "+$_.Exception.Message)
   Add-Type -AssemblyName System.Windows.Forms
