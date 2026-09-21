@@ -12,6 +12,64 @@ $AbRestart=Join-Path $Repo "RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1"
 $FreeAUrl="https://chatgpt.com/c/6ab08cb0-3738-83eb-b4bf-2ef8bf4933a8"
 $FreeBUrl="https://chatgpt.com/c/6ab08cab-006c-83eb-a753-2ea42567e22f"
 
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public static class DavidConsoleWindow {
+  [DllImport("kernel32.dll")]
+  public static extern IntPtr GetConsoleWindow();
+  [DllImport("user32.dll")]
+  public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+}
+"@
+
+function Hide-OwnConsole {
+  try {
+    $h=[DavidConsoleWindow]::GetConsoleWindow()
+    if($h-ne[IntPtr]::Zero){[void][DavidConsoleWindow]::ShowWindow($h,0)}
+  } catch {}
+}
+
+function Close-OldDavidPowerShellWindows {
+  param([int]$KeepPid)
+
+  $patterns=@(
+    "DAVID_START.ps1",
+    "DAVID_MATRIX_START.ps1",
+    "DAVID_MODE_SELECTOR_V2.ps1",
+    "START_DAVID_AUTONOMY.ps1",
+    "START_DAVID_FREETALK_ONLY.ps1",
+    "START_DAVID_EXPERIMENT_FREETALK.ps1",
+    "RESTART_DAVID_AUTONOMY_CLEAN.ps1",
+    "RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1",
+    "RESTART_DAVID_EXPERIMENT_FREETALK_CLEAN.ps1",
+    "STOP_DAVID_ALL_CLEAN.ps1",
+    "david-autonomy-dashboard.ps1",
+    "david-freetalk-only-dashboard.ps1",
+    "david-freetalk-dashboard.ps1",
+    "start-auto-continue.ps1"
+  )
+
+  try {
+    Get-CimInstance Win32_Process -ErrorAction Stop |
+      Where-Object {
+        $pidValue=[int]$_.ProcessId
+        $nameValue=[string]$_.Name
+        $line=[string]$_.CommandLine
+        $match=$false
+        foreach($pattern in $patterns){
+          if($line-like("*"+$pattern+"*")){$match=$true;break}
+        }
+        ($pidValue-ne$KeepPid)-and
+        ($nameValue-eq"powershell.exe"-or$nameValue-eq"pwsh.exe")-and
+        $match
+      } |
+      ForEach-Object {
+        Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue
+      }
+  } catch {}
+}
+
 function Get-NodeCount([string]$Pattern){
   try{return @(Get-CimInstance Win32_Process|Where-Object{$_.Name-eq"node.exe"-and([string]$_.CommandLine)-like"*$Pattern*"}).Count}catch{return 0}
 }
@@ -216,6 +274,9 @@ $form.Add_FormClosing({
 })
 
 $form.Show()
+[System.Windows.Forms.Application]::DoEvents()
+Close-OldDavidPowerShellWindows -KeepPid $PID
+Hide-OwnConsole
 Update-Ui
 
 while(-not $script:Closing -and $form.Visible){
