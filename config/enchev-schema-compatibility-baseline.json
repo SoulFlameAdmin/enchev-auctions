@@ -1,0 +1,107 @@
+{
+  "version": 1,
+  "task": "24.13",
+  "title": "Schema compatibility test baseline",
+  "compatibilityLine": "v1",
+  "openApiPath": "packages/contracts/openapi/enchev-api.v1.json",
+  "authorityBoundary": "This baseline governs published API shape compatibility only. PostgreSQL remains authoritative for auction state, accepted bids, winner selection and final results.",
+  "componentSchemas": {
+    "ComponentHealth": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ok", "component", "ready", "status", "schemaVersion", "valuesExposed"],
+      "properties": {
+        "ok": { "type": "boolean" },
+        "component": { "enum": ["web", "api", "realtime", "worker"] },
+        "ready": { "type": "boolean" },
+        "status": { "enum": ["healthy", "service-pending"] },
+        "schemaVersion": { "const": 1 },
+        "valuesExposed": { "const": false }
+      }
+    },
+    "RedisHealth": {
+      "type": "object",
+      "required": ["ok", "configured", "status"],
+      "properties": {
+        "ok": { "type": "boolean" },
+        "configured": { "type": "boolean" },
+        "status": { "enum": ["pong", "redis-binding-ping-failed", "missing-redis-binding"] },
+        "binding": { "enum": ["tcp-url", "upstash-rest", "vercel-kv-rest"] },
+        "tls": { "type": "boolean" },
+        "latencyMs": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "RedisEnvironmentHealth": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["ok", "candidateKeyCount", "candidateKeys", "valuesExposed"],
+      "properties": {
+        "ok": { "const": true },
+        "candidateKeyCount": { "type": "integer", "minimum": 0 },
+        "candidateKeys": { "type": "array", "items": { "type": "string" } },
+        "valuesExposed": { "const": false }
+      }
+    },
+    "LiveAuctionDemoClock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["serverNow", "roundEndsAt", "durationMs", "lotIndex", "lotId", "scope", "auctionAuthority", "bidFeedback", "priceDelta"],
+      "properties": {
+        "serverNow": { "type": "integer" },
+        "roundEndsAt": { "type": "integer" },
+        "durationMs": { "type": "integer", "minimum": 1 },
+        "lotIndex": { "type": "integer", "minimum": 0 },
+        "lotId": { "type": "string" },
+        "scope": { "const": "server-issued-browser-session-demo" },
+        "auctionAuthority": { "const": false },
+        "bidFeedback": {
+          "oneOf": [
+            { "type": "null" },
+            { "enum": ["accepted", "leading", "outbid", "rejected"] }
+          ]
+        },
+        "priceDelta": { "type": "number" }
+      }
+    },
+    "ErrorEnvelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["error"],
+      "properties": {
+        "error": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["code", "message"],
+          "properties": {
+            "code": { "type": "string", "minLength": 1 },
+            "message": { "type": "string", "minLength": 1 }
+          }
+        }
+      }
+    }
+  },
+  "headerSchemas": {
+    "RequestCorrelationId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+    }
+  },
+  "requestSchemas": [
+    {
+      "method": "POST",
+      "path": "/api/live-auction-clock",
+      "contentType": "application/json",
+      "required": true,
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["action"],
+        "properties": {
+          "action": { "const": "bid" }
+        }
+      }
+    }
+  ]
+}
