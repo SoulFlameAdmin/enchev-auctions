@@ -11,3 +11,5 @@ export type ContractsPackageBoundary = Readonly<{
   package: typeof CONTRACTS_PACKAGE_NAME;
   transportNeutral: true;
 }>;
+
+export * from "./http-schema";
