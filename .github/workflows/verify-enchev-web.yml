@@ -31,6 +31,10 @@ jobs:
         run: node scripts/verify-staging-deployment-pipeline.mjs
       - name: Staging deployment pipeline self-tests (26.04)
         run: node scripts/verify-staging-deployment-pipeline.mjs --self-test
+      - name: Production approval gate contract (26.05)
+        run: node scripts/verify-production-approval-gate.mjs
+      - name: Production approval gate self-tests (26.05)
+        run: node scripts/verify-production-approval-gate.mjs --self-test
       - name: Deployment concurrency control (26.06)
         run: node scripts/verify-deployment-concurrency-control.mjs
       - name: Deployment concurrency control self-tests (26.06)
