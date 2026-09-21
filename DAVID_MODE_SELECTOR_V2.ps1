@@ -1,0 +1,213 @@
+param([int]$Port=9444)
+$ErrorActionPreference="Stop"
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+
+$Repo="D:\ASI\enchev-auctions"
+$DavidDir=Join-Path $Repo "tools\david"
+$Pwsh="$env:SystemRoot\System32\WindowsPowerShell\v1.0\powershell.exe"
+$StopScript=Join-Path $Repo "STOP_DAVID_ALL_CLEAN.ps1"
+$SoulScript=Join-Path $Repo "RESTART_DAVID_AUTONOMY_CLEAN.ps1"
+$AbScript=Join-Path $Repo "RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1"
+$FreeAUrl="https://chatgpt.com/c/6ab08cb0-3738-83eb-b4bf-2ef8bf4933a8"
+$FreeBUrl="https://chatgpt.com/c/6ab08cab-006c-83eb-a753-2ea42567e22f"
+
+function Get-NodeCount([string]$Pattern){
+  try{return @(Get-CimInstance Win32_Process|Where-Object{$_.Name-eq"node.exe"-and([string]$_.CommandLine)-like"*$Pattern*"}).Count}catch{return 0}
+}
+function Read-Json([string]$Path){try{return Get-Content -Raw $Path|ConvertFrom-Json}catch{return $null}}
+function Get-ChatUrl([string]$Path){$s=Read-Json $Path;if($s){return [string]$s.chatUrl};return ""}
+function Get-Snapshot{
+  $sup=Get-NodeCount "dual-session-worker.mjs"
+  $sys=Get-NodeCount "auto-continue-enchev-v5.mjs"
+  $dpp=Get-NodeCount "auto-complete-app2-v1.mjs"
+  $apk=Get-NodeCount "auto-continue-david-apk-v1.mjs"
+  $ctrl=Get-NodeCount "auto-control-watchtower-v1.mjs"
+  $free=Get-NodeCount "free-talk-session-v1.mjs"
+  $guard=Get-NodeCount "connection-interruption-guard.mjs"
+  $design=Get-NodeCount "auto-continue-design-v1.mjs"
+  $tabs=0;$fa=0;$fb=0;$tsys=0;$tdpp=0;$tapk=0;$tctrl=0
+  $tm=Read-Json (Join-Path $DavidDir ".david-tab-monitor.json")
+  if($tm){
+    $tabs=[int]$tm.totalChatGptTabs
+    try{$fa=@($tm.managed.FREE_A).Count}catch{}
+    try{$fb=@($tm.managed.FREE_B).Count}catch{}
+    try{$tsys=@($tm.managed.SYSTEM).Count}catch{}
+    try{$tdpp=@($tm.managed.APP2).Count}catch{}
+    try{$tapk=@($tm.managed.APK).Count}catch{}
+    try{$tctrl=@($tm.managed.CONTROL).Count}catch{}
+  }
+  $aUrl=Get-ChatUrl (Join-Path $DavidDir ".david-free-talk-a-state.json")
+  $bUrl=Get-ChatUrl (Join-Path $DavidDir ".david-free-talk-b-state.json")
+  $pinned=($aUrl-eq$FreeAUrl-and$bUrl-eq$FreeBUrl)
+  $mode="CHECK"
+  if($sup-eq 0-and$sys-eq 0-and$dpp-eq 0-and$apk-eq 0-and$ctrl-eq 0-and$free-eq 0){$mode="STOPPED"}
+  elseif($sup-eq 1-and$sys-eq 1-and$dpp-eq 1-and$apk-eq 1-and$ctrl-eq 1-and$free-eq 0-and$design-eq 0){$mode="SOULFLAME"}
+  elseif($sup-eq 1-and$free-eq 2-and$sys-eq 0-and$dpp-eq 0-and$apk-eq 0-and$ctrl-eq 0-and$design-eq 0){$mode="AB"}
+  return [pscustomobject]@{Mode=$mode;Sup=$sup;System=$sys;Dpp=$dpp;Apk=$apk;Control=$ctrl;Free=$free;Guard=$guard;Design=$design;Tabs=$tabs;FreeA=$fa;FreeB=$fb;TabSystem=$tsys;TabDpp=$tdpp;TabApk=$tapk;TabControl=$tctrl;Pinned=$pinned;AUrl=$aUrl;BUrl=$bUrl}
+}
+
+$form=New-Object System.Windows.Forms.Form
+$form.Text="DAVID MODE CENTER V2"
+$form.StartPosition="CenterScreen"
+$form.Size=New-Object System.Drawing.Size(760,560)
+$form.MinimumSize=New-Object System.Drawing.Size(760,560)
+$form.MaximizeBox=$false
+$form.BackColor=[System.Drawing.Color]::FromArgb(18,20,26)
+
+$title=New-Object System.Windows.Forms.Label
+$title.Text="DAVID MODE CENTER V2"
+$title.ForeColor=[System.Drawing.Color]::White
+$title.Font=New-Object System.Drawing.Font("Segoe UI",20,[System.Drawing.FontStyle]::Bold)
+$title.AutoSize=$true
+$title.Location=New-Object System.Drawing.Point(28,20)
+$form.Controls.Add($title)
+
+$subtitle=New-Object System.Windows.Forms.Label
+$subtitle.Text="One active mode at a time. Switching is clean. Chat history and pinned A+B conversations stay preserved."
+$subtitle.ForeColor=[System.Drawing.Color]::Silver
+$subtitle.Font=New-Object System.Drawing.Font("Segoe UI",9)
+$subtitle.Size=New-Object System.Drawing.Size(690,36)
+$subtitle.Location=New-Object System.Drawing.Point(31,63)
+$form.Controls.Add($subtitle)
+
+$badge=New-Object System.Windows.Forms.Label
+$badge.Text="DETECTING..."
+$badge.TextAlign="MiddleCenter"
+$badge.ForeColor=[System.Drawing.Color]::White
+$badge.BackColor=[System.Drawing.Color]::FromArgb(75,75,85)
+$badge.Font=New-Object System.Drawing.Font("Consolas",11,[System.Drawing.FontStyle]::Bold)
+$badge.Size=New-Object System.Drawing.Size(690,34)
+$badge.Location=New-Object System.Drawing.Point(31,100)
+$form.Controls.Add($badge)
+
+$soul=New-Object System.Windows.Forms.Button
+$soul.Text="SOULFLAME SYSTEM`r`nSYSTEM + DPP + APK + CONTROL"
+$soul.Size=New-Object System.Drawing.Size(325,118)
+$soul.Location=New-Object System.Drawing.Point(31,153)
+$soul.Font=New-Object System.Drawing.Font("Segoe UI",12,[System.Drawing.FontStyle]::Bold)
+$soul.FlatStyle="Flat"
+$soul.FlatAppearance.BorderSize=2
+$soul.ForeColor=[System.Drawing.Color]::White
+$soul.BackColor=[System.Drawing.Color]::FromArgb(44,118,214)
+$form.Controls.Add($soul)
+
+$ab=New-Object System.Windows.Forms.Button
+$ab.Text="DAVID A + B`r`n2 PERSISTENT FREE-TALK CHATS"
+$ab.Size=New-Object System.Drawing.Size(325,118)
+$ab.Location=New-Object System.Drawing.Point(396,153)
+$ab.Font=New-Object System.Drawing.Font("Segoe UI",12,[System.Drawing.FontStyle]::Bold)
+$ab.FlatStyle="Flat"
+$ab.FlatAppearance.BorderSize=2
+$ab.ForeColor=[System.Drawing.Color]::White
+$ab.BackColor=[System.Drawing.Color]::FromArgb(124,72,184)
+$form.Controls.Add($ab)
+
+$pinned=New-Object System.Windows.Forms.Label
+$pinned.Text="A+B pinned sessions: checking..."
+$pinned.ForeColor=[System.Drawing.Color]::Khaki
+$pinned.Font=New-Object System.Drawing.Font("Consolas",9,[System.Drawing.FontStyle]::Bold)
+$pinned.Size=New-Object System.Drawing.Size(690,24)
+$pinned.Location=New-Object System.Drawing.Point(31,286)
+$form.Controls.Add($pinned)
+
+$runtime=New-Object System.Windows.Forms.TextBox
+$runtime.Multiline=$true
+$runtime.ReadOnly=$true
+$runtime.BorderStyle="FixedSingle"
+$runtime.BackColor=[System.Drawing.Color]::FromArgb(12,14,18)
+$runtime.ForeColor=[System.Drawing.Color]::Gainsboro
+$runtime.Font=New-Object System.Drawing.Font("Consolas",9)
+$runtime.Size=New-Object System.Drawing.Size(690,105)
+$runtime.Location=New-Object System.Drawing.Point(31,316)
+$form.Controls.Add($runtime)
+
+$stop=New-Object System.Windows.Forms.Button
+$stop.Text="STOP ALL"
+$stop.Size=New-Object System.Drawing.Size(160,46)
+$stop.Location=New-Object System.Drawing.Point(31,442)
+$stop.Font=New-Object System.Drawing.Font("Segoe UI",10,[System.Drawing.FontStyle]::Bold)
+$stop.FlatStyle="Flat"
+$stop.ForeColor=[System.Drawing.Color]::White
+$stop.BackColor=[System.Drawing.Color]::FromArgb(165,52,52)
+$form.Controls.Add($stop)
+
+$refresh=New-Object System.Windows.Forms.Button
+$refresh.Text="REFRESH STATUS"
+$refresh.Size=New-Object System.Drawing.Size(160,46)
+$refresh.Location=New-Object System.Drawing.Point(207,442)
+$refresh.Font=New-Object System.Drawing.Font("Segoe UI",10,[System.Drawing.FontStyle]::Bold)
+$refresh.FlatStyle="Flat"
+$refresh.ForeColor=[System.Drawing.Color]::White
+$refresh.BackColor=[System.Drawing.Color]::FromArgb(70,74,84)
+$form.Controls.Add($refresh)
+
+$note=New-Object System.Windows.Forms.Label
+$note.Text="Closing this selector does NOT stop the active mode."
+$note.ForeColor=[System.Drawing.Color]::DarkGray
+$note.Font=New-Object System.Drawing.Font("Segoe UI",9)
+$note.Size=New-Object System.Drawing.Size(340,28)
+$note.Location=New-Object System.Drawing.Point(381,451)
+$form.Controls.Add($note)
+
+$script:ActionProcess=$null
+$script:ActionName=""
+$script:Busy=$false
+
+function Start-Action([string]$Name,[string]$ScriptPath){
+  if($script:Busy){return}
+  if(-not(Test-Path $ScriptPath)){
+    [System.Windows.Forms.MessageBox]::Show("Missing script:`r`n"+$ScriptPath,"DAVID MODE CENTER",[System.Windows.Forms.MessageBoxButtons]::OK,[System.Windows.Forms.MessageBoxIcon]::Error)|Out-Null
+    return
+  }
+  $script:Busy=$true
+  $script:ActionName=$Name
+  $soul.Enabled=$false;$ab.Enabled=$false;$stop.Enabled=$false
+  $badge.Text="SWITCHING -> "+$Name
+  $badge.BackColor=[System.Drawing.Color]::FromArgb(173,116,26)
+  $script:ActionProcess=Start-Process -FilePath $Pwsh -ArgumentList @("-NoProfile","-ExecutionPolicy","Bypass","-File",$ScriptPath,"-Port","$Port") -PassThru
+}
+
+function Update-Ui{
+  $s=Get-Snapshot
+  if(-not$script:Busy){
+    switch($s.Mode){
+      "SOULFLAME"{$badge.Text="ACTIVE: SOULFLAME SYSTEM";$badge.BackColor=[System.Drawing.Color]::FromArgb(35,119,191);$soul.Enabled=$false;$ab.Enabled=$true;$stop.Enabled=$true}
+      "AB"{$badge.Text="ACTIVE: DAVID A + B";$badge.BackColor=[System.Drawing.Color]::FromArgb(116,63,169);$soul.Enabled=$true;$ab.Enabled=$false;$stop.Enabled=$true}
+      "STOPPED"{$badge.Text="STOPPED";$badge.BackColor=[System.Drawing.Color]::FromArgb(88,88,96);$soul.Enabled=$true;$ab.Enabled=$true;$stop.Enabled=$false}
+      default{$badge.Text="CHECK / TRANSITION";$badge.BackColor=[System.Drawing.Color]::FromArgb(170,105,27);$soul.Enabled=$true;$ab.Enabled=$true;$stop.Enabled=$true}
+    }
+  }
+  if($s.Pinned){
+    $pinned.Text="A+B PINNED SAME CHATS: YES | A=6ab08cb0... | B=6ab08cab..."
+    $pinned.ForeColor=[System.Drawing.Color]::LightGreen
+  }else{
+    $pinned.Text="A+B PINNED SAME CHATS: NOT CONFIRMED YET"
+    $pinned.ForeColor=[System.Drawing.Color]::Khaki
+  }
+  $runtime.Text=("MODE={0}   ChatGPT tabs={1}`r`nSUP={2} GUARD={3} SYSTEM={4} DPP={5} APK={6} CTRL={7} FREE={8} DESIGN={9}`r`nTAB MAP: SYS={10} DPP={11} APK={12} CTRL={13} FREE_A={14} FREE_B={15}`r`nA={16}`r`nB={17}" -f $s.Mode,$s.Tabs,$s.Sup,$s.Guard,$s.System,$s.Dpp,$s.Apk,$s.Control,$s.Free,$s.Design,$s.TabSystem,$s.TabDpp,$s.TabApk,$s.TabControl,$s.FreeA,$s.FreeB,$s.AUrl,$s.BUrl)
+}
+
+$soul.Add_Click({Start-Action "SOULFLAME SYSTEM" $SoulScript})
+$ab.Add_Click({Start-Action "DAVID A + B" $AbScript})
+$stop.Add_Click({Start-Action "STOP ALL" $StopScript})
+$refresh.Add_Click({Update-Ui})
+
+$timer=New-Object System.Windows.Forms.Timer
+$timer.Interval=750
+$timer.Add_Tick({
+  if($script:Busy-and$script:ActionProcess-and$script:ActionProcess.HasExited){
+    $code=$script:ActionProcess.ExitCode
+    if($code-ne 0){
+      $badge.Text="FAILED: "+$script:ActionName+" (exit "+$code+")"
+      $badge.BackColor=[System.Drawing.Color]::FromArgb(170,45,45)
+    }
+    $script:ActionProcess=$null
+    $script:Busy=$false
+  }
+  Update-Ui
+})
+$timer.Start()
+$form.Add_Shown({Update-Ui})
+$form.Add_FormClosed({$timer.Stop()})
+[void]$form.ShowDialog()
