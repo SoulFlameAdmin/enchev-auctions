@@ -1,0 +1,20 @@
+{
+  "taskId": "24.05",
+  "name": "Request correlation ID contract",
+  "status": "YELLOW",
+  "header": "X-Request-ID",
+  "canonicalLowercaseHeader": "x-request-id",
+  "acceptedPattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
+  "maxLength": 128,
+  "behavior": {
+    "validInbound": "preserve and propagate unchanged",
+    "missingInbound": "generate a UUID correlation ID",
+    "invalidInbound": "replace with a generated UUID; never reflect invalid input",
+    "downstream": "inject the resolved ID into the request seen by API handlers",
+    "response": "emit the same resolved ID on every /api/* response"
+  },
+  "runtimeBoundary": "proxy.ts matcher /api/:path*",
+  "contractModule": "packages/contracts/src/http-schema.ts",
+  "canonicalSpec": "packages/contracts/openapi/enchev-api.v1.json",
+  "authorityBoundary": "Correlation IDs are transport metadata only and never decide auction state, accepted bids, winner selection or final results."
+}
