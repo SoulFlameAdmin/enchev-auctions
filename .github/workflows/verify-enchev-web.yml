@@ -125,6 +125,10 @@ jobs:
         run: node scripts/verify-request-response-schema-validation.mjs
       - name: 24.03 Request/response schema validation self-tests
         run: node scripts/verify-request-response-schema-validation.mjs --self-test
+      - name: 24.04 Standard error envelope
+        run: node scripts/verify-standard-error-envelope.mjs
+      - name: 24.04 Standard error envelope self-tests
+        run: node scripts/verify-standard-error-envelope.mjs --self-test
       - name: 25.01 Unit-test strategy
         run: node scripts/verify-unit-test-strategy.mjs
       - name: 25.01 Unit-test strategy self-tests
