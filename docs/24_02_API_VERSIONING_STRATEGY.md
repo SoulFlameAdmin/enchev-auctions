@@ -1,6 +1,6 @@
 # 24.02 — API versioning strategy
 
-Status: **YELLOW** until the repository contract is merged and exact-head CI passes.
+Status: **GREEN** — implementation is merged and both exact-head and post-merge verification passed.\n\n## GREEN evidence\n\n- Implementation PR: #157, merged to `main` as `2528f1c74e085064e4fb6bfe5f45b0f6dd277689`.\n- Exact PR head: `94ee24b8209cb1544756f3bddbf743416d0d8ab5`.\n- Exact-head GitHub Actions: Verify Enchev Web `35547303461` SUCCESS; Verify SYSTEM 24.02 `35547303464` SUCCESS; SBOM `35547303398` SUCCESS; Secret Scan `35547303466` SUCCESS; Build Provenance `35547303463` SUCCESS; Code Scan `35547303414` SUCCESS.\n- Post-merge `main` verification at `2528f1c74e085064e4fb6bfe5f45b0f6dd277689`: Verify Enchev Web `35548095449` SUCCESS; SBOM `35548095447` SUCCESS; Secret Scan `35548095331` SUCCESS; Build Provenance `35548095334` SUCCESS; Code Scan `35548095355` SUCCESS.\n- Vercel preview reported free-tier deployment quota exhaustion on PR #157. That external preview quota is non-gating for this repository contract task; no manual Vercel create/update/redeploy is part of this evidence sync.
 
 ## Strategy
 
