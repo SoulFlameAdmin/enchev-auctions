@@ -7,6 +7,34 @@ function G([string]$n,[string[]]$names=@("node.exe")){try{return @(Get-CimInstan
 function CDP([int]$p){try{Invoke-RestMethod -Uri "http://127.0.0.1:$p/json/version" -TimeoutSec 2|Out-Null;return $true}catch{return $false}}
 if(-not(Test-Path(Join-Path $Repo ".git"))){throw "Repo missing: $Repo"}
 if(@(G "dual-session-worker.mjs").Count-gt 0){throw "DAVID already running. Use RESTART_DAVID_EXPERIMENT_FREETALK_CLEAN.ps1."}
+
+# Each experiment start is a new relay run. Preserve owned chat URLs/history,
+# but reset only transient A<->B exchange/counters so FREE_A always seeds NOW.
+$exchange = Join-Path $D ".david-free-talk-exchange.json"
+if(Test-Path $exchange){ Remove-Item $exchange -Force -ErrorAction SilentlyContinue }
+foreach($statePath in @(
+  (Join-Path $D ".david-free-talk-a-state.json"),
+  (Join-Path $D ".david-free-talk-b-state.json")
+)){
+  if(Test-Path $statePath){
+    try{
+      $st = Get-Content -Raw $statePath | ConvertFrom-Json
+      $st.lastConsumedSeq = 0
+      $st.lastPublishedSeq = 0
+      $st.lastAssistantHash = $null
+      $st.inflightKey = $null
+      $st.inflightBaseHash = $null
+      $st.justRolledOver = $false
+      $st.instantMode = "pending"
+      $st.updatedAt = (Get-Date).ToUniversalTime().ToString("o")
+      $st.lastAction = "Experiment relay transient state reset; Instant pending"
+      $st | ConvertTo-Json -Depth 20 | Set-Content -Encoding UTF8 $statePath
+    }catch{
+      Remove-Item $statePath -Force -ErrorAction SilentlyContinue
+    }
+  }
+}
+
 $env:DAVID_ACTIVE_WORKERS = "SYSTEM,APP2,APK,FREE_A,FREE_B,CONTROL"
 $env:DAVID_CHATGPT_TAB_TARGET = "6"
 $env:DAVID_AUTONOMY_PROFILE = "SYSTEM_DPP_APK_FREETALK_AB"
