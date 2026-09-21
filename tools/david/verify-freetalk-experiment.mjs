@@ -30,6 +30,7 @@ for(const token of [
   '6ab08cb0-3738-83eb-b4bf-2ef8bf4933a8',
   '6ab08cab-006c-83eb-a753-2ea42567e22f',
   'DAVID_FREE_TALK_RESUME_EXISTING="1"',
+  'DAVID_REQUIRE_FRESH_EDGE_ON_START="1"',
   'ChatGPT=2'
 ]) if(!abOnly.includes(token)) throw new Error("A+B-only mode invariant missing: "+token);
 if(!abRestart.includes("STOP_DAVID_ALL_CLEAN.ps1")||!abRestart.includes("START_DAVID_FREETALK_ONLY.ps1")) throw new Error("A+B-only restart is not atomic");
@@ -42,4 +43,4 @@ if(!abOnly.includes("-WindowStyle Hidden")) throw new Error("A+B launcher/dashbo
 for(const token of ["STOP FIRST","fetch origin","checkout $Branch","pull --ff-only","OPEN MATRIX","DAVID_MODE_SELECTOR_V2.ps1","Wait-OrchestrationMutex"]) if(!matrixMaster.includes(token)) throw new Error("Matrix master invariant missing: "+token);
 if(!matrixCmd.includes("DAVID_MATRIX_START.ps1")) throw new Error("Matrix CMD launcher missing master script");
 if(!selectorCmd.includes("DAVID_MATRIX_START.ps1")) throw new Error("Legacy V2 CMD must route through Matrix master");
-console.log("DAVID_FREE_TALK_EXPERIMENT PASS normal_tabs=4 experiment_tabs=6 ab_only_tabs=2 persistent_chats=2 matrix_master=ON restart_first=ON update_before_choice=ON always_clean_restart_on_choice=ON selector_v2_1=STABLE no_timer=ON hidden_shells=ON live_status=ON stop_all=ON relay_dedupe=seq instant=FORCED rate_limit_auto_ack=ON rate_limit_auto_resume=ON same_tab_rollover=ON");
+console.log("DAVID_FREE_TALK_EXPERIMENT PASS normal_tabs=4 experiment_tabs=6 ab_only_tabs=2 persistent_chats=2 matrix_master=ON restart_first=ON update_before_choice=ON always_clean_restart_on_choice=ON fresh_edge=VERIFIED selector_v2_1=STABLE no_timer=ON hidden_shells=ON live_status=ON stop_all=ON relay_dedupe=seq instant=FORCED rate_limit_auto_ack=ON rate_limit_auto_resume=ON same_tab_rollover=ON");
