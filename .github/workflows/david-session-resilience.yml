@@ -63,6 +63,9 @@ jobs:
       - name: Verify scoped AUTONOMY profile
         run: npm run verify:autonomy
 
+      - name: Verify ChatGPT effort-mode controller
+        run: node chatgpt-effort-mode.mjs --self-test
+
       - name: Verify FREE TALK experiment profile
         run: npm run verify:freetalk
 
