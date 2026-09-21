@@ -15,6 +15,7 @@ const start = read("START_DAVID_AUTONOMY.ps1");
 const restart = read("RESTART_DAVID_AUTONOMY_CLEAN.ps1");
 const abRestart = read("RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1");
 const effort = read("tools/david/chatgpt-effort-mode.mjs");
+const launcher = read("tools/david/start-auto-continue.ps1");
 
 for (const token of [
   "DAVID_ACTIVE_WORKERS",
@@ -48,6 +49,7 @@ for (const token of [
   'DAVID_ACTIVE_WORKERS = "SYSTEM,APP2,APK,CONTROL"',
   'DAVID_CHATGPT_TAB_TARGET = "4"',
   'DAVID_PROJECT_EFFORT_MODE = "medium"',
+  'DAVID_REQUIRE_FRESH_EDGE_ON_START = "1"',
   'DESIGN=0',
   'ChatGPT=4'
 ]) if (!start.includes(token)) throw new Error("Launcher invariant missing: " + token);
@@ -59,4 +61,8 @@ if (!abRestart.includes("STOP_DAVID_ALL_CLEAN.ps1") || !abRestart.includes("STAR
   throw new Error("A+B restart-first invariant missing");
 }
 
-console.log("DAVID_AUTONOMY_PROFILE PASS restart_first_wait=90s scope=SYSTEM+APP2+APK+CONTROL design=OFF strict_tabs=4 apk_fourth_tab=GUARANTEED effort=MEDIUM guard=ON semantic_terminal=SYSTEM+DPP+APK");
+for (const token of ["DAVID_REQUIRE_FRESH_EDGE_ON_START","FRESH EDGE REQUIRED","--new-window","FRESH EDGE VERIFIED","Edg/"]) {
+  if (!launcher.includes(token)) throw new Error("Fresh Edge launcher invariant missing: " + token);
+}
+
+console.log("DAVID_AUTONOMY_PROFILE PASS restart_first_wait=90s fresh_edge=VERIFIED scope=SYSTEM+APP2+APK+CONTROL design=OFF strict_tabs=4 apk_fourth_tab=GUARANTEED effort=MEDIUM guard=ON semantic_terminal=SYSTEM+DPP+APK");

@@ -11,6 +11,7 @@ $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $Root = if (Test-Path "D:\ASI") { "D:\ASI" } else { Join-Path $env:LOCALAPPDATA "DAVID" }
 $ProfileDir = Join-Path $Root "DAVID_CHATGPT_PROFILE"
 $FreshMode = $FreshSessions -or ($env:DAVID_FRESH_SESSIONS_ON_START -eq "1")
+$RequireFreshEdge = ($env:DAVID_REQUIRE_FRESH_EDGE_ON_START -eq "1")
 $LaunchUrl = if ($FreshMode) { "https://chatgpt.com/" } else { $ChatUrl }
 
 # Keep this file ASCII-only so Windows PowerShell 5.1 cannot corrupt UTF-8 text.
@@ -26,6 +27,12 @@ function Test-Cdp {
     return $true
   }
   catch { return $false }
+}
+
+function Get-CdpInfo {
+  param([int]$P)
+  try { return Invoke-RestMethod -Uri "http://127.0.0.1:$P/json/version" -TimeoutSec 2 }
+  catch { return $null }
 }
 
 function Get-BrowserPath {
@@ -67,9 +74,14 @@ function Get-BrowserPath {
   return $null
 }
 
+if ($RequireFreshEdge -and (Test-Cdp -P $Port)) {
+  throw "FRESH EDGE REQUIRED but DAVID CDP port $Port is already live. Clean stop must close the old DAVID Edge first."
+}
+
 if (-not (Test-Cdp -P $Port)) {
   $browser = Get-BrowserPath
   if (-not $browser) { throw "No supported Chromium browser was found. Expected Microsoft Edge, Google Chrome, or Brave." }
+  if ($RequireFreshEdge -and ([System.IO.Path]::GetFileName($browser) -notmatch "(?i)^msedge\.exe$")) { throw "FRESH EDGE REQUIRED but Microsoft Edge was not found as the selected browser." }
   New-Item -ItemType Directory -Force -Path $ProfileDir | Out-Null
   Write-Host "[DAVID] Browser: $browser" -ForegroundColor DarkGray
   Write-Host "[DAVID] Starting dedicated browser profile on CDP port $Port..." -ForegroundColor Cyan
@@ -79,6 +91,7 @@ if (-not (Test-Cdp -P $Port)) {
     "--user-data-dir=$ProfileDir",
     "--no-first-run",
     "--no-default-browser-check",
+    "--new-window",
     $LaunchUrl
   )
   $ok = $false
@@ -87,6 +100,12 @@ if (-not (Test-Cdp -P $Port)) {
     if (Test-Cdp -P $Port) { $ok = $true; break }
   }
   if (-not $ok) { throw "Browser started, but CDP port $Port did not become available. Close the dedicated browser window and run again." }
+  if ($RequireFreshEdge) {
+    $info = Get-CdpInfo -P $Port
+    $reported = [string]$info.Browser
+    if ($reported -notmatch "(?i)Edg/") { throw "FRESH EDGE verification failed. CDP reports '$reported'." }
+    Write-Host ("[DAVID] FRESH EDGE VERIFIED // {0}" -f $reported) -ForegroundColor Green
+  }
 }
 
 $node = Get-Command node -ErrorAction SilentlyContinue
