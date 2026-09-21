@@ -3,6 +3,7 @@ import path from "node:path";
 import process from "node:process";
 import { waitForGlobalSendPermit, reportProbeSuccess, markGlobalSendStarted } from "./chatgpt-rate-limit-coordinator.mjs";
 import { CHATGPT_ROOT, rotateOwnedChatPage } from "./chatgpt-session-rotation.mjs";
+import { ensureChatGptEffortMode } from "./chatgpt-effort-mode.mjs";
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1"));
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
@@ -166,7 +167,11 @@ async function waitForComposer(page, state, maxMs = COMPOSER_WAIT_MS) {
   let nextHeartbeat = 0;
   while (Date.now() < end) {
     const composer = await getComposer(page);
-    if (composer) return composer;
+    if (composer) {
+      const effort = await ensureChatGptEffortMode(page, "medium").catch(() => ({ ok: false }));
+      if (effort?.changed) console.log("[CONTROL] ChatGPT effort forced to Medium/Средно.");
+      return composer;
+    }
     if (Date.now() >= nextHeartbeat) {
       state.watchdog = "control-slow-load-wait";
       save(state, "CONTROL page/composer still loading; WAIT, no refresh");
