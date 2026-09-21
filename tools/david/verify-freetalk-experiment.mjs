@@ -16,6 +16,7 @@ const selectorV2=read("DAVID_MODE_SELECTOR_V2.ps1");
 const selectorCmd=read("DAVID_MODE_SELECTOR_V2.cmd");
 const matrixMaster=read("DAVID_MATRIX_START.ps1");
 const matrixCmd=read("DAVID_MATRIX_START.cmd");
+const davidStart=read("DAVID_START.ps1");
 for(const token of ["FREE_A","FREE_B","ACTIVE_EXPERIMENT_WORKERS","DAVID_FREE_A_MANAGED_V1","DAVID_FREE_B_MANAGED_V1","CONTROL_ENABLED"]) if(!dual.includes(token)) throw new Error("FREE TALK supervisor invariant missing: "+token);
 for(const token of ["[DAVID_FREE_TALK_A_V1]","[DAVID_FREE_TALK_B_V1]","[DAVID_FREE_TALK_RELAY_V2 seq=","[DAVID_FREE_TALK_SEED_V2]","lastConsumedSeq","waitOnlyForActualGlobalBlock","waitForGlobalSendPermit","clickRateLimitAcknowledge","Разбрано","free-talk-rate-limit-resend","ensureInstantMode","Instant","INITIAL_CHAT_URL","RESUME_EXISTING","conversationLimitReached","rolloverConversation","rotateOwnedChatPage","browse/search","page.keyboard.insertText(text)"]) if(!worker.includes(token)) throw new Error("FREE TALK worker invariant missing: "+token);
 for(const token of ['DAVID_ACTIVE_WORKERS = "SYSTEM,APP2,APK,FREE_A,FREE_B,CONTROL"','DAVID_CHATGPT_TAB_TARGET = "6"','FREE=2','ChatGPT=6','.david-free-talk-exchange.json','lastConsumedSeq = 0','instantMode = "pending"']) if(!experiment.includes(token)) throw new Error("FREE TALK launcher invariant missing: "+token);
@@ -42,5 +43,6 @@ if(!normal.includes("-WindowStyle Hidden")) throw new Error("SYSTEM launcher/das
 if(!abOnly.includes("-WindowStyle Hidden")) throw new Error("A+B launcher/dashboard shells must be hidden");
 for(const token of ["STOP FIRST","fetch origin","checkout $Branch","pull --ff-only","OPEN MATRIX","DAVID_MODE_SELECTOR_V2.ps1","Wait-OrchestrationMutex"]) if(!matrixMaster.includes(token)) throw new Error("Matrix master invariant missing: "+token);
 if(!matrixCmd.includes("DAVID_MATRIX_START.ps1")) throw new Error("Matrix CMD launcher missing master script");
+for(const token of ["DAVID_MATRIX_START.ps1","& $Master","param([int]$Port=9444)"]) if(!davidStart.includes(token)) throw new Error("PowerShell-only DAVID_START invariant missing: "+token);
 if(!selectorCmd.includes("DAVID_MATRIX_START.ps1")) throw new Error("Legacy V2 CMD must route through Matrix master");
-console.log("DAVID_FREE_TALK_EXPERIMENT PASS normal_tabs=4 experiment_tabs=6 ab_only_tabs=2 persistent_chats=2 matrix_master=ON restart_first=ON update_before_choice=ON always_clean_restart_on_choice=ON fresh_edge=VERIFIED selector_v2_1=STABLE no_timer=ON hidden_shells=ON live_status=ON stop_all=ON relay_dedupe=seq instant=FORCED rate_limit_auto_ack=ON rate_limit_auto_resume=ON same_tab_rollover=ON");
+console.log("DAVID_FREE_TALK_EXPERIMENT PASS normal_tabs=4 experiment_tabs=6 ab_only_tabs=2 persistent_chats=2 powershell_only_entry=ON matrix_master=ON restart_first=ON update_before_choice=ON always_clean_restart_on_choice=ON fresh_edge=VERIFIED selector_v2_1=STABLE no_timer=ON hidden_shells=ON live_status=ON stop_all=ON relay_dedupe=seq instant=FORCED rate_limit_auto_ack=ON rate_limit_auto_resume=ON same_tab_rollover=ON");
