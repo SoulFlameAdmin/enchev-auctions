@@ -76,6 +76,11 @@
                   "$ref": "#/components/schemas/RedisHealth"
                 }
               }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
             }
           },
           "503": {
@@ -85,6 +90,11 @@
                 "schema": {
                   "$ref": "#/components/schemas/RedisHealth"
                 }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
               }
             }
           }
@@ -104,6 +114,11 @@
                   "$ref": "#/components/schemas/RedisEnvironmentHealth"
                 }
               }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
             }
           }
         }
@@ -115,10 +130,20 @@
         "summary": "Sanitized Vercel OIDC management reachability probe",
         "responses": {
           "200": {
-            "description": "OIDC token exists and the management request is authorized"
+            "description": "OIDC token exists and the management request is authorized",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           },
           "503": {
-            "description": "OIDC token is absent, unauthorized, or management request failed"
+            "description": "OIDC token is absent, unauthorized, or management request failed",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           }
         }
       }
@@ -135,6 +160,11 @@
                 "schema": {
                   "$ref": "#/components/schemas/LiveAuctionDemoClock"
                 }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
               }
             }
           }
@@ -171,6 +201,11 @@
                   "$ref": "#/components/schemas/LiveAuctionDemoClock"
                 }
               }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
             }
           },
           "400": {
@@ -180,6 +215,11 @@
                 "schema": {
                   "$ref": "#/components/schemas/ErrorEnvelope"
                 }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
               }
             }
           }
@@ -197,6 +237,11 @@
               "$ref": "#/components/schemas/ComponentHealth"
             }
           }
+        },
+        "headers": {
+          "X-Request-ID": {
+            "$ref": "#/components/headers/RequestCorrelationId"
+          }
         }
       },
       "PendingComponent": {
@@ -206,6 +251,11 @@
             "schema": {
               "$ref": "#/components/schemas/ComponentHealth"
             }
+          }
+        },
+        "headers": {
+          "X-Request-ID": {
+            "$ref": "#/components/headers/RequestCorrelationId"
           }
         }
       }
@@ -399,6 +449,17 @@
               }
             }
           }
+        }
+      }
+    },
+    "headers": {
+      "RequestCorrelationId": {
+        "description": "Request correlation identifier resolved by the API boundary. Valid inbound X-Request-ID values are preserved; missing or invalid values are replaced.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
         }
       }
     }
