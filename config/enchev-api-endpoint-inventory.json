@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "task": "24.09",
+  "title": "API endpoint inventory",
+  "sourceOfTruth": "packages/contracts/openapi/enchev-api.v1.json",
+  "implementationRoot": "app/api",
+  "authorityBoundary": "Inventory is descriptive only. PostgreSQL remains authoritative for auction state, accepted bids, winner selection and final results.",
+  "endpoints": [
+    { "method": "GET", "path": "/api/health/web", "operationId": "getWebHealth", "summary": "Web health" },
+    { "method": "GET", "path": "/api/health/api", "operationId": "getApiHealth", "summary": "API health" },
+    { "method": "GET", "path": "/api/health/realtime", "operationId": "getRealtimeHealth", "summary": "Realtime service readiness" },
+    { "method": "GET", "path": "/api/health/worker", "operationId": "getWorkerHealth", "summary": "Worker service readiness" },
+    { "method": "GET", "path": "/api/health/redis", "operationId": "getRedisHealth", "summary": "Sanitized Redis or Valkey binding health" },
+    { "method": "GET", "path": "/api/health/redis-env", "operationId": "getRedisEnvironmentHealth", "summary": "Sanitized Redis-related environment key inventory" },
+    { "method": "GET", "path": "/api/health/vercel-oidc-management", "operationId": "getVercelOidcManagementHealth", "summary": "Sanitized Vercel OIDC management reachability probe" },
+    { "method": "GET", "path": "/api/live-auction-clock", "operationId": "getLiveAuctionDemoClock", "summary": "Read the server-issued non-authoritative browser-session demo clock" },
+    { "method": "POST", "path": "/api/live-auction-clock", "operationId": "postLiveAuctionDemoBid", "summary": "Advance the non-authoritative browser-session demo bid feedback" }
+  ]
+}
