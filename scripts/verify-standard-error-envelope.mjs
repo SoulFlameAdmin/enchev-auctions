@@ -17,7 +17,7 @@ function requireTrue(condition, message) {
 
 function verifyFilesAndWiring() {
   requireTrue(config.taskId === "24.04", "taskId drift");
-  requireTrue(config.status === "YELLOW", "implementation branch must remain YELLOW until acceptance evidence exists");
+  requireTrue(config.status === "GREEN", "verified 24.04 evidence status must remain GREEN");
   requireTrue(config.closedObjects === true, "error objects must be closed");
   requireTrue(config.factoryRequired === true, "factory must remain required");
   requireTrue(config.runtimeValidationRequired === true, "runtime validation must remain required");
