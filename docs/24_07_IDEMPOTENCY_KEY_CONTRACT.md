@@ -2,7 +2,7 @@
 
 Task: **24.07 Idempotency-key contract**
 
-Status: **YELLOW** — implementation is present on the task branch; GREEN requires applicable PASS CI and concrete merge evidence.
+Status: **GREEN** — implementation, exact-head CI, merge, and post-merge `main` verification passed.
 
 ## Contract
 
@@ -24,6 +24,16 @@ Mutation endpoints that opt into retry-safe semantics use the canonical `Idempot
 
 `config/enchev-idempotency-key-contract.json` records the machine-readable contract. `scripts/verify-idempotency-key-contract.mjs` verifies positive behavior and negative fail-closed cases and is wired into the aggregate SYSTEM test pre-gates.
 
-## Acceptance still required
+## GREEN evidence
 
-GREEN requires the verifier/self-test plus aggregate lint/test/typecheck/build and applicable security/supply-chain checks to PASS on the exact implementation head, followed by merge/post-merge evidence recording. No Vercel deployment is required for this repository contract task.
+- Implementation PR: #173.
+- Exact implementation head: `557691418bacbbdac2659a29d49fbcdd1720891d`.
+- Exact-head GitHub Actions PASS: Verify Enchev Web `35625424365`; Code Scan `35625424663`; Secret Scan `35625424353`; SBOM Generation `35625424374`; Build Provenance `35625424522`; SYSTEM 24.02 `35625424564`; SYSTEM 26.05 `35625424559`.
+- Merged to `main` as `cd88d73bffc39ec23f326863cef7d3d807dafc5b`.
+- Post-merge `main` PASS: Verify Enchev Web `35625995533`; Code Scan `35625995739`; Secret Scan `35625995475`; SBOM Generation `35625995482`; Build Provenance `35625995477`.
+- The aggregate Verify Enchev Web job completed successfully after lint/test/typecheck/build and browser visual-regression execution.
+- No manual Vercel create/update/redeploy was required or performed for this repository contract task.
+
+## Acceptance
+
+The shared contract, fail-closed negative cases, deterministic replay/conflict behavior, aggregate pre-gate wiring, exact-head CI, merge, post-merge verification, and concrete evidence recording satisfy SYSTEM 24.07.
