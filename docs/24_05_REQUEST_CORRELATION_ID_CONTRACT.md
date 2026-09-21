@@ -2,6 +2,17 @@
 
 Task: **24.05 Request correlation ID contract**
 
+Status: **GREEN** — exact-head verification, merge, and post-merge `main` verification all passed.
+
+## GREEN evidence
+
+- Implementation PR: #163, exact head `296469b173c48467edfb9e739bba33ebd24d620a`, merged to `main` as `8c22d057e9ed38d8ceb5314ec5c8bfb43656e51a`.
+- Exact-head GitHub Actions: Verify Enchev Web `35551204722` SUCCESS; Code Scan `35551204743` SUCCESS; SBOM `35551204725` SUCCESS; Secret Scan `35551204718` SUCCESS; Build Provenance `35551204755` SUCCESS.
+- Post-merge `main`: Verify Enchev Web `35551462036` SUCCESS; Code Scan `35551462037` SUCCESS; SBOM `35551462019` SUCCESS; Secret Scan `35551462025` SUCCESS; Build Provenance `35551462021` SUCCESS.
+- Post-merge Verify Enchev Web includes aggregate CI, TypeScript, production build, built health smoke, Chrome/Edge visual regression PASS, artifact `10618502793`, Supabase plan-state sync PASS, and secret-binding verification PASS.
+- Vercel preview remained externally blocked by provider build-rate-limit on the implementation branch. No manual Vercel create/update/redeploy was required or attempted for this repository contract task.
+
+
 ## Contract
 
 Every request matched by `/api/:path*` receives one canonical correlation identifier in `X-Request-ID`.
@@ -23,11 +34,6 @@ The canonical OpenAPI contract declares reusable `X-Request-ID` response metadat
 
 ## Acceptance
 
-GREEN requires:
-1. contract and runtime wiring present;
-2. positive and negative verifier cases PASS;
-3. aggregate CI/typecheck/build PASS at the exact implementation head;
-4. post-merge main verification PASS;
-5. concrete evidence recorded in the SYSTEM tracker.
+The contract/runtime wiring, positive and negative verifier cases, exact-head aggregate CI/typecheck/build, applicable security/supply-chain checks, merge, post-merge `main` verification, browser matrix, Supabase plan sync, secret-binding verification and concrete evidence recording are satisfied by the evidence above.
 
 No Vercel deployment is required for this contract task.
