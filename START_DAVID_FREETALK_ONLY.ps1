@@ -46,7 +46,7 @@ $env:DAVID_FREE_TALK_RESUME_EXISTING="1"
 $env:DAVID_FREE_TALK_POLL_MS="250"
 $env:DAVID_FREE_TALK_QUIET_MS="700"
 
-Start-Process -FilePath $Pwsh -ArgumentList @("-NoProfile","-ExecutionPolicy","Bypass","-File",$Launcher,"-Port","$Port","-MaxTurns","2147483647")
+Start-Process -FilePath $Pwsh -ArgumentList @("-NoProfile","-ExecutionPolicy","Bypass","-File",$Launcher,"-Port","$Port","-MaxTurns","2147483647") -WindowStyle Hidden
 
 $ok=$false;$last="starting"
 for($i=0;$i-lt 180;$i++){
@@ -60,7 +60,7 @@ for($i=0;$i-lt 180;$i++){
  }
 }
 if(-not$ok){throw "A+B ONLY health gate failed: $last; expected FREE=2 CONTROL=0 project=0 ChatGPT=2"}
-if(@(G "david-freetalk-only-dashboard.ps1" @("powershell.exe","pwsh.exe")).Count-eq 0){Start-Process -FilePath $Pwsh -ArgumentList @("-NoProfile","-ExecutionPolicy","Bypass","-File",$Dashboard)}
+if(@(G "david-freetalk-only-dashboard.ps1" @("powershell.exe","pwsh.exe")).Count-eq 0){Start-Process -FilePath $Pwsh -ArgumentList @("-NoProfile","-ExecutionPolicy","Bypass","-File",$Dashboard) -WindowStyle Hidden}
 Write-Host "[DAVID A+B] HEALTHY // persistent conversations // FREE_A + FREE_B // ChatGPT=2" -ForegroundColor Green
 Write-Host "[DAVID A+B] A=$FreeAUrl" -ForegroundColor DarkCyan
 Write-Host "[DAVID A+B] B=$FreeBUrl" -ForegroundColor DarkCyan
