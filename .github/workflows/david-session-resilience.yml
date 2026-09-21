@@ -12,6 +12,8 @@ on:
       - "DAVID_MODE_SELECTOR.ps1"
       - "DAVID_MODE_SELECTOR_V2.ps1"
       - "DAVID_MODE_SELECTOR_V2.cmd"
+      - "DAVID_MATRIX_START.ps1"
+      - "DAVID_MATRIX_START.cmd"
       - "RESTART_DAVID_ALL_CLEAN.ps1"
       - "RESTART_DAVID_AUTONOMY_CLEAN.ps1"
       - "RESTART_DAVID_EXPERIMENT_FREETALK_CLEAN.ps1"
@@ -29,6 +31,8 @@ on:
       - "DAVID_MODE_SELECTOR.ps1"
       - "DAVID_MODE_SELECTOR_V2.ps1"
       - "DAVID_MODE_SELECTOR_V2.cmd"
+      - "DAVID_MATRIX_START.ps1"
+      - "DAVID_MATRIX_START.cmd"
       - "RESTART_DAVID_ALL_CLEAN.ps1"
       - "RESTART_DAVID_AUTONOMY_CLEAN.ps1"
       - "RESTART_DAVID_EXPERIMENT_FREETALK_CLEAN.ps1"
@@ -98,6 +102,7 @@ jobs:
             "RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1",
             "DAVID_MODE_SELECTOR.ps1",
             "DAVID_MODE_SELECTOR_V2.ps1",
+            "DAVID_MATRIX_START.ps1",
             "STOP_DAVID_ALL_CLEAN.ps1",
             "tools/david/start-auto-continue.ps1",
             "tools/david/david-status-dashboard.ps1",
