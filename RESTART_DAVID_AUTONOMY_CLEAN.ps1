@@ -23,7 +23,17 @@ try {
   }
 
   if (-not $OwnsMutex) {
-    throw "Another DAVID AUTONOMY start/restart operation is already running."
+    Write-Host "[AUTONOMY] Another restart is already running. Waiting up to 90s before restart-first continues..." -ForegroundColor Yellow
+    try {
+      $OwnsMutex = $Mutex.WaitOne(90000)
+    }
+    catch [System.Threading.AbandonedMutexException] {
+      $OwnsMutex = $true
+    }
+  }
+
+  if (-not $OwnsMutex) {
+    throw "Another DAVID AUTONOMY start/restart operation is still running after 90 seconds."
   }
 
   if (-not (Test-Path $StopScript)) {
