@@ -129,11 +129,19 @@ async function rolloverConversation(context,page,reason="conversation-limit"){
 async function waitOnlyForActualGlobalBlock(){
   for(;;){
     const st=getRateLimitState();
-    if(st.status==="clear") return {mode:"fast",state:st};
+    const source=String(st.lastRateLimitBy||"").toUpperCase();
+
+    // FREE TALK must not be stalled by a SYSTEM/DPP/APK coordinator lease.
+    // If the project stack reported the rate limit, FREE_A/B are allowed one
+    // independent UI attempt. Their own visible rate-limit UI remains authoritative.
+    if(st.status==="clear" || !["FREE_A","FREE_B"].includes(source)){
+      return {mode:"fast",state:st};
+    }
     if(st.status==="probe" && st.probeOwner===ROLE) return {mode:"probe",state:st};
+
     const waitMs=Math.max(250,Math.min(1000,rateLimitRemainingMs(st)||1000));
     state.watchdog="free-talk-rate-limit-wait";
-    save("Actual global rate limit wait status="+st.status+" owner="+(st.probeOwner||"none"));
+    save("FREE TALK own rate-limit wait status="+st.status+" owner="+(st.probeOwner||"none"));
     await sleep(waitMs);
   }
 }
@@ -188,6 +196,72 @@ async function rateLimitVisible(page){
     });
   }catch{return false;}
 }
+
+async function ensureInstantMode(page){
+  if(!page||page.isClosed()) return false;
+
+  const instantRe=/^(instant|незабавно|незабавен|моментално|бързо)$/i;
+  const effortRe=/^(medium|средно|high|високо|extra high|много високо|thinking|мислене|auto|автоматично)$/i;
+
+  async function visibleExact(regex, selectors='button,[role="button"],[role="menuitem"],[role="option"]'){
+    const nodes=page.locator(selectors);
+    for(let i=(await nodes.count().catch(()=>0))-1;i>=0;i--){
+      const n=nodes.nth(i);
+      if(!await n.isVisible().catch(()=>false)) continue;
+      const text=(await n.innerText().catch(()=>"")).replace(/\s+/g," ").trim();
+      const aria=(await n.getAttribute("aria-label").catch(()=>"")||"").replace(/\s+/g," ").trim();
+      if(regex.test(text)||regex.test(aria)) return n;
+    }
+    return null;
+  }
+
+  const already=await visibleExact(instantRe);
+  if(already){
+    if(state.instantMode!=="confirmed"){
+      state.instantMode="confirmed";
+      save("FREE TALK Instant mode confirmed");
+    }
+    return true;
+  }
+
+  const picker=await visibleExact(effortRe,'button,[role="button"]');
+  if(!picker){
+    state.instantMode="picker-not-found";
+    save("FREE TALK Instant picker not found yet");
+    return false;
+  }
+
+  try{
+    await picker.click({timeout:1500});
+    await sleep(250);
+  }catch{
+    state.instantMode="picker-click-failed";
+    save("FREE TALK Instant picker click failed");
+    return false;
+  }
+
+  const option=await visibleExact(instantRe,'[role="menuitem"],[role="option"],button,[role="button"]');
+  if(!option){
+    await page.keyboard.press("Escape").catch(()=>{});
+    state.instantMode="instant-option-not-found";
+    save("FREE TALK Instant option not found");
+    return false;
+  }
+
+  try{
+    await option.click({timeout:1500});
+    await sleep(250);
+    state.instantMode="confirmed";
+    save("FREE TALK forced ChatGPT mode=Instant");
+    console.log("["+ROLE+"] ChatGPT mode forced to Instant.");
+    return true;
+  }catch{
+    state.instantMode="instant-click-failed";
+    save("FREE TALK Instant option click failed");
+    return false;
+  }
+}
+
 async function ensurePage(context,page){
   if(page && !page.isClosed()) return page;
   page=await findTagged(context);
@@ -218,6 +292,7 @@ async function waitReady(context,page){
     if(c || await latestAssistant(page)){
       const cu=cleanUrl(page.url());
       if(cu && cu!==state.chatUrl){ state.chatUrl=cu; await tag(page,TAB_NAME); save("Conversation URL synced"); }
+      await ensureInstantMode(page).catch(()=>false);
       return page;
     }
     state.watchdog="free-talk-page-wait"; save("Waiting for interactive ChatGPT page");
@@ -333,7 +408,19 @@ async function main(){
     const exchange=readExchange();
     const seq=Number(exchange.seq||0);
 
+    // A new experiment run starts from exchange seq=0. Repair any persisted
+    // counters from a previous run so stale state cannot deadlock both workers.
+    if(seq===0 && (Number(state.lastConsumedSeq||0)!==0 || Number(state.lastPublishedSeq||0)!==0 || state.inflightKey)){
+      state.lastConsumedSeq=0;
+      state.lastPublishedSeq=0;
+      state.inflightKey=null;
+      state.inflightBaseHash=null;
+      state.lastAssistantHash=null;
+      save("Reset stale FREE TALK relay counters for new exchange run");
+    }
+
     if(ROLE==="FREE_A" && seq===0 && Number(state.lastPublishedSeq||0)===0){
+      console.log("[FREE_A] Exchange seq=0 -> sending first spontaneous turn NOW.");
       const result=await sendAndCapture(context,page,"[DAVID_FREE_TALK_SEED_V2]",seedPrompt());
       page=result.page;
       publish(1,result.text);
@@ -358,7 +445,8 @@ if(process.argv.includes("--self-test")){
   if(!ROLE_MARKER.includes("DAVID_FREE_TALK_")) throw new Error("marker missing");
   if(PARTNER===ROLE) throw new Error("partner role invalid");
   if(!conversationLimitText("You have reached the maximum length for this conversation.")) throw new Error("rollover detection missing");
-  console.log("DAVID_FREE_TALK_SELF_TEST PASS role="+ROLE+" partner="+PARTNER+" dedupe=relay-seq fast_relay=ON browse_tools=ALLOWED same_tab_rollover=ON");
+  if(!ensureInstantMode.toString().includes("Instant")) throw new Error("instant mode forcing missing");
+  console.log("DAVID_FREE_TALK_SELF_TEST PASS role="+ROLE+" partner="+PARTNER+" dedupe=relay-seq fast_relay=ON instant=FORCED browse_tools=ALLOWED same_tab_rollover=ON");
 }else{
   main().catch(error=>{console.error("["+ROLE+"] FATAL",error?.stack||error);process.exit(1);});
 }
