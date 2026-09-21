@@ -1,0 +1,34 @@
+{
+  "taskId": "24.06",
+  "name": "Pagination/filter/sort contract",
+  "status": "YELLOW",
+  "pagination": {
+    "pageParameter": "page",
+    "pageSizeParameter": "pageSize",
+    "defaultPage": 1,
+    "defaultPageSize": 20,
+    "maxPageSize": 100
+  },
+  "filter": {
+    "parameter": "filter",
+    "encoding": "field:value",
+    "repeatable": true,
+    "duplicateFieldPolicy": "reject",
+    "allowlistPolicy": "endpoint-provided allowlist"
+  },
+  "sort": {
+    "parameter": "sort",
+    "encoding": "field:asc|desc",
+    "repeatable": true,
+    "duplicateFieldPolicy": "reject",
+    "allowlistPolicy": "endpoint-provided allowlist",
+    "precedence": "query order"
+  },
+  "unknownParameterPolicy": "reject",
+  "authorityBoundary": "Pagination, filtering and sorting are transport/query contracts only and never decide auction state, accepted bids, winner selection or final results.",
+  "evidence": {
+    "implementationBranch": "system/24-06-pagination-filter-sort-contract-20260921",
+    "implementationCommit": "882056c1de0003c8482b1a7c652814148665a36e",
+    "verification": "pending CI"
+  }
+}

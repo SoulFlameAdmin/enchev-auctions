@@ -154,3 +154,70 @@ export function assertContractResponse<T>(
   if (!validate(value)) throw new Error(`API_SCHEMA_VALIDATION_FAIL: ${schemaName}`);
   return value;
 }
+
+
+export const API_QUERY_MAX_PAGE_SIZE = 100 as const;
+const API_QUERY_FIELD_PATTERN = /^[A-Za-z][A-Za-z0-9._-]{0,63}$/;
+
+export type ApiListQuery = {
+  page: number;
+  pageSize: number;
+  filters: Readonly<Record<string, string>>;
+  sort: ReadonlyArray<{ field: string; direction: "asc" | "desc" }>;
+};
+
+export function parseApiListQuery(
+  input: URLSearchParams | string,
+  options: { allowedFilters?: readonly string[]; allowedSorts?: readonly string[] } = {},
+): ApiListQuery {
+  const params = typeof input === "string"
+    ? new URLSearchParams(input.startsWith("?") ? input.slice(1) : input)
+    : input;
+  const allowedFilters = new Set(options.allowedFilters ?? []);
+  const allowedSorts = new Set(options.allowedSorts ?? []);
+  const allowedKeys = new Set(["page", "pageSize", "filter", "sort"]);
+
+  for (const key of params.keys()) {
+    if (!allowedKeys.has(key)) throw new Error("API_QUERY_UNKNOWN_PARAMETER");
+  }
+
+  const parsePositiveInteger = (name: string, fallback: number, max?: number) => {
+    const values = params.getAll(name);
+    if (values.length > 1) throw new Error("API_QUERY_DUPLICATE_PARAMETER");
+    if (values.length === 0) return fallback;
+    if (!/^[1-9][0-9]*$/.test(values[0])) throw new Error("API_QUERY_INVALID_PAGINATION");
+    const value = Number(values[0]);
+    if (!Number.isSafeInteger(value) || (max !== undefined && value > max)) {
+      throw new Error("API_QUERY_INVALID_PAGINATION");
+    }
+    return value;
+  };
+
+  const page = parsePositiveInteger("page", 1);
+  const pageSize = parsePositiveInteger("pageSize", 20, API_QUERY_MAX_PAGE_SIZE);
+  const filters: Record<string, string> = {};
+  for (const entry of params.getAll("filter")) {
+    const separator = entry.indexOf(":");
+    if (separator <= 0) throw new Error("API_QUERY_INVALID_FILTER");
+    const field = entry.slice(0, separator);
+    const value = entry.slice(separator + 1);
+    if (!API_QUERY_FIELD_PATTERN.test(field) || !value || value.length > 256) {
+      throw new Error("API_QUERY_INVALID_FILTER");
+    }
+    if (allowedFilters.size > 0 && !allowedFilters.has(field)) throw new Error("API_QUERY_FILTER_NOT_ALLOWED");
+    if (Object.hasOwn(filters, field)) throw new Error("API_QUERY_DUPLICATE_FILTER");
+    filters[field] = value;
+  }
+
+  const sort = params.getAll("sort").map((entry) => {
+    const [field, direction, ...rest] = entry.split(":");
+    if (rest.length || !API_QUERY_FIELD_PATTERN.test(field ?? "") || !["asc", "desc"].includes(direction ?? "")) {
+      throw new Error("API_QUERY_INVALID_SORT");
+    }
+    if (allowedSorts.size > 0 && !allowedSorts.has(field)) throw new Error("API_QUERY_SORT_NOT_ALLOWED");
+    return { field, direction: direction as "asc" | "desc" };
+  });
+  if (new Set(sort.map((item) => item.field)).size !== sort.length) throw new Error("API_QUERY_DUPLICATE_SORT");
+
+  return { page, pageSize, filters, sort };
+}
