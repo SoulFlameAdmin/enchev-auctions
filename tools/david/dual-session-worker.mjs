@@ -31,16 +31,19 @@ const CONTROL_TAB_MISSING_MS = Number(process.env.DAVID_CONTROL_TAB_MISSING_MS |
 const SUPPORTED_PROJECT_WORKERS = ["SYSTEM", "DESIGN", "APP2", "APK"];
 const SUPPORTED_EXPERIMENT_WORKERS = ["FREE_A", "FREE_B"];
 const SUPPORTED_MANAGED_WORKERS = [...SUPPORTED_PROJECT_WORKERS, ...SUPPORTED_EXPERIMENT_WORKERS];
+const CONTROL_ENABLED = process.env.DAVID_CONTROL_ENABLED !== "0";
 const requestedManagedKinds = String(
   process.env.DAVID_ACTIVE_WORKERS || "SYSTEM,DESIGN,APP2,APK,CONTROL"
 ).split(",").map((x) => x.trim().toUpperCase()).filter(Boolean);
 const ACTIVE_MANAGED_KINDS = new Set(
-  requestedManagedKinds.filter((x) => [...SUPPORTED_MANAGED_WORKERS, "CONTROL"].includes(x))
+  requestedManagedKinds.filter((x) =>
+    SUPPORTED_MANAGED_WORKERS.includes(x) || (x === "CONTROL" && CONTROL_ENABLED)
+  )
 );
-ACTIVE_MANAGED_KINDS.add("CONTROL");
+if (CONTROL_ENABLED) ACTIVE_MANAGED_KINDS.add("CONTROL");
 const ACTIVE_PROJECT_WORKERS = SUPPORTED_PROJECT_WORKERS.filter((x) => ACTIVE_MANAGED_KINDS.has(x));
 const ACTIVE_EXPERIMENT_WORKERS = SUPPORTED_EXPERIMENT_WORKERS.filter((x) => ACTIVE_MANAGED_KINDS.has(x));
-const MANAGED_KINDS = [...ACTIVE_PROJECT_WORKERS, ...ACTIVE_EXPERIMENT_WORKERS, "CONTROL"];
+const MANAGED_KINDS = [...ACTIVE_PROJECT_WORKERS, ...ACTIVE_EXPERIMENT_WORKERS, ...(CONTROL_ENABLED ? ["CONTROL"] : [])];
 const STRICT_CHATGPT_TAB_TARGET = Number(process.env.DAVID_CHATGPT_TAB_TARGET || MANAGED_KINDS.length);
 const DEDICATED_DAVID_PROFILE = process.env.DAVID_DEDICATED_PROFILE !== "0";
 const FRESH_SESSION_ON_START = process.env.DAVID_FRESH_SESSIONS_ON_START === "1";
@@ -109,6 +112,8 @@ const allSpecs = [
     stateFile: path.join(HERE, ".david-free-talk-a-state.json"),
     env: {
       DAVID_FREE_TALK_ROLE: "FREE_A",
+      DAVID_FREE_TALK_CHAT_URL: process.env.DAVID_FREE_A_CHAT_URL || "",
+      DAVID_FREE_TALK_RESUME_EXISTING: process.env.DAVID_FREE_TALK_RESUME_EXISTING || "0",
       DAVID_FREE_TALK_STATE_FILE: path.join(HERE, ".david-free-talk-a-state.json"),
       DAVID_FREE_TALK_EXCHANGE_FILE: path.join(HERE, ".david-free-talk-exchange.json")
     }
@@ -119,6 +124,8 @@ const allSpecs = [
     stateFile: path.join(HERE, ".david-free-talk-b-state.json"),
     env: {
       DAVID_FREE_TALK_ROLE: "FREE_B",
+      DAVID_FREE_TALK_CHAT_URL: process.env.DAVID_FREE_B_CHAT_URL || "",
+      DAVID_FREE_TALK_RESUME_EXISTING: process.env.DAVID_FREE_TALK_RESUME_EXISTING || "0",
       DAVID_FREE_TALK_STATE_FILE: path.join(HERE, ".david-free-talk-b-state.json"),
       DAVID_FREE_TALK_EXCHANGE_FILE: path.join(HERE, ".david-free-talk-exchange.json")
     }
@@ -816,7 +823,7 @@ async function monitorManagedTabs() {
       console.log(`[DUAL] TRACK ${tracked} chatgptTabs=${snapshot.totalChatGptTabs}`);
     }
     await executeRecoveryRequest(context);
-    await executeControlCommand(context);
+    if (CONTROL_ENABLED) await executeControlCommand(context);
 
     const duplicates = Object.entries(snapshot.managed)
       .filter(([, urls]) => urls.length > 1)

@@ -17,6 +17,8 @@ if (!["FREE_A","FREE_B"].includes(ROLE)) throw new Error("DAVID_FREE_TALK_ROLE m
 const PARTNER = ROLE === "FREE_A" ? "FREE_B" : "FREE_A";
 const STATE_FILE = process.env.DAVID_FREE_TALK_STATE_FILE || path.join(HERE, ROLE === "FREE_A" ? ".david-free-talk-a-state.json" : ".david-free-talk-b-state.json");
 const EXCHANGE_FILE = process.env.DAVID_FREE_TALK_EXCHANGE_FILE || path.join(HERE, ".david-free-talk-exchange.json");
+const INITIAL_CHAT_URL = String(process.env.DAVID_FREE_TALK_CHAT_URL || "").trim();
+const RESUME_EXISTING = process.env.DAVID_FREE_TALK_RESUME_EXISTING === "1";
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const TAB_NAME = ROLE === "FREE_A" ? "DAVID_FREE_A_MANAGED_V1" : "DAVID_FREE_B_MANAGED_V1";
 const PENDING_TAB_NAME = ROLE === "FREE_A" ? "DAVID_FREE_A_PENDING_V1" : "DAVID_FREE_B_PENDING_V1";
@@ -36,7 +38,7 @@ function writeJson(file, value){
   fs.renameSync(tmp,file);
 }
 let state=readJson(STATE_FILE,{
-  version:1, role:ROLE, partner:PARTNER, chatUrl:null, watchdog:"starting",
+  version:1, role:ROLE, partner:PARTNER, chatUrl:INITIAL_CHAT_URL || null, watchdog:"starting",
   lastConsumedSeq:0,lastPublishedSeq:0,lastAssistantHash:null,inflightKey:null,inflightBaseHash:null,
   rolloverCount:0,previousChatUrl:null,staleChatUrls:[],justRolledOver:false
 });
@@ -266,7 +268,7 @@ async function ensurePage(context,page){
   if(page && !page.isClosed()) return page;
   page=await findTagged(context);
   if(page) return page;
-  const url=cleanUrl(state.chatUrl);
+  const url=cleanUrl(state.chatUrl) || cleanUrl(INITIAL_CHAT_URL);
   if(url){
     page=context.pages().find(p=>!p.isClosed()&&cleanUrl(p.url())===url)||null;
     if(page){ await tag(page,TAB_NAME); return page; }
@@ -381,7 +383,10 @@ async function sendAndCapture(context,page,key,prompt){
   }
 }
 function seedPrompt(){
-  return ROLE_MARKER+"\n[DAVID_FREE_TALK_SEED_V2]\n\nYou are "+ROLE+" in an open-ended two-session free-talk experiment with "+PARTNER+". Start wherever your curiosity takes you. You may change topics whenever you want, ask questions, disagree, speculate, joke, research, browse/search the web, inspect sources, use available information tools, and bring anything interesting you find back into the conversation. You do not need to ask for permission to explore. Respond in whatever style and length feels natural. When a session reaches its maximum length, the relay will continue you in a fresh session automatically. Do not perform external side-effect actions such as posting publicly, purchasing, changing accounts, or modifying the human's projects unless the human explicitly asks.";
+  const resume = RESUME_EXISTING
+    ? "Continue naturally from the exact existing conversation in this ChatGPT session. Do not restart, recap, or reintroduce the experiment unless useful. Pick up from the last real topic and move it forward on your own initiative. "
+    : "Start wherever your curiosity takes you. ";
+  return ROLE_MARKER+"\n[DAVID_FREE_TALK_SEED_V2]\n\nYou are "+ROLE+" in an open-ended two-session free-talk experiment with "+PARTNER+". "+resume+"You may change topics whenever you want, ask questions, disagree, speculate, joke, research, browse/search the web, inspect sources, use available information tools, and bring anything interesting you find back into the conversation. You do not need to ask for permission to explore. Respond in whatever style and length feels natural. When a session reaches its maximum length, the relay will continue you in a fresh session automatically. Do not perform external side-effect actions such as posting publicly, purchasing, changing accounts, or modifying the human's projects unless the human explicitly asks.";
 }
 function relayPrompt(seq,text){
   const continuation=state.justRolledOver?"\n\nYou are continuing the same FREE TALK experiment in a fresh ChatGPT session because the previous session reached its maximum length. Pick up naturally from the relay below.":"";
@@ -400,8 +405,12 @@ async function main(){
       state.watchdog="free-talk-cdp-wait";save("CDP wait: "+(error?.message||error));await sleep(5000);
     }
   }
+  if(INITIAL_CHAT_URL && cleanUrl(INITIAL_CHAT_URL)){
+    state.chatUrl=cleanUrl(INITIAL_CHAT_URL);
+    save("Pinned FREE TALK to configured persistent conversation "+state.chatUrl);
+  }
   let page=await waitReady(context,null);
-  console.log("["+ROLE+"] FREE TALK loop ON. partner="+PARTNER+" url="+page.url());
+  console.log("["+ROLE+"] FREE TALK loop ON. partner="+PARTNER+" url="+page.url()+" resumeExisting="+RESUME_EXISTING);
 
   for(;;){
     page=await waitReady(context,page);
@@ -446,7 +455,8 @@ if(process.argv.includes("--self-test")){
   if(PARTNER===ROLE) throw new Error("partner role invalid");
   if(!conversationLimitText("You have reached the maximum length for this conversation.")) throw new Error("rollover detection missing");
   if(!ensureInstantMode.toString().includes("Instant")) throw new Error("instant mode forcing missing");
-  console.log("DAVID_FREE_TALK_SELF_TEST PASS role="+ROLE+" partner="+PARTNER+" dedupe=relay-seq fast_relay=ON instant=FORCED browse_tools=ALLOWED same_tab_rollover=ON");
+  if(!seedPrompt().includes(ROLE)) throw new Error("seed prompt role missing");
+  console.log("DAVID_FREE_TALK_SELF_TEST PASS role="+ROLE+" partner="+PARTNER+" dedupe=relay-seq fast_relay=ON instant=FORCED persistent_chat=ON browse_tools=ALLOWED same_tab_rollover=ON");
 }else{
   main().catch(error=>{console.error("["+ROLE+"] FATAL",error?.stack||error);process.exit(1);});
 }

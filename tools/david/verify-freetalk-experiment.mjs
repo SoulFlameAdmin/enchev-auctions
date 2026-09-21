@@ -9,10 +9,25 @@ const normal=read("START_DAVID_AUTONOMY.ps1");
 const experiment=read("START_DAVID_EXPERIMENT_FREETALK.ps1");
 const restart=read("RESTART_DAVID_EXPERIMENT_FREETALK_CLEAN.ps1");
 const stop=read("STOP_DAVID_ALL_CLEAN.ps1");
-for(const token of ["FREE_A","FREE_B","ACTIVE_EXPERIMENT_WORKERS","DAVID_FREE_A_MANAGED_V1","DAVID_FREE_B_MANAGED_V1"]) if(!dual.includes(token)) throw new Error("FREE TALK supervisor invariant missing: "+token);
-for(const token of ["[DAVID_FREE_TALK_A_V1]","[DAVID_FREE_TALK_B_V1]","[DAVID_FREE_TALK_RELAY_V2 seq=","[DAVID_FREE_TALK_SEED_V2]","lastConsumedSeq","waitOnlyForActualGlobalBlock","ensureInstantMode","Instant","conversationLimitReached","rolloverConversation","rotateOwnedChatPage","browse/search","page.keyboard.insertText(text)"]) if(!worker.includes(token)) throw new Error("FREE TALK worker invariant missing: "+token);
+const abOnly=read("START_DAVID_FREETALK_ONLY.ps1");
+const abRestart=read("RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1");
+const selector=read("DAVID_MODE_SELECTOR.ps1");
+for(const token of ["FREE_A","FREE_B","ACTIVE_EXPERIMENT_WORKERS","DAVID_FREE_A_MANAGED_V1","DAVID_FREE_B_MANAGED_V1","CONTROL_ENABLED"]) if(!dual.includes(token)) throw new Error("FREE TALK supervisor invariant missing: "+token);
+for(const token of ["[DAVID_FREE_TALK_A_V1]","[DAVID_FREE_TALK_B_V1]","[DAVID_FREE_TALK_RELAY_V2 seq=","[DAVID_FREE_TALK_SEED_V2]","lastConsumedSeq","waitOnlyForActualGlobalBlock","ensureInstantMode","Instant","INITIAL_CHAT_URL","RESUME_EXISTING","conversationLimitReached","rolloverConversation","rotateOwnedChatPage","browse/search","page.keyboard.insertText(text)"]) if(!worker.includes(token)) throw new Error("FREE TALK worker invariant missing: "+token);
 for(const token of ['DAVID_ACTIVE_WORKERS = "SYSTEM,APP2,APK,FREE_A,FREE_B,CONTROL"','DAVID_CHATGPT_TAB_TARGET = "6"','FREE=2','ChatGPT=6','.david-free-talk-exchange.json','lastConsumedSeq = 0','instantMode = "pending"']) if(!experiment.includes(token)) throw new Error("FREE TALK launcher invariant missing: "+token);
 for(const token of ['DAVID_ACTIVE_WORKERS = "SYSTEM,APP2,APK,CONTROL"','DAVID_CHATGPT_TAB_TARGET = "4"','ChatGPT=4']) if(!normal.includes(token)) throw new Error("Normal AUTONOMY profile changed unexpectedly: "+token);
 if(!restart.includes("STOP_DAVID_ALL_CLEAN.ps1")||!restart.includes("START_DAVID_EXPERIMENT_FREETALK.ps1")) throw new Error("FREE TALK restart is not atomic");
 if(!stop.includes("free-talk-session-v1.mjs")) throw new Error("Clean stop does not own FREE TALK workers");
-console.log("DAVID_FREE_TALK_EXPERIMENT PASS normal_tabs=4 experiment_tabs=6 free_sessions=2 design=OFF relay_dedupe=seq fast_relay=ON instant=FORCED fresh_exchange=ON browse_tools=ALLOWED same_tab_rollover=ON");
+if(!stop.includes("david-freetalk-only-dashboard.ps1")) throw new Error("Clean stop does not own A+B-only dashboard");
+for(const token of [
+  'DAVID_ACTIVE_WORKERS="FREE_A,FREE_B"',
+  'DAVID_CONTROL_ENABLED="0"',
+  'DAVID_CHATGPT_TAB_TARGET="2"',
+  '6ab08cb0-3738-83eb-b4bf-2ef8bf4933a8',
+  '6ab08cab-006c-83eb-a753-2ea42567e22f',
+  'DAVID_FREE_TALK_RESUME_EXISTING="1"',
+  'ChatGPT=2'
+]) if(!abOnly.includes(token)) throw new Error("A+B-only mode invariant missing: "+token);
+if(!abRestart.includes("STOP_DAVID_ALL_CLEAN.ps1")||!abRestart.includes("START_DAVID_FREETALK_ONLY.ps1")) throw new Error("A+B-only restart is not atomic");
+for(const token of ["SOULFLAME SYSTEM","DAVID A + B","RESTART_DAVID_AUTONOMY_CLEAN.ps1","RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1","$Modes"]) if(!selector.includes(token)) throw new Error("Mode selector invariant missing: "+token);
+console.log("DAVID_FREE_TALK_EXPERIMENT PASS normal_tabs=4 experiment_tabs=6 ab_only_tabs=2 persistent_chats=2 selector_buttons=2 relay_dedupe=seq instant=FORCED same_tab_rollover=ON");
