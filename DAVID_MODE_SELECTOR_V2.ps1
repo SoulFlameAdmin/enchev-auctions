@@ -82,7 +82,7 @@ $badge.Location=New-Object System.Drawing.Point(31,100)
 $form.Controls.Add($badge)
 
 $soul=New-Object System.Windows.Forms.Button
-$soul.Text="SOULFLAME SYSTEM`r`nSYSTEM + DPP + APK + CONTROL`r`nMEDIUM / СРЕДНО"
+$soul.Text="SOULFLAME SYSTEM`r`nSYSTEM + DPP + APK + CONTROL`r`nMEDIUM"
 $soul.Size=New-Object System.Drawing.Size(325,118)
 $soul.Location=New-Object System.Drawing.Point(31,153)
 $soul.Font=New-Object System.Drawing.Font("Segoe UI",12,[System.Drawing.FontStyle]::Bold)
