@@ -1,7 +1,7 @@
 {
   "taskId": "24.02",
   "name": "API versioning strategy",
-  "status": "YELLOW",
+  "status": "GREEN",
   "canonicalSpec": "packages/contracts/openapi/enchev-api.v1.json",
   "contractSeries": "v1",
   "maturity": "pre-stable",
