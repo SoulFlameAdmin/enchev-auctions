@@ -18,7 +18,7 @@ function requireTrue(condition, message) {
 
 function verifyRepositoryContract() {
   requireTrue(config.taskId === "24.05", "taskId drift");
-  requireTrue(["YELLOW", "GREEN"].includes(config.status), "status must be YELLOW or GREEN");
+  requireTrue(config.status === "GREEN", "verified 24.05 evidence status must remain GREEN");
   requireTrue(config.header === "X-Request-ID", "canonical display header drift");
   requireTrue(config.canonicalLowercaseHeader === REQUEST_CORRELATION_HEADER, "runtime header constant drift");
   requireTrue(config.maxLength === 128, "max length drift");
