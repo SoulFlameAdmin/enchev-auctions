@@ -79,6 +79,6 @@ for($i=0;$i-lt 180;$i++){
     }
   }
 }
-if(-not$ok){throw "FAST SOLO health gate failed for $Worker: $last; expected exactly 1 project tab + WATCH background"}
+if(-not$ok){throw "FAST SOLO health gate failed for ${Worker}: $last; expected exactly 1 project tab + WATCH background"}
 $label=if($Worker-eq"SYSTEM"){"ENCHEV"}elseif($Worker-eq"APP2"){"DPP"}else{"DAVID APK"}
 Write-Host ("[DAVID FAST SOLO] HEALTHY // {0} ONLY // Instant // WATCH BACKGROUND // ChatGPT=1" -f $label) -ForegroundColor Green
