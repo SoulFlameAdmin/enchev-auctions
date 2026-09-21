@@ -1,0 +1,10 @@
+{
+  "taskId": "24.02",
+  "name": "API versioning strategy",
+  "status": "YELLOW",
+  "canonicalSpec": "packages/contracts/openapi/enchev-api.v1.json",
+  "contractSeries": "v1",
+  "maturity": "pre-stable",
+  "currentInfoVersion": "0.1.0",
+  "stableNamespaceTemplate": "/api/v{major}"
+}
