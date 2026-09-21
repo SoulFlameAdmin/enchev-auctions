@@ -42,7 +42,7 @@ function Get-Snapshot{
   $pinned=($aUrl-eq$FreeAUrl-and$bUrl-eq$FreeBUrl)
   $mode="CHECK"
   if($sup-eq 0-and$sys-eq 0-and$dpp-eq 0-and$apk-eq 0-and$ctrl-eq 0-and$free-eq 0){$mode="STOPPED"}
-  elseif($sup-eq 1-and$sys-eq 1-and$dpp-eq 1-and$apk-eq 1-and$ctrl-eq 1-and$free-eq 0-and$design-eq 0){$mode="SOULFLAME"}
+  elseif($sup-eq 1-and$sys-eq 1-and$dpp-eq 1-and$apk-eq 1-and$ctrl-eq 0-and$guard-eq 1-and$free-eq 0-and$design-eq 0){$mode="SOULFLAME"}
   elseif($sup-eq 1-and$free-eq 2-and$sys-eq 0-and$dpp-eq 0-and$apk-eq 0-and$ctrl-eq 0-and$design-eq 0){$mode="AB"}
   return [pscustomobject]@{Mode=$mode;Sup=$sup;System=$sys;Dpp=$dpp;Apk=$apk;Control=$ctrl;Free=$free;Guard=$guard;Design=$design;Tabs=$tabs;FreeA=$fa;FreeB=$fb;TabSystem=$tsys;TabDpp=$tdpp;TabApk=$tapk;TabControl=$tctrl;Pinned=$pinned;AUrl=$aUrl;BUrl=$bUrl}
 }
@@ -82,7 +82,7 @@ $badge.Location=New-Object System.Drawing.Point(31,100)
 $form.Controls.Add($badge)
 
 $soul=New-Object System.Windows.Forms.Button
-$soul.Text="SOULFLAME SYSTEM`r`nSYSTEM + DPP + APK + CONTROL`r`nMEDIUM"
+$soul.Text="SOULFLAME SYSTEM`r`nENCHEV SYSTEM + DPP + DAVID APK`r`n3 TABS / WATCH BACKGROUND / MEDIUM"
 $soul.Size=New-Object System.Drawing.Size(325,118)
 $soul.Location=New-Object System.Drawing.Point(31,153)
 $soul.Font=New-Object System.Drawing.Font("Segoe UI",12,[System.Drawing.FontStyle]::Bold)
@@ -200,7 +200,7 @@ function Update-Ui{
     $pinned.Text="A+B PINNED SAME CHATS: NOT CONFIRMED YET"
     $pinned.ForeColor=[System.Drawing.Color]::Khaki
   }
-  $runtime.Text=("MODE={0}   ChatGPT tabs={1}`r`nSUP={2} GUARD={3} SYSTEM={4} DPP={5} APK={6} CTRL={7} FREE={8} DESIGN={9}`r`nTAB MAP: SYS={10} DPP={11} APK={12} CTRL={13} FREE_A={14} FREE_B={15}`r`nA={16}`r`nB={17}" -f $s.Mode,$s.Tabs,$s.Sup,$s.Guard,$s.System,$s.Dpp,$s.Apk,$s.Control,$s.Free,$s.Design,$s.TabSystem,$s.TabDpp,$s.TabApk,$s.TabControl,$s.FreeA,$s.FreeB,$s.AUrl,$s.BUrl)
+  $watch=if($s.Sup-eq 1-and$s.Guard-eq 1){"ON"}else{"CHECK"}; $runtime.Text=("MODE={0}   ChatGPT tabs={1}`r`nWATCH={2}  SUP={3} GUARD={4}  ENCHEV={5} DPP={6} APK={7} CTRL_TAB={8}`r`nTAB MAP: ENCHEV={9} DPP={10} APK={11} FREE_A={12} FREE_B={13}`r`nA={14}`r`nB={15}" -f $s.Mode,$s.Tabs,$watch,$s.Sup,$s.Guard,$s.System,$s.Dpp,$s.Apk,$s.Control,$s.TabSystem,$s.TabDpp,$s.TabApk,$s.FreeA,$s.FreeB,$s.AUrl,$s.BUrl)
 }
 
 $soul.Add_Click({Start-Mode "SOULFLAME SYSTEM" $SoulRestart})
