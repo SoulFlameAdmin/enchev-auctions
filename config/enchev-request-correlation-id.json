@@ -1,7 +1,7 @@
 {
   "taskId": "24.05",
   "name": "Request correlation ID contract",
-  "status": "YELLOW",
+  "status": "GREEN",
   "header": "X-Request-ID",
   "canonicalLowercaseHeader": "x-request-id",
   "acceptedPattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$",
