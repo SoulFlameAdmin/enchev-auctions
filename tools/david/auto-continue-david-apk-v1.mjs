@@ -5,6 +5,7 @@ import path from "node:path";
 import process from "node:process";
 import { waitForGlobalSendPermit, reportProbeSuccess, markGlobalSendStarted } from "./chatgpt-rate-limit-coordinator.mjs";
 import { CHATGPT_ROOT, rotateOwnedChatPage } from "./chatgpt-session-rotation.mjs";
+import { ensureChatGptEffortMode } from "./chatgpt-effort-mode.mjs";
 
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const STATE_FILE = process.env.DAVID_APK_STATE_FILE || path.join(process.cwd(), ".david-apk-state.json");
@@ -510,7 +511,11 @@ async function waitReady(context, page, state) {
       continue;
     }
     syncChatUrl(page, state);
-    if (await composer(page) || await latestAssistant(page)) return page;
+    if (await composer(page) || await latestAssistant(page)) {
+      const effort = await ensureChatGptEffortMode(page, "medium").catch(() => ({ ok: false }));
+      if (effort?.changed) console.log("[APK] ChatGPT effort forced to Medium/Средно.");
+      return page;
+    }
     await sleep(POLL_MS);
   }
 }

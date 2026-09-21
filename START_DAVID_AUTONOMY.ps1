@@ -11,6 +11,7 @@ $env:DAVID_ACTIVE_WORKERS = "SYSTEM,APP2,APK,CONTROL"
 $env:DAVID_CHATGPT_TAB_TARGET = "4"
 $env:DAVID_AUTONOMY_PROFILE = "SYSTEM_DPP_APK"
 $env:DAVID_DEDICATED_PROFILE = "1"
+$env:DAVID_PROJECT_EFFORT_MODE = "medium"
 $a=@("-NoProfile","-ExecutionPolicy","Bypass","-File",$Launcher,"-Port","$Port","-MaxTurns","2147483647");if($FreshSessions){$a+="-FreshSessions"}
 Start-Process -FilePath $Pwsh -ArgumentList $a
 $ok=$false;$last="starting"
