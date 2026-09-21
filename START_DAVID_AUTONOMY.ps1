@@ -13,7 +13,7 @@ $env:DAVID_AUTONOMY_PROFILE = "SYSTEM_DPP_APK"
 $env:DAVID_DEDICATED_PROFILE = "1"
 $env:DAVID_PROJECT_EFFORT_MODE = "medium"
 $a=@("-NoProfile","-ExecutionPolicy","Bypass","-File",$Launcher,"-Port","$Port","-MaxTurns","2147483647");if($FreshSessions){$a+="-FreshSessions"}
-Start-Process -FilePath $Pwsh -ArgumentList $a
+Start-Process -FilePath $Pwsh -ArgumentList $a -WindowStyle Hidden
 $ok=$false;$last="starting"
 for($i=0;$i-lt 180;$i++){
  Start-Sleep -Seconds 1
@@ -24,5 +24,5 @@ for($i=0;$i-lt 180;$i++){
  }
 }
 if(-not$ok){throw "AUTONOMY health gate failed: $last; expected DESIGN=0 and ChatGPT=4"}
-if(@(G "david-autonomy-dashboard.ps1" @("powershell.exe","pwsh.exe")).Count-eq 0){Start-Process -FilePath $Pwsh -ArgumentList @("-NoProfile","-ExecutionPolicy","Bypass","-File",$Dashboard)}
+if(@(G "david-autonomy-dashboard.ps1" @("powershell.exe","pwsh.exe")).Count-eq 0){Start-Process -FilePath $Pwsh -ArgumentList @("-NoProfile","-ExecutionPolicy","Bypass","-File",$Dashboard) -WindowStyle Hidden}
 Write-Host "[DAVID AUTONOMY] HEALTHY // CONTROL + SYSTEM + DPP + APK // DESIGN OFF // ChatGPT=4" -ForegroundColor Green
