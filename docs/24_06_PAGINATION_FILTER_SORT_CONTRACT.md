@@ -1,6 +1,6 @@
 # SYSTEM 24.06 — Pagination/filter/sort contract
 
-Status: YELLOW pending CI evidence.
+Status: GREEN — exact-head CI passed and implementation merged via PR #168.
 
 The canonical HTTP list-query contract is implemented in `packages/contracts/src/http-schema.ts` through `parseApiListQuery`.
 
@@ -10,4 +10,4 @@ The canonical HTTP list-query contract is implemented in `packages/contracts/src
 - Unknown query parameters, malformed values, duplicate scalar pagination parameters, and non-allowlisted fields fail closed.
 - This is a transport/query contract only. It does not create auction authority.
 
-GREEN requires passing repository verification plus CI evidence on the exact implementation head.
+Evidence: exact implementation head `9105353b71d4f03ebc7e2e184cb46c2b9fb2492c` passed Verify Enchev Web run `35552920184`, Code Scan `35552920113`, SBOM `35552920247`, Secret Scan `35552920069`, Build Provenance `35552920251`, SYSTEM 24.02 `35552920143`, and SYSTEM 26.05 `35552920225`; merged to main as `de7e56be7a162d2a6b6dc8e06d01cd3759c8253e`. Vercel remained externally build-rate-limited and no manual deployment was attempted.

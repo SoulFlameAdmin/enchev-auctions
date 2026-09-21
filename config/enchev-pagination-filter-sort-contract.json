@@ -1,7 +1,7 @@
 {
   "taskId": "24.06",
   "name": "Pagination/filter/sort contract",
-  "status": "YELLOW",
+  "status": "GREEN",
   "pagination": {
     "pageParameter": "page",
     "pageSizeParameter": "pageSize",
@@ -27,8 +27,18 @@
   "unknownParameterPolicy": "reject",
   "authorityBoundary": "Pagination, filtering and sorting are transport/query contracts only and never decide auction state, accepted bids, winner selection or final results.",
   "evidence": {
-    "implementationBranch": "system/24-06-pagination-filter-sort-contract-20260921",
-    "implementationCommit": "882056c1de0003c8482b1a7c652814148665a36e",
-    "verification": "pending CI"
+    "implementationPr": "#168",
+    "exactHead": "9105353b71d4f03ebc7e2e184cb46c2b9fb2492c",
+    "mergedMain": "de7e56be7a162d2a6b6dc8e06d01cd3759c8253e",
+    "exactHeadRuns": {
+      "verifyEnchevWeb": 35552920184,
+      "codeScan": 35552920113,
+      "sbom": 35552920247,
+      "secretScan": 35552920069,
+      "buildProvenance": 35552920251,
+      "verifySystem2402": 35552920143,
+      "verifySystem2605": 35552920225
+    },
+    "vercelStatus": "external build-rate-limit; no manual deploy attempted"
   }
 }
