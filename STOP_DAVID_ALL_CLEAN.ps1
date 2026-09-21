@@ -27,6 +27,7 @@ $workerPatterns = @(
   "auto-complete-app2-v1.mjs",
   "david-status-dashboard.ps1",
   "david-freetalk-dashboard.ps1",
+  "david-freetalk-only-dashboard.ps1",
   "START_DAVID_EXPERIMENT_FREETALK.ps1",
   "RESTART_DAVID_EXPERIMENT_FREETALK_CLEAN.ps1",
   "worker-control.mjs",
