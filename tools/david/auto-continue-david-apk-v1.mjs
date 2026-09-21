@@ -235,6 +235,28 @@ async function findTaggedPage(context, names = [TAB_NAME, PENDING_TAB_NAME]) {
   return null;
 }
 
+async function ensurePendingApkPage(context, current, state) {
+  if (current && !current.isClosed()) {
+    await setPageTag(current, PENDING_TAB_NAME);
+    return current;
+  }
+
+  const tagged = await findTaggedPage(context, [PENDING_TAB_NAME, TAB_NAME]);
+  if (tagged && !tagged.isClosed()) {
+    await setPageTag(tagged, PENDING_TAB_NAME);
+    return tagged;
+  }
+
+  const page = await context.newPage();
+  await setPageTag(page, PENDING_TAB_NAME);
+  await page.goto("https://chatgpt.com/", { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  state.pendingNewChat = true;
+  save(state, "APK pending ChatGPT tab created while waiting for session discovery");
+  console.log("[APK] Pending ChatGPT tab created immediately; waiting for DAVID Phone/APK session discovery.");
+  return page;
+}
+
+
 async function ensurePage(context, current, state) {
   const target = (FRESH_SESSION_ON_START && activeChatUrl === CHATGPT_ROOT) ? null : await ensureApkUrl(context, state);
   if (!target && activeChatUrl !== "https://chatgpt.com/") return null;
@@ -249,6 +271,9 @@ async function ensurePage(context, current, state) {
 
   const tagged = await findTaggedPage(context);
   if (tagged) {
+    if (target && cleanConversationUrl(tagged.url()) !== target) {
+      await tagged.goto(target, { waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+    }
     await setPageTag(tagged, TAB_NAME);
     return tagged;
   }
@@ -499,7 +524,11 @@ async function waitReady(context, page, state) {
           if (await composer(page)) return page;
         } else {
           const found = await ensureApkUrl(context, state);
-          if (!found) { await sleep(3000); continue; }
+          if (!found) {
+            page = await ensurePendingApkPage(context, page, state);
+            await sleep(3000);
+            continue;
+          }
         }
       }
       page = await ensurePage(context, page, state);
