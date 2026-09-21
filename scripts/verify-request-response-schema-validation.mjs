@@ -45,6 +45,8 @@ function verifyContractFiles() {
   requireTrue(schemas.RedisEnvironmentHealth.additionalProperties === false, "RedisEnvironmentHealth must be closed");
   requireTrue(schemas.LiveAuctionDemoClock.additionalProperties === false, "LiveAuctionDemoClock must be closed");
   requireTrue(schemas.ErrorEnvelope.additionalProperties === false, "ErrorEnvelope must be closed");
+  requireTrue(schemas.ErrorEnvelope.properties?.error?.additionalProperties === false, "ErrorEnvelope.error must be closed");
+  requireTrue(Array.isArray(schemas.ErrorEnvelope.properties?.error?.required) && schemas.ErrorEnvelope.properties.error.required.includes("code") && schemas.ErrorEnvelope.properties.error.required.includes("message"), "ErrorEnvelope code/message contract drift");
 
   const shared = fs.readFileSync("app/api/health/_shared.ts", "utf8");
   const redis = fs.readFileSync("app/api/health/redis/route.ts", "utf8");
@@ -80,7 +82,7 @@ function verifyPositiveBehavior() {
     scope: "server-issued-browser-session-demo", auctionAuthority: false, bidFeedback: null, priceDelta: 0
   }), "valid LiveAuctionDemoClock rejected");
 
-  requireTrue(isApiErrorEnvelope({ error: "invalid-json" }), "valid ErrorEnvelope rejected");
+  requireTrue(isApiErrorEnvelope({ error: { code: "invalid-json", message: "Request body must be valid JSON." } }), "valid ErrorEnvelope rejected");
 }
 
 function verifyNegativeBehavior() {
@@ -116,7 +118,8 @@ function verifyNegativeBehavior() {
     scope: "server-issued-browser-session-demo", auctionAuthority: true, bidFeedback: null, priceDelta: 0
   }), "authoritative demo response accepted");
 
-  requireTrue(!isApiErrorEnvelope({ error: "x", detail: "unexpected" }), "ErrorEnvelope additional property accepted");
+  requireTrue(!isApiErrorEnvelope({ error: { code: "x", message: "x" }, detail: "unexpected" }), "ErrorEnvelope additional property accepted");
+  requireTrue(!isApiErrorEnvelope({ error: { code: "x", message: "x", detail: "unexpected" } }), "nested ErrorEnvelope additional property accepted");
 }
 
 verifyContractFiles();
@@ -124,7 +127,7 @@ verifyPositiveBehavior();
 
 if (process.argv.includes("--self-test")) {
   verifyNegativeBehavior();
-  console.log("24.03 REQUEST_RESPONSE_SCHEMA_VALIDATION_SELF_TEST PASS negative_cases=11");
+  console.log("24.03 REQUEST_RESPONSE_SCHEMA_VALIDATION_SELF_TEST PASS negative_cases=12");
 } else {
   console.log("24.03 REQUEST_RESPONSE_SCHEMA_VALIDATION PASS coverage=6");
 }
