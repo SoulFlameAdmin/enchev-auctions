@@ -124,7 +124,9 @@
     "verify:request-response-schema-validation": "node scripts/verify-request-response-schema-validation.mjs",
     "verify:request-response-schema-validation:self-test": "node scripts/verify-request-response-schema-validation.mjs --self-test",
     "verify:standard-error-envelope": "node scripts/verify-standard-error-envelope.mjs",
-    "verify:standard-error-envelope:self-test": "node scripts/verify-standard-error-envelope.mjs --self-test"
+    "verify:standard-error-envelope:self-test": "node scripts/verify-standard-error-envelope.mjs --self-test",
+    "verify:request-correlation-id": "node scripts/verify-request-correlation-id.mjs",
+    "verify:request-correlation-id:self-test": "node scripts/verify-request-correlation-id.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
