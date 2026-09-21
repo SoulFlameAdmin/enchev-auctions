@@ -1,0 +1,17 @@
+{
+  "taskId": "24.03",
+  "name": "Request/response schema validation",
+  "status": "YELLOW",
+  "canonicalSpec": "packages/contracts/openapi/enchev-api.v1.json",
+  "runtimeContractModule": "packages/contracts/src/http-schema.ts",
+  "coverage": {
+    "componentHealthResponses": true,
+    "redisHealthResponses": true,
+    "redisEnvironmentResponses": true,
+    "liveAuctionRequest": true,
+    "liveAuctionSuccessResponse": true,
+    "liveAuctionErrorResponse": true
+  },
+  "failClosed": true,
+  "authorityBoundary": "Schema validation does not create auction authority; PostgreSQL remains authoritative for auction state, accepted bids, winner selection and final results."
+}
