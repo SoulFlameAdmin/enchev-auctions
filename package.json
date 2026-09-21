@@ -136,7 +136,9 @@
     "verify:api-endpoint-inventory": "node scripts/verify-api-endpoint-inventory.mjs",
     "verify:api-endpoint-inventory:self-test": "node scripts/verify-api-endpoint-inventory.mjs --self-test",
     "verify:api-compatibility-policy": "node scripts/verify-api-compatibility-policy.mjs",
-    "verify:api-compatibility-policy:self-test": "node scripts/verify-api-compatibility-policy.mjs --self-test"
+    "verify:api-compatibility-policy:self-test": "node scripts/verify-api-compatibility-policy.mjs --self-test",
+    "verify:webhook-signatures": "node scripts/verify-webhook-signature-contract.mjs",
+    "verify:webhook-signatures:self-test": "node scripts/verify-webhook-signature-contract.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
