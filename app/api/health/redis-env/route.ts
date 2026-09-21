@@ -1,3 +1,5 @@
+import { assertContractResponse, isRedisEnvironmentHealthResponse } from "@enchev/contracts";
+
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -21,13 +23,19 @@ export async function GET() {
     .filter(isCandidateKey)
     .sort();
 
-  return new Response(
-    JSON.stringify({
+  const body = assertContractResponse(
+    "RedisEnvironmentHealth",
+    {
       ok: true,
       candidateKeyCount: candidateKeys.length,
       candidateKeys,
       valuesExposed: false,
-    }),
+    },
+    isRedisEnvironmentHealthResponse,
+  );
+
+  return new Response(
+    JSON.stringify(body),
     {
       status: 200,
       headers: {
