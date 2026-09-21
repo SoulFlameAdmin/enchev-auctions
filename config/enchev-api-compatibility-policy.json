@@ -1,0 +1,32 @@
+{
+  "version": 1,
+  "task": "24.10",
+  "title": "Deprecation/backward-compatibility policy",
+  "compatibilityLine": "v1",
+  "openApiPath": "packages/contracts/openapi/enchev-api.v1.json",
+  "endpointInventoryPath": "config/enchev-api-endpoint-inventory.json",
+  "authorityBoundary": "Compatibility governance is descriptive only. PostgreSQL remains authoritative for auction state, accepted bids, winner selection and final results.",
+  "breakingChangeRule": "Published v1 operations must not be removed, renamed, lose previously documented response status codes, or make an optional request body required. Breaking changes require a new compatibility line.",
+  "deprecation": {
+    "minimumNoticeDays": 90,
+    "requiredFlag": "deprecated",
+    "metadataExtension": "x-enchev-deprecation",
+    "requiredMetadataFields": [
+      "announcedOn",
+      "sunsetNotBefore",
+      "replacementOperationId",
+      "reason"
+    ]
+  },
+  "protectedOperations": [
+    { "method": "GET", "path": "/api/health/web", "operationId": "getWebHealth", "responseCodes": ["200"], "requestBodyRequired": false },
+    { "method": "GET", "path": "/api/health/api", "operationId": "getApiHealth", "responseCodes": ["200"], "requestBodyRequired": false },
+    { "method": "GET", "path": "/api/health/realtime", "operationId": "getRealtimeHealth", "responseCodes": ["503"], "requestBodyRequired": false },
+    { "method": "GET", "path": "/api/health/worker", "operationId": "getWorkerHealth", "responseCodes": ["503"], "requestBodyRequired": false },
+    { "method": "GET", "path": "/api/health/redis", "operationId": "getRedisHealth", "responseCodes": ["200", "503"], "requestBodyRequired": false },
+    { "method": "GET", "path": "/api/health/redis-env", "operationId": "getRedisEnvironmentHealth", "responseCodes": ["200"], "requestBodyRequired": false },
+    { "method": "GET", "path": "/api/health/vercel-oidc-management", "operationId": "getVercelOidcManagementHealth", "responseCodes": ["200", "503"], "requestBodyRequired": false },
+    { "method": "GET", "path": "/api/live-auction-clock", "operationId": "getLiveAuctionDemoClock", "responseCodes": ["200"], "requestBodyRequired": false },
+    { "method": "POST", "path": "/api/live-auction-clock", "operationId": "postLiveAuctionDemoBid", "responseCodes": ["200", "400"], "requestBodyRequired": true }
+  ]
+}
