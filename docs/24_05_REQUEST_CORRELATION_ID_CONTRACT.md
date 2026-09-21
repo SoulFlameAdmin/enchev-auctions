@@ -10,7 +10,7 @@ Status: **GREEN** — exact-head verification, merge, and post-merge `main` veri
 - Exact-head GitHub Actions: Verify Enchev Web `35551204722` SUCCESS; Code Scan `35551204743` SUCCESS; SBOM `35551204725` SUCCESS; Secret Scan `35551204718` SUCCESS; Build Provenance `35551204755` SUCCESS.
 - Post-merge `main`: Verify Enchev Web `35551462036` SUCCESS; Code Scan `35551462037` SUCCESS; SBOM `35551462019` SUCCESS; Secret Scan `35551462025` SUCCESS; Build Provenance `35551462021` SUCCESS.
 - Post-merge Verify Enchev Web includes aggregate CI, TypeScript, production build, built health smoke, Chrome/Edge visual regression PASS, artifact `10618502793`, Supabase plan-state sync PASS, and secret-binding verification PASS.
-- Vercel preview remained externally blocked by provider build-rate-limit on the implementation branch. No manual Vercel create/update/redeploy was required or attempted for this repository contract task.
+- No manual Vercel create/update/redeploy was required or performed for this repository contract task.
 
 
 ## Contract
