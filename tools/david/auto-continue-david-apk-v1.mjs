@@ -7,6 +7,8 @@ import { waitForGlobalSendPermit, reportProbeSuccess, markGlobalSendStarted } fr
 import { CHATGPT_ROOT, rotateOwnedChatPage } from "./chatgpt-session-rotation.mjs";
 import { ensureChatGptEffortMode } from "./chatgpt-effort-mode.mjs";
 
+const EFFORT_MODE = String(process.env.DAVID_PROJECT_EFFORT_MODE || "medium").toLowerCase();
+
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const STATE_FILE = process.env.DAVID_APK_STATE_FILE || path.join(process.cwd(), ".david-apk-state.json");
 const ENV_CHAT_URL = process.env.DAVID_APK_CHAT_URL || "";
@@ -541,8 +543,8 @@ async function waitReady(context, page, state) {
             console.log("[APK] No unique prior APK session found. Using owned fresh tab and reconstructing from GitHub evidence.");
 
             if (await composer(page)) {
-              const effort = await ensureChatGptEffortMode(page, "medium").catch(() => ({ ok: false }));
-              if (effort?.changed) console.log("[APK] ChatGPT effort forced to Medium.");
+              const effort = await ensureChatGptEffortMode(page, EFFORT_MODE).catch(() => ({ ok: false }));
+              if (effort?.changed) console.log("[APK] ChatGPT effort forced to "+EFFORT_MODE+".");
               return page;
             }
 
@@ -561,8 +563,8 @@ async function waitReady(context, page, state) {
     }
     syncChatUrl(page, state);
     if (await composer(page) || await latestAssistant(page)) {
-      const effort = await ensureChatGptEffortMode(page, "medium").catch(() => ({ ok: false }));
-      if (effort?.changed) console.log("[APK] ChatGPT effort forced to Medium/Средно.");
+      const effort = await ensureChatGptEffortMode(page, EFFORT_MODE).catch(() => ({ ok: false }));
+      if (effort?.changed) console.log("[APK] ChatGPT effort forced to "+EFFORT_MODE+".");
       return page;
     }
     await sleep(POLL_MS);
