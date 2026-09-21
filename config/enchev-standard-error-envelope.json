@@ -1,7 +1,7 @@
 {
   "taskId": "24.04",
   "name": "Standard error envelope",
-  "status": "YELLOW",
+  "status": "GREEN",
   "canonicalSpec": "packages/contracts/openapi/enchev-api.v1.json",
   "runtimeContractModule": "packages/contracts/src/http-schema.ts",
   "shape": {
