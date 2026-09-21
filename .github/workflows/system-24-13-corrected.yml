@@ -1,0 +1,20 @@
+name: SYSTEM 24.13 corrected verifier
+
+on:
+  push:
+    branches:
+      - system/24-10-deprecation-backcompat-policy-20260921
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/verify-schema-compatibility-tests-v2.mjs
+      - run: node scripts/verify-schema-compatibility-tests-v2.mjs --self-test
