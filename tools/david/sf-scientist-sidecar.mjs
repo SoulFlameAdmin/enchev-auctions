@@ -1161,26 +1161,37 @@ async function executeScientistAction(context,chief,text,s){
 }
 
 async function reasonActLoop(context,page,initialPrompt,s,maxSteps=MAX_AUTONOMOUS_STEPS){
-  let response=await ask(page,initialPrompt);
+  const first=await askFresh(page,initialPrompt,s,"initial Scientist analysis");
+  let response=first.response;
+  s=first.snapshot;
   const actions=[];
+
   for(let step=0;step<maxSteps;step++){
     const parsed=parseAction(response);
     if(parsed.kind==="NONE")break;
+
     const result=await executeScientistAction(context,page,response,s).catch(e=>"action failed: "+String(e&&e.message||e));
     actions.push({step:step+1,action:parsed,result:cleanText(result,5000)});
+
     const latest=await snapshot();
-    response=await ask(page,
+    const follow=await askFresh(page,
       "SF SCIENTIST TOOL RESULT\\n"+
       "Previous action: "+parsed.kind+" "+cleanText(parsed.arg,1200)+"\\n"+
       "Verified tool result:\\n"+cleanText(result,9000)+"\\n\\n"+
       "Fresh DAVID snapshot:\\n"+JSON.stringify(latest,null,2)+"\\n\\n"+
       "Continue the investigation autonomously only if another low-risk action is useful. "+
-      "Do not repeat a failed action without new evidence. Return ВИДЯХ/РЕШИХ/ЗАЩО/ПРЕДЛАГАМ/RISK and exactly one ACTION."
+      "Do not repeat a failed action without new evidence. Return ВИДЯХ/РЕШИХ/ЗАЩО/ПРЕДЛАГАМ/RISK and exactly one ACTION.",
+      latest,
+      "Scientist tool-result analysis"
     );
-    s=latest;
+
+    response=follow.response;
+    s=follow.snapshot;
   }
-  return {response,actions};
+
+  return {response,actions,snapshot:s};
 }
+
 
 function toolMenu(){
   return [
@@ -1266,14 +1277,17 @@ async function main(){
         currentCdp9444Online:s.cdp9444Online
       });
       if(!booted&&!state.loginRequired){
-        const r=await ask(page,boot(s));
-        append(DECISIONS,{type:"bootstrap",at:now(),snapshot:s,response:r});
+        const bootResult=await askFresh(page,boot(s),s,"Scientist bootstrap");
+        const r=bootResult.response;
+        append(DECISIONS,{type:"bootstrap",at:now(),snapshot:bootResult.snapshot,response:r});
         save("Scientist bootstrap complete",{
           bootstrappedAt:now(),
           lastDecision:r,
           lastObservation:"Scientist attached",
           lastThoughtSummary:compactThought(r),
-          thoughtSummary:compactThought(r)
+          thoughtSummary:compactThought(r),
+          staleResponseSuppressed:false,
+          responseContextStale:false
         });
         booted=true;
         lastSessionAnalysisAt=Date.now();
@@ -1342,7 +1356,9 @@ async function main(){
           pendingObservation:false,
           pendingObservationReasons:[],
           inFlightObservation:null,
-          inFlightStartedAt:null
+          inFlightStartedAt:null,
+          staleResponseSuppressed:false,
+          responseContextStale:false
         });
         lastSessionAnalysisAt=analysisAt;
       }
