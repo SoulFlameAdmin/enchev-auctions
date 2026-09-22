@@ -539,8 +539,9 @@ Close-OldDavidPowerShellWindows -KeepPid $PID
 Hide-OwnConsole
 Update-Ui
 try{
-  $bootSnapshot=Get-Snapshot
-  if($bootSnapshot.Mode-ne"STOPPED"){Start-ScientistSidecar}
+  # SF Scientist belongs to Mode Center, not to a DAVID runtime mode.
+  # Start it whenever the selector opens, even while DAVID itself is STOPPED.
+  Start-ScientistSidecar
 }catch{}
 
 while(-not $script:Closing -and $form.Visible){
