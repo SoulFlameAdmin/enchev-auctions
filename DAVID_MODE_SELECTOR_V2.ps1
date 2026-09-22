@@ -3,12 +3,41 @@ $ErrorActionPreference="Stop"
 Add-Type -AssemblyName System.Windows.Forms
 Add-Type -AssemblyName System.Drawing
 
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public static class DavidModeCenterActivation {
+  [DllImport("user32.dll", CharSet=CharSet.Unicode)]
+  public static extern IntPtr FindWindow(string lpClassName, string lpWindowName);
+
+  [DllImport("user32.dll")]
+  public static extern bool ShowWindowAsync(IntPtr hWnd, int nCmdShow);
+
+  [DllImport("user32.dll")]
+  public static extern bool SetForegroundWindow(IntPtr hWnd);
+
+  [DllImport("user32.dll")]
+  public static extern bool BringWindowToTop(IntPtr hWnd);
+
+  [DllImport("shell32.dll", CharSet=CharSet.Unicode)]
+  public static extern int SetCurrentProcessExplicitAppUserModelID(string appID);
+}
+"@
+
 # Hard singleton: at most one DAVID Mode Center may exist.
 $CenterMutex=New-Object System.Threading.Mutex($false,"Global\DAVID_MODE_CENTER_V2_SINGLETON")
 $CenterMutexOwned=$false
 try{
   try{$CenterMutexOwned=$CenterMutex.WaitOne(0)}catch [System.Threading.AbandonedMutexException]{$CenterMutexOwned=$true}
   if(-not$CenterMutexOwned){
+    try{
+      $existing=[DavidModeCenterActivation]::FindWindow($null,"DAVID MODE CENTER V2.1 STABLE")
+      if($existing-ne[IntPtr]::Zero){
+        [void][DavidModeCenterActivation]::ShowWindowAsync($existing,9)
+        [void][DavidModeCenterActivation]::BringWindowToTop($existing)
+        [void][DavidModeCenterActivation]::SetForegroundWindow($existing)
+      }
+    }catch{}
     try{$CenterMutex.Dispose()}catch{}
     exit 0
   }
@@ -16,6 +45,8 @@ try{
   try{$CenterMutex.Dispose()}catch{}
   throw
 }
+
+try{[void][DavidModeCenterActivation]::SetCurrentProcessExplicitAppUserModelID("SoulFlame.DAVID.ModeCenter")}catch{}
 
 $Repo="D:\ASI\enchev-auctions"
 $DavidDir=Join-Path $Repo "tools\david"
@@ -148,6 +179,8 @@ $form.StartPosition="CenterScreen"
 $form.MinimumSize=New-Object System.Drawing.Size(1180,760)
 $form.MaximizeBox=$true
 $form.WindowState=[System.Windows.Forms.FormWindowState]::Maximized
+$form.ShowInTaskbar=$true
+$form.TopMost=$false
 $form.BackColor=[System.Drawing.Color]::FromArgb(18,20,26)
 
 $mainTabs=New-Object System.Windows.Forms.TabControl
@@ -248,7 +281,7 @@ $taskDetail.Controls.Add($taskDetailStatus)
 $taskPreview=New-Object System.Windows.Forms.PictureBox
 $taskPreview.BackColor=[System.Drawing.Color]::Black
 $taskPreview.BorderStyle="FixedSingle"
-$taskPreview.SizeMode="StretchImage"
+$taskPreview.SizeMode="Zoom"
 $taskPreview.Location=New-Object System.Drawing.Point(8,82)
 $taskPreview.Size=New-Object System.Drawing.Size(1492,556)
 $taskPreview.Anchor="Top,Bottom,Left,Right"
@@ -1441,6 +1474,11 @@ $form.Add_FormClosing({
 
 $form.Show()
 [System.Windows.Forms.Application]::DoEvents()
+try{
+  $form.WindowState=[System.Windows.Forms.FormWindowState]::Maximized
+  $form.BringToFront()
+  $form.Activate()
+}catch{}
 Close-OldDavidPowerShellWindows -KeepPid $PID
 Hide-OwnConsole
 Update-Ui
