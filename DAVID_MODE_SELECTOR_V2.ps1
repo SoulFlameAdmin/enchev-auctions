@@ -211,7 +211,7 @@ $tasksHeader.Location=New-Object System.Drawing.Point(24,18)
 $tasksPage.Controls.Add($tasksHeader)
 
 $tasksStatus=New-Object System.Windows.Forms.Label
-$tasksStatus.Text="TASK PREVIEW WORKER: STARTING..."
+$tasksStatus.Text="TASK STATUS WORKER: STARTING..."
 $tasksStatus.ForeColor=[System.Drawing.Color]::Khaki
 $tasksStatus.Font=New-Object System.Drawing.Font("Consolas",10,[System.Drawing.FontStyle]::Bold)
 $tasksStatus.Size=New-Object System.Drawing.Size(1450,28)
@@ -279,13 +279,23 @@ $taskDetailStatus.Location=New-Object System.Drawing.Point(228,51)
 $taskDetail.Controls.Add($taskDetailStatus)
 
 $taskPreview=New-Object System.Windows.Forms.PictureBox
-$taskPreview.BackColor=[System.Drawing.Color]::Black
-$taskPreview.BorderStyle="FixedSingle"
-$taskPreview.SizeMode="Zoom"
-$taskPreview.Location=New-Object System.Drawing.Point(8,82)
-$taskPreview.Size=New-Object System.Drawing.Size(1492,556)
-$taskPreview.Anchor="Top,Bottom,Left,Right"
+$taskPreview.Visible=$false
+$taskPreview.Size=New-Object System.Drawing.Size(1,1)
 $taskDetail.Controls.Add($taskPreview)
+
+$taskProgress=New-Object System.Windows.Forms.TextBox
+$taskProgress.Multiline=$true
+$taskProgress.ReadOnly=$true
+$taskProgress.ScrollBars="Vertical"
+$taskProgress.WordWrap=$true
+$taskProgress.BackColor=[System.Drawing.Color]::FromArgb(7,9,13)
+$taskProgress.ForeColor=[System.Drawing.Color]::Gainsboro
+$taskProgress.Font=New-Object System.Drawing.Font("Consolas",12)
+$taskProgress.Location=New-Object System.Drawing.Point(18,82)
+$taskProgress.Size=New-Object System.Drawing.Size(1468,548)
+$taskProgress.Anchor="Top,Bottom,Left,Right"
+$taskProgress.Text="TASK STATUS - waiting for worker state..."
+$taskDetail.Controls.Add($taskProgress)
 
 $taskDetails=New-Object System.Windows.Forms.TextBox
 $taskDetails.Multiline=$true
@@ -308,16 +318,17 @@ $focusTask.Anchor="Top,Right"
 $focusTask.FlatStyle="Flat"
 $focusTask.ForeColor=[System.Drawing.Color]::White
 $focusTask.BackColor=[System.Drawing.Color]::FromArgb(35,119,191)
+$focusTask.Visible=$false
 $taskDetail.Controls.Add($focusTask)
 
 $taskDetail.Add_Resize({
   try{
-    $pad=8
+    $pad=18
     $top=82
     $w=[Math]::Max(300,$taskDetail.ClientSize.Width-($pad*2))
     $h=[Math]::Max(220,$taskDetail.ClientSize.Height-$top-$pad)
-    $taskPreview.Location=New-Object System.Drawing.Point($pad,$top)
-    $taskPreview.Size=New-Object System.Drawing.Size($w,$h)
+    $taskProgress.Location=New-Object System.Drawing.Point($pad,$top)
+    $taskProgress.Size=New-Object System.Drawing.Size($w,$h)
   }catch{}
 })
 
@@ -829,10 +840,20 @@ function Build-TaskGraph{
       $title=[string]$t.title
       if($title.Length-gt34){$title=$title.Substring(0,34)+"..."}
       $working=[bool]$t.working
+      $phase=""
+      $sendText="SEND: -"
+      if($t.progress){
+        $phase=[string]$t.progress.phase
+        if($phase.Length-gt28){$phase=$phase.Substring(0,28)+"..."}
+        if([bool]$t.progress.sendAck){$sendText="SEND: ACK"}
+        elseif(-not[string]::IsNullOrWhiteSpace([string]$t.progress.sendStatus)){$sendText="SEND: "+[string]$t.progress.sendStatus}
+      }
 
       $b=New-Object System.Windows.Forms.Button
       $b.Tag=[string]$t.key
-      $b.Text=($role+$nl+$status+"  |  "+$source+" "+$cdp+$nl+$title)
+      $line2=$status+" | "+$sendText
+      $line3=if([string]::IsNullOrWhiteSpace($phase)){$source+" "+$cdp}else{"PHASE: "+$phase}
+      $b.Text=($role+$nl+$line2+$nl+$line3)
       $b.TextAlign="MiddleLeft"
       $b.Size=New-Object System.Drawing.Size($boxW,$boxH)
       $b.Location=New-Object System.Drawing.Point($x,$y)
@@ -860,17 +881,15 @@ function Refresh-TaskDetail{
   if(-not$t){
     $taskDetailTitle.Text="TASK NOT AVAILABLE"
     $taskDetailStatus.Text="STATUS: OFFLINE"
-    $taskDetails.Text="The selected task is no longer present in the current task manifest."
-    Clear-TaskPreviewImage
+    $taskProgress.Text="TASK NOT AVAILABLE"+[Environment]::NewLine+"The selected task is no longer present in the current task manifest."
     return
   }
 
   $role=[string]$t.role
   $status=[string]$t.status
   $working=[bool]$t.working
-
-  $taskDetailTitle.Text=$role+" - EDGE TASK"
-  $taskDetailStatus.Text=("STATUS: {0} | SOURCE: {1} | CDP: {2}" -f $status,[string]$t.source,[string]$t.cdp)
+  $taskDetailTitle.Text=$role+" - TASK PROGRESS"
+  $taskDetailStatus.Text=("STATUS: {0} | WORKING: {1} | SOURCE: {2} | CDP: {3}" -f $status,([string]$working).ToUpperInvariant(),[string]$t.source,[string]$t.cdp)
 
   if($status-eq"THINKING"){
     $taskDetailStatus.ForeColor=[System.Drawing.Color]::DeepSkyBlue
@@ -883,22 +902,84 @@ function Refresh-TaskDetail{
   }
 
   $lines=New-Object System.Collections.Generic.List[string]
-  $lines.Add("ROLE: "+$role+" | STATUS: "+$status+" | WORKING: "+([string]$working).ToUpperInvariant())
+  $lines.Add("=== DO KUDE E ZADACHATA ===")
+  $lines.Add("")
+  $lines.Add("TASK: "+$role)
+  $lines.Add("RUNTIME: "+$status+" | WORKING="+([string]$working).ToUpperInvariant())
   $lines.Add("TITLE: "+[string]$t.title)
-  $lines.Add("URL: "+[string]$t.url)
-  $lines.Add("UPDATED: "+[string]$t.updatedAt)
-  $taskDetails.Text=($lines -join [Environment]::NewLine)
+  $lines.Add("")
 
-  $preview=[string]$t.preview
-  if(-not[string]::IsNullOrWhiteSpace($preview)-and(Test-Path -LiteralPath $preview)){
-    Set-TaskPreviewImage -Path $preview
+  if($t.progress){
+    $p=$t.progress
+    $phase=[string]$p.phase
+    if([string]::IsNullOrWhiteSpace($phase)){$phase="unknown"}
+    $lines.Add("PHASE NOW: "+$phase)
+
+    $sendAck=if([bool]$p.sendAck){"TRUE"}else{"FALSE"}
+    $sendStatus=[string]$p.sendStatus
+    if([string]::IsNullOrWhiteSpace($sendStatus)){$sendStatus="NO SEND TELEMETRY YET"}
+    $lines.Add("GPT SEND ACK: "+$sendAck)
+    $lines.Add("GPT SEND STATUS: "+$sendStatus)
+
+    if(-not[string]::IsNullOrWhiteSpace([string]$p.sendMethod)){
+      $lines.Add("SEND METHOD: "+[string]$p.sendMethod)
+    }
+    if([int]$p.sendAttempt-gt0){
+      $lines.Add("SEND ATTEMPT: "+[string]$p.sendAttempt)
+    }
+    if(-not[string]::IsNullOrWhiteSpace([string]$p.sendSignal)){
+      $lines.Add("ACK SIGNAL: "+[string]$p.sendSignal)
+    }
+    if(-not[string]::IsNullOrWhiteSpace([string]$p.sendAt)){
+      $lines.Add("LAST VERIFIED SEND: "+[string]$p.sendAt)
+    }
+    if(-not[string]::IsNullOrWhiteSpace([string]$p.sendError)){
+      $lines.Add("SEND ERROR: "+[string]$p.sendError)
+    }
+
+    $lines.Add("")
+    $lines.Add("TURNS SENT: "+[string]$p.turnsSent)
+    $lines.Add("RELAY ATTEMPTS: "+[string]$p.relayAttempts)
+    $lines.Add("RECOVERY ATTEMPT: "+[string]$p.recoveryAttempt)
+
+    if(-not[string]::IsNullOrWhiteSpace([string]$p.lastAction)){
+      $lines.Add("")
+      $lines.Add("LAST ACTION:")
+      $lines.Add([string]$p.lastAction)
+    }
+    if(-not[string]::IsNullOrWhiteSpace([string]$p.lastResult)){
+      $lines.Add("")
+      $lines.Add("LAST RESULT:")
+      $lines.Add([string]$p.lastResult)
+    }
+    if(-not[string]::IsNullOrWhiteSpace([string]$p.problem)){
+      $lines.Add("")
+      $lines.Add("PROBLEM:")
+      $lines.Add([string]$p.problem)
+    }
+    if(-not[string]::IsNullOrWhiteSpace([string]$p.problemRetryAt)){
+      $lines.Add("RETRY AT: "+[string]$p.problemRetryAt)
+    }
+    if(-not[string]::IsNullOrWhiteSpace([string]$p.promptPreview)){
+      $lines.Add("")
+      $lines.Add("LAST PROMPT PREVIEW:")
+      $lines.Add([string]$p.promptPreview)
+    }
+    if(-not[string]::IsNullOrWhiteSpace([string]$p.stateUpdatedAt)){
+      $lines.Add("")
+      $lines.Add("WORKER STATE UPDATED: "+[string]$p.stateUpdatedAt)
+    }
   }else{
-    Clear-TaskPreviewImage
+    $lines.Add("PHASE NOW: no worker state file available")
+    $lines.Add("GPT SEND ACK: UNKNOWN")
   }
 
-  $focusTask.Enabled=($working-and-not[string]::IsNullOrWhiteSpace([string]$t.url))
-}
+  $lines.Add("")
+  $lines.Add("TAB UPDATED: "+[string]$t.updatedAt)
+  $lines.Add("URL: "+[string]$t.url)
 
+  $taskProgress.Text=($lines -join [Environment]::NewLine)
+}
 function Open-TaskDetail{
   param([string]$Key)
   $t=Get-TaskByKey -Key $Key
@@ -927,7 +1008,7 @@ function Update-TasksUi{
   $m=Read-Json $ControlPanelTasks
 
   if(-not$m){
-    $tasksStatus.Text=("TASK PREVIEW WORKER: {0} | waiting for task topology..." -f $(if($workerCount-gt0){"ONLINE"}else{"OFFLINE"}))
+    $tasksStatus.Text=("TASK STATUS WORKER: {0} | waiting for task topology..." -f $(if($workerCount-gt0){"ONLINE"}else{"OFFLINE"}))
     return
   }
 
@@ -940,9 +1021,9 @@ function Update-TasksUi{
   $davidOnline=[string]$m.davidCdpOnline
   $scientistOnline=[string]$m.scientistCdpOnline
   $updated=[string]$m.updatedAt
-  $tasksStatus.Text=("PREVIEW W={0} | WORKING={1}/{2} | DAVID 9444={3} | SCIENTIST 9555={4} | UPDATED={5}" -f $workerCount,$working,$rows.Count,$davidOnline.ToUpperInvariant(),$scientistOnline.ToUpperInvariant(),$updated)
+  $tasksStatus.Text=("STATUS W={0} | WORKING={1}/{2} | DAVID 9444={3} | SCIENTIST 9555={4} | UPDATED={5}" -f $workerCount,$working,$rows.Count,$davidOnline.ToUpperInvariant(),$scientistOnline.ToUpperInvariant(),$updated)
 
-  $taskSig=($rows|ForEach-Object{([string]$_.key)+":"+([string]$_.status)+":"+([string]$_.working)})-join"|"
+  $taskSig=($rows|ForEach-Object{([string]$_.key)+":"+([string]$_.status)+":"+([string]$_.working)+":"+([string]$_.progress.phase)+":"+([string]$_.progress.sendStatus)+":"+([string]$_.progress.sendAck)+":"+([string]$_.progress.stateUpdatedAt)})-join"|"
   $edgeSig=($connections|ForEach-Object{([string]$_.from)+">"+([string]$_.to)+":"+([string]$_.kind)+":"+([string]$_.active)})-join"|"
   $sizeSig=([string]$taskGraph.ClientSize.Width)+"x"+([string]$taskGraph.ClientSize.Height)
   $graphSig=$taskSig+"||"+$edgeSig+"||"+$sizeSig
