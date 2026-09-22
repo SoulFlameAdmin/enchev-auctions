@@ -109,7 +109,7 @@ function logSummary(){
 async function shellProcesses(){
   const ps=[
     "$names=@('powershell.exe','pwsh.exe','cmd.exe','node.exe')",
-    "$p=@(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue|Where-Object{$names -contains $_.Name})",
+    "$p=@(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue|Where-Object{$names -contains $_.Name -and $_.ProcessId -ne $PID})",
     "$o=@($p|Select-Object -First 80 @{n='pid';e={$_.ProcessId}},@{n='ppid';e={$_.ParentProcessId}},@{n='name';e={$_.Name}},@{n='cmd';e={$_.CommandLine}})",
     "$o|ConvertTo-Json -Compress"
   ].join(";");
