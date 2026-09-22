@@ -131,7 +131,7 @@ function Get-Snapshot{
 }
 
 $form=New-Object System.Windows.Forms.Form
-$form.Text="DAVID MODE CENTER V2.2 + SF SCIENTIST"
+$form.Text="DAVID MODE CENTER V2.1 STABLE"
 $form.StartPosition="CenterScreen"
 $form.Size=New-Object System.Drawing.Size(760,680)
 $form.MinimumSize=New-Object System.Drawing.Size(760,680)
@@ -139,7 +139,7 @@ $form.MaximizeBox=$false
 $form.BackColor=[System.Drawing.Color]::FromArgb(18,20,26)
 
 $title=New-Object System.Windows.Forms.Label
-$title.Text="DAVID MODE CENTER V2.2"
+$title.Text="DAVID MODE CENTER V2.1"
 $title.ForeColor=[System.Drawing.Color]::White
 $title.Font=New-Object System.Drawing.Font("Segoe UI",20,[System.Drawing.FontStyle]::Bold)
 $title.AutoSize=$true
