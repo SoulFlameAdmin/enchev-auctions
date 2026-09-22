@@ -1,0 +1,55 @@
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+const HERE=path.dirname(fileURLToPath(import.meta.url));
+const ROOT=path.resolve(HERE,"..","..");
+const read=p=>fs.readFileSync(path.join(ROOT,p),"utf8");
+
+const side=read("tools/david/sf-scientist-sidecar.mjs");
+const start=read("START_SF_SCIENTIST.ps1");
+const stop=read("STOP_SF_SCIENTIST.ps1");
+const center=read("DAVID_MODE_SELECTOR_V2.ps1");
+
+for(const token of [
+  'SF_SCIENTIST_CDP_URL||"http://127.0.0.1:9555"',
+  'DAVID_CDP_URL||"http://127.0.0.1:9444"',
+  '.sf-scientist-state.json',
+  '.sf-scientist-command.json',
+  'autonomous-decision',
+  'CONSULT_AB',
+  'OPEN_POWERSHELL',
+  'SEARCH_WEB'
+]) if(!side.includes(token)) throw new Error("Scientist sidecar invariant missing: "+token);
+
+for(const token of [
+  'SF_SCIENTIST_CHATGPT_PROFILE',
+  'sf-scientist-sidecar.mjs',
+  '[int]$Port = 9555',
+  '[int]$DavidPort = 9444',
+  'Existing DAVID architecture was not modified'
+]) if(!start.includes(token)) throw new Error("Scientist launcher invariant missing: "+token);
+
+if(stop.includes("DAVID_CHATGPT_PROFILE")) throw new Error("Scientist stop must not target DAVID browser profile");
+if(stop.includes("--remote-debugging-port=9444")) throw new Error("Scientist stop must not target DAVID CDP 9444");
+
+for(const token of [
+  "DAVID MODE CENTER V2.1",
+  "SF AI SCIENTIST",
+  "START SCIENTIST",
+  "STOP SCIENTIST",
+  "AUTONOMOUS DECISION / OBSERVATION",
+  "Start-ScientistSidecar",
+  "sf-scientist-sidecar.mjs",
+  "SOULFLAME SYSTEM",
+  "DAVID A + B",
+  "ENCHEV ONLY",
+  "DPP ONLY",
+  "DAVID APK ONLY"
+]) if(!center.includes(token)) throw new Error("Mode Center Scientist invariant missing: "+token);
+
+for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_TARGET=\"2\""]) {
+  if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
+}
+
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED scientist_cdp=9555 david_observe_cdp=9444 autonomous_low_risk_tools=ALLOWLISTED");

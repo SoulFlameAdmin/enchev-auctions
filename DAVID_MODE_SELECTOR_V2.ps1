@@ -24,6 +24,11 @@ $StopScript=Join-Path $Repo "STOP_DAVID_ALL_CLEAN.ps1"
 $SoulRestart=Join-Path $Repo "RESTART_DAVID_AUTONOMY_CLEAN.ps1"
 $AbRestart=Join-Path $Repo "RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1"
 $SingleRestart=Join-Path $Repo "RESTART_DAVID_SINGLE_CLEAN.ps1"
+$ScientistStart=Join-Path $Repo "START_SF_SCIENTIST.ps1"
+$ScientistStop=Join-Path $Repo "STOP_SF_SCIENTIST.ps1"
+$ScientistState=Join-Path $DavidDir ".sf-scientist-state.json"
+$ScientistCommand=Join-Path $DavidDir ".sf-scientist-command.json"
+$ScientistResponse=Join-Path $DavidDir ".sf-scientist-response.json"
 $FreeAUrl="https://chatgpt.com/c/6ab08cb0-3738-83eb-b4bf-2ef8bf4933a8"
 $FreeBUrl="https://chatgpt.com/c/6ab08cab-006c-83eb-a753-2ea42567e22f"
 
@@ -261,11 +266,182 @@ $note.Size=New-Object System.Drawing.Size(340,28)
 $note.Location=New-Object System.Drawing.Point(381,574)
 $form.Controls.Add($note)
 
+$scientistMenu=New-Object System.Windows.Forms.Button
+$scientistMenu.Text=[string][char]0x2630
+$scientistMenu.Size=New-Object System.Drawing.Size(40,36)
+$scientistMenu.Location=New-Object System.Drawing.Point(681,18)
+$scientistMenu.Font=New-Object System.Drawing.Font("Segoe UI",15,[System.Drawing.FontStyle]::Bold)
+$scientistMenu.FlatStyle="Flat"
+$scientistMenu.ForeColor=[System.Drawing.Color]::White
+$scientistMenu.BackColor=[System.Drawing.Color]::FromArgb(48,52,63)
+$form.Controls.Add($scientistMenu)
+
+$scientistPanel=New-Object System.Windows.Forms.Panel
+$scientistPanel.Size=New-Object System.Drawing.Size(370,640)
+$scientistPanel.Location=New-Object System.Drawing.Point(742,0)
+$scientistPanel.BackColor=[System.Drawing.Color]::FromArgb(13,15,20)
+$scientistPanel.Visible=$false
+$form.Controls.Add($scientistPanel)
+
+$scientistTitle=New-Object System.Windows.Forms.Label
+$scientistTitle.Text="SF AI SCIENTIST"
+$scientistTitle.ForeColor=[System.Drawing.Color]::White
+$scientistTitle.Font=New-Object System.Drawing.Font("Segoe UI",15,[System.Drawing.FontStyle]::Bold)
+$scientistTitle.AutoSize=$true
+$scientistTitle.Location=New-Object System.Drawing.Point(18,18)
+$scientistPanel.Controls.Add($scientistTitle)
+
+$scientistStatus=New-Object System.Windows.Forms.Label
+$scientistStatus.Text="STATUS: OFFLINE"
+$scientistStatus.ForeColor=[System.Drawing.Color]::Khaki
+$scientistStatus.Font=New-Object System.Drawing.Font("Consolas",9,[System.Drawing.FontStyle]::Bold)
+$scientistStatus.Size=New-Object System.Drawing.Size(330,42)
+$scientistStatus.Location=New-Object System.Drawing.Point(20,54)
+$scientistPanel.Controls.Add($scientistStatus)
+
+$scientistStartBtn=New-Object System.Windows.Forms.Button
+$scientistStartBtn.Text="START SCIENTIST"
+$scientistStartBtn.Size=New-Object System.Drawing.Size(155,34)
+$scientistStartBtn.Location=New-Object System.Drawing.Point(20,96)
+$scientistStartBtn.FlatStyle="Flat"
+$scientistStartBtn.ForeColor=[System.Drawing.Color]::White
+$scientistStartBtn.BackColor=[System.Drawing.Color]::FromArgb(35,119,191)
+$scientistPanel.Controls.Add($scientistStartBtn)
+
+$scientistStopBtn=New-Object System.Windows.Forms.Button
+$scientistStopBtn.Text="STOP SCIENTIST"
+$scientistStopBtn.Size=New-Object System.Drawing.Size(155,34)
+$scientistStopBtn.Location=New-Object System.Drawing.Point(190,96)
+$scientistStopBtn.FlatStyle="Flat"
+$scientistStopBtn.ForeColor=[System.Drawing.Color]::White
+$scientistStopBtn.BackColor=[System.Drawing.Color]::FromArgb(130,52,52)
+$scientistPanel.Controls.Add($scientistStopBtn)
+
+$scientistDecisionLabel=New-Object System.Windows.Forms.Label
+$scientistDecisionLabel.Text="AUTONOMOUS DECISION / OBSERVATION"
+$scientistDecisionLabel.ForeColor=[System.Drawing.Color]::Silver
+$scientistDecisionLabel.Font=New-Object System.Drawing.Font("Segoe UI",8,[System.Drawing.FontStyle]::Bold)
+$scientistDecisionLabel.AutoSize=$true
+$scientistDecisionLabel.Location=New-Object System.Drawing.Point(20,143)
+$scientistPanel.Controls.Add($scientistDecisionLabel)
+
+$scientistDecision=New-Object System.Windows.Forms.TextBox
+$scientistDecision.Multiline=$true
+$scientistDecision.ReadOnly=$true
+$scientistDecision.ScrollBars="Vertical"
+$scientistDecision.BackColor=[System.Drawing.Color]::FromArgb(10,12,16)
+$scientistDecision.ForeColor=[System.Drawing.Color]::Gainsboro
+$scientistDecision.Font=New-Object System.Drawing.Font("Consolas",9)
+$scientistDecision.Size=New-Object System.Drawing.Size(325,185)
+$scientistDecision.Location=New-Object System.Drawing.Point(20,166)
+$scientistPanel.Controls.Add($scientistDecision)
+
+$scientistChatLabel=New-Object System.Windows.Forms.Label
+$scientistChatLabel.Text="CHAT WITH SCIENTIST"
+$scientistChatLabel.ForeColor=[System.Drawing.Color]::Silver
+$scientistChatLabel.Font=New-Object System.Drawing.Font("Segoe UI",8,[System.Drawing.FontStyle]::Bold)
+$scientistChatLabel.AutoSize=$true
+$scientistChatLabel.Location=New-Object System.Drawing.Point(20,367)
+$scientistPanel.Controls.Add($scientistChatLabel)
+
+$scientistReply=New-Object System.Windows.Forms.TextBox
+$scientistReply.Multiline=$true
+$scientistReply.ReadOnly=$true
+$scientistReply.ScrollBars="Vertical"
+$scientistReply.BackColor=[System.Drawing.Color]::FromArgb(10,12,16)
+$scientistReply.ForeColor=[System.Drawing.Color]::White
+$scientistReply.Font=New-Object System.Drawing.Font("Segoe UI",9)
+$scientistReply.Size=New-Object System.Drawing.Size(325,125)
+$scientistReply.Location=New-Object System.Drawing.Point(20,390)
+$scientistPanel.Controls.Add($scientistReply)
+
+$scientistInput=New-Object System.Windows.Forms.TextBox
+$scientistInput.Multiline=$true
+$scientistInput.BackColor=[System.Drawing.Color]::FromArgb(22,25,32)
+$scientistInput.ForeColor=[System.Drawing.Color]::White
+$scientistInput.Font=New-Object System.Drawing.Font("Segoe UI",9)
+$scientistInput.Size=New-Object System.Drawing.Size(238,65)
+$scientistInput.Location=New-Object System.Drawing.Point(20,528)
+$scientistPanel.Controls.Add($scientistInput)
+
+$scientistSend=New-Object System.Windows.Forms.Button
+$scientistSend.Text="SEND"
+$scientistSend.Size=New-Object System.Drawing.Size(77,65)
+$scientistSend.Location=New-Object System.Drawing.Point(268,528)
+$scientistSend.FlatStyle="Flat"
+$scientistSend.ForeColor=[System.Drawing.Color]::White
+$scientistSend.BackColor=[System.Drawing.Color]::FromArgb(83,64,145)
+$scientistPanel.Controls.Add($scientistSend)
+
+$scientistHint=New-Object System.Windows.Forms.Label
+$scientistHint.Text="Scientist sidecar: DAVID 9444 architecture stays unchanged."
+$scientistHint.ForeColor=[System.Drawing.Color]::DarkGray
+$scientistHint.Font=New-Object System.Drawing.Font("Segoe UI",8)
+$scientistHint.Size=New-Object System.Drawing.Size(325,35)
+$scientistHint.Location=New-Object System.Drawing.Point(20,600)
+$scientistPanel.Controls.Add($scientistHint)
+
 $script:ActionProcess=$null
 $script:ActionName=""
 $script:Busy=$false
 $script:Closing=$false
 $script:LastRefresh=[DateTime]::MinValue
+
+$script:ScientistDrawerOpen=$false
+$script:ScientistProcess=$null
+
+function Start-ScientistSidecar{
+  if((Get-NodeCount "sf-scientist-sidecar.mjs")-gt 0){return}
+  if(-not(Test-Path $ScientistStart)){return}
+  try{
+    $script:ScientistProcess=Start-Process -FilePath $Pwsh -ArgumentList @("-NoProfile","-ExecutionPolicy","Bypass","-File",$ScientistStart,"-Port","9555","-DavidPort","$Port") -PassThru -WindowStyle Hidden
+  }catch{}
+}
+
+function Stop-ScientistSidecar{
+  if(-not(Test-Path $ScientistStop)){return}
+  try{Start-Process -FilePath $Pwsh -ArgumentList @("-NoProfile","-ExecutionPolicy","Bypass","-File",$ScientistStop,"-Port","9555") -WindowStyle Hidden|Out-Null}catch{}
+}
+
+function Update-ScientistUi{
+  $st=Read-Json $ScientistState
+  $rp=Read-Json $ScientistResponse
+  $count=Get-NodeCount "sf-scientist-sidecar.mjs"
+  if($st){
+    $status=[string]$st.status
+    $hb=[string]$st.heartbeatAt
+    $scientistStatus.Text=("STATUS: {0}  WORKER={1}" -f $status,$count)+[Environment]::NewLine+("HEARTBEAT: {0}" -f $hb)
+    if($status-eq"online"){$scientistStatus.ForeColor=[System.Drawing.Color]::LightGreen}
+    elseif($status-eq"thinking"){$scientistStatus.ForeColor=[System.Drawing.Color]::Cyan}
+    elseif($status-eq"login-required"){$scientistStatus.ForeColor=[System.Drawing.Color]::Khaki}
+    else{$scientistStatus.ForeColor=[System.Drawing.Color]::Orange}
+    $decision=[string]$st.lastDecision
+    if(-not$decision){$decision=[string]$st.lastObservation}
+    if(-not$decision){$decision=[string]$st.lastAction}
+    $tool=[string]$st.lastToolResult
+    if($tool){$decision=$decision+[Environment]::NewLine+[Environment]::NewLine+"TOOL: "+$tool}
+    $scientistDecision.Text=$decision
+  }else{
+    $scientistStatus.Text=("STATUS: OFFLINE  WORKER={0}" -f $count)+[Environment]::NewLine+"Scientist auto-starts with DAVID."
+    $scientistStatus.ForeColor=[System.Drawing.Color]::Khaki
+    $scientistDecision.Text="No Scientist state yet."
+  }
+  if($rp-and$rp.response){$scientistReply.Text=[string]$rp.response}
+}
+
+function Send-ScientistChat{
+  $text=[string]$scientistInput.Text
+  if([string]::IsNullOrWhiteSpace($text)){return}
+  Start-ScientistSidecar
+  $cmd=[ordered]@{id=[guid]::NewGuid().ToString();createdAt=(Get-Date).ToUniversalTime().ToString("o");text=$text.Trim()}
+  try{
+    $cmd|ConvertTo-Json -Depth 8|Set-Content -LiteralPath $ScientistCommand -Encoding UTF8
+    $scientistReply.Text="SENT -> Scientist is analyzing..."
+    $scientistInput.Clear()
+  }catch{
+    $scientistReply.Text="Could not write Scientist command: "+$_.Exception.Message
+  }
+}
 
 function Set-ModeButtons([bool]$Enabled){
   foreach($b in @($soul,$ab,$soloEnchev,$soloDpp,$soloApk)){$b.Enabled=$Enabled}
@@ -279,6 +455,7 @@ function Start-Mode([string]$Name,[string]$RestartScript,[string[]]$ExtraArgs=@(
     return
   }
 
+  Start-ScientistSidecar
   $script:Busy=$true
   $script:ActionName=$Name
   Set-ModeButtons $false
@@ -332,7 +509,22 @@ $soloEnchev.Add_Click({Start-Mode "ENCHEV ONLY" $SingleRestart @("-Worker","SYST
 $soloDpp.Add_Click({Start-Mode "DPP ONLY" $SingleRestart @("-Worker","APP2")})
 $soloApk.Add_Click({Start-Mode "DAVID APK ONLY" $SingleRestart @("-Worker","APK")})
 $stop.Add_Click({Start-StopAll})
+
 $refresh.Add_Click({Update-Ui})
+$scientistMenu.Add_Click({
+  $script:ScientistDrawerOpen=-not$script:ScientistDrawerOpen
+  $scientistPanel.Visible=$script:ScientistDrawerOpen
+  if($script:ScientistDrawerOpen){$form.Size=New-Object System.Drawing.Size(1140,680);Update-ScientistUi}else{$form.Size=New-Object System.Drawing.Size(760,680)}
+})
+$scientistStartBtn.Add_Click({Start-ScientistSidecar;Start-Sleep -Milliseconds 150;Update-ScientistUi})
+$scientistStopBtn.Add_Click({Stop-ScientistSidecar;Start-Sleep -Milliseconds 150;Update-ScientistUi})
+$scientistSend.Add_Click({Send-ScientistChat})
+$scientistInput.Add_KeyDown({
+  if($_.Control-and$_.KeyCode-eq[System.Windows.Forms.Keys]::Enter){
+    $_.SuppressKeyPress=$true
+    Send-ScientistChat
+  }
+})
 
 # V2.1 STABLE: no WinForms Timer.
 # Timer.OnTick can invoke a PowerShell ScriptBlock after its pipeline is stopping,
@@ -346,6 +538,10 @@ $form.Show()
 Close-OldDavidPowerShellWindows -KeepPid $PID
 Hide-OwnConsole
 Update-Ui
+try{
+  $bootSnapshot=Get-Snapshot
+  if($bootSnapshot.Mode-ne"STOPPED"){Start-ScientistSidecar}
+}catch{}
 
 while(-not $script:Closing -and $form.Visible){
   try{
@@ -369,6 +565,7 @@ while(-not $script:Closing -and $form.Visible){
 
     if(([DateTime]::UtcNow-$script:LastRefresh).TotalMilliseconds-ge 1000){
       Update-Ui
+      if($script:ScientistDrawerOpen){Update-ScientistUi}
       $script:LastRefresh=[DateTime]::UtcNow
     }
 
