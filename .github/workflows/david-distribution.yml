@@ -1,0 +1,55 @@
+name: DAVID Distribution Validation
+on:
+  workflow_dispatch:
+  push:
+    branches: ['distribution/**']
+    paths: ['tools/david/**', 'tools/david-distribution/**', 'docs/david-distribution/**', '.github/workflows/david-distribution.yml']
+  pull_request:
+    paths: ['tools/david/**', 'tools/david-distribution/**', 'docs/david-distribution/**', '.github/workflows/david-distribution.yml']
+permissions:
+  contents: read
+jobs:
+  inventory:
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Inventory safety tests
+        run: node --test tools/david-distribution/*.test.mjs
+      - name: Install locked automation dependency
+        working-directory: tools/david
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Existing core contracts
+        shell: pwsh
+        run: |
+          $checks = @('verify-session-invariants.mjs','verify-autonomy-profile.mjs','verify-fast-solo.mjs','verify-sf-scientist-sidecar.mjs')
+          foreach ($check in $checks) {
+            node "tools/david/$check"
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
+      - name: Parse audited Windows scripts using Windows PowerShell
+        shell: powershell
+        run: |
+          $manifest = Get-Content tools/david-distribution/runtime-manifest.json -Raw | ConvertFrom-Json
+          foreach ($file in $manifest.hostScripts) {
+            $tokens = $null; $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile((Resolve-Path $file), [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count -gt 0) { $errors | ForEach-Object { Write-Error $_.Message }; exit 1 }
+          }
+          Write-Output 'DAVID_WINDOWS_POWERSHELL_PARSE PASS'
+      - name: Record inventory evidence (not a release)
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force artifacts | Out-Null
+          node tools/david-distribution/inventory.mjs --json | Set-Content -Encoding utf8 artifacts/runtime-inventory.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          git rev-parse HEAD | Set-Content artifacts/source-commit.txt
+      - uses: actions/upload-artifact@v4
+        with:
+          name: david-source-inventory-${{ github.sha }}
+          path: artifacts/
+          if-no-files-found: error
+# Deliberately no publication, deployment or channel mutation in validation CI.
