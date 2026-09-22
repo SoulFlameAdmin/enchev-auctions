@@ -30,6 +30,9 @@ $ScientistState=Join-Path $DavidDir ".sf-scientist-state.json"
 $ScientistCommand=Join-Path $DavidDir ".sf-scientist-command.json"
 $ScientistResponse=Join-Path $DavidDir ".sf-scientist-response.json"
 $ScientistOperatorLog=Join-Path $DavidDir ".sf-scientist-operator.jsonl"
+$ControlPanelPreviewWorker=Join-Path $DavidDir "control-panel-task-preview.mjs"
+$ControlPanelTasks=Join-Path $DavidDir ".david-control-panel-tasks.json"
+$ControlPanelCommand=Join-Path $DavidDir ".david-control-panel-command.json"
 $FreeAUrl="https://chatgpt.com/c/6ab08cb0-3738-83eb-b4bf-2ef8bf4933a8"
 $FreeBUrl="https://chatgpt.com/c/6ab08cab-006c-83eb-a753-2ea42567e22f"
 
@@ -142,10 +145,97 @@ function Get-Snapshot{
 $form=New-Object System.Windows.Forms.Form
 $form.Text="DAVID MODE CENTER V2.1 STABLE"
 $form.StartPosition="CenterScreen"
-$form.Size=New-Object System.Drawing.Size(760,680)
-$form.MinimumSize=New-Object System.Drawing.Size(760,680)
-$form.MaximizeBox=$false
+$form.MinimumSize=New-Object System.Drawing.Size(1180,760)
+$form.MaximizeBox=$true
+$form.WindowState=[System.Windows.Forms.FormWindowState]::Maximized
 $form.BackColor=[System.Drawing.Color]::FromArgb(18,20,26)
+
+$mainTabs=New-Object System.Windows.Forms.TabControl
+$mainTabs.Dock="Fill"
+$mainTabs.Font=New-Object System.Drawing.Font("Segoe UI",10,[System.Drawing.FontStyle]::Bold)
+$mainTabs.Appearance="Normal"
+$mainTabs.Padding=New-Object System.Drawing.Point(18,8)
+
+$controlPage=New-Object System.Windows.Forms.TabPage
+$controlPage.Text="PAGE 1 - CONTROL"
+$controlPage.BackColor=[System.Drawing.Color]::FromArgb(18,20,26)
+$controlPage.AutoScroll=$true
+
+$tasksPage=New-Object System.Windows.Forms.TabPage
+$tasksPage.Text="PAGE 2 - TASKS / ZADACHI"
+$tasksPage.BackColor=[System.Drawing.Color]::FromArgb(12,14,18)
+
+[void]$mainTabs.TabPages.Add($controlPage)
+[void]$mainTabs.TabPages.Add($tasksPage)
+$form.Controls.Add($mainTabs)
+
+$tasksHeader=New-Object System.Windows.Forms.Label
+$tasksHeader.Text="DAVID TASKS - LIVE EDGE SESSIONS"
+$tasksHeader.ForeColor=[System.Drawing.Color]::White
+$tasksHeader.Font=New-Object System.Drawing.Font("Segoe UI",18,[System.Drawing.FontStyle]::Bold)
+$tasksHeader.AutoSize=$true
+$tasksHeader.Location=New-Object System.Drawing.Point(24,18)
+$tasksPage.Controls.Add($tasksHeader)
+
+$tasksStatus=New-Object System.Windows.Forms.Label
+$tasksStatus.Text="TASK PREVIEW WORKER: STARTING..."
+$tasksStatus.ForeColor=[System.Drawing.Color]::Khaki
+$tasksStatus.Font=New-Object System.Drawing.Font("Consolas",10,[System.Drawing.FontStyle]::Bold)
+$tasksStatus.Size=New-Object System.Drawing.Size(1000,28)
+$tasksStatus.Location=New-Object System.Drawing.Point(27,56)
+$tasksStatus.Anchor="Top,Left,Right"
+$tasksPage.Controls.Add($tasksStatus)
+
+$taskList=New-Object System.Windows.Forms.ListBox
+$taskList.BackColor=[System.Drawing.Color]::FromArgb(17,19,25)
+$taskList.ForeColor=[System.Drawing.Color]::White
+$taskList.Font=New-Object System.Drawing.Font("Consolas",10)
+$taskList.BorderStyle="FixedSingle"
+$taskList.Location=New-Object System.Drawing.Point(28,92)
+$taskList.Size=New-Object System.Drawing.Size(330,580)
+$taskList.Anchor="Top,Bottom,Left"
+$tasksPage.Controls.Add($taskList)
+
+$taskPreview=New-Object System.Windows.Forms.PictureBox
+$taskPreview.BackColor=[System.Drawing.Color]::Black
+$taskPreview.BorderStyle="FixedSingle"
+$taskPreview.SizeMode="Zoom"
+$taskPreview.Location=New-Object System.Drawing.Point(382,92)
+$taskPreview.Size=New-Object System.Drawing.Size(850,500)
+$taskPreview.Anchor="Top,Bottom,Left,Right"
+$tasksPage.Controls.Add($taskPreview)
+
+$taskDetails=New-Object System.Windows.Forms.TextBox
+$taskDetails.Multiline=$true
+$taskDetails.ReadOnly=$true
+$taskDetails.ScrollBars="Vertical"
+$taskDetails.BackColor=[System.Drawing.Color]::FromArgb(9,11,15)
+$taskDetails.ForeColor=[System.Drawing.Color]::Gainsboro
+$taskDetails.Font=New-Object System.Drawing.Font("Consolas",9)
+$taskDetails.Location=New-Object System.Drawing.Point(382,606)
+$taskDetails.Size=New-Object System.Drawing.Size(850,115)
+$taskDetails.Anchor="Bottom,Left,Right"
+$tasksPage.Controls.Add($taskDetails)
+
+$focusTask=New-Object System.Windows.Forms.Button
+$focusTask.Text="FOCUS SELECTED EDGE"
+$focusTask.Size=New-Object System.Drawing.Size(200,40)
+$focusTask.Location=New-Object System.Drawing.Point(28,686)
+$focusTask.Anchor="Bottom,Left"
+$focusTask.FlatStyle="Flat"
+$focusTask.ForeColor=[System.Drawing.Color]::White
+$focusTask.BackColor=[System.Drawing.Color]::FromArgb(35,119,191)
+$tasksPage.Controls.Add($focusTask)
+
+$refreshTasks=New-Object System.Windows.Forms.Button
+$refreshTasks.Text="REFRESH TASKS"
+$refreshTasks.Size=New-Object System.Drawing.Size(120,40)
+$refreshTasks.Location=New-Object System.Drawing.Point(238,686)
+$refreshTasks.Anchor="Bottom,Left"
+$refreshTasks.FlatStyle="Flat"
+$refreshTasks.ForeColor=[System.Drawing.Color]::White
+$refreshTasks.BackColor=[System.Drawing.Color]::FromArgb(70,74,84)
+$tasksPage.Controls.Add($refreshTasks)
 
 $title=New-Object System.Windows.Forms.Label
 $title.Text="DAVID MODE CENTER V2.1"
@@ -153,7 +243,7 @@ $title.ForeColor=[System.Drawing.Color]::White
 $title.Font=New-Object System.Drawing.Font("Segoe UI",20,[System.Drawing.FontStyle]::Bold)
 $title.AutoSize=$true
 $title.Location=New-Object System.Drawing.Point(28,20)
-$form.Controls.Add($title)
+$controlPage.Controls.Add($title)
 
 $subtitle=New-Object System.Windows.Forms.Label
 $subtitle.Text="Choose a mode. Every selection performs a FULL CLEAN RESTART, then starts and verifies the selected stack."
@@ -161,7 +251,7 @@ $subtitle.ForeColor=[System.Drawing.Color]::Silver
 $subtitle.Font=New-Object System.Drawing.Font("Segoe UI",9)
 $subtitle.Size=New-Object System.Drawing.Size(690,36)
 $subtitle.Location=New-Object System.Drawing.Point(31,63)
-$form.Controls.Add($subtitle)
+$controlPage.Controls.Add($subtitle)
 
 $badge=New-Object System.Windows.Forms.Label
 $badge.Text="DETECTING..."
@@ -171,7 +261,7 @@ $badge.BackColor=[System.Drawing.Color]::FromArgb(75,75,85)
 $badge.Font=New-Object System.Drawing.Font("Consolas",11,[System.Drawing.FontStyle]::Bold)
 $badge.Size=New-Object System.Drawing.Size(690,34)
 $badge.Location=New-Object System.Drawing.Point(31,100)
-$form.Controls.Add($badge)
+$controlPage.Controls.Add($badge)
 
 $soul=New-Object System.Windows.Forms.Button
 $soul.Text="SOULFLAME SYSTEM`r`nENCHEV SYSTEM + DPP + DAVID APK`r`n3 TABS / WATCH BACKGROUND / MEDIUM"
@@ -182,7 +272,7 @@ $soul.FlatStyle="Flat"
 $soul.FlatAppearance.BorderSize=2
 $soul.ForeColor=[System.Drawing.Color]::White
 $soul.BackColor=[System.Drawing.Color]::FromArgb(44,118,214)
-$form.Controls.Add($soul)
+$controlPage.Controls.Add($soul)
 
 $ab=New-Object System.Windows.Forms.Button
 $ab.Text="DAVID A + B`r`n2 PERSISTENT FREE-TALK CHATS`r`nINSTANT / SEND NOW"
@@ -193,7 +283,7 @@ $ab.FlatStyle="Flat"
 $ab.FlatAppearance.BorderSize=2
 $ab.ForeColor=[System.Drawing.Color]::White
 $ab.BackColor=[System.Drawing.Color]::FromArgb(124,72,184)
-$form.Controls.Add($ab)
+$controlPage.Controls.Add($ab)
 
 $soloEnchev=New-Object System.Windows.Forms.Button
 $soloEnchev.Text="ENCHEV ONLY`r`n1 TAB / INSTANT`r`nWATCH BACKGROUND"
@@ -204,7 +294,7 @@ $soloEnchev.FlatStyle="Flat"
 $soloEnchev.FlatAppearance.BorderSize=2
 $soloEnchev.ForeColor=[System.Drawing.Color]::White
 $soloEnchev.BackColor=[System.Drawing.Color]::FromArgb(31,139,119)
-$form.Controls.Add($soloEnchev)
+$controlPage.Controls.Add($soloEnchev)
 
 $soloDpp=New-Object System.Windows.Forms.Button
 $soloDpp.Text="DPP ONLY`r`n1 TAB / INSTANT`r`nWATCH BACKGROUND"
@@ -215,7 +305,7 @@ $soloDpp.FlatStyle="Flat"
 $soloDpp.FlatAppearance.BorderSize=2
 $soloDpp.ForeColor=[System.Drawing.Color]::White
 $soloDpp.BackColor=[System.Drawing.Color]::FromArgb(193,113,38)
-$form.Controls.Add($soloDpp)
+$controlPage.Controls.Add($soloDpp)
 
 $soloApk=New-Object System.Windows.Forms.Button
 $soloApk.Text="DAVID APK ONLY`r`n1 TAB / INSTANT`r`nWATCH BACKGROUND"
@@ -226,7 +316,7 @@ $soloApk.FlatStyle="Flat"
 $soloApk.FlatAppearance.BorderSize=2
 $soloApk.ForeColor=[System.Drawing.Color]::White
 $soloApk.BackColor=[System.Drawing.Color]::FromArgb(156,70,91)
-$form.Controls.Add($soloApk)
+$controlPage.Controls.Add($soloApk)
 
 $pinned=New-Object System.Windows.Forms.Label
 $pinned.Text="A+B pinned sessions: checking..."
@@ -234,7 +324,7 @@ $pinned.ForeColor=[System.Drawing.Color]::Khaki
 $pinned.Font=New-Object System.Drawing.Font("Consolas",9,[System.Drawing.FontStyle]::Bold)
 $pinned.Size=New-Object System.Drawing.Size(690,24)
 $pinned.Location=New-Object System.Drawing.Point(31,397)
-$form.Controls.Add($pinned)
+$controlPage.Controls.Add($pinned)
 
 $runtime=New-Object System.Windows.Forms.TextBox
 $runtime.Multiline=$true
@@ -245,7 +335,7 @@ $runtime.ForeColor=[System.Drawing.Color]::Gainsboro
 $runtime.Font=New-Object System.Drawing.Font("Consolas",9)
 $runtime.Size=New-Object System.Drawing.Size(690,115)
 $runtime.Location=New-Object System.Drawing.Point(31,427)
-$form.Controls.Add($runtime)
+$controlPage.Controls.Add($runtime)
 
 $stop=New-Object System.Windows.Forms.Button
 $stop.Text="STOP ALL"
@@ -255,7 +345,7 @@ $stop.Font=New-Object System.Drawing.Font("Segoe UI",10,[System.Drawing.FontStyl
 $stop.FlatStyle="Flat"
 $stop.ForeColor=[System.Drawing.Color]::White
 $stop.BackColor=[System.Drawing.Color]::FromArgb(165,52,52)
-$form.Controls.Add($stop)
+$controlPage.Controls.Add($stop)
 
 $refresh=New-Object System.Windows.Forms.Button
 $refresh.Text="REFRESH STATUS"
@@ -265,7 +355,7 @@ $refresh.Font=New-Object System.Drawing.Font("Segoe UI",10,[System.Drawing.FontS
 $refresh.FlatStyle="Flat"
 $refresh.ForeColor=[System.Drawing.Color]::White
 $refresh.BackColor=[System.Drawing.Color]::FromArgb(70,74,84)
-$form.Controls.Add($refresh)
+$controlPage.Controls.Add($refresh)
 
 $note=New-Object System.Windows.Forms.Label
 $note.Text="Closing this selector does NOT stop the active mode."
@@ -273,7 +363,7 @@ $note.ForeColor=[System.Drawing.Color]::DarkGray
 $note.Font=New-Object System.Drawing.Font("Segoe UI",9)
 $note.Size=New-Object System.Drawing.Size(340,28)
 $note.Location=New-Object System.Drawing.Point(381,574)
-$form.Controls.Add($note)
+$controlPage.Controls.Add($note)
 
 $scientistMenu=New-Object System.Windows.Forms.Button
 $scientistMenu.Text=[string][char]0x2630
@@ -283,14 +373,14 @@ $scientistMenu.Font=New-Object System.Drawing.Font("Segoe UI",15,[System.Drawing
 $scientistMenu.FlatStyle="Flat"
 $scientistMenu.ForeColor=[System.Drawing.Color]::White
 $scientistMenu.BackColor=[System.Drawing.Color]::FromArgb(48,52,63)
-$form.Controls.Add($scientistMenu)
+$controlPage.Controls.Add($scientistMenu)
 
 $scientistPanel=New-Object System.Windows.Forms.Panel
 $scientistPanel.Size=New-Object System.Drawing.Size(370,740)
 $scientistPanel.Location=New-Object System.Drawing.Point(742,0)
 $scientistPanel.BackColor=[System.Drawing.Color]::FromArgb(13,15,20)
-$scientistPanel.Visible=$false
-$form.Controls.Add($scientistPanel)
+$scientistPanel.Visible=$true
+$controlPage.Controls.Add($scientistPanel)
 
 $scientistTitle=New-Object System.Windows.Forms.Label
 $scientistTitle.Text="SF AI SCIENTIST"
@@ -481,7 +571,7 @@ $script:Busy=$false
 $script:Closing=$false
 $script:LastRefresh=[DateTime]::MinValue
 
-$script:ScientistDrawerOpen=$false
+$script:ScientistDrawerOpen=$true
 $script:ScientistConsoleOpen=$false
 $script:ScientistProcess=$null
 
@@ -875,13 +965,11 @@ $scientistMenu.Add_Click({
   $script:ScientistDrawerOpen=-not$script:ScientistDrawerOpen
   $scientistPanel.Visible=$script:ScientistDrawerOpen
   if($script:ScientistDrawerOpen){
-    $form.Size=New-Object System.Drawing.Size(1140,780)
     if($script:ScientistConsoleOpen){$scientistConsolePanel.Visible=$true;$scientistConsolePanel.BringToFront()}
     Update-ScientistUi
   }else{
     $script:ScientistConsoleOpen=$false
     $scientistConsolePanel.Visible=$false
-    $form.Size=New-Object System.Drawing.Size(760,680)
   }
 })
 $scientistStartBtn.Add_Click({Start-ScientistSidecar;Start-Sleep -Milliseconds 150;Update-ScientistUi})
