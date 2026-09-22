@@ -86,7 +86,11 @@ for(const token of [
   'Autonomous Scientist analysis in flight',
   'GPT_WAIT_LIVE_REFRESH_MS',
   'gptWaitLiveRefreshedAt',
-  'currentCdp9444Online:live.cdp9444Online'
+  'currentCdp9444Online:live.cdp9444Online',
+  '.sf-scientist.lock',
+  'function acquireSingleton',
+  'if(!acquireSingleton())',
+  'process.on("exit",releaseSingleton)'
 ]) if(!side.includes(token)) throw new Error("Scientist sidecar invariant missing: "+token);
 
 for(const token of [
@@ -104,11 +108,15 @@ for(const token of [
   'sf-scientist-sidecar.mjs',
   '[int]$Port = 9555',
   '[int]$DavidPort = 9444',
-  'Existing DAVID architecture was not modified'
+  'Existing DAVID architecture was not modified',
+  '--disable-session-crashed-bubble',
+  '--disable-features=msEdgeRestoreOnStartup'
 ]) if(!start.includes(token)) throw new Error("Scientist launcher invariant missing: "+token);
 
 if(stop.includes("DAVID_CHATGPT_PROFILE")) throw new Error("Scientist stop must not target DAVID browser profile");
 if(stop.includes("--remote-debugging-port=9444")) throw new Error("Scientist stop must not target DAVID CDP 9444");
+for(const token of ['CloseMainWindow()', '.sf-scientist.lock']) if(!stop.includes(token))
+  throw new Error("Scientist graceful-stop/singleton cleanup invariant missing: "+token);
 
 if(!/Hide-OwnConsole\s+Update-Ui\s+try\{[\s\S]*?Start-ScientistSidecar[\s\S]*?\}catch\{\}/m.test(center))
   throw new Error("Mode Center must auto-start SF Scientist even when DAVID is STOPPED");
@@ -143,4 +151,4 @@ for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_T
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED send_ack=VERIFIED live_while_gpt_thinking=ON pending_vs_inflight=EXPLICIT rate_limit_recovery=ON");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED singleton_worker=ATOMIC edge_shutdown=GRACEFUL crash_restore=SUPPRESSED send_ack=VERIFIED live_while_gpt_thinking=ON");
