@@ -14,6 +14,7 @@ function targetRegex(target){
 }
 
 const anyEffortRegex = /^(instant|незабавно|незабавен|моментално|бързо|medium|средно|high|високо|extra high|много високо|thinking|мислене|auto|автоматично)$/i;
+const effortPickerRegex = /(GPT-5\\.6\\s*Sol|GPT-5\\.6.*(?:Кратко|Short|Средно|Medium|Високо|High|Дълго|Long)|(?:Кратко|Short|Средно|Medium|Високо|High|Дълго|Long))/i;
 
 async function visibleExact(page, regex, selectors){
   const nodes = page.locator(selectors);
@@ -27,6 +28,19 @@ async function visibleExact(page, regex, selectors){
   }
   return null;
 }
+async function visibleContains(page, regex, selectors){
+  const nodes = page.locator(selectors);
+  const count = await nodes.count().catch(() => 0);
+  for(let i=count-1;i>=0;i--){
+    const n=nodes.nth(i);
+    if(!await n.isVisible().catch(() => false)) continue;
+    const text=(await n.innerText().catch(() => "")).replace(/\s+/g," ").trim();
+    const aria=((await n.getAttribute("aria-label").catch(() => ""))||"").replace(/\s+/g," ").trim();
+    if(regex.test(text)||regex.test(aria)) return n;
+  }
+  return null;
+}
+
 
 export async function ensureChatGptEffortMode(page, target=DEFAULT_TARGET){
   if(!page || page.isClosed()) return {ok:false,reason:"page-unavailable"};
@@ -38,10 +52,15 @@ export async function ensureChatGptEffortMode(page, target=DEFAULT_TARGET){
   lastAttemptAt.set(page,now);
 
   const wanted=targetRegex(target);
-  const currentWanted=await visibleExact(page,wanted,'button,[role="button"]');
+  const compositeWanted = String(target).toLowerCase()==="medium"
+    ? /(GPT-5\.6\s*Sol.*(?:Medium|Средно)|(?:Medium|Средно).*GPT-5\.6\s*Sol)/i
+    : String(target).toLowerCase()==="instant"
+      ? /(GPT-5\.6\s*Sol.*(?:Instant|Кратко|Short)|(?:Instant|Кратко|Short).*GPT-5\.6\s*Sol)/i
+      : /(GPT-5\.6\s*Sol.*(?:High|Високо|Дълго|Long)|(?:High|Високо|Дълго|Long).*GPT-5\.6\s*Sol)/i;
+  const currentWanted=await visibleContains(page,compositeWanted,'button,[role="button"]');
   if(currentWanted) return {ok:true,changed:false,target};
 
-  const picker=await visibleExact(page,anyEffortRegex,'button,[role="button"]');
+  const picker=await visibleContains(page,effortPickerRegex,'button,[role="button"]');
   if(!picker) return {ok:false,reason:"picker-not-found",target};
 
   try{
@@ -64,7 +83,7 @@ export async function ensureChatGptEffortMode(page, target=DEFAULT_TARGET){
     return {ok:false,reason:"target-click-failed",target};
   }
 
-  const confirmed=await visibleExact(page,wanted,'button,[role="button"]');
+  const confirmed=await visibleContains(page,compositeWanted,'button,[role="button"]');
   return {ok:Boolean(confirmed),changed:true,target,reason:confirmed?"confirmed":"not-confirmed"};
 }
 
@@ -72,5 +91,6 @@ if(process.argv.includes("--self-test")){
   const medium=targetRegex("medium");
   if(!medium.test("Medium")||!medium.test("Средно")) throw new Error("medium labels missing");
   if(!anyEffortRegex.test("Instant")||!anyEffortRegex.test("Високо")) throw new Error("effort picker labels missing");
-  console.log("CHATGPT_EFFORT_MODE_SELF_TEST PASS target=medium labels=Medium|Средно");
+  if(!effortPickerRegex.test("GPT-5.6 Sol Кратко")) throw new Error("composite effort picker missing");
+  console.log("CHATGPT_EFFORT_MODE_SELF_TEST PASS target=medium composite_picker=GPT-5.6_Sol");
 }
