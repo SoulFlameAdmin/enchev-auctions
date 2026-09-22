@@ -91,6 +91,12 @@ jobs:
       - name: Verify ChatGPT send acknowledgement
         run: node chatgpt-send-ack.mjs --self-test
 
+      - name: Verify installer client registry sync
+        run: node installer-client-registry-sync.mjs --self-test
+
+      - name: Verify installer heartbeat contract
+        run: node david-installer-heartbeat.mjs --self-test
+
       - name: Verify FREE TALK experiment profile
         run: npm run verify:freetalk
 
