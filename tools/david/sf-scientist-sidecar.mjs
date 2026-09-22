@@ -16,6 +16,10 @@ const RESPONSE=path.join(HERE,".sf-scientist-response.json");
 const DECISIONS=path.join(HERE,".sf-scientist-decisions.jsonl");
 const MEMORY=path.join(HERE,".sf-scientist-memory.jsonl");
 const TABMON=path.join(HERE,".david-tab-monitor.json");
+const MAX_SHELLS=18;
+const MAX_STATE_FILES=12;
+const MAX_LOG_FILES=8;
+const MAX_LOG_LINES=8;
 const POLL=Number(process.env.SF_SCIENTIST_POLL_MS||1200);
 const AUTO_MIN=Number(process.env.SF_SCIENTIST_AUTO_MIN_MS||45000);
 const READY_MS=180000;
@@ -24,7 +28,10 @@ const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const now=()=>new Date().toISOString();
 const digest=v=>crypto.createHash("sha256").update(String(v||"")).digest("hex").slice(0,16);
 
-function readJson(p,f=null){try{return JSON.parse(fs.readFileSync(p,"utf8"));}catch{return f;}}
+function readJson(p,f=null){
+  try{return JSON.parse(fs.readFileSync(p,"utf8").replace(/^\uFEFF/,""));}
+  catch{return f;}
+}
 function writeJson(p,v){const t=p+".tmp";fs.writeFileSync(t,JSON.stringify(v,null,2),"utf8");fs.renameSync(t,p);}
 function append(p,v){fs.appendFileSync(p,JSON.stringify(v)+"\n","utf8");}
 let state=readJson(STATE,{version:1,status:"starting",heartbeatAt:null,chatUrl:null,lastAction:"boot",lastObservation:null,lastDecision:null,lastResponse:null,lastCommandId:null,lastAutoAnalysisAt:null,loginRequired:false});
@@ -46,6 +53,86 @@ async function processes(){
   try{const x=await execFileAsync("powershell.exe",["-NoProfile","-ExecutionPolicy","Bypass","-Command",ps],{windowsHide:true,timeout:6000});return JSON.parse(String(x.stdout||"{}").trim()||"{}");}
   catch{return {};}
 }
+
+function cleanText(value,max=700){
+  let t=String(value==null?"":value).replace(/\\u0000/g,"").replace(/\\r/g,"").trim();
+  t=t
+    .replace(/(authorization\\s*:\\s*bearer\\s+)[^\\s"']+/ig,"$1[REDACTED]")
+    .replace(/((?:api[_-]?key|token|password|passwd|secret)\\s*[=:]\\s*)[^\\s"';&]+/ig,"$1[REDACTED]")
+    .replace(/\\bsk-[A-Za-z0-9_-]{12,}\\b/g,"[REDACTED_OPENAI_KEY]")
+    .replace(/\\bgh[pousr]_[A-Za-z0-9_]{12,}\\b/g,"[REDACTED_GITHUB_TOKEN]");
+  return t.length>max?t.slice(0,max)+"...":t;
+}
+function tailLines(p,maxLines=MAX_LOG_LINES){
+  try{return fs.readFileSync(p,"utf8").replace(/^\\uFEFF/,"").split(/\\r?\\n/).filter(Boolean).slice(-maxLines).map(x=>cleanText(x,900));}
+  catch{return [];}
+}
+function runtimeFiles(){
+  let names=[];try{names=fs.readdirSync(HERE);}catch{}
+  return {
+    states:names.filter(n=>/^\\.david-.*\\.json$/i.test(n)).slice(0,80),
+    logs:names.filter(n=>/\\.log$/i.test(n)).slice(0,40)
+  };
+}
+function stateSummary(){
+  const rows=[];
+  for(const name of runtimeFiles().states){
+    const j=readJson(path.join(HERE,name),null);
+    if(!j||typeof j!=="object")continue;
+    rows.push({
+      file:name,
+      updatedAt:j.updatedAt||j.heartbeatAt||j.lastUpdatedAt||null,
+      status:j.status||null,
+      watchdog:j.watchdog||null,
+      lastAction:cleanText(j.lastAction||"",240)||null,
+      lastError:cleanText(j.lastError||j.error||"",500)||null
+    });
+  }
+  rows.sort((a,b)=>Date.parse(b.updatedAt||0)-Date.parse(a.updatedAt||0));
+  return rows.slice(0,MAX_STATE_FILES);
+}
+function logSummary(){
+  const files=runtimeFiles().logs.map(name=>{
+    const p=path.join(HERE,name);let m=0;try{m=fs.statSync(p).mtimeMs||0;}catch{}
+    return {name,path:p,mtime:m};
+  }).filter(x=>x.mtime>0).sort((a,b)=>b.mtime-a.mtime).slice(0,MAX_LOG_FILES);
+  const recent=[],alerts=[];
+  const bad=/(error|failed|failure|exception|fatal|timeout|timed out|stalled|offline|problem in|crash|denied|refused)/i;
+  for(const f of files){
+    const lines=tailLines(f.path,MAX_LOG_LINES);
+    if(lines.length)recent.push({file:f.name,mtime:new Date(f.mtime).toISOString(),lines});
+    const hit=lines.filter(x=>bad.test(x)).slice(-4);
+    if(hit.length)alerts.push({file:f.name,lines:hit});
+  }
+  return {recent,alerts};
+}
+async function shellProcesses(){
+  const ps=[
+    "$names=@('powershell.exe','pwsh.exe','cmd.exe','node.exe')",
+    "$p=@(Get-CimInstance Win32_Process -ErrorAction SilentlyContinue|Where-Object{$names -contains $_.Name})",
+    "$o=@($p|Select-Object -First 80 @{n='pid';e={$_.ProcessId}},@{n='ppid';e={$_.ParentProcessId}},@{n='name';e={$_.Name}},@{n='cmd';e={$_.CommandLine}})",
+    "$o|ConvertTo-Json -Compress"
+  ].join(";");
+  try{
+    const x=await execFileAsync("powershell.exe",["-NoProfile","-ExecutionPolicy","Bypass","-Command",ps],{windowsHide:true,timeout:6500,maxBuffer:1048576});
+    const raw=String(x.stdout||"").trim();if(!raw)return [];
+    const parsed=JSON.parse(raw),arr=Array.isArray(parsed)?parsed:[parsed];
+    return arr.map(v=>({pid:Number(v.pid||0),ppid:Number(v.ppid||0),name:String(v.name||""),cmd:cleanText(v.cmd||"",520)})).filter(v=>v.pid).slice(0,MAX_SHELLS);
+  }catch{return [];}
+}
+async function liveTelemetry(){
+  const shells=await shellProcesses();
+  const logs=logSummary();
+  return {shells,davidStates:stateSummary(),recentLogs:logs.recent,logAlerts:logs.alerts};
+}
+function telemetrySignature(t){
+  return digest(JSON.stringify({
+    shells:(t&&t.shells||[]).map(x=>[x.pid,x.ppid,x.name,x.cmd]),
+    states:(t&&t.davidStates||[]).map(x=>[x.file,x.status,x.watchdog,x.lastAction,x.lastError]),
+    alerts:t&&t.logAlerts||[]
+  }));
+}
+
 function infer(p,tm){
   const s=Number(p.SUP||0),y=Number(p.SYSTEM||0),d=Number(p.DPP||0),a=Number(p.APK||0),c=Number(p.CONTROL||0),g=Number(p.GUARD||0),f=Number(p.FREE||0),z=Number(p.DESIGN||0),t=Number(tm?.totalChatGptTabs||0);
   if(!s&&!y&&!d&&!a&&!c&&!f)return "STOPPED";
@@ -57,9 +144,13 @@ function infer(p,tm){
   return "CHECK";
 }
 async function snapshot(){
-  const [p,ver]=await Promise.all([processes(),fetchJson(DAVID_CDP+"/json/version").catch(()=>null)]);
+  const [p,ver,telemetry]=await Promise.all([
+    processes(),
+    fetchJson(DAVID_CDP+"/json/version").catch(()=>null),
+    liveTelemetry()
+  ]);
   const tm=readJson(TABMON,null),m=tm?.managed||{};
-  return {at:now(),mode:infer(p,tm),cdp9444Online:Boolean(ver),process:p,monitor:tm?{totalChatGptTabs:Number(tm.totalChatGptTabs||0),SYSTEM:Array.isArray(m.SYSTEM)?m.SYSTEM.length:0,DESIGN:Array.isArray(m.DESIGN)?m.DESIGN.length:0,APP2:Array.isArray(m.APP2)?m.APP2.length:0,APK:Array.isArray(m.APK)?m.APK.length:0,CONTROL:Array.isArray(m.CONTROL)?m.CONTROL.length:0,FREE_A:Array.isArray(m.FREE_A)?m.FREE_A.length:0,FREE_B:Array.isArray(m.FREE_B)?m.FREE_B.length:0}:null};
+  return {at:now(),mode:infer(p,tm),cdp9444Online:Boolean(ver),process:p,monitor:tm?{totalChatGptTabs:Number(tm.totalChatGptTabs||0),SYSTEM:Array.isArray(m.SYSTEM)?m.SYSTEM.length:0,DESIGN:Array.isArray(m.DESIGN)?m.DESIGN.length:0,APP2:Array.isArray(m.APP2)?m.APP2.length:0,APK:Array.isArray(m.APK)?m.APK.length:0,CONTROL:Array.isArray(m.CONTROL)?m.CONTROL.length:0,FREE_A:Array.isArray(m.FREE_A)?m.FREE_A.length:0,FREE_B:Array.isArray(m.FREE_B)?m.FREE_B.length:0}:null,liveTelemetry:telemetry};
 }
 function event(prev,next){
   if(!prev)return {important:true,reason:"Scientist attached to current DAVID state"};
@@ -67,6 +158,11 @@ function event(prev,next){
   if(prev.cdp9444Online!==next.cdp9444Online)return {important:true,reason:"DAVID CDP 9444 "+(next.cdp9444Online?"ONLINE":"OFFLINE")};
   if(digest(JSON.stringify(prev.process))!==digest(JSON.stringify(next.process)))return {important:true,reason:"DAVID process topology changed"};
   if(digest(JSON.stringify(prev.monitor))!==digest(JSON.stringify(next.monitor)))return {important:true,reason:"DAVID managed ChatGPT tab topology changed"};
+  if(telemetrySignature(prev.liveTelemetry)!==telemetrySignature(next.liveTelemetry)){
+    if(digest(JSON.stringify(prev.liveTelemetry&&prev.liveTelemetry.logAlerts||[]))!==digest(JSON.stringify(next.liveTelemetry&&next.liveTelemetry.logAlerts||[])))
+      return {important:true,reason:"DAVID live log/error telemetry changed"};
+    return {important:true,reason:"DAVID PowerShell/CMD/Node or runtime-state telemetry changed"};
+  }
   return {important:false,reason:null};
 }
 function chatUrl(u){const m=String(u||"").match(/^https:\/\/chatgpt\.com\/c\/[0-9a-f-]+/i);return m?m[0]:null;}
@@ -196,9 +292,9 @@ async function executeScientistAction(context,chief,text,s){
   return result;
 }
 
-function boot(s){return "SF CORPORATION / AI SCIENTIST BOOTSTRAP\n\nYou are the independent AI Scientist observing the existing DAVID system. You are OUTSIDE DAVID. Preserve the existing DAVID architecture. Never claim an external action happened unless the local bridge reports it. Never bypass login/MFA/CAPTCHA/permissions. Observe, form hypotheses, test claims against evidence, detect regressions and propose improvements.\n\nFor autonomous observations answer compactly in Bulgarian:\nВИДЯХ: ...\nРЕШИХ: ...\nЗАЩО: ...\nПРЕДЛАГАМ: ...\nRISK: LOW|MEDIUM|HIGH\n\nCurrent DAVID snapshot:\n"+JSON.stringify(s,null,2);}
-function observe(reason,s){return "SF SCIENTIST AUTONOMOUS OBSERVATION\nEVENT: "+reason+"\n\nAnalyze only this evidence. You may decide no intervention is needed. Do not invent actions.\n\nDAVID SNAPSHOT:\n"+JSON.stringify(s,null,2)+"\n\nYou may autonomously choose ONE low-risk Scientist-sidecar action only when useful:\nACTION: NONE | OPEN_POWERSHELL | OPEN_CMD | OPEN_CHATGPT | SEARCH_WEB <query> | OPEN_URL <https-url> | DAVID_HEALTH_CHECK | GIT_STATUS | CONSULT_AB <question>\nThese actions affect only Scientist tools or read-only diagnostics; never modify DAVID architecture.\n\nReturn:\nВИДЯХ: ...\nРЕШИХ: ...\nЗАЩО: ...\nПРЕДЛАГАМ: ...\nRISK: LOW|MEDIUM|HIGH\nACTION: ...";}
-function user(text,s){return "MITKO -> SF AI SCIENTIST\n"+text+"\n\nLive DAVID snapshot:\n"+JSON.stringify(s,null,2)+"\n\nAnswer as SF AI Scientist. Separate observed facts from hypotheses. You can use one low-risk Scientist tool when useful by ending with ACTION: NONE | OPEN_POWERSHELL | OPEN_CMD | OPEN_CHATGPT | SEARCH_WEB <query> | OPEN_URL <https-url> | DAVID_HEALTH_CHECK | GIT_STATUS | CONSULT_AB <question>. Never modify DAVID architecture from this sidecar.";}
+function boot(s){return "SF CORPORATION / AI SCIENTIST BOOTSTRAP\n\nYou are the independent AI Scientist observing the existing DAVID system. You are OUTSIDE DAVID. Preserve the existing DAVID architecture. Never claim an external action happened unless the local bridge reports it. Never bypass login/MFA/CAPTCHA/permissions. Observe, form hypotheses, test claims against evidence, detect regressions and propose improvements. The snapshot includes LIVE TELEMETRY with active PowerShell/CMD/Node processes, DAVID runtime-state summaries, recent log tails and error alerts. Use it to explain what actually happened, not only topology.\n\nFor autonomous observations answer compactly in Bulgarian:\nВИДЯХ: ...\nРЕШИХ: ...\nЗАЩО: ...\nПРЕДЛАГАМ: ...\nRISK: LOW|MEDIUM|HIGH\n\nCurrent DAVID snapshot:\n"+JSON.stringify(s,null,2);}
+function observe(reason,s){return "SF SCIENTIST AUTONOMOUS OBSERVATION\nEVENT: "+reason+"\n\nAnalyze only this evidence. Inspect liveTelemetry.shells, davidStates, recentLogs and logAlerts before concluding. Distinguish a process start/stop from a real script failure. If a log contains a concrete exception/error, name the supporting process/file. You may decide no intervention is needed. Do not invent actions.\n\nDAVID SNAPSHOT:\n"+JSON.stringify(s,null,2)+"\n\nYou may autonomously choose ONE low-risk Scientist-sidecar action only when useful:\nACTION: NONE | OPEN_POWERSHELL | OPEN_CMD | OPEN_CHATGPT | SEARCH_WEB <query> | OPEN_URL <https-url> | DAVID_HEALTH_CHECK | GIT_STATUS | CONSULT_AB <question>\nThese actions affect only Scientist tools or read-only diagnostics; never modify DAVID architecture.\n\nReturn:\nВИДЯХ: ...\nРЕШИХ: ...\nЗАЩО: ...\nПРЕДЛАГАМ: ...\nRISK: LOW|MEDIUM|HIGH\nACTION: ...";}
+function user(text,s){return "MITKO -> SF AI SCIENTIST\n"+text+"\n\nLive DAVID snapshot including PowerShell/CMD/Node processes, runtime states and recent logs:\n"+JSON.stringify(s,null,2)+"\n\nAnswer as SF AI Scientist. Separate observed facts from hypotheses. When relevant, cite the exact PID/script, state file or log line supporting the conclusion. You can use one low-risk Scientist tool when useful by ending with ACTION: NONE | OPEN_POWERSHELL | OPEN_CMD | OPEN_CHATGPT | SEARCH_WEB <query> | OPEN_URL <https-url> | DAVID_HEALTH_CHECK | GIT_STATUS | CONSULT_AB <question>. Never modify DAVID architecture from this sidecar.";}
 async function command(context,page,s){
   const c=readJson(COMMAND,null);if(!c?.id||c.id===state.lastCommandId||!String(c.text||"").trim())return;
   save("Processing Scientist chat command",{lastCommandId:c.id});
