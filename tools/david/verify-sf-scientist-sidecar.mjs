@@ -11,6 +11,7 @@ const start=read("START_SF_SCIENTIST.ps1");
 const stop=read("STOP_SF_SCIENTIST.ps1");
 const center=read("DAVID_MODE_SELECTOR_V2.ps1");
 const effort=read("tools/david/chatgpt-effort-mode.mjs");
+const controlPreview=read("tools/david/control-panel-task-preview.mjs");
 
 for(const token of [
   'SF_SCIENTIST_CDP_URL||"http://127.0.0.1:9555"',
@@ -185,11 +186,36 @@ for(const token of [
   "=== RECENT ACTIVITY ===",
   "$st.lastToolStatus",
   "$st.lastToolCommand",
-  "$st.lastToolResult"
+  "$st.lastToolResult",
+  "PAGE 1 - CONTROL",
+  "PAGE 2 - TASKS / ZADACHI",
+  "DAVID TASKS - LIVE EDGE SESSIONS",
+  "FOCUS SELECTED EDGE",
+  "Start-ControlPanelPreviewWorker",
+  "Update-TasksUi",
+  ".david-control-panel-tasks.json",
+  ".david-control-panel-command.json",
+  "FormWindowState]::Maximized"
 ]) if(!center.includes(token)) throw new Error("Mode Center Scientist invariant missing: "+token);
+
+for(const token of [
+  'chromium.connectOverCDP',
+  '.david-control-panel-tasks.json',
+  '.david-control-panel-previews',
+  'DAVID_CDP_URL',
+  'SF_SCIENTIST_CDP_URL',
+  'page.screenshot',
+  'page.bringToFront',
+  'action==="FOCUS"',
+  'source==="DAVID"',
+  'source==="SCIENTIST"'
+]) if(!controlPreview.includes(token)) throw new Error("Control panel preview invariant missing: "+token);
+
+if(/\.close\(\)/.test(controlPreview) && /Browser/.test(controlPreview))
+  throw new Error("Control panel preview worker must not close external DAVID/Scientist browsers");
 
 for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_TARGET=\"2\""]) {
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED scientist_burger=ON realtime_console=ON powershell_history=ON stale_runtime_response=SUPPRESSED fresh_context=ON singleton_worker=ATOMIC send_ack=VERIFIED");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED fullscreen_control_panel=ON page2_tasks=ON live_edge_previews=ON scientist_burger=ON realtime_console=ON stale_runtime_response=SUPPRESSED fresh_context=ON");
