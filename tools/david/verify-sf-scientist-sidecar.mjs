@@ -13,6 +13,10 @@ const center=read("DAVID_MODE_SELECTOR_V2.ps1");
 const effort=read("tools/david/chatgpt-effort-mode.mjs");
 const controlPreview=read("tools/david/control-panel-task-preview.mjs");
 const matrix=read("DAVID_MATRIX_START.ps1");
+const sendAck=read("tools/david/chatgpt-send-ack.mjs");
+const app2Worker=read("tools/david/auto-complete-app2-v1.mjs");
+const systemWorker=read("tools/david/auto-continue-enchev-v5.mjs");
+const apkWorker=read("tools/david/auto-continue-david-apk-v1.mjs");
 
 for(const token of [
   'SF_SCIENTIST_CDP_URL||"http://127.0.0.1:9555"',
@@ -202,7 +206,12 @@ for(const token of [
   ".david-control-panel-tasks.json",
   ".david-control-panel-command.json",
   "FormWindowState]::Maximized",
-  '$taskPreview.SizeMode="Zoom"',
+  "$taskProgress",
+  "DO KUDE E ZADACHATA",
+  "GPT SEND ACK:",
+  "GPT SEND STATUS:",
+  "LAST VERIFIED SEND:",
+  "LAST PROMPT PREVIEW:",
   "DavidModeCenterActivation",
   "FindWindow",
   "ShowWindowAsync",
@@ -218,25 +227,51 @@ for(const token of [
 for(const token of [
   'chromium.connectOverCDP',
   '.david-control-panel-tasks.json',
-  '.david-control-panel-previews',
   'DAVID_CDP_URL',
   'SF_SCIENTIST_CDP_URL',
-  'page.screenshot',
   'page.bringToFront',
   'action==="FOCUS"',
   'source==="DAVID"',
   'collect(scientistBrowser,"SCIENTIST",monitor)',
   'DAVID_ROLES',
+  'STATE_FILE_BY_ROLE',
+  'progressForRole',
+  'lastSendAck',
+  'lastSendStatus',
+  'promptPreview',
+  'previewKind:"disabled-task-status"',
   'working:false',
   'connections',
   'SAME_DAVID_RUNTIME',
-  'SCIENTIST_OBSERVES_DAVID',
-  'main.screenshot',
-  'previewKind="main"'
+  'SCIENTIST_OBSERVES_DAVID'
 ]) if(!controlPreview.includes(token)) throw new Error("Control panel preview invariant missing: "+token);
 
 if(/\.close\(\)/.test(controlPreview) && /Browser/.test(controlPreview))
   throw new Error("Control panel preview worker must not close external DAVID/Scientist browsers");
+
+if(controlPreview.includes("page.screenshot(") || controlPreview.includes("main.screenshot("))
+  throw new Error("Task-status worker must not screenshot live Edge when box detail is status-only");
+
+for(const token of [
+  "sendPromptVerified",
+  "user-count-increased",
+  "latest-user-matches",
+  "composer-cleared",
+  "bounded_fallbacks=3",
+  "duplicate_guard=ON"
+]) if(!sendAck.includes(token)) throw new Error("Verified send-ack invariant missing: "+token);
+
+for(const [name,worker] of [["APP2",app2Worker],["SYSTEM",systemWorker],["APK",apkWorker]]){
+  for(const token of [
+    'from "./chatgpt-send-ack.mjs"',
+    "lastSendAck",
+    "lastSendStatus",
+    "lastSendAttempt",
+    "lastSendMethod",
+    "lastSendSignal",
+    "lastSendError"
+  ]) if(!worker.includes(token)) throw new Error(name+" verified-send telemetry missing: "+token);
+}
 
 if(!matrix.includes('-WindowStyle Hidden')) throw new Error("Mode Center launcher must hide its PowerShell console host");
 if(matrix.includes('-WindowStyle Normal')) throw new Error("Mode Center launcher must not leave a visible selector PowerShell host");
@@ -245,4 +280,4 @@ for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_T
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED edge_preview_full_area=ON edge_preview_aspect=ON center_taskbar_identity=ON center_reactivate_existing=ON active_mode_reclick=ON hidden_selector_console=ON task_topology=ON");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED task_detail=STATUS_ONLY task_progress=ON verified_gpt_send_ack=SYSTEM_APP2_APK edge_screenshot_polling=OFF center_taskbar_identity=ON task_topology=ON");
