@@ -95,7 +95,15 @@ function Close-OldDavidPowerShellWindows {
 function Get-NodeCount([string]$Pattern){
   try{return @(Get-CimInstance Win32_Process|Where-Object{$_.Name-eq"node.exe"-and([string]$_.CommandLine)-like"*$Pattern*"}).Count}catch{return 0}
 }
-function Read-Json([string]$Path){try{return Get-Content -Raw $Path|ConvertFrom-Json}catch{return $null}}
+function Read-Json([string]$Path){
+  try{
+    if(-not(Test-Path -LiteralPath $Path)){return $null}
+    $utf8=New-Object System.Text.UTF8Encoding($false,$true)
+    $raw=[System.IO.File]::ReadAllText($Path,$utf8)
+    if([string]::IsNullOrWhiteSpace($raw)){return $null}
+    return $raw|ConvertFrom-Json
+  }catch{return $null}
+}
 function Get-ChatUrl([string]$Path){$s=Read-Json $Path;if($s){return [string]$s.chatUrl};return ""}
 function Get-Snapshot{
   $sup=Get-NodeCount "dual-session-worker.mjs"
@@ -435,7 +443,9 @@ function Send-ScientistChat{
   Start-ScientistSidecar
   $cmd=[ordered]@{id=[guid]::NewGuid().ToString();createdAt=(Get-Date).ToUniversalTime().ToString("o");text=$text.Trim()}
   try{
-    $cmd|ConvertTo-Json -Depth 8|Set-Content -LiteralPath $ScientistCommand -Encoding UTF8
+    $json=$cmd|ConvertTo-Json -Depth 8
+    $utf8NoBom=New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($ScientistCommand,$json,$utf8NoBom)
     $scientistReply.Text="SENT -> Scientist is analyzing..."
     $scientistInput.Clear()
   }catch{
