@@ -46,11 +46,6 @@ export async function ensureChatGptEffortMode(page, target=DEFAULT_TARGET){
   if(!page || page.isClosed()) return {ok:false,reason:"page-unavailable"};
   if(!String(page.url?.()||"").startsWith("https://chatgpt.com/")) return {ok:false,reason:"not-chatgpt"};
 
-  const now=Date.now();
-  const last=Number(lastAttemptAt.get(page)||0);
-  if(now-last<RETRY_MS) return {ok:false,reason:"cooldown"};
-  lastAttemptAt.set(page,now);
-
   const wanted=targetRegex(target);
   const compositeWanted = String(target).toLowerCase()==="medium"
     ? /(GPT-5\.6\s*Sol.*(?:Medium|Средно)|(?:Medium|Средно).*GPT-5\.6\s*Sol)/i
@@ -59,6 +54,11 @@ export async function ensureChatGptEffortMode(page, target=DEFAULT_TARGET){
       : /(GPT-5\.6\s*Sol.*(?:High|Високо|Дълго|Long)|(?:High|Високо|Дълго|Long).*GPT-5\.6\s*Sol)/i;
   const currentWanted=await visibleContains(page,compositeWanted,'button,[role="button"]');
   if(currentWanted) return {ok:true,changed:false,target};
+
+  const now=Date.now();
+  const last=Number(lastAttemptAt.get(page)||0);
+  if(now-last<RETRY_MS) return {ok:false,reason:"cooldown-unconfirmed",target};
+  lastAttemptAt.set(page,now);
 
   const picker=await visibleContains(page,effortPickerRegex,'button,[role="button"]');
   if(!picker) return {ok:false,reason:"picker-not-found",target};
