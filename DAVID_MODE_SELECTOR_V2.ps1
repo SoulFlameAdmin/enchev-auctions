@@ -29,6 +29,7 @@ $ScientistStop=Join-Path $Repo "STOP_SF_SCIENTIST.ps1"
 $ScientistState=Join-Path $DavidDir ".sf-scientist-state.json"
 $ScientistCommand=Join-Path $DavidDir ".sf-scientist-command.json"
 $ScientistResponse=Join-Path $DavidDir ".sf-scientist-response.json"
+$ScientistOperatorLog=Join-Path $DavidDir ".sf-scientist-operator.jsonl"
 $FreeAUrl="https://chatgpt.com/c/6ab08cb0-3738-83eb-b4bf-2ef8bf4933a8"
 $FreeBUrl="https://chatgpt.com/c/6ab08cab-006c-83eb-a753-2ea42567e22f"
 
@@ -299,6 +300,17 @@ $scientistTitle.AutoSize=$true
 $scientistTitle.Location=New-Object System.Drawing.Point(18,18)
 $scientistPanel.Controls.Add($scientistTitle)
 
+$scientistInnerMenu=New-Object System.Windows.Forms.Button
+$scientistInnerMenu.Text=[string][char]0x2630
+$scientistInnerMenu.Size=New-Object System.Drawing.Size(34,32)
+$scientistInnerMenu.Location=New-Object System.Drawing.Point(316,14)
+$scientistInnerMenu.Font=New-Object System.Drawing.Font("Segoe UI",13,[System.Drawing.FontStyle]::Bold)
+$scientistInnerMenu.FlatStyle="Flat"
+$scientistInnerMenu.ForeColor=[System.Drawing.Color]::White
+$scientistInnerMenu.BackColor=[System.Drawing.Color]::FromArgb(48,52,63)
+$scientistInnerMenu.Tag="Toggle realtime Scientist console"
+$scientistPanel.Controls.Add($scientistInnerMenu)
+
 $scientistStatus=New-Object System.Windows.Forms.Label
 $scientistStatus.Text="STATUS: OFFLINE"
 $scientistStatus.ForeColor=[System.Drawing.Color]::Khaki
@@ -364,7 +376,7 @@ $scientistReply.Location=New-Object System.Drawing.Point(20,317)
 $scientistPanel.Controls.Add($scientistReply)
 
 $scientistActionLabel=New-Object System.Windows.Forms.Label
-$scientistActionLabel.Text="LIVE ACTION / POWERSHELL"
+$scientistActionLabel.Text="LAST ACTION / POWERSHELL"
 $scientistActionLabel.ForeColor=[System.Drawing.Color]::Silver
 $scientistActionLabel.Font=New-Object System.Drawing.Font("Segoe UI",8,[System.Drawing.FontStyle]::Bold)
 $scientistActionLabel.AutoSize=$true
@@ -409,6 +421,60 @@ $scientistHint.Size=New-Object System.Drawing.Size(325,55)
 $scientistHint.Location=New-Object System.Drawing.Point(20,660)
 $scientistPanel.Controls.Add($scientistHint)
 
+$scientistConsolePanel=New-Object System.Windows.Forms.Panel
+$scientistConsolePanel.Size=New-Object System.Drawing.Size(370,740)
+$scientistConsolePanel.Location=New-Object System.Drawing.Point(0,0)
+$scientistConsolePanel.BackColor=[System.Drawing.Color]::FromArgb(8,10,14)
+$scientistConsolePanel.Visible=$false
+$scientistPanel.Controls.Add($scientistConsolePanel)
+
+$scientistConsoleTitle=New-Object System.Windows.Forms.Label
+$scientistConsoleTitle.Text="REALTIME SCIENTIST CONSOLE"
+$scientistConsoleTitle.ForeColor=[System.Drawing.Color]::White
+$scientistConsoleTitle.Font=New-Object System.Drawing.Font("Segoe UI",14,[System.Drawing.FontStyle]::Bold)
+$scientistConsoleTitle.AutoSize=$true
+$scientistConsoleTitle.Location=New-Object System.Drawing.Point(18,18)
+$scientistConsolePanel.Controls.Add($scientistConsoleTitle)
+
+$scientistConsoleMenu=New-Object System.Windows.Forms.Button
+$scientistConsoleMenu.Text=[string][char]0x2630
+$scientistConsoleMenu.Size=New-Object System.Drawing.Size(34,32)
+$scientistConsoleMenu.Location=New-Object System.Drawing.Point(316,14)
+$scientistConsoleMenu.Font=New-Object System.Drawing.Font("Segoe UI",13,[System.Drawing.FontStyle]::Bold)
+$scientistConsoleMenu.FlatStyle="Flat"
+$scientistConsoleMenu.ForeColor=[System.Drawing.Color]::White
+$scientistConsoleMenu.BackColor=[System.Drawing.Color]::FromArgb(48,52,63)
+$scientistConsolePanel.Controls.Add($scientistConsoleMenu)
+
+$scientistConsoleStatus=New-Object System.Windows.Forms.Label
+$scientistConsoleStatus.Text="IDLE"
+$scientistConsoleStatus.ForeColor=[System.Drawing.Color]::LightGreen
+$scientistConsoleStatus.Font=New-Object System.Drawing.Font("Consolas",9,[System.Drawing.FontStyle]::Bold)
+$scientistConsoleStatus.Size=New-Object System.Drawing.Size(325,45)
+$scientistConsoleStatus.Location=New-Object System.Drawing.Point(20,58)
+$scientistConsolePanel.Controls.Add($scientistConsoleStatus)
+
+$scientistConsole=New-Object System.Windows.Forms.TextBox
+$scientistConsole.Multiline=$true
+$scientistConsole.ReadOnly=$true
+$scientistConsole.ScrollBars="Both"
+$scientistConsole.WordWrap=$false
+$scientistConsole.BackColor=[System.Drawing.Color]::Black
+$scientistConsole.ForeColor=[System.Drawing.Color]::LightGreen
+$scientistConsole.Font=New-Object System.Drawing.Font("Consolas",9)
+$scientistConsole.Size=New-Object System.Drawing.Size(325,585)
+$scientistConsole.Location=New-Object System.Drawing.Point(20,105)
+$scientistConsole.Text="Waiting for Scientist activity..."
+$scientistConsolePanel.Controls.Add($scientistConsole)
+
+$scientistConsoleHint=New-Object System.Windows.Forms.Label
+$scientistConsoleHint.Text="Live view only. Full commands/results are still audited in .sf-scientist-operator.jsonl."
+$scientistConsoleHint.ForeColor=[System.Drawing.Color]::DarkGray
+$scientistConsoleHint.Font=New-Object System.Drawing.Font("Segoe UI",8)
+$scientistConsoleHint.Size=New-Object System.Drawing.Size(325,35)
+$scientistConsoleHint.Location=New-Object System.Drawing.Point(20,695)
+$scientistConsolePanel.Controls.Add($scientistConsoleHint)
+
 $script:ActionProcess=$null
 $script:ActionName=""
 $script:Busy=$false
@@ -416,6 +482,7 @@ $script:Closing=$false
 $script:LastRefresh=[DateTime]::MinValue
 
 $script:ScientistDrawerOpen=$false
+$script:ScientistConsoleOpen=$false
 $script:ScientistProcess=$null
 
 function Start-ScientistSidecar{
@@ -429,6 +496,83 @@ function Start-ScientistSidecar{
 function Stop-ScientistSidecar{
   if(-not(Test-Path $ScientistStop)){return}
   try{Start-Process -FilePath $Pwsh -ArgumentList @("-NoProfile","-ExecutionPolicy","Bypass","-File",$ScientistStop,"-Port","9555") -WindowStyle Hidden|Out-Null}catch{}
+}
+
+function Get-ScientistConsoleHistory{
+  param($State)
+
+  $out=New-Object System.Collections.Generic.List[string]
+
+  if($State){
+    $mode=[string]$State.currentMode
+    $cdp=[string]$State.currentCdp9444Online
+    $status=[string]$State.lastToolStatus
+    $kind=[string]$State.lastToolKind
+    $cmd=[string]$State.lastToolCommand
+    $result=[string]$State.lastToolResult
+
+    $out.Add("=== CURRENT ===")
+    if(-not[string]::IsNullOrWhiteSpace($mode)){$out.Add("DAVID MODE: "+$mode)}
+    if(-not[string]::IsNullOrWhiteSpace($cdp)){$out.Add("CDP 9444: "+$cdp.ToUpperInvariant())}
+    if(-not[string]::IsNullOrWhiteSpace($status)){$out.Add("STATUS: "+$status)}
+    if(-not[string]::IsNullOrWhiteSpace($kind)){$out.Add("ACTION: "+$kind)}
+    if(-not[string]::IsNullOrWhiteSpace($cmd)){
+      $out.Add("")
+      $out.Add("COMMAND:")
+      $out.Add($cmd)
+    }
+    if(-not[string]::IsNullOrWhiteSpace($result)){
+      $out.Add("")
+      $out.Add("RESULT:")
+      $out.Add($result)
+    }
+    $out.Add("")
+    $out.Add("=== RECENT ACTIVITY ===")
+  }
+
+  if(Test-Path $ScientistOperatorLog){
+    try{
+      $raw=@(Get-Content -LiteralPath $ScientistOperatorLog -Tail 30 -ErrorAction Stop)
+      foreach($line in $raw){
+        if([string]::IsNullOrWhiteSpace($line)){continue}
+        try{
+          $e=$line|ConvertFrom-Json -ErrorAction Stop
+          $at=[string]$e.at
+          $kind=[string]$e.kind
+          $tool=[string]$e.tool
+          if(-not[string]::IsNullOrWhiteSpace($at)){$out.Add("["+ $at +"] "+$kind+$(if($tool){" / "+$tool}else{""}))}
+          elseif(-not[string]::IsNullOrWhiteSpace($kind)){$out.Add($kind)}
+
+          $command=[string]$e.command
+          if([string]::IsNullOrWhiteSpace($command)){$command=[string]$e.arg}
+          if(-not[string]::IsNullOrWhiteSpace($command)){$out.Add("  > "+$command)}
+
+          $stdout=[string]$e.stdout
+          if(-not[string]::IsNullOrWhiteSpace($stdout)){$out.Add("  OUT: "+$stdout)}
+
+          $stderr=[string]$e.stderr
+          if(-not[string]::IsNullOrWhiteSpace($stderr)){$out.Add("  ERR: "+$stderr)}
+
+          $errorText=[string]$e.error
+          if(-not[string]::IsNullOrWhiteSpace($errorText)){$out.Add("  ERROR: "+$errorText)}
+
+          $res=[string]$e.result
+          if(-not[string]::IsNullOrWhiteSpace($res)){$out.Add("  RESULT: "+$res)}
+
+          $button=[string]$e.button
+          if(-not[string]::IsNullOrWhiteSpace($button)){$out.Add("  UI: "+$button)}
+        }catch{
+          $out.Add($line)
+        }
+      }
+    }catch{
+      $out.Add("Could not read operator log: "+$_.Exception.Message)
+    }
+  }else{
+    $out.Add("No operator log yet.")
+  }
+
+  return ($out -join [Environment]::NewLine)
 }
 
 function Update-ScientistUi{
@@ -600,6 +744,19 @@ function Update-ScientistUi{
     $scientistAction.ForeColor=[System.Drawing.Color]::DarkGray
   }
 
+  if($st){
+    $toolStatus=[string]$st.lastToolStatus
+    $toolKind=[string]$st.lastToolKind
+    $consoleHead="MODE="+([string]$st.currentMode)+" | CDP9444="+([string]$st.currentCdp9444Online).ToUpperInvariant()
+    if(-not[string]::IsNullOrWhiteSpace($toolStatus)){$consoleHead+=" | "+$toolStatus}
+    if(-not[string]::IsNullOrWhiteSpace($toolKind)){$consoleHead+=" | "+$toolKind}
+    $scientistConsoleStatus.Text=$consoleHead
+    $scientistConsole.Text=Get-ScientistConsoleHistory -State $st
+  }else{
+    $scientistConsoleStatus.Text="OFFLINE"
+    $scientistConsole.Text="No Scientist state yet."
+  }
+
   $shortThought=""
   if($st-and$st.staleResponseSuppressed){
     $shortThought="CONTEXT CHANGED -> stale GPT answer hidden. Refreshing current DAVID state..."
@@ -702,10 +859,30 @@ $soloApk.Add_Click({Start-Mode "DAVID APK ONLY" $SingleRestart @("-Worker","APK"
 $stop.Add_Click({Start-StopAll})
 
 $refresh.Add_Click({Update-Ui})
+$scientistInnerMenu.Add_Click({
+  $script:ScientistConsoleOpen=$true
+  $scientistConsolePanel.Visible=$true
+  $scientistConsolePanel.BringToFront()
+  Update-ScientistUi
+})
+$scientistConsoleMenu.Add_Click({
+  $script:ScientistConsoleOpen=$false
+  $scientistConsolePanel.Visible=$false
+  Update-ScientistUi
+})
+
 $scientistMenu.Add_Click({
   $script:ScientistDrawerOpen=-not$script:ScientistDrawerOpen
   $scientistPanel.Visible=$script:ScientistDrawerOpen
-  if($script:ScientistDrawerOpen){$form.Size=New-Object System.Drawing.Size(1140,780);Update-ScientistUi}else{$form.Size=New-Object System.Drawing.Size(760,680)}
+  if($script:ScientistDrawerOpen){
+    $form.Size=New-Object System.Drawing.Size(1140,780)
+    if($script:ScientistConsoleOpen){$scientistConsolePanel.Visible=$true;$scientistConsolePanel.BringToFront()}
+    Update-ScientistUi
+  }else{
+    $script:ScientistConsoleOpen=$false
+    $scientistConsolePanel.Visible=$false
+    $form.Size=New-Object System.Drawing.Size(760,680)
+  }
 })
 $scientistStartBtn.Add_Click({Start-ScientistSidecar;Start-Sleep -Milliseconds 150;Update-ScientistUi})
 $scientistStopBtn.Add_Click({Stop-ScientistSidecar;Start-Sleep -Milliseconds 150;Update-ScientistUi})
