@@ -24,6 +24,11 @@ for(const token of [
   'PowerShell/CMD/Node',
   'recentLogs',
   'logAlerts',
+  'probeErrors',
+  'SETTLE_MS',
+  'STARTING_DPP',
+  'stable snapshot after event burst',
+  'POWERSHELL_EXE',
   'replace(/^\\uFEFF/,"")'
 ]) if(!side.includes(token)) throw new Error("Scientist sidecar invariant missing: "+token);
 
@@ -62,4 +67,4 @@ for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_T
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED scientist_cdp=9555 david_observe_cdp=9444 utf8=STRICT live_shell_process_log_telemetry=ON autonomous_low_risk_tools=ALLOWLISTED");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED scientist_cdp=9555 david_observe_cdp=9444 utf8=STRICT live_shell_process_log_telemetry=ON stable_event_coalescing=ON probe_error_visibility=ON autonomous_low_risk_tools=ALLOWLISTED");

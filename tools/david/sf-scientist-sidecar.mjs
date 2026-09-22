@@ -21,7 +21,11 @@ const MAX_STATE_FILES=12;
 const MAX_LOG_FILES=8;
 const MAX_LOG_LINES=8;
 const POLL=Number(process.env.SF_SCIENTIST_POLL_MS||1200);
-const AUTO_MIN=Number(process.env.SF_SCIENTIST_AUTO_MIN_MS||45000);
+const AUTO_MIN=Number(process.env.SF_SCIENTIST_AUTO_MIN_MS||8000);
+const SETTLE_MS=Number(process.env.SF_SCIENTIST_SETTLE_MS||2500);
+const POWERSHELL_EXE=process.env.SystemRoot?path.join(process.env.SystemRoot,"System32","WindowsPowerShell","v1.0","powershell.exe"):"powershell.exe";
+let lastProcessProbeError=null;
+let lastShellProbeError=null;
 const READY_MS=180000;
 const RESPONSE_MS=900000;
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
@@ -50,8 +54,15 @@ async function processes(){
     "foreach($k in $m.Keys){$n=$m[$k];$o[$k]=@($p|Where-Object{([string]$_.CommandLine)-like('*'+$n+'*')}).Count}",
     "$o|ConvertTo-Json -Compress"
   ].join(";");
-  try{const x=await execFileAsync("powershell.exe",["-NoProfile","-ExecutionPolicy","Bypass","-Command",ps],{windowsHide:true,timeout:6000});return JSON.parse(String(x.stdout||"{}").trim()||"{}");}
-  catch{return {};}
+  try{
+    const cmd='$OutputEncoding=[Console]::OutputEncoding=New-Object System.Text.UTF8Encoding($false);'+ps;
+    const x=await execFileAsync(POWERSHELL_EXE,["-NoProfile","-ExecutionPolicy","Bypass","-Command",cmd],{windowsHide:true,timeout:6000,maxBuffer:1048576});
+    lastProcessProbeError=null;
+    return JSON.parse(String(x.stdout||"{}").trim()||"{}");
+  }catch(e){
+    lastProcessProbeError=cleanText(e&&e.message||e,500);
+    return {};
+  }
 }
 
 function cleanText(value,max=700){
@@ -114,28 +125,50 @@ async function shellProcesses(){
     "$o|ConvertTo-Json -Compress"
   ].join(";");
   try{
-    const x=await execFileAsync("powershell.exe",["-NoProfile","-ExecutionPolicy","Bypass","-Command",ps],{windowsHide:true,timeout:6500,maxBuffer:1048576});
-    const raw=String(x.stdout||"").trim();if(!raw)return [];
+    const cmd='$OutputEncoding=[Console]::OutputEncoding=New-Object System.Text.UTF8Encoding($false);'+ps;
+    const x=await execFileAsync(POWERSHELL_EXE,["-NoProfile","-ExecutionPolicy","Bypass","-Command",cmd],{windowsHide:true,timeout:6500,maxBuffer:1048576});
+    const raw=String(x.stdout||"").trim();if(!raw){lastShellProbeError=null;return [];}
     const parsed=JSON.parse(raw),arr=Array.isArray(parsed)?parsed:[parsed];
+    lastShellProbeError=null;
     return arr.map(v=>({pid:Number(v.pid||0),ppid:Number(v.ppid||0),name:String(v.name||""),cmd:cleanText(v.cmd||"",520)})).filter(v=>v.pid).slice(0,MAX_SHELLS);
-  }catch{return [];}
+  }catch(e){
+    lastShellProbeError=cleanText(e&&e.message||e,500);
+    return [];
+  }
 }
 async function liveTelemetry(){
   const shells=await shellProcesses();
   const logs=logSummary();
-  return {shells,davidStates:stateSummary(),recentLogs:logs.recent,logAlerts:logs.alerts};
+  return {
+    shells,
+    davidStates:stateSummary(),
+    recentLogs:logs.recent,
+    logAlerts:logs.alerts,
+    probeErrors:{processCounts:lastProcessProbeError,shellProcesses:lastShellProbeError}
+  };
 }
 function telemetrySignature(t){
   return digest(JSON.stringify({
     shells:(t&&t.shells||[]).map(x=>[x.pid,x.ppid,x.name,x.cmd]),
     states:(t&&t.davidStates||[]).map(x=>[x.file,x.status,x.watchdog,x.lastAction,x.lastError]),
-    alerts:t&&t.logAlerts||[]
+    alerts:t&&t.logAlerts||[],
+    probeErrors:t&&t.probeErrors||{}
   }));
 }
 
-function infer(p,tm){
+function infer(p,tm,cdpOnline=false){
+  const managed=tm&&tm.managed||{};
+  const app2=Array.isArray(managed.APP2)?managed.APP2.length:0;
+  const sysTab=Array.isArray(managed.SYSTEM)?managed.SYSTEM.length:0;
+  const apkTab=Array.isArray(managed.APK)?managed.APK.length:0;
   const s=Number(p.SUP||0),y=Number(p.SYSTEM||0),d=Number(p.DPP||0),a=Number(p.APK||0),c=Number(p.CONTROL||0),g=Number(p.GUARD||0),f=Number(p.FREE||0),z=Number(p.DESIGN||0),t=Number(tm?.totalChatGptTabs||0);
-  if(!s&&!y&&!d&&!a&&!c&&!f)return "STOPPED";
+  if(!s&&!y&&!d&&!a&&!c&&!f){
+    if(cdpOnline&&app2===1&&t>=1)return "STARTING_DPP";
+    if(cdpOnline&&sysTab===1&&t>=1)return "STARTING_SYSTEM";
+    if(cdpOnline&&apkTab===1&&t>=1)return "STARTING_APK";
+    if(cdpOnline&&t>0)return "EDGE_READY";
+    return "STOPPED";
+  }
   if(s===1&&y===1&&d===1&&a===1&&c===0&&g===1&&f===0&&z===0)return "SOULFLAME";
   if(s===1&&f===2&&!y&&!d&&!a&&!c&&!z)return "AB";
   if(s===1&&g===1&&y===1&&!d&&!a&&!c&&!f&&!z&&t===1)return "SOLO_SYSTEM";
@@ -150,7 +183,7 @@ async function snapshot(){
     liveTelemetry()
   ]);
   const tm=readJson(TABMON,null),m=tm?.managed||{};
-  return {at:now(),mode:infer(p,tm),cdp9444Online:Boolean(ver),process:p,monitor:tm?{totalChatGptTabs:Number(tm.totalChatGptTabs||0),SYSTEM:Array.isArray(m.SYSTEM)?m.SYSTEM.length:0,DESIGN:Array.isArray(m.DESIGN)?m.DESIGN.length:0,APP2:Array.isArray(m.APP2)?m.APP2.length:0,APK:Array.isArray(m.APK)?m.APK.length:0,CONTROL:Array.isArray(m.CONTROL)?m.CONTROL.length:0,FREE_A:Array.isArray(m.FREE_A)?m.FREE_A.length:0,FREE_B:Array.isArray(m.FREE_B)?m.FREE_B.length:0}:null,liveTelemetry:telemetry};
+  return {at:now(),mode:infer(p,tm,Boolean(ver)),cdp9444Online:Boolean(ver),process:p,monitor:tm?{totalChatGptTabs:Number(tm.totalChatGptTabs||0),SYSTEM:Array.isArray(m.SYSTEM)?m.SYSTEM.length:0,DESIGN:Array.isArray(m.DESIGN)?m.DESIGN.length:0,APP2:Array.isArray(m.APP2)?m.APP2.length:0,APK:Array.isArray(m.APK)?m.APK.length:0,CONTROL:Array.isArray(m.CONTROL)?m.CONTROL.length:0,FREE_A:Array.isArray(m.FREE_A)?m.FREE_A.length:0,FREE_B:Array.isArray(m.FREE_B)?m.FREE_B.length:0}:null,liveTelemetry:telemetry};
 }
 function event(prev,next){
   if(!prev)return {important:true,reason:"Scientist attached to current DAVID state"};
@@ -293,7 +326,7 @@ async function executeScientistAction(context,chief,text,s){
 }
 
 function boot(s){return "SF CORPORATION / AI SCIENTIST BOOTSTRAP\n\nYou are the independent AI Scientist observing the existing DAVID system. You are OUTSIDE DAVID. Preserve the existing DAVID architecture. Never claim an external action happened unless the local bridge reports it. Never bypass login/MFA/CAPTCHA/permissions. Observe, form hypotheses, test claims against evidence, detect regressions and propose improvements. The snapshot includes LIVE TELEMETRY with active PowerShell/CMD/Node processes, DAVID runtime-state summaries, recent log tails and error alerts. Use it to explain what actually happened, not only topology.\n\nFor autonomous observations answer compactly in Bulgarian:\nВИДЯХ: ...\nРЕШИХ: ...\nЗАЩО: ...\nПРЕДЛАГАМ: ...\nRISK: LOW|MEDIUM|HIGH\n\nCurrent DAVID snapshot:\n"+JSON.stringify(s,null,2);}
-function observe(reason,s){return "SF SCIENTIST AUTONOMOUS OBSERVATION\nEVENT: "+reason+"\n\nAnalyze only this evidence. Inspect liveTelemetry.shells, davidStates, recentLogs and logAlerts before concluding. Distinguish a process start/stop from a real script failure. If a log contains a concrete exception/error, name the supporting process/file. You may decide no intervention is needed. Do not invent actions.\n\nDAVID SNAPSHOT:\n"+JSON.stringify(s,null,2)+"\n\nYou may autonomously choose ONE low-risk Scientist-sidecar action only when useful:\nACTION: NONE | OPEN_POWERSHELL | OPEN_CMD | OPEN_CHATGPT | SEARCH_WEB <query> | OPEN_URL <https-url> | DAVID_HEALTH_CHECK | GIT_STATUS | CONSULT_AB <question>\nThese actions affect only Scientist tools or read-only diagnostics; never modify DAVID architecture.\n\nReturn:\nВИДЯХ: ...\nРЕШИХ: ...\nЗАЩО: ...\nПРЕДЛАГАМ: ...\nRISK: LOW|MEDIUM|HIGH\nACTION: ...";}
+function observe(reason,s){return "SF SCIENTIST AUTONOMOUS OBSERVATION\nEVENT: "+reason+"\n\nAnalyze only this evidence. Inspect liveTelemetry.shells, davidStates, recentLogs, logAlerts and probeErrors before concluding. Treat empty telemetry as absence of evidence only when the corresponding probeErrors field is null. Distinguish a process start/stop from a real script failure. If a log contains a concrete exception/error, name the supporting process/file. You may decide no intervention is needed. Do not invent actions.\n\nDAVID SNAPSHOT:\n"+JSON.stringify(s,null,2)+"\n\nYou may autonomously choose ONE low-risk Scientist-sidecar action only when useful:\nACTION: NONE | OPEN_POWERSHELL | OPEN_CMD | OPEN_CHATGPT | SEARCH_WEB <query> | OPEN_URL <https-url> | DAVID_HEALTH_CHECK | GIT_STATUS | CONSULT_AB <question>\nThese actions affect only Scientist tools or read-only diagnostics; never modify DAVID architecture.\n\nReturn:\nВИДЯХ: ...\nРЕШИХ: ...\nЗАЩО: ...\nПРЕДЛАГАМ: ...\nRISK: LOW|MEDIUM|HIGH\nACTION: ...";}
 function user(text,s){return "MITKO -> SF AI SCIENTIST\n"+text+"\n\nLive DAVID snapshot including PowerShell/CMD/Node processes, runtime states and recent logs:\n"+JSON.stringify(s,null,2)+"\n\nAnswer as SF AI Scientist. Separate observed facts from hypotheses. When relevant, cite the exact PID/script, state file or log line supporting the conclusion. You can use one low-risk Scientist tool when useful by ending with ACTION: NONE | OPEN_POWERSHELL | OPEN_CMD | OPEN_CHATGPT | SEARCH_WEB <query> | OPEN_URL <https-url> | DAVID_HEALTH_CHECK | GIT_STATUS | CONSULT_AB <question>. Never modify DAVID architecture from this sidecar.";}
 async function command(context,page,s){
   const c=readJson(COMMAND,null);if(!c?.id||c.id===state.lastCommandId||!String(c.text||"").trim())return;
@@ -306,14 +339,33 @@ async function main(){
   save("Connecting to Scientist Edge",{status:"starting",scientistCdp:SCI_CDP,davidCdp:DAVID_CDP});
   const browser=await chromium.connectOverCDP(SCI_CDP,{timeout:30000}),contexts=browser.contexts();if(!contexts.length)throw new Error("Scientist Edge has no browser context");
   const context=contexts[0];let page=await pageFor(context),prev=null,booted=Boolean(state.bootstrappedAt);
+  let pendingEvent=null;
+  let lastMaterialChangeAt=0;
   while(true){
     try{
       if(!page||page.isClosed())page=await pageFor(context);
       const s=await snapshot();save("Scientist heartbeat",{status:state.loginRequired?"login-required":"online",liveSnapshot:s});
       if(!booted&&!state.loginRequired){const r=await ask(page,boot(s));append(DECISIONS,{type:"bootstrap",at:now(),snapshot:s,response:r});save("Scientist bootstrap complete",{bootstrappedAt:now(),lastDecision:r,lastObservation:"Scientist attached"});booted=true;}
       await command(context,page,s);
-      const e=event(prev,s),last=state.lastAutoAnalysisAt?Date.parse(state.lastAutoAnalysisAt):0;
-      if(booted&&e.important&&Date.now()-last>=AUTO_MIN){const r=await ask(page,observe(e.reason,s));const actionResult=await executeScientistAction(context,page,r,s).catch(x=>"action failed: "+String(x?.message||x));append(DECISIONS,{type:"autonomous-decision",at:now(),event:e.reason,snapshot:s,response:r,actionResult});append(MEMORY,{at:now(),kind:"observed-system-event",event:e.reason,response:r,actionResult});save("Autonomous Scientist decision recorded",{lastObservation:e.reason,lastDecision:r,lastAutoAnalysisAt:now(),lastToolResult:actionResult});}
+      const e=event(prev,s);
+      if(e.important){
+        pendingEvent={reason:e.reason,queuedAt:now()};
+        lastMaterialChangeAt=Date.now();
+        save("Scientist waiting for stable live telemetry",{lastObservation:e.reason,pendingObservation:true});
+      }
+      const last=state.lastAutoAnalysisAt?Date.parse(state.lastAutoAnalysisAt):0;
+      const settled=Boolean(pendingEvent)&&Date.now()-lastMaterialChangeAt>=SETTLE_MS;
+      const cooldownReady=Date.now()-last>=AUTO_MIN;
+      if(booted&&settled&&cooldownReady){
+        const latest=await snapshot();
+        const reason=pendingEvent.reason+" (stable snapshot after event burst)";
+        const r=await ask(page,observe(reason,latest));
+        const actionResult=await executeScientistAction(context,page,r,latest).catch(x=>"action failed: "+String(x?.message||x));
+        append(DECISIONS,{type:"autonomous-decision",at:now(),event:reason,snapshot:latest,response:r,actionResult});
+        append(MEMORY,{at:now(),kind:"observed-system-event",event:reason,response:r,actionResult});
+        save("Autonomous Scientist decision recorded",{lastObservation:reason,lastDecision:r,lastAutoAnalysisAt:now(),lastToolResult:actionResult,pendingObservation:false});
+        pendingEvent=null;
+      }
       prev=s;
     }catch(err){save("Scientist loop error",{status:"degraded",lastError:String(err?.stack||err)});}
     await sleep(POLL);
