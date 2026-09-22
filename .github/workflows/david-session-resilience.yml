@@ -73,6 +73,9 @@ jobs:
       - name: Verify scoped AUTONOMY profile
         run: npm run verify:autonomy
 
+      - name: Verify FAST SOLO modes
+        run: node verify-fast-solo.mjs
+
       - name: Verify ChatGPT effort-mode controller
         run: node chatgpt-effort-mode.mjs --self-test
 
