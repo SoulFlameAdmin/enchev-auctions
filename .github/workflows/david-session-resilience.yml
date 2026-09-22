@@ -5,6 +5,10 @@ on:
     paths:
       - "tools/david/**"
       - "START_DAVID_ALL.ps1"
+      - "START_SF_SCIENTIST.ps1"
+      - "STOP_SF_SCIENTIST.ps1"
+      - "START_SF_SCIENTIST.ps1"
+      - "STOP_SF_SCIENTIST.ps1"
       - "START_DAVID_AUTONOMY.ps1"
       - "START_DAVID_SINGLE.ps1"
       - "RESTART_DAVID_SINGLE_CLEAN.ps1"
@@ -76,6 +80,11 @@ jobs:
       - name: Verify FAST SOLO modes
         run: node verify-fast-solo.mjs
 
+      - name: Verify SF Scientist sidecar
+        run: |
+          node --check sf-scientist-sidecar.mjs
+          node verify-sf-scientist-sidecar.mjs
+
       - name: Verify ChatGPT effort-mode controller
         run: node chatgpt-effort-mode.mjs --self-test
 
@@ -102,6 +111,8 @@ jobs:
         run: |
           $files = @(
             "START_DAVID_ALL.ps1",
+            "START_SF_SCIENTIST.ps1",
+            "STOP_SF_SCIENTIST.ps1",
             "START_DAVID_AUTONOMY.ps1",
             "START_DAVID_SINGLE.ps1",
             "RESTART_DAVID_SINGLE_CLEAN.ps1",
