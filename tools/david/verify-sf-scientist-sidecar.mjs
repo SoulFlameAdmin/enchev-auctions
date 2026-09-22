@@ -34,7 +34,7 @@ if(stop.includes("DAVID_CHATGPT_PROFILE")) throw new Error("Scientist stop must 
 if(stop.includes("--remote-debugging-port=9444")) throw new Error("Scientist stop must not target DAVID CDP 9444");
 
 for(const token of [
-  "DAVID MODE CENTER V2.2",
+  "DAVID MODE CENTER V2.1",
   "SF AI SCIENTIST",
   "START SCIENTIST",
   "STOP SCIENTIST",
