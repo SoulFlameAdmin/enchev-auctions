@@ -10,7 +10,8 @@ const PREVIEW_DIR=path.join(HERE,".david-control-panel-previews");
 const DAVID_CDP=process.env.DAVID_CDP_URL||"http://127.0.0.1:9444";
 const SCIENTIST_CDP=process.env.SF_SCIENTIST_CDP_URL||"http://127.0.0.1:9555";
 const REFRESH_MS=Math.max(1500,Number(process.env.DAVID_CONTROL_PANEL_PREVIEW_MS||3000));
-const MAX_TASKS=Math.max(2,Math.min(12,Number(process.env.DAVID_CONTROL_PANEL_MAX_TASKS||8)));
+const MAX_TASKS=Math.max(8,Math.min(16,Number(process.env.DAVID_CONTROL_PANEL_MAX_TASKS||12)));
+const DAVID_ROLES=["SYSTEM","DESIGN","APP2","APK","CONTROL","FREE_A","FREE_B"];
 
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const now=()=>new Date().toISOString();
@@ -58,7 +59,7 @@ async function collect(browser,source,monitor){
       const url=page.url();
       if(!/^https:\/\/chatgpt\.com\//i.test(url))continue;
       const role=source==="DAVID"?roleForDavid(url,monitor,idx):(idx===0?"SCIENTIST":"SCIENTIST_"+(idx+1));
-      const key=source+":"+role+":"+idx;
+      const key=source+":"+role+(role.startsWith("DAVID_TAB_")||role.startsWith("SCIENTIST_")?":"+idx:"");
       const preview=path.join(PREVIEW_DIR,safe(key)+".png");
       let title="";
       try{title=clean(await page.title());}catch{}
@@ -110,23 +111,119 @@ async function processCommand(tasks){
   writeJson(path.join(HERE,".david-control-panel-command-result.json"),result);
 }
 
+function statusWorking(status){
+  return !["OFFLINE","NO_TAB","ERROR"].includes(String(status||"").toUpperCase());
+}
+
+function normalizeTopology(david,scientist,monitor){
+  const liveByRole=new Map();
+  for(const task of david){
+    if(!liveByRole.has(task.role))liveByRole.set(task.role,task);
+  }
+
+  const managed=monitor&&monitor.managed||{};
+  const health=monitor&&monitor.workerHealth||{};
+  const tasks=[];
+
+  for(const role of DAVID_ROLES){
+    const live=liveByRole.get(role);
+    if(live){
+      const h=health&&health[role]||null;
+      const processAlive=h?Boolean(h.processAlive):true;
+      tasks.push({
+        ...live,
+        key:"DAVID:"+role,
+        status:processAlive?live.status:"TAB_ONLY",
+        processAlive,
+        tabCount:h?Number(h.tabCount||1):1,
+        working:processAlive&&statusWorking(live.status)
+      });
+      continue;
+    }
+
+    const h=health&&health[role]||null;
+    const urls=Array.isArray(managed&&managed[role])?managed[role]:[];
+    const processAlive=h?Boolean(h.processAlive):false;
+    tasks.push({
+      key:"DAVID:"+role,
+      source:"DAVID",
+      role,
+      cdp:9444,
+      title:role,
+      url:urls.length?conversationUrl(urls[0]):"",
+      status:processAlive?"NO_TAB":"OFFLINE",
+      preview:null,
+      updatedAt:now(),
+      processAlive,
+      tabCount:h?Number(h.tabCount||0):0,
+      working:false
+    });
+  }
+
+  for(const extra of david){
+    if(DAVID_ROLES.includes(extra.role))continue;
+    tasks.push({...extra,working:statusWorking(extra.status),processAlive:true,tabCount:1});
+  }
+
+  const scientistTask=scientist[0]||{
+    key:"SCIENTIST:SCIENTIST",
+    source:"SCIENTIST",
+    role:"SCIENTIST",
+    cdp:9555,
+    title:"SF AI SCIENTIST",
+    url:"",
+    status:"OFFLINE",
+    preview:null,
+    updatedAt:now()
+  };
+  scientistTask.key="SCIENTIST:SCIENTIST";
+  scientistTask.role="SCIENTIST";
+  scientistTask.working=statusWorking(scientistTask.status)&&Boolean(scientistBrowser);
+  scientistTask.processAlive=Boolean(scientistBrowser);
+  scientistTask.tabCount=scientist.length;
+  tasks.push(scientistTask);
+
+  const activeDavid=tasks.filter(x=>x.source==="DAVID"&&x.working);
+  const connections=[];
+  if(activeDavid.length>1){
+    const hub=activeDavid[0];
+    for(const task of activeDavid.slice(1)){
+      connections.push({from:hub.key,to:task.key,kind:"SAME_DAVID_RUNTIME",active:true});
+    }
+  }
+  if(scientistTask.working&&activeDavid.length){
+    connections.push({from:scientistTask.key,to:activeDavid[0].key,kind:"SCIENTIST_OBSERVES_DAVID",active:true});
+  }
+
+  return {tasks:tasks.slice(0,MAX_TASKS),connections};
+}
+
 async function cycle(){
   ensureDir();
   davidBrowser=await connect(DAVID_CDP,davidBrowser);
   scientistBrowser=await connect(SCIENTIST_CDP,scientistBrowser);
   const monitor=readJson(MONITOR,null);
+
   const [david,scientist]=await Promise.all([
     collect(davidBrowser,"DAVID",monitor),
     collect(scientistBrowser,"SCIENTIST",monitor)
   ]);
-  const tasks=[...david,...scientist].slice(0,MAX_TASKS);
+
+  const topology=normalizeTopology(david,scientist,monitor);
   writeJson(MANIFEST,{
-    version:1,updatedAt:now(),
+    version:2,
+    updatedAt:now(),
     davidCdpOnline:Boolean(davidBrowser),
     scientistCdpOnline:Boolean(scientistBrowser),
-    tasks
+    tasks:topology.tasks,
+    connections:topology.connections,
+    legend:{
+      SAME_DAVID_RUNTIME:"shared DAVID 9444 runtime",
+      SCIENTIST_OBSERVES_DAVID:"Scientist observing DAVID runtime"
+    }
   });
-  await processCommand(tasks);
+
+  await processCommand(topology.tasks);
 }
 
 async function main(){

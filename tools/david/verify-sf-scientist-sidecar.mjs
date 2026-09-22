@@ -188,8 +188,14 @@ for(const token of [
   "$st.lastToolResult",
   "PAGE 1 - CONTROL",
   "PAGE 2 - TASKS / ZADACHI",
-  "DAVID TASKS - LIVE EDGE SESSIONS",
-  "FOCUS SELECTED EDGE",
+  "DAVID TASKS - LIVE TOPOLOGY",
+  "< BACK TO TASK MAP",
+  "FOCUS REAL EDGE",
+  "function Build-TaskGraph",
+  "function Open-TaskDetail",
+  "function Close-TaskDetail",
+  "$taskGraph.Add_Paint",
+  "LIVE CONNECTION",
   "Start-ControlPanelPreviewWorker",
   "Update-TasksUi",
   ".david-control-panel-tasks.json",
@@ -207,7 +213,12 @@ for(const token of [
   'page.bringToFront',
   'action==="FOCUS"',
   'source==="DAVID"',
-  'collect(scientistBrowser,"SCIENTIST",monitor)'
+  'collect(scientistBrowser,"SCIENTIST",monitor)',
+  'DAVID_ROLES',
+  'working:false',
+  'connections',
+  'SAME_DAVID_RUNTIME',
+  'SCIENTIST_OBSERVES_DAVID'
 ]) if(!controlPreview.includes(token)) throw new Error("Control panel preview invariant missing: "+token);
 
 if(/\.close\(\)/.test(controlPreview) && /Browser/.test(controlPreview))
@@ -217,4 +228,4 @@ for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_T
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED fullscreen_control_panel=ON page2_tasks=ON live_edge_previews=ON scientist_burger=ON realtime_console=ON stale_runtime_response=SUPPRESSED fresh_context=ON");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED task_topology=ON all_task_states=ON glowing_connections=ON task_click_edge_detail=ON back_to_map=ON fullscreen_control_panel=ON scientist_burger=ON realtime_console=ON");

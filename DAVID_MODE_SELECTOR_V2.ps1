@@ -170,7 +170,7 @@ $tasksPage.BackColor=[System.Drawing.Color]::FromArgb(12,14,18)
 $form.Controls.Add($mainTabs)
 
 $tasksHeader=New-Object System.Windows.Forms.Label
-$tasksHeader.Text="DAVID TASKS - LIVE EDGE SESSIONS"
+$tasksHeader.Text="DAVID TASKS - LIVE TOPOLOGY"
 $tasksHeader.ForeColor=[System.Drawing.Color]::White
 $tasksHeader.Font=New-Object System.Drawing.Font("Segoe UI",18,[System.Drawing.FontStyle]::Bold)
 $tasksHeader.AutoSize=$true
@@ -181,29 +181,78 @@ $tasksStatus=New-Object System.Windows.Forms.Label
 $tasksStatus.Text="TASK PREVIEW WORKER: STARTING..."
 $tasksStatus.ForeColor=[System.Drawing.Color]::Khaki
 $tasksStatus.Font=New-Object System.Drawing.Font("Consolas",10,[System.Drawing.FontStyle]::Bold)
-$tasksStatus.Size=New-Object System.Drawing.Size(1000,28)
+$tasksStatus.Size=New-Object System.Drawing.Size(1450,28)
 $tasksStatus.Location=New-Object System.Drawing.Point(27,56)
 $tasksStatus.Anchor="Top,Left,Right"
 $tasksPage.Controls.Add($tasksStatus)
 
-$taskList=New-Object System.Windows.Forms.ListBox
-$taskList.BackColor=[System.Drawing.Color]::FromArgb(17,19,25)
-$taskList.ForeColor=[System.Drawing.Color]::White
-$taskList.Font=New-Object System.Drawing.Font("Consolas",10)
-$taskList.BorderStyle="FixedSingle"
-$taskList.Location=New-Object System.Drawing.Point(28,92)
-$taskList.Size=New-Object System.Drawing.Size(330,580)
-$taskList.Anchor="Top,Bottom,Left"
-$tasksPage.Controls.Add($taskList)
+$taskOverview=New-Object System.Windows.Forms.Panel
+$taskOverview.Location=New-Object System.Drawing.Point(20,90)
+$taskOverview.Size=New-Object System.Drawing.Size(1510,650)
+$taskOverview.Anchor="Top,Bottom,Left,Right"
+$taskOverview.BackColor=[System.Drawing.Color]::FromArgb(10,12,16)
+$taskOverview.BorderStyle="FixedSingle"
+$tasksPage.Controls.Add($taskOverview)
+
+$taskLegend=New-Object System.Windows.Forms.Label
+$taskLegend.Text="GREEN/CYAN = WORKING  |  AMBER = PROCESS WITHOUT TAB  |  RED = OFFLINE  |  GLOW LINE = LIVE CONNECTION"
+$taskLegend.ForeColor=[System.Drawing.Color]::Silver
+$taskLegend.Font=New-Object System.Drawing.Font("Consolas",9,[System.Drawing.FontStyle]::Bold)
+$taskLegend.Size=New-Object System.Drawing.Size(1400,24)
+$taskLegend.Location=New-Object System.Drawing.Point(18,10)
+$taskLegend.Anchor="Top,Left,Right"
+$taskOverview.Controls.Add($taskLegend)
+
+$taskGraph=New-Object System.Windows.Forms.Panel
+$taskGraph.Location=New-Object System.Drawing.Point(18,42)
+$taskGraph.Size=New-Object System.Drawing.Size(1470,585)
+$taskGraph.Anchor="Top,Bottom,Left,Right"
+$taskGraph.BackColor=[System.Drawing.Color]::FromArgb(7,9,13)
+$taskGraph.BorderStyle="FixedSingle"
+$taskOverview.Controls.Add($taskGraph)
+
+$taskDetail=New-Object System.Windows.Forms.Panel
+$taskDetail.Location=New-Object System.Drawing.Point(20,90)
+$taskDetail.Size=New-Object System.Drawing.Size(1510,650)
+$taskDetail.Anchor="Top,Bottom,Left,Right"
+$taskDetail.BackColor=[System.Drawing.Color]::FromArgb(10,12,16)
+$taskDetail.BorderStyle="FixedSingle"
+$taskDetail.Visible=$false
+$tasksPage.Controls.Add($taskDetail)
+
+$taskBack=New-Object System.Windows.Forms.Button
+$taskBack.Text="< BACK TO TASK MAP"
+$taskBack.Size=New-Object System.Drawing.Size(190,42)
+$taskBack.Location=New-Object System.Drawing.Point(18,16)
+$taskBack.FlatStyle="Flat"
+$taskBack.ForeColor=[System.Drawing.Color]::White
+$taskBack.BackColor=[System.Drawing.Color]::FromArgb(70,74,84)
+$taskDetail.Controls.Add($taskBack)
+
+$taskDetailTitle=New-Object System.Windows.Forms.Label
+$taskDetailTitle.Text="TASK DETAIL"
+$taskDetailTitle.ForeColor=[System.Drawing.Color]::White
+$taskDetailTitle.Font=New-Object System.Drawing.Font("Segoe UI",16,[System.Drawing.FontStyle]::Bold)
+$taskDetailTitle.AutoSize=$true
+$taskDetailTitle.Location=New-Object System.Drawing.Point(228,20)
+$taskDetail.Controls.Add($taskDetailTitle)
+
+$taskDetailStatus=New-Object System.Windows.Forms.Label
+$taskDetailStatus.Text="STATUS: -"
+$taskDetailStatus.ForeColor=[System.Drawing.Color]::Khaki
+$taskDetailStatus.Font=New-Object System.Drawing.Font("Consolas",10,[System.Drawing.FontStyle]::Bold)
+$taskDetailStatus.Size=New-Object System.Drawing.Size(900,26)
+$taskDetailStatus.Location=New-Object System.Drawing.Point(228,51)
+$taskDetail.Controls.Add($taskDetailStatus)
 
 $taskPreview=New-Object System.Windows.Forms.PictureBox
 $taskPreview.BackColor=[System.Drawing.Color]::Black
 $taskPreview.BorderStyle="FixedSingle"
 $taskPreview.SizeMode="Zoom"
-$taskPreview.Location=New-Object System.Drawing.Point(382,92)
-$taskPreview.Size=New-Object System.Drawing.Size(850,500)
+$taskPreview.Location=New-Object System.Drawing.Point(18,82)
+$taskPreview.Size=New-Object System.Drawing.Size(1468,465)
 $taskPreview.Anchor="Top,Bottom,Left,Right"
-$tasksPage.Controls.Add($taskPreview)
+$taskDetail.Controls.Add($taskPreview)
 
 $taskDetails=New-Object System.Windows.Forms.TextBox
 $taskDetails.Multiline=$true
@@ -212,30 +261,30 @@ $taskDetails.ScrollBars="Vertical"
 $taskDetails.BackColor=[System.Drawing.Color]::FromArgb(9,11,15)
 $taskDetails.ForeColor=[System.Drawing.Color]::Gainsboro
 $taskDetails.Font=New-Object System.Drawing.Font("Consolas",9)
-$taskDetails.Location=New-Object System.Drawing.Point(382,606)
-$taskDetails.Size=New-Object System.Drawing.Size(850,115)
+$taskDetails.Location=New-Object System.Drawing.Point(18,558)
+$taskDetails.Size=New-Object System.Drawing.Size(1180,70)
 $taskDetails.Anchor="Bottom,Left,Right"
-$tasksPage.Controls.Add($taskDetails)
+$taskDetail.Controls.Add($taskDetails)
 
 $focusTask=New-Object System.Windows.Forms.Button
-$focusTask.Text="FOCUS SELECTED EDGE"
-$focusTask.Size=New-Object System.Drawing.Size(200,40)
-$focusTask.Location=New-Object System.Drawing.Point(28,686)
-$focusTask.Anchor="Bottom,Left"
+$focusTask.Text="FOCUS REAL EDGE"
+$focusTask.Size=New-Object System.Drawing.Size(240,70)
+$focusTask.Location=New-Object System.Drawing.Point(1216,558)
+$focusTask.Anchor="Bottom,Right"
 $focusTask.FlatStyle="Flat"
 $focusTask.ForeColor=[System.Drawing.Color]::White
 $focusTask.BackColor=[System.Drawing.Color]::FromArgb(35,119,191)
-$tasksPage.Controls.Add($focusTask)
+$taskDetail.Controls.Add($focusTask)
 
 $refreshTasks=New-Object System.Windows.Forms.Button
-$refreshTasks.Text="REFRESH TASKS"
-$refreshTasks.Size=New-Object System.Drawing.Size(120,40)
-$refreshTasks.Location=New-Object System.Drawing.Point(238,686)
-$refreshTasks.Anchor="Bottom,Left"
+$refreshTasks.Text="REFRESH"
+$refreshTasks.Size=New-Object System.Drawing.Size(105,34)
+$refreshTasks.Location=New-Object System.Drawing.Point(1380,16)
+$refreshTasks.Anchor="Top,Right"
 $refreshTasks.FlatStyle="Flat"
 $refreshTasks.ForeColor=[System.Drawing.Color]::White
 $refreshTasks.BackColor=[System.Drawing.Color]::FromArgb(70,74,84)
-$tasksPage.Controls.Add($refreshTasks)
+$taskOverview.Controls.Add($refreshTasks)
 
 $title=New-Object System.Windows.Forms.Label
 $title.Text="DAVID MODE CENTER V2.1"
@@ -576,7 +625,12 @@ $script:ScientistConsoleOpen=$false
 $script:ScientistProcess=$null
 $script:ControlPanelPreviewProcess=$null
 $script:TaskRows=@()
+$script:TaskConnections=@()
+$script:TaskNodeControls=@{}
 $script:SelectedTaskKey=""
+$script:TaskDetailOpen=$false
+$script:TaskGraphSignature=""
+$script:GraphPulse=$false
 $script:LastPreviewPath=""
 $script:LastPreviewStamp=0
 
@@ -638,28 +692,188 @@ function Set-TaskPreviewImage{
   }catch{}
 }
 
-function Show-SelectedTask{
-  $i=[int]$taskList.SelectedIndex
-  if($i-lt 0-or$i-ge$script:TaskRows.Count){
-    $taskDetails.Text="Select a task."
+function Get-TaskByKey{
+  param([string]$Key)
+  if([string]::IsNullOrWhiteSpace($Key)){return $null}
+  foreach($t in @($script:TaskRows)){
+    if(([string]$t.key)-eq$Key){return $t}
+  }
+  return $null
+}
+
+function Clear-TaskPreviewImage{
+  try{
+    $old=$taskPreview.Image
+    $taskPreview.Image=$null
+    if($old){$old.Dispose()}
+  }catch{}
+  $script:LastPreviewPath=""
+  $script:LastPreviewStamp=0
+}
+
+function Set-TaskStatusStyle{
+  param(
+    [System.Windows.Forms.Button]$Button,
+    [string]$Status,
+    [bool]$Working
+  )
+
+  $st=([string]$Status).ToUpperInvariant()
+  if($st-eq"THINKING"){
+    $Button.BackColor=[System.Drawing.Color]::FromArgb(20,55,78)
+    $Button.FlatAppearance.BorderColor=[System.Drawing.Color]::DeepSkyBlue
+    $Button.ForeColor=[System.Drawing.Color]::White
+  }elseif($Working){
+    $Button.BackColor=[System.Drawing.Color]::FromArgb(20,62,42)
+    $Button.FlatAppearance.BorderColor=[System.Drawing.Color]::LimeGreen
+    $Button.ForeColor=[System.Drawing.Color]::White
+  }elseif($st-eq"NO_TAB"){
+    $Button.BackColor=[System.Drawing.Color]::FromArgb(74,57,18)
+    $Button.FlatAppearance.BorderColor=[System.Drawing.Color]::Goldenrod
+    $Button.ForeColor=[System.Drawing.Color]::White
+  }else{
+    $Button.BackColor=[System.Drawing.Color]::FromArgb(58,25,29)
+    $Button.FlatAppearance.BorderColor=[System.Drawing.Color]::Firebrick
+    $Button.ForeColor=[System.Drawing.Color]::Silver
+  }
+}
+
+function Build-TaskGraph{
+  $taskGraph.SuspendLayout()
+  try{
+    $taskGraph.Controls.Clear()
+    $script:TaskNodeControls=@{}
+
+    $rows=@($script:TaskRows)
+    if($rows.Count-eq0){
+      $empty=New-Object System.Windows.Forms.Label
+      $empty.Text="NO TASK DATA YET"
+      $empty.ForeColor=[System.Drawing.Color]::DarkGray
+      $empty.Font=New-Object System.Drawing.Font("Segoe UI",18,[System.Drawing.FontStyle]::Bold)
+      $empty.AutoSize=$true
+      $empty.Location=New-Object System.Drawing.Point(40,60)
+      $taskGraph.Controls.Add($empty)
+      return
+    }
+
+    $w=[Math]::Max(900,$taskGraph.ClientSize.Width)
+    $cols=4
+    if($w-lt1200){$cols=3}
+    if($w-lt900){$cols=2}
+
+    $gap=28
+    $boxW=[Math]::Floor(($w-(($cols+1)*$gap))/$cols)
+    if($boxW-gt320){$boxW=320}
+    if($boxW-lt210){$boxW=210}
+    $boxH=122
+    $rowGap=42
+    $top=36
+    $nl=[Environment]::NewLine
+
+    for($i=0;$i-lt$rows.Count;$i++){
+      $t=$rows[$i]
+      $col=$i%$cols
+      $row=[Math]::Floor($i/$cols)
+      $x=$gap+($col*($boxW+$gap))
+      $y=$top+($row*($boxH+$rowGap))
+
+      $role=[string]$t.role
+      $status=[string]$t.status
+      $source=[string]$t.source
+      $cdp=[string]$t.cdp
+      $title=[string]$t.title
+      if($title.Length-gt34){$title=$title.Substring(0,34)+"..."}
+      $working=[bool]$t.working
+
+      $b=New-Object System.Windows.Forms.Button
+      $b.Tag=[string]$t.key
+      $b.Text=($role+$nl+$status+"  |  "+$source+" "+$cdp+$nl+$title)
+      $b.TextAlign="MiddleLeft"
+      $b.Size=New-Object System.Drawing.Size($boxW,$boxH)
+      $b.Location=New-Object System.Drawing.Point($x,$y)
+      $b.Font=New-Object System.Drawing.Font("Consolas",10,[System.Drawing.FontStyle]::Bold)
+      $b.FlatStyle="Flat"
+      $b.FlatAppearance.BorderSize=3
+      $b.Cursor=[System.Windows.Forms.Cursors]::Hand
+      Set-TaskStatusStyle -Button $b -Status $status -Working $working
+      $b.Add_Click({
+        param($sender,$e)
+        Open-TaskDetail -Key ([string]$sender.Tag)
+      })
+
+      $taskGraph.Controls.Add($b)
+      $script:TaskNodeControls[[string]$t.key]=$b
+    }
+  }finally{
+    $taskGraph.ResumeLayout()
+  }
+  $taskGraph.Invalidate()
+}
+
+function Refresh-TaskDetail{
+  $t=Get-TaskByKey -Key $script:SelectedTaskKey
+  if(-not$t){
+    $taskDetailTitle.Text="TASK NOT AVAILABLE"
+    $taskDetailStatus.Text="STATUS: OFFLINE"
+    $taskDetails.Text="The selected task is no longer present in the current task manifest."
+    Clear-TaskPreviewImage
     return
   }
 
-  $t=$script:TaskRows[$i]
-  $script:SelectedTaskKey=[string]$t.key
+  $role=[string]$t.role
+  $status=[string]$t.status
+  $working=[bool]$t.working
+
+  $taskDetailTitle.Text=$role+" - EDGE TASK"
+  $taskDetailStatus.Text=("STATUS: {0} | SOURCE: {1} | CDP: {2}" -f $status,[string]$t.source,[string]$t.cdp)
+
+  if($status-eq"THINKING"){
+    $taskDetailStatus.ForeColor=[System.Drawing.Color]::DeepSkyBlue
+  }elseif($working){
+    $taskDetailStatus.ForeColor=[System.Drawing.Color]::LightGreen
+  }elseif($status-eq"NO_TAB"){
+    $taskDetailStatus.ForeColor=[System.Drawing.Color]::Khaki
+  }else{
+    $taskDetailStatus.ForeColor=[System.Drawing.Color]::Tomato
+  }
 
   $lines=New-Object System.Collections.Generic.List[string]
-  $lines.Add("ROLE: "+[string]$t.role)
-  $lines.Add("SOURCE: "+[string]$t.source+" | CDP: "+[string]$t.cdp+" | STATUS: "+[string]$t.status)
+  $lines.Add("ROLE: "+$role+" | STATUS: "+$status+" | WORKING: "+([string]$working).ToUpperInvariant())
   $lines.Add("TITLE: "+[string]$t.title)
   $lines.Add("URL: "+[string]$t.url)
   $lines.Add("UPDATED: "+[string]$t.updatedAt)
   $taskDetails.Text=($lines -join [Environment]::NewLine)
 
   $preview=[string]$t.preview
-  if(-not[string]::IsNullOrWhiteSpace($preview)){
+  if(-not[string]::IsNullOrWhiteSpace($preview)-and(Test-Path -LiteralPath $preview)){
     Set-TaskPreviewImage -Path $preview
+  }else{
+    Clear-TaskPreviewImage
   }
+
+  $focusTask.Enabled=($working-and-not[string]::IsNullOrWhiteSpace([string]$t.url))
+}
+
+function Open-TaskDetail{
+  param([string]$Key)
+  $t=Get-TaskByKey -Key $Key
+  if(-not$t){return}
+
+  $script:SelectedTaskKey=$Key
+  $script:TaskDetailOpen=$true
+  $taskOverview.Visible=$false
+  $taskDetail.Visible=$true
+  $taskDetail.BringToFront()
+  Refresh-TaskDetail
+}
+
+function Close-TaskDetail{
+  $script:TaskDetailOpen=$false
+  $taskDetail.Visible=$false
+  $taskOverview.Visible=$true
+  $taskOverview.BringToFront()
+  Clear-TaskPreviewImage
+  $taskGraph.Invalidate()
 }
 
 function Update-TasksUi{
@@ -668,61 +882,44 @@ function Update-TasksUi{
   $m=Read-Json $ControlPanelTasks
 
   if(-not$m){
-    $tasksStatus.Text=("TASK PREVIEW WORKER: {0} | waiting for manifest..." -f $(if($workerCount-gt 0){"ONLINE"}else{"OFFLINE"}))
+    $tasksStatus.Text=("TASK PREVIEW WORKER: {0} | waiting for task topology..." -f $(if($workerCount-gt0){"ONLINE"}else{"OFFLINE"}))
     return
   }
 
+  $rows=@($m.tasks)
+  $connections=@($m.connections)
+  $script:TaskRows=$rows
+  $script:TaskConnections=$connections
+
+  $working=@($rows|Where-Object{[bool]$_.working}).Count
   $davidOnline=[string]$m.davidCdpOnline
   $scientistOnline=[string]$m.scientistCdpOnline
   $updated=[string]$m.updatedAt
-  $tasksStatus.Text=("PREVIEW W={0} | DAVID 9444={1} | SCIENTIST 9555={2} | UPDATED={3}" -f $workerCount,$davidOnline.ToUpperInvariant(),$scientistOnline.ToUpperInvariant(),$updated)
+  $tasksStatus.Text=("PREVIEW W={0} | WORKING={1}/{2} | DAVID 9444={3} | SCIENTIST 9555={4} | UPDATED={5}" -f $workerCount,$working,$rows.Count,$davidOnline.ToUpperInvariant(),$scientistOnline.ToUpperInvariant(),$updated)
 
-  $rows=@($m.tasks)
-  $oldKey=$script:SelectedTaskKey
-  $newSig=($rows|ForEach-Object{[string]$_.key})-join"|"
-  $oldSig=($script:TaskRows|ForEach-Object{[string]$_.key})-join"|"
-  $script:TaskRows=$rows
+  $taskSig=($rows|ForEach-Object{([string]$_.key)+":"+([string]$_.status)+":"+([string]$_.working)})-join"|"
+  $edgeSig=($connections|ForEach-Object{([string]$_.from)+">"+([string]$_.to)+":"+([string]$_.kind)+":"+([string]$_.active)})-join"|"
+  $sizeSig=([string]$taskGraph.ClientSize.Width)+"x"+([string]$taskGraph.ClientSize.Height)
+  $graphSig=$taskSig+"||"+$edgeSig+"||"+$sizeSig
 
-  if($newSig-ne$oldSig){
-    $taskList.BeginUpdate()
-    try{
-      $taskList.Items.Clear()
-      foreach($t in $rows){
-        $role=[string]$t.role
-        $status=[string]$t.status
-        $source=[string]$t.source
-        $title=[string]$t.title
-        if($title.Length-gt 36){$title=$title.Substring(0,36)+"..."}
-        [void]$taskList.Items.Add(("[{0}] {1} | {2} | {3}" -f $source,$role,$status,$title))
-      }
-    }finally{$taskList.EndUpdate()}
-
-    $select=-1
-    if(-not[string]::IsNullOrWhiteSpace($oldKey)){
-      for($j=0;$j-lt$rows.Count;$j++){
-        if(([string]$rows[$j].key)-eq$oldKey){$select=$j;break}
-      }
-    }
-    if($select-lt 0-and$rows.Count-gt 0){$select=0}
-    if($select-ge 0){$taskList.SelectedIndex=$select}
+  if($graphSig-ne$script:TaskGraphSignature){
+    $script:TaskGraphSignature=$graphSig
+    Build-TaskGraph
   }
 
-  if($rows.Count-eq 0){
-    $taskDetails.Text="No live ChatGPT tasks detected yet."
-    $old=$taskPreview.Image
-    $taskPreview.Image=$null
-    if($old){try{$old.Dispose()}catch{}}
-    $script:LastPreviewPath=""
-    $script:LastPreviewStamp=0
-  }else{
-    Show-SelectedTask
+  $script:GraphPulse=-not$script:GraphPulse
+  $taskGraph.Invalidate()
+
+  if($script:TaskDetailOpen){
+    Refresh-TaskDetail
   }
 }
 
 function Focus-SelectedTask{
-  $i=[int]$taskList.SelectedIndex
-  if($i-lt 0-or$i-ge$script:TaskRows.Count){return}
-  $t=$script:TaskRows[$i]
+  $t=Get-TaskByKey -Key $script:SelectedTaskKey
+  if(-not$t){return}
+  if(-not[bool]$t.working){return}
+  if([string]::IsNullOrWhiteSpace([string]$t.url)){return}
 
   try{
     $cmd=[ordered]@{
@@ -1111,9 +1308,78 @@ $soloApk.Add_Click({Start-Mode "DAVID APK ONLY" $SingleRestart @("-Worker","APK"
 $stop.Add_Click({Start-StopAll})
 
 $refresh.Add_Click({Update-Ui})
-$taskList.Add_SelectedIndexChanged({Show-SelectedTask})
+$taskGraph.Add_Paint({
+  param($sender,$e)
+
+  try{
+    $e.Graphics.SmoothingMode=[System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+
+    foreach($edge in @($script:TaskConnections)){
+      $from=[string]$edge.from
+      $to=[string]$edge.to
+
+      if(-not$script:TaskNodeControls.ContainsKey($from)){continue}
+      if(-not$script:TaskNodeControls.ContainsKey($to)){continue}
+
+      $a=$script:TaskNodeControls[$from]
+      $b=$script:TaskNodeControls[$to]
+      if(-not$a-or-not$b){continue}
+
+      $p1=New-Object System.Drawing.Point(
+        [int]($a.Left+($a.Width/2)),
+        [int]($a.Top+($a.Height/2))
+      )
+      $p2=New-Object System.Drawing.Point(
+        [int]($b.Left+($b.Width/2)),
+        [int]($b.Top+($b.Height/2))
+      )
+
+      $active=[bool]$edge.active
+      $kind=[string]$edge.kind
+
+      if(-not$active){
+        $glowColor=[System.Drawing.Color]::FromArgb(35,120,120,120)
+        $lineColor=[System.Drawing.Color]::DimGray
+      }elseif($kind-eq"SCIENTIST_OBSERVES_DAVID"){
+        if($script:GraphPulse){
+          $glowColor=[System.Drawing.Color]::FromArgb(85,0,200,255)
+          $lineColor=[System.Drawing.Color]::Cyan
+        }else{
+          $glowColor=[System.Drawing.Color]::FromArgb(60,0,150,220)
+          $lineColor=[System.Drawing.Color]::DeepSkyBlue
+        }
+      }else{
+        if($script:GraphPulse){
+          $glowColor=[System.Drawing.Color]::FromArgb(85,0,255,120)
+          $lineColor=[System.Drawing.Color]::Lime
+        }else{
+          $glowColor=[System.Drawing.Color]::FromArgb(60,0,200,90)
+          $lineColor=[System.Drawing.Color]::LimeGreen
+        }
+      }
+
+      $glow=New-Object System.Drawing.Pen -ArgumentList @($glowColor,[single]10)
+      $line=New-Object System.Drawing.Pen -ArgumentList @($lineColor,[single]3)
+      try{
+        $e.Graphics.DrawLine($glow,$p1,$p2)
+        $e.Graphics.DrawLine($line,$p1,$p2)
+      }finally{
+        $glow.Dispose()
+        $line.Dispose()
+      }
+    }
+  }catch{}
+})
+
+$taskBack.Add_Click({Close-TaskDetail})
 $focusTask.Add_Click({Focus-SelectedTask})
-$refreshTasks.Add_Click({Update-TasksUi})
+$refreshTasks.Add_Click({
+  $script:TaskGraphSignature=""
+  Update-TasksUi
+})
+$taskGraph.Add_SizeChanged({
+  $script:TaskGraphSignature=""
+})
 $mainTabs.Add_SelectedIndexChanged({
   if($mainTabs.SelectedTab-eq$tasksPage){
     Start-ControlPanelPreviewWorker
