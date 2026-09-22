@@ -257,34 +257,60 @@ function rateLimitText(text){
 }
 async function safeDismissChatGptUi(page){
   if(!page||page.isClosed())return {dismissed:false,rateLimited:false,reason:"page-unavailable"};
+
   const dialogs=await visibleDialogTexts(page);
+  let scope=null;
+  let detectedText="";
+
   for(const d of dialogs){
-    if(!rateLimitText(d.text))continue;
-    const candidates=d.node.locator('button,[role="button"]');
-    const n=await candidates.count().catch(()=>0);
-    for(let i=n-1;i>=0;i--){
-      const b=candidates.nth(i);
-      if(!await b.isVisible().catch(()=>false))continue;
-      const label=normalizeUiText((await b.innerText().catch(()=>""))+" "+((await b.getAttribute("aria-label").catch(()=>""))||""));
-      if(!/^(Разбрано|Разбрах|Got it|OK|Okay|Close|Затвори)$/i.test(label))continue;
-      try{
-        await b.click({timeout:2500});
-        const at=now();
-        save("Scientist auto-dismissed safe ChatGPT rate-limit dialog",{
-          status:"rate-limited",
-          lastUiRecovery:{at,type:"rate-limit",button:label,dialog:cleanText(d.text,500)},
-          rateLimitBackoffUntil:new Date(Date.now()+RATE_LIMIT_BACKOFF_MS).toISOString()
-        });
-        append(OPERATOR_LOG,{at,kind:"ui-recovery",type:"rate-limit",button:label,dialog:cleanText(d.text,500)});
-        return {dismissed:true,rateLimited:true,reason:"rate-limit",button:label,dialog:d.text};
-      }catch(e){
-        return {dismissed:false,rateLimited:true,reason:"rate-limit-click-failed",error:String(e&&e.message||e)};
-      }
+    if(rateLimitText(d.text)){
+      scope=d.node;
+      detectedText=d.text;
+      break;
     }
-    return {dismissed:false,rateLimited:true,reason:"rate-limit-dialog-no-safe-button"};
   }
-  return {dismissed:false,rateLimited:false,reason:null};
+
+  if(!scope){
+    const body=normalizeUiText(await page.locator("body").innerText().catch(()=>""));
+    if(rateLimitText(body)){
+      scope=page;
+      detectedText=body;
+    }
+  }
+
+  if(!scope)return {dismissed:false,rateLimited:false,reason:null};
+
+  const safeLabel=/^(Разбрано|Разбрах|Got it|OK|Okay|Close|Затвори)$/i;
+  const candidates=scope.locator('button,[role="button"]');
+  const n=await candidates.count().catch(()=>0);
+
+  for(let i=n-1;i>=0;i--){
+    const b=candidates.nth(i);
+    if(!await b.isVisible().catch(()=>false))continue;
+
+    const text=normalizeUiText(await b.innerText().catch(()=>""));
+    const aria=normalizeUiText((await b.getAttribute("aria-label").catch(()=>""))||"");
+    const label=safeLabel.test(text)?text:(safeLabel.test(aria)?aria:"");
+    if(!label)continue;
+
+    try{
+      await b.click({timeout:2500});
+      const at=now();
+      save("Scientist auto-dismissed safe ChatGPT rate-limit dialog",{
+        status:"rate-limited",
+        lastUiRecovery:{at,type:"rate-limit",button:label,dialog:cleanText(detectedText,500)},
+        rateLimitBackoffUntil:new Date(Date.now()+RATE_LIMIT_BACKOFF_MS).toISOString()
+      });
+      append(OPERATOR_LOG,{at,kind:"ui-recovery",type:"rate-limit",button:label,dialog:cleanText(detectedText,500)});
+      return {dismissed:true,rateLimited:true,reason:"rate-limit",button:label,dialog:detectedText};
+    }catch(e){
+      return {dismissed:false,rateLimited:true,reason:"rate-limit-click-failed",error:String(e&&e.message||e)};
+    }
+  }
+
+  return {dismissed:false,rateLimited:true,reason:"rate-limit-dialog-no-safe-button",dialog:detectedText};
 }
+
 async function waitRateLimitBackoff(page,context){
   const until=Date.now()+RATE_LIMIT_BACKOFF_MS;
   save("Scientist respecting ChatGPT rate limit",{status:"rate-limited",rateLimitBackoffUntil:new Date(until).toISOString()});
