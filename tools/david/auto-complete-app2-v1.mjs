@@ -1,3 +1,4 @@
+import { runtimeDataDir } from "./runtime-paths.mjs";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -13,7 +14,7 @@ const INITIAL_CHAT_URL = process.env.DAVID_APP2_CHAT_URL || "https://chatgpt.com
 const FRESH_SESSION_ON_START = process.env.DAVID_FRESH_SESSIONS_ON_START === "1";
 let activeChatUrl = FRESH_SESSION_ON_START ? CHATGPT_ROOT : INITIAL_CHAT_URL;
 const CDP_URL = process.env.DAVID_APP2_CDP_URL || "http://127.0.0.1:9444";
-const STATE_FILE = process.env.DAVID_APP2_STATE_FILE || path.join(process.cwd(), ".david-app2-state.json");
+const STATE_FILE = process.env.DAVID_APP2_STATE_FILE || path.join(runtimeDataDir(process.cwd()), ".david-app2-state.json");
 const POLL_MS = Number(process.env.DAVID_APP2_POLL_MS || 800);
 const START_TIMEOUT_MS = Number(process.env.DAVID_APP2_START_TIMEOUT_MS || 60000);
 const STALL_MS = Number(process.env.DAVID_APP2_STALL_MS || 600000);

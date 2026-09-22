@@ -1,0 +1,255 @@
+{
+  "schemaVersion": 1,
+  "sourceBase": "76ff8d61c4d96ab0988b0cbec4490e39a2da43cf",
+  "branch": "distribution/david-installer-v1-20260922",
+  "pullRequest": "https://github.com/SoulFlameAdmin/enchev-auctions/pull/231",
+  "productReady": false,
+  "milestones": [
+    {
+      "id": "M01",
+      "title": "Audit current DAVID",
+      "status": "PASS_SOURCE_SCOPE",
+      "implementationCommit": "0bc78a4e8712dfb41dddf3ddff6a333e1d9cf2ee",
+      "filesChanged": [
+        "docs/david-distribution/M01_CURRENT_RUNTIME.md"
+      ],
+      "test": "node --test tools/david-distribution/inventory.test.mjs; existing core invariants; Windows PowerShell parse",
+      "result": "PASS",
+      "artifact": "https://github.com/SoulFlameAdmin/enchev-auctions/actions/runs/35787270193",
+      "blocker": null
+    },
+    {
+      "id": "M02",
+      "title": "Runtime manifest",
+      "status": "PASS_SOURCE_SCOPE",
+      "implementationCommit": "0bc78a4e8712dfb41dddf3ddff6a333e1d9cf2ee",
+      "filesChanged": [
+        "tools/david-distribution/runtime-manifest.json",
+        "tools/david-distribution/inventory.mjs",
+        "tools/david-distribution/inventory.test.mjs",
+        "tools/david/package-lock.json",
+        ".github/workflows/david-distribution.yml"
+      ],
+      "test": "node --test tools/david-distribution/inventory.test.mjs; existing core invariants; Windows PowerShell parse",
+      "result": "PASS",
+      "artifact": "https://github.com/SoulFlameAdmin/enchev-auctions/actions/runs/35787270193",
+      "blocker": null
+    },
+    {
+      "id": "M03",
+      "title": "Portable DAVID Core",
+      "status": "IN_PROGRESS",
+      "implementationCommit": "fa687b911b44a8a24a40226028f4a2ee39477859",
+      "filesChanged": [
+        "tools/david/runtime-paths.mjs",
+        "11 current core modules",
+        "tools/david-distribution/runtime-paths.test.mjs"
+      ],
+      "test": "node --test tools/david-distribution/runtime-paths.test.mjs",
+      "result": "PASS_PARTIAL_WINDOWS_AND_LOCAL",
+      "artifact": "https://github.com/SoulFlameAdmin/enchev-auctions/actions/runs/35787548379",
+      "blocker": "Remaining implementation: portable host/UI paths, user-owned task configuration, process ownership. Not an external blocker."
+    },
+    {
+      "id": "M04",
+      "title": "DAVID Launcher/Supervisor",
+      "status": "NOT_STARTED",
+      "implementationCommit": null,
+      "filesChanged": [],
+      "test": null,
+      "result": "NOT_RUN",
+      "artifact": null,
+      "blocker": null
+    },
+    {
+      "id": "M05",
+      "title": "Clean local installation layout",
+      "status": "NOT_STARTED",
+      "implementationCommit": null,
+      "filesChanged": [],
+      "test": null,
+      "result": "NOT_RUN",
+      "artifact": null,
+      "blocker": null
+    },
+    {
+      "id": "M06",
+      "title": "First-run login/session setup",
+      "status": "NOT_STARTED",
+      "implementationCommit": null,
+      "filesChanged": [],
+      "test": null,
+      "result": "NOT_RUN",
+      "artifact": null,
+      "blocker": null
+    },
+    {
+      "id": "M07",
+      "title": "Installer",
+      "status": "NOT_STARTED",
+      "implementationCommit": null,
+      "filesChanged": [],
+      "test": null,
+      "result": "NOT_RUN",
+      "artifact": null,
+      "blocker": null
+    },
+    {
+      "id": "M08",
+      "title": "Device registration",
+      "status": "NOT_STARTED",
+      "implementationCommit": null,
+      "filesChanged": [],
+      "test": null,
+      "result": "NOT_RUN",
+      "artifact": null,
+      "blocker": null
+    },
+    {
+      "id": "M09",
+      "title": "Heartbeat",
+      "status": "NOT_STARTED",
+      "implementationCommit": null,
+      "filesChanged": [],
+      "test": null,
+      "result": "NOT_RUN",
+      "artifact": null,
+      "blocker": null
+    },
+    {
+      "id": "M10",
+      "title": "Twins DAVID Download",
+      "status": "NOT_STARTED",
+      "implementationCommit": null,
+      "filesChanged": [],
+      "test": null,
+      "result": "NOT_RUN",
+      "artifact": null,
+      "blocker": null
+    },
+    {
+      "id": "M11",
+      "title": "MITKO Fleet Admin",
+      "status": "NOT_STARTED",
+      "implementationCommit": null,
+      "filesChanged": [],
+      "test": null,
+      "result": "NOT_RUN",
+      "artifact": null,
+      "blocker": null
+    },
+    {
+      "id": "M12",
+      "title": "Version manifest",
+      "status": "NOT_STARTED",
+      "implementationCommit": null,
+      "filesChanged": [],
+      "test": null,
+      "result": "NOT_RUN",
+      "artifact": null,
+      "blocker": null
+    },
+    {
+      "id": "M13",
+      "title": "Client updater",
+      "status": "NOT_STARTED",
+      "implementationCommit": null,
+      "filesChanged": [],
+      "test": null,
+      "result": "NOT_RUN",
+      "artifact": null,
+      "blocker": null
+    },
+    {
+      "id": "M14",
+      "title": "A/B Core",
+      "status": "NOT_STARTED",
+      "implementationCommit": null,
+      "filesChanged": [],
+      "test": null,
+      "result": "NOT_RUN",
+      "artifact": null,
+      "blocker": null
+    },
+    {
+      "id": "M15",
+      "title": "Rollback",
+      "status": "NOT_STARTED",
+      "implementationCommit": null,
+      "filesChanged": [],
+      "test": null,
+      "result": "NOT_RUN",
+      "artifact": null,
+      "blocker": null
+    },
+    {
+      "id": "M16",
+      "title": "Remote diagnostics",
+      "status": "NOT_STARTED",
+      "implementationCommit": null,
+      "filesChanged": [],
+      "test": null,
+      "result": "NOT_RUN",
+      "artifact": null,
+      "blocker": null
+    },
+    {
+      "id": "M17",
+      "title": "Soul offline task queue",
+      "status": "NOT_STARTED",
+      "implementationCommit": null,
+      "filesChanged": [],
+      "test": null,
+      "result": "NOT_RUN",
+      "artifact": null,
+      "blocker": null
+    },
+    {
+      "id": "M18",
+      "title": "УЧЕН routing validation",
+      "status": "NOT_STARTED",
+      "implementationCommit": null,
+      "filesChanged": [],
+      "test": null,
+      "result": "NOT_RUN",
+      "artifact": null,
+      "blocker": null
+    },
+    {
+      "id": "M19",
+      "title": "BORKO clean-machine test",
+      "status": "NOT_STARTED",
+      "implementationCommit": null,
+      "filesChanged": [],
+      "test": null,
+      "result": "NOT_RUN",
+      "artifact": null,
+      "blocker": "Real BORKO Windows device and interactive login/reboot evidence not available in this session. Windows CI can validate code but cannot establish BORKO acceptance."
+    },
+    {
+      "id": "M20",
+      "title": "BORKO beta release",
+      "status": "NOT_STARTED",
+      "implementationCommit": null,
+      "filesChanged": [],
+      "test": null,
+      "result": "NOT_RUN",
+      "artifact": null,
+      "blocker": "Depends on M19 and all release gates; no beta published."
+    }
+  ],
+  "limitations": [
+    "Source audit is not live workstation parity proof.",
+    "M02 validates an explicit spawned/host/assets set plus literal JS import closure; no installer size claim.",
+    "M03 data directory is opt-in and is not yet wired through all PowerShell/UI consumers.",
+    "No remote shell, deploy, stable-channel mutation, account change or production release performed."
+  ],
+  "latestVerifiedCommit": "fa687b911b44a8a24a40226028f4a2ee39477859",
+  "latestVerification": {
+    "windowsDistribution": "PASS",
+    "sessionResilience": "PASS",
+    "localTests": "7/7 PASS",
+    "windowsRunId": 35787548379,
+    "resilienceRunId": 35787548238
+  }
+}

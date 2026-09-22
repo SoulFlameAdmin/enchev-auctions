@@ -1,3 +1,4 @@
+import { runtimeDataDir } from "./runtime-paths.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
@@ -18,8 +19,8 @@ const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "
 const ROLE = String(process.env.DAVID_FREE_TALK_ROLE || "FREE_A").toUpperCase();
 if (!["FREE_A","FREE_B"].includes(ROLE)) throw new Error("DAVID_FREE_TALK_ROLE must be FREE_A or FREE_B");
 const PARTNER = ROLE === "FREE_A" ? "FREE_B" : "FREE_A";
-const STATE_FILE = process.env.DAVID_FREE_TALK_STATE_FILE || path.join(HERE, ROLE === "FREE_A" ? ".david-free-talk-a-state.json" : ".david-free-talk-b-state.json");
-const EXCHANGE_FILE = process.env.DAVID_FREE_TALK_EXCHANGE_FILE || path.join(HERE, ".david-free-talk-exchange.json");
+const STATE_FILE = process.env.DAVID_FREE_TALK_STATE_FILE || path.join(runtimeDataDir(HERE), ROLE === "FREE_A" ? ".david-free-talk-a-state.json" : ".david-free-talk-b-state.json");
+const EXCHANGE_FILE = process.env.DAVID_FREE_TALK_EXCHANGE_FILE || path.join(runtimeDataDir(HERE), ".david-free-talk-exchange.json");
 const INITIAL_CHAT_URL = String(process.env.DAVID_FREE_TALK_CHAT_URL || "").trim();
 const RESUME_EXISTING = process.env.DAVID_FREE_TALK_RESUME_EXISTING === "1";
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";

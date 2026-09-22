@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "sourceRepository": "SoulFlameAdmin/enchev-auctions",
+  "sourceBranch": "test/david-autonomy-system-dpp-apk-20260919",
+  "auditedCommit": "76ff8d61c4d96ab0988b0cbec4490e39a2da43cf",
+  "kind": "development-runtime-inventory",
+  "releaseReady": false,
+  "entrypoints": [
+    "tools/david/dual-session-worker.mjs",
+    "tools/david/sf-scientist-sidecar.mjs",
+    "tools/david/control-panel-task-preview.mjs"
+  ],
+  "spawnedModules": [
+    "tools/david/auto-continue-enchev-v5.mjs",
+    "tools/david/auto-continue-design-v1.mjs",
+    "tools/david/auto-complete-app2-v1.mjs",
+    "tools/david/auto-continue-david-apk-v1.mjs",
+    "tools/david/auto-control-watchtower-v1.mjs",
+    "tools/david/connection-interruption-guard.mjs",
+    "tools/david/free-talk-session-v1.mjs"
+  ],
+  "hostScripts": [
+    "DAVID_START.ps1",
+    "DAVID_MATRIX_START.ps1",
+    "DAVID_MODE_SELECTOR_V2.ps1",
+    "START_DAVID_AUTONOMY.ps1",
+    "RESTART_DAVID_AUTONOMY_CLEAN.ps1",
+    "START_DAVID_SINGLE.ps1",
+    "RESTART_DAVID_SINGLE_CLEAN.ps1",
+    "START_DAVID_FREETALK_ONLY.ps1",
+    "RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1",
+    "STOP_DAVID_ALL_CLEAN.ps1",
+    "START_SF_SCIENTIST.ps1",
+    "STOP_SF_SCIENTIST.ps1",
+    "tools/david/start-auto-continue.ps1",
+    "tools/david/david-autonomy-dashboard.ps1",
+    "tools/david/david-freetalk-only-dashboard.ps1"
+  ],
+  "runtimeAssets": [
+    "tools/david/package.json",
+    "app/design-process-2-evidence.json",
+    "tools/david/package-lock.json"
+  ],
+  "externalDependencies": {
+    "playwright-core": "1.63.0"
+  },
+  "hostDependencies": [
+    "Windows interactive user session",
+    "Windows PowerShell 5.1 / WinForms",
+    "Node.js (must be embedded for distribution)",
+    "Microsoft Edge (system installation)",
+    "User-owned ChatGPT login"
+  ],
+  "excluded": [
+    ".git",
+    ".env*",
+    "browser profiles",
+    "cookies",
+    "state files",
+    "logs",
+    "node_modules from developer machine",
+    "legacy v1-v4 workers",
+    "website except explicitly required DESIGN evidence"
+  ],
+  "releaseGates": [
+    "portable paths and external mutable state",
+    "per-user project prompts and conversation configuration",
+    "embedded pinned Node and dependency lockfile",
+    "owned process and browser shutdown",
+    "bounded restart budget",
+    "Scientist local execution consent and remote allowlist separation",
+    "account/device registration",
+    "signed updates and rollback",
+    "Windows clean-install and BORKO acceptance"
+  ]
+}

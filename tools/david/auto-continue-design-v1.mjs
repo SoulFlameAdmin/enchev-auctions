@@ -1,3 +1,4 @@
+import { runtimeDataDir } from "./runtime-paths.mjs";
 import { chromium } from "playwright-core";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -15,7 +16,7 @@ const INITIAL_CHAT_URL = process.env.DAVID_DESIGN_CHAT_URL || "https://chatgpt.c
 const FRESH_SESSION_ON_START = process.env.DAVID_FRESH_SESSIONS_ON_START === "1";
 let activeChatUrl = FRESH_SESSION_ON_START ? CHATGPT_ROOT : INITIAL_CHAT_URL;
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
-const STATE_FILE = process.env.DAVID_DESIGN_STATE_FILE || path.join(process.cwd(), ".david-enchev-design-state.json");
+const STATE_FILE = process.env.DAVID_DESIGN_STATE_FILE || path.join(runtimeDataDir(process.cwd()), ".david-enchev-design-state.json");
 const POLL_MS = Number(process.env.DAVID_DESIGN_POLL_MS || 900);
 const START_TIMEOUT_MS = Number(process.env.DAVID_DESIGN_START_TIMEOUT_MS || 60000);
 const READY_TIMEOUT_MS = Number(process.env.DAVID_DESIGN_READY_TIMEOUT_MS || 120000);
