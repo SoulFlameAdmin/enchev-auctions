@@ -152,6 +152,43 @@ async function processes(){
   }
 }
 
+function compactThought(text){
+  const raw=String(text||"").replace(/\r/g,"").trim();
+  if(!raw)return "";
+
+  const order=["ВИДЯХ","РЕШИХ","ЗАЩО","ПРЕДЛАГАМ","RISK"];
+  const sections=new Map();
+  let current=null;
+
+  for(const rawLine of raw.split("\n")){
+    const line=rawLine.trim();
+    if(!line)continue;
+
+    const m=line.match(/^(ВИДЯХ|РЕШИХ|ЗАЩО|ПРЕДЛАГАМ|RISK|ACTION)\s*:\s*(.*)$/i);
+    if(m){
+      const key=m[1].toUpperCase();
+      if(key==="ACTION"){current=null;continue;}
+      current=order.find(x=>x.toUpperCase()===key)||null;
+      if(current)sections.set(current,m[2]||"");
+      continue;
+    }
+
+    if(current){
+      const old=sections.get(current)||"";
+      sections.set(current,(old+" "+line).trim());
+    }
+  }
+
+  const out=[];
+  for(const label of order){
+    const value=cleanText(sections.get(label)||"",180);
+    if(value)out.push(label+": "+value);
+  }
+
+  if(out.length)return out.join("\n");
+  return cleanText(raw.replace(/\n+/g," "),520);
+}
+
 function cleanText(value,max=700){
   let t=String(value==null?"":value).replace(/\\u0000/g,"").replace(/\\r/g,"").trim();
   t=t
@@ -733,14 +770,25 @@ async function ask(page,prompt){
     const text=await latest(page),h=digest(text);
     if(h&&h!==last){
       last=h;stable=h;since=Date.now();
-      save("Scientist response progressing",{status:"thinking",lastResponsePreview:cleanText(text,800)});
+      save("Scientist response progressing",{
+        status:"thinking",
+        lastResponsePreview:cleanText(text,800),
+        thoughtSummary:compactThought(text)
+      });
     }
     if(await busy(page)){await sleep(800);continue;}
     if(h&&h!==base){
       if(h!==stable){stable=h;since=Date.now();}
       if(Date.now()-since>1200){
         const u=chatUrl(page.url());
-        save("Scientist response captured",{status:"online",chatUrl:u||state.chatUrl,lastResponse:text,lastResponseAt:now()});
+        save("Scientist response captured",{
+          status:"online",
+          chatUrl:u||state.chatUrl,
+          lastResponse:text,
+          lastResponseAt:now(),
+          thoughtSummary:compactThought(text),
+          lastThoughtSummary:compactThought(text)
+        });
         return text;
       }
     }
@@ -1039,10 +1087,16 @@ async function command(context,page,s){
   save("Processing Scientist chat command",{lastCommandId:c.id});
   const loop=await reasonActLoop(context,page,user(String(c.text).trim(),s),s);
   const actionResult=loop.actions.length?JSON.stringify(loop.actions):"no action";
-  const o={id:c.id,createdAt:now(),request:String(c.text).trim(),response:loop.response,actions:loop.actions,actionResult};
+  const summary=compactThought(loop.response);
+  const o={id:c.id,createdAt:now(),request:String(c.text).trim(),response:loop.response,summary,actions:loop.actions,actionResult};
   writeJson(RESPONSE,o);
   append(MEMORY,{at:o.createdAt,kind:"mitko-chat",request:o.request,response:loop.response,actionResult});
-  save("Scientist chat complete",{lastResponse:loop.response,lastToolResult:cleanText(actionResult,5000)});
+  save("Scientist chat complete",{
+    lastResponse:loop.response,
+    lastThoughtSummary:summary,
+    thoughtSummary:summary,
+    lastToolResult:cleanText(actionResult,5000)
+  });
 }
 async function main(){
   save("Connecting to Scientist Edge",{status:"starting",scientistCdp:SCI_CDP,davidCdp:DAVID_CDP});
@@ -1066,7 +1120,13 @@ async function main(){
       if(!booted&&!state.loginRequired){
         const r=await ask(page,boot(s));
         append(DECISIONS,{type:"bootstrap",at:now(),snapshot:s,response:r});
-        save("Scientist bootstrap complete",{bootstrappedAt:now(),lastDecision:r,lastObservation:"Scientist attached"});
+        save("Scientist bootstrap complete",{
+          bootstrappedAt:now(),
+          lastDecision:r,
+          lastObservation:"Scientist attached",
+          lastThoughtSummary:compactThought(r),
+          thoughtSummary:compactThought(r)
+        });
         booted=true;
         lastSessionAnalysisAt=Date.now();
       }
@@ -1127,6 +1187,8 @@ async function main(){
         save("Autonomous Scientist decision recorded",{
           lastObservation:reason,
           lastDecision:loop.response,
+          lastThoughtSummary:compactThought(loop.response),
+          thoughtSummary:compactThought(loop.response),
           lastAutoAnalysisAt:now(),
           lastToolResult:cleanText(actionResult,5000),
           pendingObservation:false,
