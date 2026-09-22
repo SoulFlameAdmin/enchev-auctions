@@ -276,17 +276,21 @@ async function ensureNormalChatExperience(page){
 
   let chat=await exactVisibleControl(page,/^(Chat|Чат)$/i);
   if(chat){
-    await chat.click({timeout:2500}).catch(()=>{});
-    clickedChat=true;
-    await sleep(900);
+    try{
+      await chat.click({timeout:2500});
+      clickedChat=true;
+      await sleep(900);
+    }catch{}
   }
 
   if(await workLimitVisible(page)){
     chat=await exactVisibleControl(page,/^(Chat|Чат)$/i);
     if(chat){
-      await chat.click({timeout:2500}).catch(()=>{});
-      clickedChat=true;
-      await sleep(1200);
+      try{
+        await chat.click({timeout:2500});
+        clickedChat=true;
+        await sleep(1200);
+      }catch{}
     }
   }
 
