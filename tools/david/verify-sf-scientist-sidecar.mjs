@@ -202,7 +202,16 @@ for(const token of [
   ".david-control-panel-tasks.json",
   ".david-control-panel-command.json",
   "FormWindowState]::Maximized",
-  '$taskPreview.SizeMode="StretchImage"',
+  '$taskPreview.SizeMode="Zoom"',
+  "DavidModeCenterActivation",
+  "FindWindow",
+  "ShowWindowAsync",
+  "SetForegroundWindow",
+  "BringWindowToTop",
+  "SetCurrentProcessExplicitAppUserModelID",
+  '$form.ShowInTaskbar=$true',
+  "$form.BringToFront()",
+  "$form.Activate()",
   "CLICK MODE AGAIN TO RESTART"
 ]) if(!center.includes(token)) throw new Error("Mode Center Scientist invariant missing: "+token);
 
@@ -236,4 +245,4 @@ for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_T
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED edge_preview_full_area=ON active_mode_reclick=ON hidden_selector_console=ON task_topology=ON glowing_connections=ON back_to_map=ON");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED edge_preview_full_area=ON edge_preview_aspect=ON center_taskbar_identity=ON center_reactivate_existing=ON active_mode_reclick=ON hidden_selector_console=ON task_topology=ON");
