@@ -418,7 +418,8 @@ function Update-ScientistUi{
   if($st){
     $status=[string]$st.status
     $hb=[string]$st.heartbeatAt
-    $scientistStatus.Text=("STATUS: {0}  WORKER={1}" -f $status,$count)+[Environment]::NewLine+("HEARTBEAT: {0}" -f $hb)
+    $profile=if($st.scientistProfileConfirmed){"CHAT | GPT-5.6 SOL | MEDIUM"}else{"CHAT / MEDIUM: VERIFYING"}
+    $scientistStatus.Text=("{0}  W={1} | {2}" -f $status.ToUpperInvariant(),$count,$profile)+[Environment]::NewLine+("HB: {0}" -f $hb)
     if($status-eq"online"){$scientistStatus.ForeColor=[System.Drawing.Color]::LightGreen}
     elseif($status-eq"thinking"){$scientistStatus.ForeColor=[System.Drawing.Color]::Cyan}
     elseif($status-eq"login-required"){$scientistStatus.ForeColor=[System.Drawing.Color]::Khaki}

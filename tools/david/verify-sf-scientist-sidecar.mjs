@@ -42,7 +42,13 @@ for(const token of [
   'ACTION: INSPECT_SCREEN',
   'ACTION: CHECK_PROJECT',
   'blocked-high-risk-pattern',
-  'Recent persistent Scientist memory'
+  'Recent persistent Scientist memory',
+  'ensureChatGptEffortMode',
+  'SCIENTIST_EFFORT="medium"',
+  'scientistExperience:"CHAT"',
+  'scientistModel:"GPT-5.6 Sol"',
+  'scientistProfileConfirmed',
+  'never ChatGPT Work'
 ]) if(!side.includes(token)) throw new Error("Scientist sidecar invariant missing: "+token);
 
 for(const token of [
@@ -73,11 +79,12 @@ for(const token of [
   "DPP ONLY",
   "DAVID APK ONLY",
   "UTF8Encoding($false,$true)",
-  "WriteAllText($ScientistCommand"
+  "WriteAllText($ScientistCommand",
+  "CHAT | GPT-5.6 SOL | MEDIUM"
 ]) if(!center.includes(token)) throw new Error("Mode Center Scientist invariant missing: "+token);
 
 for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_TARGET=\"2\""]) {
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED scientist_cdp=9555 david_observe_cdp=9444 utf8=STRICT live_shell_process_log_telemetry=ON stable_event_coalescing=ON operator_reason_act_loop=ON powershell_normal_user=ON desktop_vision=ON project_connector_consult=ON persistent_scientist_memory=ON");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED scientist_experience=CHAT model=GPT-5.6_SOL effort=MEDIUM work=OFF scientist_cdp=9555 david_observe_cdp=9444 operator_reason_act_loop=ON");
