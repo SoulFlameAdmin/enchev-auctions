@@ -782,8 +782,10 @@ async function main() {
       state.problem = null;
       state.problemAttempts = 0;
       state.lastResult = "OK";
-      save(state, "APK problem fixed with final OK; rotating to fresh session");
-      page = await rolloverConversation(context, page, state, "final-ok");
+      save(state, "APK problem fixed with final OK; continuing in same ChatGPT conversation");
+      state.nextTaskAt = new Date().toISOString();
+      state.watchdog = "next-task-ready";
+      save(state, "Previous block complete; NEXT TASK will continue in SAME ChatGPT conversation. Rollover only on real conversation limit.");
       await sleep(COOLDOWN_MS);
       continue;
     }
@@ -808,9 +810,11 @@ async function main() {
       }
     }
     state.lastResult = "OK";
-    save(state, "Final OK received; rotating to fresh APK session before next prompt");
-    console.log("[APK] Final OK received. Rotating to fresh session.");
-    page = await rolloverConversation(context, page, state, "final-ok");
+    save(state, "Final OK received; continuing to NEXT APK task in the same ChatGPT conversation");
+    console.log("[APK] Final OK received. continuing in same ChatGPT conversation.");
+    state.nextTaskAt = new Date().toISOString();
+      state.watchdog = "next-task-ready";
+      save(state, "Previous block complete; NEXT TASK will continue in SAME ChatGPT conversation. Rollover only on real conversation limit.");
     await sleep(COOLDOWN_MS);
   }
 }
