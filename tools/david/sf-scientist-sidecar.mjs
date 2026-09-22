@@ -231,43 +231,98 @@ function workLikeUrl(url){
   return /https:\/\/chatgpt\.com\/(?:work|workspace)(?:\/|$|\?)/i.test(String(url||"")) ||
          /[?&](?:mode|product)=work(?:&|$)/i.test(String(url||""));
 }
-async function visibleActiveWorkMode(page){
+async function exactVisibleControl(page,regex){
+  const nodes=page.locator('button,[role="button"],[role="tab"],a');
+  const n=await nodes.count().catch(()=>0);
+  for(let i=n-1;i>=0;i--){
+    const x=nodes.nth(i);
+    if(!await x.isVisible().catch(()=>false))continue;
+    const text=((await x.innerText().catch(()=>""))||"").replace(/\s+/g," ").trim();
+    const aria=((await x.getAttribute("aria-label").catch(()=>""))||"").replace(/\s+/g," ").trim();
+    if(regex.test(text)||regex.test(aria))return x;
+  }
+  return null;
+}
+async function workLimitVisible(page){
   try{
-    const nodes=page.locator('button,[role="button"],[role="tab"]');
+    const body=(await page.locator("body").innerText().catch(()=>"")).replace(/\s+/g," ");
+    return /(Временно сте изчерпали лимита за използване на Work|temporarily.{0,80}(?:limit|quota).{0,40}Work|upgrade.{0,40}Work|add credits.{0,40}Work)/i.test(body);
+  }catch{return false;}
+}
+async function scientistModelSolVisible(page){
+  try{
+    const nodes=page.locator('button,[role="button"]');
     const n=await nodes.count().catch(()=>0);
     for(let i=n-1;i>=0;i--){
       const x=nodes.nth(i);
       if(!await x.isVisible().catch(()=>false))continue;
       const text=((await x.innerText().catch(()=>""))||"").replace(/\s+/g," ").trim();
       const aria=((await x.getAttribute("aria-label").catch(()=>""))||"").replace(/\s+/g," ").trim();
-      if(!/^(work|работа)$/i.test(text)&&!/^(work|работа)$/i.test(aria))continue;
-      const pressed=await x.getAttribute("aria-pressed").catch(()=>null);
-      const selected=await x.getAttribute("aria-selected").catch(()=>null);
-      const stateAttr=await x.getAttribute("data-state").catch(()=>null);
-      if(pressed==="true"||selected==="true"||/^(on|active|checked)$/i.test(String(stateAttr||"")))return true;
+      if(/GPT-5\.6\s*Sol/i.test(text)||/GPT-5\.6\s*Sol/i.test(aria))return true;
     }
   }catch{}
   return false;
 }
-async function ensureScientistChatMedium(page){
+async function ensureNormalChatExperience(page){
   if(!page||page.isClosed())return {ok:false,reason:"page-unavailable"};
-  let returnedToChat=false;
-  if(workLikeUrl(page.url())||await visibleActiveWorkMode(page)){
+  let clickedChat=false;
+  let navigated=false;
+
+  if(workLikeUrl(page.url())){
     await page.goto(SCIENTIST_CHAT_ROOT,{waitUntil:"domcontentloaded",timeout:60000});
-    returnedToChat=true;
+    navigated=true;
     await sleep(700);
   }
+
+  let chat=await exactVisibleControl(page,/^(Chat|Чат)$/i);
+  if(chat){
+    await chat.click({timeout:2500}).catch(()=>{});
+    clickedChat=true;
+    await sleep(900);
+  }
+
+  if(await workLimitVisible(page)){
+    chat=await exactVisibleControl(page,/^(Chat|Чат)$/i);
+    if(chat){
+      await chat.click({timeout:2500}).catch(()=>{});
+      clickedChat=true;
+      await sleep(1200);
+    }
+  }
+
+  const workBanner=await workLimitVisible(page);
+  const composerReady=Boolean(await composer(page));
+  const ok=!workLikeUrl(page.url())&&!workBanner&&composerReady&&(clickedChat||navigated||!await exactVisibleControl(page,/^(Work|Работа)$/i));
+  return {ok,reason:ok?"chat-confirmed":workBanner?"work-still-active":"chat-not-confirmed",clickedChat,navigated,workBanner};
+}
+async function ensureScientistChatMedium(page){
+  if(!page||page.isClosed())return {ok:false,reason:"page-unavailable"};
+
+  const chat=await ensureNormalChatExperience(page);
+  if(!chat.ok){
+    save("Scientist Chat profile NOT confirmed",{
+      scientistExperience:"UNKNOWN",
+      scientistReasoning:"UNKNOWN",
+      scientistModel:"UNKNOWN",
+      scientistProfileConfirmed:false,
+      scientistProfileReason:chat.reason
+    });
+    return {ok:false,chat,effort:null,modelOk:false,reason:chat.reason};
+  }
+
   const effort=await ensureChatGptEffortMode(page,SCIENTIST_EFFORT);
-  const ok=!workLikeUrl(page.url())&&Boolean(effort&&effort.ok);
+  const modelOk=await scientistModelSolVisible(page);
+  const ok=Boolean(chat.ok&&effort&&effort.ok&&modelOk);
   save("Scientist Chat/Medium profile checked",{
     scientistExperience:"CHAT",
-    scientistReasoning:"MEDIUM",
-    scientistModel:"GPT-5.6 Sol",
+    scientistReasoning:effort&&effort.ok?"MEDIUM":"UNCONFIRMED",
+    scientistModel:modelOk?"GPT-5.6 Sol":"UNCONFIRMED",
     scientistProfileConfirmed:ok,
-    scientistProfileReason:effort&&effort.reason||null,
-    returnedFromWork:returnedToChat
+    scientistProfileReason:ok?"chat-sol-medium-confirmed":((effort&&effort.reason)||(!modelOk?"model-not-confirmed":"profile-not-confirmed")),
+    clickedChat:Boolean(chat.clickedChat),
+    workBanner:Boolean(chat.workBanner)
   });
-  return {ok,returnedToChat,effort};
+  return {ok,chat,effort,modelOk,reason:ok?"chat-sol-medium-confirmed":"profile-not-confirmed"};
 }
 
 async function ready(page){
@@ -276,12 +331,19 @@ async function ready(page){
     if(await composer(page)){
       const profile=await ensureScientistChatMedium(page).catch(e=>({ok:false,reason:String(e&&e.message||e)}));
       const u=chatUrl(page.url());
-      save("Scientist chat ready",{
-        status:"online",chatUrl:u||state.chatUrl,loginRequired:false,
-        scientistExperience:"CHAT",scientistReasoning:"MEDIUM",scientistModel:"GPT-5.6 Sol",
-        scientistProfileConfirmed:Boolean(profile&&profile.ok)
+      if(profile&&profile.ok){
+        save("Scientist chat ready",{
+          status:"online",chatUrl:u||state.chatUrl,loginRequired:false,
+          scientistExperience:"CHAT",scientistReasoning:"MEDIUM",scientistModel:"GPT-5.6 Sol",
+          scientistProfileConfirmed:true
+        });
+        return page;
+      }
+      save("Scientist profile correction required",{
+        status:"starting",chatUrl:u||state.chatUrl,loginRequired:false,
+        scientistProfileConfirmed:false,
+        scientistProfileReason:profile&&profile.reason||"profile-not-confirmed"
       });
-      return page;
     }
     const body=await page.locator("body").innerText().catch(()=>"");
     if(/log in|sign in|login/i.test(body)||/auth|login/i.test(page.url()))save("Scientist login required",{status:"login-required",loginRequired:true});
@@ -299,7 +361,7 @@ async function pageFor(context){
 }
 async function send(page,text){
   const profile=await ensureScientistChatMedium(page);
-  if(!profile.ok)throw new Error("Scientist must be Chat / GPT-5.6 Sol / Medium before send");
+  if(!profile.ok)throw new Error("Scientist send blocked: Chat / GPT-5.6 Sol / Medium not confirmed");
   const c=await composer(page); if(!c)throw new Error("Scientist composer unavailable");
   try{await c.fill(text,{timeout:2500});}catch{await c.focus();await page.keyboard.press("Control+A");await page.keyboard.insertText(text);}
   for(const s of ['button[data-testid="send-button"]','button[aria-label*="Send"]']){const b=page.locator(s).last();if(await b.count().catch(()=>0)&&await b.isVisible().catch(()=>false)&&await b.isEnabled().catch(()=>false)){await b.click({timeout:2000});return;}}
