@@ -274,31 +274,24 @@ async function ensureNormalChatExperience(page){
     await sleep(700);
   }
 
-  let chat=await exactVisibleControl(page,/^(Chat|Чат)$/i);
+  const chat=await exactVisibleControl(page,/^(Chat|Чат)$/i);
   if(chat){
     try{
       await chat.click({timeout:2500});
       clickedChat=true;
       await sleep(900);
-    }catch{}
-  }
-
-  if(await workLimitVisible(page)){
-    chat=await exactVisibleControl(page,/^(Chat|Чат)$/i);
-    if(chat){
-      try{
-        await chat.click({timeout:2500});
-        clickedChat=true;
-        await sleep(1200);
-      }catch{}
+    }catch(e){
+      return {ok:false,reason:"chat-click-failed",clickedChat:false,navigated,error:String(e&&e.message||e)};
     }
+  }else if(!navigated){
+    return {ok:false,reason:"chat-toggle-not-found",clickedChat:false,navigated:false};
   }
 
-  const workBanner=await workLimitVisible(page);
   const composerReady=Boolean(await composer(page));
-  const ok=!workLikeUrl(page.url())&&!workBanner&&composerReady&&(clickedChat||navigated||!await exactVisibleControl(page,/^(Work|Работа)$/i));
-  return {ok,reason:ok?"chat-confirmed":workBanner?"work-still-active":"chat-not-confirmed",clickedChat,navigated,workBanner};
+  const ok=!workLikeUrl(page.url())&&composerReady&&(clickedChat||navigated);
+  return {ok,reason:ok?"chat-click-confirmed":composerReady?"chat-not-confirmed":"composer-missing",clickedChat,navigated};
 }
+
 async function ensureScientistChatMedium(page){
   if(!page||page.isClosed())return {ok:false,reason:"page-unavailable"};
 
@@ -323,14 +316,15 @@ async function ensureScientistChatMedium(page){
     scientistModel:modelOk?"GPT-5.6 Sol":"UNCONFIRMED",
     scientistProfileConfirmed:ok,
     scientistProfileReason:ok?"chat-sol-medium-confirmed":((effort&&effort.reason)||(!modelOk?"model-not-confirmed":"profile-not-confirmed")),
-    clickedChat:Boolean(chat.clickedChat),
-    workBanner:Boolean(chat.workBanner)
+    scientistPickerLabel:effort&&effort.pickerLabel||null,
+    clickedChat:Boolean(chat.clickedChat)
   });
-  return {ok,chat,effort,modelOk,reason:ok?"chat-sol-medium-confirmed":"profile-not-confirmed"};
+  return {ok,chat,effort,modelOk,reason:ok?"chat-sol-medium-confirmed":((effort&&effort.reason)||"profile-not-confirmed")};
 }
 
 async function ready(page){
   const t=Date.now();
+  let profileFailures=0;
   while(Date.now()-t<READY_MS){
     if(await composer(page)){
       const profile=await ensureScientistChatMedium(page).catch(e=>({ok:false,reason:String(e&&e.message||e)}));
@@ -343,11 +337,16 @@ async function ready(page){
         });
         return page;
       }
-      save("Scientist profile correction required",{
-        status:"starting",chatUrl:u||state.chatUrl,loginRequired:false,
+      profileFailures++;
+      const blocked=profileFailures>=5;
+      save(blocked?"Scientist profile blocked":"Scientist profile correction required",{
+        status:blocked?"profile-blocked":"starting",chatUrl:u||state.chatUrl,loginRequired:false,
         scientistProfileConfirmed:false,
-        scientistProfileReason:profile&&profile.reason||"profile-not-confirmed"
+        scientistProfileReason:profile&&profile.reason||"profile-not-confirmed",
+        scientistPickerLabel:profile&&profile.effort&&profile.effort.pickerLabel||null,
+        profileVerifyAttempts:profileFailures
       });
+      if(blocked)await sleep(2500);
     }
     const body=await page.locator("body").innerText().catch(()=>"");
     if(/log in|sign in|login/i.test(body)||/auth|login/i.test(page.url()))save("Scientist login required",{status:"login-required",loginRequired:true});
