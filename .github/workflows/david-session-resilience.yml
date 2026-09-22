@@ -88,6 +88,9 @@ jobs:
       - name: Verify ChatGPT effort-mode controller
         run: node chatgpt-effort-mode.mjs --self-test
 
+      - name: Verify ChatGPT send acknowledgement
+        run: node chatgpt-send-ack.mjs --self-test
+
       - name: Verify FREE TALK experiment profile
         run: npm run verify:freetalk
 
