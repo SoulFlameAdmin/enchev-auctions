@@ -207,7 +207,7 @@ for(const token of [
   'page.bringToFront',
   'action==="FOCUS"',
   'source==="DAVID"',
-  'source==="SCIENTIST"'
+  'collect(scientistBrowser,"SCIENTIST",monitor)'
 ]) if(!controlPreview.includes(token)) throw new Error("Control panel preview invariant missing: "+token);
 
 if(/\.close\(\)/.test(controlPreview) && /Browser/.test(controlPreview))
