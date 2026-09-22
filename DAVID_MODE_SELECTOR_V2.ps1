@@ -376,7 +376,7 @@ $scientistReply.Location=New-Object System.Drawing.Point(20,317)
 $scientistPanel.Controls.Add($scientistReply)
 
 $scientistActionLabel=New-Object System.Windows.Forms.Label
-$scientistActionLabel.Text="LAST ACTION / POWERSHELL"
+$scientistActionLabel.Text="LIVE ACTION / POWERSHELL"
 $scientistActionLabel.ForeColor=[System.Drawing.Color]::Silver
 $scientistActionLabel.Font=New-Object System.Drawing.Font("Segoe UI",8,[System.Drawing.FontStyle]::Bold)
 $scientistActionLabel.AutoSize=$true
