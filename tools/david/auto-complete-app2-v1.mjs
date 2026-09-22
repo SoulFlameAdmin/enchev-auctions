@@ -923,7 +923,9 @@ async function main() {
     }
     mode = "work";
     deferRepeats = 0;
-    page = await rolloverConversation(context, page, state, "final-ok");
+    state.nextTaskAt = new Date().toISOString();
+      state.watchdog = "next-task-ready";
+      save(state, "Previous block complete; NEXT TASK will continue in SAME ChatGPT conversation. Rollover only on real conversation limit.");
     await sleep(COOLDOWN_MS);
   }
 }
