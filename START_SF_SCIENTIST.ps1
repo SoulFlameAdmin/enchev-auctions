@@ -38,7 +38,7 @@ if(-not(Test-Cdp $Port)){
   $browser=Get-BrowserPath
   if(-not$browser){throw "No Edge/Chrome browser found for SF Scientist."}
   New-Item -ItemType Directory -Force -Path $ProfileDir|Out-Null
-  Start-Process -FilePath $browser -ArgumentList @("--remote-debugging-address=127.0.0.1","--remote-debugging-port=$Port","--user-data-dir=$ProfileDir","--no-first-run","--no-default-browser-check","--new-window","https://chatgpt.com/")
+  Start-Process -FilePath $browser -ArgumentList @("--remote-debugging-address=127.0.0.1","--remote-debugging-port=$Port","--user-data-dir=$ProfileDir","--no-first-run","--no-default-browser-check","--disable-session-crashed-bubble","--disable-features=msEdgeRestoreOnStartup","--new-window","https://chatgpt.com/")
   $ok=$false;for($i=0;$i-lt 50;$i++){Start-Sleep -Milliseconds 500;if(Test-Cdp $Port){$ok=$true;break}}
   if(-not$ok){throw "SF Scientist browser started but CDP $Port did not become ready."}
 }

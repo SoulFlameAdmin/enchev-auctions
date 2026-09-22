@@ -12,6 +12,7 @@ const HERE=path.dirname(fileURLToPath(import.meta.url));
 const SCI_CDP=process.env.SF_SCIENTIST_CDP_URL||"http://127.0.0.1:9555";
 const DAVID_CDP=process.env.DAVID_CDP_URL||"http://127.0.0.1:9444";
 const STATE=path.join(HERE,".sf-scientist-state.json");
+const SINGLETON_LOCK=path.join(HERE,".sf-scientist.lock");
 const COMMAND=path.join(HERE,".sf-scientist-command.json");
 const RESPONSE=path.join(HERE,".sf-scientist-response.json");
 const DECISIONS=path.join(HERE,".sf-scientist-decisions.jsonl");
@@ -52,6 +53,43 @@ function readJson(p,f=null){
 }
 function writeJson(p,v){const t=p+".tmp";fs.writeFileSync(t,JSON.stringify(v,null,2),"utf8");fs.renameSync(t,p);}
 function append(p,v){fs.appendFileSync(p,JSON.stringify(v)+"\n","utf8");}
+
+let singletonFd=null;
+let singletonOwned=false;
+function pidAlive(pid){
+  const n=Number(pid||0);
+  if(!Number.isInteger(n)||n<=0)return false;
+  try{process.kill(n,0);return true;}catch{return false;}
+}
+function acquireSingleton(){
+  for(let attempt=0;attempt<2;attempt++){
+    try{
+      singletonFd=fs.openSync(SINGLETON_LOCK,"wx");
+      fs.writeFileSync(singletonFd,JSON.stringify({pid:process.pid,startedAt:now()})+"\n","utf8");
+      singletonOwned=true;
+      return true;
+    }catch(e){
+      if(e&&e.code!=="EEXIST")throw e;
+      const existing=readJson(SINGLETON_LOCK,null);
+      if(existing&&pidAlive(existing.pid)){
+        return false;
+      }
+      try{fs.unlinkSync(SINGLETON_LOCK);}catch{}
+    }
+  }
+  return false;
+}
+function releaseSingleton(){
+  if(!singletonOwned)return;
+  try{if(singletonFd!==null)fs.closeSync(singletonFd);}catch{}
+  singletonFd=null;
+  try{
+    const current=readJson(SINGLETON_LOCK,null);
+    if(!current||Number(current.pid)===process.pid)fs.unlinkSync(SINGLETON_LOCK);
+  }catch{}
+  singletonOwned=false;
+}
+
 function ensureDir(p){try{fs.mkdirSync(p,{recursive:true});}catch{}}
 function tailJsonl(p,count=8){
   try{
@@ -68,6 +106,13 @@ function recentScientistMemory(){
     result:cleanText(x.result||x.actionResult||"",500)||null
   }));
 }
+if(!acquireSingleton()){
+  process.exit(0);
+}
+process.on("exit",releaseSingleton);
+process.on("SIGINT",()=>{releaseSingleton();process.exit(0);});
+process.on("SIGTERM",()=>{releaseSingleton();process.exit(0);});
+
 let state=readJson(STATE,{version:1,status:"starting",heartbeatAt:null,chatUrl:null,lastAction:"boot",lastObservation:null,lastDecision:null,lastResponse:null,lastCommandId:null,lastAutoAnalysisAt:null,loginRequired:false,liveActivity:"boot",activityAt:null});
 function save(action,patch={}){
   const stamp=now();
