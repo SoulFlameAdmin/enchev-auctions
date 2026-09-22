@@ -39,15 +39,15 @@
       "id": "M03",
       "title": "Portable DAVID Core",
       "status": "IN_PROGRESS",
-      "implementationCommit": null,
+      "implementationCommit": "fa687b911b44a8a24a40226028f4a2ee39477859",
       "filesChanged": [
         "tools/david/runtime-paths.mjs",
         "11 current core modules",
         "tools/david-distribution/runtime-paths.test.mjs"
       ],
       "test": "node --test tools/david-distribution/runtime-paths.test.mjs",
-      "result": "LOCAL_PASS_PARTIAL",
-      "artifact": null,
+      "result": "PASS_PARTIAL_WINDOWS_AND_LOCAL",
+      "artifact": "https://github.com/SoulFlameAdmin/enchev-auctions/actions/runs/35787548379",
       "blocker": "Remaining implementation: portable host/UI paths, user-owned task configuration, process ownership. Not an external blocker."
     },
     {
@@ -243,5 +243,13 @@
     "M02 validates an explicit spawned/host/assets set plus literal JS import closure; no installer size claim.",
     "M03 data directory is opt-in and is not yet wired through all PowerShell/UI consumers.",
     "No remote shell, deploy, stable-channel mutation, account change or production release performed."
-  ]
+  ],
+  "latestVerifiedCommit": "fa687b911b44a8a24a40226028f4a2ee39477859",
+  "latestVerification": {
+    "windowsDistribution": "PASS",
+    "sessionResilience": "PASS",
+    "localTests": "7/7 PASS",
+    "windowsRunId": 35787548379,
+    "resilienceRunId": 35787548238
+  }
 }
