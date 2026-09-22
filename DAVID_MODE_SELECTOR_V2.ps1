@@ -466,6 +466,22 @@ function Update-ScientistUi{
       }
     }
 
+    $inFlight=[string]$st.inFlightObservation
+    if(-not[string]::IsNullOrWhiteSpace($inFlight)){
+      $lines.Add("IN FLIGHT: "+$inFlight)
+    }
+
+    if($null-ne$st.sendAck){
+      $lines.Add("SEND ACK: "+([string]$st.sendAck).ToUpperInvariant())
+    }
+    $sendAttempt=[string]$st.sendAttempt
+    if(-not[string]::IsNullOrWhiteSpace($sendAttempt)){
+      $method=[string]$st.sendMethod
+      $sendLine="SEND TRY: "+$sendAttempt
+      if(-not[string]::IsNullOrWhiteSpace($method)){$sendLine+=" via "+$method}
+      $lines.Add($sendLine)
+    }
+
     $backoff=[string]$st.rateLimitBackoffUntil
     if(-not[string]::IsNullOrWhiteSpace($backoff)){
       $lines.Add("RATE LIMIT BACKOFF UNTIL: "+$backoff)
