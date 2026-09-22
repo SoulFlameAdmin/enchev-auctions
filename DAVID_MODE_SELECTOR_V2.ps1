@@ -418,6 +418,8 @@ function Update-ScientistUi{
     $decision=[string]$st.lastDecision
     if(-not$decision){$decision=[string]$st.lastObservation}
     if(-not$decision){$decision=[string]$st.lastAction}
+    $tool=[string]$st.lastToolResult
+    if($tool){$decision=$decision+[Environment]::NewLine+[Environment]::NewLine+"TOOL: "+$tool}
     $scientistDecision.Text=$decision
   }else{
     $scientistStatus.Text=("STATUS: OFFLINE  WORKER={0}" -f $count)+[Environment]::NewLine+"Scientist auto-starts with DAVID."
@@ -536,6 +538,10 @@ $form.Show()
 Close-OldDavidPowerShellWindows -KeepPid $PID
 Hide-OwnConsole
 Update-Ui
+try{
+  $bootSnapshot=Get-Snapshot
+  if($bootSnapshot.Mode-ne"STOPPED"){Start-ScientistSidecar}
+}catch{}
 
 while(-not $script:Closing -and $form.Visible){
   try{
