@@ -347,6 +347,8 @@ async function ready(page){
         profileVerifyAttempts:profileFailures
       });
       if(blocked)await sleep(2500);
+      else await sleep(1200);
+      continue;
     }
     const body=await page.locator("body").innerText().catch(()=>"");
     if(/log in|sign in|login/i.test(body)||/auth|login/i.test(page.url()))save("Scientist login required",{status:"login-required",loginRequired:true});
