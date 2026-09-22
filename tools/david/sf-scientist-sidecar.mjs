@@ -155,27 +155,36 @@ async function processes(){
 function compactThought(text){
   const raw=String(text||"").replace(/\r/g,"").trim();
   if(!raw)return "";
-  const labels=["ВИДЯХ","РЕШИХ","ЗАЩО","ПРЕДЛАГАМ","RISK"];
-  const out=[];
-  for(let i=0;i<labels.length;i++){
-    const label=labels[i];
-    const next=labels.slice(i+1).concat(["ACTION"]).join("|");
-    const re=new RegExp("(?:^|\\n)"+label+"\\s*:\\s*([\\s\\S]*?)(?=\\n(?:"+(next||"ACTION")+" )?\\s*:|$)","i");
-    let m=raw.match(re);
-    if(!m){
-      const startRe=new RegExp("(?:^|\\n)"+label+"\\s*:\\s*","i");
-      const sm=startRe.exec(raw);
-      if(sm){
-        const rest=raw.slice(sm.index+sm[0].length);
-        const stop=rest.search(/\n(?:ВИДЯХ|РЕШИХ|ЗАЩО|ПРЕДЛАГАМ|RISK|ACTION)\s*:/i);
-        m=[null,stop>=0?rest.slice(0,stop):rest];
-      }
+
+  const order=["ВИДЯХ","РЕШИХ","ЗАЩО","ПРЕДЛАГАМ","RISK"];
+  const sections=new Map();
+  let current=null;
+
+  for(const rawLine of raw.split("\n")){
+    const line=rawLine.trim();
+    if(!line)continue;
+
+    const m=line.match(/^(ВИДЯХ|РЕШИХ|ЗАЩО|ПРЕДЛАГАМ|RISK|ACTION)\s*:\s*(.*)$/i);
+    if(m){
+      const key=m[1].toUpperCase();
+      if(key==="ACTION"){current=null;continue;}
+      current=order.find(x=>x.toUpperCase()===key)||null;
+      if(current)sections.set(current,m[2]||"");
+      continue;
     }
-    if(m&&m[1]){
-      const value=cleanText(m[1].replace(/\n+/g," "),180);
-      if(value)out.push(label+": "+value);
+
+    if(current){
+      const old=sections.get(current)||"";
+      sections.set(current,(old+" "+line).trim());
     }
   }
+
+  const out=[];
+  for(const label of order){
+    const value=cleanText(sections.get(label)||"",180);
+    if(value)out.push(label+": "+value);
+  }
+
   if(out.length)return out.join("\n");
   return cleanText(raw.replace(/\n+/g," "),520);
 }
