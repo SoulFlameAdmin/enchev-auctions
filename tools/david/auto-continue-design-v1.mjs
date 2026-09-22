@@ -6,6 +6,7 @@ import process from "node:process";
 import { fileURLToPath } from "node:url";
 import { waitForGlobalSendPermit, reportRateLimit, reportProbeSuccess, markGlobalSendStarted } from "./chatgpt-rate-limit-coordinator.mjs";
 import { CHATGPT_ROOT, rotateOwnedChatPage } from "./chatgpt-session-rotation.mjs";
+import { sendPromptVerified } from "./chatgpt-send-ack.mjs";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(HERE, "..", "..");
@@ -507,57 +508,34 @@ async function waitReady(context, page, state) {
     await sleep(1000);
   }
 }
-async function fillAndSend(page, text) {
-  const c = await composer(page);
-  if (!c) throw new Error("Design ChatGPT composer not found");
+async function fillAndSend(page, text, state) {
+  state.lastPromptPreview = String(text || "").replace(/\s+/g, " ").trim().slice(0, 220);
+  state.lastSendAck = false;
+  state.lastSendStatus = "PREPARING";
+  state.lastSendError = null;
+  save(state);
 
-  let filled = false;
-  try {
-    await c.fill(text, { timeout: 5000 });
-    filled = true;
-  } catch {}
-
-  if (!filled) {
-    await c.focus({ timeout: 3000 }).catch(() => {});
-    await c.evaluate((el, value) => {
-      el.focus();
-      if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) {
-        el.value = value;
-      } else {
-        el.textContent = value;
+  return sendPromptVerified(page, text, {
+    worker: "DESIGN",
+    ackTimeoutMs: 5000,
+    onEvent: (stage, info) => {
+      state.lastSendStatus = stage;
+      state.lastSendUpdatedAt = info.at || new Date().toISOString();
+      state.lastSendAttempt = Number(info.attempt || 0);
+      if (info.method) state.lastSendMethod = info.method;
+      if (info.signal) state.lastSendSignal = info.signal;
+      if (info.error) state.lastSendError = info.error;
+      if (stage === "ACK") {
+        state.lastSendAck = true;
+        state.lastSendAt = info.at || new Date().toISOString();
+      } else if (stage === "FAILED") {
+        state.lastSendAck = false;
       }
-      el.dispatchEvent(new InputEvent("input", { bubbles: true, inputType: "insertText", data: value }));
-    }, text);
-  }
-
-  await sleep(250);
-
-  for (const s of ['button[data-testid="send-button"]','button[aria-label*="Send"]','button[aria-label*="Изпрати"]']) {
-    const b = page.locator(s).last();
-    if (!await b.count()) continue;
-    if (!await b.isVisible().catch(() => false) || !await b.isEnabled().catch(() => false)) continue;
-    try {
-      await b.click({ timeout: 2000 });
-      return;
-    } catch {}
-  }
-
-  try {
-    await c.focus({ timeout: 2000 });
-    await c.press("Enter", { timeout: 3000 });
-    return;
-  } catch {}
-
-  for (const s of ['button[data-testid="send-button"]','button[aria-label*="Send"]','button[aria-label*="Изпрати"]']) {
-    const b = page.locator(s).last();
-    if (await b.count() && await b.isVisible().catch(() => false) && await b.isEnabled().catch(() => false)) {
-      await b.click({ force: true, timeout: 3000 });
-      return;
+      save(state);
     }
-  }
-
-  throw new Error("Design ChatGPT send failed after pointer-safe fallbacks");
+  });
 }
+
 async function waitStart(context, page, base, state) {
   const end = Date.now() + START_TIMEOUT_MS;
   while (Date.now() < end) {
@@ -617,7 +595,7 @@ async function runPrompt(context, page, state, prompt, kind) {
       state.watchdog = "global-rate-limit-probe";
       save(state, "DESIGN owns the single post-cooldown probe send; no refresh required");
     }
-    await fillAndSend(page, outgoingPrompt);
+    await fillAndSend(page, outgoingPrompt, state);
     await markGlobalSendStarted("DESIGN");
     let started = await waitStart(context, page, base, state); page = started.page;
     syncActiveChatUrl(page, state);

@@ -5,6 +5,7 @@ import process from "node:process";
 import { waitForGlobalSendPermit, reportRateLimit, reportProbeSuccess, markGlobalSendStarted } from "./chatgpt-rate-limit-coordinator.mjs";
 import { CHATGPT_ROOT, rotateOwnedChatPage } from "./chatgpt-session-rotation.mjs";
 import { ensureChatGptEffortMode } from "./chatgpt-effort-mode.mjs";
+import { sendPromptVerified } from "./chatgpt-send-ack.mjs";
 
 const EFFORT_MODE = String(process.env.DAVID_PROJECT_EFFORT_MODE || "medium").toLowerCase();
 
@@ -454,73 +455,34 @@ async function waitReady(context, page, state) {
     await sleep(POLL_MS);
   }
 }
-async function fillAndSend(page, text) {
-  let c = null;
-  let filled = false;
+async function fillAndSend(page, text, state) {
+  state.lastPromptPreview = String(text || "").replace(/\s+/g, " ").trim().slice(0, 220);
+  state.lastSendAck = false;
+  state.lastSendStatus = "PREPARING";
+  state.lastSendError = null;
+  save(state);
 
-  // ChatGPT may replace #prompt-textarea while the page settles. Never hold a
-  // stale locator for 30s: reacquire the visible composer on every bounded try.
-  for (let attempt = 1; attempt <= 10 && !filled; attempt++) {
-    c = await composer(page);
-    if (!c) {
-      await sleep(400);
-      continue;
+  return sendPromptVerified(page, text, {
+    worker: "APP2",
+    ackTimeoutMs: 5000,
+    onEvent: (stage, info) => {
+      state.lastSendStatus = stage;
+      state.lastSendUpdatedAt = info.at || new Date().toISOString();
+      state.lastSendAttempt = Number(info.attempt || 0);
+      if (info.method) state.lastSendMethod = info.method;
+      if (info.signal) state.lastSendSignal = info.signal;
+      if (info.error) state.lastSendError = info.error;
+      if (stage === "ACK") {
+        state.lastSendAck = true;
+        state.lastSendAt = info.at || new Date().toISOString();
+      } else if (stage === "FAILED") {
+        state.lastSendAck = false;
+      }
+      save(state);
     }
-
-    try {
-      await c.fill(text, { timeout: 1800 });
-      filled = true;
-      break;
-    } catch {}
-
-    // Pointer-safe fallback: reacquire before focusing, then type through the
-    // page keyboard so locator.evaluate cannot hang on a detached node.
-    c = await composer(page);
-    if (!c) {
-      await sleep(400);
-      continue;
-    }
-    try {
-      await c.focus({ timeout: 1200 });
-      await page.keyboard.press("Control+A");
-      await page.keyboard.insertText(text);
-      filled = true;
-      break;
-    } catch {}
-
-    await sleep(400);
-  }
-
-  if (!filled || !c) throw new Error("ChatGPT composer unavailable after bounded reacquire");
-
-  await sleep(250);
-
-  for (const s of ['button[data-testid="send-button"]','button[aria-label*="Send"]','button[aria-label*="Изпрати"]']) {
-    const b = page.locator(s).last();
-    if (!await b.count()) continue;
-    if (!await b.isVisible().catch(() => false) || !await b.isEnabled().catch(() => false)) continue;
-    try {
-      await b.click({ timeout: 2000 });
-      return;
-    } catch {}
-  }
-
-  try {
-    await c.focus({ timeout: 2000 });
-    await c.press("Enter", { timeout: 3000 });
-    return;
-  } catch {}
-
-  for (const s of ['button[data-testid="send-button"]','button[aria-label*="Send"]','button[aria-label*="Изпрати"]']) {
-    const b = page.locator(s).last();
-    if (await b.count() && await b.isVisible().catch(() => false) && await b.isEnabled().catch(() => false)) {
-      await b.click({ force: true, timeout: 3000 });
-      return;
-    }
-  }
-
-  throw new Error("ChatGPT send failed after pointer-safe fallbacks");
+  });
 }
+
 async function forceStop(page) {
   const b = await stopButton(page);
   if (!b) return false;
@@ -667,7 +629,7 @@ async function runPrompt(context, page, state, prompt, kind) {
       state.watchdog = "global-rate-limit-probe";
       save(state, "APP2 owns the single post-cooldown probe send; no refresh required");
     }
-    await fillAndSend(page, outgoingPrompt);
+    await fillAndSend(page, outgoingPrompt, state);
     await markGlobalSendStarted("APP2");
     const start = await waitStart(context, page, baseHash, state);
     page = start.page;

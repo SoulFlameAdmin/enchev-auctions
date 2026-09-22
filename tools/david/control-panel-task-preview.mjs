@@ -12,6 +12,16 @@ const SCIENTIST_CDP=process.env.SF_SCIENTIST_CDP_URL||"http://127.0.0.1:9555";
 const REFRESH_MS=Math.max(1500,Number(process.env.DAVID_CONTROL_PANEL_PREVIEW_MS||3000));
 const MAX_TASKS=Math.max(8,Math.min(16,Number(process.env.DAVID_CONTROL_PANEL_MAX_TASKS||12)));
 const DAVID_ROLES=["SYSTEM","DESIGN","APP2","APK","CONTROL","FREE_A","FREE_B"];
+const STATE_FILE_BY_ROLE={
+  SYSTEM:".david-enchev-state.json",
+  DESIGN:".david-enchev-design-state.json",
+  APP2:".david-app2-state-6aac2dbb.json",
+  APK:".david-apk-state.json",
+  CONTROL:".david-control-state.json",
+  FREE_A:".david-free-talk-a-state.json",
+  FREE_B:".david-free-talk-b-state.json",
+  SCIENTIST:".sf-scientist-state.json"
+};
 
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const now=()=>new Date().toISOString();
@@ -38,7 +48,50 @@ function roleForDavid(url,monitor,index){
     if(!Array.isArray(urls))continue;
     if(urls.some(x=>conversationUrl(x)===u))return role;
   }
+
+  // Fresh ChatGPT conversations can change URL before the monitor catches up.
+  // When exactly one DAVID worker is alive, assign the visible tab to that role
+  // instead of exposing a misleading DAVID_TAB_1 label.
+  const health=monitor&&monitor.workerHealth||{};
+  const alive=DAVID_ROLES.filter(role=>Boolean(health&&health[role]&&health[role].processAlive));
+  if(alive.length===1)return alive[0];
+
   return "DAVID_TAB_"+(index+1);
+}
+
+function progressForRole(role){
+  const file=STATE_FILE_BY_ROLE[role];
+  if(!file)return null;
+  const st=readJson(path.join(HERE,file),null);
+  if(!st)return null;
+
+  return {
+    phase:clean(st.watchdog||st.status||"unknown"),
+    lastAction:clean(st.lastAction||st.lastObservation||""),
+    lastResult:clean(st.lastResult||""),
+    stateUpdatedAt:st.updatedAt||st.heartbeatAt||null,
+    turnsSent:Number(st.turnsSent||0),
+    relayAttempts:Number(st.relayAttempts||0),
+    recoveryAttempt:Number(st.recoveryAttempt||0),
+    complete:Boolean(st.complete),
+    problem:clean(st.problem||""),
+    problemRetryAt:st.problemRetryAt||null,
+    sendAck:st.lastSendAck===true,
+    sendStatus:clean(st.lastSendStatus||""),
+    sendMethod:clean(st.lastSendMethod||""),
+    sendSignal:clean(st.lastSendSignal||""),
+    sendAttempt:Number(st.lastSendAttempt||0),
+    sendAt:st.lastSendAt||null,
+    sendUpdatedAt:st.lastSendUpdatedAt||null,
+    sendError:clean(st.lastSendError||""),
+    promptPreview:clean(st.lastPromptPreview||""),
+    chatUrl:conversationUrl(st.chatUrl||"")
+  };
+}
+
+function withProgress(task){
+  const progress=progressForRole(task.role);
+  return progress?{...task,progress}:{...task,progress:null};
 }
 
 async function pageStatus(page){
@@ -60,33 +113,14 @@ async function collect(browser,source,monitor){
       if(!/^https:\/\/chatgpt\.com\//i.test(url))continue;
       const role=source==="DAVID"?roleForDavid(url,monitor,idx):(idx===0?"SCIENTIST":"SCIENTIST_"+(idx+1));
       const key=source+":"+role+(role.startsWith("DAVID_TAB_")||role.startsWith("SCIENTIST_")?":"+idx:"");
-      const preview=path.join(PREVIEW_DIR,safe(key)+".png");
       let title="";
       try{title=clean(await page.title());}catch{}
       const status=await pageStatus(page);
-      let screenshotOk=false;
-      let previewKind="viewport";
-      try{
-        const main=page.locator("main").last();
-        const visible=await main.isVisible().catch(()=>false);
-        const box=visible?await main.boundingBox().catch(()=>null):null;
-        if(box&&box.width>=420&&box.height>=300){
-          await main.screenshot({path:preview,type:"png",timeout:6000,animations:"disabled"});
-          screenshotOk=true;
-          previewKind="main";
-        }
-      }catch{}
-      if(!screenshotOk){
-        try{
-          await page.screenshot({path:preview,type:"png",timeout:6000,animations:"disabled",fullPage:false});
-          screenshotOk=true;
-        }catch{}
-      }
-      out.push({
+      out.push(withProgress({
         key,source,role,cdp:source==="DAVID"?9444:9555,
         title:title||role,url:conversationUrl(url),status,
-        preview:screenshotOk?preview:null,previewKind,updatedAt:now()
-      });
+        preview:null,previewKind:"disabled-task-status",updatedAt:now()
+      }));
       idx++;
       if(out.length>=MAX_TASKS)return out;
     }
@@ -143,21 +177,21 @@ function normalizeTopology(david,scientist,monitor){
     if(live){
       const h=health&&health[role]||null;
       const processAlive=h?Boolean(h.processAlive):true;
-      tasks.push({
+      tasks.push(withProgress({
         ...live,
         key:"DAVID:"+role,
         status:processAlive?live.status:"TAB_ONLY",
         processAlive,
         tabCount:h?Number(h.tabCount||1):1,
         working:processAlive&&statusWorking(live.status)
-      });
+      }));
       continue;
     }
 
     const h=health&&health[role]||null;
     const urls=Array.isArray(managed&&managed[role])?managed[role]:[];
     const processAlive=h?Boolean(h.processAlive):false;
-    tasks.push({
+    tasks.push(withProgress({
       key:"DAVID:"+role,
       source:"DAVID",
       role,
@@ -170,12 +204,12 @@ function normalizeTopology(david,scientist,monitor){
       processAlive,
       tabCount:h?Number(h.tabCount||0):0,
       working:false
-    });
+    }));
   }
 
   for(const extra of david){
     if(DAVID_ROLES.includes(extra.role))continue;
-    tasks.push({...extra,working:statusWorking(extra.status),processAlive:true,tabCount:1});
+    tasks.push(withProgress({...extra,working:statusWorking(extra.status),processAlive:true,tabCount:1}));
   }
 
   const scientistTask=scientist[0]||{
@@ -194,7 +228,7 @@ function normalizeTopology(david,scientist,monitor){
   scientistTask.working=statusWorking(scientistTask.status)&&Boolean(scientistBrowser);
   scientistTask.processAlive=Boolean(scientistBrowser);
   scientistTask.tabCount=scientist.length;
-  tasks.push(scientistTask);
+  tasks.push(withProgress(scientistTask));
 
   const activeDavid=tasks.filter(x=>x.source==="DAVID"&&x.working);
   const connections=[];

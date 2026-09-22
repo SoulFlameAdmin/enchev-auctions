@@ -4,6 +4,7 @@ import process from "node:process";
 import { waitForGlobalSendPermit, reportProbeSuccess, markGlobalSendStarted } from "./chatgpt-rate-limit-coordinator.mjs";
 import { CHATGPT_ROOT, rotateOwnedChatPage } from "./chatgpt-session-rotation.mjs";
 import { ensureChatGptEffortMode } from "./chatgpt-effort-mode.mjs";
+import { sendPromptVerified } from "./chatgpt-send-ack.mjs";
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1"));
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
@@ -410,8 +411,31 @@ async function sendAndWait(context, page, state, prompt) {
       save(state, "CONTROL owns the single post-cooldown probe send; no refresh required");
     }
 
-    await fillComposer(composer, prompt);
-    await sendComposer(page, composer);
+    state.lastPromptPreview = String(prompt || "").replace(/\s+/g, " ").trim().slice(0, 220);
+    state.lastSendAck = false;
+    state.lastSendStatus = "PREPARING";
+    state.lastSendError = null;
+    save(state);
+
+    await sendPromptVerified(page, prompt, {
+      worker: "CONTROL",
+      ackTimeoutMs: 5000,
+      onEvent: (stage, info) => {
+        state.lastSendStatus = stage;
+        state.lastSendUpdatedAt = info.at || new Date().toISOString();
+        state.lastSendAttempt = Number(info.attempt || 0);
+        if (info.method) state.lastSendMethod = info.method;
+        if (info.signal) state.lastSendSignal = info.signal;
+        if (info.error) state.lastSendError = info.error;
+        if (stage === "ACK") {
+          state.lastSendAck = true;
+          state.lastSendAt = info.at || new Date().toISOString();
+        } else if (stage === "FAILED") {
+          state.lastSendAck = false;
+        }
+        save(state);
+      }
+    });
     await markGlobalSendStarted("CONTROL");
     state.turnsSent = Number(state.turnsSent || 0) + 1;
     state.watchdog = "control-waiting-response";
