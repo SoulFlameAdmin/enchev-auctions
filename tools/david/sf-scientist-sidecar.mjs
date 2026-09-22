@@ -494,15 +494,63 @@ async function reasonActLoop(context,page,initialPrompt,s,maxSteps=MAX_AUTONOMOU
   return {response,actions};
 }
 
-function boot(s){return "SF CORPORATION / AI SCIENTIST BOOTSTRAP\n\nYou are the independent AI Scientist observing the existing DAVID system. You are OUTSIDE DAVID. Preserve the existing DAVID architecture. Never claim an external action happened unless the local bridge reports it. Never bypass login/MFA/CAPTCHA/permissions. Observe, form hypotheses, test claims against evidence, detect regressions and propose improvements. The snapshot includes LIVE TELEMETRY with active PowerShell/CMD/Node processes, DAVID runtime-state summaries, recent log tails and error alerts. Use it to explain what actually happened, not only topology.\n\nFor autonomous observations answer compactly in Bulgarian:\nВИДЯХ: ...\nРЕШИХ: ...\nЗАЩО: ...\nПРЕДЛАГАМ: ...\nRISK: LOW|MEDIUM|HIGH\n\nCurrent DAVID snapshot:\n"+JSON.stringify(s,null,2);}
-function observe(reason,s){return "SF SCIENTIST AUTONOMOUS OBSERVATION\nEVENT: "+reason+"\n\nAnalyze only this evidence. Inspect liveTelemetry.shells, davidStates, recentLogs, logAlerts and probeErrors before concluding. Treat empty telemetry as absence of evidence only when the corresponding probeErrors field is null. Distinguish a process start/stop from a real script failure. If a log contains a concrete exception/error, name the supporting process/file. You may decide no intervention is needed. Do not invent actions.\n\nDAVID SNAPSHOT:\n"+JSON.stringify(s,null,2)+"\n\nYou may autonomously choose ONE low-risk Scientist-sidecar action only when useful:\nACTION: NONE | OPEN_POWERSHELL | OPEN_CMD | OPEN_CHATGPT | SEARCH_WEB <query> | OPEN_URL <https-url> | DAVID_HEALTH_CHECK | GIT_STATUS | CONSULT_AB <question>\nThese actions affect only Scientist tools or read-only diagnostics; never modify DAVID architecture.\n\nReturn:\nВИДЯХ: ...\nРЕШИХ: ...\nЗАЩО: ...\nПРЕДЛАГАМ: ...\nRISK: LOW|MEDIUM|HIGH\nACTION: ...";}
-function user(text,s){return "MITKO -> SF AI SCIENTIST\n"+text+"\n\nLive DAVID snapshot including PowerShell/CMD/Node processes, runtime states and recent logs:\n"+JSON.stringify(s,null,2)+"\n\nAnswer as SF AI Scientist. Separate observed facts from hypotheses. When relevant, cite the exact PID/script, state file or log line supporting the conclusion. You can use one low-risk Scientist tool when useful by ending with ACTION: NONE | OPEN_POWERSHELL | OPEN_CMD | OPEN_CHATGPT | SEARCH_WEB <query> | OPEN_URL <https-url> | DAVID_HEALTH_CHECK | GIT_STATUS | CONSULT_AB <question>. Never modify DAVID architecture from this sidecar.";}
+function toolMenu(){
+  return [
+    "ACTION: NONE",
+    "ACTION: POWERSHELL <normal-user PowerShell command>",
+    "ACTION: INSPECT_SCREEN <what to inspect visually>",
+    "ACTION: CHECK_PROJECT <question for @GitHub @Vercel @Supabase>",
+    "ACTION: CONSULT_AB <question>",
+    "ACTION: DAVID_HEALTH_CHECK",
+    "ACTION: GIT_STATUS",
+    "ACTION: SEARCH_WEB <query>",
+    "ACTION: OPEN_URL <https-url>",
+    "ACTION: OPEN_POWERSHELL",
+    "ACTION: OPEN_CMD",
+    "ACTION: OPEN_CHATGPT"
+  ].join("\n");
+}
+function operatorLaw(){
+  return "You are an autonomous SF AI Scientist/Operator. Minimize human intervention, but maximize evidence quality. "+
+    "Use tools yourself when a low-risk check can resolve uncertainty. Normal-user PowerShell is available and every command/result is audited. "+
+    "Never request or attempt UAC bypass, elevation bypass, credential extraction, destructive disk/file/account/security operations, or production-critical mutation. "+
+    "High-risk/admin/destructive actions require a future explicit human approval path and are not available in this tool broker. "+
+    "Preserve DAVID architecture and distinguish observations from hypotheses.";
+}
+function boot(s){return "SF CORPORATION / AI SCIENTIST BOOTSTRAP\n\n"+operatorLaw()+
+  "\n\nYou are OUTSIDE DAVID. Observe, form hypotheses, test claims against evidence, detect regressions, investigate with your own tools and record what you learn. "+
+  "The snapshot includes LIVE TELEMETRY with active PowerShell/CMD/Node processes, DAVID runtime-state summaries, recent log tails and error alerts. "+
+  "Recent persistent Scientist memory:\n"+JSON.stringify(recentScientistMemory(),null,2)+
+  "\n\nFor this bootstrap only, do not take an action. Answer compactly in Bulgarian:\nВИДЯХ: ...\nРЕШИХ: ...\nЗАЩО: ...\nПРЕДЛАГАМ: ...\nRISK: LOW|MEDIUM|HIGH\nACTION: NONE"+
+  "\n\nCurrent DAVID snapshot:\n"+JSON.stringify(s,null,2);}
+function observe(reason,s){return "SF SCIENTIST AUTONOMOUS OBSERVATION\nEVENT: "+reason+
+  "\n\n"+operatorLaw()+
+  "\n\nInspect liveTelemetry.shells, davidStates, recentLogs, logAlerts and probeErrors before concluding. "+
+  "Treat empty telemetry as absence of evidence only when the corresponding probeErrors field is null. "+
+  "Distinguish a process start/stop from a real script failure. If useful, investigate autonomously with PowerShell, a desktop screenshot, connected project tools or SCI-A/SCI-B. "+
+  "Do not take an action merely to look busy. Prefer the cheapest discriminating check."+
+  "\n\nRECENT SCIENTIST MEMORY:\n"+JSON.stringify(recentScientistMemory(),null,2)+
+  "\n\nDAVID SNAPSHOT:\n"+JSON.stringify(s,null,2)+
+  "\n\nAVAILABLE ACTIONS (choose exactly one; the operator loop may give you another turn after the verified result):\n"+toolMenu()+
+  "\n\nReturn:\nВИДЯХ: ...\nРЕШИХ: ...\nЗАЩО: ...\nПРЕДЛАГАМ: ...\nRISK: LOW|MEDIUM|HIGH\nACTION: ...";}
+function user(text,s){return "MITKO -> SF AI SCIENTIST\n"+text+
+  "\n\n"+operatorLaw()+
+  "\n\nYou may investigate the request autonomously for up to "+MAX_AUTONOMOUS_STEPS+" verified tool steps. "+
+  "When relevant, cite the exact PID/script, state file, log line, PowerShell output, screen evidence, or connector evidence supporting the conclusion."+
+  "\n\nRECENT SCIENTIST MEMORY:\n"+JSON.stringify(recentScientistMemory(),null,2)+
+  "\n\nLive DAVID snapshot:\n"+JSON.stringify(s,null,2)+
+  "\n\nAVAILABLE ACTIONS:\n"+toolMenu()+
+  "\n\nReturn ВИДЯХ/РЕШИХ/ЗАЩО/ПРЕДЛАГАМ/RISK and exactly one ACTION.";}
 async function command(context,page,s){
-  const c=readJson(COMMAND,null);if(!c?.id||c.id===state.lastCommandId||!String(c.text||"").trim())return;
+  const c=readJson(COMMAND,null);
+  if(!c?.id||c.id===state.lastCommandId||!String(c.text||"").trim())return;
   save("Processing Scientist chat command",{lastCommandId:c.id});
-  const r=await ask(page,user(String(c.text).trim(),s));
-  const actionResult=await executeScientistAction(context,page,r,s).catch(e=>"action failed: "+String(e?.message||e));
-  const o={id:c.id,createdAt:now(),request:String(c.text).trim(),response:r,actionResult};writeJson(RESPONSE,o);append(MEMORY,{at:o.createdAt,kind:"mitko-chat",request:o.request,response:r,actionResult});save("Scientist chat complete",{lastResponse:r,lastToolResult:actionResult});
+  const loop=await reasonActLoop(context,page,user(String(c.text).trim(),s),s);
+  const actionResult=loop.actions.length?JSON.stringify(loop.actions):"no action";
+  const o={id:c.id,createdAt:now(),request:String(c.text).trim(),response:loop.response,actions:loop.actions,actionResult};
+  writeJson(RESPONSE,o);
+  append(MEMORY,{at:o.createdAt,kind:"mitko-chat",request:o.request,response:loop.response,actionResult});
+  save("Scientist chat complete",{lastResponse:loop.response,lastToolResult:cleanText(actionResult,5000)});
 }
 async function main(){
   save("Connecting to Scientist Edge",{status:"starting",scientistCdp:SCI_CDP,davidCdp:DAVID_CDP});
@@ -528,11 +576,11 @@ async function main(){
       if(booted&&settled&&cooldownReady){
         const latest=await snapshot();
         const reason=pendingEvent.reason+" (stable snapshot after event burst)";
-        const r=await ask(page,observe(reason,latest));
-        const actionResult=await executeScientistAction(context,page,r,latest).catch(x=>"action failed: "+String(x?.message||x));
-        append(DECISIONS,{type:"autonomous-decision",at:now(),event:reason,snapshot:latest,response:r,actionResult});
-        append(MEMORY,{at:now(),kind:"observed-system-event",event:reason,response:r,actionResult});
-        save("Autonomous Scientist decision recorded",{lastObservation:reason,lastDecision:r,lastAutoAnalysisAt:now(),lastToolResult:actionResult,pendingObservation:false});
+        const loop=await reasonActLoop(context,page,observe(reason,latest),latest);
+        const actionResult=loop.actions.length?JSON.stringify(loop.actions):"no action";
+        append(DECISIONS,{type:"autonomous-decision",at:now(),event:reason,snapshot:latest,response:loop.response,actions:loop.actions,actionResult});
+        append(MEMORY,{at:now(),kind:"observed-system-event",event:reason,response:loop.response,actionResult});
+        save("Autonomous Scientist decision recorded",{lastObservation:reason,lastDecision:loop.response,lastAutoAnalysisAt:now(),lastToolResult:cleanText(actionResult,5000),pendingObservation:false});
         pendingEvent=null;
       }
       prev=s;
