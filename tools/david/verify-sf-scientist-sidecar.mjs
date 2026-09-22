@@ -175,7 +175,6 @@ for(const token of [
   "$st.lastToolStatus",
   "$st.lastToolCommand",
   "$st.lastToolResult",
-  "System.Drawing.Size(1140,780)",
   "REALTIME SCIENTIST CONSOLE",
   "$scientistInnerMenu",
   "$scientistConsolePanel",
