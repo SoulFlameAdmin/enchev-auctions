@@ -309,6 +309,18 @@ async function snapshot(){
   const tm=readJson(TABMON,null),m=tm?.managed||{};
   return {at:now(),mode:infer(p,tm,Boolean(ver)),cdp9444Online:Boolean(ver),process:p,monitor:tm?{totalChatGptTabs:Number(tm.totalChatGptTabs||0),SYSTEM:Array.isArray(m.SYSTEM)?m.SYSTEM.length:0,DESIGN:Array.isArray(m.DESIGN)?m.DESIGN.length:0,APP2:Array.isArray(m.APP2)?m.APP2.length:0,APK:Array.isArray(m.APK)?m.APK.length:0,CONTROL:Array.isArray(m.CONTROL)?m.CONTROL.length:0,FREE_A:Array.isArray(m.FREE_A)?m.FREE_A.length:0,FREE_B:Array.isArray(m.FREE_B)?m.FREE_B.length:0}:null,liveTelemetry:telemetry};
 }
+function materialSnapshotView(s){
+  return {
+    mode:s&&s.mode||null,
+    cdp9444Online:Boolean(s&&s.cdp9444Online),
+    process:s&&s.process||{},
+    monitor:s&&s.monitor||null
+  };
+}
+function materialSnapshotKey(s){
+  return digest(JSON.stringify(materialSnapshotView(s)));
+}
+
 function event(prev,next){
   if(!prev)return {important:true,reason:"Scientist attached to current DAVID state"};
   if(prev.mode!==next.mode)return {important:true,reason:"DAVID mode changed "+prev.mode+" -> "+next.mode};
@@ -723,9 +735,19 @@ async function send(page,text){
   throw new Error("Scientist send failed: prompt was not acknowledged after "+MAX_SEND_ATTEMPTS+" attempts");
 }
 
-async function ask(page,prompt){
+async function ask(page,prompt,contextSnapshot=null){
   const base=digest(await latest(page));
+  const promptEpoch=contextSnapshot?materialSnapshotKey(contextSnapshot):null;
+  let liveEpoch=promptEpoch;
+  let contextStale=false;
   let rateRetries=0;
+
+  save("Scientist preparing prompt context",{
+    responseContextEpoch:promptEpoch,
+    responseContextStale:false,
+    staleResponseSuppressed:false
+  });
+
   let sent=await send(page,prompt);
   while(sent&&sent.rateLimited&&rateRetries<MAX_RATE_LIMIT_RETRIES){
     rateRetries++;
@@ -734,7 +756,7 @@ async function ask(page,prompt){
   }
   if(sent&&sent.rateLimited)throw new Error("Scientist rate-limited after retry budget");
   if(!sent||!sent.acknowledged)throw new Error("Scientist prompt not acknowledged");
-  save("Scientist prompt sent",{status:"thinking",lastPromptAt:now(),sendAck:true});
+  save("Scientist prompt sent",{status:"thinking",lastPromptAt:now(),sendAck:true,responseContextEpoch:promptEpoch});
 
   let last=base,stable="",since=0,start=Date.now(),lastLiveRefreshAt=0;
   while(Date.now()-start<RESPONSE_MS){
@@ -742,20 +764,23 @@ async function ask(page,prompt){
       lastLiveRefreshAt=Date.now();
       try{
         const live=await snapshot();
+        liveEpoch=materialSnapshotKey(live);
+        if(promptEpoch&&liveEpoch!==promptEpoch)contextStale=true;
         save("Scientist heartbeat",{
           status:"thinking",
           liveSnapshot:live,
           currentMode:live.mode,
           currentCdp9444Online:live.cdp9444Online,
-          gptWaitLiveRefreshedAt:now()
+          gptWaitLiveRefreshedAt:now(),
+          responseContextEpoch:promptEpoch,
+          currentRuntimeEpoch:liveEpoch,
+          responseContextStale:contextStale
         });
       }catch(e){
-        save("Scientist heartbeat",{
-          status:"thinking",
-          gptWaitProbeError:cleanText(e&&e.message||e,500)
-        });
+        save("Scientist heartbeat",{status:"thinking",gptWaitProbeError:cleanText(e&&e.message||e,500)});
       }
     }
+
     const ui=await safeDismissChatGptUi(page).catch(()=>({dismissed:false,rateLimited:false}));
     if(ui.rateLimited){
       if(rateRetries>=MAX_RATE_LIMIT_RETRIES)throw new Error("Scientist rate-limited while waiting for response");
@@ -770,31 +795,95 @@ async function ask(page,prompt){
     const text=await latest(page),h=digest(text);
     if(h&&h!==last){
       last=h;stable=h;since=Date.now();
-      save("Scientist response progressing",{
-        status:"thinking",
-        lastResponsePreview:cleanText(text,800),
-        thoughtSummary:compactThought(text)
-      });
+      if(contextStale){
+        save("Scientist stale response progressing",{
+          status:"refreshing",
+          staleResponsePreview:cleanText(text,800),
+          staleResponseSuppressed:true,
+          responseContextStale:true
+        });
+      }else{
+        save("Scientist response progressing",{
+          status:"thinking",
+          lastResponsePreview:cleanText(text,800),
+          thoughtSummary:compactThought(text)
+        });
+      }
     }
+
     if(await busy(page)){await sleep(800);continue;}
+
     if(h&&h!==base){
       if(h!==stable){stable=h;since=Date.now();}
       if(Date.now()-since>1200){
+        try{
+          const live=await snapshot();
+          liveEpoch=materialSnapshotKey(live);
+          if(promptEpoch&&liveEpoch!==promptEpoch)contextStale=true;
+        }catch{}
+
         const u=chatUrl(page.url());
-        save("Scientist response captured",{
-          status:"online",
-          chatUrl:u||state.chatUrl,
-          lastResponse:text,
-          lastResponseAt:now(),
-          thoughtSummary:compactThought(text),
-          lastThoughtSummary:compactThought(text)
-        });
+        if(contextStale){
+          save("Scientist response captured but stale",{
+            status:"refreshing",
+            chatUrl:u||state.chatUrl,
+            staleResponse:text,
+            staleResponseAt:now(),
+            staleResponseSuppressed:true,
+            responseContextStale:true,
+            responseContextEpoch:promptEpoch,
+            currentRuntimeEpoch:liveEpoch,
+            lastResponsePreview:null
+          });
+        }else{
+          save("Scientist response captured",{
+            status:"online",
+            chatUrl:u||state.chatUrl,
+            lastResponse:text,
+            lastResponseAt:now(),
+            thoughtSummary:compactThought(text),
+            lastThoughtSummary:compactThought(text),
+            responseContextStale:false,
+            staleResponseSuppressed:false,
+            lastResponsePreview:null
+          });
+        }
         return text;
       }
     }
     await sleep(700);
   }
   throw new Error("Scientist response timeout");
+}
+
+async function askFresh(page,prompt,contextSnapshot,label="runtime analysis"){
+  let baseSnapshot=contextSnapshot||await snapshot();
+  let response=await ask(page,prompt,baseSnapshot);
+
+  if(!state.responseContextStale){
+    return {response,snapshot:baseSnapshot,refreshed:false};
+  }
+
+  const fresh=await snapshot();
+  save("Scientist stale conclusion suppressed; refreshing",{
+    status:"refreshing",
+    staleResponseSuppressed:true,
+    staleResponseReason:"material DAVID runtime changed while GPT was answering",
+    staleResponseLabel:label,
+    freshRuntimeMode:fresh.mode,
+    freshRuntimeCdp9444Online:fresh.cdp9444Online
+  });
+
+  const refreshPrompt=
+    "SF SCIENTIST CONTEXT REFRESH\\n\\n"+
+    "Your immediately previous answer is stale because DAVID materially changed while you were answering. "+
+    "Do NOT present the previous conclusion as current. Re-evaluate only from the fresh evidence below. "+
+    "If the previous conclusion is still valid, prove it again from this snapshot.\\n\\n"+
+    "FRESH DAVID SNAPSHOT:\\n"+JSON.stringify(fresh,null,2)+
+    "\\n\\nReturn compactly in Bulgarian:\\nВИДЯХ: ...\\nРЕШИХ: ...\\nЗАЩО: ...\\nПРЕДЛАГАМ: ...\\nRISK: LOW|MEDIUM|HIGH\\nACTION: ...";
+
+  response=await ask(page,refreshPrompt,fresh);
+  return {response,snapshot:fresh,refreshed:true};
 }
 
 
@@ -828,23 +917,54 @@ function classifyPowerShell(command){
 }
 async function runPowerShell(command){
   const policy=classifyPowerShell(command);
+  const startedAt=now();
+
+  save("Scientist PowerShell requested",{
+    lastToolKind:"POWERSHELL",
+    lastToolStatus:policy.allowed?"RUNNING":"BLOCKED",
+    lastToolCommand:cleanText(command,2000),
+    lastToolStartedAt:startedAt,
+    lastToolFinishedAt:null,
+    lastToolResult:null
+  });
+
   if(!policy.allowed){
     const result={ok:false,blocked:true,reason:policy.reason,command:cleanText(command,1000)};
     append(OPERATOR_LOG,{at:now(),kind:"powershell-blocked",...result});
+    save("Scientist PowerShell blocked",{
+      lastToolKind:"POWERSHELL",
+      lastToolStatus:"BLOCKED",
+      lastToolFinishedAt:now(),
+      lastToolResult:cleanText(JSON.stringify(result),5000)
+    });
     return result;
   }
+
   const started=Date.now();
   try{
     const x=await execFileAsync(POWERSHELL_EXE,[
       "-NoProfile","-NonInteractive","-ExecutionPolicy","Bypass","-Command",
       '$OutputEncoding=[Console]::OutputEncoding=New-Object System.Text.UTF8Encoding($false);'+command
     ],{windowsHide:true,timeout:POWERSHELL_TIMEOUT_MS,maxBuffer:4*1024*1024});
+
     const result={
       ok:true,blocked:false,exitCode:0,durationMs:Date.now()-started,
       stdout:redactToolOutput(x.stdout),stderr:redactToolOutput(x.stderr),
       command:cleanText(command,1000)
     };
+
     append(OPERATOR_LOG,{at:now(),kind:"powershell",...result});
+    save("Scientist PowerShell complete",{
+      lastToolKind:"POWERSHELL",
+      lastToolStatus:"DONE",
+      lastToolFinishedAt:now(),
+      lastToolResult:cleanText(
+        (result.stdout?"STDOUT:\\n"+result.stdout:"")+
+        (result.stderr?"\\nSTDERR:\\n"+result.stderr:"")+
+        (!result.stdout&&!result.stderr?"exitCode=0":""),
+        6000
+      )
+    });
     return result;
   }catch(e){
     const result={
@@ -853,9 +973,21 @@ async function runPowerShell(command){
       error:redactToolOutput(e&&e.message||e,3000),command:cleanText(command,1000)
     };
     append(OPERATOR_LOG,{at:now(),kind:"powershell",...result});
+    save("Scientist PowerShell failed",{
+      lastToolKind:"POWERSHELL",
+      lastToolStatus:"FAILED",
+      lastToolFinishedAt:now(),
+      lastToolResult:cleanText(
+        (result.stdout?"STDOUT:\\n"+result.stdout:"")+
+        (result.stderr?"\\nSTDERR:\\n"+result.stderr:"")+
+        (result.error?"\\nERROR:\\n"+result.error:""),
+        6000
+      )
+    });
     return result;
   }
 }
+
 async function captureDesktop(){
   ensureDir(CAPTURE_DIR);
   const file=path.join(CAPTURE_DIR,"screen-"+Date.now()+".png");
@@ -981,6 +1113,16 @@ async function executeScientistAction(context,chief,text,s){
   const a=parseAction(text);
   let result="no action";
   if(a.kind==="NONE")return result;
+  if(a.kind!=="POWERSHELL"){
+    save("Scientist tool action started",{
+      lastToolKind:a.kind,
+      lastToolStatus:"RUNNING",
+      lastToolCommand:cleanText(a.arg||"",2000),
+      lastToolStartedAt:now(),
+      lastToolFinishedAt:null,
+      lastToolResult:null
+    });
+  }
   if(a.kind==="OPEN_POWERSHELL")result=openDetached(POWERSHELL_EXE,["-NoProfile","-NoExit"]);
   else if(a.kind==="OPEN_CMD")result=openDetached("cmd.exe",[]);
   else if(a.kind==="OPEN_CHATGPT"){
@@ -1008,31 +1150,48 @@ async function executeScientistAction(context,chief,text,s){
     result="rejected unsupported action: "+a.kind;
   }
   append(MEMORY,{at:now(),kind:"scientist-tool-action",action:a,result:cleanText(result,5000)});
-  save("Scientist autonomous tool action",{lastToolAction:a,lastToolResult:cleanText(result,5000)});
+  save("Scientist autonomous tool action",{
+    lastToolAction:a,
+    lastToolKind:a.kind,
+    lastToolStatus:String(result||"").startsWith("action failed:")?"FAILED":"DONE",
+    lastToolFinishedAt:now(),
+    lastToolResult:cleanText(result,5000)
+  });
   return result;
 }
 
 async function reasonActLoop(context,page,initialPrompt,s,maxSteps=MAX_AUTONOMOUS_STEPS){
-  let response=await ask(page,initialPrompt);
+  const first=await askFresh(page,initialPrompt,s,"initial Scientist analysis");
+  let response=first.response;
+  s=first.snapshot;
   const actions=[];
+
   for(let step=0;step<maxSteps;step++){
     const parsed=parseAction(response);
     if(parsed.kind==="NONE")break;
+
     const result=await executeScientistAction(context,page,response,s).catch(e=>"action failed: "+String(e&&e.message||e));
     actions.push({step:step+1,action:parsed,result:cleanText(result,5000)});
+
     const latest=await snapshot();
-    response=await ask(page,
+    const follow=await askFresh(page,
       "SF SCIENTIST TOOL RESULT\\n"+
       "Previous action: "+parsed.kind+" "+cleanText(parsed.arg,1200)+"\\n"+
       "Verified tool result:\\n"+cleanText(result,9000)+"\\n\\n"+
       "Fresh DAVID snapshot:\\n"+JSON.stringify(latest,null,2)+"\\n\\n"+
       "Continue the investigation autonomously only if another low-risk action is useful. "+
-      "Do not repeat a failed action without new evidence. Return ВИДЯХ/РЕШИХ/ЗАЩО/ПРЕДЛАГАМ/RISK and exactly one ACTION."
+      "Do not repeat a failed action without new evidence. Return ВИДЯХ/РЕШИХ/ЗАЩО/ПРЕДЛАГАМ/RISK and exactly one ACTION.",
+      latest,
+      "Scientist tool-result analysis"
     );
-    s=latest;
+
+    response=follow.response;
+    s=follow.snapshot;
   }
-  return {response,actions};
+
+  return {response,actions,snapshot:s};
 }
+
 
 function toolMenu(){
   return [
@@ -1118,14 +1277,17 @@ async function main(){
         currentCdp9444Online:s.cdp9444Online
       });
       if(!booted&&!state.loginRequired){
-        const r=await ask(page,boot(s));
-        append(DECISIONS,{type:"bootstrap",at:now(),snapshot:s,response:r});
+        const bootResult=await askFresh(page,boot(s),s,"Scientist bootstrap");
+        const r=bootResult.response;
+        append(DECISIONS,{type:"bootstrap",at:now(),snapshot:bootResult.snapshot,response:r});
         save("Scientist bootstrap complete",{
           bootstrappedAt:now(),
           lastDecision:r,
           lastObservation:"Scientist attached",
           lastThoughtSummary:compactThought(r),
-          thoughtSummary:compactThought(r)
+          thoughtSummary:compactThought(r),
+          staleResponseSuppressed:false,
+          responseContextStale:false
         });
         booted=true;
         lastSessionAnalysisAt=Date.now();
@@ -1194,7 +1356,9 @@ async function main(){
           pendingObservation:false,
           pendingObservationReasons:[],
           inFlightObservation:null,
-          inFlightStartedAt:null
+          inFlightStartedAt:null,
+          staleResponseSuppressed:false,
+          responseContextStale:false
         });
         lastSessionAnalysisAt=analysisAt;
       }

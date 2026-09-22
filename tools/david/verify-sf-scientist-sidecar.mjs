@@ -97,7 +97,17 @@ for(const token of [
   'function compactThought',
   'lastThoughtSummary',
   'thoughtSummary',
-  'summary=compactThought'
+  'summary=compactThought',
+  'function materialSnapshotKey',
+  'async function askFresh',
+  'Scientist response captured but stale',
+  'Scientist stale conclusion suppressed; refreshing',
+  'staleResponseSuppressed',
+  'responseContextStale',
+  'lastToolKind:"POWERSHELL"',
+  'lastToolStatus:"DONE"',
+  'Scientist PowerShell requested',
+  'Scientist tool action started'
 ]) if(!side.includes(token)) throw new Error("Scientist sidecar invariant missing: "+token);
 
 for(const token of [
@@ -154,11 +164,19 @@ for(const token of [
   "SEND TRY: ",
   "$rp.summary",
   "$st.thoughtSummary",
-  "$st.lastThoughtSummary"
+  "$st.lastThoughtSummary",
+  "LIVE ACTION / POWERSHELL",
+  "$scientistAction",
+  "STALE GPT RESPONSE: SUPPRESSED",
+  "CONTEXT CHANGED -> stale GPT answer hidden",
+  "$st.lastToolStatus",
+  "$st.lastToolCommand",
+  "$st.lastToolResult",
+  "System.Drawing.Size(1140,780)"
 ]) if(!center.includes(token)) throw new Error("Mode Center Scientist invariant missing: "+token);
 
 for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_TARGET=\"2\""]) {
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED compact_thought_panel=ON full_response_persisted=ON singleton_worker=ATOMIC send_ack=VERIFIED live_telemetry=ON");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED stale_runtime_response=SUPPRESSED auto_fresh_context=ON live_action_panel=ON live_powershell_output=ON compact_thought_panel=ON singleton_worker=ATOMIC send_ack=VERIFIED");
