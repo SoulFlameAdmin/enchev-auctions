@@ -1308,9 +1308,78 @@ $soloApk.Add_Click({Start-Mode "DAVID APK ONLY" $SingleRestart @("-Worker","APK"
 $stop.Add_Click({Start-StopAll})
 
 $refresh.Add_Click({Update-Ui})
-$taskList.Add_SelectedIndexChanged({Show-SelectedTask})
+$taskGraph.Add_Paint({
+  param($sender,$e)
+
+  try{
+    $e.Graphics.SmoothingMode=[System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+
+    foreach($edge in @($script:TaskConnections)){
+      $from=[string]$edge.from
+      $to=[string]$edge.to
+
+      if(-not$script:TaskNodeControls.ContainsKey($from)){continue}
+      if(-not$script:TaskNodeControls.ContainsKey($to)){continue}
+
+      $a=$script:TaskNodeControls[$from]
+      $b=$script:TaskNodeControls[$to]
+      if(-not$a-or-not$b){continue}
+
+      $p1=New-Object System.Drawing.Point(
+        [int]($a.Left+($a.Width/2)),
+        [int]($a.Top+($a.Height/2))
+      )
+      $p2=New-Object System.Drawing.Point(
+        [int]($b.Left+($b.Width/2)),
+        [int]($b.Top+($b.Height/2))
+      )
+
+      $active=[bool]$edge.active
+      $kind=[string]$edge.kind
+
+      if(-not$active){
+        $glowColor=[System.Drawing.Color]::FromArgb(35,120,120,120)
+        $lineColor=[System.Drawing.Color]::DimGray
+      }elseif($kind-eq"SCIENTIST_OBSERVES_DAVID"){
+        if($script:GraphPulse){
+          $glowColor=[System.Drawing.Color]::FromArgb(85,0,200,255)
+          $lineColor=[System.Drawing.Color]::Cyan
+        }else{
+          $glowColor=[System.Drawing.Color]::FromArgb(60,0,150,220)
+          $lineColor=[System.Drawing.Color]::DeepSkyBlue
+        }
+      }else{
+        if($script:GraphPulse){
+          $glowColor=[System.Drawing.Color]::FromArgb(85,0,255,120)
+          $lineColor=[System.Drawing.Color]::Lime
+        }else{
+          $glowColor=[System.Drawing.Color]::FromArgb(60,0,200,90)
+          $lineColor=[System.Drawing.Color]::LimeGreen
+        }
+      }
+
+      $glow=New-Object System.Drawing.Pen -ArgumentList @($glowColor,[single]10)
+      $line=New-Object System.Drawing.Pen -ArgumentList @($lineColor,[single]3)
+      try{
+        $e.Graphics.DrawLine($glow,$p1,$p2)
+        $e.Graphics.DrawLine($line,$p1,$p2)
+      }finally{
+        $glow.Dispose()
+        $line.Dispose()
+      }
+    }
+  }catch{}
+})
+
+$taskBack.Add_Click({Close-TaskDetail})
 $focusTask.Add_Click({Focus-SelectedTask})
-$refreshTasks.Add_Click({Update-TasksUi})
+$refreshTasks.Add_Click({
+  $script:TaskGraphSignature=""
+  Update-TasksUi
+})
+$taskGraph.Add_SizeChanged({
+  $script:TaskGraphSignature=""
+})
 $mainTabs.Add_SelectedIndexChanged({
   if($mainTabs.SelectedTab-eq$tasksPage){
     Start-ControlPanelPreviewWorker
