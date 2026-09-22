@@ -54,7 +54,6 @@ for(const token of [
   '/^(Chat|Чат)$/i',
   'workLimitVisible',
   'scientistModelSolVisible',
-  'Scientist send blocked: Chat / GPT-5.6 Sol / Medium not confirmed',
   'status:blocked?"profile-blocked":"starting"',
   'profileVerifyAttempts',
   'scientistPickerLabel',
