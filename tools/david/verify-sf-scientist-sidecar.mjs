@@ -20,6 +20,9 @@ const apkWorker=read("tools/david/auto-continue-david-apk-v1.mjs");
 const designWorker=read("tools/david/auto-continue-design-v1.mjs");
 const controlWorker=read("tools/david/auto-control-watchtower-v1.mjs");
 const freeTalkWorker=read("tools/david/free-talk-session-v1.mjs");
+const installerSync=read("tools/david/installer-client-registry-sync.mjs");
+const installerHeartbeat=read("tools/david/david-installer-heartbeat.mjs");
+const installerMigration=read("supabase/migrations/20260923011500_add_david_installer_clients_registry.sql");
 
 for(const token of [
   'SF_SCIENTIST_CDP_URL||"http://127.0.0.1:9555"',
@@ -224,7 +227,17 @@ for(const token of [
   '$form.ShowInTaskbar=$true',
   "$form.BringToFront()",
   "$form.Activate()",
-  "CLICK MODE AGAIN TO RESTART"
+  "CLICK MODE AGAIN TO RESTART",
+  "INSTALLER CLIENTS",
+  "CONNECTED:",
+  "NO INSTALLER CLIENTS REGISTERED",
+  "$installerClientsPanel",
+  "$installerClientsList",
+  "Update-InstallerClientsUi",
+  "Start-InstallerClientsSync",
+  "Stop-InstallerClientsSync",
+  ".david-installer-clients.json",
+  "Only authenticated DAVID Installer heartbeat clients appear here."
 ]) if(!center.includes(token)) throw new Error("Mode Center Scientist invariant missing: "+token);
 
 for(const token of [
@@ -276,6 +289,29 @@ for(const [name,worker] of [["APP2",app2Worker],["SYSTEM",systemWorker],["APK",a
   ]) if(!worker.includes(token)) throw new Error(name+" verified-send telemetry missing: "+token);
 }
 
+for(const token of [
+  "david_installer_clients_snapshot",
+  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+  "hardcoded_people=OFF",
+  ".david-installer-clients.json"
+]) if(!installerSync.includes(token)) throw new Error("Installer registry sync invariant missing: "+token);
+
+for(const token of [
+  "david_installer_heartbeat",
+  "SOULFLAME_ACCESS_TOKEN",
+  "DAVID_CLIENT_KEY",
+  "authenticated_user=REQUIRED"
+]) if(!installerHeartbeat.includes(token)) throw new Error("Installer heartbeat invariant missing: "+token);
+
+for(const token of [
+  "create table if not exists public.david_installer_clients",
+  "enable row level security",
+  "david_installer_clients_select_own",
+  "create or replace function public.david_installer_heartbeat",
+  "create or replace function public.david_installer_clients_snapshot",
+  "grant execute on function public.david_installer_clients_snapshot() to anon, authenticated"
+]) if(!installerMigration.includes(token)) throw new Error("Installer registry migration invariant missing: "+token);
+
 if(!matrix.includes('-WindowStyle Hidden')) throw new Error("Mode Center launcher must hide its PowerShell console host");
 if(matrix.includes('-WindowStyle Normal')) throw new Error("Mode Center launcher must not leave a visible selector PowerShell host");
 
@@ -283,4 +319,4 @@ for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_T
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED task_detail=STATUS_ONLY task_progress=ON verified_gpt_send_ack=SYSTEM_DESIGN_APP2_APK_CONTROL_FREE_TALK edge_screenshot_polling=OFF center_taskbar_identity=ON task_topology=ON");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED installer_clients_panel=ON installer_registry=HEARTBEAT_ONLY hardcoded_people=OFF task_detail=STATUS_ONLY verified_gpt_send_ack=SYSTEM_DESIGN_APP2_APK_CONTROL_FREE_TALK scientist_panel=ON");

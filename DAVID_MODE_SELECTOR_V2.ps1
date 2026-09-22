@@ -64,6 +64,8 @@ $ScientistOperatorLog=Join-Path $DavidDir ".sf-scientist-operator.jsonl"
 $ControlPanelPreviewWorker=Join-Path $DavidDir "control-panel-task-preview.mjs"
 $ControlPanelTasks=Join-Path $DavidDir ".david-control-panel-tasks.json"
 $ControlPanelCommand=Join-Path $DavidDir ".david-control-panel-command.json"
+$InstallerClientsSyncWorker=Join-Path $DavidDir "installer-client-registry-sync.mjs"
+$InstallerClientsCache=Join-Path $DavidDir ".david-installer-clients.json"
 $FreeAUrl="https://chatgpt.com/c/6ab08cb0-3738-83eb-b4bf-2ef8bf4933a8"
 $FreeBUrl="https://chatgpt.com/c/6ab08cab-006c-83eb-a753-2ea42567e22f"
 
@@ -487,6 +489,73 @@ $scientistPanel.BackColor=[System.Drawing.Color]::FromArgb(13,15,20)
 $scientistPanel.Visible=$true
 $controlPage.Controls.Add($scientistPanel)
 
+$installerClientsPanel=New-Object System.Windows.Forms.Panel
+$installerClientsPanel.Size=New-Object System.Drawing.Size(500,740)
+$installerClientsPanel.Location=New-Object System.Drawing.Point(1120,0)
+$installerClientsPanel.BackColor=[System.Drawing.Color]::FromArgb(11,13,18)
+$installerClientsPanel.BorderStyle="FixedSingle"
+$installerClientsPanel.Anchor="Top,Bottom,Left,Right"
+$controlPage.Controls.Add($installerClientsPanel)
+
+$installerClientsTitle=New-Object System.Windows.Forms.Label
+$installerClientsTitle.Text="INSTALLER CLIENTS"
+$installerClientsTitle.ForeColor=[System.Drawing.Color]::White
+$installerClientsTitle.Font=New-Object System.Drawing.Font("Segoe UI",15,[System.Drawing.FontStyle]::Bold)
+$installerClientsTitle.AutoSize=$true
+$installerClientsTitle.Location=New-Object System.Drawing.Point(18,18)
+$installerClientsPanel.Controls.Add($installerClientsTitle)
+
+$installerClientsSummary=New-Object System.Windows.Forms.Label
+$installerClientsSummary.Text="REGISTRY: STARTING..."
+$installerClientsSummary.ForeColor=[System.Drawing.Color]::Khaki
+$installerClientsSummary.Font=New-Object System.Drawing.Font("Consolas",9,[System.Drawing.FontStyle]::Bold)
+$installerClientsSummary.Size=New-Object System.Drawing.Size(460,46)
+$installerClientsSummary.Location=New-Object System.Drawing.Point(20,54)
+$installerClientsSummary.Anchor="Top,Left,Right"
+$installerClientsPanel.Controls.Add($installerClientsSummary)
+
+$installerClientsList=New-Object System.Windows.Forms.ListView
+$installerClientsList.View=[System.Windows.Forms.View]::Details
+$installerClientsList.FullRowSelect=$true
+$installerClientsList.GridLines=$true
+$installerClientsList.HideSelection=$false
+$installerClientsList.MultiSelect=$false
+$installerClientsList.BackColor=[System.Drawing.Color]::FromArgb(8,10,14)
+$installerClientsList.ForeColor=[System.Drawing.Color]::Gainsboro
+$installerClientsList.Font=New-Object System.Drawing.Font("Consolas",9)
+$installerClientsList.Location=New-Object System.Drawing.Point(20,105)
+$installerClientsList.Size=New-Object System.Drawing.Size(455,430)
+$installerClientsList.Anchor="Top,Bottom,Left,Right"
+[void]$installerClientsList.Columns.Add("PERSON",135)
+[void]$installerClientsList.Columns.Add("STATE",80)
+[void]$installerClientsList.Columns.Add("VERSION",75)
+[void]$installerClientsList.Columns.Add("MODE",90)
+[void]$installerClientsList.Columns.Add("TASK",190)
+[void]$installerClientsList.Columns.Add("LAST SEEN",155)
+$installerClientsPanel.Controls.Add($installerClientsList)
+
+$installerClientDetailLabel=New-Object System.Windows.Forms.Label
+$installerClientDetailLabel.Text="SELECT INSTALLER CLIENT"
+$installerClientDetailLabel.ForeColor=[System.Drawing.Color]::Silver
+$installerClientDetailLabel.Font=New-Object System.Drawing.Font("Segoe UI",8,[System.Drawing.FontStyle]::Bold)
+$installerClientDetailLabel.AutoSize=$true
+$installerClientDetailLabel.Location=New-Object System.Drawing.Point(20,548)
+$installerClientDetailLabel.Anchor="Bottom,Left"
+$installerClientsPanel.Controls.Add($installerClientDetailLabel)
+
+$installerClientDetail=New-Object System.Windows.Forms.TextBox
+$installerClientDetail.Multiline=$true
+$installerClientDetail.ReadOnly=$true
+$installerClientDetail.ScrollBars="Vertical"
+$installerClientDetail.BackColor=[System.Drawing.Color]::FromArgb(8,10,14)
+$installerClientDetail.ForeColor=[System.Drawing.Color]::Gainsboro
+$installerClientDetail.Font=New-Object System.Drawing.Font("Consolas",9)
+$installerClientDetail.Location=New-Object System.Drawing.Point(20,572)
+$installerClientDetail.Size=New-Object System.Drawing.Size(455,145)
+$installerClientDetail.Anchor="Bottom,Left,Right"
+$installerClientDetail.Text="Only authenticated DAVID Installer heartbeat clients appear here."
+$installerClientsPanel.Controls.Add($installerClientDetail)
+
 $scientistTitle=New-Object System.Windows.Forms.Label
 $scientistTitle.Text="SF AI SCIENTIST"
 $scientistTitle.ForeColor=[System.Drawing.Color]::White
@@ -680,6 +749,8 @@ $script:ScientistDrawerOpen=$true
 $script:ScientistConsoleOpen=$false
 $script:ScientistProcess=$null
 $script:ControlPanelPreviewProcess=$null
+$script:InstallerClientsSyncProcess=$null
+$script:InstallerClientsSignature=""
 $script:TaskRows=@()
 $script:TaskConnections=@()
 $script:TaskNodeControls=@{}
@@ -690,21 +761,167 @@ $script:GraphPulse=$false
 $script:LastPreviewPath=""
 $script:LastPreviewStamp=0
 
+function Get-NodePath{
+  $portableNode="D:\ASI\tools\node\node.exe"
+  if(Test-Path $portableNode){return $portableNode}
+  try{
+    $n=Get-Command node.exe -ErrorAction SilentlyContinue
+    if(-not$n){$n=Get-Command node -ErrorAction SilentlyContinue}
+    if($n){return [string]$n.Source}
+  }catch{}
+  return ""
+}
+
+function Start-InstallerClientsSync{
+  if((Get-NodeCount "installer-client-registry-sync.mjs")-gt 0){return}
+  if(-not(Test-Path $InstallerClientsSyncWorker)){return}
+  $nodePath=Get-NodePath
+  if([string]::IsNullOrWhiteSpace($nodePath)){return}
+  try{
+    $script:InstallerClientsSyncProcess=Start-Process -FilePath $nodePath -ArgumentList @($InstallerClientsSyncWorker) -WorkingDirectory $DavidDir -PassThru -WindowStyle Hidden
+  }catch{}
+}
+
+function Stop-InstallerClientsSync{
+  try{
+    Get-CimInstance Win32_Process -ErrorAction Stop |
+      Where-Object {
+        $_.Name-eq"node.exe"-and
+        ([string]$_.CommandLine)-like"*installer-client-registry-sync.mjs*"
+      } |
+      ForEach-Object {Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue}
+  }catch{}
+}
+
+function Layout-InstallerClientsPanel{
+  try{
+    $scientistPanel.Height=[Math]::Max(640,$controlPage.ClientSize.Height-8)
+    $x=$scientistPanel.Right+8
+    $w=[Math]::Max(320,$controlPage.ClientSize.Width-$x-8)
+    $installerClientsPanel.Location=New-Object System.Drawing.Point($x,0)
+    $installerClientsPanel.Size=New-Object System.Drawing.Size($w,[Math]::Max(640,$controlPage.ClientSize.Height-8))
+  }catch{}
+}
+
+function Show-InstallerClientDetail{
+  if($installerClientsList.SelectedItems.Count-eq0){
+    $installerClientDetail.Text="Select an installer client to see runtime details."
+    return
+  }
+
+  $c=$installerClientsList.SelectedItems[0].Tag
+  if(-not$c){return}
+  $lines=New-Object System.Collections.Generic.List[string]
+  $lines.Add("PERSON: "+[string]$c.name)
+  $lines.Add("CONNECTION: "+[string]$c.connectionStatus+" | RUNTIME: "+[string]$c.runtimeStatus)
+  $lines.Add("DAVID VERSION: "+[string]$c.installerVersion)
+  if(-not[string]::IsNullOrWhiteSpace([string]$c.deviceName)){$lines.Add("DEVICE: "+[string]$c.deviceName)}
+  if(-not[string]::IsNullOrWhiteSpace([string]$c.mode)){$lines.Add("MODE: "+[string]$c.mode)}
+  if(-not[string]::IsNullOrWhiteSpace([string]$c.currentTask)){
+    $lines.Add("")
+    $lines.Add("CURRENT TASK:")
+    $lines.Add([string]$c.currentTask)
+  }
+  if(-not[string]::IsNullOrWhiteSpace([string]$c.lastError)){
+    $lines.Add("")
+    $lines.Add("ERROR:")
+    $lines.Add([string]$c.lastError)
+  }
+  $lines.Add("")
+  $lines.Add("LAST SEEN: "+[string]$c.lastSeenAt)
+  $installerClientDetail.Text=($lines -join [Environment]::NewLine)
+}
+
+function Update-InstallerClientsUi{
+  Start-InstallerClientsSync
+  $workerCount=Get-NodeCount "installer-client-registry-sync.mjs"
+  $m=Read-Json $InstallerClientsCache
+
+  if(-not$m){
+    $installerClientsSummary.Text=("REGISTRY W={0} | waiting for installer heartbeat registry..." -f $workerCount)
+    $installerClientsSummary.ForeColor=[System.Drawing.Color]::Khaki
+    return
+  }
+
+  $clients=@($m.clients)
+  $online=[int]$m.online
+  $working=[int]$m.working
+  $total=[int]$m.total
+  $updated=[string]$m.updatedAt
+  $err=[string]$m.error
+
+  if([string]::IsNullOrWhiteSpace($err)){
+    if($total-eq0){
+      $installerClientsSummary.Text=("CONNECTED: 0/0 | NO INSTALLER CLIENTS REGISTERED | W={0}" -f $workerCount)
+      $installerClientsSummary.ForeColor=[System.Drawing.Color]::DarkGray
+    }else{
+      $installerClientsSummary.Text=("CONNECTED: {0}/{1} | WORKING: {2} | W={3} | UPDATED={4}" -f $online,$total,$working,$workerCount,$updated)
+      $installerClientsSummary.ForeColor=[System.Drawing.Color]::LightGreen
+    }
+  }else{
+    $installerClientsSummary.Text=("REGISTRY WARNING | W={0} | {1}" -f $workerCount,$err)
+    $installerClientsSummary.ForeColor=[System.Drawing.Color]::Orange
+  }
+
+  $sig=($clients|ForEach-Object{
+    ([string]$_.name)+"|"+([string]$_.connectionStatus)+"|"+([string]$_.runtimeStatus)+"|"+([string]$_.installerVersion)+"|"+([string]$_.mode)+"|"+([string]$_.currentTask)+"|"+([string]$_.lastSeenAt)
+  })-join"||"
+
+  if($sig-ne$script:InstallerClientsSignature){
+    $selectedName=""
+    if($installerClientsList.SelectedItems.Count-gt0){$selectedName=[string]$installerClientsList.SelectedItems[0].Text}
+    $script:InstallerClientsSignature=$sig
+    $installerClientsList.BeginUpdate()
+    try{
+      $installerClientsList.Items.Clear()
+      foreach($c in $clients){
+        $name=[string]$c.name
+        $connection=[string]$c.connectionStatus
+        $runtimeStatus=[string]$c.runtimeStatus
+        $state=$connection
+        if($connection-eq"ONLINE"-and-not[string]::IsNullOrWhiteSpace($runtimeStatus)){$state=$runtimeStatus}
+        $version=[string]$c.installerVersion
+        $mode=[string]$c.mode
+        $task=[string]$c.currentTask
+        $lastSeen=[string]$c.lastSeenAt
+        if($task.Length-gt70){$task=$task.Substring(0,70)+"..."}
+
+        $item=New-Object System.Windows.Forms.ListViewItem($name)
+        [void]$item.SubItems.Add($state)
+        [void]$item.SubItems.Add($version)
+        [void]$item.SubItems.Add($mode)
+        [void]$item.SubItems.Add($task)
+        [void]$item.SubItems.Add($lastSeen)
+        $item.Tag=$c
+
+        if($connection-eq"ONLINE"){
+          if($runtimeStatus-eq"WORKING"){$item.ForeColor=[System.Drawing.Color]::Cyan}
+          else{$item.ForeColor=[System.Drawing.Color]::LightGreen}
+        }elseif($connection-eq"STALE"){
+          $item.ForeColor=[System.Drawing.Color]::Khaki
+        }else{
+          $item.ForeColor=[System.Drawing.Color]::DarkGray
+        }
+
+        [void]$installerClientsList.Items.Add($item)
+        if(-not[string]::IsNullOrWhiteSpace($selectedName)-and$name-eq$selectedName){$item.Selected=$true}
+      }
+    }finally{$installerClientsList.EndUpdate()}
+
+    if($clients.Count-eq0){
+      $installerClientDetail.Text="No registered DAVID Installer heartbeat clients yet."
+    }elseif($installerClientsList.SelectedItems.Count-eq0-and$installerClientsList.Items.Count-gt0){
+      $installerClientsList.Items[0].Selected=$true
+    }
+    Show-InstallerClientDetail
+  }
+}
+
 function Start-ControlPanelPreviewWorker{
   if((Get-NodeCount "control-panel-task-preview.mjs")-gt 0){return}
   if(-not(Test-Path $ControlPanelPreviewWorker)){return}
 
-  $nodePath=""
-  $portableNode="D:\ASI\tools\node\node.exe"
-  if(Test-Path $portableNode){
-    $nodePath=$portableNode
-  }else{
-    try{
-      $n=Get-Command node.exe -ErrorAction SilentlyContinue
-      if(-not$n){$n=Get-Command node -ErrorAction SilentlyContinue}
-      if($n){$nodePath=[string]$n.Source}
-    }catch{}
-  }
+  $nodePath=Get-NodePath
   if([string]::IsNullOrWhiteSpace($nodePath)){return}
 
   try{
@@ -1503,6 +1720,9 @@ $refreshTasks.Add_Click({
   $script:TaskGraphSignature=""
   Update-TasksUi
 })
+$installerClientsList.Add_SelectedIndexChanged({Show-InstallerClientDetail})
+$controlPage.Add_Resize({Layout-InstallerClientsPanel})
+
 $taskGraph.Add_SizeChanged({
   $script:TaskGraphSignature=""
 })
@@ -1568,6 +1788,8 @@ try{
   # Start it whenever the selector opens, even while DAVID itself is STOPPED.
   Start-ScientistSidecar
   Start-ControlPanelPreviewWorker
+  Start-InstallerClientsSync
+  Layout-InstallerClientsPanel
 }catch{}
 
 while(-not $script:Closing -and $form.Visible){
@@ -1593,6 +1815,7 @@ while(-not $script:Closing -and $form.Visible){
     if(([DateTime]::UtcNow-$script:LastRefresh).TotalMilliseconds-ge 1000){
       Update-Ui
       if($script:ScientistDrawerOpen){Update-ScientistUi}
+      Update-InstallerClientsUi
       Update-TasksUi
       $script:LastRefresh=[DateTime]::UtcNow
     }
@@ -1610,6 +1833,7 @@ while(-not $script:Closing -and $form.Visible){
 }
 
 try{Stop-ControlPanelPreviewWorker}catch{}
+try{Stop-InstallerClientsSync}catch{}
 try{
   $old=$taskPreview.Image
   $taskPreview.Image=$null
