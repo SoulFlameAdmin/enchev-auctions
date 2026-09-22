@@ -5,6 +5,7 @@ import crypto from "node:crypto";
 import { execFile, spawn } from "node:child_process";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
+import { ensureChatGptEffortMode } from "./chatgpt-effort-mode.mjs";
 
 const execFileAsync=promisify(execFile);
 const HERE=path.dirname(fileURLToPath(import.meta.url));
@@ -33,6 +34,8 @@ let lastProcessProbeError=null;
 let lastShellProbeError=null;
 const READY_MS=180000;
 const RESPONSE_MS=900000;
+const SCIENTIST_CHAT_ROOT="https://chatgpt.com/";
+const SCIENTIST_EFFORT="medium";
 const sleep=ms=>new Promise(r=>setTimeout(r,ms));
 const now=()=>new Date().toISOString();
 const digest=v=>crypto.createHash("sha256").update(String(v||"")).digest("hex").slice(0,16);
@@ -223,10 +226,63 @@ function chatUrl(u){const m=String(u||"").match(/^https:\/\/chatgpt\.com\/c\/[0-
 async function composer(page){for(const s of ["#prompt-textarea",'[data-testid="prompt-textarea"]','div[contenteditable="true"][role="textbox"]','div[contenteditable="true"]']){const x=page.locator(s).last();if(await x.count().catch(()=>0)&&await x.isVisible().catch(()=>false))return x;}return null;}
 async function latest(page){try{const n=page.locator('[data-message-author-role="assistant"]');if(!await n.count())return "";return (await n.last().innerText().catch(()=>"")).trim();}catch{return "";}}
 async function busy(page){for(const s of ['[data-testid="stop-button"]','[data-testid*="stop" i]','button[aria-label*="Stop"]']){const n=page.locator(s).last();if(await n.count().catch(()=>0)&&await n.isVisible().catch(()=>false))return true;}return false;}
+
+function workLikeUrl(url){
+  return /https:\/\/chatgpt\.com\/(?:work|workspace)(?:\/|$|\?)/i.test(String(url||"")) ||
+         /[?&](?:mode|product)=work(?:&|$)/i.test(String(url||""));
+}
+async function visibleActiveWorkMode(page){
+  try{
+    const nodes=page.locator('button,[role="button"],[role="tab"]');
+    const n=await nodes.count().catch(()=>0);
+    for(let i=n-1;i>=0;i--){
+      const x=nodes.nth(i);
+      if(!await x.isVisible().catch(()=>false))continue;
+      const text=((await x.innerText().catch(()=>""))||"").replace(/\s+/g," ").trim();
+      const aria=((await x.getAttribute("aria-label").catch(()=>""))||"").replace(/\s+/g," ").trim();
+      if(!/^(work|работа)$/i.test(text)&&!/^(work|работа)$/i.test(aria))continue;
+      const pressed=await x.getAttribute("aria-pressed").catch(()=>null);
+      const selected=await x.getAttribute("aria-selected").catch(()=>null);
+      const stateAttr=await x.getAttribute("data-state").catch(()=>null);
+      if(pressed==="true"||selected==="true"||/^(on|active|checked)$/i.test(String(stateAttr||"")))return true;
+    }
+  }catch{}
+  return false;
+}
+async function ensureScientistChatMedium(page){
+  if(!page||page.isClosed())return {ok:false,reason:"page-unavailable"};
+  let returnedToChat=false;
+  if(workLikeUrl(page.url())||await visibleActiveWorkMode(page)){
+    await page.goto(SCIENTIST_CHAT_ROOT,{waitUntil:"domcontentloaded",timeout:60000});
+    returnedToChat=true;
+    await sleep(700);
+  }
+  const effort=await ensureChatGptEffortMode(page,SCIENTIST_EFFORT);
+  const ok=!workLikeUrl(page.url())&&Boolean(effort&&effort.ok);
+  save("Scientist Chat/Medium profile checked",{
+    scientistExperience:"CHAT",
+    scientistReasoning:"MEDIUM",
+    scientistModel:"GPT-5.6 Sol",
+    scientistProfileConfirmed:ok,
+    scientistProfileReason:effort&&effort.reason||null,
+    returnedFromWork:returnedToChat
+  });
+  return {ok,returnedToChat,effort};
+}
+
 async function ready(page){
   const t=Date.now();
   while(Date.now()-t<READY_MS){
-    if(await composer(page)){const u=chatUrl(page.url());save("Scientist chat ready",{status:"online",chatUrl:u||state.chatUrl,loginRequired:false});return page;}
+    if(await composer(page)){
+      const profile=await ensureScientistChatMedium(page).catch(e=>({ok:false,reason:String(e&&e.message||e)}));
+      const u=chatUrl(page.url());
+      save("Scientist chat ready",{
+        status:"online",chatUrl:u||state.chatUrl,loginRequired:false,
+        scientistExperience:"CHAT",scientistReasoning:"MEDIUM",scientistModel:"GPT-5.6 Sol",
+        scientistProfileConfirmed:Boolean(profile&&profile.ok)
+      });
+      return page;
+    }
     const body=await page.locator("body").innerText().catch(()=>"");
     if(/log in|sign in|login/i.test(body)||/auth|login/i.test(page.url()))save("Scientist login required",{status:"login-required",loginRequired:true});
     else save("Waiting for Scientist ChatGPT UI",{status:"starting"});
@@ -242,6 +298,8 @@ async function pageFor(context){
   return await ready(page);
 }
 async function send(page,text){
+  const profile=await ensureScientistChatMedium(page);
+  if(!profile.ok)throw new Error("Scientist must be Chat / GPT-5.6 Sol / Medium before send");
   const c=await composer(page); if(!c)throw new Error("Scientist composer unavailable");
   try{await c.fill(text,{timeout:2500});}catch{await c.focus();await page.keyboard.press("Control+A");await page.keyboard.insertText(text);}
   for(const s of ['button[data-testid="send-button"]','button[aria-label*="Send"]']){const b=page.locator(s).last();if(await b.count().catch(()=>0)&&await b.isVisible().catch(()=>false)&&await b.isEnabled().catch(()=>false)){await b.click({timeout:2000});return;}}
@@ -398,7 +456,10 @@ function openDetached(exe,args=[]){
 async function waitDetachedReady(page){
   const started=Date.now();
   while(Date.now()-started<READY_MS){
-    if(await composer(page))return page;
+    if(await composer(page)){
+      const profile=await ensureScientistChatMedium(page);
+      if(profile.ok)return page;
+    }
     await sleep(1000);
   }
   throw new Error("Detached Scientist chat ready timeout");
@@ -511,7 +572,7 @@ function toolMenu(){
   ].join("\n");
 }
 function operatorLaw(){
-  return "You are an autonomous SF AI Scientist/Operator. Minimize human intervention, but maximize evidence quality. "+
+  return "You are running as SF AI Scientist in the normal Chat experience using GPT-5.6 Sol at Medium reasoning, never ChatGPT Work. You are an autonomous SF AI Scientist/Operator. Minimize human intervention, but maximize evidence quality. "+
     "Use tools yourself when a low-risk check can resolve uncertainty. Normal-user PowerShell is available and every command/result is audited. "+
     "Never request or attempt UAC bypass, elevation bypass, credential extraction, destructive disk/file/account/security operations, or production-critical mutation. "+
     "High-risk/admin/destructive actions require a future explicit human approval path and are not available in this tool broker. "+
