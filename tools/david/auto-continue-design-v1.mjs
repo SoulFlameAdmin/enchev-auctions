@@ -868,7 +868,9 @@ async function main() {
         save(state, "One DESIGN defer relay completed; same blocker will not receive another relay");
       }
       save(state, "Design independent task completed with final OK");
-      page = await rolloverConversation(context, page, state, "final-ok");
+      state.nextTaskAt = new Date().toISOString();
+      state.watchdog = "next-task-ready";
+      save(state, "Previous block complete; NEXT TASK will continue in SAME ChatGPT conversation. Rollover only on real conversation limit.");
       await sleep(COOLDOWN_MS);
       continue;
     }
@@ -888,7 +890,9 @@ async function main() {
           continue;
         }
       }
-      state.problem = null; state.problemAttempts = 0; state.lastResult = "OK"; state.watchdog = "design-problem-fixed"; save(state, "Design problem fixed with final OK; continuing plan"); page = await rolloverConversation(context, page, state, "final-ok"); await sleep(COOLDOWN_MS); continue;
+      state.problem = null; state.problemAttempts = 0; state.lastResult = "OK"; state.watchdog = "design-problem-fixed"; save(state, "Design problem fixed with final OK; continuing plan"); state.nextTaskAt = new Date().toISOString();
+      state.watchdog = "next-task-ready";
+      save(state, "Previous block complete; NEXT TASK will continue in SAME ChatGPT conversation. Rollover only on real conversation limit."); await sleep(COOLDOWN_MS); continue;
     }
 
     state.problem = null;
@@ -908,9 +912,11 @@ async function main() {
     }
     state.lastResult = "OK";
     state.watchdog = "design-complete";
-    save(state, "Final OK received; rotating to fresh DESIGN session before next prompt");
-    console.log("[DESIGN] Final OK received. Rotating to fresh session.");
-    page = await rolloverConversation(context, page, state, "final-ok");
+    save(state, "Final OK received; continuing to NEXT DESIGN task in the same ChatGPT conversation");
+    console.log("[DESIGN] Final OK received. continuing in same ChatGPT conversation.");
+    state.nextTaskAt = new Date().toISOString();
+      state.watchdog = "next-task-ready";
+      save(state, "Previous block complete; NEXT TASK will continue in SAME ChatGPT conversation. Rollover only on real conversation limit.");
     await sleep(COOLDOWN_MS);
   }
 }
