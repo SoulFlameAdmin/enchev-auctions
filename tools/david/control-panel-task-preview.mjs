@@ -26,7 +26,6 @@ let davidBrowser=null,scientistBrowser=null,lastCommandId=null;
 async function connect(url,current){
   if(current){
     try{if(current.isConnected())return current;}catch{}
-    try{await current.close();}catch{}
   }
   try{return await chromium.connectOverCDP(url,{timeout:4000});}catch{return null;}
 }
@@ -140,6 +139,6 @@ async function main(){
   }
 }
 
-process.on("SIGINT",async()=>{try{await davidBrowser?.close();}catch{};try{await scientistBrowser?.close();}catch{};process.exit(0);});
-process.on("SIGTERM",async()=>{try{await davidBrowser?.close();}catch{};try{await scientistBrowser?.close();}catch{};process.exit(0);});
+process.on("SIGINT",()=>process.exit(0));
+process.on("SIGTERM",()=>process.exit(0));}catch{};try{await scientistBrowser?.close();}catch{};process.exit(0);});
 main().catch(e=>{writeJson(MANIFEST,{version:1,updatedAt:now(),error:String(e?.stack||e),tasks:[]});process.exit(1);});
