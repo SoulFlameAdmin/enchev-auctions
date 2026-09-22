@@ -107,7 +107,9 @@ for(const token of [
   'lastToolKind:"POWERSHELL"',
   'lastToolStatus:"DONE"',
   'Scientist PowerShell requested',
-  'Scientist tool action started'
+  'Scientist tool action started',
+  'kind:"tool-start"',
+  'kind:"tool-finish"'
 ]) if(!side.includes(token)) throw new Error("Scientist sidecar invariant missing: "+token);
 
 for(const token of [
@@ -172,11 +174,22 @@ for(const token of [
   "$st.lastToolStatus",
   "$st.lastToolCommand",
   "$st.lastToolResult",
-  "System.Drawing.Size(1140,780)"
+  "System.Drawing.Size(1140,780)",
+  "REALTIME SCIENTIST CONSOLE",
+  "$scientistInnerMenu",
+  "$scientistConsolePanel",
+  "$scientistConsoleMenu",
+  "Get-ScientistConsoleHistory",
+  ".sf-scientist-operator.jsonl",
+  "=== CURRENT ===",
+  "=== RECENT ACTIVITY ===",
+  "$st.lastToolStatus",
+  "$st.lastToolCommand",
+  "$st.lastToolResult"
 ]) if(!center.includes(token)) throw new Error("Mode Center Scientist invariant missing: "+token);
 
 for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_TARGET=\"2\""]) {
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED stale_runtime_response=SUPPRESSED auto_fresh_context=ON live_action_panel=ON live_powershell_output=ON compact_thought_panel=ON singleton_worker=ATOMIC send_ack=VERIFIED");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED scientist_burger=ON realtime_console=ON powershell_history=ON stale_runtime_response=SUPPRESSED fresh_context=ON singleton_worker=ATOMIC send_ack=VERIFIED");

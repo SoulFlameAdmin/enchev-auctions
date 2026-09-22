@@ -919,6 +919,7 @@ async function runPowerShell(command){
   const policy=classifyPowerShell(command);
   const startedAt=now();
 
+  append(OPERATOR_LOG,{at:startedAt,kind:"tool-start",tool:"POWERSHELL",command:cleanText(command,2000)});
   save("Scientist PowerShell requested",{
     lastToolKind:"POWERSHELL",
     lastToolStatus:policy.allowed?"RUNNING":"BLOCKED",
@@ -1114,6 +1115,7 @@ async function executeScientistAction(context,chief,text,s){
   let result="no action";
   if(a.kind==="NONE")return result;
   if(a.kind!=="POWERSHELL"){
+    append(OPERATOR_LOG,{at:now(),kind:"tool-start",tool:a.kind,arg:cleanText(a.arg||"",2000)});
     save("Scientist tool action started",{
       lastToolKind:a.kind,
       lastToolStatus:"RUNNING",
@@ -1150,6 +1152,7 @@ async function executeScientistAction(context,chief,text,s){
     result="rejected unsupported action: "+a.kind;
   }
   append(MEMORY,{at:now(),kind:"scientist-tool-action",action:a,result:cleanText(result,5000)});
+  append(OPERATOR_LOG,{at:now(),kind:"tool-finish",tool:a.kind,result:cleanText(result,5000)});
   save("Scientist autonomous tool action",{
     lastToolAction:a,
     lastToolKind:a.kind,
