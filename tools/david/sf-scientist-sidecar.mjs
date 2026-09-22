@@ -29,6 +29,7 @@ const MAX_LOG_LINES=8;
 const POLL=Number(process.env.SF_SCIENTIST_POLL_MS||1200);
 const AUTO_MIN=Number(process.env.SF_SCIENTIST_AUTO_MIN_MS||8000);
 const SETTLE_MS=Number(process.env.SF_SCIENTIST_SETTLE_MS||2500);
+const MAX_EVENT_BURST_MS=Number(process.env.SF_SCIENTIST_MAX_EVENT_BURST_MS||7000);
 const POWERSHELL_EXE=process.env.SystemRoot?path.join(process.env.SystemRoot,"System32","WindowsPowerShell","v1.0","powershell.exe"):"powershell.exe";
 let lastProcessProbeError=null;
 let lastShellProbeError=null;
@@ -683,33 +684,64 @@ async function command(context,page,s){
 async function main(){
   save("Connecting to Scientist Edge",{status:"starting",scientistCdp:SCI_CDP,davidCdp:DAVID_CDP});
   const browser=await chromium.connectOverCDP(SCI_CDP,{timeout:30000}),contexts=browser.contexts();if(!contexts.length)throw new Error("Scientist Edge has no browser context");
-  const context=contexts[0];let page=await pageFor(context),prev=null,booted=Boolean(state.bootstrappedAt);
+  const context=contexts[0];let page=await pageFor(context),prev=null,booted=false;
   let pendingEvent=null;
+  let pendingStartedAt=0;
   let lastMaterialChangeAt=0;
+  let lastSessionAnalysisAt=0;
   while(true){
     try{
       if(!page||page.isClosed())page=await pageFor(context);
       const s=await snapshot();save("Scientist heartbeat",{status:state.loginRequired?"login-required":"online",liveSnapshot:s});
-      if(!booted&&!state.loginRequired){const r=await ask(page,boot(s));append(DECISIONS,{type:"bootstrap",at:now(),snapshot:s,response:r});save("Scientist bootstrap complete",{bootstrappedAt:now(),lastDecision:r,lastObservation:"Scientist attached"});booted=true;}
+      if(!booted&&!state.loginRequired){
+        const r=await ask(page,boot(s));
+        append(DECISIONS,{type:"bootstrap",at:now(),snapshot:s,response:r});
+        save("Scientist bootstrap complete",{bootstrappedAt:now(),lastDecision:r,lastObservation:"Scientist attached"});
+        booted=true;
+        lastSessionAnalysisAt=Date.now();
+      }
       await command(context,page,s);
       const e=event(prev,s);
       if(e.important){
-        pendingEvent={reason:e.reason,queuedAt:now()};
-        lastMaterialChangeAt=Date.now();
-        save("Scientist waiting for stable live telemetry",{lastObservation:e.reason,pendingObservation:true});
+        const nowMs=Date.now();
+        if(!pendingEvent){
+          pendingEvent={reasons:[e.reason],queuedAt:now()};
+          pendingStartedAt=nowMs;
+        }else if(!pendingEvent.reasons.includes(e.reason)){
+          pendingEvent.reasons.push(e.reason);
+        }
+        lastMaterialChangeAt=nowMs;
+        save("Scientist waiting for stable live telemetry",{
+          lastObservation:e.reason,
+          pendingObservation:true,
+          pendingObservationReasons:pendingEvent.reasons,
+          pendingObservationAgeMs:nowMs-pendingStartedAt
+        });
       }
-      const last=state.lastAutoAnalysisAt?Date.parse(state.lastAutoAnalysisAt):0;
-      const settled=Boolean(pendingEvent)&&Date.now()-lastMaterialChangeAt>=SETTLE_MS;
-      const cooldownReady=Date.now()-last>=AUTO_MIN;
+      const nowMs=Date.now();
+      const quietSettled=Boolean(pendingEvent)&&nowMs-lastMaterialChangeAt>=SETTLE_MS;
+      const burstExpired=Boolean(pendingEvent)&&nowMs-pendingStartedAt>=MAX_EVENT_BURST_MS;
+      const settled=quietSettled||burstExpired;
+      const cooldownReady=nowMs-lastSessionAnalysisAt>=AUTO_MIN;
       if(booted&&settled&&cooldownReady){
         const latest=await snapshot();
-        const reason=pendingEvent.reason+" (stable snapshot after event burst)";
+        const reason=(pendingEvent.reasons||[]).join(" | ")+(burstExpired?" (max burst snapshot)":" (stable snapshot after event burst)");
         const loop=await reasonActLoop(context,page,observe(reason,latest),latest);
         const actionResult=loop.actions.length?JSON.stringify(loop.actions):"no action";
         append(DECISIONS,{type:"autonomous-decision",at:now(),event:reason,snapshot:latest,response:loop.response,actions:loop.actions,actionResult});
         append(MEMORY,{at:now(),kind:"observed-system-event",event:reason,response:loop.response,actionResult});
-        save("Autonomous Scientist decision recorded",{lastObservation:reason,lastDecision:loop.response,lastAutoAnalysisAt:now(),lastToolResult:cleanText(actionResult,5000),pendingObservation:false});
+        const analysisAt=Date.now();
+        save("Autonomous Scientist decision recorded",{
+          lastObservation:reason,
+          lastDecision:loop.response,
+          lastAutoAnalysisAt:now(),
+          lastToolResult:cleanText(actionResult,5000),
+          pendingObservation:false,
+          pendingObservationReasons:[]
+        });
+        lastSessionAnalysisAt=analysisAt;
         pendingEvent=null;
+        pendingStartedAt=0;
       }
       prev=s;
     }catch(err){save("Scientist loop error",{status:"degraded",lastError:String(err?.stack||err)});}
