@@ -11,6 +11,7 @@ import {
   reportRateLimit
 } from "./chatgpt-rate-limit-coordinator.mjs";
 import { CHATGPT_ROOT, rotateOwnedChatPage } from "./chatgpt-session-rotation.mjs";
+import { sendPromptVerified } from "./chatgpt-send-ack.mjs";
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1"));
 const ROLE = String(process.env.DAVID_FREE_TALK_ROLE || "FREE_A").toUpperCase();
@@ -340,33 +341,33 @@ async function waitReady(context,page){
   }
 }
 async function fillAndSend(page,text){
-  let c=null,filled=false;
-  for(let i=0;i<10&&!filled;i++){
-    c=await composer(page);
-    if(!c){await sleep(400);continue;}
-    try{await c.fill(text,{timeout:1800});filled=true;break;}catch{}
-    c=await composer(page);
-    if(!c){await sleep(400);continue;}
-    try{
-      await c.focus({timeout:1200});
-      await page.keyboard.press("Control+A");
-      await page.keyboard.insertText(text);
-      filled=true;break;
-    }catch{}
-    await sleep(400);
-  }
-  if(!filled||!c) throw new Error("FREE TALK composer unavailable after bounded reacquire");
-  await sleep(200);
-  for(const sel of ['button[data-testid="send-button"]','button[aria-label*="Send"]','button[aria-label*="Изпрати"]']){
-    const b=page.locator(sel).last();
-    if(await b.count().catch(()=>0)&&await b.isVisible().catch(()=>false)&&await b.isEnabled().catch(()=>false)){
-      try{await b.click({timeout:2000});return "button";}catch{}
+  state.lastPromptPreview=String(text||"").replace(/\s+/g," ").trim().slice(0,220);
+  state.lastSendAck=false;
+  state.lastSendStatus="PREPARING";
+  state.lastSendError=null;
+  save("Preparing verified GPT send");
+
+  return sendPromptVerified(page,text,{
+    worker:ROLE,
+    ackTimeoutMs:5000,
+    onEvent:(stage,info)=>{
+      state.lastSendStatus=stage;
+      state.lastSendUpdatedAt=info.at||nowIso();
+      state.lastSendAttempt=Number(info.attempt||0);
+      if(info.method)state.lastSendMethod=info.method;
+      if(info.signal)state.lastSendSignal=info.signal;
+      if(info.error)state.lastSendError=info.error;
+      if(stage==="ACK"){
+        state.lastSendAck=true;
+        state.lastSendAt=info.at||nowIso();
+      }else if(stage==="FAILED"){
+        state.lastSendAck=false;
+      }
+      save("GPT SEND "+stage);
     }
-  }
-  await c.focus({timeout:1500}).catch(()=>{});
-  await c.press("Enter",{timeout:2500});
-  return "enter";
+  });
 }
+
 async function waitComplete(context,page,baseHash){
   let lastHash=baseHash||"",stableHash="",stableSince=0,lastProgress=Date.now();
   for(;;){
