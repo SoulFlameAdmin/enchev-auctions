@@ -33,6 +33,9 @@ for(const token of [
 if(stop.includes("DAVID_CHATGPT_PROFILE")) throw new Error("Scientist stop must not target DAVID browser profile");
 if(stop.includes("--remote-debugging-port=9444")) throw new Error("Scientist stop must not target DAVID CDP 9444");
 
+if(!/Hide-OwnConsole\s+Update-Ui\s+try\{[\s\S]*?Start-ScientistSidecar[\s\S]*?\}catch\{\}/m.test(center))
+  throw new Error("Mode Center must auto-start SF Scientist even when DAVID is STOPPED");
+
 for(const token of [
   "DAVID MODE CENTER V2.1",
   "SF AI SCIENTIST",
