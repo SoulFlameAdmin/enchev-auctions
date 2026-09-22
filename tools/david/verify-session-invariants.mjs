@@ -65,8 +65,16 @@ for (const [name, file, rotateAfterOk] of workerFiles) {
   if (!body.includes("NO NEW TAB") && name !== "CONTROL") {
     throw new Error(`${name} rollover is missing explicit single-tab evidence/logging`);
   }
-  if (rotateAfterOk && !source.includes('rolloverConversation(context, page, state, "final-ok")')) {
-    throw new Error(`${name} does not rotate to a fresh session after exact final OK`);
+  if (rotateAfterOk) {
+    if (source.includes('rolloverConversation(context, page, state, "final-ok")')) {
+      throw new Error(`${name} must not rotate after a normal completed task; keep same ChatGPT conversation until real conversation limit`);
+    }
+    if (!source.includes('state.watchdog = "next-task-ready"')) {
+      throw new Error(`${name} missing continuous NEXT TASK state after completed block`);
+    }
+    if (!source.includes("Rollover only on real conversation limit")) {
+      throw new Error(`${name} missing explicit same-chat continuation evidence`);
+    }
   }
 }
 
@@ -190,4 +198,4 @@ if (/allFiveOwned/.test(supervisor)) {
   throw new Error("Unmanaged-tab cleanup must not depend on all five workers already being healthy");
 }
 
-console.log("DAVID_SESSION_INVARIANTS PASS same_tab_rollover=5 project_ok_rotation=4 dynamic_tab_budget=1 active_work_protected=1 fresh_restart_wiring=5 pointer_safe_send=5 mandatory_immediate_try_again=1 retry_x3_reload_restart=1 dead_worker_lease_release=1 dynamic_fresh_parallel_prewarm=1 transient_probe_reset=1 monitor_2s=1");
+console.log("DAVID_SESSION_INVARIANTS PASS continuous_same_chat=4 same_tab_rollover=5 project_ok_rotation=4 dynamic_tab_budget=1 active_work_protected=1 fresh_restart_wiring=5 pointer_safe_send=5 mandatory_immediate_try_again=1 retry_x3_reload_restart=1 dead_worker_lease_release=1 dynamic_fresh_parallel_prewarm=1 transient_probe_reset=1 monitor_2s=1");
