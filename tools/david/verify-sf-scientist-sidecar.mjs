@@ -17,6 +17,9 @@ const sendAck=read("tools/david/chatgpt-send-ack.mjs");
 const app2Worker=read("tools/david/auto-complete-app2-v1.mjs");
 const systemWorker=read("tools/david/auto-continue-enchev-v5.mjs");
 const apkWorker=read("tools/david/auto-continue-david-apk-v1.mjs");
+const designWorker=read("tools/david/auto-continue-design-v1.mjs");
+const controlWorker=read("tools/david/auto-control-watchtower-v1.mjs");
+const freeTalkWorker=read("tools/david/free-talk-session-v1.mjs");
 
 for(const token of [
   'SF_SCIENTIST_CDP_URL||"http://127.0.0.1:9555"',
@@ -261,7 +264,7 @@ for(const token of [
   "duplicate_guard=ON"
 ]) if(!sendAck.includes(token)) throw new Error("Verified send-ack invariant missing: "+token);
 
-for(const [name,worker] of [["APP2",app2Worker],["SYSTEM",systemWorker],["APK",apkWorker]]){
+for(const [name,worker] of [["APP2",app2Worker],["SYSTEM",systemWorker],["APK",apkWorker],["DESIGN",designWorker],["CONTROL",controlWorker],["FREE_TALK",freeTalkWorker]]){
   for(const token of [
     'from "./chatgpt-send-ack.mjs"',
     "lastSendAck",
@@ -280,4 +283,4 @@ for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_T
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED task_detail=STATUS_ONLY task_progress=ON verified_gpt_send_ack=SYSTEM_APP2_APK edge_screenshot_polling=OFF center_taskbar_identity=ON task_topology=ON");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED task_detail=STATUS_ONLY task_progress=ON verified_gpt_send_ack=SYSTEM_DESIGN_APP2_APK_CONTROL_FREE_TALK edge_screenshot_polling=OFF center_taskbar_identity=ON task_topology=ON");
