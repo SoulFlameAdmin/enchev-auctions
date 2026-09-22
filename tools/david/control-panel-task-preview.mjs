@@ -129,12 +129,14 @@ function normalizeTopology(david,scientist,monitor){
     const live=liveByRole.get(role);
     if(live){
       const h=health&&health[role]||null;
+      const processAlive=h?Boolean(h.processAlive):true;
       tasks.push({
         ...live,
         key:"DAVID:"+role,
-        processAlive:h?Boolean(h.processAlive):true,
+        status:processAlive?live.status:"TAB_ONLY",
+        processAlive,
         tabCount:h?Number(h.tabCount||1):1,
-        working:true
+        working:processAlive&&statusWorking(live.status)
       });
       continue;
     }
