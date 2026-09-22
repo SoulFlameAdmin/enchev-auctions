@@ -549,7 +549,7 @@ function Update-ScientistUi{
   }elseif($st-and$st.lastThoughtSummary){
     $shortThought=[string]$st.lastThoughtSummary
   }elseif($st-and$st.status-eq"thinking"){
-    $shortThought="Мисля... чакам ново заключение от Scientist."
+    $shortThought="Thinking... waiting for Scientist conclusion."
   }
 
   if(-not[string]::IsNullOrWhiteSpace($shortThought)){
