@@ -44,7 +44,7 @@ if(selectorV2.includes("System.Windows.Forms.Timer")) throw new Error("Mode sele
 if([...selectorV2].some(ch=>ch.charCodeAt(0)>127)) throw new Error("Mode selector V2 must remain ASCII-only for Windows PowerShell 5.1");
 if(!normal.includes("-WindowStyle Hidden")) throw new Error("SYSTEM launcher/dashboard shells must be hidden");
 if(!abOnly.includes("-WindowStyle Hidden")) throw new Error("A+B launcher/dashboard shells must be hidden");
-for(const token of ["STOP FIRST","fetch origin","checkout $Branch","pull --ff-only","OPEN MATRIX HIDDEN CONSOLE HOST / VISIBLE WINFORMS PANEL","MATRIX READY","DAVID_MODE_SELECTOR_V2.ps1","Wait-OrchestrationMutex","Start-Process -FilePath $Pwsh","-WindowStyle Hidden","launcher exits"]) if(!matrixMaster.includes(token)) throw new Error("Matrix master invariant missing: "+token);
+for(const token of ["STOP FIRST","fetch origin","checkout $Branch","pull --ff-only","OPEN MATRIX HIDDEN CONSOLE HOST / VISIBLE WINFORMS PANEL","MATRIX READY","DAVID_MODE_SELECTOR_V2.ps1","Wait-OrchestrationMutex","Start-Process -FilePath $Pwsh","-WindowStyle Hidden","WinForms panel stays visible"]) if(!matrixMaster.includes(token)) throw new Error("Matrix master invariant missing: "+token);
 if(!matrixMaster.includes("exit 0")) throw new Error("Matrix launcher must exit after spawning the own-process Mode Center");
 if(!matrixCmd.includes("DAVID_MATRIX_START.ps1")) throw new Error("Matrix CMD launcher missing master script");
 for(const token of ["DAVID_MATRIX_START.ps1","& $Master","param([int]$Port=9444)"]) if(!davidStart.includes(token)) throw new Error("PowerShell-only DAVID_START invariant missing: "+token);
