@@ -74,13 +74,16 @@ for (const token of [
   '$env:DAVID_CHATGPT_TAB_TARGET="1"',
   '$env:DAVID_PROJECT_EFFORT_MODE="instant"',
   '$env:DAVID_REQUIRE_FRESH_EDGE_ON_START="1"',
-  '$env:DAVID_GLOBAL_SEND_INTERVAL_MS="1500"',
   '$env:DAVID_COMPLETE_QUIET_MS="1200"',
   '$env:DAVID_COMPLETE_STABLE_SAMPLES="2"',
   '$env:DAVID_SEMANTIC_TERMINAL_QUIET_MS="2500"',
   'WATCH BACKGROUND',
   'ChatGPT=1'
 ]) if (!singleStart.includes(token)) throw new Error("FAST SOLO start invariant missing: " + token);
+
+if (singleStart.includes("DAVID_GLOBAL_SEND_INTERVAL_MS")) {
+  throw new Error("FAST SOLO must preserve platform-safe global send pacing");
+}
 
 for (const token of ["STOP_DAVID_ALL_CLEAN.ps1", "START_DAVID_SINGLE.ps1", "WaitOne(90000)", "-Worker $Worker"]) {
   if (!singleRestart.includes(token)) throw new Error("FAST SOLO restart invariant missing: " + token);
@@ -90,4 +93,4 @@ for (const token of ["DAVID_REQUIRE_FRESH_EDGE_ON_START","FRESH EDGE REQUIRED","
   if (!launcher.includes(token)) throw new Error("Fresh Edge launcher invariant missing: " + token);
 }
 
-console.log("DAVID_AUTONOMY_PROFILE PASS restart_first_wait=90s fresh_edge=VERIFIED scope=SYSTEM+APP2+APK watch=BACKGROUND control_tab=OFF design=OFF strict_tabs=3 fast_solo=SYSTEM|DPP|APK fast_solo_tabs=1 fast_solo_effort=INSTANT fast_solo_watch=BACKGROUND apk_tab=GUARANTEED apk_discovery_miss_autostart=ON effort=MEDIUM guard=ON semantic_terminal=SYSTEM+DPP+APK");
+console.log("DAVID_AUTONOMY_PROFILE PASS restart_first_wait=90s fresh_edge=VERIFIED scope=SYSTEM+APP2+APK watch=BACKGROUND control_tab=OFF design=OFF strict_tabs=3 fast_solo=SYSTEM|DPP|APK fast_solo_tabs=1 fast_solo_effort=INSTANT fast_solo_watch=BACKGROUND fast_completion_detect=ON rate_limit_safety=PRESERVED apk_tab=GUARANTEED apk_discovery_miss_autostart=ON effort=MEDIUM guard=ON semantic_terminal=SYSTEM+DPP+APK");

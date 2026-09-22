@@ -38,7 +38,6 @@ $env:DAVID_COMPLETE_QUIET_MS="1200"
 $env:DAVID_COMPLETE_STABLE_SAMPLES="2"
 $env:DAVID_COMPLETE_SAMPLE_MS="350"
 $env:DAVID_SEMANTIC_TERMINAL_QUIET_MS="2500"
-$env:DAVID_GLOBAL_SEND_INTERVAL_MS="1500"
 
 $args=@("-NoProfile","-ExecutionPolicy","Bypass","-File",$Launcher,"-Port","$Port","-MaxTurns","2147483647")
 Start-Process -FilePath $Pwsh -ArgumentList $args -WindowStyle Hidden
