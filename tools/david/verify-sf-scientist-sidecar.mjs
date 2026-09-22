@@ -58,7 +58,9 @@ for(const token of [
   'status:blocked?"profile-blocked":"starting"',
   'profileVerifyAttempts',
   'scientistPickerLabel',
-  'chat-click-confirmed'
+  'chat-click-confirmed',
+  'status:blocked?"profile-blocked":"starting"',
+  'continue;'
 ]) if(!side.includes(token)) throw new Error("Scientist sidecar invariant missing: "+token);
 
 for(const token of [
