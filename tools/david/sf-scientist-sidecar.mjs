@@ -24,6 +24,8 @@ const POWERSHELL_TIMEOUT_MS=Number(process.env.SF_SCIENTIST_POWERSHELL_TIMEOUT_M
 const MAX_TOOL_OUTPUT=12000;
 const RATE_LIMIT_BACKOFF_MS=Number(process.env.SF_SCIENTIST_RATE_LIMIT_BACKOFF_MS||120000);
 const MAX_RATE_LIMIT_RETRIES=Number(process.env.SF_SCIENTIST_RATE_LIMIT_RETRIES||2);
+const SEND_ACK_MS=Number(process.env.SF_SCIENTIST_SEND_ACK_MS||6500);
+const MAX_SEND_ATTEMPTS=Number(process.env.SF_SCIENTIST_MAX_SEND_ATTEMPTS||3);
 const MAX_SHELLS=18;
 const MAX_STATE_FILES=12;
 const MAX_LOG_FILES=8;
@@ -464,13 +466,77 @@ async function pageFor(context){
   if(!String(page.url()||"").includes("chatgpt.com"))await page.goto(state.chatUrl||"https://chatgpt.com/",{waitUntil:"domcontentloaded",timeout:60000}).catch(()=>{});
   return await ready(page);
 }
+async function userMessageCount(page){
+  try{return await page.locator('[data-message-author-role="user"]').count();}
+  catch{return 0;}
+}
+async function composerTextValue(c){
+  if(!c)return "";
+  try{
+    const value=await c.inputValue({timeout:500}).catch(()=>null);
+    if(value!==null)return String(value||"").trim();
+  }catch{}
+  try{return String((await c.innerText().catch(()=>""))||"").trim();}
+  catch{return "";}
+}
+async function waitForSendAck(page,beforeUserCount,attempt){
+  const started=Date.now();
+  while(Date.now()-started<SEND_ACK_MS){
+    const ui=await safeDismissChatGptUi(page).catch(()=>({dismissed:false,rateLimited:false}));
+    if(ui.rateLimited)return {ok:false,rateLimited:true,uiRecovery:ui,reason:"rate-limited"};
+
+    const count=await userMessageCount(page);
+    if(count>beforeUserCount)return {ok:true,reason:"user-message-count-increased",attempt,userMessageCount:count};
+
+    const c=await composer(page);
+    if(c){
+      const txt=await composerTextValue(c);
+      if(!txt)return {ok:true,reason:"composer-cleared",attempt,userMessageCount:count};
+    }
+
+    await sleep(250);
+  }
+  return {ok:false,rateLimited:false,reason:"send-not-acknowledged",attempt};
+}
+async function trySubmitPrompt(page,c,attempt){
+  const selectors=[
+    'button[data-testid="send-button"]',
+    'button[aria-label*="Send" i]',
+    'button[aria-label*="Изпрат" i]'
+  ];
+
+  if(attempt===1){
+    for(const sel of selectors){
+      const b=page.locator(sel).last();
+      if(await b.count().catch(()=>0)&&await b.isVisible().catch(()=>false)&&await b.isEnabled().catch(()=>false)){
+        try{await b.click({timeout:2000});return "button:"+sel;}catch{}
+      }
+    }
+  }
+
+  if(attempt===2){
+    try{await c.press("Enter",{timeout:2500});return "enter";}catch{}
+  }
+
+  if(attempt>=3){
+    for(const sel of selectors){
+      const b=page.locator(sel).last();
+      if(await b.count().catch(()=>0)&&await b.isVisible().catch(()=>false)&&await b.isEnabled().catch(()=>false)){
+        try{await b.click({timeout:2000,force:true});return "force-button:"+sel;}catch{}
+      }
+    }
+    try{await c.press("Enter",{timeout:2500});return "enter-fallback";}catch{}
+  }
+
+  return "no-submit-control";
+}
 async function send(page,text){
   const preUi=await safeDismissChatGptUi(page).catch(()=>({dismissed:false,rateLimited:false}));
   if(preUi.rateLimited){
     await waitRateLimitBackoff(page,preUi);
   }
+
   const profile=await ensureScientistChatMedium(page).catch(e=>({ok:false,reason:String(e&&e.message||e)}));
-  const c=await composer(page); if(!c)throw new Error("Scientist composer unavailable");
   if(!profile||!profile.ok){
     save("Scientist send proceeding with profile warning",{
       status:"online-warning",
@@ -479,21 +545,69 @@ async function send(page,text){
       scientistPickerLabel:profile&&profile.effort&&profile.effort.pickerLabel||null
     });
   }
-  try{await c.fill(text,{timeout:2500});}catch{await c.focus();await page.keyboard.press("Control+A");await page.keyboard.insertText(text);}
-  let submitted=false;
-  for(const s of ['button[data-testid="send-button"]','button[aria-label*="Send"]']){
-    const b=page.locator(s).last();
-    if(await b.count().catch(()=>0)&&await b.isVisible().catch(()=>false)&&await b.isEnabled().catch(()=>false)){
-      await b.click({timeout:2000});
-      submitted=true;
-      break;
+
+  for(let attempt=1;attempt<=MAX_SEND_ATTEMPTS;attempt++){
+    const c=await composer(page);
+    if(!c)throw new Error("Scientist composer unavailable");
+
+    const beforeUserCount=await userMessageCount(page);
+    const currentText=await composerTextValue(c);
+
+    if(currentText!==text){
+      try{
+        await c.fill(text,{timeout:3000});
+      }catch{
+        await c.focus();
+        await page.keyboard.press("Control+A").catch(()=>{});
+        await page.keyboard.insertText(text);
+      }
     }
+
+    const method=await trySubmitPrompt(page,c,attempt);
+    save("Scientist submit attempt",{
+      status:"sending",
+      sendAttempt:attempt,
+      sendMethod:method,
+      sendAck:false,
+      pendingPromptPreview:cleanText(text,500)
+    });
+
+    const ack=await waitForSendAck(page,beforeUserCount,attempt);
+    if(ack.rateLimited){
+      save("Scientist send hit rate limit",{
+        status:"rate-limited",
+        sendAttempt:attempt,
+        sendMethod:method,
+        sendAck:false
+      });
+      return {submitted:false,acknowledged:false,rateLimited:true,uiRecovery:ack.uiRecovery,attempt,method,reason:ack.reason};
+    }
+
+    if(ack.ok){
+      save("Scientist send acknowledged",{
+        status:"thinking",
+        sendAttempt:attempt,
+        sendMethod:method,
+        sendAck:true,
+        sendAckReason:ack.reason,
+        pendingPromptPreview:null
+      });
+      return {submitted:true,acknowledged:true,rateLimited:false,attempt,method,reason:ack.reason};
+    }
+
+    save("Scientist send not acknowledged; retrying",{
+      status:"send-retry",
+      sendAttempt:attempt,
+      sendMethod:method,
+      sendAck:false,
+      sendAckReason:ack.reason
+    });
+    await sleep(400);
   }
-  if(!submitted){await c.press("Enter",{timeout:2500});submitted=true;}
-  await sleep(500);
-  const postUi=await safeDismissChatGptUi(page).catch(()=>({dismissed:false,rateLimited:false}));
-  return {submitted,rateLimited:Boolean(postUi.rateLimited),uiRecovery:postUi};
+
+  throw new Error("Scientist send failed: prompt was not acknowledged after "+MAX_SEND_ATTEMPTS+" attempts");
 }
+
 async function ask(page,prompt){
   const base=digest(await latest(page));
   let rateRetries=0;
@@ -504,7 +618,8 @@ async function ask(page,prompt){
     sent=await send(page,prompt);
   }
   if(sent&&sent.rateLimited)throw new Error("Scientist rate-limited after retry budget");
-  save("Scientist prompt sent",{status:"thinking",lastPromptAt:now()});
+  if(!sent||!sent.acknowledged)throw new Error("Scientist prompt not acknowledged");
+  save("Scientist prompt sent",{status:"thinking",lastPromptAt:now(),sendAck:true});
 
   let last=base,stable="",since=0,start=Date.now();
   while(Date.now()-start<RESPONSE_MS){
@@ -515,7 +630,8 @@ async function ask(page,prompt){
       await waitRateLimitBackoff(page,ui);
       const retry=await send(page,prompt);
       if(retry&&retry.rateLimited)continue;
-      save("Scientist prompt resent after rate-limit backoff",{status:"thinking",lastPromptAt:now()});
+      if(!retry||!retry.acknowledged)throw new Error("Scientist retry prompt not acknowledged");
+      save("Scientist prompt resent after rate-limit backoff",{status:"thinking",lastPromptAt:now(),sendAck:true});
     }
 
     const text=await latest(page),h=digest(text);
@@ -884,7 +1000,30 @@ async function main(){
       if(booted&&settled&&cooldownReady){
         const latest=await snapshot();
         const reason=(pendingEvent.reasons||[]).join(" | ")+(burstExpired?" (max burst snapshot)":" (stable snapshot after event burst)");
-        const loop=await reasonActLoop(context,page,observe(reason,latest),latest);
+
+        pendingEvent=null;
+        pendingStartedAt=0;
+        save("Autonomous Scientist analysis in flight",{
+          status:"sending",
+          pendingObservation:false,
+          pendingObservationReasons:[],
+          inFlightObservation:reason,
+          inFlightStartedAt:now()
+        });
+
+        let loop;
+        try{
+          loop=await reasonActLoop(context,page,observe(reason,latest),latest);
+        }catch(e){
+          save("Autonomous Scientist analysis failed",{
+            status:"degraded",
+            inFlightObservation:null,
+            inFlightStartedAt:null,
+            lastError:String(e&&e.stack||e)
+          });
+          throw e;
+        }
+
         const actionResult=loop.actions.length?JSON.stringify(loop.actions):"no action";
         append(DECISIONS,{type:"autonomous-decision",at:now(),event:reason,snapshot:latest,response:loop.response,actions:loop.actions,actionResult});
         append(MEMORY,{at:now(),kind:"observed-system-event",event:reason,response:loop.response,actionResult});
@@ -895,11 +1034,11 @@ async function main(){
           lastAutoAnalysisAt:now(),
           lastToolResult:cleanText(actionResult,5000),
           pendingObservation:false,
-          pendingObservationReasons:[]
+          pendingObservationReasons:[],
+          inFlightObservation:null,
+          inFlightStartedAt:null
         });
         lastSessionAnalysisAt=analysisAt;
-        pendingEvent=null;
-        pendingStartedAt=0;
       }
       prev=s;
     }catch(err){save("Scientist loop error",{status:"degraded",lastError:String(err?.stack||err)});}

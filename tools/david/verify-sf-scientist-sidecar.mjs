@@ -75,7 +75,15 @@ for(const token of [
   'Scientist respecting ChatGPT rate limit',
   'liveActivity',
   'lastResponsePreview',
-  'currentMode'
+  'currentMode',
+  'SEND_ACK_MS',
+  'MAX_SEND_ATTEMPTS',
+  'async function userMessageCount',
+  'async function waitForSendAck',
+  'Scientist send acknowledged',
+  'send-not-acknowledged',
+  'inFlightObservation',
+  'Autonomous Scientist analysis in flight'
 ]) if(!side.includes(token)) throw new Error("Scientist sidecar invariant missing: "+token);
 
 for(const token of [
@@ -122,11 +130,14 @@ for(const token of [
   "DAVID MODE: ",
   "UI RECOVERY: ",
   "GPT LIVE: ",
-  "RATE LIMIT BACKOFF UNTIL: "
+  "RATE LIMIT BACKOFF UNTIL: ",
+  "IN FLIGHT: ",
+  "SEND ACK: ",
+  "SEND TRY: "
 ]) if(!center.includes(token)) throw new Error("Mode Center Scientist invariant missing: "+token);
 
 for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_TARGET=\"2\""]) {
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED safe_rate_limit_ui_recovery=ON live_mode_panel=ON gpt_progress_panel=ON profile_gate=NONBLOCKING event_starvation=FIXED");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED send_ack=VERIFIED pending_vs_inflight=EXPLICIT safe_rate_limit_ui_recovery=ON live_mode_panel=ON event_starvation=FIXED");
