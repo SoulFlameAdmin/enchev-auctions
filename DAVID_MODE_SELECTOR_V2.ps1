@@ -170,7 +170,7 @@ $tasksPage.BackColor=[System.Drawing.Color]::FromArgb(12,14,18)
 $form.Controls.Add($mainTabs)
 
 $tasksHeader=New-Object System.Windows.Forms.Label
-$tasksHeader.Text="DAVID TASKS - LIVE EDGE SESSIONS"
+$tasksHeader.Text="DAVID TASKS - LIVE TOPOLOGY"
 $tasksHeader.ForeColor=[System.Drawing.Color]::White
 $tasksHeader.Font=New-Object System.Drawing.Font("Segoe UI",18,[System.Drawing.FontStyle]::Bold)
 $tasksHeader.AutoSize=$true
@@ -181,29 +181,78 @@ $tasksStatus=New-Object System.Windows.Forms.Label
 $tasksStatus.Text="TASK PREVIEW WORKER: STARTING..."
 $tasksStatus.ForeColor=[System.Drawing.Color]::Khaki
 $tasksStatus.Font=New-Object System.Drawing.Font("Consolas",10,[System.Drawing.FontStyle]::Bold)
-$tasksStatus.Size=New-Object System.Drawing.Size(1000,28)
+$tasksStatus.Size=New-Object System.Drawing.Size(1450,28)
 $tasksStatus.Location=New-Object System.Drawing.Point(27,56)
 $tasksStatus.Anchor="Top,Left,Right"
 $tasksPage.Controls.Add($tasksStatus)
 
-$taskList=New-Object System.Windows.Forms.ListBox
-$taskList.BackColor=[System.Drawing.Color]::FromArgb(17,19,25)
-$taskList.ForeColor=[System.Drawing.Color]::White
-$taskList.Font=New-Object System.Drawing.Font("Consolas",10)
-$taskList.BorderStyle="FixedSingle"
-$taskList.Location=New-Object System.Drawing.Point(28,92)
-$taskList.Size=New-Object System.Drawing.Size(330,580)
-$taskList.Anchor="Top,Bottom,Left"
-$tasksPage.Controls.Add($taskList)
+$taskOverview=New-Object System.Windows.Forms.Panel
+$taskOverview.Location=New-Object System.Drawing.Point(20,90)
+$taskOverview.Size=New-Object System.Drawing.Size(1510,650)
+$taskOverview.Anchor="Top,Bottom,Left,Right"
+$taskOverview.BackColor=[System.Drawing.Color]::FromArgb(10,12,16)
+$taskOverview.BorderStyle="FixedSingle"
+$tasksPage.Controls.Add($taskOverview)
+
+$taskLegend=New-Object System.Windows.Forms.Label
+$taskLegend.Text="GREEN/CYAN = WORKING  |  AMBER = PROCESS WITHOUT TAB  |  RED = OFFLINE  |  GLOW LINE = LIVE CONNECTION"
+$taskLegend.ForeColor=[System.Drawing.Color]::Silver
+$taskLegend.Font=New-Object System.Drawing.Font("Consolas",9,[System.Drawing.FontStyle]::Bold)
+$taskLegend.Size=New-Object System.Drawing.Size(1400,24)
+$taskLegend.Location=New-Object System.Drawing.Point(18,10)
+$taskLegend.Anchor="Top,Left,Right"
+$taskOverview.Controls.Add($taskLegend)
+
+$taskGraph=New-Object System.Windows.Forms.Panel
+$taskGraph.Location=New-Object System.Drawing.Point(18,42)
+$taskGraph.Size=New-Object System.Drawing.Size(1470,585)
+$taskGraph.Anchor="Top,Bottom,Left,Right"
+$taskGraph.BackColor=[System.Drawing.Color]::FromArgb(7,9,13)
+$taskGraph.BorderStyle="FixedSingle"
+$taskOverview.Controls.Add($taskGraph)
+
+$taskDetail=New-Object System.Windows.Forms.Panel
+$taskDetail.Location=New-Object System.Drawing.Point(20,90)
+$taskDetail.Size=New-Object System.Drawing.Size(1510,650)
+$taskDetail.Anchor="Top,Bottom,Left,Right"
+$taskDetail.BackColor=[System.Drawing.Color]::FromArgb(10,12,16)
+$taskDetail.BorderStyle="FixedSingle"
+$taskDetail.Visible=$false
+$tasksPage.Controls.Add($taskDetail)
+
+$taskBack=New-Object System.Windows.Forms.Button
+$taskBack.Text="< BACK TO TASK MAP"
+$taskBack.Size=New-Object System.Drawing.Size(190,42)
+$taskBack.Location=New-Object System.Drawing.Point(18,16)
+$taskBack.FlatStyle="Flat"
+$taskBack.ForeColor=[System.Drawing.Color]::White
+$taskBack.BackColor=[System.Drawing.Color]::FromArgb(70,74,84)
+$taskDetail.Controls.Add($taskBack)
+
+$taskDetailTitle=New-Object System.Windows.Forms.Label
+$taskDetailTitle.Text="TASK DETAIL"
+$taskDetailTitle.ForeColor=[System.Drawing.Color]::White
+$taskDetailTitle.Font=New-Object System.Drawing.Font("Segoe UI",16,[System.Drawing.FontStyle]::Bold)
+$taskDetailTitle.AutoSize=$true
+$taskDetailTitle.Location=New-Object System.Drawing.Point(228,20)
+$taskDetail.Controls.Add($taskDetailTitle)
+
+$taskDetailStatus=New-Object System.Windows.Forms.Label
+$taskDetailStatus.Text="STATUS: -"
+$taskDetailStatus.ForeColor=[System.Drawing.Color]::Khaki
+$taskDetailStatus.Font=New-Object System.Drawing.Font("Consolas",10,[System.Drawing.FontStyle]::Bold)
+$taskDetailStatus.Size=New-Object System.Drawing.Size(900,26)
+$taskDetailStatus.Location=New-Object System.Drawing.Point(228,51)
+$taskDetail.Controls.Add($taskDetailStatus)
 
 $taskPreview=New-Object System.Windows.Forms.PictureBox
 $taskPreview.BackColor=[System.Drawing.Color]::Black
 $taskPreview.BorderStyle="FixedSingle"
 $taskPreview.SizeMode="Zoom"
-$taskPreview.Location=New-Object System.Drawing.Point(382,92)
-$taskPreview.Size=New-Object System.Drawing.Size(850,500)
+$taskPreview.Location=New-Object System.Drawing.Point(18,82)
+$taskPreview.Size=New-Object System.Drawing.Size(1468,465)
 $taskPreview.Anchor="Top,Bottom,Left,Right"
-$tasksPage.Controls.Add($taskPreview)
+$taskDetail.Controls.Add($taskPreview)
 
 $taskDetails=New-Object System.Windows.Forms.TextBox
 $taskDetails.Multiline=$true
@@ -212,30 +261,30 @@ $taskDetails.ScrollBars="Vertical"
 $taskDetails.BackColor=[System.Drawing.Color]::FromArgb(9,11,15)
 $taskDetails.ForeColor=[System.Drawing.Color]::Gainsboro
 $taskDetails.Font=New-Object System.Drawing.Font("Consolas",9)
-$taskDetails.Location=New-Object System.Drawing.Point(382,606)
-$taskDetails.Size=New-Object System.Drawing.Size(850,115)
+$taskDetails.Location=New-Object System.Drawing.Point(18,558)
+$taskDetails.Size=New-Object System.Drawing.Size(1180,70)
 $taskDetails.Anchor="Bottom,Left,Right"
-$tasksPage.Controls.Add($taskDetails)
+$taskDetail.Controls.Add($taskDetails)
 
 $focusTask=New-Object System.Windows.Forms.Button
-$focusTask.Text="FOCUS SELECTED EDGE"
-$focusTask.Size=New-Object System.Drawing.Size(200,40)
-$focusTask.Location=New-Object System.Drawing.Point(28,686)
-$focusTask.Anchor="Bottom,Left"
+$focusTask.Text="FOCUS REAL EDGE"
+$focusTask.Size=New-Object System.Drawing.Size(240,70)
+$focusTask.Location=New-Object System.Drawing.Point(1216,558)
+$focusTask.Anchor="Bottom,Right"
 $focusTask.FlatStyle="Flat"
 $focusTask.ForeColor=[System.Drawing.Color]::White
 $focusTask.BackColor=[System.Drawing.Color]::FromArgb(35,119,191)
-$tasksPage.Controls.Add($focusTask)
+$taskDetail.Controls.Add($focusTask)
 
 $refreshTasks=New-Object System.Windows.Forms.Button
-$refreshTasks.Text="REFRESH TASKS"
-$refreshTasks.Size=New-Object System.Drawing.Size(120,40)
-$refreshTasks.Location=New-Object System.Drawing.Point(238,686)
-$refreshTasks.Anchor="Bottom,Left"
+$refreshTasks.Text="REFRESH"
+$refreshTasks.Size=New-Object System.Drawing.Size(105,34)
+$refreshTasks.Location=New-Object System.Drawing.Point(1380,16)
+$refreshTasks.Anchor="Top,Right"
 $refreshTasks.FlatStyle="Flat"
 $refreshTasks.ForeColor=[System.Drawing.Color]::White
 $refreshTasks.BackColor=[System.Drawing.Color]::FromArgb(70,74,84)
-$tasksPage.Controls.Add($refreshTasks)
+$taskOverview.Controls.Add($refreshTasks)
 
 $title=New-Object System.Windows.Forms.Label
 $title.Text="DAVID MODE CENTER V2.1"
@@ -576,7 +625,12 @@ $script:ScientistConsoleOpen=$false
 $script:ScientistProcess=$null
 $script:ControlPanelPreviewProcess=$null
 $script:TaskRows=@()
+$script:TaskConnections=@()
+$script:TaskNodeControls=@{}
 $script:SelectedTaskKey=""
+$script:TaskDetailOpen=$false
+$script:TaskGraphSignature=""
+$script:GraphPulse=$false
 $script:LastPreviewPath=""
 $script:LastPreviewStamp=0
 
