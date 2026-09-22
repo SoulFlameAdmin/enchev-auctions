@@ -54,7 +54,6 @@ for(const token of [
   '/^(Chat|Чат)$/i',
   'workLimitVisible',
   'scientistModelSolVisible',
-  'status:blocked?"profile-blocked":"starting"',
   'profileVerifyAttempts',
   'scientistPickerLabel',
   'chat-click-confirmed',
