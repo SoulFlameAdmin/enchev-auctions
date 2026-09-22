@@ -692,28 +692,188 @@ function Set-TaskPreviewImage{
   }catch{}
 }
 
-function Show-SelectedTask{
-  $i=[int]$taskList.SelectedIndex
-  if($i-lt 0-or$i-ge$script:TaskRows.Count){
-    $taskDetails.Text="Select a task."
+function Get-TaskByKey{
+  param([string]$Key)
+  if([string]::IsNullOrWhiteSpace($Key)){return $null}
+  foreach($t in @($script:TaskRows)){
+    if(([string]$t.key)-eq$Key){return $t}
+  }
+  return $null
+}
+
+function Clear-TaskPreviewImage{
+  try{
+    $old=$taskPreview.Image
+    $taskPreview.Image=$null
+    if($old){$old.Dispose()}
+  }catch{}
+  $script:LastPreviewPath=""
+  $script:LastPreviewStamp=0
+}
+
+function Set-TaskStatusStyle{
+  param(
+    [System.Windows.Forms.Button]$Button,
+    [string]$Status,
+    [bool]$Working
+  )
+
+  $st=([string]$Status).ToUpperInvariant()
+  if($st-eq"THINKING"){
+    $Button.BackColor=[System.Drawing.Color]::FromArgb(20,55,78)
+    $Button.FlatAppearance.BorderColor=[System.Drawing.Color]::DeepSkyBlue
+    $Button.ForeColor=[System.Drawing.Color]::White
+  }elseif($Working){
+    $Button.BackColor=[System.Drawing.Color]::FromArgb(20,62,42)
+    $Button.FlatAppearance.BorderColor=[System.Drawing.Color]::LimeGreen
+    $Button.ForeColor=[System.Drawing.Color]::White
+  }elseif($st-eq"NO_TAB"){
+    $Button.BackColor=[System.Drawing.Color]::FromArgb(74,57,18)
+    $Button.FlatAppearance.BorderColor=[System.Drawing.Color]::Goldenrod
+    $Button.ForeColor=[System.Drawing.Color]::White
+  }else{
+    $Button.BackColor=[System.Drawing.Color]::FromArgb(58,25,29)
+    $Button.FlatAppearance.BorderColor=[System.Drawing.Color]::Firebrick
+    $Button.ForeColor=[System.Drawing.Color]::Silver
+  }
+}
+
+function Build-TaskGraph{
+  $taskGraph.SuspendLayout()
+  try{
+    $taskGraph.Controls.Clear()
+    $script:TaskNodeControls=@{}
+
+    $rows=@($script:TaskRows)
+    if($rows.Count-eq0){
+      $empty=New-Object System.Windows.Forms.Label
+      $empty.Text="NO TASK DATA YET"
+      $empty.ForeColor=[System.Drawing.Color]::DarkGray
+      $empty.Font=New-Object System.Drawing.Font("Segoe UI",18,[System.Drawing.FontStyle]::Bold)
+      $empty.AutoSize=$true
+      $empty.Location=New-Object System.Drawing.Point(40,60)
+      $taskGraph.Controls.Add($empty)
+      return
+    }
+
+    $w=[Math]::Max(900,$taskGraph.ClientSize.Width)
+    $cols=4
+    if($w-lt1200){$cols=3}
+    if($w-lt900){$cols=2}
+
+    $gap=28
+    $boxW=[Math]::Floor(($w-(($cols+1)*$gap))/$cols)
+    if($boxW-gt320){$boxW=320}
+    if($boxW-lt210){$boxW=210}
+    $boxH=122
+    $rowGap=42
+    $top=36
+    $nl=[Environment]::NewLine
+
+    for($i=0;$i-lt$rows.Count;$i++){
+      $t=$rows[$i]
+      $col=$i%$cols
+      $row=[Math]::Floor($i/$cols)
+      $x=$gap+($col*($boxW+$gap))
+      $y=$top+($row*($boxH+$rowGap))
+
+      $role=[string]$t.role
+      $status=[string]$t.status
+      $source=[string]$t.source
+      $cdp=[string]$t.cdp
+      $title=[string]$t.title
+      if($title.Length-gt34){$title=$title.Substring(0,34)+"..."}
+      $working=[bool]$t.working
+
+      $b=New-Object System.Windows.Forms.Button
+      $b.Tag=[string]$t.key
+      $b.Text=($role+$nl+$status+"  |  "+$source+" "+$cdp+$nl+$title)
+      $b.TextAlign="MiddleLeft"
+      $b.Size=New-Object System.Drawing.Size($boxW,$boxH)
+      $b.Location=New-Object System.Drawing.Point($x,$y)
+      $b.Font=New-Object System.Drawing.Font("Consolas",10,[System.Drawing.FontStyle]::Bold)
+      $b.FlatStyle="Flat"
+      $b.FlatAppearance.BorderSize=3
+      $b.Cursor=[System.Windows.Forms.Cursors]::Hand
+      Set-TaskStatusStyle -Button $b -Status $status -Working $working
+      $b.Add_Click({
+        param($sender,$e)
+        Open-TaskDetail -Key ([string]$sender.Tag)
+      })
+
+      $taskGraph.Controls.Add($b)
+      $script:TaskNodeControls[[string]$t.key]=$b
+    }
+  }finally{
+    $taskGraph.ResumeLayout()
+  }
+  $taskGraph.Invalidate()
+}
+
+function Refresh-TaskDetail{
+  $t=Get-TaskByKey -Key $script:SelectedTaskKey
+  if(-not$t){
+    $taskDetailTitle.Text="TASK NOT AVAILABLE"
+    $taskDetailStatus.Text="STATUS: OFFLINE"
+    $taskDetails.Text="The selected task is no longer present in the current task manifest."
+    Clear-TaskPreviewImage
     return
   }
 
-  $t=$script:TaskRows[$i]
-  $script:SelectedTaskKey=[string]$t.key
+  $role=[string]$t.role
+  $status=[string]$t.status
+  $working=[bool]$t.working
+
+  $taskDetailTitle.Text=$role+" - EDGE TASK"
+  $taskDetailStatus.Text=("STATUS: {0} | SOURCE: {1} | CDP: {2}" -f $status,[string]$t.source,[string]$t.cdp)
+
+  if($status-eq"THINKING"){
+    $taskDetailStatus.ForeColor=[System.Drawing.Color]::DeepSkyBlue
+  }elseif($working){
+    $taskDetailStatus.ForeColor=[System.Drawing.Color]::LightGreen
+  }elseif($status-eq"NO_TAB"){
+    $taskDetailStatus.ForeColor=[System.Drawing.Color]::Khaki
+  }else{
+    $taskDetailStatus.ForeColor=[System.Drawing.Color]::Tomato
+  }
 
   $lines=New-Object System.Collections.Generic.List[string]
-  $lines.Add("ROLE: "+[string]$t.role)
-  $lines.Add("SOURCE: "+[string]$t.source+" | CDP: "+[string]$t.cdp+" | STATUS: "+[string]$t.status)
+  $lines.Add("ROLE: "+$role+" | STATUS: "+$status+" | WORKING: "+([string]$working).ToUpperInvariant())
   $lines.Add("TITLE: "+[string]$t.title)
   $lines.Add("URL: "+[string]$t.url)
   $lines.Add("UPDATED: "+[string]$t.updatedAt)
   $taskDetails.Text=($lines -join [Environment]::NewLine)
 
   $preview=[string]$t.preview
-  if(-not[string]::IsNullOrWhiteSpace($preview)){
+  if(-not[string]::IsNullOrWhiteSpace($preview)-and(Test-Path -LiteralPath $preview)){
     Set-TaskPreviewImage -Path $preview
+  }else{
+    Clear-TaskPreviewImage
   }
+
+  $focusTask.Enabled=($working-and-not[string]::IsNullOrWhiteSpace([string]$t.url))
+}
+
+function Open-TaskDetail{
+  param([string]$Key)
+  $t=Get-TaskByKey -Key $Key
+  if(-not$t){return}
+
+  $script:SelectedTaskKey=$Key
+  $script:TaskDetailOpen=$true
+  $taskOverview.Visible=$false
+  $taskDetail.Visible=$true
+  $taskDetail.BringToFront()
+  Refresh-TaskDetail
+}
+
+function Close-TaskDetail{
+  $script:TaskDetailOpen=$false
+  $taskDetail.Visible=$false
+  $taskOverview.Visible=$true
+  $taskOverview.BringToFront()
+  Clear-TaskPreviewImage
+  $taskGraph.Invalidate()
 }
 
 function Update-TasksUi{
@@ -722,61 +882,44 @@ function Update-TasksUi{
   $m=Read-Json $ControlPanelTasks
 
   if(-not$m){
-    $tasksStatus.Text=("TASK PREVIEW WORKER: {0} | waiting for manifest..." -f $(if($workerCount-gt 0){"ONLINE"}else{"OFFLINE"}))
+    $tasksStatus.Text=("TASK PREVIEW WORKER: {0} | waiting for task topology..." -f $(if($workerCount-gt0){"ONLINE"}else{"OFFLINE"}))
     return
   }
 
+  $rows=@($m.tasks)
+  $connections=@($m.connections)
+  $script:TaskRows=$rows
+  $script:TaskConnections=$connections
+
+  $working=@($rows|Where-Object{[bool]$_.working}).Count
   $davidOnline=[string]$m.davidCdpOnline
   $scientistOnline=[string]$m.scientistCdpOnline
   $updated=[string]$m.updatedAt
-  $tasksStatus.Text=("PREVIEW W={0} | DAVID 9444={1} | SCIENTIST 9555={2} | UPDATED={3}" -f $workerCount,$davidOnline.ToUpperInvariant(),$scientistOnline.ToUpperInvariant(),$updated)
+  $tasksStatus.Text=("PREVIEW W={0} | WORKING={1}/{2} | DAVID 9444={3} | SCIENTIST 9555={4} | UPDATED={5}" -f $workerCount,$working,$rows.Count,$davidOnline.ToUpperInvariant(),$scientistOnline.ToUpperInvariant(),$updated)
 
-  $rows=@($m.tasks)
-  $oldKey=$script:SelectedTaskKey
-  $newSig=($rows|ForEach-Object{[string]$_.key})-join"|"
-  $oldSig=($script:TaskRows|ForEach-Object{[string]$_.key})-join"|"
-  $script:TaskRows=$rows
+  $taskSig=($rows|ForEach-Object{([string]$_.key)+":"+([string]$_.status)+":"+([string]$_.working)})-join"|"
+  $edgeSig=($connections|ForEach-Object{([string]$_.from)+">"+([string]$_.to)+":"+([string]$_.kind)+":"+([string]$_.active)})-join"|"
+  $sizeSig=([string]$taskGraph.ClientSize.Width)+"x"+([string]$taskGraph.ClientSize.Height)
+  $graphSig=$taskSig+"||"+$edgeSig+"||"+$sizeSig
 
-  if($newSig-ne$oldSig){
-    $taskList.BeginUpdate()
-    try{
-      $taskList.Items.Clear()
-      foreach($t in $rows){
-        $role=[string]$t.role
-        $status=[string]$t.status
-        $source=[string]$t.source
-        $title=[string]$t.title
-        if($title.Length-gt 36){$title=$title.Substring(0,36)+"..."}
-        [void]$taskList.Items.Add(("[{0}] {1} | {2} | {3}" -f $source,$role,$status,$title))
-      }
-    }finally{$taskList.EndUpdate()}
-
-    $select=-1
-    if(-not[string]::IsNullOrWhiteSpace($oldKey)){
-      for($j=0;$j-lt$rows.Count;$j++){
-        if(([string]$rows[$j].key)-eq$oldKey){$select=$j;break}
-      }
-    }
-    if($select-lt 0-and$rows.Count-gt 0){$select=0}
-    if($select-ge 0){$taskList.SelectedIndex=$select}
+  if($graphSig-ne$script:TaskGraphSignature){
+    $script:TaskGraphSignature=$graphSig
+    Build-TaskGraph
   }
 
-  if($rows.Count-eq 0){
-    $taskDetails.Text="No live ChatGPT tasks detected yet."
-    $old=$taskPreview.Image
-    $taskPreview.Image=$null
-    if($old){try{$old.Dispose()}catch{}}
-    $script:LastPreviewPath=""
-    $script:LastPreviewStamp=0
-  }else{
-    Show-SelectedTask
+  $script:GraphPulse=-not$script:GraphPulse
+  $taskGraph.Invalidate()
+
+  if($script:TaskDetailOpen){
+    Refresh-TaskDetail
   }
 }
 
 function Focus-SelectedTask{
-  $i=[int]$taskList.SelectedIndex
-  if($i-lt 0-or$i-ge$script:TaskRows.Count){return}
-  $t=$script:TaskRows[$i]
+  $t=Get-TaskByKey -Key $script:SelectedTaskKey
+  if(-not$t){return}
+  if(-not[bool]$t.working){return}
+  if([string]::IsNullOrWhiteSpace([string]$t.url)){return}
 
   try{
     $cmd=[ordered]@{
