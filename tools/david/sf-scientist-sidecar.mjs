@@ -26,6 +26,7 @@ const RATE_LIMIT_BACKOFF_MS=Number(process.env.SF_SCIENTIST_RATE_LIMIT_BACKOFF_M
 const MAX_RATE_LIMIT_RETRIES=Number(process.env.SF_SCIENTIST_RATE_LIMIT_RETRIES||2);
 const SEND_ACK_MS=Number(process.env.SF_SCIENTIST_SEND_ACK_MS||6500);
 const MAX_SEND_ATTEMPTS=Number(process.env.SF_SCIENTIST_MAX_SEND_ATTEMPTS||3);
+const GPT_WAIT_LIVE_REFRESH_MS=Number(process.env.SF_SCIENTIST_GPT_WAIT_LIVE_REFRESH_MS||2500);
 const MAX_SHELLS=18;
 const MAX_STATE_FILES=12;
 const MAX_LOG_FILES=8;
@@ -621,8 +622,26 @@ async function ask(page,prompt){
   if(!sent||!sent.acknowledged)throw new Error("Scientist prompt not acknowledged");
   save("Scientist prompt sent",{status:"thinking",lastPromptAt:now(),sendAck:true});
 
-  let last=base,stable="",since=0,start=Date.now();
+  let last=base,stable="",since=0,start=Date.now(),lastLiveRefreshAt=0;
   while(Date.now()-start<RESPONSE_MS){
+    if(Date.now()-lastLiveRefreshAt>=GPT_WAIT_LIVE_REFRESH_MS){
+      lastLiveRefreshAt=Date.now();
+      try{
+        const live=await snapshot();
+        save("Scientist heartbeat",{
+          status:"thinking",
+          liveSnapshot:live,
+          currentMode:live.mode,
+          currentCdp9444Online:live.cdp9444Online,
+          gptWaitLiveRefreshedAt:now()
+        });
+      }catch(e){
+        save("Scientist heartbeat",{
+          status:"thinking",
+          gptWaitProbeError:cleanText(e&&e.message||e,500)
+        });
+      }
+    }
     const ui=await safeDismissChatGptUi(page).catch(()=>({dismissed:false,rateLimited:false}));
     if(ui.rateLimited){
       if(rateRetries>=MAX_RATE_LIMIT_RETRIES)throw new Error("Scientist rate-limited while waiting for response");

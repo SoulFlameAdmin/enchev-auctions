@@ -83,7 +83,10 @@ for(const token of [
   'Scientist send acknowledged',
   'send-not-acknowledged',
   'inFlightObservation',
-  'Autonomous Scientist analysis in flight'
+  'Autonomous Scientist analysis in flight',
+  'GPT_WAIT_LIVE_REFRESH_MS',
+  'gptWaitLiveRefreshedAt',
+  'currentCdp9444Online:live.cdp9444Online'
 ]) if(!side.includes(token)) throw new Error("Scientist sidecar invariant missing: "+token);
 
 for(const token of [
@@ -140,4 +143,4 @@ for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_T
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED send_ack=VERIFIED pending_vs_inflight=EXPLICIT safe_rate_limit_ui_recovery=ON live_mode_panel=ON event_starvation=FIXED");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED send_ack=VERIFIED live_while_gpt_thinking=ON pending_vs_inflight=EXPLICIT rate_limit_recovery=ON");
