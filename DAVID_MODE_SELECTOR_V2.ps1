@@ -541,8 +541,19 @@ function Update-ScientistUi{
     $scientistDecision.Text="No Scientist state yet."
   }
 
-  if($rp-and$rp.response){
-    $scientistReply.Text=[string]$rp.response
+  $shortThought=""
+  if($rp-and$rp.summary){
+    $shortThought=[string]$rp.summary
+  }elseif($st-and$st.thoughtSummary){
+    $shortThought=[string]$st.thoughtSummary
+  }elseif($st-and$st.lastThoughtSummary){
+    $shortThought=[string]$st.lastThoughtSummary
+  }elseif($st-and$st.status-eq"thinking"){
+    $shortThought="Мисля... чакам ново заключение от Scientist."
+  }
+
+  if(-not[string]::IsNullOrWhiteSpace($shortThought)){
+    $scientistReply.Text=$shortThought
   }
 }
 
