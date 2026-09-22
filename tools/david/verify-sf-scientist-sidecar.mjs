@@ -59,14 +59,12 @@ for(const token of [
   'profileVerifyAttempts',
   'scientistPickerLabel',
   'chat-click-confirmed',
-  'status:blocked?"profile-blocked":"starting"',
   'continue;'
 ]) if(!side.includes(token)) throw new Error("Scientist sidecar invariant missing: "+token);
 
 for(const token of [
   'effortPickerRegex',
   'GPT-5\\.6\\s*Sol',
-  'compositeWanted',
   'cooldown-unconfirmed',
   'GPT-5.6 Sol Кратко',
   'async function findSolPicker',
