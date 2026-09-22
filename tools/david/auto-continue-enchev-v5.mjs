@@ -1063,7 +1063,9 @@ async function main() {
         state.deferredBlockerAcknowledged = true;
         state.lastResult = "OK";
         saveState(state, "One defer relay completed; same blocker will not receive another relay");
-        page = await rolloverConversation(context, page, state, "final-ok");
+        state.nextTaskAt = new Date().toISOString();
+      state.watchdog = "next-task-ready";
+      saveState(state, "Previous block complete; NEXT TASK will continue in SAME ChatGPT conversation. Rollover only on real conversation limit.");
         await sleep(COOLDOWN_MS);
         continue;
       }
@@ -1110,7 +1112,9 @@ async function main() {
       state.watchdog = "problem-fixed";
       saveState(state, "Problem fixed; returning to stage execution");
       mode = "work";
-      page = await rolloverConversation(context, page, state, "final-ok");
+      state.nextTaskAt = new Date().toISOString();
+      state.watchdog = "next-task-ready";
+      saveState(state, "Previous block complete; NEXT TASK will continue in SAME ChatGPT conversation. Rollover only on real conversation limit.");
       await sleep(COOLDOWN_MS);
       continue;
     }
@@ -1147,8 +1151,10 @@ async function main() {
     state.problem = null;
     state.problemAttempts = 0;
     state.watchdog = "answer-complete";
-    saveState(state, "Stage/block complete; rotating to a fresh ChatGPT session before next task");
-    page = await rolloverConversation(context, page, state, "final-ok");
+    saveState(state, "Stage/block complete; continuing to NEXT TASK in the same ChatGPT conversation");
+    state.nextTaskAt = new Date().toISOString();
+      state.watchdog = "next-task-ready";
+      saveState(state, "Previous block complete; NEXT TASK will continue in SAME ChatGPT conversation. Rollover only on real conversation limit.");
     await sleep(COOLDOWN_MS);
   }
 }
