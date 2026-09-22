@@ -54,15 +54,22 @@ for(const token of [
   '/^(Chat|Чат)$/i',
   'workLimitVisible',
   'scientistModelSolVisible',
-  'Scientist send blocked: Chat / GPT-5.6 Sol / Medium not confirmed'
+  'Scientist send blocked: Chat / GPT-5.6 Sol / Medium not confirmed',
+  'status:blocked?"profile-blocked":"starting"',
+  'profileVerifyAttempts',
+  'scientistPickerLabel',
+  'chat-click-confirmed',
+  'continue;'
 ]) if(!side.includes(token)) throw new Error("Scientist sidecar invariant missing: "+token);
 
 for(const token of [
   'effortPickerRegex',
   'GPT-5\\.6\\s*Sol',
-  'compositeWanted',
   'cooldown-unconfirmed',
-  'GPT-5.6 Sol Кратко'
+  'GPT-5.6 Sol Кратко',
+  'async function findSolPicker',
+  'still-short-after-medium-click',
+  'pickerLabel'
 ]) if(!effort.includes(token)) throw new Error("ChatGPT effort controller invariant missing: "+token);
 
 for(const token of [
@@ -101,4 +108,4 @@ for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_T
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED scientist_experience=CHAT model=GPT-5.6_SOL effort=MEDIUM work=OFF scientist_cdp=9555 david_observe_cdp=9444 operator_reason_act_loop=ON");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED scientist_experience=CHAT model=GPT-5.6_SOL effort=MEDIUM work=OFF sol_picker=DIRECT historical_work_quota=IGNORED profile_blocker=VISIBLE");

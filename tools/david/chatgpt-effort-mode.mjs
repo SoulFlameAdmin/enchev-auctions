@@ -42,49 +42,89 @@ async function visibleContains(page, regex, selectors){
 }
 
 
+async function labelOf(node){
+  if(!node)return "";
+  const text=((await node.innerText().catch(()=>""))||"").replace(/\s+/g," ").trim();
+  const aria=((await node.getAttribute("aria-label").catch(()=>""))||"").replace(/\s+/g," ").trim();
+  return (text+" "+aria).replace(/\s+/g," ").trim();
+}
+async function findSolPicker(page){
+  const nodes=page.locator('button,[role="button"]');
+  const count=await nodes.count().catch(()=>0);
+  for(let i=count-1;i>=0;i--){
+    const n=nodes.nth(i);
+    if(!await n.isVisible().catch(()=>false))continue;
+    const label=await labelOf(n);
+    if(/GPT-5\.6\s*Sol/i.test(label))return n;
+  }
+  return null;
+}
+async function findEffortOption(page,target){
+  const wanted=targetRegex(target);
+  return await visibleExact(page,wanted,'[role="menuitem"],[role="option"],button,[role="button"]');
+}
+function mediumLabel(text){return /(?:^|\s)(?:Medium|Средно)(?:\s|$)/i.test(String(text||""));}
+function shortLabel(text){return /(?:^|\s)(?:Instant|Кратко|Short)(?:\s|$)/i.test(String(text||""));}
+
 export async function ensureChatGptEffortMode(page, target=DEFAULT_TARGET){
   if(!page || page.isClosed()) return {ok:false,reason:"page-unavailable"};
   if(!String(page.url?.()||"").startsWith("https://chatgpt.com/")) return {ok:false,reason:"not-chatgpt"};
 
-  const wanted=targetRegex(target);
-  const compositeWanted = String(target).toLowerCase()==="medium"
-    ? /(GPT-5\.6\s*Sol.*(?:Medium|Средно)|(?:Medium|Средно).*GPT-5\.6\s*Sol)/i
-    : String(target).toLowerCase()==="instant"
-      ? /(GPT-5\.6\s*Sol.*(?:Instant|Кратко|Short)|(?:Instant|Кратко|Short).*GPT-5\.6\s*Sol)/i
-      : /(GPT-5\.6\s*Sol.*(?:High|Високо|Дълго|Long)|(?:High|Високо|Дълго|Long).*GPT-5\.6\s*Sol)/i;
-  const currentWanted=await visibleContains(page,compositeWanted,'button,[role="button"]');
-  if(currentWanted) return {ok:true,changed:false,target};
+  const picker=await findSolPicker(page);
+  if(!picker) return {ok:false,reason:"sol-picker-not-found",target};
+
+  const before=await labelOf(picker);
+  if(String(target).toLowerCase()==="medium" && mediumLabel(before))
+    return {ok:true,changed:false,target,pickerLabel:before};
 
   const now=Date.now();
   const last=Number(lastAttemptAt.get(page)||0);
-  if(now-last<RETRY_MS) return {ok:false,reason:"cooldown-unconfirmed",target};
+  if(now-last<RETRY_MS) return {ok:false,reason:"cooldown-unconfirmed",target,pickerLabel:before};
   lastAttemptAt.set(page,now);
 
-  const picker=await visibleContains(page,effortPickerRegex,'button,[role="button"]');
-  if(!picker) return {ok:false,reason:"picker-not-found",target};
+  for(let attempt=1;attempt<=2;attempt++){
+    try{
+      await picker.click({timeout:2000});
+      await sleep(300);
+    }catch{
+      return {ok:false,reason:"picker-click-failed",target,pickerLabel:before};
+    }
 
-  try{
-    await picker.click({timeout:1500});
-    await sleep(200);
-  }catch{
-    return {ok:false,reason:"picker-click-failed",target};
+    const option=await findEffortOption(page,target);
+    if(!option){
+      await page.keyboard.press("Escape").catch(()=>{});
+      return {ok:false,reason:"target-option-not-found",target,pickerLabel:before};
+    }
+
+    try{
+      await option.click({timeout:2000});
+      await sleep(500);
+    }catch{
+      return {ok:false,reason:"target-click-failed",target,pickerLabel:before};
+    }
+
+    const freshPicker=await findSolPicker(page);
+    const after=await labelOf(freshPicker);
+    if(String(target).toLowerCase()==="medium" && mediumLabel(after))
+      return {ok:true,changed:true,target,attempt,pickerLabel:after};
+
+    const standalone=await visibleExact(page,targetRegex(target),'button,[role="button"]');
+    if(standalone)
+      return {ok:true,changed:true,target,attempt,pickerLabel:after||"standalone-medium-confirmed"};
+
+    await page.keyboard.press("Escape").catch(()=>{});
+    await sleep(250);
   }
 
-  const option=await visibleExact(page,wanted,'[role="menuitem"],[role="option"],button,[role="button"]');
-  if(!option){
-    await page.keyboard.press("Escape").catch(() => {});
-    return {ok:false,reason:"target-option-not-found",target};
-  }
-
-  try{
-    await option.click({timeout:1500});
-    await sleep(200);
-  }catch{
-    return {ok:false,reason:"target-click-failed",target};
-  }
-
-  const confirmed=await visibleContains(page,compositeWanted,'button,[role="button"]');
-  return {ok:Boolean(confirmed),changed:true,target,reason:confirmed?"confirmed":"not-confirmed"};
+  const finalPicker=await findSolPicker(page);
+  const finalLabel=await labelOf(finalPicker);
+  return {
+    ok:false,
+    changed:true,
+    target,
+    reason:shortLabel(finalLabel)?"still-short-after-medium-click":"not-confirmed",
+    pickerLabel:finalLabel
+  };
 }
 
 if(process.argv.includes("--self-test")){
