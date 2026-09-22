@@ -309,6 +309,18 @@ async function snapshot(){
   const tm=readJson(TABMON,null),m=tm?.managed||{};
   return {at:now(),mode:infer(p,tm,Boolean(ver)),cdp9444Online:Boolean(ver),process:p,monitor:tm?{totalChatGptTabs:Number(tm.totalChatGptTabs||0),SYSTEM:Array.isArray(m.SYSTEM)?m.SYSTEM.length:0,DESIGN:Array.isArray(m.DESIGN)?m.DESIGN.length:0,APP2:Array.isArray(m.APP2)?m.APP2.length:0,APK:Array.isArray(m.APK)?m.APK.length:0,CONTROL:Array.isArray(m.CONTROL)?m.CONTROL.length:0,FREE_A:Array.isArray(m.FREE_A)?m.FREE_A.length:0,FREE_B:Array.isArray(m.FREE_B)?m.FREE_B.length:0}:null,liveTelemetry:telemetry};
 }
+function materialSnapshotView(s){
+  return {
+    mode:s&&s.mode||null,
+    cdp9444Online:Boolean(s&&s.cdp9444Online),
+    process:s&&s.process||{},
+    monitor:s&&s.monitor||null
+  };
+}
+function materialSnapshotKey(s){
+  return digest(JSON.stringify(materialSnapshotView(s)));
+}
+
 function event(prev,next){
   if(!prev)return {important:true,reason:"Scientist attached to current DAVID state"};
   if(prev.mode!==next.mode)return {important:true,reason:"DAVID mode changed "+prev.mode+" -> "+next.mode};
@@ -723,9 +735,19 @@ async function send(page,text){
   throw new Error("Scientist send failed: prompt was not acknowledged after "+MAX_SEND_ATTEMPTS+" attempts");
 }
 
-async function ask(page,prompt){
+async function ask(page,prompt,contextSnapshot=null){
   const base=digest(await latest(page));
+  const promptEpoch=contextSnapshot?materialSnapshotKey(contextSnapshot):null;
+  let liveEpoch=promptEpoch;
+  let contextStale=false;
   let rateRetries=0;
+
+  save("Scientist preparing prompt context",{
+    responseContextEpoch:promptEpoch,
+    responseContextStale:false,
+    staleResponseSuppressed:false
+  });
+
   let sent=await send(page,prompt);
   while(sent&&sent.rateLimited&&rateRetries<MAX_RATE_LIMIT_RETRIES){
     rateRetries++;
@@ -734,7 +756,7 @@ async function ask(page,prompt){
   }
   if(sent&&sent.rateLimited)throw new Error("Scientist rate-limited after retry budget");
   if(!sent||!sent.acknowledged)throw new Error("Scientist prompt not acknowledged");
-  save("Scientist prompt sent",{status:"thinking",lastPromptAt:now(),sendAck:true});
+  save("Scientist prompt sent",{status:"thinking",lastPromptAt:now(),sendAck:true,responseContextEpoch:promptEpoch});
 
   let last=base,stable="",since=0,start=Date.now(),lastLiveRefreshAt=0;
   while(Date.now()-start<RESPONSE_MS){
@@ -742,20 +764,23 @@ async function ask(page,prompt){
       lastLiveRefreshAt=Date.now();
       try{
         const live=await snapshot();
+        liveEpoch=materialSnapshotKey(live);
+        if(promptEpoch&&liveEpoch!==promptEpoch)contextStale=true;
         save("Scientist heartbeat",{
           status:"thinking",
           liveSnapshot:live,
           currentMode:live.mode,
           currentCdp9444Online:live.cdp9444Online,
-          gptWaitLiveRefreshedAt:now()
+          gptWaitLiveRefreshedAt:now(),
+          responseContextEpoch:promptEpoch,
+          currentRuntimeEpoch:liveEpoch,
+          responseContextStale:contextStale
         });
       }catch(e){
-        save("Scientist heartbeat",{
-          status:"thinking",
-          gptWaitProbeError:cleanText(e&&e.message||e,500)
-        });
+        save("Scientist heartbeat",{status:"thinking",gptWaitProbeError:cleanText(e&&e.message||e,500)});
       }
     }
+
     const ui=await safeDismissChatGptUi(page).catch(()=>({dismissed:false,rateLimited:false}));
     if(ui.rateLimited){
       if(rateRetries>=MAX_RATE_LIMIT_RETRIES)throw new Error("Scientist rate-limited while waiting for response");
@@ -770,31 +795,95 @@ async function ask(page,prompt){
     const text=await latest(page),h=digest(text);
     if(h&&h!==last){
       last=h;stable=h;since=Date.now();
-      save("Scientist response progressing",{
-        status:"thinking",
-        lastResponsePreview:cleanText(text,800),
-        thoughtSummary:compactThought(text)
-      });
+      if(contextStale){
+        save("Scientist stale response progressing",{
+          status:"refreshing",
+          staleResponsePreview:cleanText(text,800),
+          staleResponseSuppressed:true,
+          responseContextStale:true
+        });
+      }else{
+        save("Scientist response progressing",{
+          status:"thinking",
+          lastResponsePreview:cleanText(text,800),
+          thoughtSummary:compactThought(text)
+        });
+      }
     }
+
     if(await busy(page)){await sleep(800);continue;}
+
     if(h&&h!==base){
       if(h!==stable){stable=h;since=Date.now();}
       if(Date.now()-since>1200){
+        try{
+          const live=await snapshot();
+          liveEpoch=materialSnapshotKey(live);
+          if(promptEpoch&&liveEpoch!==promptEpoch)contextStale=true;
+        }catch{}
+
         const u=chatUrl(page.url());
-        save("Scientist response captured",{
-          status:"online",
-          chatUrl:u||state.chatUrl,
-          lastResponse:text,
-          lastResponseAt:now(),
-          thoughtSummary:compactThought(text),
-          lastThoughtSummary:compactThought(text)
-        });
+        if(contextStale){
+          save("Scientist response captured but stale",{
+            status:"refreshing",
+            chatUrl:u||state.chatUrl,
+            staleResponse:text,
+            staleResponseAt:now(),
+            staleResponseSuppressed:true,
+            responseContextStale:true,
+            responseContextEpoch:promptEpoch,
+            currentRuntimeEpoch:liveEpoch,
+            lastResponsePreview:null
+          });
+        }else{
+          save("Scientist response captured",{
+            status:"online",
+            chatUrl:u||state.chatUrl,
+            lastResponse:text,
+            lastResponseAt:now(),
+            thoughtSummary:compactThought(text),
+            lastThoughtSummary:compactThought(text),
+            responseContextStale:false,
+            staleResponseSuppressed:false,
+            lastResponsePreview:null
+          });
+        }
         return text;
       }
     }
     await sleep(700);
   }
   throw new Error("Scientist response timeout");
+}
+
+async function askFresh(page,prompt,contextSnapshot,label="runtime analysis"){
+  let baseSnapshot=contextSnapshot||await snapshot();
+  let response=await ask(page,prompt,baseSnapshot);
+
+  if(!state.responseContextStale){
+    return {response,snapshot:baseSnapshot,refreshed:false};
+  }
+
+  const fresh=await snapshot();
+  save("Scientist stale conclusion suppressed; refreshing",{
+    status:"refreshing",
+    staleResponseSuppressed:true,
+    staleResponseReason:"material DAVID runtime changed while GPT was answering",
+    staleResponseLabel:label,
+    freshRuntimeMode:fresh.mode,
+    freshRuntimeCdp9444Online:fresh.cdp9444Online
+  });
+
+  const refreshPrompt=
+    "SF SCIENTIST CONTEXT REFRESH\\n\\n"+
+    "Your immediately previous answer is stale because DAVID materially changed while you were answering. "+
+    "Do NOT present the previous conclusion as current. Re-evaluate only from the fresh evidence below. "+
+    "If the previous conclusion is still valid, prove it again from this snapshot.\\n\\n"+
+    "FRESH DAVID SNAPSHOT:\\n"+JSON.stringify(fresh,null,2)+
+    "\\n\\nReturn compactly in Bulgarian:\\nВИДЯХ: ...\\nРЕШИХ: ...\\nЗАЩО: ...\\nПРЕДЛАГАМ: ...\\nRISK: LOW|MEDIUM|HIGH\\nACTION: ...";
+
+  response=await ask(page,refreshPrompt,fresh);
+  return {response,snapshot:fresh,refreshed:true};
 }
 
 
