@@ -10,6 +10,7 @@ const side=read("tools/david/sf-scientist-sidecar.mjs");
 const start=read("START_SF_SCIENTIST.ps1");
 const stop=read("STOP_SF_SCIENTIST.ps1");
 const center=read("DAVID_MODE_SELECTOR_V2.ps1");
+const effort=read("tools/david/chatgpt-effort-mode.mjs");
 
 for(const token of [
   'SF_SCIENTIST_CDP_URL||"http://127.0.0.1:9555"',
@@ -48,8 +49,21 @@ for(const token of [
   'scientistExperience:"CHAT"',
   'scientistModel:"GPT-5.6 Sol"',
   'scientistProfileConfirmed',
-  'never ChatGPT Work'
+  'never ChatGPT Work',
+  'async function ensureNormalChatExperience',
+  '/^(Chat|Чат)$/i',
+  'workLimitVisible',
+  'scientistModelSolVisible',
+  'Scientist send blocked: Chat / GPT-5.6 Sol / Medium not confirmed'
 ]) if(!side.includes(token)) throw new Error("Scientist sidecar invariant missing: "+token);
+
+for(const token of [
+  'effortPickerRegex',
+  'GPT-5\\.6\\s*Sol',
+  'compositeWanted',
+  'cooldown-unconfirmed',
+  'GPT-5.6 Sol Кратко'
+]) if(!effort.includes(token)) throw new Error("ChatGPT effort controller invariant missing: "+token);
 
 for(const token of [
   'SF_SCIENTIST_CHATGPT_PROFILE',
