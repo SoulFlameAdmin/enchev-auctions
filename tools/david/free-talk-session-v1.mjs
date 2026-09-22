@@ -12,6 +12,7 @@ import {
 } from "./chatgpt-rate-limit-coordinator.mjs";
 import { CHATGPT_ROOT, rotateOwnedChatPage } from "./chatgpt-session-rotation.mjs";
 import { sendPromptVerified } from "./chatgpt-send-ack.mjs";
+// Shared sendPromptVerified owns the pointer-safe page.keyboard.insertText(text) fallback.
 
 const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "$1"));
 const ROLE = String(process.env.DAVID_FREE_TALK_ROLE || "FREE_A").toUpperCase();
