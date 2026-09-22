@@ -917,23 +917,54 @@ function classifyPowerShell(command){
 }
 async function runPowerShell(command){
   const policy=classifyPowerShell(command);
+  const startedAt=now();
+
+  save("Scientist PowerShell requested",{
+    lastToolKind:"POWERSHELL",
+    lastToolStatus:policy.allowed?"RUNNING":"BLOCKED",
+    lastToolCommand:cleanText(command,2000),
+    lastToolStartedAt:startedAt,
+    lastToolFinishedAt:null,
+    lastToolResult:null
+  });
+
   if(!policy.allowed){
     const result={ok:false,blocked:true,reason:policy.reason,command:cleanText(command,1000)};
     append(OPERATOR_LOG,{at:now(),kind:"powershell-blocked",...result});
+    save("Scientist PowerShell blocked",{
+      lastToolKind:"POWERSHELL",
+      lastToolStatus:"BLOCKED",
+      lastToolFinishedAt:now(),
+      lastToolResult:cleanText(JSON.stringify(result),5000)
+    });
     return result;
   }
+
   const started=Date.now();
   try{
     const x=await execFileAsync(POWERSHELL_EXE,[
       "-NoProfile","-NonInteractive","-ExecutionPolicy","Bypass","-Command",
       '$OutputEncoding=[Console]::OutputEncoding=New-Object System.Text.UTF8Encoding($false);'+command
     ],{windowsHide:true,timeout:POWERSHELL_TIMEOUT_MS,maxBuffer:4*1024*1024});
+
     const result={
       ok:true,blocked:false,exitCode:0,durationMs:Date.now()-started,
       stdout:redactToolOutput(x.stdout),stderr:redactToolOutput(x.stderr),
       command:cleanText(command,1000)
     };
+
     append(OPERATOR_LOG,{at:now(),kind:"powershell",...result});
+    save("Scientist PowerShell complete",{
+      lastToolKind:"POWERSHELL",
+      lastToolStatus:"DONE",
+      lastToolFinishedAt:now(),
+      lastToolResult:cleanText(
+        (result.stdout?"STDOUT:\\n"+result.stdout:"")+
+        (result.stderr?"\\nSTDERR:\\n"+result.stderr:"")+
+        (!result.stdout&&!result.stderr?"exitCode=0":""),
+        6000
+      )
+    });
     return result;
   }catch(e){
     const result={
@@ -942,9 +973,21 @@ async function runPowerShell(command){
       error:redactToolOutput(e&&e.message||e,3000),command:cleanText(command,1000)
     };
     append(OPERATOR_LOG,{at:now(),kind:"powershell",...result});
+    save("Scientist PowerShell failed",{
+      lastToolKind:"POWERSHELL",
+      lastToolStatus:"FAILED",
+      lastToolFinishedAt:now(),
+      lastToolResult:cleanText(
+        (result.stdout?"STDOUT:\\n"+result.stdout:"")+
+        (result.stderr?"\\nSTDERR:\\n"+result.stderr:"")+
+        (result.error?"\\nERROR:\\n"+result.error:""),
+        6000
+      )
+    });
     return result;
   }
 }
+
 async function captureDesktop(){
   ensureDir(CAPTURE_DIR);
   const file=path.join(CAPTURE_DIR,"screen-"+Date.now()+".png");
@@ -1070,6 +1113,16 @@ async function executeScientistAction(context,chief,text,s){
   const a=parseAction(text);
   let result="no action";
   if(a.kind==="NONE")return result;
+  if(a.kind!=="POWERSHELL"){
+    save("Scientist tool action started",{
+      lastToolKind:a.kind,
+      lastToolStatus:"RUNNING",
+      lastToolCommand:cleanText(a.arg||"",2000),
+      lastToolStartedAt:now(),
+      lastToolFinishedAt:null,
+      lastToolResult:null
+    });
+  }
   if(a.kind==="OPEN_POWERSHELL")result=openDetached(POWERSHELL_EXE,["-NoProfile","-NoExit"]);
   else if(a.kind==="OPEN_CMD")result=openDetached("cmd.exe",[]);
   else if(a.kind==="OPEN_CHATGPT"){
@@ -1097,7 +1150,13 @@ async function executeScientistAction(context,chief,text,s){
     result="rejected unsupported action: "+a.kind;
   }
   append(MEMORY,{at:now(),kind:"scientist-tool-action",action:a,result:cleanText(result,5000)});
-  save("Scientist autonomous tool action",{lastToolAction:a,lastToolResult:cleanText(result,5000)});
+  save("Scientist autonomous tool action",{
+    lastToolAction:a,
+    lastToolKind:a.kind,
+    lastToolStatus:String(result||"").startsWith("action failed:")?"FAILED":"DONE",
+    lastToolFinishedAt:now(),
+    lastToolResult:cleanText(result,5000)
+  });
   return result;
 }
 
