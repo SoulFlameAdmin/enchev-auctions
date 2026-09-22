@@ -1,3 +1,4 @@
+import { runtimeDataDir } from "./runtime-paths.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
@@ -10,11 +11,11 @@ const HERE = path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/, "
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
 const INITIAL_CHAT_URL = process.env.DAVID_CONTROL_CHAT_URL || "https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e";
 const FRESH_SESSION_ON_START = process.env.DAVID_FRESH_SESSIONS_ON_START === "1";
-const STATE_FILE = process.env.DAVID_CONTROL_STATE_FILE || path.join(HERE, ".david-control-state.json");
-const MONITOR_FILE = path.join(HERE, ".david-tab-monitor.json");
-const COMMAND_FILE = path.join(HERE, ".david-control-command.json");
-const RESULT_FILE = path.join(HERE, ".david-control-result.json");
-const RATE_LIMIT_FILE = path.join(HERE, ".david-global-chatgpt-rate-limit.json");
+const STATE_FILE = process.env.DAVID_CONTROL_STATE_FILE || path.join(runtimeDataDir(HERE), ".david-control-state.json");
+const MONITOR_FILE = path.join(runtimeDataDir(HERE), ".david-tab-monitor.json");
+const COMMAND_FILE = path.join(runtimeDataDir(HERE), ".david-control-command.json");
+const RESULT_FILE = path.join(runtimeDataDir(HERE), ".david-control-result.json");
+const RATE_LIMIT_FILE = path.join(runtimeDataDir(HERE), ".david-global-chatgpt-rate-limit.json");
 const MARKER = "[DAVID_CONTROL_WATCHTOWER_V1]";
 const TAB_NAME = "DAVID_CONTROL_MANAGED_V1";
 const PENDING_TAB_NAME = "DAVID_CONTROL_PENDING_V1";
@@ -269,7 +270,7 @@ async function rollover(context, page, state) {
 }
 
 function compactWorkerState(file) {
-  const s = readJson(path.join(HERE, file)) || {};
+  const s = readJson(path.join(runtimeDataDir(HERE), file)) || {};
   return {
     updatedAt: s.updatedAt || null,
     watchdog: s.watchdog || null,

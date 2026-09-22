@@ -38,7 +38,8 @@
   ],
   "runtimeAssets": [
     "tools/david/package.json",
-    "app/design-process-2-evidence.json"
+    "app/design-process-2-evidence.json",
+    "tools/david/package-lock.json"
   ],
   "externalDependencies": {
     "playwright-core": "1.63.0"

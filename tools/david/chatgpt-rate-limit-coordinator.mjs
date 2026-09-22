@@ -1,10 +1,11 @@
+import { runtimeDataDir } from "./runtime-paths.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-export const RATE_LIMIT_STATE_FILE = path.join(HERE, ".david-global-chatgpt-rate-limit.json");
-const RATE_LIMIT_LOCK_FILE = path.join(HERE, ".david-global-chatgpt-rate-limit.lock");
+export const RATE_LIMIT_STATE_FILE = path.join(runtimeDataDir(HERE), ".david-global-chatgpt-rate-limit.json");
+const RATE_LIMIT_LOCK_FILE = path.join(runtimeDataDir(HERE), ".david-global-chatgpt-rate-limit.lock");
 
 const RATE_LIMIT_COOLDOWN_MS = Number(process.env.DAVID_RATE_LIMIT_COOLDOWN_MS || 60_000);
 const BACKOFF_MS = [RATE_LIMIT_COOLDOWN_MS, RATE_LIMIT_COOLDOWN_MS, RATE_LIMIT_COOLDOWN_MS];

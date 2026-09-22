@@ -1,3 +1,4 @@
+import { runtimeDataDir } from "./runtime-paths.mjs";
 import { chromium } from "playwright-core";
 import fs from "node:fs";
 import path from "node:path";
@@ -11,15 +12,15 @@ const execFileAsync=promisify(execFile);
 const HERE=path.dirname(fileURLToPath(import.meta.url));
 const SCI_CDP=process.env.SF_SCIENTIST_CDP_URL||"http://127.0.0.1:9555";
 const DAVID_CDP=process.env.DAVID_CDP_URL||"http://127.0.0.1:9444";
-const STATE=path.join(HERE,".sf-scientist-state.json");
-const SINGLETON_LOCK=path.join(HERE,".sf-scientist.lock");
-const COMMAND=path.join(HERE,".sf-scientist-command.json");
-const RESPONSE=path.join(HERE,".sf-scientist-response.json");
-const DECISIONS=path.join(HERE,".sf-scientist-decisions.jsonl");
-const MEMORY=path.join(HERE,".sf-scientist-memory.jsonl");
-const TABMON=path.join(HERE,".david-tab-monitor.json");
-const CAPTURE_DIR=path.join(HERE,".sf-scientist-captures");
-const OPERATOR_LOG=path.join(HERE,".sf-scientist-operator.jsonl");
+const STATE=path.join(runtimeDataDir(HERE), ".sf-scientist-state.json");
+const SINGLETON_LOCK=path.join(runtimeDataDir(HERE), ".sf-scientist.lock");
+const COMMAND=path.join(runtimeDataDir(HERE), ".sf-scientist-command.json");
+const RESPONSE=path.join(runtimeDataDir(HERE), ".sf-scientist-response.json");
+const DECISIONS=path.join(runtimeDataDir(HERE), ".sf-scientist-decisions.jsonl");
+const MEMORY=path.join(runtimeDataDir(HERE), ".sf-scientist-memory.jsonl");
+const TABMON=path.join(runtimeDataDir(HERE), ".david-tab-monitor.json");
+const CAPTURE_DIR=path.join(runtimeDataDir(HERE), ".sf-scientist-captures");
+const OPERATOR_LOG=path.join(runtimeDataDir(HERE), ".sf-scientist-operator.jsonl");
 const MAX_AUTONOMOUS_STEPS=Number(process.env.SF_SCIENTIST_MAX_STEPS||4);
 const POWERSHELL_TIMEOUT_MS=Number(process.env.SF_SCIENTIST_POWERSHELL_TIMEOUT_MS||60000);
 const MAX_TOOL_OUTPUT=12000;
@@ -203,7 +204,7 @@ function tailLines(p,maxLines=MAX_LOG_LINES){
   catch{return [];}
 }
 function runtimeFiles(){
-  let names=[];try{names=fs.readdirSync(HERE);}catch{}
+  let names=[];try{names=fs.readdirSync(runtimeDataDir(HERE));}catch{}
   return {
     states:names.filter(n=>/^\\.david-.*\\.json$/i.test(n)).slice(0,80),
     logs:names.filter(n=>/\\.log$/i.test(n)).slice(0,40)
@@ -212,7 +213,7 @@ function runtimeFiles(){
 function stateSummary(){
   const rows=[];
   for(const name of runtimeFiles().states){
-    const j=readJson(path.join(HERE,name),null);
+    const j=readJson(path.join(runtimeDataDir(HERE),name),null);
     if(!j||typeof j!=="object")continue;
     rows.push({
       file:name,
@@ -228,7 +229,7 @@ function stateSummary(){
 }
 function logSummary(){
   const files=runtimeFiles().logs.map(name=>{
-    const p=path.join(HERE,name);let m=0;try{m=fs.statSync(p).mtimeMs||0;}catch{}
+    const p=path.join(runtimeDataDir(HERE),name);let m=0;try{m=fs.statSync(p).mtimeMs||0;}catch{}
     return {name,path:p,mtime:m};
   }).filter(x=>x.mtime>0).sort((a,b)=>b.mtime-a.mtime).slice(0,MAX_LOG_FILES);
   const recent=[],alerts=[];

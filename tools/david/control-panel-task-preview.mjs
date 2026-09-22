@@ -1,12 +1,13 @@
+import { runtimeDataDir } from "./runtime-paths.mjs";
 import fs from "node:fs";
 import path from "node:path";
 import { chromium } from "playwright-core";
 
 const HERE=path.dirname(new URL(import.meta.url).pathname.replace(/^\/(.:)/,"$1"));
-const MANIFEST=path.join(HERE,".david-control-panel-tasks.json");
-const COMMAND=path.join(HERE,".david-control-panel-command.json");
-const MONITOR=path.join(HERE,".david-tab-monitor.json");
-const PREVIEW_DIR=path.join(HERE,".david-control-panel-previews");
+const MANIFEST=path.join(runtimeDataDir(HERE), ".david-control-panel-tasks.json");
+const COMMAND=path.join(runtimeDataDir(HERE), ".david-control-panel-command.json");
+const MONITOR=path.join(runtimeDataDir(HERE), ".david-tab-monitor.json");
+const PREVIEW_DIR=path.join(runtimeDataDir(HERE), ".david-control-panel-previews");
 const DAVID_CDP=process.env.DAVID_CDP_URL||"http://127.0.0.1:9444";
 const SCIENTIST_CDP=process.env.SF_SCIENTIST_CDP_URL||"http://127.0.0.1:9555";
 const REFRESH_MS=Math.max(1500,Number(process.env.DAVID_CONTROL_PANEL_PREVIEW_MS||3000));
@@ -62,7 +63,7 @@ function roleForDavid(url,monitor,index){
 function progressForRole(role){
   const file=STATE_FILE_BY_ROLE[role];
   if(!file)return null;
-  const st=readJson(path.join(HERE,file),null);
+  const st=readJson(path.join(runtimeDataDir(HERE),file),null);
   if(!st)return null;
 
   return {
@@ -155,7 +156,7 @@ async function processCommand(tasks){
   }else{
     result.error="unsupported-action";
   }
-  writeJson(path.join(HERE,".david-control-panel-command-result.json"),result);
+  writeJson(path.join(runtimeDataDir(HERE), ".david-control-panel-command-result.json"),result);
 }
 
 function statusWorking(status){

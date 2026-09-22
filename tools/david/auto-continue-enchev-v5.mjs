@@ -1,3 +1,4 @@
+import { runtimeDataDir } from "./runtime-paths.mjs";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
@@ -28,7 +29,7 @@ const COMPLETE_SAMPLE_MS = Number(process.env.DAVID_COMPLETE_SAMPLE_MS || 1200);
 const SEMANTIC_TERMINAL_QUIET_MS = Number(process.env.DAVID_SEMANTIC_TERMINAL_QUIET_MS || 15000);
 const PROBLEM_BACKOFF_MS = Number(process.env.DAVID_PROBLEM_BACKOFF_MS || 30000);
 const PLATFORM_BACKOFF_MS = Number(process.env.DAVID_PLATFORM_BACKOFF_MS || 180000);
-const STATE_FILE = process.env.DAVID_STATE_FILE || path.join(process.cwd(), ".david-enchev-state.json");
+const STATE_FILE = process.env.DAVID_STATE_FILE || path.join(runtimeDataDir(process.cwd()), ".david-enchev-state.json");
 const RELAY_MARKER = "[DAVID_RELAY_ENCHEV_V5]";
 const TAB_NAME = "DAVID_SYSTEM_MANAGED_V1";
 const PENDING_TAB_NAME = "DAVID_SYSTEM_PENDING_V1";

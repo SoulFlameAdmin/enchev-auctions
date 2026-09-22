@@ -1,3 +1,4 @@
+import { runtimeDataDir } from "./runtime-paths.mjs";
 import { chromium } from "playwright-core";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
@@ -11,7 +12,7 @@ import { sendPromptVerified } from "./chatgpt-send-ack.mjs";
 const EFFORT_MODE = String(process.env.DAVID_PROJECT_EFFORT_MODE || "medium").toLowerCase();
 
 const CDP_URL = process.env.DAVID_CDP_URL || "http://127.0.0.1:9444";
-const STATE_FILE = process.env.DAVID_APK_STATE_FILE || path.join(process.cwd(), ".david-apk-state.json");
+const STATE_FILE = process.env.DAVID_APK_STATE_FILE || path.join(runtimeDataDir(process.cwd()), ".david-apk-state.json");
 const ENV_CHAT_URL = process.env.DAVID_APK_CHAT_URL || "";
 const FRESH_SESSION_ON_START = process.env.DAVID_FRESH_SESSIONS_ON_START === "1";
 const POLL_MS = Number(process.env.DAVID_APK_POLL_MS || 900);

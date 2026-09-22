@@ -1,3 +1,4 @@
+import { runtimeDataDir } from "./runtime-paths.mjs";
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
@@ -15,11 +16,11 @@ const INTERRUPT_GUARD = path.join(HERE, "connection-interruption-guard.mjs");
 const FREE_TALK = path.join(HERE, "free-talk-session-v1.mjs");
 const NODE = process.execPath;
 const children = new Map();
-const MONITOR_FILE = path.join(HERE, ".david-tab-monitor.json");
-const CONTROL_COMMAND_FILE = path.join(HERE, ".david-control-command.json");
-const CONTROL_RESULT_FILE = path.join(HERE, ".david-control-result.json");
-const RECOVERY_REQUEST_FILE = path.join(HERE, ".david-recovery-request.json");
-const RECOVERY_RESULT_FILE = path.join(HERE, ".david-recovery-result.json");
+const MONITOR_FILE = path.join(runtimeDataDir(HERE), ".david-tab-monitor.json");
+const CONTROL_COMMAND_FILE = path.join(runtimeDataDir(HERE), ".david-control-command.json");
+const CONTROL_RESULT_FILE = path.join(runtimeDataDir(HERE), ".david-control-result.json");
+const RECOVERY_REQUEST_FILE = path.join(runtimeDataDir(HERE), ".david-recovery-request.json");
+const RECOVERY_RESULT_FILE = path.join(runtimeDataDir(HERE), ".david-recovery-result.json");
 const MONITOR_MS = Number(process.env.DAVID_TAB_MONITOR_MS || 2000);
 const MONITOR_CONNECT_TIMEOUT_MS = Number(process.env.DAVID_TAB_MONITOR_CONNECT_TIMEOUT_MS || 60000);
 const WORKER_START_GRACE_MS = Number(process.env.DAVID_WORKER_START_GRACE_MS || 45000);
@@ -64,70 +65,70 @@ const allSpecs = [
   {
     name: "SYSTEM",
     script: SYSTEM,
-    stateFile: path.join(HERE, ".david-enchev-state.json"),
+    stateFile: path.join(runtimeDataDir(HERE), ".david-enchev-state.json"),
     env: {
       DAVID_CHAT_URL: "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71",
-      DAVID_STATE_FILE: path.join(HERE, ".david-enchev-state.json")
+      DAVID_STATE_FILE: path.join(runtimeDataDir(HERE), ".david-enchev-state.json")
     }
   },
   {
     name: "DESIGN",
     script: DESIGN,
-    stateFile: path.join(HERE, ".david-enchev-design-state.json"),
+    stateFile: path.join(runtimeDataDir(HERE), ".david-enchev-design-state.json"),
     env: {
       DAVID_DESIGN_CHAT_URL: "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7",
-      DAVID_DESIGN_STATE_FILE: path.join(HERE, ".david-enchev-design-state.json")
+      DAVID_DESIGN_STATE_FILE: path.join(runtimeDataDir(HERE), ".david-enchev-design-state.json")
     }
   },
   {
     name: "APP2",
     script: APP2,
-    stateFile: path.join(HERE, ".david-app2-state-6aac2dbb.json"),
+    stateFile: path.join(runtimeDataDir(HERE), ".david-app2-state-6aac2dbb.json"),
     env: {
       DAVID_APP2_CHAT_URL: "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4",
       DAVID_APP2_CDP_URL: process.env.DAVID_CDP_URL || "http://127.0.0.1:9444",
-      DAVID_APP2_STATE_FILE: path.join(HERE, ".david-app2-state-6aac2dbb.json")
+      DAVID_APP2_STATE_FILE: path.join(runtimeDataDir(HERE), ".david-app2-state-6aac2dbb.json")
     }
   },
   {
     name: "APK",
     script: APK,
-    stateFile: path.join(HERE, ".david-apk-state.json"),
+    stateFile: path.join(runtimeDataDir(HERE), ".david-apk-state.json"),
     env: {
-      DAVID_APK_STATE_FILE: path.join(HERE, ".david-apk-state.json")
+      DAVID_APK_STATE_FILE: path.join(runtimeDataDir(HERE), ".david-apk-state.json")
     }
   },
   {
     name: "CONTROL",
     script: CONTROL,
-    stateFile: path.join(HERE, ".david-control-state.json"),
+    stateFile: path.join(runtimeDataDir(HERE), ".david-control-state.json"),
     env: {
       DAVID_CONTROL_CHAT_URL: "https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e",
-      DAVID_CONTROL_STATE_FILE: path.join(HERE, ".david-control-state.json")
+      DAVID_CONTROL_STATE_FILE: path.join(runtimeDataDir(HERE), ".david-control-state.json")
     }
   },
   {
     name: "FREE_A",
     script: FREE_TALK,
-    stateFile: path.join(HERE, ".david-free-talk-a-state.json"),
+    stateFile: path.join(runtimeDataDir(HERE), ".david-free-talk-a-state.json"),
     env: {
       DAVID_FREE_TALK_ROLE: "FREE_A",
       DAVID_FREE_TALK_CHAT_URL: process.env.DAVID_FREE_A_CHAT_URL || "",
       DAVID_FREE_TALK_RESUME_EXISTING: process.env.DAVID_FREE_TALK_RESUME_EXISTING || "0",
-      DAVID_FREE_TALK_STATE_FILE: path.join(HERE, ".david-free-talk-a-state.json"),
-      DAVID_FREE_TALK_EXCHANGE_FILE: path.join(HERE, ".david-free-talk-exchange.json")
+      DAVID_FREE_TALK_STATE_FILE: path.join(runtimeDataDir(HERE), ".david-free-talk-a-state.json"),
+      DAVID_FREE_TALK_EXCHANGE_FILE: path.join(runtimeDataDir(HERE), ".david-free-talk-exchange.json")
     }
   },
   {
     name: "FREE_B",
     script: FREE_TALK,
-    stateFile: path.join(HERE, ".david-free-talk-b-state.json"),
+    stateFile: path.join(runtimeDataDir(HERE), ".david-free-talk-b-state.json"),
     env: {
       DAVID_FREE_TALK_ROLE: "FREE_B",
       DAVID_FREE_TALK_CHAT_URL: process.env.DAVID_FREE_B_CHAT_URL || "",
       DAVID_FREE_TALK_RESUME_EXISTING: process.env.DAVID_FREE_TALK_RESUME_EXISTING || "0",
-      DAVID_FREE_TALK_STATE_FILE: path.join(HERE, ".david-free-talk-b-state.json"),
-      DAVID_FREE_TALK_EXCHANGE_FILE: path.join(HERE, ".david-free-talk-exchange.json")
+      DAVID_FREE_TALK_STATE_FILE: path.join(runtimeDataDir(HERE), ".david-free-talk-b-state.json"),
+      DAVID_FREE_TALK_EXCHANGE_FILE: path.join(runtimeDataDir(HERE), ".david-free-talk-exchange.json")
     }
   },
   {
@@ -322,13 +323,13 @@ async function getMonitorContext() {
 
 function currentOwnedUrls() {
   const defs = [
-    ["SYSTEM", path.join(HERE, ".david-enchev-state.json"), "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71"],
-    ["DESIGN", path.join(HERE, ".david-enchev-design-state.json"), "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7"],
-    ["APP2", path.join(HERE, ".david-app2-state-6aac2dbb.json"), "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4"],
-    ["APK", path.join(HERE, ".david-apk-state.json"), null],
-    ["FREE_A", path.join(HERE, ".david-free-talk-a-state.json"), null],
-    ["FREE_B", path.join(HERE, ".david-free-talk-b-state.json"), null],
-    ["CONTROL", path.join(HERE, ".david-control-state.json"), "https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e"]
+    ["SYSTEM", path.join(runtimeDataDir(HERE), ".david-enchev-state.json"), "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71"],
+    ["DESIGN", path.join(runtimeDataDir(HERE), ".david-enchev-design-state.json"), "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7"],
+    ["APP2", path.join(runtimeDataDir(HERE), ".david-app2-state-6aac2dbb.json"), "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4"],
+    ["APK", path.join(runtimeDataDir(HERE), ".david-apk-state.json"), null],
+    ["FREE_A", path.join(runtimeDataDir(HERE), ".david-free-talk-a-state.json"), null],
+    ["FREE_B", path.join(runtimeDataDir(HERE), ".david-free-talk-b-state.json"), null],
+    ["CONTROL", path.join(runtimeDataDir(HERE), ".david-control-state.json"), "https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e"]
   ];
   const byUrl = new Map();
   for (const [kind, file, fallback] of defs) {
@@ -556,13 +557,13 @@ async function executeControlCommand(context) {
 
 async function cleanupManagedTabs() {
   const stateSpecs = [
-    { kind: "SYSTEM", file: path.join(HERE, ".david-enchev-state.json"), fallback: "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71" },
-    { kind: "DESIGN", file: path.join(HERE, ".david-enchev-design-state.json"), fallback: "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7" },
-    { kind: "APP2", file: path.join(HERE, ".david-app2-state-6aac2dbb.json"), fallback: "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4" },
-    { kind: "APK", file: path.join(HERE, ".david-apk-state.json"), fallback: null },
-    { kind: "FREE_A", file: path.join(HERE, ".david-free-talk-a-state.json"), fallback: null },
-    { kind: "FREE_B", file: path.join(HERE, ".david-free-talk-b-state.json"), fallback: null },
-    { kind: "CONTROL", file: path.join(HERE, ".david-control-state.json"), fallback: "https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e" }
+    { kind: "SYSTEM", file: path.join(runtimeDataDir(HERE), ".david-enchev-state.json"), fallback: "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71" },
+    { kind: "DESIGN", file: path.join(runtimeDataDir(HERE), ".david-enchev-design-state.json"), fallback: "https://chatgpt.com/c/6aab25f8-e68c-83eb-ba1a-9e3fda3d5eb7" },
+    { kind: "APP2", file: path.join(runtimeDataDir(HERE), ".david-app2-state-6aac2dbb.json"), fallback: "https://chatgpt.com/c/6aac2dbb-3ff4-83eb-aaac-ab791d3f87b4" },
+    { kind: "APK", file: path.join(runtimeDataDir(HERE), ".david-apk-state.json"), fallback: null },
+    { kind: "FREE_A", file: path.join(runtimeDataDir(HERE), ".david-free-talk-a-state.json"), fallback: null },
+    { kind: "FREE_B", file: path.join(runtimeDataDir(HERE), ".david-free-talk-b-state.json"), fallback: null },
+    { kind: "CONTROL", file: path.join(runtimeDataDir(HERE), ".david-control-state.json"), fallback: "https://chatgpt.com/c/6aade2fa-e2a0-83ed-96af-702c0430d49e" }
   ].filter((spec) => ACTIVE_MANAGED_KINDS.has(spec.kind));
   const preferredByKind = new Map();
   const stale = new Set();

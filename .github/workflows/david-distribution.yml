@@ -40,6 +40,14 @@ jobs:
             if ($errors.Count -gt 0) { $errors | ForEach-Object { Write-Error $_.Message }; exit 1 }
           }
           Write-Output 'DAVID_WINDOWS_POWERSHELL_PARSE PASS'
+      - name: Worker behavior self-tests (no user browser or credentials)
+        shell: pwsh
+        run: |
+          $checks = @('chatgpt-send-ack.mjs','chatgpt-effort-mode.mjs','auto-continue-enchev-v5.mjs','auto-complete-app2-v1.mjs','auto-continue-david-apk-v1.mjs')
+          foreach ($check in $checks) {
+            node "tools/david/$check" --self-test
+            if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          }
       - name: Record inventory evidence (not a release)
         shell: pwsh
         run: |
