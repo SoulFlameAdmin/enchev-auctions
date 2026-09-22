@@ -327,29 +327,30 @@ async function ready(page){
   const t=Date.now();
   let profileFailures=0;
   while(Date.now()-t<READY_MS){
-    if(await composer(page)){
+    const c=await composer(page);
+    if(c){
       const profile=await ensureScientistChatMedium(page).catch(e=>({ok:false,reason:String(e&&e.message||e)}));
       const u=chatUrl(page.url());
       if(profile&&profile.ok){
         save("Scientist chat ready",{
           status:"online",chatUrl:u||state.chatUrl,loginRequired:false,
           scientistExperience:"CHAT",scientistReasoning:"MEDIUM",scientistModel:"GPT-5.6 Sol",
-          scientistProfileConfirmed:true
+          scientistProfileConfirmed:true,scientistProfileWarning:null
         });
-        return page;
+      }else{
+        profileFailures++;
+        save("Scientist chat ready with profile warning",{
+          status:"online-warning",chatUrl:u||state.chatUrl,loginRequired:false,
+          scientistExperience:"CHAT",
+          scientistReasoning:"BEST-EFFORT-MEDIUM",
+          scientistModel:"GPT-5.6 Sol",
+          scientistProfileConfirmed:false,
+          scientistProfileWarning:profile&&profile.reason||"profile-not-confirmed",
+          scientistPickerLabel:profile&&profile.effort&&profile.effort.pickerLabel||null,
+          profileVerifyAttempts:profileFailures
+        });
       }
-      profileFailures++;
-      const blocked=profileFailures>=5;
-      save(blocked?"Scientist profile blocked":"Scientist profile correction required",{
-        status:blocked?"profile-blocked":"starting",chatUrl:u||state.chatUrl,loginRequired:false,
-        scientistProfileConfirmed:false,
-        scientistProfileReason:profile&&profile.reason||"profile-not-confirmed",
-        scientistPickerLabel:profile&&profile.effort&&profile.effort.pickerLabel||null,
-        profileVerifyAttempts:profileFailures
-      });
-      if(blocked)await sleep(2500);
-      else await sleep(1200);
-      continue;
+      return page;
     }
     const body=await page.locator("body").innerText().catch(()=>"");
     if(/log in|sign in|login/i.test(body)||/auth|login/i.test(page.url()))save("Scientist login required",{status:"login-required",loginRequired:true});
@@ -358,6 +359,7 @@ async function ready(page){
   }
   throw new Error("Scientist ChatGPT ready timeout");
 }
+
 async function pageFor(context){
   let pages=context.pages().filter(p=>String(p.url()||"").includes("chatgpt.com")),page=null;
   if(state.chatUrl)page=pages.find(p=>chatUrl(p.url())===state.chatUrl)||null;
@@ -366,9 +368,16 @@ async function pageFor(context){
   return await ready(page);
 }
 async function send(page,text){
-  const profile=await ensureScientistChatMedium(page);
-  if(!profile.ok)throw new Error("Scientist send blocked: Chat / GPT-5.6 Sol / Medium not confirmed");
+  const profile=await ensureScientistChatMedium(page).catch(e=>({ok:false,reason:String(e&&e.message||e)}));
   const c=await composer(page); if(!c)throw new Error("Scientist composer unavailable");
+  if(!profile||!profile.ok){
+    save("Scientist send proceeding with profile warning",{
+      status:"online-warning",
+      scientistProfileConfirmed:false,
+      scientistProfileWarning:profile&&profile.reason||"profile-not-confirmed",
+      scientistPickerLabel:profile&&profile.effort&&profile.effort.pickerLabel||null
+    });
+  }
   try{await c.fill(text,{timeout:2500});}catch{await c.focus();await page.keyboard.press("Control+A");await page.keyboard.insertText(text);}
   for(const s of ['button[data-testid="send-button"]','button[aria-label*="Send"]']){const b=page.locator(s).last();if(await b.count().catch(()=>0)&&await b.isVisible().catch(()=>false)&&await b.isEnabled().catch(()=>false)){await b.click({timeout:2000});return;}}
   await c.press("Enter",{timeout:2500});
@@ -525,8 +534,8 @@ async function waitDetachedReady(page){
   const started=Date.now();
   while(Date.now()-started<READY_MS){
     if(await composer(page)){
-      const profile=await ensureScientistChatMedium(page);
-      if(profile.ok)return page;
+      await ensureScientistChatMedium(page).catch(()=>null);
+      return page;
     }
     await sleep(1000);
   }
