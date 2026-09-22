@@ -415,9 +415,11 @@ function Update-ScientistUi{
   $st=Read-Json $ScientistState
   $rp=Read-Json $ScientistResponse
   $count=Get-NodeCount "sf-scientist-sidecar.mjs"
+
   if($st){
     $status=[string]$st.status
     $hb=[string]$st.heartbeatAt
+
     if($st.scientistProfileConfirmed){
       $profile="CHAT | GPT-5.6 SOL | MEDIUM"
     }elseif($status-eq"online-warning"){
@@ -425,23 +427,107 @@ function Update-ScientistUi{
     }else{
       $profile="CHAT / MEDIUM: VERIFYING"
     }
+
     $scientistStatus.Text=("{0}  W={1} | {2}" -f $status.ToUpperInvariant(),$count,$profile)+[Environment]::NewLine+("HB: {0}" -f $hb)
+
     if($status-eq"online"){$scientistStatus.ForeColor=[System.Drawing.Color]::LightGreen}
     elseif($status-eq"thinking"){$scientistStatus.ForeColor=[System.Drawing.Color]::Cyan}
+    elseif($status-eq"rate-limited"){$scientistStatus.ForeColor=[System.Drawing.Color]::Khaki}
+    elseif($status-eq"online-warning"){$scientistStatus.ForeColor=[System.Drawing.Color]::Orange}
     elseif($status-eq"login-required"){$scientistStatus.ForeColor=[System.Drawing.Color]::Khaki}
     else{$scientistStatus.ForeColor=[System.Drawing.Color]::Orange}
+
+    $lines=New-Object System.Collections.Generic.List[string]
+
+    $activity=[string]$st.liveActivity
+    if(-not[string]::IsNullOrWhiteSpace($activity)){
+      $lines.Add("LIVE: "+$activity)
+    }
+    $activityAt=[string]$st.activityAt
+    if(-not[string]::IsNullOrWhiteSpace($activityAt)){
+      $lines.Add("AT: "+$activityAt)
+    }
+
+    $mode=[string]$st.currentMode
+    if(-not[string]::IsNullOrWhiteSpace($mode)){
+      $lines.Add("DAVID MODE: "+$mode)
+    }
+
+    if($null-ne$st.currentCdp9444Online){
+      $lines.Add("CDP 9444: "+([string]$st.currentCdp9444Online).ToUpperInvariant())
+    }
+
+    if($st.pendingObservation){
+      $reasons=@($st.pendingObservationReasons)
+      if($reasons.Count-gt0){
+        $lines.Add("PENDING: "+($reasons -join " | "))
+      }else{
+        $lines.Add("PENDING: live telemetry analysis")
+      }
+    }
+
+    $backoff=[string]$st.rateLimitBackoffUntil
+    if(-not[string]::IsNullOrWhiteSpace($backoff)){
+      $lines.Add("RATE LIMIT BACKOFF UNTIL: "+$backoff)
+    }
+
+    if($st.lastUiRecovery){
+      $uiType=[string]$st.lastUiRecovery.type
+      $uiButton=[string]$st.lastUiRecovery.button
+      $uiAt=[string]$st.lastUiRecovery.at
+      $ui="UI RECOVERY: "+$uiType
+      if(-not[string]::IsNullOrWhiteSpace($uiButton)){$ui+=" -> "+$uiButton}
+      if(-not[string]::IsNullOrWhiteSpace($uiAt)){$ui+=" @ "+$uiAt}
+      $lines.Add($ui)
+    }
+
+    $warning=[string]$st.scientistProfileWarning
+    if(-not[string]::IsNullOrWhiteSpace($warning)){
+      $lines.Add("PROFILE WARNING: "+$warning)
+    }
+
+    $err=[string]$st.lastError
+    if(-not[string]::IsNullOrWhiteSpace($err)){
+      $lines.Add("")
+      $lines.Add("ERROR: "+$err)
+    }
+
+    $obs=[string]$st.lastObservation
+    if(-not[string]::IsNullOrWhiteSpace($obs)){
+      $lines.Add("")
+      $lines.Add("LAST OBSERVATION: "+$obs)
+    }
+
+    $preview=[string]$st.lastResponsePreview
+    if(-not[string]::IsNullOrWhiteSpace($preview)){
+      $lines.Add("")
+      $lines.Add("GPT LIVE: "+$preview)
+    }
+
     $decision=[string]$st.lastDecision
-    if(-not$decision){$decision=[string]$st.lastObservation}
-    if(-not$decision){$decision=[string]$st.lastAction}
+    if(-not[string]::IsNullOrWhiteSpace($decision)){
+      $lines.Add("")
+      $lines.Add("LAST DECISION:")
+      $lines.Add($decision)
+    }
+
     $tool=[string]$st.lastToolResult
-    if($tool){$decision=$decision+[Environment]::NewLine+[Environment]::NewLine+"TOOL: "+$tool}
-    $scientistDecision.Text=$decision
+    if(-not[string]::IsNullOrWhiteSpace($tool)){
+      $lines.Add("")
+      $lines.Add("TOOL: "+$tool)
+    }
+
+    if($lines.Count-eq0){$lines.Add("Scientist connected. Waiting for live activity.")}
+    $scientistDecision.Text=($lines -join [Environment]::NewLine)
   }else{
     $scientistStatus.Text=("STATUS: OFFLINE  WORKER={0}" -f $count)+[Environment]::NewLine+"Scientist auto-starts with DAVID."
     $scientistStatus.ForeColor=[System.Drawing.Color]::Khaki
     $scientistDecision.Text="No Scientist state yet."
   }
-  if($rp-and$rp.response){$scientistReply.Text=[string]$rp.response}
+
+  if($rp-and$rp.response){
+    $scientistReply.Text=[string]$rp.response
+  }
 }
 
 function Send-ScientistChat{

@@ -66,7 +66,16 @@ for(const token of [
   'booted=false',
   'online-warning',
   'Scientist send proceeding with profile warning',
-  'BEST-EFFORT-MEDIUM'
+  'BEST-EFFORT-MEDIUM',
+  'async function safeDismissChatGptUi',
+  'Твърде много заявки',
+  'Разбрано',
+  'RATE_LIMIT_BACKOFF_MS',
+  'Scientist auto-dismissed safe ChatGPT rate-limit dialog',
+  'Scientist respecting ChatGPT rate limit',
+  'liveActivity',
+  'lastResponsePreview',
+  'currentMode'
 ]) if(!side.includes(token)) throw new Error("Scientist sidecar invariant missing: "+token);
 
 for(const token of [
@@ -108,11 +117,16 @@ for(const token of [
   "DAVID APK ONLY",
   "UTF8Encoding($false,$true)",
   "WriteAllText($ScientistCommand",
-  "CHAT | GPT-5.6 SOL | MEDIUM"
+  "CHAT | GPT-5.6 SOL | MEDIUM",
+  "LIVE: ",
+  "DAVID MODE: ",
+  "UI RECOVERY: ",
+  "GPT LIVE: ",
+  "RATE LIMIT BACKOFF UNTIL: "
 ]) if(!center.includes(token)) throw new Error("Mode Center Scientist invariant missing: "+token);
 
 for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_TARGET=\"2\""]) {
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED profile_gate=NONBLOCKING composer_send=ENABLED chat_medium=BEST_EFFORT event_starvation=FIXED operator_reason_act_loop=ON");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED safe_rate_limit_ui_recovery=ON live_mode_panel=ON gpt_progress_panel=ON profile_gate=NONBLOCKING event_starvation=FIXED");
