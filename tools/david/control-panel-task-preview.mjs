@@ -140,5 +140,5 @@ async function main(){
 }
 
 process.on("SIGINT",()=>process.exit(0));
-process.on("SIGTERM",()=>process.exit(0));}catch{};try{await scientistBrowser?.close();}catch{};process.exit(0);});
+process.on("SIGTERM",()=>process.exit(0));
 main().catch(e=>{writeJson(MANIFEST,{version:1,updatedAt:now(),error:String(e?.stack||e),tasks:[]});process.exit(1);});
