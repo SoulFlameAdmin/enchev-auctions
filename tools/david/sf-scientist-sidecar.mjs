@@ -16,6 +16,11 @@ const RESPONSE=path.join(HERE,".sf-scientist-response.json");
 const DECISIONS=path.join(HERE,".sf-scientist-decisions.jsonl");
 const MEMORY=path.join(HERE,".sf-scientist-memory.jsonl");
 const TABMON=path.join(HERE,".david-tab-monitor.json");
+const CAPTURE_DIR=path.join(HERE,".sf-scientist-captures");
+const OPERATOR_LOG=path.join(HERE,".sf-scientist-operator.jsonl");
+const MAX_AUTONOMOUS_STEPS=Number(process.env.SF_SCIENTIST_MAX_STEPS||4);
+const POWERSHELL_TIMEOUT_MS=Number(process.env.SF_SCIENTIST_POWERSHELL_TIMEOUT_MS||60000);
+const MAX_TOOL_OUTPUT=12000;
 const MAX_SHELLS=18;
 const MAX_STATE_FILES=12;
 const MAX_LOG_FILES=8;
@@ -38,6 +43,22 @@ function readJson(p,f=null){
 }
 function writeJson(p,v){const t=p+".tmp";fs.writeFileSync(t,JSON.stringify(v,null,2),"utf8");fs.renameSync(t,p);}
 function append(p,v){fs.appendFileSync(p,JSON.stringify(v)+"\n","utf8");}
+function ensureDir(p){try{fs.mkdirSync(p,{recursive:true});}catch{}}
+function tailJsonl(p,count=8){
+  try{
+    return fs.readFileSync(p,"utf8").split(/\r?\n/).filter(Boolean).slice(-count).map(x=>{try{return JSON.parse(x);}catch{return null;}}).filter(Boolean);
+  }catch{return [];}
+}
+function recentScientistMemory(){
+  return tailJsonl(MEMORY,8).map(x=>({
+    at:x.at||null,
+    kind:x.kind||null,
+    event:cleanText(x.event||"",220)||null,
+    request:cleanText(x.request||"",220)||null,
+    action:x.action||null,
+    result:cleanText(x.result||x.actionResult||"",500)||null
+  }));
+}
 let state=readJson(STATE,{version:1,status:"starting",heartbeatAt:null,chatUrl:null,lastAction:"boot",lastObservation:null,lastDecision:null,lastResponse:null,lastCommandId:null,lastAutoAnalysisAt:null,loginRequired:false});
 function save(action,patch={}){state={...state,...patch,heartbeatAt:now(),lastAction:action};writeJson(STATE,state);}
 
@@ -239,6 +260,129 @@ async function ask(page,prompt){
   throw new Error("Scientist response timeout");
 }
 
+
+function redactToolOutput(value,max=MAX_TOOL_OUTPUT){
+  return cleanText(String(value||""),max);
+}
+function quotePsLiteral(v){return "'"+String(v).replace(/'/g,"''")+"'";}
+function classifyPowerShell(command){
+  const c=String(command||"").trim();
+  if(!c)return {allowed:false,reason:"empty-command"};
+  if(c.length>6000)return {allowed:false,reason:"command-too-long"};
+  const hardBlock=[
+    /\bRemove-Item\b/i,/\bdel(?:ete)?\b/i,/\berase\b/i,/\brd\b/i,/\brmdir\b/i,
+    /\bFormat-(?:Volume|Disk)\b/i,/\bClear-Disk\b/i,/\bInitialize-Disk\b/i,/\bdiskpart\b/i,
+    /\bStop-Computer\b/i,/\bRestart-Computer\b/i,/\bshutdown(?:\.exe)?\b/i,/\bbcdedit\b/i,
+    /\bSet-MpPreference\b/i,/\bSet-ExecutionPolicy\b/i,/\bDisable-WindowsOptionalFeature\b/i,
+    /\bNew-LocalUser\b/i,/\bSet-LocalUser\b/i,/\bRemove-LocalUser\b/i,/\bnet\s+user\b/i,/\bnet\s+localgroup\b/i,
+    /\bschtasks\b/i,/\bNew-ScheduledTask\b/i,/\bRegister-ScheduledTask\b/i,
+    /\bsc(?:\.exe)?\s+(?:delete|config)\b/i,/\bStop-Service\b/i,/\bSet-Service\b/i,
+    /\btakeown\b/i,/\bicacls\b.*(?:\/grant|\/deny|\/reset)/i,
+    /\bmanage-bde\b/i,/\bcipher\b.*\/w/i,
+    /\breg(?:\.exe)?\s+(?:add|delete)\b/i,
+    /\bSet-ItemProperty\b.*\bHK(?:LM|CU|CR|U|CC)\b/i,
+    /\bNew-ItemProperty\b.*\bHK(?:LM|CU|CR|U|CC)\b/i,
+    /\bStart-Process\b[^\r\n;]*\b-Verb\s+RunAs\b/i,/\brunas(?:\.exe)?\b/i,
+    /\bInvoke-Expression\b/i,/(?:^|[\s;|])iex(?:\s|$)/i
+  ];
+  const hit=hardBlock.find(r=>r.test(c));
+  if(hit)return {allowed:false,reason:"blocked-high-risk-pattern"};
+  return {allowed:true,reason:"normal-user-operator"};
+}
+async function runPowerShell(command){
+  const policy=classifyPowerShell(command);
+  if(!policy.allowed){
+    const result={ok:false,blocked:true,reason:policy.reason,command:cleanText(command,1000)};
+    append(OPERATOR_LOG,{at:now(),kind:"powershell-blocked",...result});
+    return result;
+  }
+  const started=Date.now();
+  try{
+    const x=await execFileAsync(POWERSHELL_EXE,[
+      "-NoProfile","-NonInteractive","-ExecutionPolicy","Bypass","-Command",
+      '$OutputEncoding=[Console]::OutputEncoding=New-Object System.Text.UTF8Encoding($false);'+command
+    ],{windowsHide:true,timeout:POWERSHELL_TIMEOUT_MS,maxBuffer:4*1024*1024});
+    const result={
+      ok:true,blocked:false,exitCode:0,durationMs:Date.now()-started,
+      stdout:redactToolOutput(x.stdout),stderr:redactToolOutput(x.stderr),
+      command:cleanText(command,1000)
+    };
+    append(OPERATOR_LOG,{at:now(),kind:"powershell",...result});
+    return result;
+  }catch(e){
+    const result={
+      ok:false,blocked:false,durationMs:Date.now()-started,
+      stdout:redactToolOutput(e&&e.stdout),stderr:redactToolOutput(e&&e.stderr),
+      error:redactToolOutput(e&&e.message||e,3000),command:cleanText(command,1000)
+    };
+    append(OPERATOR_LOG,{at:now(),kind:"powershell",...result});
+    return result;
+  }
+}
+async function captureDesktop(){
+  ensureDir(CAPTURE_DIR);
+  const file=path.join(CAPTURE_DIR,"screen-"+Date.now()+".png");
+  const ps=[
+    "Add-Type -AssemblyName System.Windows.Forms",
+    "Add-Type -AssemblyName System.Drawing",
+    "$b=[System.Windows.Forms.SystemInformation]::VirtualScreen",
+    "$bmp=New-Object System.Drawing.Bitmap $b.Width,$b.Height",
+    "$g=[System.Drawing.Graphics]::FromImage($bmp)",
+    "$g.CopyFromScreen($b.Left,$b.Top,0,0,$bmp.Size)",
+    "$bmp.Save("+quotePsLiteral(file)+",[System.Drawing.Imaging.ImageFormat]::Png)",
+    "$g.Dispose()",
+    "$bmp.Dispose()"
+  ].join(";");
+  const r=await runPowerShell(ps);
+  if(!r.ok||!fs.existsSync(file))throw new Error("desktop screenshot failed: "+(r.error||r.stderr||r.reason||"unknown"));
+  try{
+    const old=fs.readdirSync(CAPTURE_DIR).filter(x=>/\.png$/i.test(x)).map(x=>({x,p:path.join(CAPTURE_DIR,x),m:fs.statSync(path.join(CAPTURE_DIR,x)).mtimeMs})).sort((a,b)=>b.m-a.m).slice(20);
+    for(const x of old)fs.unlinkSync(x.p);
+  }catch{}
+  append(OPERATOR_LOG,{at:now(),kind:"desktop-capture",file});
+  return file;
+}
+async function attachFile(page,file){
+  let input=page.locator('input[type="file"]').last();
+  if(!await input.count().catch(()=>0)){
+    for(const sel of ['button[aria-label*="Attach" i]','button[aria-label*="Upload" i]','button[data-testid*="attach" i]']){
+      const b=page.locator(sel).last();
+      if(await b.count().catch(()=>0)&&await b.isVisible().catch(()=>false)){
+        await b.click({timeout:2000}).catch(()=>{});
+        await sleep(400);
+        input=page.locator('input[type="file"]').last();
+        if(await input.count().catch(()=>0))break;
+      }
+    }
+  }
+  if(!await input.count().catch(()=>0))throw new Error("ChatGPT file input not available");
+  await input.setInputFiles(file);
+  await sleep(700);
+}
+async function inspectScreen(page,question,snapshot){
+  const file=await captureDesktop();
+  await attachFile(page,file);
+  const answer=await ask(page,
+    "SF SCIENTIST SCREEN INSPECTION\\n"+
+    "Inspect the attached current Windows desktop screenshot. Question: "+(question||"What is visibly happening and is there evidence of an error?")+
+    "\\nCross-check against this DAVID telemetry and do not infer hidden facts:\\n"+JSON.stringify(snapshot,null,2)+
+    "\\nReturn visible evidence, likely interpretation, uncertainty, and next low-risk action. End with ACTION: NONE."
+  );
+  append(MEMORY,{at:now(),kind:"screen-inspection",file,question,answer});
+  return "SCREEN INSPECTION:\\n"+answer;
+}
+async function consultProjectConnectors(page,question,snapshot){
+  const answer=await ask(page,
+    "@GitHub @Vercel @Supabase\\n\\nSF SCIENTIST PROJECT CHECK\\n"+
+    String(question||"Inspect the current project state relevant to the observed DAVID event.")+
+    "\\n\\nUse connected tools when available. Never invent connector evidence, and do not bypass login/MFA/CAPTCHA/permissions. "+
+    "Do not make destructive or production changes. Compare findings to this local snapshot:\\n"+JSON.stringify(snapshot,null,2)+
+    "\\nReturn exact evidence and what remains uncertain. End with ACTION: NONE."
+  );
+  append(MEMORY,{at:now(),kind:"project-connector-check",question,answer});
+  return "PROJECT CONNECTOR CHECK:\\n"+answer;
+}
+
 function parseAction(text){
   const m=String(text||"").match(/^ACTION:\s*(.+)$/mi);
   if(!m)return {kind:"NONE",arg:""};
@@ -297,7 +441,7 @@ async function executeScientistAction(context,chief,text,s){
   const a=parseAction(text);
   let result="no action";
   if(a.kind==="NONE")return result;
-  if(a.kind==="OPEN_POWERSHELL")result=openDetached("powershell.exe",["-NoProfile","-NoExit"]);
+  if(a.kind==="OPEN_POWERSHELL")result=openDetached(POWERSHELL_EXE,["-NoProfile","-NoExit"]);
   else if(a.kind==="OPEN_CMD")result=openDetached("cmd.exe",[]);
   else if(a.kind==="OPEN_CHATGPT"){
     const p=await context.newPage();await p.goto("https://chatgpt.com/",{waitUntil:"domcontentloaded",timeout:60000}).catch(()=>{});result="opened Scientist ChatGPT tab";
@@ -310,19 +454,44 @@ async function executeScientistAction(context,chief,text,s){
   }else if(a.kind==="DAVID_HEALTH_CHECK"){
     const x=await snapshot();result="DAVID health snapshot: "+JSON.stringify(x);
   }else if(a.kind==="GIT_STATUS"){
-    try{
-      const x=await execFileAsync("git",["-C","D:\\ASI\\enchev-auctions","status","--short","--branch"],{windowsHide:true,timeout:15000});
-      result="git status: "+String(x.stdout||"").trim();
-    }catch(e){result="git status failed: "+String(e?.message||e);}
+    result=JSON.stringify(await runPowerShell("& git -C 'D:\\ASI\\enchev-auctions' status --short --branch"));
+  }else if(a.kind==="POWERSHELL"){
+    result=JSON.stringify(await runPowerShell(a.arg));
+  }else if(a.kind==="INSPECT_SCREEN"){
+    result=await inspectScreen(chief,a.arg,s);
+  }else if(a.kind==="CHECK_PROJECT"){
+    result=await consultProjectConnectors(chief,a.arg,s);
   }else if(a.kind==="CONSULT_AB"){
     const q=a.arg||("Investigate current DAVID event and decide the best next scientific test.");
     result=await consultAB(context,chief,q,s);
   }else{
     result="rejected unsupported action: "+a.kind;
   }
-  append(MEMORY,{at:now(),kind:"scientist-tool-action",action:a,result});
-  save("Scientist autonomous tool action",{lastToolAction:a,lastToolResult:result});
+  append(MEMORY,{at:now(),kind:"scientist-tool-action",action:a,result:cleanText(result,5000)});
+  save("Scientist autonomous tool action",{lastToolAction:a,lastToolResult:cleanText(result,5000)});
   return result;
+}
+
+async function reasonActLoop(context,page,initialPrompt,s,maxSteps=MAX_AUTONOMOUS_STEPS){
+  let response=await ask(page,initialPrompt);
+  const actions=[];
+  for(let step=0;step<maxSteps;step++){
+    const parsed=parseAction(response);
+    if(parsed.kind==="NONE")break;
+    const result=await executeScientistAction(context,page,response,s).catch(e=>"action failed: "+String(e&&e.message||e));
+    actions.push({step:step+1,action:parsed,result:cleanText(result,5000)});
+    const latest=await snapshot();
+    response=await ask(page,
+      "SF SCIENTIST TOOL RESULT\\n"+
+      "Previous action: "+parsed.kind+" "+cleanText(parsed.arg,1200)+"\\n"+
+      "Verified tool result:\\n"+cleanText(result,9000)+"\\n\\n"+
+      "Fresh DAVID snapshot:\\n"+JSON.stringify(latest,null,2)+"\\n\\n"+
+      "Continue the investigation autonomously only if another low-risk action is useful. "+
+      "Do not repeat a failed action without new evidence. Return ВИДЯХ/РЕШИХ/ЗАЩО/ПРЕДЛАГАМ/RISK and exactly one ACTION."
+    );
+    s=latest;
+  }
+  return {response,actions};
 }
 
 function boot(s){return "SF CORPORATION / AI SCIENTIST BOOTSTRAP\n\nYou are the independent AI Scientist observing the existing DAVID system. You are OUTSIDE DAVID. Preserve the existing DAVID architecture. Never claim an external action happened unless the local bridge reports it. Never bypass login/MFA/CAPTCHA/permissions. Observe, form hypotheses, test claims against evidence, detect regressions and propose improvements. The snapshot includes LIVE TELEMETRY with active PowerShell/CMD/Node processes, DAVID runtime-state summaries, recent log tails and error alerts. Use it to explain what actually happened, not only topology.\n\nFor autonomous observations answer compactly in Bulgarian:\nВИДЯХ: ...\nРЕШИХ: ...\nЗАЩО: ...\nПРЕДЛАГАМ: ...\nRISK: LOW|MEDIUM|HIGH\n\nCurrent DAVID snapshot:\n"+JSON.stringify(s,null,2);}
