@@ -65,7 +65,10 @@ for(const token of [
   'burstExpired',
   'max burst snapshot',
   'lastSessionAnalysisAt',
-  'booted=false'
+  'booted=false',
+  'online-warning',
+  'Scientist send proceeding with profile warning',
+  'BEST-EFFORT-MEDIUM'
 ]) if(!side.includes(token)) throw new Error("Scientist sidecar invariant missing: "+token);
 
 for(const token of [
@@ -114,4 +117,4 @@ for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_T
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED scientist_experience=CHAT model=GPT-5.6_SOL effort=MEDIUM event_starvation=FIXED max_burst=ON fresh_session_bootstrap=ON operator_reason_act_loop=ON");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED profile_gate=NONBLOCKING composer_send=ENABLED chat_medium=BEST_EFFORT event_starvation=FIXED operator_reason_act_loop=ON");
