@@ -2,7 +2,7 @@ import { chromium } from "playwright-core";
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
-import { execFile } from "node:child_process";
+import { execFile, spawn } from "node:child_process";
 import { promisify } from "node:util";
 import { fileURLToPath } from "node:url";
 
@@ -109,14 +109,102 @@ async function ask(page,prompt){
   }
   throw new Error("Scientist response timeout");
 }
+
+function parseAction(text){
+  const m=String(text||"").match(/^ACTION:\s*(.+)$/mi);
+  if(!m)return {kind:"NONE",arg:""};
+  const raw=m[1].trim();
+  const head=raw.split(/\s+/,1)[0].toUpperCase();
+  return {kind:head,arg:raw.slice(head.length).trim()};
+}
+function openDetached(exe,args=[]){
+  const p=spawn(exe,args,{detached:true,stdio:"ignore",windowsHide:false});
+  p.unref();
+  return "started "+exe;
+}
+async function waitDetachedReady(page){
+  const started=Date.now();
+  while(Date.now()-started<READY_MS){
+    if(await composer(page))return page;
+    await sleep(1000);
+  }
+  throw new Error("Detached Scientist chat ready timeout");
+}
+async function askDetached(page,prompt){
+  await waitDetachedReady(page);
+  const base=digest(await latest(page));
+  await send(page,prompt);
+  let last=base,stable="",since=0,start=Date.now();
+  while(Date.now()-start<RESPONSE_MS){
+    const text=await latest(page),h=digest(text);
+    if(h&&h!==last){last=h;stable=h;since=Date.now();}
+    if(await busy(page)){await sleep(800);continue;}
+    if(h&&h!==base){if(h!==stable){stable=h;since=Date.now();}if(Date.now()-since>1200)return text;}
+    await sleep(700);
+  }
+  throw new Error("Detached Scientist response timeout");
+}
+async function consultAB(context,chief,question,s){
+  const a=await context.newPage(),b=await context.newPage();
+  try{
+    await Promise.all([
+      a.goto("https://chatgpt.com/",{waitUntil:"domcontentloaded",timeout:60000}).catch(()=>{}),
+      b.goto("https://chatgpt.com/",{waitUntil:"domcontentloaded",timeout:60000}).catch(()=>{})
+    ]);
+    const base="Question from SF Chief Scientist:\n"+question+"\n\nEvidence snapshot:\n"+JSON.stringify(s,null,2);
+    const [ra,rb]=await Promise.all([
+      askDetached(a,"You are SCI-A. Generate the strongest plausible explanation, tests and next low-risk move. Do not invent evidence.\n\n"+base),
+      askDetached(b,"You are SCI-B, the skeptical falsifier. Attack assumptions, find alternative explanations and propose discriminating tests. Do not invent evidence.\n\n"+base)
+    ]);
+    const synth=await ask(chief,"SF SCIENTIST A/B CONSULTATION\n\nSCI-A:\n"+ra+"\n\nSCI-B:\n"+rb+"\n\nSynthesize your own conclusion. State which claims are supported, what remains uncertain, and the next best low-risk step. ACTION: NONE");
+    append(MEMORY,{at:now(),kind:"scientist-ab-consult",question,scienceA:ra,scienceB:rb,synthesis:synth});
+    return "SCI-A + SCI-B consulted; chief synthesis recorded.";
+  }finally{
+    await a.close().catch(()=>{});
+    await b.close().catch(()=>{});
+  }
+}
+async function executeScientistAction(context,chief,text,s){
+  const a=parseAction(text);
+  let result="no action";
+  if(a.kind==="NONE")return result;
+  if(a.kind==="OPEN_POWERSHELL")result=openDetached("powershell.exe",["-NoProfile","-NoExit"]);
+  else if(a.kind==="OPEN_CMD")result=openDetached("cmd.exe",[]);
+  else if(a.kind==="OPEN_CHATGPT"){
+    const p=await context.newPage();await p.goto("https://chatgpt.com/",{waitUntil:"domcontentloaded",timeout:60000}).catch(()=>{});result="opened Scientist ChatGPT tab";
+  }else if(a.kind==="SEARCH_WEB"){
+    const q=a.arg.slice(0,500);if(!q)throw new Error("SEARCH_WEB requires query");
+    const p=await context.newPage();await p.goto("https://www.bing.com/search?q="+encodeURIComponent(q),{waitUntil:"domcontentloaded",timeout:60000}).catch(()=>{});result="opened web search: "+q;
+  }else if(a.kind==="OPEN_URL"){
+    if(!/^https:\/\//i.test(a.arg))throw new Error("OPEN_URL allows HTTPS only");
+    const p=await context.newPage();await p.goto(a.arg,{waitUntil:"domcontentloaded",timeout:60000}).catch(()=>{});result="opened URL: "+a.arg;
+  }else if(a.kind==="DAVID_HEALTH_CHECK"){
+    const x=await snapshot();result="DAVID health snapshot: "+JSON.stringify(x);
+  }else if(a.kind==="GIT_STATUS"){
+    try{
+      const x=await execFileAsync("git",["-C","D:\\ASI\\enchev-auctions","status","--short","--branch"],{windowsHide:true,timeout:15000});
+      result="git status: "+String(x.stdout||"").trim();
+    }catch(e){result="git status failed: "+String(e?.message||e);}
+  }else if(a.kind==="CONSULT_AB"){
+    const q=a.arg||("Investigate current DAVID event and decide the best next scientific test.");
+    result=await consultAB(context,chief,q,s);
+  }else{
+    result="rejected unsupported action: "+a.kind;
+  }
+  append(MEMORY,{at:now(),kind:"scientist-tool-action",action:a,result});
+  save("Scientist autonomous tool action",{lastToolAction:a,lastToolResult:result});
+  return result;
+}
+
 function boot(s){return "SF CORPORATION / AI SCIENTIST BOOTSTRAP\n\nYou are the independent AI Scientist observing the existing DAVID system. You are OUTSIDE DAVID. Preserve the existing DAVID architecture. Never claim an external action happened unless the local bridge reports it. Never bypass login/MFA/CAPTCHA/permissions. Observe, form hypotheses, test claims against evidence, detect regressions and propose improvements.\n\nFor autonomous observations answer compactly in Bulgarian:\nВИДЯХ: ...\nРЕШИХ: ...\nЗАЩО: ...\nПРЕДЛАГАМ: ...\nRISK: LOW|MEDIUM|HIGH\n\nCurrent DAVID snapshot:\n"+JSON.stringify(s,null,2);}
-function observe(reason,s){return "SF SCIENTIST AUTONOMOUS OBSERVATION\nEVENT: "+reason+"\n\nAnalyze only this evidence. You may decide no intervention is needed. Do not invent actions.\n\nDAVID SNAPSHOT:\n"+JSON.stringify(s,null,2)+"\n\nReturn:\nВИДЯХ: ...\nРЕШИХ: ...\nЗАЩО: ...\nПРЕДЛАГАМ: ...\nRISK: LOW|MEDIUM|HIGH";}
-function user(text,s){return "MITKO -> SF AI SCIENTIST\n"+text+"\n\nLive DAVID snapshot:\n"+JSON.stringify(s,null,2)+"\n\nAnswer as SF AI Scientist. Separate observed facts from hypotheses. If you recommend an action, say exactly what and why.";}
-async function command(page,s){
+function observe(reason,s){return "SF SCIENTIST AUTONOMOUS OBSERVATION\nEVENT: "+reason+"\n\nAnalyze only this evidence. You may decide no intervention is needed. Do not invent actions.\n\nDAVID SNAPSHOT:\n"+JSON.stringify(s,null,2)+"\n\nYou may autonomously choose ONE low-risk Scientist-sidecar action only when useful:\nACTION: NONE | OPEN_POWERSHELL | OPEN_CMD | OPEN_CHATGPT | SEARCH_WEB <query> | OPEN_URL <https-url> | DAVID_HEALTH_CHECK | GIT_STATUS | CONSULT_AB <question>\nThese actions affect only Scientist tools or read-only diagnostics; never modify DAVID architecture.\n\nReturn:\nВИДЯХ: ...\nРЕШИХ: ...\nЗАЩО: ...\nПРЕДЛАГАМ: ...\nRISK: LOW|MEDIUM|HIGH\nACTION: ...";}
+function user(text,s){return "MITKO -> SF AI SCIENTIST\n"+text+"\n\nLive DAVID snapshot:\n"+JSON.stringify(s,null,2)+"\n\nAnswer as SF AI Scientist. Separate observed facts from hypotheses. You can use one low-risk Scientist tool when useful by ending with ACTION: NONE | OPEN_POWERSHELL | OPEN_CMD | OPEN_CHATGPT | SEARCH_WEB <query> | OPEN_URL <https-url> | DAVID_HEALTH_CHECK | GIT_STATUS | CONSULT_AB <question>. Never modify DAVID architecture from this sidecar.";}
+async function command(context,page,s){
   const c=readJson(COMMAND,null);if(!c?.id||c.id===state.lastCommandId||!String(c.text||"").trim())return;
   save("Processing Scientist chat command",{lastCommandId:c.id});
   const r=await ask(page,user(String(c.text).trim(),s));
-  const o={id:c.id,createdAt:now(),request:String(c.text).trim(),response:r};writeJson(RESPONSE,o);append(MEMORY,{at:o.createdAt,kind:"mitko-chat",request:o.request,response:r});save("Scientist chat complete",{lastResponse:r});
+  const actionResult=await executeScientistAction(context,page,r,s).catch(e=>"action failed: "+String(e?.message||e));
+  const o={id:c.id,createdAt:now(),request:String(c.text).trim(),response:r,actionResult};writeJson(RESPONSE,o);append(MEMORY,{at:o.createdAt,kind:"mitko-chat",request:o.request,response:r,actionResult});save("Scientist chat complete",{lastResponse:r,lastToolResult:actionResult});
 }
 async function main(){
   save("Connecting to Scientist Edge",{status:"starting",scientistCdp:SCI_CDP,davidCdp:DAVID_CDP});
@@ -127,9 +215,9 @@ async function main(){
       if(!page||page.isClosed())page=await pageFor(context);
       const s=await snapshot();save("Scientist heartbeat",{status:state.loginRequired?"login-required":"online",liveSnapshot:s});
       if(!booted&&!state.loginRequired){const r=await ask(page,boot(s));append(DECISIONS,{type:"bootstrap",at:now(),snapshot:s,response:r});save("Scientist bootstrap complete",{bootstrappedAt:now(),lastDecision:r,lastObservation:"Scientist attached"});booted=true;}
-      await command(page,s);
+      await command(context,page,s);
       const e=event(prev,s),last=state.lastAutoAnalysisAt?Date.parse(state.lastAutoAnalysisAt):0;
-      if(booted&&e.important&&Date.now()-last>=AUTO_MIN){const r=await ask(page,observe(e.reason,s));append(DECISIONS,{type:"autonomous-decision",at:now(),event:e.reason,snapshot:s,response:r});append(MEMORY,{at:now(),kind:"observed-system-event",event:e.reason,response:r});save("Autonomous Scientist decision recorded",{lastObservation:e.reason,lastDecision:r,lastAutoAnalysisAt:now()});}
+      if(booted&&e.important&&Date.now()-last>=AUTO_MIN){const r=await ask(page,observe(e.reason,s));const actionResult=await executeScientistAction(context,page,r,s).catch(x=>"action failed: "+String(x?.message||x));append(DECISIONS,{type:"autonomous-decision",at:now(),event:e.reason,snapshot:s,response:r,actionResult});append(MEMORY,{at:now(),kind:"observed-system-event",event:e.reason,response:r,actionResult});save("Autonomous Scientist decision recorded",{lastObservation:e.reason,lastDecision:r,lastAutoAnalysisAt:now(),lastToolResult:actionResult});}
       prev=s;
     }catch(err){save("Scientist loop error",{status:"degraded",lastError:String(err?.stack||err)});}
     await sleep(POLL);
