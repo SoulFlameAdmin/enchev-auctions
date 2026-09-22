@@ -248,9 +248,9 @@ $taskDetail.Controls.Add($taskDetailStatus)
 $taskPreview=New-Object System.Windows.Forms.PictureBox
 $taskPreview.BackColor=[System.Drawing.Color]::Black
 $taskPreview.BorderStyle="FixedSingle"
-$taskPreview.SizeMode="Zoom"
-$taskPreview.Location=New-Object System.Drawing.Point(18,82)
-$taskPreview.Size=New-Object System.Drawing.Size(1468,465)
+$taskPreview.SizeMode="StretchImage"
+$taskPreview.Location=New-Object System.Drawing.Point(8,82)
+$taskPreview.Size=New-Object System.Drawing.Size(1492,556)
 $taskPreview.Anchor="Top,Bottom,Left,Right"
 $taskDetail.Controls.Add($taskPreview)
 
@@ -261,20 +261,32 @@ $taskDetails.ScrollBars="Vertical"
 $taskDetails.BackColor=[System.Drawing.Color]::FromArgb(9,11,15)
 $taskDetails.ForeColor=[System.Drawing.Color]::Gainsboro
 $taskDetails.Font=New-Object System.Drawing.Font("Consolas",9)
-$taskDetails.Location=New-Object System.Drawing.Point(18,558)
-$taskDetails.Size=New-Object System.Drawing.Size(1180,70)
+$taskDetails.Location=New-Object System.Drawing.Point(18,606)
+$taskDetails.Size=New-Object System.Drawing.Size(1040,32)
 $taskDetails.Anchor="Bottom,Left,Right"
+$taskDetails.Visible=$false
 $taskDetail.Controls.Add($taskDetails)
 
 $focusTask=New-Object System.Windows.Forms.Button
 $focusTask.Text="FOCUS REAL EDGE"
-$focusTask.Size=New-Object System.Drawing.Size(240,70)
-$focusTask.Location=New-Object System.Drawing.Point(1216,558)
-$focusTask.Anchor="Bottom,Right"
+$focusTask.Size=New-Object System.Drawing.Size(180,42)
+$focusTask.Location=New-Object System.Drawing.Point(1304,16)
+$focusTask.Anchor="Top,Right"
 $focusTask.FlatStyle="Flat"
 $focusTask.ForeColor=[System.Drawing.Color]::White
 $focusTask.BackColor=[System.Drawing.Color]::FromArgb(35,119,191)
 $taskDetail.Controls.Add($focusTask)
+
+$taskDetail.Add_Resize({
+  try{
+    $pad=8
+    $top=82
+    $w=[Math]::Max(300,$taskDetail.ClientSize.Width-($pad*2))
+    $h=[Math]::Max(220,$taskDetail.ClientSize.Height-$top-$pad)
+    $taskPreview.Location=New-Object System.Drawing.Point($pad,$top)
+    $taskPreview.Size=New-Object System.Drawing.Size($w,$h)
+  }catch{}
+})
 
 $refreshTasks=New-Object System.Windows.Forms.Button
 $refreshTasks.Text="REFRESH"
