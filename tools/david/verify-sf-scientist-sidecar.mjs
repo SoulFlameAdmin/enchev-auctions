@@ -29,7 +29,20 @@ for(const token of [
   'STARTING_DPP',
   'stable snapshot after event burst',
   'POWERSHELL_EXE',
-  'replace(/^\\uFEFF/,"")'
+  'replace(/^\\uFEFF/,"")',
+  'MAX_AUTONOMOUS_STEPS',
+  '.sf-scientist-operator.jsonl',
+  'function classifyPowerShell',
+  'async function runPowerShell',
+  'async function captureDesktop',
+  'async function inspectScreen',
+  'async function consultProjectConnectors',
+  'async function reasonActLoop',
+  'ACTION: POWERSHELL <normal-user PowerShell command>',
+  'ACTION: INSPECT_SCREEN',
+  'ACTION: CHECK_PROJECT',
+  'blocked-high-risk-pattern',
+  'Recent persistent Scientist memory'
 ]) if(!side.includes(token)) throw new Error("Scientist sidecar invariant missing: "+token);
 
 for(const token of [
@@ -67,4 +80,4 @@ for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_T
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED scientist_cdp=9555 david_observe_cdp=9444 utf8=STRICT live_shell_process_log_telemetry=ON stable_event_coalescing=ON probe_error_visibility=ON autonomous_low_risk_tools=ALLOWLISTED");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED scientist_cdp=9555 david_observe_cdp=9444 utf8=STRICT live_shell_process_log_telemetry=ON stable_event_coalescing=ON operator_reason_act_loop=ON powershell_normal_user=ON desktop_vision=ON project_connector_consult=ON persistent_scientist_memory=ON");
