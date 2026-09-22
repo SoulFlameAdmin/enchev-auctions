@@ -19,7 +19,12 @@ for(const token of [
   'autonomous-decision',
   'CONSULT_AB',
   'OPEN_POWERSHELL',
-  'SEARCH_WEB'
+  'SEARCH_WEB',
+  'async function liveTelemetry',
+  'PowerShell/CMD/Node',
+  'recentLogs',
+  'logAlerts',
+  'replace(/^\\uFEFF/,"")'
 ]) if(!side.includes(token)) throw new Error("Scientist sidecar invariant missing: "+token);
 
 for(const token of [
@@ -48,11 +53,13 @@ for(const token of [
   "DAVID A + B",
   "ENCHEV ONLY",
   "DPP ONLY",
-  "DAVID APK ONLY"
+  "DAVID APK ONLY",
+  "UTF8Encoding($false,$true)",
+  "WriteAllText($ScientistCommand"
 ]) if(!center.includes(token)) throw new Error("Mode Center Scientist invariant missing: "+token);
 
 for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_TARGET=\"2\""]) {
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED scientist_cdp=9555 david_observe_cdp=9444 autonomous_low_risk_tools=ALLOWLISTED");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED scientist_cdp=9555 david_observe_cdp=9444 utf8=STRICT live_shell_process_log_telemetry=ON autonomous_low_risk_tools=ALLOWLISTED");
