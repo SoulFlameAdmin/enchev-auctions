@@ -65,14 +65,27 @@ async function collect(browser,source,monitor){
       try{title=clean(await page.title());}catch{}
       const status=await pageStatus(page);
       let screenshotOk=false;
+      let previewKind="viewport";
       try{
-        await page.screenshot({path:preview,type:"png",timeout:6000,animations:"disabled"});
-        screenshotOk=true;
+        const main=page.locator("main").last();
+        const visible=await main.isVisible().catch(()=>false);
+        const box=visible?await main.boundingBox().catch(()=>null):null;
+        if(box&&box.width>=420&&box.height>=300){
+          await main.screenshot({path:preview,type:"png",timeout:6000,animations:"disabled"});
+          screenshotOk=true;
+          previewKind="main";
+        }
       }catch{}
+      if(!screenshotOk){
+        try{
+          await page.screenshot({path:preview,type:"png",timeout:6000,animations:"disabled",fullPage:false});
+          screenshotOk=true;
+        }catch{}
+      }
       out.push({
         key,source,role,cdp:source==="DAVID"?9444:9555,
         title:title||role,url:conversationUrl(url),status,
-        preview:screenshotOk?preview:null,updatedAt:now()
+        preview:screenshotOk?preview:null,previewKind,updatedAt:now()
       });
       idx++;
       if(out.length>=MAX_TASKS)return out;

@@ -66,10 +66,10 @@ try{
   }
 
   if(-not(Test-Path $Selector)){throw "Matrix selector missing: $Selector"}
-  Log("OPEN MATRIX VISIBLE OWN PROCESS")
+  Log("OPEN MATRIX HIDDEN CONSOLE HOST / VISIBLE WINFORMS PANEL")
   Write-Host "[DAVID] MATRIX READY - choose SOULFLAME SYSTEM or DAVID A+B" -ForegroundColor Green
-  Start-Process -FilePath $Pwsh -ArgumentList @("-NoProfile","-ExecutionPolicy","Bypass","-File",$Selector,"-Port","$Port") -WindowStyle Normal
-  Log("MATRIX spawned in own PowerShell host; launcher exits")
+  Start-Process -FilePath $Pwsh -ArgumentList @("-NoProfile","-ExecutionPolicy","Bypass","-File",$Selector,"-Port","$Port") -WindowStyle Hidden
+  Log("MATRIX spawned with hidden PowerShell console host; WinForms panel stays visible")
   exit 0
 }catch{
   Log("FATAL "+$_.Exception.Message)

@@ -248,9 +248,9 @@ $taskDetail.Controls.Add($taskDetailStatus)
 $taskPreview=New-Object System.Windows.Forms.PictureBox
 $taskPreview.BackColor=[System.Drawing.Color]::Black
 $taskPreview.BorderStyle="FixedSingle"
-$taskPreview.SizeMode="Zoom"
-$taskPreview.Location=New-Object System.Drawing.Point(18,82)
-$taskPreview.Size=New-Object System.Drawing.Size(1468,465)
+$taskPreview.SizeMode="StretchImage"
+$taskPreview.Location=New-Object System.Drawing.Point(8,82)
+$taskPreview.Size=New-Object System.Drawing.Size(1492,556)
 $taskPreview.Anchor="Top,Bottom,Left,Right"
 $taskDetail.Controls.Add($taskPreview)
 
@@ -261,20 +261,32 @@ $taskDetails.ScrollBars="Vertical"
 $taskDetails.BackColor=[System.Drawing.Color]::FromArgb(9,11,15)
 $taskDetails.ForeColor=[System.Drawing.Color]::Gainsboro
 $taskDetails.Font=New-Object System.Drawing.Font("Consolas",9)
-$taskDetails.Location=New-Object System.Drawing.Point(18,558)
-$taskDetails.Size=New-Object System.Drawing.Size(1180,70)
+$taskDetails.Location=New-Object System.Drawing.Point(18,606)
+$taskDetails.Size=New-Object System.Drawing.Size(1040,32)
 $taskDetails.Anchor="Bottom,Left,Right"
+$taskDetails.Visible=$false
 $taskDetail.Controls.Add($taskDetails)
 
 $focusTask=New-Object System.Windows.Forms.Button
 $focusTask.Text="FOCUS REAL EDGE"
-$focusTask.Size=New-Object System.Drawing.Size(240,70)
-$focusTask.Location=New-Object System.Drawing.Point(1216,558)
-$focusTask.Anchor="Bottom,Right"
+$focusTask.Size=New-Object System.Drawing.Size(180,42)
+$focusTask.Location=New-Object System.Drawing.Point(1304,16)
+$focusTask.Anchor="Top,Right"
 $focusTask.FlatStyle="Flat"
 $focusTask.ForeColor=[System.Drawing.Color]::White
 $focusTask.BackColor=[System.Drawing.Color]::FromArgb(35,119,191)
 $taskDetail.Controls.Add($focusTask)
+
+$taskDetail.Add_Resize({
+  try{
+    $pad=8
+    $top=82
+    $w=[Math]::Max(300,$taskDetail.ClientSize.Width-($pad*2))
+    $h=[Math]::Max(220,$taskDetail.ClientSize.Height-$top-$pad)
+    $taskPreview.Location=New-Object System.Drawing.Point($pad,$top)
+    $taskPreview.Size=New-Object System.Drawing.Size($w,$h)
+  }catch{}
+})
 
 $refreshTasks=New-Object System.Windows.Forms.Button
 $refreshTasks.Text="REFRESH"
@@ -1281,11 +1293,11 @@ function Update-Ui{
   if(-not$script:Busy){
     Set-ModeButtons $true
     switch($s.Mode){
-      "SOULFLAME"{$badge.Text="ACTIVE: SOULFLAME SYSTEM";$badge.BackColor=[System.Drawing.Color]::FromArgb(35,119,191);$soul.Enabled=$false;$stop.Enabled=$true}
-      "AB"{$badge.Text="ACTIVE: DAVID A + B";$badge.BackColor=[System.Drawing.Color]::FromArgb(116,63,169);$ab.Enabled=$false;$stop.Enabled=$true}
-      "SOLO_SYSTEM"{$badge.Text="ACTIVE: ENCHEV ONLY / FAST";$badge.BackColor=[System.Drawing.Color]::FromArgb(31,139,119);$soloEnchev.Enabled=$false;$stop.Enabled=$true}
-      "SOLO_DPP"{$badge.Text="ACTIVE: DPP ONLY / FAST";$badge.BackColor=[System.Drawing.Color]::FromArgb(193,113,38);$soloDpp.Enabled=$false;$stop.Enabled=$true}
-      "SOLO_APK"{$badge.Text="ACTIVE: DAVID APK ONLY / FAST";$badge.BackColor=[System.Drawing.Color]::FromArgb(156,70,91);$soloApk.Enabled=$false;$stop.Enabled=$true}
+      "SOULFLAME"{$badge.Text="ACTIVE: SOULFLAME SYSTEM | CLICK MODE AGAIN TO RESTART";$badge.BackColor=[System.Drawing.Color]::FromArgb(35,119,191);$stop.Enabled=$true}
+      "AB"{$badge.Text="ACTIVE: DAVID A + B | CLICK MODE AGAIN TO RESTART";$badge.BackColor=[System.Drawing.Color]::FromArgb(116,63,169);$stop.Enabled=$true}
+      "SOLO_SYSTEM"{$badge.Text="ACTIVE: ENCHEV ONLY / FAST | CLICK AGAIN TO RESTART";$badge.BackColor=[System.Drawing.Color]::FromArgb(31,139,119);$stop.Enabled=$true}
+      "SOLO_DPP"{$badge.Text="ACTIVE: DPP ONLY / FAST | CLICK AGAIN TO RESTART";$badge.BackColor=[System.Drawing.Color]::FromArgb(193,113,38);$stop.Enabled=$true}
+      "SOLO_APK"{$badge.Text="ACTIVE: DAVID APK ONLY / FAST | CLICK AGAIN TO RESTART";$badge.BackColor=[System.Drawing.Color]::FromArgb(156,70,91);$stop.Enabled=$true}
       "STOPPED"{$badge.Text="READY: CHOOSE MODE -> FULL CLEAN RESTART";$badge.BackColor=[System.Drawing.Color]::FromArgb(45,115,70);$stop.Enabled=$false}
       default{$badge.Text="CHECK / TRANSITION";$badge.BackColor=[System.Drawing.Color]::FromArgb(170,105,27);$stop.Enabled=$true}
     }

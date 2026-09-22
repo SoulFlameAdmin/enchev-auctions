@@ -12,6 +12,7 @@ const stop=read("STOP_SF_SCIENTIST.ps1");
 const center=read("DAVID_MODE_SELECTOR_V2.ps1");
 const effort=read("tools/david/chatgpt-effort-mode.mjs");
 const controlPreview=read("tools/david/control-panel-task-preview.mjs");
+const matrix=read("DAVID_MATRIX_START.ps1");
 
 for(const token of [
   'SF_SCIENTIST_CDP_URL||"http://127.0.0.1:9555"',
@@ -200,7 +201,9 @@ for(const token of [
   "Update-TasksUi",
   ".david-control-panel-tasks.json",
   ".david-control-panel-command.json",
-  "FormWindowState]::Maximized"
+  "FormWindowState]::Maximized",
+  '$taskPreview.SizeMode="StretchImage"',
+  "CLICK MODE AGAIN TO RESTART"
 ]) if(!center.includes(token)) throw new Error("Mode Center Scientist invariant missing: "+token);
 
 for(const token of [
@@ -218,14 +221,19 @@ for(const token of [
   'working:false',
   'connections',
   'SAME_DAVID_RUNTIME',
-  'SCIENTIST_OBSERVES_DAVID'
+  'SCIENTIST_OBSERVES_DAVID',
+  'main.screenshot',
+  'previewKind="main"'
 ]) if(!controlPreview.includes(token)) throw new Error("Control panel preview invariant missing: "+token);
 
 if(/\.close\(\)/.test(controlPreview) && /Browser/.test(controlPreview))
   throw new Error("Control panel preview worker must not close external DAVID/Scientist browsers");
 
+if(!matrix.includes('-WindowStyle Hidden')) throw new Error("Mode Center launcher must hide its PowerShell console host");
+if(matrix.includes('-WindowStyle Normal')) throw new Error("Mode Center launcher must not leave a visible selector PowerShell host");
+
 for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_TARGET=\"2\""]) {
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED task_topology=ON all_task_states=ON glowing_connections=ON task_click_edge_detail=ON back_to_map=ON fullscreen_control_panel=ON scientist_burger=ON realtime_console=ON");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED edge_preview_full_area=ON active_mode_reclick=ON hidden_selector_console=ON task_topology=ON glowing_connections=ON back_to_map=ON");
