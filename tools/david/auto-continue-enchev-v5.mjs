@@ -5,6 +5,7 @@ import process from "node:process";
 import { waitForGlobalSendPermit, reportRateLimit, reportProbeSuccess, markGlobalSendStarted } from "./chatgpt-rate-limit-coordinator.mjs";
 import { CHATGPT_ROOT, rotateOwnedChatPage } from "./chatgpt-session-rotation.mjs";
 import { ensureChatGptEffortMode } from "./chatgpt-effort-mode.mjs";
+import { sendPromptVerified } from "./chatgpt-send-ack.mjs";
 
 const EFFORT_MODE = String(process.env.DAVID_PROJECT_EFFORT_MODE || "medium").toLowerCase();
 
@@ -635,39 +636,32 @@ async function fillComposer(composer, text) {
   }, text);
 }
 
-async function sendText(page, text) {
-  const composer = await getComposer(page);
-  if (!composer) throw new Error("ChatGPT composer not found.");
-  await fillComposer(composer, text);
-  await sleep(300);
-  for (const selector of ['button[data-testid="send-button"]', 'button[aria-label*="Send"]', 'button[aria-label*="Изпрати"]']) {
-    try {
-      const btn = page.locator(selector).last();
-      if (await btn.count() && await btn.isVisible().catch(() => false) && await btn.isEnabled().catch(() => false)) {
-        try {
-          await btn.click({ timeout: 2000 });
-          console.log("[DAVID] Message sent via send button.");
-          return;
-        } catch {}
-      }
-    } catch {}
-  }
-  try {
-    await composer.focus({ timeout: 2000 });
-    await composer.press("Enter", { timeout: 3000 });
-    console.log("[DAVID] Message sent via Enter.");
-    return;
-  } catch {}
+async function sendText(page, text, state) {
+  state.lastPromptPreview = String(text || "").replace(/\s+/g, " ").trim().slice(0, 220);
+  state.lastSendAck = false;
+  state.lastSendStatus = "PREPARING";
+  state.lastSendError = null;
+  saveState(state);
 
-  for (const selector of ['button[data-testid="send-button"]', 'button[aria-label*="Send"]', 'button[aria-label*="Изпрати"]']) {
-    const btn = page.locator(selector).last();
-    if (await btn.count() && await btn.isVisible().catch(() => false) && await btn.isEnabled().catch(() => false)) {
-      await btn.click({ force: true, timeout: 3000 });
-      console.log("[DAVID] Message sent via forced send-button fallback.");
-      return;
+  return sendPromptVerified(page, text, {
+    worker: "SYSTEM",
+    ackTimeoutMs: 5000,
+    onEvent: (stage, info) => {
+      state.lastSendStatus = stage;
+      state.lastSendUpdatedAt = info.at || new Date().toISOString();
+      state.lastSendAttempt = Number(info.attempt || 0);
+      if (info.method) state.lastSendMethod = info.method;
+      if (info.signal) state.lastSendSignal = info.signal;
+      if (info.error) state.lastSendError = info.error;
+      if (stage === "ACK") {
+        state.lastSendAck = true;
+        state.lastSendAt = info.at || new Date().toISOString();
+      } else if (stage === "FAILED") {
+        state.lastSendAck = false;
+      }
+      saveState(state);
     }
-  }
-  throw new Error("ChatGPT send failed after pointer-safe fallbacks");
+  });
 }
 
 async function refreshChat(context, page, state, attempt) {
@@ -812,7 +806,7 @@ async function sendWithRecovery(context, page, state, text, kind) {
     }
 
     console.log(`[DAVID] Sending ${kind} attempt ${attempt}/${MAX_RECOVERY_ATTEMPTS}. rateMode=${permit.mode}`);
-    await sendText(page, outgoingText);
+    await sendText(page, outgoingText, state);
     await markGlobalSendStarted("SYSTEM");
     const started = await waitForResponseStart(context, page, baselineHash, baselineCounts.user, outgoingHash, state);
     page = started.page;
