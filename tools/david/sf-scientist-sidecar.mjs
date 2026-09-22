@@ -361,12 +361,44 @@ async function safeDismissChatGptUi(page){
 
 async function waitRateLimitBackoff(page,context){
   const until=Date.now()+RATE_LIMIT_BACKOFF_MS;
-  save("Scientist respecting ChatGPT rate limit",{status:"rate-limited",rateLimitBackoffUntil:new Date(until).toISOString()});
+  let lastLiveRefreshAt=0;
+  save("Scientist respecting ChatGPT rate limit",{
+    status:"rate-limited",
+    rateLimitBackoffUntil:new Date(until).toISOString()
+  });
+
   while(Date.now()<until){
     await safeDismissChatGptUi(page).catch(()=>null);
-    await sleep(Math.min(5000,Math.max(500,until-Date.now())));
+
+    if(Date.now()-lastLiveRefreshAt>=GPT_WAIT_LIVE_REFRESH_MS){
+      lastLiveRefreshAt=Date.now();
+      try{
+        const live=await snapshot();
+        save("Scientist heartbeat",{
+          status:"rate-limited",
+          liveSnapshot:live,
+          currentMode:live.mode,
+          currentCdp9444Online:live.cdp9444Online,
+          rateLimitBackoffUntil:new Date(until).toISOString(),
+          rateLimitLiveRefreshedAt:now()
+        });
+      }catch(e){
+        save("Scientist heartbeat",{
+          status:"rate-limited",
+          rateLimitBackoffUntil:new Date(until).toISOString(),
+          rateLimitProbeError:cleanText(e&&e.message||e,500)
+        });
+      }
+    }
+
+    await sleep(Math.min(1000,Math.max(250,until-Date.now())));
   }
-  save("Scientist rate-limit backoff complete",{status:"online-warning",rateLimitBackoffUntil:null,lastUiRecovery:context||state.lastUiRecovery});
+
+  save("Scientist rate-limit backoff complete",{
+    status:"online-warning",
+    rateLimitBackoffUntil:null,
+    lastUiRecovery:context||state.lastUiRecovery
+  });
 }
 
 async function composer(page){for(const s of ["#prompt-textarea",'[data-testid="prompt-textarea"]','div[contenteditable="true"][role="textbox"]','div[contenteditable="true"]']){const x=page.locator(s).last();if(await x.count().catch(()=>0)&&await x.isVisible().catch(()=>false))return x;}return null;}

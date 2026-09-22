@@ -90,7 +90,10 @@ for(const token of [
   '.sf-scientist.lock',
   'function acquireSingleton',
   'if(!acquireSingleton())',
-  'process.on("exit",releaseSingleton)'
+  'process.on("exit",releaseSingleton)',
+  'rateLimitLiveRefreshedAt',
+  'currentMode:live.mode',
+  'status:"rate-limited"'
 ]) if(!side.includes(token)) throw new Error("Scientist sidecar invariant missing: "+token);
 
 for(const token of [
@@ -151,4 +154,4 @@ for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_T
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED singleton_worker=ATOMIC edge_shutdown=GRACEFUL crash_restore=SUPPRESSED send_ack=VERIFIED live_while_gpt_thinking=ON");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED singleton_worker=ATOMIC rate_limit_backoff_live_telemetry=ON send_ack=VERIFIED live_while_gpt_thinking=ON");
