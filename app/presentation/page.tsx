@@ -1,10 +1,10 @@
 import PresentationExperience from "./PresentationExperience";
 
 export const metadata = {
-  title: "ENCHEV — Презентация",
-  description: "ENCHEV — от автомобил до международна сделка. Една система за целия бизнес.",
+  title: "EAuctions by ENCHEV — От автомобила до доставката",
+  description: "Проследи един автомобил през EAuctions: избор, търг, плащане, документи и доставка. Анимирана продуктова презентация.",
 };
 
-export default function PresentationPage(){
+export default function PresentationPage() {
   return <PresentationExperience />;
 }
