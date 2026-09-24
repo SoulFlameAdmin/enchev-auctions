@@ -1,6 +1,6 @@
 # SYSTEM 27.08 — Error-budget policy
 
-Status: **YELLOW** until exact-head CI and post-merge descendant verification pass.
+Status: **GREEN** — the policy contract, fail-closed verifier, exact-head CI, merge, and post-merge descendant verification are complete.
 
 ## Purpose
 
@@ -40,7 +40,7 @@ Manual resets, target relaxation, or widening exclusions solely to make a budget
 
 SYSTEM 27.07 defines a 99% compliance target for bid-acceptance latency and realtime-delivery latency, but numeric latency thresholds belong to SYSTEM 27.09.
 
-Therefore their error-budget allowance is known (1% non-compliant samples), but their actual budget consumption is **not evaluable until SYSTEM 27.09 defines the authoritative latency budgets**.
+Therefore their error-budget allowance is known (1% non-compliant samples), but actual budget consumption is **not evaluable until SYSTEM 27.09 defines the authoritative latency budgets**.
 
 SYSTEM 27.08 must not invent milliseconds or timeout values.
 
@@ -64,6 +64,16 @@ Manual budget reset is forbidden. Changing a target requires separate evidence a
 
 PostgreSQL remains authoritative for auction state, accepted bids, winner selection and final results. SLO/error-budget telemetry is observational only.
 
-## Acceptance
+## GREEN evidence
 
-GREEN requires the executable fail-closed verifier and negative self-tests to pass on the exact implementation head, merge to `main`, and post-merge descendant verification. SYSTEM 27.08 does not claim live production burn data.
+- Implementation exact-head commit: `2c3754570b6edd6ca11e474f8d2b64b7d384e2fa`.
+- Implementation PR #252 merged to `main` as `3c54537939381a347526ba953032deee4755215b`.
+- Exact-head Verify Enchev Web run `36034346594`: SUCCESS; aggregate CI test suite (including 27.08 verifier/self-test), TypeScript, production build, built health smoke, Chrome/Edge visual regression and artifact upload all PASS.
+- Exact-head security/supply-chain checks PASS: Code Scan `36034346802`, Secret Scan `36034346623`, SBOM Generation `36034346837`, Build Provenance `36034346762`, SYSTEM 26.05 `36034346667`, SYSTEM 24.02 `36034346890`.
+- Exact-head Vercel Preview `dpl_284sQzFZhvNxy7CVBrk7nHKkg1e6` for commit `2c3754570b6edd6ca11e474f8d2b64b7d384e2fa`: READY.
+- This evidence branch is based directly on merged `main` commit `3c54537939381a347526ba953032deee4755215b`; its exact-head CI provides the required post-merge descendant verification before evidence merge.
+- Error budgets are derived directly from 27.07 targets using `1 - target`; no separate arbitrary allowance is invented.
+- Latency error-budget consumption remains `not_evaluable_until_27.09` because numeric latency/timeout thresholds are owned by SYSTEM 27.09.
+- No downtime minutes, retry budgets, capacity limits, or measured production performance are invented.
+- PostgreSQL remains authoritative and error-budget telemetry remains observational only.
+- Protected DAVID orchestrator files were not modified.
