@@ -1,6 +1,6 @@
 # SYSTEM 27.10 — Retry budgets
 
-Status: **YELLOW** until exact-head CI and post-merge descendant verification pass.
+Status: **GREEN** — bounded retry policy, fail-closed verification, exact-head CI, merge, and post-merge descendant verification are complete.
 
 ## Purpose
 
@@ -57,6 +57,15 @@ PostgreSQL remains authoritative for accepted bids, auction state, winner select
 
 Budgets may be changed only with representative operational evidence and explicit approval. Retry counts must not be increased merely to hide reliability failures or recover an exhausted error budget.
 
-## Acceptance
+## GREEN evidence
 
-GREEN requires the fail-closed verifier/self-tests, exact-head CI/security/build checks, READY exact-head Vercel preview, merge to `main`, and post-merge descendant verification.
+- Implementation exact-head commit: `e61427508ae1f81fd7754b88bfcd88fde6281762`.
+- Implementation PR #257 merged to `main` as `f9df9c0d8d451289b1bfc69fb00c977d792615ea`.
+- Exact-head Verify Enchev Web run `36046694678`: SUCCESS; aggregate CI test suite (including 27.10 verifier/self-test), TypeScript, production build, built health smoke, Chrome/Edge visual regression and artifact upload all PASS.
+- Exact-head security/supply-chain checks PASS: Code Scan `36046694796`, Secret Scan `36046694688`, SBOM Generation `36046694723`, Build Provenance `36046694721`, SYSTEM 26.05 `36046694711`, SYSTEM 24.02 `36046694550`.
+- Exact-head Vercel Preview `dpl_w1i1935HEbJi2PCqWQsTQ8o7nZ7t` for commit `e61427508ae1f81fd7754b88bfcd88fde6281762`: READY.
+- This evidence branch is based directly on merged `main` commit `f9df9c0d8d451289b1bfc69fb00c977d792615ea`; its exact-head CI provides the required post-merge descendant verification before evidence merge.
+- Retry counts/backoff values are initial engineering policy values, not measured production results.
+- Capacity remains owned by SYSTEM 27.11; graceful degradation by 27.12; load shedding by 27.13.
+- PostgreSQL remains authoritative; retry policy and telemetry cannot manufacture accepted bids, winners, or final auction state.
+- Protected DAVID orchestrator files were not modified.
