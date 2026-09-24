@@ -1,6 +1,6 @@
 # SYSTEM 27.06 — Auction finalization success SLI
 
-Status: **YELLOW** until exact-head CI and post-merge descendant verification pass.
+Status: **GREEN** — the measurement contract, fail-closed verifier, exact-head CI, merge, and post-merge descendant verification are complete.
 
 ## Purpose
 
@@ -16,7 +16,7 @@ The current repository does not yet contain an authoritative production auction-
 
 `auction_finalization_success_ratio` measures eligible authoritative finalization attempts.
 
-A finalization counts as **success** only when all of the following are true:
+A finalization counts as **success** only when:
 
 - exactly one authoritative terminal auction result is durably committed in PostgreSQL;
 - winner outcome is resolved as either one authoritative winner or an explicit closed-without-winner state;
@@ -49,6 +49,15 @@ Correlation IDs may be used for diagnostic joins but not as metric dimensions. A
 
 PostgreSQL remains authoritative for final auction state, winner selection and final results. Telemetry is observational only and may not mutate auction state.
 
-## Acceptance
+## GREEN evidence
 
-GREEN requires the executable verifier and fail-closed self-tests to pass on the exact implementation head, merge to `main`, and post-merge descendant verification. No SLO percentage is introduced by SYSTEM 27.06.
+- Implementation exact-head commit: `4622c7151041ae304b08d6e2e407f4ca459099e0`.
+- Implementation PR #248 merged to `main` as `39aa849e289db754181fed92162966c500171cb2`.
+- Exact-head Verify Enchev Web run `36026410836`: SUCCESS; aggregate CI test suite (including 27.06 verifier/self-test), TypeScript, production build, built health smoke, Chrome/Edge visual regression and artifact upload all PASS.
+- Exact-head security/supply-chain checks PASS: Code Scan `36026410568`, Secret Scan `36026410670`, SBOM Generation `36026410565`, Build Provenance `36026410639`, SYSTEM 26.05 `36026410779`, SYSTEM 24.02 `36026410607`.
+- Exact-head Vercel Preview `dpl_CcFmexGjrp9soUgPmNKDjRPPfdn2` for commit `4622c7151041ae304b08d6e2e407f4ca459099e0`: READY.
+- This evidence branch is based directly on merged `main` commit `39aa849e289db754181fed92162966c500171cb2`; its exact-head CI provides the required post-merge descendant verification before evidence merge.
+- No SLO target was invented; ownership remains SYSTEM 27.07.
+- Current architecture truth is preserved: authoritative production auction-finalization runtime is not falsely claimed.
+- `enchev.auction.closed.v1` remains a projection only; PostgreSQL remains authoritative for final auction state, winner selection and results.
+- Protected DAVID orchestrator files were not modified.
