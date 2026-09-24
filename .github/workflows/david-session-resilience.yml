@@ -8,8 +8,6 @@ on:
       - "START_DAVID_AUTONOMY.ps1"
       - "START_DAVID_SINGLE.ps1"
       - "RESTART_DAVID_SINGLE_CLEAN.ps1"
-      - "START_DAVID_SINGLE.ps1"
-      - "RESTART_DAVID_SINGLE_CLEAN.ps1"
       - "START_DAVID_EXPERIMENT_FREETALK.ps1"
       - "START_DAVID_FREETALK_ONLY.ps1"
       - "RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1"
@@ -31,10 +29,6 @@ on:
       - "tools/david/**"
       - "START_DAVID_ALL.ps1"
       - "START_DAVID_AUTONOMY.ps1"
-      - "START_DAVID_SINGLE.ps1"
-      - "RESTART_DAVID_SINGLE_CLEAN.ps1"
-      - "START_DAVID_SINGLE.ps1"
-      - "RESTART_DAVID_SINGLE_CLEAN.ps1"
       - "START_DAVID_FREETALK_ONLY.ps1"
       - "RESTART_DAVID_FREETALK_ONLY_CLEAN.ps1"
       - "DAVID_MODE_SELECTOR.ps1"
@@ -104,8 +98,6 @@ jobs:
           $files = @(
             "START_DAVID_ALL.ps1",
             "START_DAVID_AUTONOMY.ps1",
-            "START_DAVID_SINGLE.ps1",
-            "RESTART_DAVID_SINGLE_CLEAN.ps1",
             "START_DAVID_SINGLE.ps1",
             "RESTART_DAVID_SINGLE_CLEAN.ps1",
             "RESTART_DAVID_ALL_CLEAN.ps1",
