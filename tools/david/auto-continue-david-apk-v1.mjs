@@ -629,6 +629,11 @@ async function fillAndSend(page, text, state) {
     ackTimeoutMs: 5000,
     onEvent: (stage, info) => {
       state.lastSendStatus = stage;
+      if (stage === "WAIT_ACTIVE") state.watchdog = "dispatch-wait-active";
+      else if (stage === "WAIT_PENDING_USER") state.watchdog = "dispatch-wait-pending-user";
+      else if (stage === "WAIT_FOREIGN_DRAFT") state.watchdog = "dispatch-wait-foreign-draft";
+      else if (stage === "AMBIGUOUS") state.watchdog = "dispatch-send-ambiguous";
+      else if (stage === "ACK") state.watchdog = "dispatch-acknowledged";
       state.lastSendUpdatedAt = info.at || new Date().toISOString();
       state.lastSendAttempt = Number(info.attempt || 0);
       if (info.method) state.lastSendMethod = info.method;

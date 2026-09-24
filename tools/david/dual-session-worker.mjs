@@ -415,7 +415,7 @@ async function controlActionProtected(target, context) {
   const spec = specs.find((x) => x.name === target);
   const st = spec?.stateFile ? readState(spec.stateFile) : {};
   const watchdog = String(st?.watchdog || "");
-  if (/(thinking|writing|tool|active|settling|awaiting-final-ok|awaiting-terminal|human-terminal|waiting-response|sending|send-timeout|global-rate-limit)/i.test(watchdog)) {
+  if (/(thinking|writing|tool|active|settling|awaiting-final-ok|awaiting-terminal|human-terminal|waiting-response|sending|send-timeout|global-rate-limit|dispatch-wait|foreign-draft|pending-user)/i.test(watchdog)) {
     return { protected: true, reason: "worker watchdog protected: " + watchdog };
   }
 

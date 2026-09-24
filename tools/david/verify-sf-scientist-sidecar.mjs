@@ -135,6 +135,12 @@ for(const token of [
   'All DAVID lifecycle recovery must use DAVID_RECOVER'
 ]) if(!side.includes(token)) throw new Error("Scientist sidecar invariant missing: "+token);
 
+if(!dualWorker.includes("dispatch-wait")) throw new Error("Unified Supervisor must protect dispatch wait states");
+if(!systemWorker.includes("dispatch-wait-foreign-draft")) throw new Error("SYSTEM dispatch watchdog state missing");
+if(!app2Worker.includes("dispatch-wait-foreign-draft")) throw new Error("APP2 dispatch watchdog state missing");
+if(!designWorker.includes("dispatch-wait-foreign-draft")) throw new Error("DESIGN dispatch watchdog state missing");
+if(!apkWorker.includes("dispatch-wait-foreign-draft")) throw new Error("APK dispatch watchdog state missing");
+
 for(const token of [
   ".sf-scientist-supervisor-command.json",
   ".sf-scientist-supervisor-result.json",
@@ -326,6 +332,7 @@ for(const token of [
   "composer-cleared-without-strong-turn-evidence",
   "ambiguous_no_duplicate=ON",
   "strong_ack=ON",
+  "dispatch_heartbeat=ON",
   "latest-user-matches",
   "composer-cleared",
   "bounded_fallbacks=3",

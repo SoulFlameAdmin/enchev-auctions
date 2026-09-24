@@ -4,6 +4,7 @@ const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
 const normalize=(v)=>String(v||"").replace(/\s+/g," ").trim();
 const hashText=(v)=>createHash("sha256").update(normalize(v)).digest("hex");
 const DISPATCH_POLL_MS=Number(process.env.DAVID_DISPATCH_POLL_MS||500);
+const DISPATCH_HEARTBEAT_MS=Number(process.env.DAVID_DISPATCH_HEARTBEAT_MS||10000);
 const AMBIGUOUS_SETTLE_MS=Number(process.env.DAVID_SEND_AMBIGUOUS_SETTLE_MS||8000);
 
 const SEND_SELECTORS=[
@@ -75,13 +76,18 @@ async function generating(page){
   return false;
 }
 async function dispatchGate(page,expected,emit){
-  let lastStage="";
+  let lastStage="",lastEmitAt=0;
+  const waitEvent=(stage,data)=>{
+    const now=Date.now();
+    if(lastStage!==stage||now-lastEmitAt>=DISPATCH_HEARTBEAT_MS){
+      lastStage=stage;
+      lastEmitAt=now;
+      emit(stage,data);
+    }
+  };
   for(;;){
     if(await generating(page)){
-      if(lastStage!=="WAIT_ACTIVE"){
-        lastStage="WAIT_ACTIVE";
-        emit("WAIT_ACTIVE",{signal:"real-stop-or-generating-visible"});
-      }
+      waitEvent("WAIT_ACTIVE",{signal:"real-stop-or-generating-visible"});
       await sleep(DISPATCH_POLL_MS);
       continue;
     }
@@ -90,10 +96,7 @@ async function dispatchGate(page,expected,emit){
     const latest=await latestUserText(page);
     if(role==="user"){
       if(latest&&latest===expected)return {accepted:true,signal:"matching-user-turn-already-pending"};
-      if(lastStage!=="WAIT_PENDING_USER"){
-        lastStage="WAIT_PENDING_USER";
-        emit("WAIT_PENDING_USER",{signal:"another-user-turn-awaiting-assistant"});
-      }
+      waitEvent("WAIT_PENDING_USER",{signal:"another-user-turn-awaiting-assistant"});
       await sleep(DISPATCH_POLL_MS);
       continue;
     }
@@ -101,10 +104,7 @@ async function dispatchGate(page,expected,emit){
     const c=await composer(page);
     const draft=await composerText(c);
     if(draft&&draft!==expected){
-      if(lastStage!=="WAIT_FOREIGN_DRAFT"){
-        lastStage="WAIT_FOREIGN_DRAFT";
-        emit("WAIT_FOREIGN_DRAFT",{signal:"composer-contains-non-david-draft"});
-      }
+      waitEvent("WAIT_FOREIGN_DRAFT",{signal:"composer-contains-non-david-draft"});
       await sleep(DISPATCH_POLL_MS);
       continue;
     }
@@ -253,5 +253,6 @@ if(process.argv.includes("--self-test")){
   if(!dispatchGate.toString().includes("WAIT_ACTIVE"))throw new Error("send-ack self-test: active dispatch gate missing");
   if(!dispatchGate.toString().includes("WAIT_PENDING_USER"))throw new Error("send-ack self-test: pending user-turn gate missing");
   if(!dispatchGate.toString().includes("WAIT_FOREIGN_DRAFT"))throw new Error("send-ack self-test: foreign draft gate missing");
-  console.log("DAVID_SEND_ACK_SELF_TEST PASS verified_submission=ON bounded_fallbacks=3 duplicate_guard=ON active_dispatch_gate=ON pending_user_gate=ON foreign_draft_gate=ON strong_ack=ON ambiguous_no_duplicate=ON");
+  if(!dispatchGate.toString().includes("DISPATCH_HEARTBEAT_MS"))throw new Error("send-ack self-test: dispatch heartbeat missing");
+  console.log("DAVID_SEND_ACK_SELF_TEST PASS verified_submission=ON bounded_fallbacks=3 duplicate_guard=ON active_dispatch_gate=ON pending_user_gate=ON foreign_draft_gate=ON dispatch_heartbeat=ON strong_ack=ON ambiguous_no_duplicate=ON");
 }
