@@ -1,0 +1,89 @@
+{
+  "taskId": "27.10",
+  "name": "Retry budgets",
+  "version": 1,
+  "status": "initial-provisional-policy",
+  "scope": "engineering-retry-policy",
+  "sources": ["27.03", "27.04", "27.05", "27.06", "27.08", "27.09"],
+  "reviewPolicy": {
+    "valuesAreMeasuredProductionResults": false,
+    "valuesAreInitialEngineeringBudgets": true,
+    "reviewAfterRepresentativeProductionEvidence": true,
+    "changeRequiresEvidenceAndApproval": true
+  },
+  "budgets": {
+    "bidAcceptance": {
+      "sourceTask": "27.03",
+      "attemptTimeoutSourceTask": "27.09",
+      "maxAutomaticRetriesAfterInitialAttempt": 0,
+      "ambiguousOutcomeRequiresAuthoritativeReadBeforeAnyRetry": true,
+      "idempotencyKeyRequiredForAnyExplicitRetry": true,
+      "reason": "Never duplicate or reorder authoritative bid acceptance on an unknown outcome."
+    },
+    "realtimeDelivery": {
+      "sourceTask": "27.04",
+      "attemptTimeoutSourceTask": "27.09",
+      "maxAutomaticRetriesAfterInitialAttempt": 2,
+      "backoffMs": [250, 750],
+      "jitter": "full",
+      "duplicateDeliveryMustRemainNonAuthoritative": true,
+      "reason": "Bound transport retries while avoiding retry storms."
+    },
+    "reconnectRecovery": {
+      "sourceTask": "27.05",
+      "attemptTimeoutSourceTask": "27.09",
+      "maxAutomaticRetriesAfterInitialAttempt": 3,
+      "backoffMs": [500, 1500, 4000],
+      "jitter": "full",
+      "authoritativeBaselineRequiredAfterReconnect": true,
+      "sequenceGapForcesResync": true
+    },
+    "auctionFinalization": {
+      "sourceTask": "27.06",
+      "attemptTimeoutSourceTask": "27.09",
+      "maxAutomaticRetriesAfterInitialAttempt": 1,
+      "backoffMs": [1000],
+      "jitter": "full",
+      "idempotencyKeyRequired": true,
+      "authoritativeReadBeforeRetryAfterUnknownOutcome": true,
+      "durablePostgresqlCommitStillDefinesSuccess": true
+    }
+  },
+  "globalSemantics": {
+    "retryBudgetCountsRetriesAfterInitialAttempt": true,
+    "retryMayNotExtendIndividualAttemptTimeout": true,
+    "retryMayNotConvertUnknownOutcomeToSuccess": true,
+    "retryOnExplicitPermanentFailureForbidden": true,
+    "retryOnValidationOrPermissionFailureForbidden": true,
+    "retryOnRateLimitMustHonorAuthoritativeRetryAfterWhenProvided": true,
+    "retryAfterMustNotBeInvented": true,
+    "boundedExponentialStyleBackoff": true,
+    "jitterRequiredWhereBackoffExists": true,
+    "capacityOwnershipTask": "27.11",
+    "gracefulDegradationOwnershipTask": "27.12",
+    "loadSheddingOwnershipTask": "27.13"
+  },
+  "errorBudgetIntegration": {
+    "sourceTask": "27.08",
+    "retriesDoNotEraseOriginalFailures": true,
+    "retryAttemptsMayBeMeasuredSeparately": true,
+    "successfulRetryDoesNotRewriteFailedAttemptTelemetry": true
+  },
+  "authority": {
+    "authoritativeAuctionSource": "postgresql",
+    "retryPolicyMayMutateAuctionState": false,
+    "telemetryMayMutateAuctionState": false,
+    "retryMayChooseWinner": false,
+    "retryMayCreateAcceptedBidWithoutAuthoritativeCommand": false,
+    "realtimeTransportAuthoritative": false
+  },
+  "guardrails": {
+    "noUnlimitedRetries": true,
+    "noRetryStorms": true,
+    "noBlindBidRetry": true,
+    "noBlindFinalizationRetry": true,
+    "noCapacityLimitInThisTask": true,
+    "noMeasuredProductionPerformanceClaim": true,
+    "noProviderSpecificShortcut": true
+  }
+}

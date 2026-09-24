@@ -160,7 +160,9 @@
     "verify:error-budget-policy": "node scripts/verify-error-budget-policy.mjs",
     "verify:error-budget-policy:self-test": "node scripts/verify-error-budget-policy.mjs --self-test",
     "verify:latency-timeout-budgets": "node scripts/verify-latency-timeout-budgets.mjs",
-    "verify:latency-timeout-budgets:self-test": "node scripts/verify-latency-timeout-budgets.mjs --self-test"
+    "verify:latency-timeout-budgets:self-test": "node scripts/verify-latency-timeout-budgets.mjs --self-test",
+    "verify:retry-budgets": "node scripts/verify-retry-budgets.mjs",
+    "verify:retry-budgets:self-test": "node scripts/verify-retry-budgets.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
