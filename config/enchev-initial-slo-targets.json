@@ -1,0 +1,72 @@
+{
+  "taskId": "27.07",
+  "name": "Initial SLO targets",
+  "version": 1,
+  "status": "initial-provisional-policy",
+  "evaluationWindow": {
+    "type": "rolling",
+    "days": 30,
+    "insufficientDataState": "not_evaluable",
+    "zeroTrafficMayNotCountAsCompliant": true
+  },
+  "sources": [
+    "27.01",
+    "27.02",
+    "27.03",
+    "27.04",
+    "27.05",
+    "27.06"
+  ],
+  "targets": {
+    "criticalJourneys": [
+      { "journeyId": "inventory_discovery", "sli": "successful_journey_ratio", "targetRatio": 0.995 },
+      { "journeyId": "lot_detail", "sli": "successful_journey_ratio", "targetRatio": 0.995 },
+      { "journeyId": "live_auction_view", "sli": "successful_journey_ratio", "targetRatio": 0.995 },
+      { "journeyId": "bid_submission", "sli": "successful_journey_ratio", "targetRatio": 0.999 },
+      { "journeyId": "auction_result_visibility", "sli": "successful_journey_ratio", "targetRatio": 0.999 }
+    ],
+    "apiAvailability": {
+      "sli": "api_availability_ratio",
+      "targetRatio": 0.999
+    },
+    "bidAcceptanceLatency": {
+      "sli": "bid_acceptance_latency_ms",
+      "complianceTargetRatio": 0.99,
+      "latencyBudgetReferenceTask": "27.09",
+      "numericLatencyBudgetDefinedHere": false
+    },
+    "realtimeDeliveryLatency": {
+      "sli": "realtime_delivery_latency_ms",
+      "complianceTargetRatio": 0.99,
+      "latencyBudgetReferenceTask": "27.09",
+      "numericLatencyBudgetDefinedHere": false
+    },
+    "reconnectSuccess": {
+      "sli": "reconnect_success_ratio",
+      "targetRatio": 0.99
+    },
+    "auctionFinalizationSuccess": {
+      "sli": "auction_finalization_success_ratio",
+      "targetRatio": 0.999
+    }
+  },
+  "policy": {
+    "targetsAreMeasuredResults": false,
+    "targetsAreInitialPolicyObjectives": true,
+    "reviewAfterProductionEvidence": true,
+    "reviewMayTightenOrRelaxWithEvidenceAndApproval": true,
+    "errorBudgetPolicyOwnershipTask": "27.08",
+    "latencyTimeoutBudgetOwnershipTask": "27.09",
+    "retryBudgetOwnershipTask": "27.10",
+    "capacityOwnershipTask": "27.11"
+  },
+  "guardrails": {
+    "postgresqlRemainsAuthoritative": true,
+    "telemetryMayNotMutateAuctionState": true,
+    "noTelemetryDerivedAcceptedBid": true,
+    "noTelemetryDerivedWinner": true,
+    "noNumericLatencyOrTimeoutBudgetInThisTask": true,
+    "noRetryBudgetInThisTask": true,
+    "noErrorBudgetPolicyInThisTask": true
+  }
+}
