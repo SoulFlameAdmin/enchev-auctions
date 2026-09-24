@@ -603,7 +603,7 @@ async function executeScientistCommand(context) {
         await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
         results.push({ type, target, ok: true, detail: "owned tab refreshed" });
       } else {
-        restartWorker(target, "CONTROL refresh fallback: owned tab missing");
+        restartWorker(target, "SF SCIENTIST refresh fallback: owned tab missing");
         results.push({ type, target, ok: true, detail: "tab missing; worker restart requested" });
       }
       continue;

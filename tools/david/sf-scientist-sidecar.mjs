@@ -1303,6 +1303,7 @@ function observe(reason,s){return "SF SCIENTIST AUTONOMOUS OBSERVATION\nEVENT: "
   "\n\n"+operatorLaw()+
   "\n\nInspect liveTelemetry.scientistAudit first, then shells, davidStates, recentLogs, logAlerts and probeErrors before concluding. "+
   "activeNoProgress means investigate and WAIT while the real active response signal remains; it is never permission to interrupt GPT. "+
+  "If scientistAudit.critical contains an awaiting-supervision worker, diagnose the evidence first; when the owned tab is inactive and recovery is justified, use DAVID_RECOVER REFRESH/RESTART for that one worker and let the Unified Supervisor make the final safety decision. "+
   "Treat empty telemetry as absence of evidence only when the corresponding probeErrors field is null. "+
   "Distinguish a process start/stop from a real script failure. If useful, investigate autonomously with PowerShell, a desktop screenshot, connected project tools or SCI-A/SCI-B. "+
   "Do not take an action merely to look busy. Prefer the cheapest discriminating check."+
