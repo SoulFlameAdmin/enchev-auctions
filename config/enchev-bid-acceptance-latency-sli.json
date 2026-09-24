@@ -1,0 +1,51 @@
+{
+  "taskId": "27.03",
+  "name": "Bid acceptance latency SLI",
+  "version": 1,
+  "scope": "measurement-contract-only",
+  "targetOwnershipTask": "27.07",
+  "latencyBudgetOwnershipTask": "27.09",
+  "criticalJourneySource": "config/enchev-critical-user-journey-slis.json",
+  "journeyId": "bid_submission",
+  "authoritativeBidRoute": "POST /api/bids",
+  "authoritativeBidRouteImplemented": false,
+  "demoRouteExcluded": "POST /api/live-auction-clock",
+  "authoritativeAuctionSource": "postgresql",
+  "telemetryMayMutateAuctionState": false,
+  "indicator": {
+    "name": "bid_acceptance_latency_ms",
+    "unit": "milliseconds",
+    "type": "distribution",
+    "startEvent": "eligible authoritative bid request admitted after boundary validation and idempotency-key validation",
+    "endEvent": "authoritative accepted-bid commit is durable and the acceptance outcome is available to the API response path",
+    "samplePopulation": "authoritative bids that are durably accepted",
+    "rejectedBidsExcluded": true,
+    "unknownOrAmbiguousAcceptanceExcluded": true
+  },
+  "clock": {
+    "required": "monotonic server-side clock",
+    "clientClockForbidden": true,
+    "wallClockForOrderingForbidden": true,
+    "negativeDurationForbidden": true
+  },
+  "measurement": {
+    "requiredDimensions": ["environment", "operation_id", "outcome"],
+    "optionalDimensions": ["country_profile", "region"],
+    "correlationIdAllowed": true,
+    "correlationIdAsMetricDimensionForbidden": true,
+    "piiForbidden": true,
+    "rawCredentialDataForbidden": true,
+    "requestBodyCaptureForbidden": true,
+    "bidAmountAsMetricDimensionForbidden": true,
+    "userIdAsMetricDimensionForbidden": true
+  },
+  "guardrails": {
+    "noSloTargetInThisTask": true,
+    "noLatencyTargetInThisTask": true,
+    "demoBidFeedbackNeverAuthoritative": true,
+    "noTelemetryDerivedAcceptedBid": true,
+    "noTelemetryDerivedWinner": true,
+    "idempotencyOwnershipTask": "24.07",
+    "correlationOwnershipTask": "24.05"
+  }
+}

@@ -21,7 +21,8 @@ const gates = [
   ["scripts/verify-websocket-event-registry.mjs", "--self-test"],
   ["scripts/verify-web-api-provider-contract-tests.mjs", "--self-test"],
   ["scripts/verify-critical-user-journey-slis.mjs", "--self-test"],
-  ["scripts/verify-api-availability-sli.mjs", "--self-test"]
+  ["scripts/verify-api-availability-sli.mjs", "--self-test"],
+  ["scripts/verify-bid-acceptance-latency-sli.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of gates) {
