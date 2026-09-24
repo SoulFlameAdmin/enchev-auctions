@@ -30,6 +30,8 @@ $workerPatterns = @(
   "david-freetalk-only-dashboard.ps1",
   "START_DAVID_EXPERIMENT_FREETALK.ps1",
   "RESTART_DAVID_EXPERIMENT_FREETALK_CLEAN.ps1",
+  "START_DAVID_SINGLE.ps1",
+  "RESTART_DAVID_SINGLE_CLEAN.ps1",
   "worker-control.mjs",
   "run-worker-control.cmd",
   "launch-worker-control.vbs"
