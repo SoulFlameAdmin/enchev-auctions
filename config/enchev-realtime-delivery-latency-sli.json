@@ -1,0 +1,60 @@
+{
+  "taskId": "27.04",
+  "name": "Realtime delivery latency SLI",
+  "version": 1,
+  "scope": "measurement-contract-only",
+  "targetOwnershipTask": "27.07",
+  "latencyBudgetOwnershipTask": "27.09",
+  "eventRegistrySource": "config/enchev-websocket-event-registry.json",
+  "realtimeWorkspace": "apps/realtime",
+  "realtimeRuntimeImplemented": false,
+  "authoritativeAuctionSource": "postgresql",
+  "telemetryMayMutateAuctionState": false,
+  "indicator": {
+    "name": "realtime_delivery_latency_ms",
+    "unit": "milliseconds",
+    "type": "distribution",
+    "startEvent": "validated canonical realtime event is handed from the authoritative projection publisher into the realtime delivery layer",
+    "endEvent": "same event is handed by the realtime service to an eligible subscribed connection transport",
+    "samplePopulation": "canonical registry events handed to at least one eligible subscribed connection",
+    "clientRenderExcluded": true,
+    "clientAckExcluded": true,
+    "eventsWithoutEligibleSubscriberExcluded": true,
+    "failedDeliveryAttemptExcludedFromLatencyDistribution": true
+  },
+  "clock": {
+    "required": "monotonic server-side clock",
+    "clientClockForbidden": true,
+    "eventEnvelopeIsoTimeForbiddenForDurationMath": true,
+    "wallClockForOrderingForbidden": true,
+    "negativeDurationForbidden": true
+  },
+  "failureSemantics": {
+    "failedOrUnknownDeliveryBelongsToHigherLevelReliabilityIndicators": true,
+    "sequenceGapLatencySampleForbidden": true,
+    "sequenceGapRequiresAuthoritativeResync": true,
+    "duplicateDeliveryMayNotCreateSecondLatencySample": true
+  },
+  "measurement": {
+    "requiredDimensions": ["environment", "event_type", "outcome"],
+    "optionalDimensions": ["region", "country_profile"],
+    "correlationIdAllowedForDiagnostics": true,
+    "correlationIdAsMetricDimensionForbidden": true,
+    "auctionIdAsMetricDimensionForbidden": true,
+    "connectionIdAsMetricDimensionForbidden": true,
+    "userIdAsMetricDimensionForbidden": true,
+    "piiForbidden": true,
+    "rawCredentialDataForbidden": true,
+    "eventPayloadCaptureForbidden": true
+  },
+  "guardrails": {
+    "noSloTargetInThisTask": true,
+    "noLatencyTargetInThisTask": true,
+    "noProviderSpecificShortcut": true,
+    "transportNeverAuthoritative": true,
+    "noTelemetryDerivedAcceptedBid": true,
+    "noTelemetryDerivedWinner": true,
+    "registryOwnershipTask": "24.12",
+    "reconnectOwnershipTask": "27.05"
+  }
+}
