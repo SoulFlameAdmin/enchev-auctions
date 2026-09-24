@@ -156,7 +156,9 @@
     "verify:auction-finalization-success-sli": "node scripts/verify-auction-finalization-success-sli.mjs",
     "verify:auction-finalization-success-sli:self-test": "node scripts/verify-auction-finalization-success-sli.mjs --self-test",
     "verify:initial-slo-targets": "node scripts/verify-initial-slo-targets.mjs",
-    "verify:initial-slo-targets:self-test": "node scripts/verify-initial-slo-targets.mjs --self-test"
+    "verify:initial-slo-targets:self-test": "node scripts/verify-initial-slo-targets.mjs --self-test",
+    "verify:error-budget-policy": "node scripts/verify-error-budget-policy.mjs",
+    "verify:error-budget-policy:self-test": "node scripts/verify-error-budget-policy.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
