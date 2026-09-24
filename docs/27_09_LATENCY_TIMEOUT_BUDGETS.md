@@ -1,6 +1,6 @@
 # SYSTEM 27.09 — Latency/timeout budgets
 
-Status: **YELLOW** until exact-head CI and post-merge descendant verification pass.
+Status: **GREEN** — the engineering-budget policy, fail-closed verifier, exact-head CI, merge, and post-merge descendant verification are complete.
 
 ## Purpose
 
@@ -55,6 +55,15 @@ PostgreSQL remains authoritative for auction state, accepted bids, winner select
 
 The budgets may be tightened or relaxed only with representative operational evidence and explicit approval. Changing a budget must not rewrite the underlying 27.03–27.06 SLI semantics merely to improve compliance.
 
-## Acceptance
+## GREEN evidence
 
-GREEN requires the fail-closed verifier/self-tests, exact-head CI/security/build checks, READY exact-head Vercel preview, merge to `main`, and post-merge descendant verification.
+- Implementation exact-head commit: `a880324e01d5b1148b99a5c5169ee1745ab529ba`.
+- Implementation PR #255 merged to `main` as `109ae55079a993eea84deb797077e4167c316e86`.
+- Exact-head Verify Enchev Web run `36044807882`: SUCCESS; aggregate CI test suite (including 27.09 verifier/self-test), TypeScript, production build, built health smoke, Chrome/Edge visual regression and artifact upload all PASS.
+- Exact-head security/supply-chain checks PASS: Code Scan `36044808047`, Secret Scan `36044807819`, SBOM Generation `36044807974`, Build Provenance `36044807967`, SYSTEM 26.05 `36044807876`, SYSTEM 24.02 `36044807928`.
+- Exact-head Vercel Preview `dpl_9436bmHbACEu4WaxuAS4N4rhMMAM` for commit `a880324e01d5b1148b99a5c5169ee1745ab529ba`: READY.
+- This evidence branch is based directly on merged `main` commit `109ae55079a993eea84deb797077e4167c316e86`; its exact-head CI provides the required post-merge descendant verification before evidence merge.
+- Latency thresholds are initial engineering policy values, not measured production results.
+- Retry budgets remain owned by SYSTEM 27.10; capacity remains owned by SYSTEM 27.11.
+- PostgreSQL remains authoritative; timeouts cannot create accepted bids, winners or authoritative success.
+- Protected DAVID orchestrator files were not modified.
