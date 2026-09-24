@@ -44,9 +44,15 @@ async function assistantCount(page){
 }
 async function latestRole(page){
   try{
-    const n=page.locator('[data-message-author-role]').last();
-    if(!await n.count())return "";
-    return String(await n.getAttribute("data-message-author-role").catch(()=>"")||"").toLowerCase();
+    const nodes=page.locator('[data-message-author-role]');
+    const count=await nodes.count();
+    for(let i=count-1;i>=0;i--){
+      const n=nodes.nth(i);
+      if(!await n.isVisible().catch(()=>false))continue;
+      const role=String(await n.getAttribute("data-message-author-role").catch(()=>"")||"").toLowerCase();
+      if(role==="user"||role==="assistant")return role;
+    }
+    return "";
   }catch{return "";}
 }
 async function latestUserText(page){
@@ -94,9 +100,11 @@ async function dispatchGate(page,expected,emit){
 
     const role=await latestRole(page);
     const latest=await latestUserText(page);
-    if(role==="user"){
+    const uCount=await userCount(page);
+    const aCount=await assistantCount(page);
+    if(role==="user"&&uCount>aCount){
       if(latest&&latest===expected)return {accepted:true,signal:"matching-user-turn-already-pending"};
-      waitEvent("WAIT_PENDING_USER",{signal:"another-user-turn-awaiting-assistant"});
+      waitEvent("WAIT_PENDING_USER",{signal:"unanswered-user-turn-count-confirmed"});
       await sleep(DISPATCH_POLL_MS);
       continue;
     }
@@ -112,6 +120,41 @@ async function dispatchGate(page,expected,emit){
     return {accepted:false,signal:"safe-to-dispatch"};
   }
 }
+async function preSubmitGate(page,expected,baselineUserCount,emit){
+  let lastStage="",lastEmitAt=0;
+  const waitEvent=(stage,data)=>{
+    const now=Date.now();
+    if(lastStage!==stage||now-lastEmitAt>=DISPATCH_HEARTBEAT_MS){
+      lastStage=stage;
+      lastEmitAt=now;
+      emit(stage,data);
+    }
+  };
+  for(;;){
+    const latest=await latestUserText(page);
+    const count=await userCount(page);
+    if(count>baselineUserCount&&latest===expected){
+      return {accepted:true,signal:"matching-user-turn-appeared-during-fill"};
+    }
+    if(await generating(page)){
+      waitEvent("WAIT_ACTIVE",{signal:"generation-started-before-submit"});
+      await sleep(DISPATCH_POLL_MS);
+      continue;
+    }
+    const c=await composer(page);
+    const draft=await composerText(c);
+    if(!draft){
+      return {accepted:false,empty:true,signal:"composer-became-empty-before-submit"};
+    }
+    if(draft!==expected){
+      waitEvent("WAIT_FOREIGN_DRAFT",{signal:"composer-changed-after-david-fill"});
+      await sleep(DISPATCH_POLL_MS);
+      continue;
+    }
+    return {accepted:false,signal:"expected-draft-ready-to-submit"};
+  }
+}
+
 async function fillComposer(page,text,expected){
   for(let attempt=1;attempt<=10;attempt++){
     let c=await composer(page);
@@ -202,10 +245,19 @@ export async function sendPromptVerified(page,text,{worker="DAVID",onEvent=null,
 
   let lastError="";
   for(let i=0;i<methods.length;i++){
-    const pre=await dispatchGate(page,expected,emit);
+    const pre=await preSubmitGate(page,expected,baselineUserCount,emit);
     if(pre.accepted){
       emit("ACK",{attempt:i,method:"pre-submit-idempotence-check",signal:pre.signal,baselineUserCount,baselineAssistantCount});
       return {acknowledged:true,alreadyAccepted:true,attempt:i,method:"pre-submit-idempotence-check",signal:pre.signal,promptHash};
+    }
+    if(pre.empty){
+      const alreadyAccepted=await waitAck(page,baselineUserCount,baselineAssistantCount,expected,1200);
+      if(alreadyAccepted.ok){
+        emit("ACK",{attempt:i,method:"pre-submit-empty-check",...alreadyAccepted,baselineUserCount,baselineAssistantCount});
+        return {acknowledged:true,attempt:i,method:"pre-submit-empty-check",signal:alreadyAccepted.signal,promptHash};
+      }
+      emit("AMBIGUOUS",{attempt:i,method:"pre-submit-empty-check",signal:pre.signal,baselineUserCount,baselineAssistantCount});
+      return {acknowledged:false,ambiguous:true,submitted:false,attempt:i,method:"pre-submit-empty-check",signal:pre.signal,promptHash};
     }
 
     const already=await waitAck(page,baselineUserCount,baselineAssistantCount,expected,500);
@@ -254,5 +306,7 @@ if(process.argv.includes("--self-test")){
   if(!dispatchGate.toString().includes("WAIT_PENDING_USER"))throw new Error("send-ack self-test: pending user-turn gate missing");
   if(!dispatchGate.toString().includes("WAIT_FOREIGN_DRAFT"))throw new Error("send-ack self-test: foreign draft gate missing");
   if(!dispatchGate.toString().includes("DISPATCH_HEARTBEAT_MS"))throw new Error("send-ack self-test: dispatch heartbeat missing");
-  console.log("DAVID_SEND_ACK_SELF_TEST PASS verified_submission=ON bounded_fallbacks=3 duplicate_guard=ON active_dispatch_gate=ON pending_user_gate=ON foreign_draft_gate=ON dispatch_heartbeat=ON strong_ack=ON ambiguous_no_duplicate=ON");
+  if(!dispatchGate.toString().includes("uCount>aCount"))throw new Error("send-ack self-test: pending-user count confirmation missing");
+  if(!preSubmitGate.toString().includes("expected-draft-ready-to-submit"))throw new Error("send-ack self-test: dedicated pre-submit gate missing");
+  console.log("DAVID_SEND_ACK_SELF_TEST PASS verified_submission=ON bounded_fallbacks=3 duplicate_guard=ON active_dispatch_gate=ON pending_user_gate=COUNT_CONFIRMED foreign_draft_gate=ON pre_submit_gate=ON dispatch_heartbeat=ON strong_ack=ON ambiguous_no_duplicate=ON");
 }
