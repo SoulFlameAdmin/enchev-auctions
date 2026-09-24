@@ -329,7 +329,7 @@ function anomaly(t) {
     if (t.workerHealth && t.workerHealth[n] && t.workerHealth[n].processAlive === false) return true;
     if (Number(t.workerHealth && t.workerHealth[n] ? t.workerHealth[n].heartbeatAgeMs || 0 : 0) > 300000) return true;
     const watchdog = String(t.workers && t.workers[n] ? t.workers[n].watchdog || "" : "");
-    if (/(fatal|composer-missing|session-missing|cdp|browser-dead|platform-error)/i.test(watchdog)) return true;
+    if (/(fatal|composer-missing|session-missing|cdp|browser-dead|platform-error|awaiting-supervision)/i.test(watchdog)) return true;
   }
   return false;
 }

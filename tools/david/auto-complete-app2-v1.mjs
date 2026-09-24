@@ -607,8 +607,22 @@ async function waitComplete(context, page, baseHash, state) {
     await sleep(COMPLETE_SAMPLE_MS);
   }
 }
+async function waitForScientistSupervision(state, reason) {
+  state.problem = reason;
+  state.watchdog = "app2-awaiting-supervision";
+  save(state, "Recovery budget exhausted; SF Scientist / Unified Supervisor must diagnose before restart");
+  console.log("[APP2] Recovery budget exhausted -> AWAITING SF SCIENTIST / SUPERVISOR.");
+  while (true) {
+    state.supervisionHeartbeatAt = new Date().toISOString();
+    save(state, "Awaiting SF Scientist / Unified Supervisor; no further refresh/resend");
+    await sleep(15000);
+  }
+}
 async function runPrompt(context, page, state, prompt, kind) {
   for (let attempt = 1; ; attempt++) {
+    if (attempt > MAX_RETRIES) {
+      await waitForScientistSupervision(state, `APP2 logical task exceeded bounded recovery budget (${MAX_RETRIES})`);
+    }
     page = await waitReady(context, page, state);
     const baseHash = hash(await latestAssistant(page));
     state.watchdog = `sending-${kind}`;

@@ -826,11 +826,19 @@ async function sendWithRecovery(context, page, state, text, kind) {
     console.log("[DAVID] GPT did not start and user turn was not confirmed. LAW: REFRESH -> RESEND.");
     page = await refreshChat(context, page, state, attempt);
   }
-  state.watchdog = "refreshing-chat";
-  state.problem = "GPT did not accept the user turn after recovery attempts";
-  saveState(state, "Response start recovery exhausted; refreshing instead of stopping");
-  page = await refreshChat(context, page, state, MAX_RECOVERY_ATTEMPTS);
+  await waitForScientistSupervision(state, "GPT did not accept the user turn after bounded recovery attempts");
   return { ok: false, page, baselineHash, outgoingHash };
+}
+async function waitForScientistSupervision(state, reason) {
+  state.problem = reason;
+  state.watchdog = "system-awaiting-supervision";
+  saveState(state, "Recovery budget exhausted; SF Scientist / Unified Supervisor must diagnose before restart");
+  console.log("[DAVID] Recovery budget exhausted -> AWAITING SF SCIENTIST / SUPERVISOR.");
+  while (true) {
+    state.supervisionHeartbeatAt = new Date().toISOString();
+    saveState(state, "Awaiting SF Scientist / Unified Supervisor; no further refresh/resend");
+    await sleep(15000);
+  }
 }
 async function waitForCompletion(context, page, state, baselineHash) {
   let lastHash = baselineHash;
@@ -901,6 +909,7 @@ async function waitForCompletion(context, page, state, baselineHash) {
   }
 }
 async function runPrompt(context, page, state, prompt, kind) {
+  let stalledRecoveryCycles = 0;
   while (true) {
     const sent = await sendWithRecovery(context, page, state, prompt, kind);
     page = sent.page;
@@ -926,19 +935,23 @@ async function runPrompt(context, page, state, prompt, kind) {
       }
 
       sameTurnRecoveries += 1;
+      stalledRecoveryCycles += 1;
       state.problem = null;
-      if (sameTurnRecoveries <= STALL_RESEND_LIMIT) {
+      if (stalledRecoveryCycles <= STALL_RESEND_LIMIT) {
         state.watchdog = "stalled-resend";
-        saveState(state, `LAW: GPT stopped thinking/writing -> resend same logical task ${sameTurnRecoveries}/${STALL_RESEND_LIMIT}`);
-        console.log(`[DAVID] LAW: GPT stopped thinking/writing -> RESEND (${sameTurnRecoveries}/${STALL_RESEND_LIMIT}).`);
+        saveState(state, `Inactive GPT stall -> bounded resend ${stalledRecoveryCycles}/${STALL_RESEND_LIMIT}`);
+        console.log(`[DAVID] Inactive stall -> bounded RESEND (${stalledRecoveryCycles}/${STALL_RESEND_LIMIT}).`);
+        break;
+      }
+      if (stalledRecoveryCycles === STALL_RESEND_LIMIT + 1) {
+        page = await refreshChat(context, page, state, stalledRecoveryCycles);
+        state.watchdog = "stalled-refresh-resend";
+        saveState(state, "Inactive repeated stall -> one final bounded refresh/resend before supervision");
+        console.log("[DAVID] Repeated inactive stall -> one final REFRESH -> RESEND.");
         break;
       }
 
-      page = await refreshChat(context, page, state, sameTurnRecoveries);
-      state.watchdog = "stalled-refresh-resend";
-      saveState(state, "LAW: repeated stall -> refresh -> resend");
-      console.log("[DAVID] LAW: repeated stall -> REFRESH -> RESEND.");
-      sameTurnRecoveries = 0;
+      await waitForScientistSupervision(state, "Repeated inactive GPT stall after bounded resend + refresh budget");
       break;
     }
   }

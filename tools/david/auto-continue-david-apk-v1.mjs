@@ -599,8 +599,21 @@ async function fillAndSend(page, text, state) {
   });
 }
 
+async function waitForScientistSupervision(state, reason) {
+  state.problem = reason;
+  state.watchdog = "apk-awaiting-supervision";
+  save(state, "Recovery budget exhausted; SF Scientist / Unified Supervisor must diagnose before restart");
+  console.log("[APK] Recovery budget exhausted -> AWAITING SF SCIENTIST / SUPERVISOR.");
+  while (true) {
+    state.supervisionHeartbeatAt = new Date().toISOString();
+    save(state, "Awaiting SF Scientist / Unified Supervisor; no further refresh/resend");
+    await sleep(15000);
+  }
+}
 async function runPrompt(context, page, state, prompt, kind) {
   let stallResends = 0;
+  let stallRefreshes = 0;
+  let noStartRecoveries = 0;
   for (;;) {
     page = await waitReady(context, page, state);
     const base = hash(await latestAssistant(page));
@@ -658,9 +671,13 @@ async function runPrompt(context, page, state, prompt, kind) {
         await sleep(POLL_MS);
       }
       if (!started) {
+        noStartRecoveries += 1;
+        if (noStartRecoveries > 2) {
+          await waitForScientistSupervision(state, "APK response failed to start after two bounded refresh recoveries");
+        }
         state.watchdog = "apk-no-start-bounded-refresh";
-        save(state, "APK still inactive after extended grace -> one bounded refresh");
-        console.log("[APK] Still inactive after grace -> one bounded REFRESH.");
+        save(state, `APK still inactive after extended grace -> bounded refresh ${noStartRecoveries}/2`);
+        console.log(`[APK] Still inactive after grace -> bounded REFRESH ${noStartRecoveries}/2.`);
         await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
         await sleep(1800);
         continue;
@@ -720,9 +737,13 @@ async function runPrompt(context, page, state, prompt, kind) {
           await sleep(800);
           break;
         }
+        stallRefreshes += 1;
+        if (stallRefreshes > 1) {
+          await waitForScientistSupervision(state, "APK repeated inactive stall after bounded resends and one refresh");
+        }
         state.watchdog = "apk-stalled-refresh-resend";
-        save(state, "LAW: repeated APK stall -> refresh -> resend");
-        console.log("[APK] LAW: repeated stall -> REFRESH -> RESEND.");
+        save(state, "Repeated inactive APK stall -> one final bounded refresh/resend before supervision");
+        console.log("[APK] Repeated inactive stall -> one final REFRESH -> RESEND.");
         await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
         await sleep(1800);
         stallResends = 0;

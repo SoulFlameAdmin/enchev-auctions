@@ -267,7 +267,7 @@ async function shellProcesses(){
 function scientistWatchdogAudit(states,logs,probeErrors){
   const nowMs=Date.now();
   const activeNoProgress=states.filter(x=>/active-no-progress/i.test(String(x.watchdog||"")));
-  const critical=states.filter(x=>/(fatal|offline|browser-dead|session-missing|composer-missing|recovery-budget-exhausted|stalled-awaiting-supervision|needs-scientist)/i.test(String(x.watchdog||"")) || /(?:fatal|uncaught|crash)/i.test(String(x.lastError||"")));
+  const critical=states.filter(x=>/(fatal|offline|browser-dead|session-missing|composer-missing|recovery-budget-exhausted|awaiting-supervision|needs-scientist)/i.test(String(x.watchdog||"")) || /(?:fatal|uncaught|crash)/i.test(String(x.lastError||"")));
   const staleStates=states.filter(x=>{const t=Date.parse(String(x.updatedAt||""));return Number.isFinite(t)&&nowMs-t>300000;});
   const probeHealthy=!probeErrors.processCounts&&!probeErrors.shellProcesses;
   return {

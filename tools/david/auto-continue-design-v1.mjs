@@ -592,7 +592,27 @@ async function waitCompletion(context, page, base, state) {
     await sleep(POLL_MS);
   }
 }
+async function waitForScientistSupervision(state, reason) {
+  state.problem = reason;
+  state.watchdog = "design-awaiting-supervision";
+  save(state, "Recovery budget exhausted; SF Scientist / Unified Supervisor must diagnose before restart");
+  console.log("[DESIGN] Recovery budget exhausted -> AWAITING SF SCIENTIST / SUPERVISOR.");
+  while (true) {
+    state.supervisionHeartbeatAt = new Date().toISOString();
+    save(state, "Awaiting SF Scientist / Unified Supervisor; no further refresh/resend");
+    await sleep(15000);
+  }
+}
 async function runPrompt(context, page, state, prompt, kind) {
+  let inactiveRecoveryCount = 0;
+  const maxInactiveRecoveries = 4;
+  const useRecoveryBudget = async (reason) => {
+    inactiveRecoveryCount += 1;
+    state.recoveryAttempt = inactiveRecoveryCount;
+    if (inactiveRecoveryCount > maxInactiveRecoveries) {
+      await waitForScientistSupervision(state, `DESIGN recovery budget exhausted: ${reason}`);
+    }
+  };
   for (;;) {
     page = await waitReady(context, page, state);
     const base = hash(await latestAssistant(page));
@@ -668,6 +688,7 @@ async function runPrompt(context, page, state, prompt, kind) {
       state.problem = `ChatGPT platform: ${started.blocker}`;
       state.watchdog = "design-platform-backoff";
       save(state, `Design platform blocker: ${started.blocker}; one bounded network recovery`);
+      await useRecoveryBudget("platform blocker "+started.blocker);
       await sleep(15000);
       await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
       continue;
@@ -683,6 +704,7 @@ async function runPrompt(context, page, state, prompt, kind) {
         state.watchdog = "design-bounded-refresh";
         save(state, "Design still inactive after extended grace -> one bounded refresh");
         console.log("[DESIGN] Still inactive after grace -> one bounded REFRESH.");
+        await useRecoveryBudget("response did not start after grace");
         await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
         await sleep(2500);
         continue;
@@ -714,12 +736,20 @@ async function runPrompt(context, page, state, prompt, kind) {
       }
       state.watchdog = "design-network-recovery";
       save(state, `Design network blocker ${done.blocker}; one bounded refresh`);
+      await useRecoveryBudget("completion network blocker "+done.blocker);
       await sleep(15000);
       await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
       await sleep(2500);
       continue;
     }
-    if (done.stalled) { state.watchdog = "design-stalled-resend"; save(state, "LAW: Design GPT stopped thinking/writing -> resend"); console.log("[DESIGN] LAW: stopped thinking/writing -> RESEND."); await sleep(800); continue; }
+    if (done.stalled) {
+      state.watchdog = "design-stalled-resend";
+      save(state, "Inactive Design GPT stall -> bounded resend");
+      console.log("[DESIGN] Inactive stall -> bounded RESEND.");
+      await useRecoveryBudget("inactive stalled response");
+      await sleep(800);
+      continue;
+    }
     state.lastAssistantHash = hash(done.text);
     if (state.justRolledOver) state.justRolledOver = false;
             if (state.freshStartPending) state.freshStartPending = false;

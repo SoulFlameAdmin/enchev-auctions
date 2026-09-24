@@ -112,6 +112,13 @@ Do not invent secrets, results, deployments or test evidence.
 - A Supervisor rejection is evidence to WAIT, not a reason to escalate around the safety gate.
 - Human verification, CAPTCHA, MFA, login, permission and explicit approval gates remain human-owned and are never bypassed.
 
+## 4B. Recovery-budget exhaustion law
+- Inactive recovery is finite. A worker may use only its explicit bounded resend/refresh budget for one logical turn.
+- When that budget is exhausted, the worker enters an `*-awaiting-supervision` state, keeps a lightweight supervision heartbeat, and performs no further refresh/resend by itself.
+- `*-awaiting-supervision` is a real watchdog anomaly for both CONTROL and SF Scientist.
+- The next lifecycle recovery must come through the guarded Unified Supervisor path, which re-checks real active-work protection immediately before REFRESH/RESTART.
+- A rate-limit cooldown, human-verification gate, login/MFA/CAPTCHA, or explicit permission wait does not consume the inactive technical recovery budget.
+
 ## 5. 24/7 supervisor health
 - One unified supervisor owns CONTROL/WATCHTOWER, SYSTEM, DESIGN, DPP/APP2 and DAVID APK.
 - Startup is successful only after all five managed ChatGPT tabs are present exactly once: CONTROL=1, SYSTEM=1, DESIGN=1, APP2=1, APK=1.

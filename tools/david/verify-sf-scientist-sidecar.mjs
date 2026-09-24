@@ -160,6 +160,19 @@ for(const [name,worker,token] of [
 
 if(app2Worker.includes("async function forceStop")) throw new Error("APP2 must never own a forceStop recovery path");
 
+for(const [name,worker] of [
+  ["SYSTEM",systemWorker],
+  ["DESIGN",designWorker],
+  ["APP2",app2Worker],
+  ["APK",apkWorker]
+]) {
+  if(!worker.includes("waitForScientistSupervision")) throw new Error(name+" bounded recovery must hand off to Scientist supervision");
+  if(!worker.includes("awaiting-supervision")) throw new Error(name+" supervision watchdog state missing");
+}
+if(!controlWorker.includes("awaiting-supervision")) throw new Error("CONTROL must detect awaiting-supervision as an anomaly");
+if(!side.includes("awaiting-supervision")) throw new Error("Scientist audit must detect awaiting-supervision");
+if(!operatingLaws.includes("Recovery-budget exhaustion law")) throw new Error("DAVID recovery-budget law missing");
+
 for(const token of [
   'effortPickerRegex',
   'GPT-5\\.6\\s*Sol',
