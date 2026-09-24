@@ -142,7 +142,9 @@
     "verify:websocket-event-registry": "node scripts/verify-websocket-event-registry.mjs",
     "verify:websocket-event-registry:self-test": "node scripts/verify-websocket-event-registry.mjs --self-test",
     "verify:web-api-provider-contract-tests": "node scripts/verify-web-api-provider-contract-tests.mjs",
-    "verify:web-api-provider-contract-tests:self-test": "node scripts/verify-web-api-provider-contract-tests.mjs --self-test"
+    "verify:web-api-provider-contract-tests:self-test": "node scripts/verify-web-api-provider-contract-tests.mjs --self-test",
+    "verify:staging-smoke-suite": "node scripts/verify-staging-smoke-suite-ci.mjs",
+    "verify:staging-smoke-suite:self-test": "node scripts/verify-staging-smoke-suite-ci.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
