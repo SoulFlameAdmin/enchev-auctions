@@ -657,6 +657,7 @@ async function runPrompt(context, page, state, prompt, kind) {
     syncActiveChatUrl(page, state);
     if (start.blocker) {
       if (start.blocker === "send timeout") {
+        attempt -= 1;
         page = await waitSendTimeoutRecovery(context, page, state);
         const recoveredStart = await waitStart(context, page, baseHash, state);
         page = recoveredStart.page;
@@ -678,6 +679,7 @@ async function runPrompt(context, page, state, prompt, kind) {
         continue;
       }
       if (start.blocker === "rate limit") {
+        attempt -= 1;
         const rl = await reportRateLimit("APP2", "ChatGPT UI/start: rate limit");
         state.problem = null;
         state.problemRetryAt = rl.blockedUntil;
@@ -689,6 +691,7 @@ async function runPrompt(context, page, state, prompt, kind) {
       state.problem = `ChatGPT platform: ${start.blocker}`;
       state.watchdog = "platform-block";
       save(state, `Platform block ${start.blocker}`);
+      if (start.blocker === "human verification") attempt -= 1;
       await sleep(start.blocker === "human verification" ? 30000 : 15000);
       continue;
     }
@@ -701,6 +704,7 @@ async function runPrompt(context, page, state, prompt, kind) {
       page = graceStart.page;
       if (graceStart.blocker) {
         if (graceStart.blocker === "rate limit") {
+          attempt -= 1;
           const rl = await reportRateLimit("APP2", "ChatGPT UI/grace: rate limit");
           state.problem = null;
           state.problemRetryAt = rl.blockedUntil;
@@ -712,6 +716,7 @@ async function runPrompt(context, page, state, prompt, kind) {
         state.problem = `ChatGPT platform: ${graceStart.blocker}`;
         state.watchdog = "platform-block";
         save(state, `Platform block during APP2 grace: ${graceStart.blocker}`);
+        if (graceStart.blocker === "human verification") attempt -= 1;
         await sleep(graceStart.blocker === "human verification" ? 30000 : 15000);
         continue;
       }
@@ -731,10 +736,12 @@ async function runPrompt(context, page, state, prompt, kind) {
     page = done.page;
     if (done.retry) {
       if (done.reason === "send timeout") {
+        attempt -= 1;
         page = await waitSendTimeoutRecovery(context, page, state);
       } else if (done.reason === "connection-interrupted" || done.reason === "stalled-or-blank") {
         page = await recoverActive(context, page, state, done.reason);
       } else if (done.reason === "rate limit") {
+        attempt -= 1;
         const rl = await reportRateLimit("APP2", "ChatGPT UI/completion: rate limit");
         state.problem = null;
         state.problemRetryAt = rl.blockedUntil;
@@ -742,6 +749,7 @@ async function runPrompt(context, page, state, prompt, kind) {
         save(state, `GLOBAL RATE LIMIT during APP2 completion; stage=${rl.stage} until=${rl.blockedUntil}; NO REFRESH`);
         await sleep(1000);
       } else if (done.reason === "human verification") {
+        attempt -= 1;
         state.problem = "ChatGPT platform: human verification";
         state.watchdog = "human-blocked";
         save(state, "APP2 waiting for human verification; NO REFRESH / NO BYPASS");
