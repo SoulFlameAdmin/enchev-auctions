@@ -152,7 +152,9 @@
     "verify:realtime-delivery-latency-sli": "node scripts/verify-realtime-delivery-latency-sli.mjs",
     "verify:realtime-delivery-latency-sli:self-test": "node scripts/verify-realtime-delivery-latency-sli.mjs --self-test",
     "verify:reconnect-success-sli": "node scripts/verify-reconnect-success-sli.mjs",
-    "verify:reconnect-success-sli:self-test": "node scripts/verify-reconnect-success-sli.mjs --self-test"
+    "verify:reconnect-success-sli:self-test": "node scripts/verify-reconnect-success-sli.mjs --self-test",
+    "verify:auction-finalization-success-sli": "node scripts/verify-auction-finalization-success-sli.mjs",
+    "verify:auction-finalization-success-sli:self-test": "node scripts/verify-auction-finalization-success-sli.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
