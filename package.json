@@ -158,7 +158,9 @@
     "verify:initial-slo-targets": "node scripts/verify-initial-slo-targets.mjs",
     "verify:initial-slo-targets:self-test": "node scripts/verify-initial-slo-targets.mjs --self-test",
     "verify:error-budget-policy": "node scripts/verify-error-budget-policy.mjs",
-    "verify:error-budget-policy:self-test": "node scripts/verify-error-budget-policy.mjs --self-test"
+    "verify:error-budget-policy:self-test": "node scripts/verify-error-budget-policy.mjs --self-test",
+    "verify:latency-timeout-budgets": "node scripts/verify-latency-timeout-budgets.mjs",
+    "verify:latency-timeout-budgets:self-test": "node scripts/verify-latency-timeout-budgets.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",

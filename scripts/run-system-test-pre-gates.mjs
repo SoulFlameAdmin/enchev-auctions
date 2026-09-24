@@ -27,7 +27,8 @@ const gates = [
   ["scripts/verify-reconnect-success-sli.mjs", "--self-test"],
   ["scripts/verify-auction-finalization-success-sli.mjs", "--self-test"],
   ["scripts/verify-initial-slo-targets.mjs", "--self-test"],
-  ["scripts/verify-error-budget-policy.mjs", "--self-test"]
+  ["scripts/verify-error-budget-policy.mjs", "--self-test"],
+  ["scripts/verify-latency-timeout-budgets.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of gates) {
