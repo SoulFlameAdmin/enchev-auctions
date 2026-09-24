@@ -354,6 +354,13 @@ for(const token of [
 ]) if(!operatingLaws.includes(token)) throw new Error("DAVID dispatch law invariant missing: "+token);
 
 for(const token of [
+  "isExternalBlocker",
+  "deferPrompt",
+  "routeApkProblem",
+  "prompt_router=WORK_FIX_DEFER_NEXT"
+]) if(!apkWorker.includes(token)) throw new Error("APK deterministic prompt router invariant missing: "+token);
+
+for(const token of [
   "david_installer_clients_snapshot",
   "NEXT_PUBLIC_SUPABASE_ANON_KEY",
   "hardcoded_people=OFF",

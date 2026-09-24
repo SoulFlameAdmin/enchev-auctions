@@ -164,6 +164,52 @@ TRY TO MAKE THIS FIX YOURSELF NOW. Опит ${attempt}. Провери SoulFlame
 ${ORCHESTRATOR_LAW}\n\n${DEPLOY_LAW}
 ${MARKER}`;
 }
+function isExternalBlocker(problem) {
+  return /(quota|billing|plan limit|provider credential|credential|permission|authorization|external access|play console|signing key|keystore|release approval|legal sign-off|customer data|marketplace|vendor account|device farm quota)/i.test(String(problem || ""));
+}
+function blockerKey(problem) {
+  return String(problem || "")
+    .toLowerCase()
+    .replace(/[-_/]+/g, " ")
+    .replace(/[^a-zа-я0-9\s]+/gi, " ")
+    .replace(/\s+/g, " ")
+    .replace(/опит\s*\d+|attempt\s*\d+/g, "")
+    .trim();
+}
+function sameBlocker(a,b) {
+  const x=blockerKey(a),y=blockerKey(b);
+  return Boolean(x&&y&&(x===y||x.includes(y)||y.includes(x)));
+}
+function deferPrompt(problem, repeat=1) {
+  return `@GitHub
+
+DAVID APK EXTERNAL BLOCKER DEFER:
+${problem}
+
+Това е външен blocker, не вътрешен APK дефект. Запиши blocker/evidence и НЕ го върти отново в този цикъл. Веднага избери най-ранната независима dependency-safe DAVID Phone/APK задача, която може да се изпълни без този blocker. Работи в test branch/PR, направи реална промяна, build/test и evidence. Това е defer cycle ${repeat}.
+
+Не прави production release/merge без разрешение. Не заобикаляй login/CAPTCHA/MFA/permissions и не измисляй credentials/evidence.
+
+При доказано завършен независим блок последният ред е: OK
+Само при нов вътрешен технически дефект, който спира безопасната работа: ${PROBLEM_PREFIX} <точният проблем>
+
+${ORCHESTRATOR_LAW}\n\n${DEPLOY_LAW}
+${MARKER}`;
+}
+function routeApkProblem(state, problem) {
+  if (isExternalBlocker(problem)) {
+    if (!sameBlocker(state.deferredBlocker, problem)) state.deferredBlockerAcknowledged = false;
+    state.deferredBlocker = problem;
+    state.problem = null;
+    state.problemAttempts = 0;
+    state.watchdog = "apk-external-blocker-deferred";
+    return "defer";
+  }
+  state.problem = problem;
+  state.problemAttempts = 0;
+  state.watchdog = "apk-internal-problem";
+  return "fix";
+}
 
 async function discoverApkChat(context) {
   const candidates = new Map();
@@ -806,23 +852,99 @@ async function main() {
   state.watchdog = "apk-monitoring";
   save(state, "DAVID APK worker connected");
 
+  if (state.problem && isExternalBlocker(state.problem)) {
+    routeApkProblem(state, state.problem);
+    save(state, "Persisted APK external blocker routed to DEFER instead of FIX");
+  }
+  let deferRepeats = 0;
+
   while (true) {
+    if (state.deferredBlocker && !state.deferredBlockerAcknowledged) {
+      const deferred = state.deferredBlocker;
+      deferRepeats += 1;
+      state.watchdog = "apk-defer-external-blocker";
+      save(state, `Sending one APK defer relay for external blocker: ${deferred}`);
+      const result = await runPrompt(context, page, state, deferPrompt(deferred, deferRepeats), "defer");
+      page = result.page;
+      const nextProblem = extractProblem(result.text);
+
+      if (nextProblem) {
+        if (isExternalBlocker(nextProblem)) {
+          if (sameBlocker(deferred, nextProblem)) {
+            state.deferredBlockerAcknowledged = true;
+            state.problem = null;
+            state.watchdog = "apk-external-blocker-already-deferred";
+            save(state, `Same APK external blocker repeated after defer; forcing independent WORK: ${nextProblem}`);
+          } else {
+            state.deferredBlocker = nextProblem;
+            state.deferredBlockerAcknowledged = false;
+            state.problem = null;
+            state.watchdog = "apk-external-blocker-deferred";
+            save(state, `Different APK external blocker discovered: ${nextProblem}`);
+          }
+        } else {
+          const routed = routeApkProblem(state, nextProblem);
+          save(state, `APK problem during defer routed to ${routed.toUpperCase()}: ${nextProblem}`);
+        }
+        await sleep(COOLDOWN_MS);
+        continue;
+      }
+
+      if (!endsOk(result.text)) {
+        const terminal = await waitForTerminalMarker(page, state);
+        if (terminal.type === "problem") {
+          if (isExternalBlocker(terminal.problem)) {
+            if (sameBlocker(deferred, terminal.problem)) {
+              state.deferredBlockerAcknowledged = true;
+              state.problem = null;
+              state.watchdog = "apk-external-blocker-already-deferred";
+            } else {
+              state.deferredBlocker = terminal.problem;
+              state.deferredBlockerAcknowledged = false;
+              state.problem = null;
+              state.watchdog = "apk-external-blocker-deferred";
+            }
+          } else {
+            routeApkProblem(state, terminal.problem);
+          }
+          save(state, `APK defer terminal result routed: ${terminal.problem}`);
+          continue;
+        }
+      }
+
+      state.deferredBlockerAcknowledged = true;
+      state.problem = null;
+      state.lastResult = "OK";
+      state.watchdog = "apk-external-blocker-deferred-once";
+      save(state, "APK external blocker deferred once; continuing independent WORK");
+      state.nextTaskAt = new Date().toISOString();
+      state.watchdog = "next-task-ready";
+      save(state, "NEXT APK task allowed after completed defer relay");
+      await sleep(COOLDOWN_MS);
+      continue;
+    }
+
     if (state.problem) {
+      if (isExternalBlocker(state.problem)) {
+        routeApkProblem(state, state.problem);
+        save(state, "APK external blocker intercepted before FIX and routed to DEFER");
+        continue;
+      }
       state.problemAttempts = Number(state.problemAttempts || 0) + 1;
       const result = await runPrompt(context, page, state, fixPrompt(state.problem, state.problemAttempts), "fix");
       page = result.page;
       const problem = extractProblem(result.text);
       if (problem) {
-        state.problem = problem;
-        save(state, `APK problem remains: ${problem}`);
-        await sleep(state.problemAttempts % 4 === 0 ? 30000 : COOLDOWN_MS);
+        const routed = routeApkProblem(state, problem);
+        save(state, `APK problem after FIX routed to ${routed.toUpperCase()}: ${problem}`);
+        await sleep(routed === "fix" && state.problemAttempts % 4 === 0 ? 30000 : COOLDOWN_MS);
         continue;
       }
       if (!endsOk(result.text)) {
         const terminal = await waitForTerminalMarker(page, state);
         if (terminal.type === "problem") {
-          state.problem = terminal.problem;
-          save(state, `APK fix terminal marker became PROBLEM IN: ${terminal.problem}`);
+          const routed = routeApkProblem(state, terminal.problem);
+          save(state, `APK fix terminal problem routed to ${routed.toUpperCase()}: ${terminal.problem}`);
           continue;
         }
       }
@@ -841,18 +963,16 @@ async function main() {
     page = result.page;
     const problem = extractProblem(result.text);
     if (problem) {
-      state.problem = problem;
-      state.problemAttempts = 0;
-      save(state, `APK GPT reported: ${problem}`);
+      const routed = routeApkProblem(state, problem);
+      save(state, `APK GPT problem routed to ${routed.toUpperCase()}: ${problem}`);
       await sleep(COOLDOWN_MS);
       continue;
     }
     if (!endsOk(result.text)) {
       const terminal = await waitForTerminalMarker(page, state);
       if (terminal.type === "problem") {
-        state.problem = terminal.problem;
-        state.problemAttempts = 0;
-        save(state, `APK terminal marker became PROBLEM IN: ${terminal.problem}`);
+        const routed = routeApkProblem(state, terminal.problem);
+        save(state, `APK terminal problem routed to ${routed.toUpperCase()}: ${terminal.problem}`);
         continue;
       }
     }
@@ -860,8 +980,8 @@ async function main() {
     save(state, "Final OK received; continuing to NEXT APK task in the same ChatGPT conversation");
     console.log("[APK] Final OK received. continuing in same ChatGPT conversation.");
     state.nextTaskAt = new Date().toISOString();
-      state.watchdog = "next-task-ready";
-      save(state, "Previous block complete; NEXT TASK will continue in SAME ChatGPT conversation. Rollover only on real conversation limit.");
+    state.watchdog = "next-task-ready";
+    save(state, "Previous block complete; NEXT TASK will continue in SAME ChatGPT conversation. Rollover only on real conversation limit.");
     await sleep(COOLDOWN_MS);
   }
 }
@@ -871,7 +991,11 @@ function runSelfTest() {
   if (semanticTerminalCandidate("Android CI is still running and pending. Please wait.")) throw new Error("APK self-test: pending CI must not auto-continue");
   if (semanticTerminalCandidate("Please log in and approve MFA before continuing.")) throw new Error("APK self-test: human gate must pause");
   if (!waitReady.toString().includes("fresh-owned-tab-after-discovery-miss")) throw new Error("APK self-test: discovery miss must auto-start owned fresh tab");
-  console.log("DAVID_APK_RESPONSE_WATCHDOG_SELF_TEST PASS semantic_terminal=3 discovery_miss_autostart=ON");
+  if (!isExternalBlocker("Play Console credential unavailable")) throw new Error("APK self-test: external blocker classification missing");
+  if (isExternalBlocker("TypeError in Android bridge")) throw new Error("APK self-test: internal defect misclassified as external");
+  if (!sameBlocker("Play Console credential unavailable", "Play-Console credential unavailable")) throw new Error("APK self-test: equivalent blockers must dedupe");
+  if (!deferPrompt("Play Console credential unavailable",1).includes("independent")) throw new Error("APK self-test: defer prompt must continue independent work");
+  console.log("DAVID_APK_RESPONSE_WATCHDOG_SELF_TEST PASS semantic_terminal=3 discovery_miss_autostart=ON prompt_router=WORK_FIX_DEFER_NEXT");
 }
 
 if (process.argv.includes("--self-test")) {
