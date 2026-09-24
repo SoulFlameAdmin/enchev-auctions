@@ -1,0 +1,81 @@
+{
+  "taskId": "27.08",
+  "name": "Error-budget policy",
+  "version": 1,
+  "scope": "policy-contract-only",
+  "sloSourceTask": "27.07",
+  "evaluationWindowSourceTask": "27.07",
+  "budgetDefinition": {
+    "formula": "allowed_bad_fraction = 1 - slo_target_ratio",
+    "consumptionFormula": "consumed_fraction_of_budget = observed_bad_fraction / allowed_bad_fraction",
+    "remainingFormula": "remaining_fraction_of_budget = max(0, 1 - consumed_fraction_of_budget)",
+    "unit": "eligible_events_or_samples",
+    "absoluteDowntimeMinutesDefinedHere": false,
+    "budgetsArePerSloIndependent": true,
+    "crossSloBudgetTransferForbidden": true,
+    "manualBudgetResetForbidden": true,
+    "targetRelaxationToRestoreBudgetForbidden": true,
+    "exclusionExpansionToRestoreBudgetForbidden": true
+  },
+  "budgetCatalog": [
+    { "id": "journey.inventory_discovery", "source": "targets.criticalJourneys[inventory_discovery].targetRatio", "targetRatio": 0.995, "allowedBadFraction": 0.005, "evaluableNow": true },
+    { "id": "journey.lot_detail", "source": "targets.criticalJourneys[lot_detail].targetRatio", "targetRatio": 0.995, "allowedBadFraction": 0.005, "evaluableNow": true },
+    { "id": "journey.live_auction_view", "source": "targets.criticalJourneys[live_auction_view].targetRatio", "targetRatio": 0.995, "allowedBadFraction": 0.005, "evaluableNow": true },
+    { "id": "journey.bid_submission", "source": "targets.criticalJourneys[bid_submission].targetRatio", "targetRatio": 0.999, "allowedBadFraction": 0.001, "evaluableNow": true },
+    { "id": "journey.auction_result_visibility", "source": "targets.criticalJourneys[auction_result_visibility].targetRatio", "targetRatio": 0.999, "allowedBadFraction": 0.001, "evaluableNow": true },
+    { "id": "api.availability", "source": "targets.apiAvailability.targetRatio", "targetRatio": 0.999, "allowedBadFraction": 0.001, "evaluableNow": true },
+    { "id": "bid.acceptance_latency", "source": "targets.bidAcceptanceLatency.complianceTargetRatio", "targetRatio": 0.99, "allowedBadFraction": 0.01, "evaluableNow": false, "blockedByTask": "27.09" },
+    { "id": "realtime.delivery_latency", "source": "targets.realtimeDeliveryLatency.complianceTargetRatio", "targetRatio": 0.99, "allowedBadFraction": 0.01, "evaluableNow": false, "blockedByTask": "27.09" },
+    { "id": "reconnect.success", "source": "targets.reconnectSuccess.targetRatio", "targetRatio": 0.99, "allowedBadFraction": 0.01, "evaluableNow": true },
+    { "id": "auction.finalization_success", "source": "targets.auctionFinalizationSuccess.targetRatio", "targetRatio": 0.999, "allowedBadFraction": 0.001, "evaluableNow": true }
+  ],
+  "evaluation": {
+    "windowType": "rolling",
+    "windowDays": 30,
+    "insufficientDataState": "not_evaluable",
+    "zeroTrafficMayNotCountAsCompliant": true,
+    "unknownOutcomeSemanticsInheritedFromSli": true,
+    "latencyBudgetsWithout27_09State": "not_evaluable_until_27.09",
+    "observedPerformanceClaimedHere": false
+  },
+  "states": [
+    { "id": "healthy", "remainingBudgetFractionAbove": 0.5, "action": "normal_change_policy" },
+    { "id": "watch", "remainingBudgetFractionAtMost": 0.5, "remainingBudgetFractionAbove": 0.25, "action": "risk_review_and_reliability_attention" },
+    { "id": "restricted", "remainingBudgetFractionAtMost": 0.25, "remainingBudgetFractionAbove": 0, "action": "pause_nonessential_high_risk_changes_and_prioritize_reliability" },
+    { "id": "exhausted", "remainingBudgetFractionAtMost": 0, "action": "freeze_nonessential_risk_increasing_production_changes" },
+    { "id": "not_evaluable", "action": "no_compliance_claim_and_manual_risk_control" }
+  ],
+  "changePolicy": {
+    "securityFixesMayProceedWhenExhausted": true,
+    "incidentMitigationMayProceedWhenExhausted": true,
+    "approvedEmergencyChangesMayProceedWhenExhausted": true,
+    "emergencyChangeRequiresExplicitApproval": true,
+    "emergencyChangeRequiresRollbackPlan": true,
+    "nonessentialRiskIncreasingChangesFrozenWhenExhausted": true,
+    "budgetExhaustionDoesNotAuthorizeUnsafeRollbackOrDataMutation": true
+  },
+  "recoveryPolicy": {
+    "naturalRollingWindowRecoveryAllowed": true,
+    "authoritativeTelemetryCorrectionAllowed": true,
+    "manualResetForbidden": true,
+    "targetChangeRequiresSeparateEvidenceAndApproval": true,
+    "sliSemanticRewriteToRestoreBudgetForbidden": true
+  },
+  "ownership": {
+    "latencyTimeoutBudgetsTask": "27.09",
+    "retryBudgetsTask": "27.10",
+    "capacityModelTask": "27.11",
+    "gracefulDegradationTask": "27.12",
+    "loadSheddingTask": "27.13"
+  },
+  "guardrails": {
+    "postgresqlRemainsAuthoritative": true,
+    "telemetryMayNotMutateAuctionState": true,
+    "noTelemetryDerivedAcceptedBid": true,
+    "noTelemetryDerivedWinner": true,
+    "noNumericLatencyOrTimeoutBudgetInThisTask": true,
+    "noRetryBudgetInThisTask": true,
+    "noCapacityLimitInThisTask": true,
+    "policyDoesNotClaimMeasuredProductionPerformance": true
+  }
+}
