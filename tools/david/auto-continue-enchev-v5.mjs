@@ -864,13 +864,23 @@ async function waitForCompletion(context, page, state, baselineHash) {
         saveState(state, "GPT generation indicator observed");
       }
       if (Date.now() - lastActivityAt >= STALL_TIMEOUT_MS) {
-        state.watchdog = "stalled";
-        state.problem = "GPT response stalled or remained blank";
-        saveState(state, "GPT generation stalled without text progress");
-        return { status: "stalled", page, text, hash: currentHash };
+        if (state.watchdog !== "gpt-active-no-progress") {
+          state.watchdog = "gpt-active-no-progress";
+          state.problem = null;
+          state.activeNoProgressSince = state.activeNoProgressSince || new Date(lastActivityAt).toISOString();
+          saveState(state, "GPT is still ACTIVE (real generating/Stop signal) without text progress; WAIT only. Recovery is prohibited while active.");
+        }
       }
       await sleep(POLL_MS);
       continue;
+    }
+
+    if (state.activeNoProgressSince) {
+      delete state.activeNoProgressSince;
+      if (state.watchdog === "gpt-active-no-progress") {
+        state.watchdog = "gpt-active-ended-verifying";
+        saveState(state, "GPT ACTIVE lock ended; verifying completion before any bounded recovery");
+      }
     }
 
     generatingObserved = false;
@@ -1167,7 +1177,9 @@ function runSelfTest() {
   if (promptAcceptedSignal(4, 3, otherHash, outgoingHash)) throw new Error("ENCH_EV5 self-test: different user text must not claim acceptance");
   if (!sameTurnPromptPresent(outgoingHash, outgoingHash)) throw new Error("ENCH_EV5 self-test: same accepted turn must survive refresh recovery");
   if (sameTurnPromptPresent(otherHash, outgoingHash)) throw new Error("ENCH_EV5 self-test: different latest user turn must permit safe resend");
-  if (!runPrompt.toString().includes("stalled-resend")) throw new Error("ENCH_EV5 self-test: stalled generation must trigger bounded resend");
+  if (!waitForCompletion.toString().includes("gpt-active-no-progress")) throw new Error("ENCH_EV5 self-test: active no-progress must remain WAIT telemetry");
+  if (waitForCompletion.toString().includes("GPT generation stalled without text progress")) throw new Error("ENCH_EV5 self-test: active generation must never be converted into a stall recovery");
+  if (!runPrompt.toString().includes("stalled-resend")) throw new Error("ENCH_EV5 self-test: inactive stalled response must retain bounded recovery");
   if (!runPrompt.toString().includes("stalled-refresh-resend")) throw new Error("ENCH_EV5 self-test: repeated stall must refresh before resend");
   if (!semanticTerminalCandidate("Implementation completed successfully. Tests PASS. Evidence commit abc123 is recorded.")) throw new Error("ENCH_EV5 self-test: proven stable completion should allow semantic terminal fallback");
   if (semanticTerminalCandidate("CI is still running and pending. Please wait for the workflow.")) throw new Error("ENCH_EV5 self-test: pending work must not be terminal");

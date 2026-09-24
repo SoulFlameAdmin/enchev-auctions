@@ -556,9 +556,30 @@ async function waitCompletion(context, page, base, state) {
     const pb = await platformBlock(page);
     if (pb) return { page, blocker: pb, stalled: false, text: "" };
     const text = await latestAssistant(page), h = hash(text);
-    if (await generating(page)) { lastActivity = Date.now(); state.watchdog = "design-thinking"; save(state, "Design GPT thinking"); await sleep(POLL_MS); continue; }
+    if (await generating(page)) {
+      if (Date.now() - lastActivity > STALL_MS) {
+        if (state.watchdog !== "design-active-no-progress") {
+          state.watchdog = "design-active-no-progress";
+          state.problem = null;
+          state.activeNoProgressSince = state.activeNoProgressSince || new Date(lastActivity).toISOString();
+          save(state, "Design GPT remains ACTIVE with no text progress; WAIT only. No refresh/resend while Stop/generating is visible.");
+        }
+      } else {
+        state.watchdog = "design-thinking";
+        save(state, "Design GPT thinking");
+      }
+      await sleep(POLL_MS);
+      continue;
+    }
+    if (state.activeNoProgressSince) {
+      delete state.activeNoProgressSince;
+      if (state.watchdog === "design-active-no-progress") {
+        state.watchdog = "design-active-ended-verifying";
+        save(state, "Design ACTIVE lock ended; verifying completion before bounded recovery");
+      }
+    }
     if (text && h !== base) {
-      if (h !== last) { last = h; lastActivity = Date.now(); state.watchdog = "design-writing"; save(state, "Design GPT writing"); }
+      if (h !== last) { last = h; lastActivity = Date.now(); delete state.activeNoProgressSince; state.watchdog = "design-writing"; save(state, "Design GPT writing"); }
       if (await complete(page, base)) return { page, blocker: null, stalled: false, text: await latestAssistant(page) };
     }
     if (Date.now() - lastActivity > STALL_MS) return { page, blocker: null, stalled: true, text };

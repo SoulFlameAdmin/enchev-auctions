@@ -23,6 +23,8 @@ const freeTalkWorker=read("tools/david/free-talk-session-v1.mjs");
 const installerSync=read("tools/david/installer-client-registry-sync.mjs");
 const installerHeartbeat=read("tools/david/david-installer-heartbeat.mjs");
 const installerMigration=read("supabase/migrations/20260923011500_add_david_installer_clients_registry.sql");
+const dualWorker=read("tools/david/dual-session-worker.mjs");
+const operatingLaws=read("tools/david/DAVID_OPERATING_LAWS.md");
 
 for(const token of [
   'SF_SCIENTIST_CDP_URL||"http://127.0.0.1:9555"',
@@ -121,8 +123,42 @@ for(const token of [
   'Scientist PowerShell requested',
   'Scientist tool action started',
   'kind:"tool-start"',
-  'kind:"tool-finish"'
+  'kind:"tool-finish"',
+  '.sf-scientist-supervisor-command.json',
+  '.sf-scientist-supervisor-result.json',
+  'function scientistWatchdogAudit',
+  'scientistAudit',
+  'gpt-active-no-progress',
+  'requestSupervisorAction',
+  'DAVID_RECOVER',
+  'DAVID_CLEAN_DUPLICATES',
+  'All DAVID lifecycle recovery must use DAVID_RECOVER'
 ]) if(!side.includes(token)) throw new Error("Scientist sidecar invariant missing: "+token);
+
+for(const token of [
+  ".sf-scientist-supervisor-command.json",
+  ".sf-scientist-supervisor-result.json",
+  "executeScientistCommand",
+  "controlActionProtected",
+  "REJECTED: ",
+  "pageShowsActiveWork"
+]) if(!dualWorker.includes(token)) throw new Error("Unified Supervisor Scientist safety invariant missing: "+token);
+
+for(const token of [
+  "gpt-active-no-progress",
+  "text-stall timer is advisory telemetry while ACTIVE is visible",
+  "SF Scientist -> Supervisor recovery law",
+  "must pass through the unified DAVID Supervisor"
+]) if(!operatingLaws.includes(token)) throw new Error("DAVID active-response law invariant missing: "+token);
+
+for(const [name,worker,token] of [
+  ["SYSTEM",systemWorker,"gpt-active-no-progress"],
+  ["DESIGN",designWorker,"design-active-no-progress"],
+  ["APP2",app2Worker,"gpt-active-no-progress"],
+  ["APK",apkWorker,"apk-active-no-progress"]
+]) if(!worker.includes(token)) throw new Error(name+" active-response watchdog telemetry missing: "+token);
+
+if(app2Worker.includes("async function forceStop")) throw new Error("APP2 must never own a forceStop recovery path");
 
 for(const token of [
   'effortPickerRegex',
@@ -319,4 +355,4 @@ for(const forbidden of ["START_DAVID_ALL.ps1 -ForceRestart","DAVID_CHATGPT_TAB_T
   if(start.includes(forbidden)) throw new Error("Scientist launcher may not rewrite DAVID topology: "+forbidden);
 }
 
-console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED installer_clients_panel=ON installer_registry=HEARTBEAT_ONLY hardcoded_people=OFF task_detail=STATUS_ONLY verified_gpt_send_ack=SYSTEM_DESIGN_APP2_APK_CONTROL_FREE_TALK scientist_panel=ON");
+console.log("SF_SCIENTIST_SIDECAR PASS david_architecture=UNCHANGED active_response_lock=ON scientist_watchdog_audit=ON scientist_supervisor_recovery=ALLOWLISTED_AND_GUARDED installer_clients_panel=ON installer_registry=HEARTBEAT_ONLY hardcoded_people=OFF task_detail=STATUS_ONLY verified_gpt_send_ack=SYSTEM_DESIGN_APP2_APK_CONTROL_FREE_TALK scientist_panel=ON");

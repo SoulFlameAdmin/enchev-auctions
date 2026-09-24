@@ -681,9 +681,19 @@ async function runPrompt(context, page, state, prompt, kind) {
       const text = await latestAssistant(page);
       const h = hash(text);
       if (await generating(page)) {
-        lastActivity = Date.now();
+        if (Date.now() - lastActivity > STALL_MS) {
+          if (state.watchdog !== "apk-active-no-progress") {
+            state.watchdog = "apk-active-no-progress";
+            state.problem = null;
+            state.activeNoProgressSince = state.activeNoProgressSince || new Date(lastActivity).toISOString();
+            save(state, "APK GPT remains ACTIVE with no text progress; WAIT only. No refresh/resend while Stop/generating is visible.");
+          }
+        }
+        await sleep(POLL_MS);
+        continue;
       } else if (text && h !== base) {
-        if (h !== last) { last = h; lastActivity = Date.now(); }
+        if (h !== last) { last = h; lastActivity = Date.now(); delete state.activeNoProgressSince; }
+        if (state.activeNoProgressSince) delete state.activeNoProgressSince;
         if (await complete(page, base)) {
           if (state.justRolledOver) state.justRolledOver = false;
           if (state.freshStartPending) state.freshStartPending = false;

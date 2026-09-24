@@ -18,9 +18,13 @@ These rules are mandatory for CONTROL/WATCHTOWER, SYSTEM, DESIGN, DPP/APP2 and D
    - never create an unbounded duplicate-send loop.
 3. If GPT began thinking/writing or is using tools:
    - treat visible active work as BUSY and wait;
-   - do not press Stop on an active GPT/tool turn;
-   - only after a long no-progress timeout may the worker enter bounded recovery;
-   - recovery is refresh/verify/resend, never an unbounded duplicate loop.
+   - a real visible ChatGPT Stop / Stop generating / Stop thinking control is an authoritative ACTIVE lock;
+   - while that ACTIVE lock is visible: never press Stop, never refresh, never restart the worker, never resend the project prompt, and never switch the model merely because the response is slow;
+   - every real assistant-text change resets the no-progress clock;
+   - after the configured no-progress window (default 10 minutes) while ACTIVE remains visible, publish watchdog state `gpt-active-no-progress` (or the worker-prefixed equivalent) for SF Scientist investigation, but KEEP WAITING;
+   - the text-stall timer is advisory telemetry while ACTIVE is visible and can never override the ACTIVE lock;
+   - recovery becomes eligible only after the ACTIVE lock disappears and the response is still incomplete/inactive;
+   - inactive recovery is bounded: verify the owned session, refresh only when necessary, and resend the same logical task only within the worker's explicit recovery budget; never create an unbounded duplicate loop.
 4. Connection interrupted:
    - never stop an active thinking/writing/tool-using GPT turn;
    - require a persistent interruption signal confirmed across multiple checks;
@@ -98,6 +102,15 @@ Project keys:
 GREEN requires implementation + applicable PASS test + concrete evidence.
 Do not invent secrets, results, deployments or test evidence.
 
+
+## 4A. SF Scientist -> Supervisor recovery law
+- SF Scientist continuously audits worker watchdog/state freshness, runtime topology, recent logs/logAlerts and probeErrors.
+- `gpt-active-no-progress` is an investigation signal, not permission to interrupt an active ChatGPT response.
+- SF Scientist may request only allowlisted DAVID recovery actions: REFRESH or RESTART one managed project worker, or CLEAN_DUPLICATES.
+- Every Scientist recovery request must pass through the unified DAVID Supervisor; Scientist must not use PowerShell process-kill commands to bypass that gate.
+- The Supervisor re-checks worker watchdog protection and the real owned ChatGPT tab immediately before execution. If thinking/writing/tool/Stop-active evidence is present, recovery is rejected.
+- A Supervisor rejection is evidence to WAIT, not a reason to escalate around the safety gate.
+- Human verification, CAPTCHA, MFA, login, permission and explicit approval gates remain human-owned and are never bypassed.
 
 ## 5. 24/7 supervisor health
 - One unified supervisor owns CONTROL/WATCHTOWER, SYSTEM, DESIGN, DPP/APP2 and DAVID APK.

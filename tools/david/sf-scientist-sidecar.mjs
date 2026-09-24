@@ -20,6 +20,10 @@ const MEMORY=path.join(HERE,".sf-scientist-memory.jsonl");
 const TABMON=path.join(HERE,".david-tab-monitor.json");
 const CAPTURE_DIR=path.join(HERE,".sf-scientist-captures");
 const OPERATOR_LOG=path.join(HERE,".sf-scientist-operator.jsonl");
+const SUPERVISOR_COMMAND=path.join(HERE,".sf-scientist-supervisor-command.json");
+const SUPERVISOR_RESULT=path.join(HERE,".sf-scientist-supervisor-result.json");
+const SUPERVISOR_RESULT_WAIT_MS=Number(process.env.SF_SCIENTIST_SUPERVISOR_RESULT_WAIT_MS||15000);
+const SUPERVISOR_WORKERS=new Set(["SYSTEM","DESIGN","APP2","APK"]);
 const MAX_AUTONOMOUS_STEPS=Number(process.env.SF_SCIENTIST_MAX_STEPS||4);
 const POWERSHELL_TIMEOUT_MS=Number(process.env.SF_SCIENTIST_POWERSHELL_TIMEOUT_MS||60000);
 const MAX_TOOL_OUTPUT=12000;
@@ -260,22 +264,35 @@ async function shellProcesses(){
     return [];
   }
 }
+function scientistWatchdogAudit(states,logs,probeErrors){
+  const nowMs=Date.now();
+  const activeNoProgress=states.filter(x=>/active-no-progress/i.test(String(x.watchdog||"")));
+  const critical=states.filter(x=>/(fatal|offline|browser-dead|session-missing|composer-missing|recovery-budget-exhausted|stalled-awaiting-supervision|needs-scientist)/i.test(String(x.watchdog||"")) || /(?:fatal|uncaught|crash)/i.test(String(x.lastError||"")));
+  const staleStates=states.filter(x=>{const t=Date.parse(String(x.updatedAt||""));return Number.isFinite(t)&&nowMs-t>300000;});
+  const probeHealthy=!probeErrors.processCounts&&!probeErrors.shellProcesses;
+  return {
+    activeNoProgress:activeNoProgress.map(x=>({file:x.file,watchdog:x.watchdog,updatedAt:x.updatedAt,lastAction:x.lastAction})),
+    critical:critical.map(x=>({file:x.file,watchdog:x.watchdog,updatedAt:x.updatedAt,lastError:x.lastError})),
+    staleStates:staleStates.map(x=>({file:x.file,watchdog:x.watchdog,updatedAt:x.updatedAt})),
+    logAlertCount:Array.isArray(logs.alerts)?logs.alerts.length:0,
+    probeHealthy,
+    needsAttention:Boolean(activeNoProgress.length||critical.length||staleStates.length||logs.alerts.length||!probeHealthy)
+  };
+}
 async function liveTelemetry(){
   const shells=await shellProcesses();
   const logs=logSummary();
-  return {
-    shells,
-    davidStates:stateSummary(),
-    recentLogs:logs.recent,
-    logAlerts:logs.alerts,
-    probeErrors:{processCounts:lastProcessProbeError,shellProcesses:lastShellProbeError}
-  };
+  const davidStates=stateSummary();
+  const probeErrors={processCounts:lastProcessProbeError,shellProcesses:lastShellProbeError};
+  const scientistAudit=scientistWatchdogAudit(davidStates,logs,probeErrors);
+  return {shells,davidStates,recentLogs:logs.recent,logAlerts:logs.alerts,scientistAudit,probeErrors};
 }
 function telemetrySignature(t){
   return digest(JSON.stringify({
     shells:(t&&t.shells||[]).map(x=>[x.pid,x.ppid,x.name,x.cmd]),
     states:(t&&t.davidStates||[]).map(x=>[x.file,x.status,x.watchdog,x.lastAction,x.lastError]),
     alerts:t&&t.logAlerts||[],
+    audit:t&&t.scientistAudit||null,
     probeErrors:t&&t.probeErrors||{}
   }));
 }
@@ -328,6 +345,8 @@ function event(prev,next){
   if(digest(JSON.stringify(prev.process))!==digest(JSON.stringify(next.process)))return {important:true,reason:"DAVID process topology changed"};
   if(digest(JSON.stringify(prev.monitor))!==digest(JSON.stringify(next.monitor)))return {important:true,reason:"DAVID managed ChatGPT tab topology changed"};
   if(telemetrySignature(prev.liveTelemetry)!==telemetrySignature(next.liveTelemetry)){
+    if(digest(JSON.stringify(prev.liveTelemetry&&prev.liveTelemetry.scientistAudit||null))!==digest(JSON.stringify(next.liveTelemetry&&next.liveTelemetry.scientistAudit||null)))
+      return {important:true,reason:"SF Scientist watchdog audit changed"};
     if(digest(JSON.stringify(prev.liveTelemetry&&prev.liveTelemetry.logAlerts||[]))!==digest(JSON.stringify(next.liveTelemetry&&next.liveTelemetry.logAlerts||[])))
       return {important:true,reason:"DAVID live log/error telemetry changed"};
     return {important:true,reason:"DAVID PowerShell/CMD/Node or runtime-state telemetry changed"};
@@ -909,6 +928,7 @@ function classifyPowerShell(command){
     /\bSet-ItemProperty\b.*\bHK(?:LM|CU|CR|U|CC)\b/i,
     /\bNew-ItemProperty\b.*\bHK(?:LM|CU|CR|U|CC)\b/i,
     /\bStart-Process\b[^\r\n;]*\b-Verb\s+RunAs\b/i,/\brunas(?:\.exe)?\b/i,
+    /\bStop-Process\b/i,/\btaskkill(?:\.exe)?\b/i,/\bsc(?:\.exe)?\s+(?:stop|delete)\b/i,
     /\bInvoke-Expression\b/i,/(?:^|[\s;|])iex(?:\s|$)/i
   ];
   const hit=hardBlock.find(r=>r.test(c));
@@ -1110,6 +1130,47 @@ async function consultAB(context,chief,question,s){
     await b.close().catch(()=>{});
   }
 }
+async function requestSupervisorAction(type,target,reason,snapshot){
+  const action=String(type||"").toUpperCase(),worker=String(target||"").toUpperCase();
+  if(!["REFRESH","RESTART"].includes(action))throw new Error("DAVID_RECOVER allows REFRESH or RESTART only");
+  if(!SUPERVISOR_WORKERS.has(worker))throw new Error("DAVID_RECOVER target must be SYSTEM|DESIGN|APP2|APK");
+  const id="sci-"+Date.now()+"-"+crypto.randomBytes(4).toString("hex");
+  const command={id,createdAt:now(),source:"SF_SCIENTIST",actions:[{type:action,target:worker}],reason:cleanText(reason||"Scientist evidence-based recovery request",600),evidenceEpoch:materialSnapshotKey(snapshot||{})};
+  writeJson(SUPERVISOR_COMMAND,command);
+  append(OPERATOR_LOG,{at:now(),kind:"supervisor-request",...command});
+  save("Scientist Supervisor recovery requested",{lastSupervisorRequest:command,lastSupervisorResult:null});
+  const until=Date.now()+SUPERVISOR_RESULT_WAIT_MS;
+  while(Date.now()<until){
+    const result=readJson(SUPERVISOR_RESULT,null);
+    if(result&&result.id===id){
+      append(OPERATOR_LOG,{at:now(),kind:"supervisor-result",result});
+      save("Scientist Supervisor recovery result",{lastSupervisorRequest:command,lastSupervisorResult:result});
+      return result;
+    }
+    await sleep(300);
+  }
+  const pending={id,ok:false,pending:true,detail:"Supervisor result not observed inside bounded wait; do not bypass the gate"};
+  save("Scientist Supervisor recovery pending",{lastSupervisorRequest:command,lastSupervisorResult:pending});
+  return pending;
+}
+async function requestDuplicateCleanup(reason,snapshot){
+  const id="sci-"+Date.now()+"-"+crypto.randomBytes(4).toString("hex");
+  const command={id,createdAt:now(),source:"SF_SCIENTIST",actions:[{type:"CLEAN_DUPLICATES"}],reason:cleanText(reason||"Scientist duplicate-tab cleanup",600),evidenceEpoch:materialSnapshotKey(snapshot||{})};
+  writeJson(SUPERVISOR_COMMAND,command);
+  append(OPERATOR_LOG,{at:now(),kind:"supervisor-request",...command});
+  const until=Date.now()+SUPERVISOR_RESULT_WAIT_MS;
+  while(Date.now()<until){
+    const result=readJson(SUPERVISOR_RESULT,null);
+    if(result&&result.id===id){
+      append(OPERATOR_LOG,{at:now(),kind:"supervisor-result",result});
+      save("Scientist Supervisor duplicate cleanup result",{lastSupervisorRequest:command,lastSupervisorResult:result});
+      return result;
+    }
+    await sleep(300);
+  }
+  return {id,ok:false,pending:true,detail:"Supervisor result pending; no direct cleanup fallback"};
+}
+
 async function executeScientistAction(context,chief,text,s){
   const a=parseAction(text);
   let result="no action";
@@ -1148,6 +1209,14 @@ async function executeScientistAction(context,chief,text,s){
   }else if(a.kind==="CONSULT_AB"){
     const q=a.arg||("Investigate current DAVID event and decide the best next scientific test.");
     result=await consultAB(context,chief,q,s);
+  }else if(a.kind==="DAVID_RECOVER"){
+    const m=String(a.arg||"").match(/^(REFRESH|RESTART)\s+(SYSTEM|DESIGN|APP2|APK)\b\s*(.*)$/i);
+    if(!m)throw new Error("DAVID_RECOVER syntax: REFRESH|RESTART SYSTEM|DESIGN|APP2|APK [reason]");
+    result=JSON.stringify(await requestSupervisorAction(m[1],m[2],m[3]||"Scientist evidence-based recovery",s));
+  }else if(a.kind==="DAVID_CLEAN_DUPLICATES"){
+    result=JSON.stringify(await requestDuplicateCleanup(a.arg||"Scientist observed duplicate managed tabs",s));
+  }else if(a.kind==="DAVID_SUPERVISOR_RESULT"){
+    result=JSON.stringify(readJson(SUPERVISOR_RESULT,{status:"no-supervisor-result-yet"}));
   }else{
     result="rejected unsupported action: "+a.kind;
   }
@@ -1204,6 +1273,9 @@ function toolMenu(){
     "ACTION: CHECK_PROJECT <question for @GitHub @Vercel @Supabase>",
     "ACTION: CONSULT_AB <question>",
     "ACTION: DAVID_HEALTH_CHECK",
+    "ACTION: DAVID_RECOVER REFRESH|RESTART SYSTEM|DESIGN|APP2|APK <evidence-based reason>",
+    "ACTION: DAVID_CLEAN_DUPLICATES <reason>",
+    "ACTION: DAVID_SUPERVISOR_RESULT",
     "ACTION: GIT_STATUS",
     "ACTION: SEARCH_WEB <query>",
     "ACTION: OPEN_URL <https-url>",
@@ -1217,6 +1289,8 @@ function operatorLaw(){
     "Use tools yourself when a low-risk check can resolve uncertainty. Normal-user PowerShell is available and every command/result is audited. "+
     "Never request or attempt UAC bypass, elevation bypass, credential extraction, destructive disk/file/account/security operations, or production-critical mutation. "+
     "High-risk/admin/destructive actions require a future explicit human approval path and are not available in this tool broker. "+
+    "All DAVID lifecycle recovery must use DAVID_RECOVER or DAVID_CLEAN_DUPLICATES so the unified Supervisor can re-check active-work protection; never use PowerShell Stop-Process/taskkill to bypass that gate. "+
+    "A real active Stop/generating signal always means WAIT even when text progress is slow. "+
     "Preserve DAVID architecture and distinguish observations from hypotheses.";
 }
 function boot(s){return "SF CORPORATION / AI SCIENTIST BOOTSTRAP\n\n"+operatorLaw()+
@@ -1227,7 +1301,8 @@ function boot(s){return "SF CORPORATION / AI SCIENTIST BOOTSTRAP\n\n"+operatorLa
   "\n\nCurrent DAVID snapshot:\n"+JSON.stringify(s,null,2);}
 function observe(reason,s){return "SF SCIENTIST AUTONOMOUS OBSERVATION\nEVENT: "+reason+
   "\n\n"+operatorLaw()+
-  "\n\nInspect liveTelemetry.shells, davidStates, recentLogs, logAlerts and probeErrors before concluding. "+
+  "\n\nInspect liveTelemetry.scientistAudit first, then shells, davidStates, recentLogs, logAlerts and probeErrors before concluding. "+
+  "activeNoProgress means investigate and WAIT while the real active response signal remains; it is never permission to interrupt GPT. "+
   "Treat empty telemetry as absence of evidence only when the corresponding probeErrors field is null. "+
   "Distinguish a process start/stop from a real script failure. If useful, investigate autonomously with PowerShell, a desktop screenshot, connected project tools or SCI-A/SCI-B. "+
   "Do not take an action merely to look busy. Prefer the cheapest discriminating check."+

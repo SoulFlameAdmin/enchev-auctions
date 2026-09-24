@@ -483,31 +483,22 @@ async function fillAndSend(page, text, state) {
   });
 }
 
-async function forceStop(page) {
-  const b = await stopButton(page);
-  if (!b) return false;
-  await b.click({ timeout: 3000 }).catch(() => {});
-  await sleep(700);
-  return true;
-}
 async function recoverActive(context, page, state, reason) {
   state.watchdog = `recover-${reason}`;
   state.recoveryAttempt = Number(state.recoveryAttempt || 0) + 1;
-  save(state, `Recovery: ${reason}; stop and prepare clean retry`);
-  if (reason === "connection-interrupted" && await generating(page)) {
-    state.watchdog = "interruption-transient-active";
-    save(state, "Interruption-like UI while GPT still active; recovery cancelled");
-    console.log("[APP2] Interruption-like UI while GPT is active. NO STOP / NO RESEND.");
+  if (await generating(page)) {
+    state.watchdog = "gpt-active-no-progress";
+    state.problem = null;
+    state.activeNoProgressSince = state.activeNoProgressSince || new Date().toISOString();
+    save(state, `Recovery ${reason} cancelled: real Stop/generating signal is still ACTIVE. WAIT only.`);
+    console.log("[APP2] ACTIVE response lock. NO STOP / NO REFRESH / NO RESEND.");
     return waitReady(context, page, state);
   }
-  console.log(`[APP2] Recovery ${reason}: clean retry.`);
-  if (reason !== "connection-interrupted") await forceStop(page).catch(() => {});
-  if (reason === "stalled-or-blank") {
-    state.watchdog = "stalled-resend";
-    save(state, "LAW: GPT stopped thinking/writing -> resend before refresh");
-    console.log("[APP2] LAW: stopped thinking/writing -> RESEND.");
-    await sleep(700);
-  }
+  state.watchdog = `bounded-${reason}-refresh`;
+  save(state, `Inactive incomplete response: one bounded refresh/verify for ${reason}; never click Stop`);
+  console.log(`[APP2] Inactive recovery ${reason}: bounded REFRESH -> verify; no Stop click.`);
+  await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+  await sleep(2500);
   return waitReady(context, page, state);
 }
 async function waitStart(context, page, baseHash, state) {
@@ -559,11 +550,27 @@ async function waitComplete(context, page, baseHash, state) {
       stableHash = null;
       stableSince = 0;
       stableSamples = 0;
-      state.watchdog = t && h !== baseHash ? "gpt-writing" : "gpt-thinking";
-      save(state, state.watchdog === "gpt-writing" ? "GPT writing" : "GPT thinking");
-      if (stallExpired(lastProgressAt)) return { page, retry: true, reason: "stalled-or-blank" };
+      if (stallExpired(lastProgressAt)) {
+        if (state.watchdog !== "gpt-active-no-progress") {
+          state.watchdog = "gpt-active-no-progress";
+          state.problem = null;
+          state.activeNoProgressSince = state.activeNoProgressSince || new Date(lastProgressAt).toISOString();
+          save(state, "GPT remains ACTIVE with no text progress; WAIT only. Stop/refresh/resend are prohibited while active.");
+        }
+      } else {
+        state.watchdog = t && h !== baseHash ? "gpt-writing" : "gpt-thinking";
+        save(state, state.watchdog === "gpt-writing" ? "GPT writing" : "GPT thinking");
+      }
       await sleep(POLL_MS);
       continue;
+    }
+
+    if (state.activeNoProgressSince) {
+      delete state.activeNoProgressSince;
+      if (state.watchdog === "gpt-active-no-progress") {
+        state.watchdog = "gpt-active-ended-verifying";
+        save(state, "GPT ACTIVE lock ended; verify completion before bounded recovery");
+      }
     }
 
     if (role === "assistant" && h && h !== baseHash) {
@@ -938,6 +945,8 @@ function runSelfTest() {
   if (stallExpired(1000, 1000 + STALL_MS)) throw new Error("APP2 watchdog self-test: exact stall threshold must not expire early");
   if (!stallExpired(1000, 1001 + STALL_MS)) throw new Error("APP2 watchdog self-test: stalled response must expire after threshold");
   if (/fillAndSend\s*\(/.test(recoverActive.toString())) throw new Error("APP2 watchdog self-test: recovery must not resend; outer retry owns sending");
+  if (recoverActive.toString().includes("forceStop")) throw new Error("APP2 watchdog self-test: recovery must never click Stop");
+  if (!waitComplete.toString().includes("gpt-active-no-progress")) throw new Error("APP2 watchdog self-test: active no-progress must remain WAIT telemetry");
   if (!conversationLimitText("Достигнахте максималната продължителност на този разговор, но можете да продължите да говорите, като започнете нов чат.")) throw new Error("APP2 rollover self-test: BG limit text not detected");
   if (!conversationLimitText("You've reached the maximum length for this conversation, but you can keep talking by starting a new chat.")) throw new Error("APP2 rollover self-test: EN limit text not detected");
   if (conversationLimitText("Normal assistant response")) throw new Error("APP2 rollover self-test: false positive");

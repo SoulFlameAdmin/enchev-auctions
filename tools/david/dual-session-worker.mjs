@@ -18,6 +18,8 @@ const children = new Map();
 const MONITOR_FILE = path.join(HERE, ".david-tab-monitor.json");
 const CONTROL_COMMAND_FILE = path.join(HERE, ".david-control-command.json");
 const CONTROL_RESULT_FILE = path.join(HERE, ".david-control-result.json");
+const SCIENTIST_COMMAND_FILE = path.join(HERE, ".sf-scientist-supervisor-command.json");
+const SCIENTIST_RESULT_FILE = path.join(HERE, ".sf-scientist-supervisor-result.json");
 const RECOVERY_REQUEST_FILE = path.join(HERE, ".david-recovery-request.json");
 const RECOVERY_RESULT_FILE = path.join(HERE, ".david-recovery-result.json");
 const MONITOR_MS = Number(process.env.DAVID_TAB_MONITOR_MS || 2000);
@@ -58,6 +60,7 @@ const restartTimers = new Map();
 const restartRequestedAt = new Map();
 const workerGeneration = new Map();
 let lastControlCommandId = null;
+let lastScientistCommandId = null;
 let lastRecoveryRequestId = null;
 
 const allSpecs = [
@@ -554,6 +557,71 @@ async function executeControlCommand(context) {
   console.log("[DUAL] CONTROL command " + command.id + " executed: " + JSON.stringify(results));
 }
 
+async function executeScientistCommand(context) {
+  if (!lastScientistCommandId) {
+    const previous = readState(SCIENTIST_RESULT_FILE);
+    if (previous?.id) lastScientistCommandId = previous.id;
+  }
+  const command = readState(SCIENTIST_COMMAND_FILE);
+  if (!command?.id || command.id === lastScientistCommandId) return;
+  lastScientistCommandId = command.id;
+
+  const allowedWorkers = new Set(ACTIVE_PROJECT_WORKERS);
+  const actions = Array.isArray(command.actions) ? command.actions.slice(0, 4) : [];
+  const results = [];
+
+  for (const action of actions) {
+    const type = String(action?.type || "").toUpperCase();
+    const target = String(action?.target || "").toUpperCase();
+
+    if (type === "WAIT") {
+      results.push({ type, ok: true, detail: "no-op" });
+      continue;
+    }
+
+    if (type === "CLEAN_DUPLICATES") {
+      await cleanupManagedTabs();
+      results.push({ type, ok: true, detail: "cleanup invoked" });
+      continue;
+    }
+
+    if ((type === "REFRESH" || type === "RESTART") && allowedWorkers.has(target)) {
+      const guard = await controlActionProtected(target, context);
+      if (guard.protected) {
+        results.push({ type, target, ok: false, detail: "REJECTED: " + guard.reason });
+        continue;
+      }
+
+      if (type === "RESTART") {
+        restartWorker(target, "SF SCIENTIST command " + command.id);
+        results.push({ type, target, ok: true, detail: "worker restart requested" });
+        continue;
+      }
+
+      const page = guard.page;
+      if (page) {
+        await page.reload({ waitUntil: "domcontentloaded", timeout: 60000 }).catch(() => {});
+        results.push({ type, target, ok: true, detail: "owned tab refreshed" });
+      } else {
+        restartWorker(target, "CONTROL refresh fallback: owned tab missing");
+        results.push({ type, target, ok: true, detail: "tab missing; worker restart requested" });
+      }
+      continue;
+    }
+
+    results.push({ type, target: target || null, ok: false, detail: "rejected by allowlist" });
+  }
+
+  const result = {
+    id: command.id,
+    executedAt: new Date().toISOString(),
+    sourceChatUrl: command.sourceChatUrl || null,
+    results
+  };
+  try { fs.writeFileSync(SCIENTIST_RESULT_FILE, JSON.stringify(result, null, 2), "utf8"); } catch {}
+  console.log("[DUAL] SF SCIENTIST command " + command.id + " executed: " + JSON.stringify(results));
+}
+
 async function cleanupManagedTabs() {
   const stateSpecs = [
     { kind: "SYSTEM", file: path.join(HERE, ".david-enchev-state.json"), fallback: "https://chatgpt.com/c/6aab44e1-385c-83eb-b122-c4ae9836cb71" },
@@ -824,6 +892,7 @@ async function monitorManagedTabs() {
     }
     await executeRecoveryRequest(context);
     if (CONTROL_ENABLED) await executeControlCommand(context);
+    await executeScientistCommand(context);
 
     const duplicates = Object.entries(snapshot.managed)
       .filter(([, urls]) => urls.length > 1)
