@@ -1,0 +1,65 @@
+{
+  "taskId": "27.05",
+  "name": "Reconnect success SLI",
+  "version": 1,
+  "scope": "measurement-contract-only",
+  "targetOwnershipTask": "27.07",
+  "eventRegistrySource": "config/enchev-websocket-event-registry.json",
+  "realtimeWorkspace": "apps/realtime",
+  "realtimeRuntimeImplemented": false,
+  "authoritativeAuctionSource": "postgresql",
+  "telemetryMayMutateAuctionState": false,
+  "indicator": {
+    "name": "reconnect_success_ratio",
+    "type": "ratio",
+    "numerator": "eligible reconnect attempts that re-establish transport and regain an authoritative baseline before incremental realtime events resume",
+    "denominator": "all eligible reconnect attempts after an unexpected eligible disconnect",
+    "successRequiresTransportReestablished": true,
+    "successRequiresAuthoritativeBaseline": true,
+    "successRequiresSafeSequenceResume": true,
+    "unknownOutcomeCountsAsFailure": true,
+    "timeoutCountsAsFailure": true
+  },
+  "baselineRecovery": {
+    "acceptedMechanisms": [
+      "enchev.auction.snapshot.v1",
+      "authoritative HTTP/PostgreSQL-backed resync"
+    ],
+    "sequenceGapRequiresResync": true,
+    "incrementalResumeBeforeBaselineForbidden": true,
+    "resyncRequiredEventIsInstructionNotSuccess": true,
+    "duplicateEventMayNotCreateReconnectSuccess": true
+  },
+  "eligibility": {
+    "unexpectedDisconnectIncluded": true,
+    "networkInterruptionIncluded": true,
+    "serverRestartIncluded": true,
+    "userIntentionalDisconnectExcluded": true,
+    "pageNavigationAwayExcluded": true,
+    "explicitLogoutExcluded": true,
+    "syntheticAttemptsExcluded": false
+  },
+  "measurement": {
+    "requiredDimensions": ["environment", "outcome"],
+    "optionalDimensions": ["region", "country_profile", "browser_family", "device_class"],
+    "correlationIdAllowedForDiagnostics": true,
+    "correlationIdAsMetricDimensionForbidden": true,
+    "auctionIdAsMetricDimensionForbidden": true,
+    "connectionIdAsMetricDimensionForbidden": true,
+    "userIdAsMetricDimensionForbidden": true,
+    "piiForbidden": true,
+    "rawCredentialDataForbidden": true,
+    "eventPayloadCaptureForbidden": true
+  },
+  "guardrails": {
+    "noSloTargetInThisTask": true,
+    "noRetryBudgetInThisTask": true,
+    "noProviderSpecificShortcut": true,
+    "transportReopenAloneIsNotSuccess": true,
+    "transportNeverAuthoritative": true,
+    "noTelemetryDerivedAcceptedBid": true,
+    "noTelemetryDerivedWinner": true,
+    "registryOwnershipTask": "24.12",
+    "retryBudgetOwnershipTask": "27.10"
+  }
+}
