@@ -140,7 +140,9 @@
     "verify:webhook-signatures": "node scripts/verify-webhook-signature-contract.mjs",
     "verify:webhook-signatures:self-test": "node scripts/verify-webhook-signature-contract.mjs --self-test",
     "verify:websocket-event-registry": "node scripts/verify-websocket-event-registry.mjs",
-    "verify:websocket-event-registry:self-test": "node scripts/verify-websocket-event-registry.mjs --self-test"
+    "verify:websocket-event-registry:self-test": "node scripts/verify-websocket-event-registry.mjs --self-test",
+    "verify:web-api-provider-contract-tests": "node scripts/verify-web-api-provider-contract-tests.mjs",
+    "verify:web-api-provider-contract-tests:self-test": "node scripts/verify-web-api-provider-contract-tests.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
