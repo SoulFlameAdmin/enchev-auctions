@@ -148,7 +148,9 @@
     "verify:api-availability-sli": "node scripts/verify-api-availability-sli.mjs",
     "verify:api-availability-sli:self-test": "node scripts/verify-api-availability-sli.mjs --self-test",
     "verify:bid-acceptance-latency-sli": "node scripts/verify-bid-acceptance-latency-sli.mjs",
-    "verify:bid-acceptance-latency-sli:self-test": "node scripts/verify-bid-acceptance-latency-sli.mjs --self-test"
+    "verify:bid-acceptance-latency-sli:self-test": "node scripts/verify-bid-acceptance-latency-sli.mjs --self-test",
+    "verify:realtime-delivery-latency-sli": "node scripts/verify-realtime-delivery-latency-sli.mjs",
+    "verify:realtime-delivery-latency-sli:self-test": "node scripts/verify-realtime-delivery-latency-sli.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
