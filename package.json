@@ -144,7 +144,9 @@
     "verify:web-api-provider-contract-tests": "node scripts/verify-web-api-provider-contract-tests.mjs",
     "verify:web-api-provider-contract-tests:self-test": "node scripts/verify-web-api-provider-contract-tests.mjs --self-test",
     "verify:critical-user-journey-slis": "node scripts/verify-critical-user-journey-slis.mjs",
-    "verify:critical-user-journey-slis:self-test": "node scripts/verify-critical-user-journey-slis.mjs --self-test"
+    "verify:critical-user-journey-slis:self-test": "node scripts/verify-critical-user-journey-slis.mjs --self-test",
+    "verify:api-availability-sli": "node scripts/verify-api-availability-sli.mjs",
+    "verify:api-availability-sli:self-test": "node scripts/verify-api-availability-sli.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
