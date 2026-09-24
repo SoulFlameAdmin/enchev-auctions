@@ -1,0 +1,65 @@
+{
+  "taskId": "27.01",
+  "name": "Critical user-journey SLIs",
+  "version": 1,
+  "scope": "measurement-contract-only",
+  "targetOwnershipTask": "27.07",
+  "authoritativeAuctionSource": "postgresql",
+  "telemetryMayMutateAuctionState": false,
+  "journeys": [
+    {
+      "id": "inventory_discovery",
+      "entry": "/inventory",
+      "success": "inventory_page_usable",
+      "failure": "inventory_page_unusable",
+      "sli": "successful_journey_ratio"
+    },
+    {
+      "id": "lot_detail",
+      "entry": "/lot/{id}",
+      "success": "lot_detail_usable",
+      "failure": "lot_detail_unusable",
+      "sli": "successful_journey_ratio"
+    },
+    {
+      "id": "live_auction_view",
+      "entry": "/live-auctions",
+      "success": "live_state_visible_or_declared_service_pending",
+      "failure": "live_state_unavailable_without_declared_degradation",
+      "sli": "successful_journey_ratio"
+    },
+    {
+      "id": "bid_submission",
+      "entry": "POST /api/bids",
+      "success": "authoritative_accept_or_explicit_reject",
+      "failure": "timeout_or_ambiguous_outcome",
+      "sli": "successful_journey_ratio"
+    },
+    {
+      "id": "auction_result_visibility",
+      "entry": "auction close to visible result",
+      "success": "authoritative_result_visible",
+      "failure": "closed_auction_result_missing_or_ambiguous",
+      "sli": "successful_journey_ratio"
+    }
+  ],
+  "ratioDefinition": {
+    "numerator": "eligible journey attempts meeting the declared success condition",
+    "denominator": "all eligible journey attempts",
+    "excludeSynthetic": false,
+    "excludeUserCancelled": true,
+    "unknownOutcomeCountsAsFailure": true
+  },
+  "measurement": {
+    "requiredDimensions": ["environment", "journey_id", "outcome"],
+    "optionalDimensions": ["country_profile", "browser_family", "device_class"],
+    "piiForbidden": true,
+    "rawCredentialDataForbidden": true
+  },
+  "guardrails": {
+    "noSloTargetInThisTask": true,
+    "noProviderSpecificSuccessShortcut": true,
+    "noTelemetryDerivedWinner": true,
+    "noTelemetryDerivedAcceptedBid": true
+  }
+}
