@@ -1,5 +1,11 @@
+import { createHash } from "node:crypto";
+
 const sleep=(ms)=>new Promise(r=>setTimeout(r,ms));
 const normalize=(v)=>String(v||"").replace(/\s+/g," ").trim();
+const hashText=(v)=>createHash("sha256").update(normalize(v)).digest("hex");
+const DISPATCH_POLL_MS=Number(process.env.DAVID_DISPATCH_POLL_MS||500);
+const AMBIGUOUS_SETTLE_MS=Number(process.env.DAVID_SEND_AMBIGUOUS_SETTLE_MS||8000);
+
 const SEND_SELECTORS=[
   'button[data-testid="send-button"]',
   'button[aria-label*="Send"]',
@@ -21,7 +27,6 @@ async function composer(page){
   }
   return null;
 }
-
 async function composerText(c){
   if(!c)return "";
   try{
@@ -30,11 +35,19 @@ async function composerText(c){
   }catch{}
   try{return normalize(await c.innerText({timeout:500}).catch(()=>""));}catch{return "";}
 }
-
 async function userCount(page){
   try{return await page.locator('[data-message-author-role="user"]').count();}catch{return 0;}
 }
-
+async function assistantCount(page){
+  try{return await page.locator('[data-message-author-role="assistant"]').count();}catch{return 0;}
+}
+async function latestRole(page){
+  try{
+    const n=page.locator('[data-message-author-role]').last();
+    if(!await n.count())return "";
+    return String(await n.getAttribute("data-message-author-role").catch(()=>"")||"").toLowerCase();
+  }catch{return "";}
+}
 async function latestUserText(page){
   try{
     const u=page.locator('[data-message-author-role="user"]').last();
@@ -42,13 +55,17 @@ async function latestUserText(page){
     return normalize(await u.innerText().catch(()=>""));
   }catch{return "";}
 }
-
 async function generating(page){
   for(const selector of [
     '[data-testid="stop-button"]',
     '[data-testid*="stop" i]',
     'button[aria-label*="Stop"]',
-    'button[aria-label*="Спри"]'
+    'button[aria-label*="stop"]',
+    'button[aria-label*="Спри"]',
+    'button:has-text("Stop generating")',
+    'button:has-text("Stop thinking")',
+    'button:has-text("Спри да мисли")',
+    'button:has-text("Спри отговора")'
   ]){
     try{
       const b=page.locator(selector).last();
@@ -57,78 +74,109 @@ async function generating(page){
   }
   return false;
 }
+async function dispatchGate(page,expected,emit){
+  let lastStage="";
+  for(;;){
+    if(await generating(page)){
+      if(lastStage!=="WAIT_ACTIVE"){
+        lastStage="WAIT_ACTIVE";
+        emit("WAIT_ACTIVE",{signal:"real-stop-or-generating-visible"});
+      }
+      await sleep(DISPATCH_POLL_MS);
+      continue;
+    }
 
-async function fillComposer(page,text){
+    const role=await latestRole(page);
+    const latest=await latestUserText(page);
+    if(role==="user"){
+      if(latest&&latest===expected)return {accepted:true,signal:"matching-user-turn-already-pending"};
+      if(lastStage!=="WAIT_PENDING_USER"){
+        lastStage="WAIT_PENDING_USER";
+        emit("WAIT_PENDING_USER",{signal:"another-user-turn-awaiting-assistant"});
+      }
+      await sleep(DISPATCH_POLL_MS);
+      continue;
+    }
+
+    const c=await composer(page);
+    const draft=await composerText(c);
+    if(draft&&draft!==expected){
+      if(lastStage!=="WAIT_FOREIGN_DRAFT"){
+        lastStage="WAIT_FOREIGN_DRAFT";
+        emit("WAIT_FOREIGN_DRAFT",{signal:"composer-contains-non-david-draft"});
+      }
+      await sleep(DISPATCH_POLL_MS);
+      continue;
+    }
+
+    return {accepted:false,signal:"safe-to-dispatch"};
+  }
+}
+async function fillComposer(page,text,expected){
   for(let attempt=1;attempt<=10;attempt++){
     let c=await composer(page);
     if(!c){await sleep(250);continue;}
     try{
       await c.fill(text,{timeout:1800});
-      const v=await composerText(c);
-      if(v.length>0)return c;
+      if(await composerText(c)===expected)return c;
     }catch{}
-
     c=await composer(page);
     if(!c){await sleep(250);continue;}
     try{
       await c.focus({timeout:1200});
       await page.keyboard.press("Control+A");
       await page.keyboard.insertText(text);
-      const v=await composerText(c);
-      if(v.length>0)return c;
+      if(await composerText(c)===expected)return c;
     }catch{}
     await sleep(250);
   }
-  throw new Error("ChatGPT composer unavailable or could not be filled");
+  throw new Error("ChatGPT composer unavailable or exact prompt could not be verified");
 }
-
-async function waitAck(page,baselineUserCount,expected,timeoutMs=5000){
+async function waitAck(page,baselineUserCount,baselineAssistantCount,expected,timeoutMs=5000){
   const end=Date.now()+timeoutMs;
-  let emptySince=0;
   while(Date.now()<end){
     const count=await userCount(page);
-    if(count>baselineUserCount)return {ok:true,signal:"user-count-increased"};
-
+    const aCount=await assistantCount(page);
+    const role=await latestRole(page);
     const latest=await latestUserText(page);
-    if(latest&&latest===expected)return {ok:true,signal:"latest-user-matches"};
-
-    const c=await composer(page);
-    const current=await composerText(c);
-    if(!current){
-      if(!emptySince)emptySince=Date.now();
-      if(await generating(page))return {ok:true,signal:"composer-cleared-and-generating"};
-      if(Date.now()-emptySince>=1200)return {ok:true,signal:"composer-cleared"};
-    }else{
-      emptySince=0;
-    }
+    if(count>baselineUserCount)return {ok:true,signal:"user-count-increased",acceptedUserCount:count,acceptedAssistantCount:aCount};
+    if(latest&&latest===expected&&role==="user")return {ok:true,signal:"latest-user-matches-pending",acceptedUserCount:count,acceptedAssistantCount:aCount};
+    if(latest&&latest===expected&&aCount>baselineAssistantCount)return {ok:true,signal:"assistant-count-increased-after-matching-user",acceptedUserCount:count,acceptedAssistantCount:aCount};
+    const current=await composerText(await composer(page));
+    if(!current&&await generating(page))return {ok:true,signal:"composer-cleared-and-generating",acceptedUserCount:count,acceptedAssistantCount:aCount};
     await sleep(250);
   }
-  return {ok:false,signal:"no-acceptance-signal"};
+  return {ok:false,signal:"no-strong-acceptance-signal"};
 }
-
 async function visibleSendButton(page){
   for(const selector of SEND_SELECTORS){
     try{
       const b=page.locator(selector).last();
-      if(await b.count()&&await b.isVisible().catch(()=>false)&&await b.isEnabled().catch(()=>false)){
-        return {button:b,selector};
-      }
+      if(await b.count()&&await b.isVisible().catch(()=>false)&&await b.isEnabled().catch(()=>false))return {button:b,selector};
     }catch{}
   }
   return null;
 }
 
 export async function sendPromptVerified(page,text,{worker="DAVID",onEvent=null,ackTimeoutMs=5000}={}){
+  const expected=normalize(text);
+  if(!expected)throw new Error("ChatGPT send refused: empty prompt");
+  const promptHash=hashText(text);
   const emit=(stage,data={})=>{
-    try{onEvent?.(stage,{worker,...data,at:new Date().toISOString()});}catch{}
+    try{onEvent?.(stage,{worker,promptHash,...data,at:new Date().toISOString()});}catch{}
   };
 
-  const expected=normalize(text);
-  const baselineUserCount=await userCount(page);
-  emit("PREPARING",{baselineUserCount,textLength:expected.length});
+  const gate=await dispatchGate(page,expected,emit);
+  if(gate.accepted){
+    emit("ACK",{attempt:0,method:"idempotent-pre-send",signal:gate.signal});
+    return {acknowledged:true,alreadyAccepted:true,attempt:0,method:"idempotent-pre-send",signal:gate.signal,promptHash};
+  }
 
-  let c=await fillComposer(page,text);
-  emit("FILLED",{composerLength:(await composerText(c)).length});
+  const baselineUserCount=await userCount(page);
+  const baselineAssistantCount=await assistantCount(page);
+  emit("PREPARING",{baselineUserCount,baselineAssistantCount,textLength:expected.length});
+  let c=await fillComposer(page,text,expected);
+  emit("FILLED",{composerLength:(await composerText(c)).length,baselineUserCount,baselineAssistantCount});
 
   const methods=[
     async()=>{
@@ -154,50 +202,56 @@ export async function sendPromptVerified(page,text,{worker="DAVID",onEvent=null,
 
   let lastError="";
   for(let i=0;i<methods.length;i++){
-    const already=await waitAck(page,baselineUserCount,expected,500);
+    const pre=await dispatchGate(page,expected,emit);
+    if(pre.accepted){
+      emit("ACK",{attempt:i,method:"pre-submit-idempotence-check",signal:pre.signal,baselineUserCount,baselineAssistantCount});
+      return {acknowledged:true,alreadyAccepted:true,attempt:i,method:"pre-submit-idempotence-check",signal:pre.signal,promptHash};
+    }
+
+    const already=await waitAck(page,baselineUserCount,baselineAssistantCount,expected,500);
     if(already.ok){
-      emit("ACK",{attempt:i,method:"pre-retry-check",signal:already.signal});
-      return {acknowledged:true,attempt:i,method:"pre-retry-check",signal:already.signal};
+      emit("ACK",{attempt:i,method:"pre-retry-check",...already,baselineUserCount,baselineAssistantCount});
+      return {acknowledged:true,attempt:i,method:"pre-retry-check",signal:already.signal,promptHash};
     }
 
     let method="";
     try{
       method=await methods[i]();
-      emit("ATTEMPT",{attempt:i+1,method});
+      emit("ATTEMPT",{attempt:i+1,method,baselineUserCount,baselineAssistantCount});
     }catch(e){
       lastError=String(e?.message||e);
-      emit("ATTEMPT_FAILED",{attempt:i+1,error:lastError});
+      emit("ATTEMPT_FAILED",{attempt:i+1,error:lastError,baselineUserCount,baselineAssistantCount});
       continue;
     }
 
-    const ack=await waitAck(page,baselineUserCount,expected,ackTimeoutMs);
+    const ack=await waitAck(page,baselineUserCount,baselineAssistantCount,expected,ackTimeoutMs);
     if(ack.ok){
-      emit("ACK",{attempt:i+1,method,signal:ack.signal});
-      return {acknowledged:true,attempt:i+1,method,signal:ack.signal};
+      emit("ACK",{attempt:i+1,method,...ack,baselineUserCount,baselineAssistantCount});
+      return {acknowledged:true,attempt:i+1,method,signal:ack.signal,promptHash};
     }
 
-    emit("NO_ACK",{attempt:i+1,method,signal:ack.signal});
-
-    // If the composer is empty, do not risk a duplicate user turn. Wait longer
-    // before trying a second submission method.
+    emit("NO_ACK",{attempt:i+1,method,signal:ack.signal,baselineUserCount,baselineAssistantCount});
     const current=await composerText(await composer(page));
     if(!current){
-      const lateAck=await waitAck(page,baselineUserCount,expected,5000);
+      const lateAck=await waitAck(page,baselineUserCount,baselineAssistantCount,expected,AMBIGUOUS_SETTLE_MS);
       if(lateAck.ok){
-        emit("ACK",{attempt:i+1,method,signal:lateAck.signal});
-        return {acknowledged:true,attempt:i+1,method,signal:lateAck.signal};
+        emit("ACK",{attempt:i+1,method,...lateAck,baselineUserCount,baselineAssistantCount});
+        return {acknowledged:true,attempt:i+1,method,signal:lateAck.signal,promptHash};
       }
-      lastError="composer cleared but no user-turn acknowledgement appeared";
-      break;
+      emit("AMBIGUOUS",{attempt:i+1,method,signal:"composer-cleared-without-strong-turn-evidence",baselineUserCount,baselineAssistantCount});
+      return {acknowledged:false,ambiguous:true,submitted:true,attempt:i+1,method,signal:"composer-cleared-without-strong-turn-evidence",promptHash};
     }
   }
 
-  emit("FAILED",{error:lastError||"send was not acknowledged"});
+  emit("FAILED",{error:lastError||"send was not acknowledged",baselineUserCount,baselineAssistantCount});
   throw new Error("ChatGPT send not acknowledged: "+(lastError||"no acceptance signal"));
 }
 
 if(process.argv.includes("--self-test")){
   if(!SEND_SELECTORS.some(x=>x.includes("send-button")))throw new Error("send-ack self-test: send selector missing");
   if(!COMPOSER_SELECTORS.includes("#prompt-textarea"))throw new Error("send-ack self-test: composer selector missing");
-  console.log("DAVID_SEND_ACK_SELF_TEST PASS verified_submission=ON bounded_fallbacks=3 duplicate_guard=ON");
+  if(!dispatchGate.toString().includes("WAIT_ACTIVE"))throw new Error("send-ack self-test: active dispatch gate missing");
+  if(!dispatchGate.toString().includes("WAIT_PENDING_USER"))throw new Error("send-ack self-test: pending user-turn gate missing");
+  if(!dispatchGate.toString().includes("WAIT_FOREIGN_DRAFT"))throw new Error("send-ack self-test: foreign draft gate missing");
+  console.log("DAVID_SEND_ACK_SELF_TEST PASS verified_submission=ON bounded_fallbacks=3 duplicate_guard=ON active_dispatch_gate=ON pending_user_gate=ON foreign_draft_gate=ON strong_ack=ON ambiguous_no_duplicate=ON");
 }

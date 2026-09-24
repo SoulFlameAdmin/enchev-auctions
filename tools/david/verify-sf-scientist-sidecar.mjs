@@ -320,6 +320,12 @@ if(controlPreview.includes("page.screenshot(") || controlPreview.includes("main.
 for(const token of [
   "sendPromptVerified",
   "user-count-increased",
+  "WAIT_ACTIVE",
+  "WAIT_PENDING_USER",
+  "WAIT_FOREIGN_DRAFT",
+  "composer-cleared-without-strong-turn-evidence",
+  "ambiguous_no_duplicate=ON",
+  "strong_ack=ON",
   "latest-user-matches",
   "composer-cleared",
   "bounded_fallbacks=3",
@@ -337,6 +343,15 @@ for(const [name,worker] of [["APP2",app2Worker],["SYSTEM",systemWorker],["APK",a
     "lastSendError"
   ]) if(!worker.includes(token)) throw new Error(name+" verified-send telemetry missing: "+token);
 }
+
+for(const token of [
+  "Deterministic turn-dispatch law",
+  "Composer-cleared by itself is never ACK",
+  "normal completion -> NEXT WORK",
+  "internal technical defect -> FIX",
+  "external blocker -> DEFER once",
+  "human verification/login/MFA/CAPTCHA -> WAIT"
+]) if(!operatingLaws.includes(token)) throw new Error("DAVID dispatch law invariant missing: "+token);
 
 for(const token of [
   "david_installer_clients_snapshot",

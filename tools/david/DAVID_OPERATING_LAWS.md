@@ -103,6 +103,17 @@ GREEN requires implementation + applicable PASS test + concrete evidence.
 Do not invent secrets, results, deployments or test evidence.
 
 
+## 4.5 Deterministic turn-dispatch law
+- DAVID may submit a new project prompt only when the owned ChatGPT tab is not actively generating, the latest turn is not an unanswered user turn, and the composer does not contain a different/manual draft.
+- A visible real Stop/generating control is an absolute dispatch lock.
+- If a different user turn is pending, DAVID waits for its assistant response instead of overtaking it.
+- If the composer contains a different draft, DAVID preserves it and waits instead of overwriting it.
+- Send acknowledgement requires strong evidence: a new user-turn count, a matching pending user turn, a matching user turn followed by a new assistant turn, or composer-cleared plus real generation.
+- Composer-cleared by itself is never ACK. It is AMBIGUOUS and DAVID verifies the same turn before any resend.
+- Every send exposes prompt hash, baseline/accepted user counts, baseline/accepted assistant counts, method, signal and ACK/AMBIGUOUS state to watchdog telemetry.
+- Prompt routing is semantic: normal completion -> NEXT WORK; internal technical defect -> FIX; known external blocker -> DEFER once then independent WORK; human verification/login/MFA/CAPTCHA -> WAIT.
+- No router may turn a human gate or external blocker into an uncontrolled resend loop.
+
 ## 4A. SF Scientist -> Supervisor recovery law
 - SF Scientist continuously audits worker watchdog/state freshness, runtime topology, recent logs/logAlerts and probeErrors.
 - `gpt-active-no-progress` is an investigation signal, not permission to interrupt an active ChatGPT response.

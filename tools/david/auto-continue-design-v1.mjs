@@ -525,11 +525,21 @@ async function fillAndSend(page, text, state) {
       if (info.method) state.lastSendMethod = info.method;
       if (info.signal) state.lastSendSignal = info.signal;
       if (info.error) state.lastSendError = info.error;
+      if (info.promptHash) state.lastSendPromptHash = info.promptHash;
+      if (Number.isFinite(info.baselineUserCount)) state.lastSendBaselineUserCount = info.baselineUserCount;
+      if (Number.isFinite(info.baselineAssistantCount)) state.lastSendBaselineAssistantCount = info.baselineAssistantCount;
+      if (Number.isFinite(info.acceptedUserCount)) state.lastSendAcceptedUserCount = info.acceptedUserCount;
+      if (Number.isFinite(info.acceptedAssistantCount)) state.lastSendAcceptedAssistantCount = info.acceptedAssistantCount;
       if (stage === "ACK") {
         state.lastSendAck = true;
+        state.lastSendAmbiguous = false;
         state.lastSendAt = info.at || new Date().toISOString();
+      } else if (stage === "AMBIGUOUS") {
+        state.lastSendAck = false;
+        state.lastSendAmbiguous = true;
       } else if (stage === "FAILED") {
         state.lastSendAck = false;
+        state.lastSendAmbiguous = false;
       }
       save(state);
     }
