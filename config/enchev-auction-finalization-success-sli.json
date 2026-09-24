@@ -1,0 +1,77 @@
+{
+  "taskId": "27.06",
+  "name": "Auction finalization success SLI",
+  "version": 1,
+  "scope": "measurement-contract-only",
+  "targetOwnershipTask": "27.07",
+  "eventRegistrySource": "config/enchev-websocket-event-registry.json",
+  "authoritativeAuctionSource": "postgresql",
+  "telemetryMayMutateAuctionState": false,
+  "runtimeFinalizationImplemented": false,
+  "indicator": {
+    "name": "auction_finalization_success_ratio",
+    "type": "ratio",
+    "numerator": "eligible auction finalization attempts that durably commit one unambiguous authoritative final result in PostgreSQL and make that result available to downstream API/realtime projection paths",
+    "denominator": "all eligible auction finalization attempts",
+    "successRequiresDurablePostgresqlCommit": true,
+    "successRequiresSingleUnambiguousFinalState": true,
+    "successRequiresResultPublishable": true,
+    "successRequiresWinnerOutcomeResolved": true,
+    "unknownOutcomeCountsAsFailure": true,
+    "timeoutCountsAsFailure": true
+  },
+  "winnerOutcome": {
+    "acceptedTerminalOutcomes": [
+      "winner_assigned",
+      "closed_without_winner"
+    ],
+    "ambiguousWinnerForbidden": true,
+    "multipleWinnersForbidden": true,
+    "telemetryMayNotChooseWinner": true,
+    "realtimeEventMayNotChooseWinner": true
+  },
+  "eligibility": {
+    "authoritativeCloseAttemptIncluded": true,
+    "workerRetryOfSameIdempotentFinalizationIncludedAsSameLogicalAttempt": true,
+    "syntheticAttemptsExcluded": false,
+    "cancelledBeforeFinalizationAttemptExcluded": true,
+    "nonAuthoritativeBrowserClockExcluded": true
+  },
+  "projectionBoundary": {
+    "closedEventType": "enchev.auction.closed.v1",
+    "closedEventIsProjectionNotAuthority": true,
+    "eventEmissionAloneIsNotSuccess": true,
+    "resultVisibilityJourneySourceTask": "27.01",
+    "resultVisibilityJourneyId": "auction_result_visibility"
+  },
+  "measurement": {
+    "requiredDimensions": [
+      "environment",
+      "outcome"
+    ],
+    "optionalDimensions": [
+      "region",
+      "country_profile",
+      "finalization_path"
+    ],
+    "correlationIdAllowedForDiagnostics": true,
+    "correlationIdAsMetricDimensionForbidden": true,
+    "auctionIdAsMetricDimensionForbidden": true,
+    "winnerIdAsMetricDimensionForbidden": true,
+    "sellerIdAsMetricDimensionForbidden": true,
+    "buyerIdAsMetricDimensionForbidden": true,
+    "piiForbidden": true,
+    "rawCredentialDataForbidden": true,
+    "bidAmountAsMetricDimensionForbidden": true
+  },
+  "guardrails": {
+    "noSloTargetInThisTask": true,
+    "noProviderSpecificShortcut": true,
+    "noBrowserDerivedFinalization": true,
+    "noTelemetryDerivedAcceptedBid": true,
+    "noTelemetryDerivedWinner": true,
+    "noRealtimeDerivedWinner": true,
+    "singleAuthoritativeFinalResultRequired": true,
+    "registryOwnershipTask": "24.12"
+  }
+}
