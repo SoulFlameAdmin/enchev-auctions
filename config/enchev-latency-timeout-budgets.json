@@ -1,0 +1,94 @@
+{
+  "taskId": "27.09",
+  "name": "Latency/timeout budgets",
+  "version": 1,
+  "status": "initial-provisional-policy",
+  "scope": "engineering-budget-policy",
+  "sources": ["27.03", "27.04", "27.05", "27.06", "27.07", "27.08"],
+  "reviewPolicy": {
+    "valuesAreMeasuredProductionResults": false,
+    "valuesAreInitialEngineeringBudgets": true,
+    "reviewAfterRepresentativeProductionEvidence": true,
+    "changeRequiresEvidenceAndApproval": true
+  },
+  "latencyBudgets": {
+    "bidAcceptance": {
+      "sli": "bid_acceptance_latency_ms",
+      "sourceTask": "27.03",
+      "complianceTargetSourceTask": "27.07",
+      "complianceTargetRatio": 0.99,
+      "thresholdMs": 750,
+      "clock": "monotonic_server_side",
+      "samplePopulationInheritedFromSli": true
+    },
+    "realtimeDelivery": {
+      "sli": "realtime_delivery_latency_ms",
+      "sourceTask": "27.04",
+      "complianceTargetSourceTask": "27.07",
+      "complianceTargetRatio": 0.99,
+      "thresholdMs": 250,
+      "clock": "monotonic_server_side",
+      "samplePopulationInheritedFromSli": true
+    }
+  },
+  "timeoutBudgets": {
+    "bidAcceptanceAttempt": {
+      "sourceTask": "27.03",
+      "timeoutMs": 3000,
+      "timeoutDoesNotCreateAcceptedLatencySample": true,
+      "timeoutRemainsReliabilityFailure": true
+    },
+    "realtimeDeliveryAttempt": {
+      "sourceTask": "27.04",
+      "timeoutMs": 1000,
+      "timeoutDoesNotCreateDeliveryLatencySample": true,
+      "timeoutRemainsReliabilityFailure": true
+    },
+    "reconnectRecovery": {
+      "sourceTask": "27.05",
+      "timeoutMs": 10000,
+      "successStillRequiresAuthoritativeBaseline": true,
+      "timeoutCountsAsReconnectFailure": true
+    },
+    "auctionFinalizationAttempt": {
+      "sourceTask": "27.06",
+      "timeoutMs": 30000,
+      "successStillRequiresDurablePostgresqlCommit": true,
+      "timeoutCountsAsFinalizationFailure": true
+    }
+  },
+  "semantics": {
+    "timeoutStartsAtEligibleAttemptBoundary": true,
+    "timeoutIsAttemptDeadlineNotRetryBudget": true,
+    "retryCountOwnershipTask": "27.10",
+    "capacityOwnershipTask": "27.11",
+    "clientRenderTimeExcludedFromServerLatencyBudgets": true,
+    "browserClockForbiddenForBudgetEvaluation": true,
+    "wallClockForbiddenForDurationMath": true,
+    "negativeDurationForbidden": true,
+    "timeoutMayNotConvertUnknownOutcomeToSuccess": true,
+    "latencyThresholdMayNotRedefineSliPopulation": true
+  },
+  "errorBudgetIntegration": {
+    "sourceTask": "27.08",
+    "bidLatencyAllowedBadFraction": 0.01,
+    "realtimeLatencyAllowedBadFraction": 0.01,
+    "latencyBudgetConsumptionNowEvaluableWhenEligibleSamplesExist": true,
+    "insufficientEligibleDataState": "not_evaluable"
+  },
+  "authority": {
+    "authoritativeAuctionSource": "postgresql",
+    "telemetryMayMutateAuctionState": false,
+    "timeoutMayChooseWinner": false,
+    "timeoutMayCreateAcceptedBid": false,
+    "realtimeTransportAuthoritative": false
+  },
+  "guardrails": {
+    "noRetryBudgetInThisTask": true,
+    "noCapacityLimitInThisTask": true,
+    "noMeasuredProductionPerformanceClaim": true,
+    "noProviderSpecificShortcut": true,
+    "noTelemetryDerivedAcceptedBid": true,
+    "noTelemetryDerivedWinner": true
+  }
+}
