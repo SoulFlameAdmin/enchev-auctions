@@ -1,6 +1,6 @@
 # SYSTEM 27.02 — API availability SLI
 
-Status: **YELLOW** until exact-head CI and post-merge verification pass.
+Status: **GREEN** — the measurement contract, fail-closed verifier, exact-head CI, merge, and post-merge descendant verification are complete.
 
 ## Purpose
 
@@ -25,7 +25,7 @@ Malformed requests rejected before ingress eligibility and client cancellations 
 
 ## Scope and authority
 
-The endpoint scope is derived from `config/enchev-api-endpoint-inventory.json`; 27.02 must not maintain a second endpoint registry.
+The endpoint scope is derived from `config/enchev-api-endpoint-inventory.json`; 27.02 does not maintain a second endpoint registry.
 
 Telemetry is observational only. PostgreSQL remains authoritative for auction state, accepted bids, winner selection and final results.
 
@@ -33,6 +33,14 @@ Telemetry is observational only. PostgreSQL remains authoritative for auction st
 
 Required dimensions are environment, operation ID, method and outcome. PII, raw credential data and request-body capture are forbidden.
 
-## Acceptance
+## GREEN evidence
 
-GREEN requires the executable verifier and fail-closed negative self-tests to pass on the exact implementation head, merge to `main`, and post-merge descendant verification. No SLO target percentage is introduced here.
+- Implementation exact-head commit: `fb07ffccc7af1cbad9ca409904859e187a016564`.
+- Implementation PR #240 merged to `main` as `ab10f0dcd6944eb9b329488a3d4e44586f0b49e6`.
+- Exact-head Verify Enchev Web run `36010931042`: SUCCESS; aggregate CI test suite (including 27.02 verifier/self-test), TypeScript, production build, built health smoke, Chrome/Edge visual regression and artifact upload all PASS.
+- Exact-head security/supply-chain checks PASS: Code Scan `36010931097`, Secret Scan `36010931112`, SBOM Generation `36010931040`, Build Provenance `36010931179`, SYSTEM 26.05 `36010931158`, SYSTEM 24.02 `36010931099`.
+- Exact-head Vercel Preview `dpl_CZK6gj2VNcgpd2sutXiMCGFhio1Z` for commit `fb07ffccc7af1cbad9ca409904859e187a016564`: READY.
+- This evidence commit is based directly on merged `main` commit `ab10f0dcd6944eb9b329488a3d4e44586f0b49e6`; its exact-head CI provides the required post-merge descendant verification before the evidence PR is merged.
+- No SLO target percentage was invented; target ownership remains SYSTEM 27.07.
+- PostgreSQL remains authoritative; telemetry remains observational only.
+- Protected DAVID orchestrator files were not modified.
