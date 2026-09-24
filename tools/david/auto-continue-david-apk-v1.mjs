@@ -681,7 +681,13 @@ async function runPrompt(context, page, state, prompt, kind) {
       const text = await latestAssistant(page);
       const h = hash(text);
       if (await generating(page)) {
-        if (Date.now() - lastActivity > STALL_MS) {
+        if (text && h !== base && h !== last) {
+          last = h;
+          lastActivity = Date.now();
+          delete state.activeNoProgressSince;
+          state.watchdog = "apk-writing";
+          save(state, "APK GPT text progressed while ACTIVE");
+        } else if (Date.now() - lastActivity > STALL_MS) {
           if (state.watchdog !== "apk-active-no-progress") {
             state.watchdog = "apk-active-no-progress";
             state.problem = null;

@@ -557,7 +557,13 @@ async function waitCompletion(context, page, base, state) {
     if (pb) return { page, blocker: pb, stalled: false, text: "" };
     const text = await latestAssistant(page), h = hash(text);
     if (await generating(page)) {
-      if (Date.now() - lastActivity > STALL_MS) {
+      if (text && h !== base && h !== last) {
+        last = h;
+        lastActivity = Date.now();
+        delete state.activeNoProgressSince;
+        state.watchdog = "design-writing";
+        save(state, "Design GPT text progressed while ACTIVE");
+      } else if (Date.now() - lastActivity > STALL_MS) {
         if (state.watchdog !== "design-active-no-progress") {
           state.watchdog = "design-active-no-progress";
           state.problem = null;
