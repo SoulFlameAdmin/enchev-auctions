@@ -56,13 +56,44 @@ try{
 
   if(-not$SkipUpdate){
     if(-not(Test-Path $Git)){throw "PortableGit missing: $Git"}
-    Log("UPDATE "+$Branch)
-    & $Git -C $Repo fetch origin $Branch
-    if($LASTEXITCODE-ne 0){throw "git fetch failed with exit code $LASTEXITCODE"}
+
+    # Local branch validity is required even when GitHub is temporarily offline.
+    # Checkout is intentionally done before fetch because it does not require network.
     & $Git -C $Repo checkout $Branch
     if($LASTEXITCODE-ne 0){throw "git checkout failed with exit code $LASTEXITCODE"}
-    & $Git -C $Repo pull --ff-only origin $Branch
-    if($LASTEXITCODE-ne 0){throw "git pull --ff-only failed with exit code $LASTEXITCODE"}
+
+    $localHead=(& $Git -C $Repo rev-parse HEAD 2>$null | Select-Object -First 1)
+    if($LASTEXITCODE-ne 0 -or [string]::IsNullOrWhiteSpace([string]$localHead)){
+      throw "Unable to resolve local DAVID HEAD"
+    }
+    $localHead=([string]$localHead).Trim()
+    Log("LOCAL HEAD "+$localHead)
+
+    Log("UPDATE "+$Branch)
+    & $Git -C $Repo fetch origin $Branch
+    $fetchCode=$LASTEXITCODE
+
+    if($fetchCode-eq 0){
+      & $Git -C $Repo pull --ff-only origin $Branch
+      if($LASTEXITCODE-ne 0){
+        # Fetch succeeded, so a pull failure is a real repository state problem,
+        # not a network outage. Do not hide divergence/conflicts.
+        throw "git pull --ff-only failed with exit code $LASTEXITCODE"
+      }
+      $updatedHead=(& $Git -C $Repo rev-parse HEAD 2>$null | Select-Object -First 1)
+      Log("UPDATE OK HEAD "+([string]$updatedHead).Trim())
+    }else{
+      # Network/GitHub outage: preserve availability. We already proved the
+      # expected local branch exists and has a resolvable commit, so boot that
+      # last-known-good checkout instead of leaving DAVID completely OFF.
+      Write-Warning ("[DAVID] GitHub update unavailable (fetch exit "+$fetchCode+"). Starting LAST KNOWN GOOD local HEAD "+$localHead+".")
+      Write-Host "[DAVID] OFFLINE FALLBACK - local code only; remote freshness not verified." -ForegroundColor Yellow
+      Log("OFFLINE FALLBACK fetch_exit="+$fetchCode+" local_head="+$localHead)
+    }
+  }else{
+    $localHead=(& $Git -C $Repo rev-parse HEAD 2>$null | Select-Object -First 1)
+    Write-Host ("[DAVID] UPDATE SKIPPED - starting local HEAD "+([string]$localHead).Trim()) -ForegroundColor Yellow
+    Log("UPDATE SKIPPED local_head="+([string]$localHead).Trim())
   }
 
   if(-not(Test-Path $Selector)){throw "Matrix selector missing: $Selector"}
