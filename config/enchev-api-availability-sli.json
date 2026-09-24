@@ -1,0 +1,56 @@
+{
+  "taskId": "27.02",
+  "name": "API availability SLI",
+  "version": 1,
+  "scope": "measurement-contract-only",
+  "targetOwnershipTask": "27.07",
+  "sourceInventory": "config/enchev-api-endpoint-inventory.json",
+  "authoritativeAuctionSource": "postgresql",
+  "telemetryMayMutateAuctionState": false,
+  "indicator": {
+    "name": "api_availability_ratio",
+    "unit": "ratio",
+    "numerator": "eligible API requests that receive a contract-classified response without server-side unavailability",
+    "denominator": "all eligible API requests after ingress validation",
+    "unknownOutcomeCountsAsBad": true
+  },
+  "eligibility": {
+    "listedOperationRequired": true,
+    "excludeMalformedBeforeIngressValidation": true,
+    "excludeClientCancelledBeforeResponse": true,
+    "excludeSynthetic": false
+  },
+  "classification": {
+    "good": [
+      "contract-classified 2xx response",
+      "contract-classified 3xx response when explicitly documented",
+      "contract-classified 4xx business/client response except server-request-timeout semantics",
+      "429 rate-limit response with valid 24.08 metadata"
+    ],
+    "bad": [
+      "5xx response",
+      "network failure after eligible request admission",
+      "server-side request timeout",
+      "response timeout",
+      "malformed or unclassifiable response",
+      "unknown outcome"
+    ],
+    "rateLimitedCountsAsAvailable": true,
+    "businessRejectionCountsAsAvailable": true
+  },
+  "measurement": {
+    "requiredDimensions": ["environment", "operation_id", "method", "outcome"],
+    "optionalDimensions": ["country_profile", "region"],
+    "piiForbidden": true,
+    "rawCredentialDataForbidden": true,
+    "requestBodyCaptureForbidden": true
+  },
+  "guardrails": {
+    "noSloTargetInThisTask": true,
+    "noProviderSpecificAvailabilityShortcut": true,
+    "noTelemetryDerivedWinner": true,
+    "noTelemetryDerivedAcceptedBid": true,
+    "rateLimitPolicyOwnershipTask": "24.08",
+    "capacityOwnershipTask": "27.11"
+  }
+}
