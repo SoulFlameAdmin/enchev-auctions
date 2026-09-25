@@ -85,7 +85,7 @@ export function buildSubjectExportBundle(args: Readonly<{
 }> {
   if (!args.identityVerified) throw new Error("SUBJECT_EXPORT_IDENTITY_NOT_VERIFIED");
   if (!args.subjectId.trim()) throw new Error("SUBJECT_EXPORT_SUBJECT_REQUIRED");
-  const records = args.records.filter((record) => record.subject_id === args.subjectId && record.sensitivity !== ("DC-3" as DataSensitivity));
+  const records = args.records.filter((record) => record.subject_id === args.subjectId && String(record.sensitivity) !== "DC-3");
   if (records.length !== args.records.length) throw new Error("SUBJECT_EXPORT_SCOPE_OR_SECRET_VIOLATION");
   return Object.freeze({
     subject_id: args.subjectId,
