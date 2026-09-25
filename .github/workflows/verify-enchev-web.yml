@@ -369,6 +369,10 @@ jobs:
         run: node scripts/verify-data-lifecycle-privacy.mjs
       - name: Phase 29 data lifecycle and privacy engineering self-tests
         run: node scripts/verify-data-lifecycle-privacy.mjs --self-test
+      - name: Phase 30 operational readiness
+        run: node scripts/verify-operational-readiness.mjs
+      - name: Phase 30 operational readiness self-tests
+        run: node scripts/verify-operational-readiness.mjs --self-test
       - name: Cross-browser visual contract
         run: node scripts/verify-cross-browser-visual-contract.mjs
       - name: Cross-browser visual self-tests
