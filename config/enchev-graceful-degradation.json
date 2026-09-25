@@ -1,0 +1,115 @@
+{
+  "taskId": "27.12",
+  "name": "Graceful degradation rules",
+  "version": 1,
+  "status": "initial-provisional-policy",
+  "scope": "reliability-degradation-policy",
+  "sources": ["27.08", "27.09", "27.10", "27.11"],
+  "reviewPolicy": {
+    "rulesAreMeasuredProductionBehavior": false,
+    "rulesAreInitialEngineeringPolicy": true,
+    "runtimeActivationClaimed": false,
+    "changeRequiresEvidenceAndApproval": true
+  },
+  "principles": {
+    "correctnessBeforeAvailabilityForAuthoritativeAuctionState": true,
+    "degradeOptionalCapabilityBeforeCriticalCapability": true,
+    "failClosedWhenAuthoritativeSafetyCannotBePreserved": true,
+    "degradationMustBeReversible": true,
+    "degradationStateMustBeObservableAndAuditable": true,
+    "degradationMustNotRewriteHistoricalTelemetry": true
+  },
+  "protectedCapabilities": [
+    "authentication_and_authorization",
+    "buyer_eligibility_enforcement",
+    "authoritative_bid_acceptance",
+    "auction_timer_and_state_transition_authority",
+    "auction_finalization_and_winner_selection",
+    "idempotency_and_duplicate_protection",
+    "durable_audit_and_critical_event_history"
+  ],
+  "degradableCapabilities": {
+    "optionalEnrichment": {
+      "class": "non_authoritative",
+      "allowedActions": ["disable_optional_enrichment", "serve_base_authoritative_data"],
+      "mustNotChangeAuthoritativeFields": true
+    },
+    "noncriticalBackgroundWork": {
+      "class": "deferable",
+      "allowedActions": ["pause_or_delay_noncritical_jobs", "resume_after_recovery"],
+      "criticalFinalizationWorkersExcluded": true
+    },
+    "realtimePresentation": {
+      "class": "projection",
+      "allowedActions": ["reduce_nonessential_event_detail", "force_authoritative_state_refetch_on_gap"],
+      "mayNotBecomeAuthoritative": true,
+      "mayNotInventBidOrWinnerState": true
+    },
+    "optionalNotifications": {
+      "class": "best_effort",
+      "allowedActions": ["delay_noncritical_notifications", "preserve_security_and_critical_result_notifications"],
+      "securityNotificationsExcluded": true,
+      "criticalAuctionResultNotificationsExcluded": true
+    }
+  },
+  "states": [
+    {
+      "id": "normal",
+      "meaning": "all enabled capabilities operate under normal policy",
+      "optionalCapabilityReductionAllowed": false
+    },
+    {
+      "id": "constrained",
+      "meaning": "reduce optional work while preserving all protected capabilities",
+      "optionalCapabilityReductionAllowed": true
+    },
+    {
+      "id": "degraded",
+      "meaning": "serve authoritative core with reduced non-authoritative experience",
+      "optionalCapabilityReductionAllowed": true
+    },
+    {
+      "id": "recovery",
+      "meaning": "restore capabilities progressively after stability evidence",
+      "optionalCapabilityReductionAllowed": true
+    }
+  ],
+  "activationSemantics": {
+    "capacitySignalSourceTask": "27.11",
+    "errorBudgetSourceTask": "27.08",
+    "latencyTimeoutSourceTask": "27.09",
+    "retrySourceTask": "27.10",
+    "capacityThresholdsAloneDoNotAuthorizeTrafficDropping": true,
+    "degradationDecisionMustNameAffectedCapability": true,
+    "degradationDecisionMustNameTriggerEvidence": true,
+    "automaticActivationRequiresSeparatelyVerifiedRuntimeImplementation": true,
+    "thisTaskDoesNotClaimAutomaticRuntimeActivation": true
+  },
+  "recoverySemantics": {
+    "recoveryMustNotBeTimeOnly": true,
+    "recoveryRequiresTriggerConditionCleared": true,
+    "recoveryRequiresRelevantHealthEvidence": true,
+    "restoreProtectedCapabilitiesNotApplicableBecauseNeverDegraded": true,
+    "restoreOptionalCapabilitiesProgressively": true,
+    "flappingMustBeAvoided": true
+  },
+  "downstreamOwnership": {
+    "loadSheddingTask": "27.13",
+    "scalingRunbookTask": "27.14"
+  },
+  "authority": {
+    "authoritativeAuctionSource": "postgresql",
+    "degradationPolicyMayMutateAuthoritativeAuctionState": false,
+    "degradationPolicyMayChooseWinner": false,
+    "degradationPolicyMayCreateAcceptedBid": false,
+    "realtimeProjectionAuthoritative": false
+  },
+  "guardrails": {
+    "noTrafficDroppingRulesInThisTask": true,
+    "noAdmissionControlRulesInThisTask": true,
+    "noCapacityCertificationInThisTask": true,
+    "noProviderSpecificShortcut": true,
+    "noMeasuredProductionBehaviorClaim": true,
+    "noSilentFeatureDisablement": true
+  }
+}
