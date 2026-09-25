@@ -162,7 +162,9 @@
     "verify:latency-timeout-budgets": "node scripts/verify-latency-timeout-budgets.mjs",
     "verify:latency-timeout-budgets:self-test": "node scripts/verify-latency-timeout-budgets.mjs --self-test",
     "verify:retry-budgets": "node scripts/verify-retry-budgets.mjs",
-    "verify:retry-budgets:self-test": "node scripts/verify-retry-budgets.mjs --self-test"
+    "verify:retry-budgets:self-test": "node scripts/verify-retry-budgets.mjs --self-test",
+    "verify:capacity-model": "node scripts/verify-capacity-model.mjs",
+    "verify:capacity-model:self-test": "node scripts/verify-capacity-model.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
