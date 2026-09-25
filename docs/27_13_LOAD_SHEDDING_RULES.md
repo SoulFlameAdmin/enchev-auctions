@@ -1,6 +1,6 @@
 # SYSTEM 27.13 — Load-shedding rules
 
-Status: **YELLOW** until fail-closed verification, exact-head CI, merge, and post-merge descendant verification pass.
+Status: **GREEN** — load-shedding policy, fail-closed verification, exact-head CI, merge, READY preview, and post-merge descendant verification are complete.
 
 ## Purpose
 
@@ -92,3 +92,16 @@ Load-shedding policy may not manufacture accepted bids, choose winners, mutate h
 ## Acceptance
 
 GREEN requires the fail-closed verifier and negative self-tests, package/pre-gate wiring, exact-head CI/security/build checks, READY exact-head Vercel preview, merge to main, and post-merge descendant verification.
+
+## GREEN evidence
+
+- Implementation exact-head commit: `36235e8569330ff4babd21acfa9ecf972a268ff3`.
+- Implementation PR #264 merged to `main` as `78c0bc6edc909daa96afc5997158a10b28f52535`.
+- Exact-head Verify Enchev Web run `36114414224`: SUCCESS; SYSTEM pre-gates including the 27.13 fail-closed verifier/self-tests, aggregate CI suite, TypeScript, production build, built health smoke, Chrome/Edge visual regression, and artifact upload all PASS.
+- Exact-head security/supply-chain checks PASS: Code Scan `36114414243`, Secret Scan `36114414236`, SBOM Generation `36114414252`, Build Provenance `36114414340`, SYSTEM 26.05 `36114414274`, SYSTEM 24.02 `36114414214`.
+- Exact-head Vercel Preview `dpl_5CmYQDaSBsHza8T6nL459Kg5T4bJ` for commit `36235e8569330ff4babd21acfa9ecf972a268ff3`: READY.
+- This evidence branch is based directly on merged `main` commit `78c0bc6edc909daa96afc5997158a10b28f52535`; its exact-head CI provides the required post-merge descendant verification before evidence merge.
+- Shed authoritative commands are rejected before mutation and can never be reported as successful.
+- Bid admission fairness forbids user, pricing-tier, geographic, or opaque-random preferential admission.
+- Scaling operational procedure remains owned by SYSTEM 27.14.
+- PostgreSQL remains authoritative; load-shedding policy cannot manufacture accepted bids, winners, or final auction state.
