@@ -29,7 +29,8 @@ const gates = [
   ["scripts/verify-initial-slo-targets.mjs", "--self-test"],
   ["scripts/verify-error-budget-policy.mjs", "--self-test"],
   ["scripts/verify-latency-timeout-budgets.mjs", "--self-test"],
-  ["scripts/verify-retry-budgets.mjs", "--self-test"]
+  ["scripts/verify-retry-budgets.mjs", "--self-test"],
+  ["scripts/verify-capacity-model.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of gates) {
