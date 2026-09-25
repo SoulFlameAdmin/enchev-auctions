@@ -53,7 +53,7 @@ export function validate(config,sources){
   need(sources.lot,/role="dialog" aria-modal="true" aria-labelledby="lot-viewer-title"/,"28.08 labelled modal dialog missing");
   need(sources.lot,/event\.key==="Escape"/,"28.08 Escape close handling missing");
   need(sources.lot,/viewerCloseRef\.current\?\.focus\(\)/,"28.08 initial dialog focus missing");
-  need(sources.lot,/trigger\.focus\({preventScroll:true})/,"28.08 focus restoration missing");
+  if(!sources.lot.includes("trigger.focus({preventScroll:true})"))fail("28.08 focus restoration missing");
 
   const colorSources=`${sources.theme}\n${sources.accessibility}`.toLowerCase();
   for(const pair of config.contrastPairs||[]){
@@ -176,3 +176,4 @@ if(process.argv.includes("--self-test")){
   runExisting("scripts/capture-visual-regression.mjs",["--self-test"]);
   console.log(`ACCESSIBILITY_DEVICE_QUALITY PASS phase=28 tasks=${result.tasks} core_routes=${result.coreRoutes} contrast_pairs=${result.contrastPairs} certification_claimed=false real_ios_android_execution_claimed=false`);
 }
+
