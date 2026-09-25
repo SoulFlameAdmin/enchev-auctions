@@ -10,6 +10,10 @@ const NOTES_KEY = "enchev-system-notes-v5";
 const CHANNEL_KEY = "enchev-system-realtime-v5";
 // Governance verification marker only; runtime behavior is unchanged.
 
+const VERIFIED_YELLOW: Record<string, string> = {
+  "29.08": "Backup retention alignment remains pending: production authoritative database/backup provider and configured retention window are not yet verified. Phase 29 exact-head Verify Enchev Web 36189225470 SUCCESS proves the fail-closed contract; it does not prove provider alignment.",
+};
+
 const VERIFIED_WAVE_0: Record<string, string> = {
   "00.01": "docs/00_01_SYSTEM_SCOPE_AND_BOUNDARIES.md · commit 1782e4deac453adb024c2322490ac94386656a07 · Vercel production READY",
   "00.02": "docs/00_02_ACTORS_AND_PERMISSION_MAP.md · commit 332e6ecc9cc1cda93768d5d01e5d02bae97dbc8f · Vercel production READY",
@@ -138,10 +142,6 @@ const VERIFIED_WAVE_0: Record<string, string> = {
   "30.13": "docs/30_OPERATIONAL_READINESS.md · implementation PR #271 head 566cb3273742e1113d6b08056b34bdfabbe5df85 · merged at 7dc1ae3f10bfbd352f14cdf6e1772041d0a72c9f · exact-head Verify Enchev Web 36189796650 SUCCESS · Phase 30 verifier/self-tests PASS · TypeScript/build/health PASS · Chrome+Edge visual matrix PASS · Vercel dpl_2xsAngQ5WQ7o8yUioQpoXWzcPrwU READY · GREEN evidence verified · Maintenance/emergency change procedure",
   "30.14": "docs/30_OPERATIONAL_READINESS.md · implementation PR #271 head 566cb3273742e1113d6b08056b34bdfabbe5df85 · merged at 7dc1ae3f10bfbd352f14cdf6e1772041d0a72c9f · exact-head Verify Enchev Web 36189796650 SUCCESS · Phase 30 verifier/self-tests PASS · TypeScript/build/health PASS · Chrome+Edge visual matrix PASS · Vercel dpl_2xsAngQ5WQ7o8yUioQpoXWzcPrwU READY · GREEN evidence verified · Operational readiness review",
 
-};
-
-const VERIFIED_YELLOW: Record<string, string> = {
-  "29.08": "Backup retention alignment remains pending: production authoritative database/backup provider and configured retention window are not yet verified. Phase 29 exact-head Verify Enchev Web 36189225470 SUCCESS proves the fail-closed contract; it does not prove provider alignment.",
 };
 
 export default function VerifiedPlanEvidenceSync() {
