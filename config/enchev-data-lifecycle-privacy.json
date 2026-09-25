@@ -1,0 +1,506 @@
+{
+  "phaseId": "29",
+  "phaseName": "Data lifecycle & privacy engineering",
+  "version": 1,
+  "legalConclusion": false,
+  "privacyComplianceApproved": false,
+  "authoritativeReference": "docs/00_07_DATA_CLASSIFICATION_MODEL.md",
+  "tasks": [
+    {
+      "id": "29.01",
+      "name": "System-wide data inventory",
+      "implementation": "registry"
+    },
+    {
+      "id": "29.02",
+      "name": "Data classification by sensitivity",
+      "implementation": "classification-map"
+    },
+    {
+      "id": "29.03",
+      "name": "Data minimization review",
+      "implementation": "purpose-and-minimum-fields"
+    },
+    {
+      "id": "29.04",
+      "name": "Retention rules per data class",
+      "implementation": "retention-policy"
+    },
+    {
+      "id": "29.05",
+      "name": "Deletion/anonymization rules",
+      "implementation": "lifecycle-rules"
+    },
+    {
+      "id": "29.06",
+      "name": "User data export workflow",
+      "implementation": "export-state-machine"
+    },
+    {
+      "id": "29.07",
+      "name": "Legal-hold exceptions",
+      "implementation": "hold-policy"
+    },
+    {
+      "id": "29.08",
+      "name": "Backup retention alignment",
+      "implementation": "provider-alignment",
+      "greenEligible": false,
+      "blocker": "Production authoritative database/backup provider and its retention configuration are not yet verified."
+    },
+    {
+      "id": "29.09",
+      "name": "Object-storage lifecycle",
+      "implementation": "provider-neutral-object-policy"
+    },
+    {
+      "id": "29.10",
+      "name": "PII redaction in logs",
+      "implementation": "domain-redaction-helper"
+    },
+    {
+      "id": "29.11",
+      "name": "Sensitive-data access logging",
+      "implementation": "structured-access-event"
+    },
+    {
+      "id": "29.12",
+      "name": "Cross-border data-flow inventory",
+      "implementation": "data-flow-registry"
+    }
+  ],
+  "dataFamilies": [
+    {
+      "id": "public-marketplace",
+      "examples": [
+        "approved vehicle listing fields",
+        "public lot number",
+        "public auction schedule"
+      ],
+      "sensitivity": "DC-0",
+      "authority": [
+        "A1",
+        "A2"
+      ],
+      "systems": [
+        "web",
+        "api",
+        "cdn"
+      ],
+      "minimumFields": [
+        "lot_id",
+        "public_vehicle_facts",
+        "public_auction_state"
+      ],
+      "prohibitedFields": [
+        "private_max_bid",
+        "identity_documents",
+        "session_tokens"
+      ]
+    },
+    {
+      "id": "engineering-operations",
+      "examples": [
+        "health state",
+        "deployment metadata",
+        "sanitized diagnostics"
+      ],
+      "sensitivity": "DC-1",
+      "authority": [
+        "A2",
+        "A3"
+      ],
+      "systems": [
+        "web",
+        "api",
+        "worker",
+        "observability"
+      ],
+      "minimumFields": [
+        "correlation_id",
+        "service",
+        "event",
+        "status",
+        "duration_ms"
+      ],
+      "prohibitedFields": [
+        "password",
+        "token",
+        "private_max_bid",
+        "kyc_document_body"
+      ]
+    },
+    {
+      "id": "account-and-support",
+      "examples": [
+        "name",
+        "email",
+        "telephone",
+        "address",
+        "support case"
+      ],
+      "sensitivity": "DC-2",
+      "authority": [
+        "A1"
+      ],
+      "systems": [
+        "api",
+        "postgresql",
+        "support"
+      ],
+      "minimumFields": [
+        "subject_id",
+        "purpose_specific_contact_fields"
+      ],
+      "prohibitedFields": [
+        "raw_password",
+        "provider_secret"
+      ]
+    },
+    {
+      "id": "identity-and-critical-secrets",
+      "examples": [
+        "KYC/KYB artifacts",
+        "session secrets",
+        "MFA secrets",
+        "private max bid",
+        "signing keys"
+      ],
+      "sensitivity": "DC-3",
+      "authority": [
+        "A0",
+        "A1"
+      ],
+      "systems": [
+        "api",
+        "postgresql",
+        "identity-provider"
+      ],
+      "minimumFields": [
+        "opaque_reference",
+        "decision_status"
+      ],
+      "prohibitedFields": [
+        "raw_value_in_logs",
+        "browser_local_storage",
+        "search_index",
+        "analytics_payload"
+      ]
+    },
+    {
+      "id": "auction-authority",
+      "examples": [
+        "accepted bid sequence",
+        "auction state",
+        "final result"
+      ],
+      "sensitivity": "DC-1/DC-2",
+      "authority": [
+        "A0"
+      ],
+      "systems": [
+        "api",
+        "postgresql",
+        "worker",
+        "realtime-projection"
+      ],
+      "minimumFields": [
+        "auction_id",
+        "sequence",
+        "server_timestamp",
+        "decision"
+      ],
+      "prohibitedFields": [
+        "client_only_authority"
+      ]
+    },
+    {
+      "id": "development-evidence",
+      "examples": [
+        "CI run id",
+        "commit sha",
+        "test status"
+      ],
+      "sensitivity": "DC-1",
+      "authority": [
+        "A3"
+      ],
+      "systems": [
+        "github",
+        "supabase-development-governance"
+      ],
+      "minimumFields": [
+        "commit_sha",
+        "run_id",
+        "test_id",
+        "status"
+      ],
+      "prohibitedFields": [
+        "customer_payload",
+        "secret"
+      ]
+    },
+    {
+      "id": "presentation-demo",
+      "examples": [
+        "sample vehicle cards",
+        "browser-only demo auction state",
+        "sample media"
+      ],
+      "sensitivity": "DC-0",
+      "authority": [
+        "A4"
+      ],
+      "systems": [
+        "web"
+      ],
+      "minimumFields": [
+        "demo_label",
+        "sample_public_fields"
+      ],
+      "prohibitedFields": [
+        "production_authority_claim",
+        "real_customer_secret"
+      ]
+    }
+  ],
+  "retention": {
+    "DC-0": {
+      "mode": "publication-lifecycle",
+      "defaultDaysAfterUnpublish": 365,
+      "legalOverrideAllowed": true
+    },
+    "DC-1": {
+      "mode": "bounded-operational",
+      "defaultDays": 90,
+      "legalOverrideAllowed": true
+    },
+    "DC-2": {
+      "mode": "purpose-plus-reviewed-retention",
+      "defaultDaysAfterPurposeEnds": 365,
+      "legalOverrideRequiredForLongerRetention": true
+    },
+    "DC-3": {
+      "mode": "shortest-necessary-or-provider-policy",
+      "defaultDaysAfterPurposeEnds": 30,
+      "legalOverrideRequiredForLongerRetention": true,
+      "secretValuesUseCredentialExpiry": true
+    }
+  },
+  "deletionAndAnonymization": {
+    "directIdentifiers": [
+      "name",
+      "email",
+      "phone",
+      "telephone",
+      "address",
+      "ip_address",
+      "device_id"
+    ],
+    "secretFields": [
+      "password",
+      "token",
+      "refresh_token",
+      "api_key",
+      "secret",
+      "mfa_secret",
+      "private_max_bid"
+    ],
+    "anonymizedReplacement": "[ANONYMIZED]",
+    "redactedReplacement": "[REDACTED]",
+    "preserveWhenRequired": [
+      "legal_hold_reference",
+      "immutable_a0_event_identity",
+      "security_incident_reference"
+    ],
+    "rules": [
+      "delete raw secrets when their owning credential/session expires",
+      "anonymize direct identifiers when deletion is approved and immutable operational history must remain",
+      "never mutate immutable A0 event facts merely to simplify deletion",
+      "store the minimum subject linkage required for a lawful hold or dispute"
+    ]
+  },
+  "exportWorkflow": {
+    "states": [
+      "requested",
+      "identity-verified",
+      "collecting",
+      "reviewed",
+      "ready",
+      "delivered",
+      "expired",
+      "rejected"
+    ],
+    "requiresVerifiedSubject": true,
+    "exportOnlySubjectScopedData": true,
+    "exclude": [
+      "credentials",
+      "password_hashes",
+      "provider_secrets",
+      "other_subject_data",
+      "internal_security_secrets"
+    ],
+    "includeProvenance": true,
+    "deliveryMustBeTimeLimited": true,
+    "authoritativeDataSourcesMustBeEnumerated": true
+  },
+  "legalHold": {
+    "states": [
+      "none",
+      "active",
+      "released"
+    ],
+    "requiresReason": true,
+    "requiresActor": true,
+    "requiresTimestamp": true,
+    "blocksDeletionWhileActive": true,
+    "doesNotPermitExtraCollection": true
+  },
+  "backupAlignment": {
+    "required": true,
+    "productionAuthoritativeProviderVerified": false,
+    "greenEligible": false,
+    "requirements": [
+      "backup retention must not silently exceed approved data retention without documented reason",
+      "restore procedures must preserve legal holds",
+      "expired deleted data must age out of backups according to provider capability and documented schedule"
+    ]
+  },
+  "objectStorageLifecycle": {
+    "providerBound": false,
+    "greenMeaning": "provider-neutral lifecycle contract exists; provider provisioning remains separate",
+    "classes": {
+      "public-media": {
+        "visibility": "public-after-approval",
+        "deleteAfterSourceRemovalDays": 30
+      },
+      "private-documents": {
+        "visibility": "private",
+        "signedAccessRequired": true,
+        "deleteAfterPurposeEndsDays": 30
+      },
+      "inspection-evidence": {
+        "visibility": "private-until-approved-projection",
+        "versioned": true,
+        "deleteOnlyAfterRetentionCheck": true
+      }
+    },
+    "orphanCleanupRequired": true,
+    "legalHoldOverridesDeletion": true
+  },
+  "logRedaction": {
+    "keyPatterns": [
+      "password",
+      "passcode",
+      "token",
+      "secret",
+      "authorization",
+      "cookie",
+      "api_key",
+      "apikey",
+      "mfa",
+      "private_max_bid",
+      "kyc_document"
+    ],
+    "stringPatterns": [
+      "email",
+      "bearer-token"
+    ],
+    "replacement": "[REDACTED]",
+    "maxDepth": 8
+  },
+  "sensitiveAccessLogging": {
+    "requiredFields": [
+      "event_id",
+      "occurred_at",
+      "actor_id",
+      "subject_id",
+      "resource_type",
+      "resource_id",
+      "purpose",
+      "sensitivity",
+      "action",
+      "outcome",
+      "correlation_id"
+    ],
+    "forbiddenFields": [
+      "raw_value",
+      "document_body",
+      "password",
+      "token",
+      "secret",
+      "private_max_bid"
+    ],
+    "appendOnlyIntent": true
+  },
+  "crossBorderFlows": [
+    {
+      "id": "public-cdn",
+      "source": "web/api",
+      "destination": "global CDN edge",
+      "classes": [
+        "DC-0"
+      ],
+      "persistentResidencyClaim": false
+    },
+    {
+      "id": "development-governance",
+      "source": "GitHub CI",
+      "destination": "Supabase eu-west-1 development-governance",
+      "classes": [
+        "DC-1/A3"
+      ],
+      "persistentResidencyClaim": false
+    },
+    {
+      "id": "runtime-compute",
+      "source": "browser",
+      "destination": "Vercel runtime compute",
+      "classes": [
+        "DC-0",
+        "DC-1",
+        "DC-2-minimized"
+      ],
+      "regionStatus": "unpinned",
+      "persistentResidencyClaim": false
+    },
+    {
+      "id": "future-authoritative-db",
+      "source": "api",
+      "destination": "production PostgreSQL",
+      "classes": [
+        "DC-1",
+        "DC-2",
+        "DC-3"
+      ],
+      "regionStatus": "not-yet-bound",
+      "persistentResidencyClaim": false
+    },
+    {
+      "id": "future-object-storage",
+      "source": "api",
+      "destination": "private/public object storage",
+      "classes": [
+        "DC-0",
+        "DC-2",
+        "DC-3-minimized"
+      ],
+      "regionStatus": "not-yet-bound",
+      "persistentResidencyClaim": false
+    }
+  ],
+  "greenRules": {
+    "inventoryCoversPublicInternalConfidentialRestrictedAndAuthorityData": true,
+    "classificationReusesFrozen00_07Model": true,
+    "minimizationHasPurposeAndProhibitedFields": true,
+    "retentionIsExplicitBySensitivity": true,
+    "deletionPreservesImmutableAuthorityAndLegalHolds": true,
+    "exportIsSubjectScopedAndExcludesSecrets": true,
+    "legalHoldIsAuditableAndDoesNotPermitExtraCollection": true,
+    "objectLifecycleIsProviderNeutralAndFailClosed": true,
+    "piiRedactionHelperIsImplemented": true,
+    "sensitiveAccessEventHelperIsImplemented": true,
+    "crossBorderInventoryDoesNotClaimResidencyCompliance": true,
+    "backupAlignmentRemainsYellowUntilProviderEvidence": true
+  }
+}
