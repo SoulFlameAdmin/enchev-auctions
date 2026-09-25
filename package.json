@@ -172,7 +172,9 @@
     "verify:scaling-runbook": "node scripts/verify-scaling-runbook.mjs",
     "verify:scaling-runbook:self-test": "node scripts/verify-scaling-runbook.mjs --self-test",
     "verify:accessibility-device-quality": "node scripts/verify-accessibility-device-quality.mjs",
-    "verify:accessibility-device-quality:self-test": "node scripts/verify-accessibility-device-quality.mjs --self-test"
+    "verify:accessibility-device-quality:self-test": "node scripts/verify-accessibility-device-quality.mjs --self-test",
+    "verify:data-lifecycle-privacy": "node scripts/verify-data-lifecycle-privacy.mjs",
+    "verify:data-lifecycle-privacy:self-test": "node scripts/verify-data-lifecycle-privacy.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
