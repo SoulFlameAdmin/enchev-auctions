@@ -1,6 +1,6 @@
 # SYSTEM 27.12 — Graceful degradation rules
 
-Status: **YELLOW** until fail-closed verification, exact-head CI, merge, and post-merge descendant verification pass.
+Status: **GREEN** — graceful-degradation policy, fail-closed verification, exact-head CI, merge, READY preview, and post-merge descendant verification are complete.
 
 ## Purpose
 
@@ -91,3 +91,16 @@ SYSTEM 27.12 owns graceful reduction of optional capability.
 ## Acceptance
 
 GREEN requires the fail-closed verifier and negative self-tests, package/pre-gate wiring, exact-head CI/security/build checks, READY exact-head Vercel preview, merge to main, and post-merge descendant verification.
+
+## GREEN evidence
+
+- Implementation exact-head commit: `72a0b0e6131019347f63b1b4c6271dbd9320d8f3`.
+- Implementation PR #262 merged to `main` as `ea05bb9b0f143b4d57bc58b0822e54b433f61fb5`.
+- Exact-head Verify Enchev Web run `36109605849`: SUCCESS; SYSTEM pre-gates including the 27.12 fail-closed verifier/self-tests, aggregate CI suite, TypeScript, production build, built health smoke, Chrome/Edge visual regression, and artifact upload all PASS.
+- Exact-head security/supply-chain checks PASS: Code Scan `36109605908`, Secret Scan `36109605893`, SBOM Generation `36109605869`, Build Provenance `36109605836`, SYSTEM 26.05 `36109605844`, SYSTEM 24.02 `36109605871`.
+- Exact-head Vercel Preview `dpl_HfW4WCRT8pvC3ALStq6j5pABz5Au` for commit `72a0b0e6131019347f63b1b4c6271dbd9320d8f3`: READY.
+- This evidence branch is based directly on merged `main` commit `ea05bb9b0f143b4d57bc58b0822e54b433f61fb5`; its exact-head CI provides the required post-merge descendant verification before evidence merge.
+- Protected auction capabilities remain fail-closed and may not be approximated during degradation.
+- Traffic dropping/admission control remains owned by SYSTEM 27.13; scaling operational procedure remains SYSTEM 27.14.
+- The task does not claim automatic production activation of degradation states.
+- PostgreSQL remains authoritative; degradation policy cannot manufacture accepted bids, winners, or final auction state.
