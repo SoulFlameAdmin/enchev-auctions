@@ -1,0 +1,125 @@
+{
+  "taskId": "27.14",
+  "name": "Scaling runbook",
+  "version": 1,
+  "status": "initial-operational-runbook",
+  "scope": "reliability-scaling-procedure",
+  "sources": ["27.08", "27.09", "27.10", "27.11", "27.12", "27.13"],
+  "reviewPolicy": {
+    "stepsAreMeasuredProductionResults": false,
+    "runbookIsInitialEngineeringProcedure": true,
+    "automatedScalerClaimed": false,
+    "providerSpecificSizingClaimed": false,
+    "changeRequiresEvidenceAndApproval": true
+  },
+  "preconditions": {
+    "ownerAssigned": true,
+    "bottleneckDimensionMustBeIdentified": true,
+    "triggerEvidenceCaptured": true,
+    "authoritativeHealthBaselineCaptured": true,
+    "downstreamSaturationReviewed": true,
+    "rollbackPathDefinedBeforeScaling": true,
+    "changeCorrelationIdRequired": true
+  },
+  "procedure": [
+    {
+      "id": "observe_confirm",
+      "requires": ["identify_affected_capacity_dimension", "capture_slo_latency_retry_error_budget_evidence", "confirm_problem_is_not_only_client_projection"]
+    },
+    {
+      "id": "stabilize",
+      "requires": ["apply_verified_graceful_degradation_if_needed", "apply_verified_load_shedding_if_needed", "preserve_authoritative_auction_correctness"]
+    },
+    {
+      "id": "choose_action",
+      "requires": ["choose_bottleneck_specific_action", "confirm_downstream_can_accept_added_pressure", "define_expected_signal_improvement", "define_rollback_condition"]
+    },
+    {
+      "id": "execute_incrementally",
+      "requires": ["make_one_bounded_reversible_capacity_change", "record_change_and_time", "do_not_stack_unverified_changes"]
+    },
+    {
+      "id": "verify_after_each_step",
+      "requires": ["check_capacity_signal", "check_slo_and_error_budget", "check_latency_and_timeouts", "check_retry_pressure", "check_authoritative_invariants"]
+    },
+    {
+      "id": "recover_optional_traffic",
+      "requires": ["recover_only_after_health_evidence", "restore_higher_priority_before_optional", "remove_shedding_or_degradation_progressively"]
+    },
+    {
+      "id": "close_record",
+      "requires": ["record_before_after_evidence", "record_final_capacity_state", "record_remaining_risk", "create_followup_if_capacity_remains_uncertified"]
+    }
+  ],
+  "allowedActionClasses": {
+    "horizontalCapacity": {
+      "allowed": true,
+      "requiresStatelessOrSafePartitionSemantics": true,
+      "downstreamCapacityMustBeConfirmed": true
+    },
+    "verticalCapacity": {
+      "allowed": true,
+      "requiresProviderSpecificChangePlanOutsideThisContract": true,
+      "mustBeReversibleOrHaveExplicitRecoveryPlan": true
+    },
+    "workerConcurrency": {
+      "allowed": true,
+      "downstreamCapacityMustBeConfirmed": true,
+      "blindConcurrencyIncreaseForbidden": true
+    },
+    "connectionCapacity": {
+      "allowed": true,
+      "downstreamConnectionBudgetMustBeKnown": true,
+      "blindPoolIncreaseForbidden": true
+    },
+    "scaleDown": {
+      "allowed": true,
+      "requiresStableHealthEvidence": true,
+      "uncertainCapacityRequiresConservativePosture": true
+    }
+  },
+  "decisionSemantics": {
+    "capacityModelSourceTask": "27.11",
+    "gracefulDegradationSourceTask": "27.12",
+    "loadSheddingSourceTask": "27.13",
+    "errorBudgetSourceTask": "27.08",
+    "latencyTimeoutSourceTask": "27.09",
+    "retrySourceTask": "27.10",
+    "noUniversalScaleAmount": true,
+    "noUniversalInstanceCount": true,
+    "noUniversalConcurrencyValue": true,
+    "scaleActionMustTargetObservedBottleneck": true,
+    "scalingMayNotResetOrHideFailureTelemetry": true
+  },
+  "verification": {
+    "relevantCapacitySignalMustImproveOrRemainSafe": true,
+    "sloAndErrorBudgetMustNotWorsenWithoutExplicitIncidentDecision": true,
+    "latencyTimeoutAndRetryPressureMustBeChecked": true,
+    "authoritativeAuctionInvariantsMustPass": true,
+    "acceptedBidAndWinnerCorrectnessMustRemainIntact": true,
+    "degradationAndSheddingRecoveryMustBeEvidenceBased": true
+  },
+  "rollback": {
+    "rollbackOnAuthoritativeInvariantFailure": true,
+    "rollbackOnDownstreamSaturationIncrease": true,
+    "rollbackOnMaterialHealthRegression": true,
+    "rollbackWhenExpectedSignalDoesNotImproveAndRiskIncreases": true,
+    "rollbackMustBeRecorded": true
+  },
+  "authority": {
+    "authoritativeAuctionSource": "postgresql",
+    "scalingRunbookMayMutateAuctionState": false,
+    "scalingRunbookMayChooseWinner": false,
+    "scalingRunbookMayCreateAcceptedBid": false,
+    "telemetryMayRewriteAuthoritativeState": false
+  },
+  "guardrails": {
+    "noBlindScaling": true,
+    "noBlindConcurrencyIncrease": true,
+    "noProviderSpecificProductionSizingInThisTask": true,
+    "noMeasuredProductionCapacityClaim": true,
+    "noScalingToMaskCorrectnessFailure": true,
+    "noScaleDownWithoutHealthEvidence": true,
+    "noSimultaneousUnverifiedScalingChanges": true
+  }
+}
