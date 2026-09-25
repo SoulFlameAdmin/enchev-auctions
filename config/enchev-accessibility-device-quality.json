@@ -1,0 +1,65 @@
+{
+  "phaseId": "28",
+  "phaseName": "Accessibility & device quality",
+  "standardTarget": {
+    "standard": "WCAG",
+    "version": "2.2",
+    "level": "AA",
+    "certificationClaimed": false,
+    "formalAuditRequiredForFinalProductionAcceptance": true
+  },
+  "coreRoutes": [
+    "/",
+    "/inventory",
+    "/lot/EA-10539",
+    "/live-auctions",
+    "/profile"
+  ],
+  "tasks": [
+    {"id":"28.01","name":"WCAG 2.2 AA target"},
+    {"id":"28.02","name":"Keyboard-only navigation"},
+    {"id":"28.03","name":"Visible focus states"},
+    {"id":"28.04","name":"Screen-reader labels"},
+    {"id":"28.05","name":"Color contrast checks"},
+    {"id":"28.06","name":"Status not color-only"},
+    {"id":"28.07","name":"Accessible forms/errors"},
+    {"id":"28.08","name":"Accessible dialogs/modals"},
+    {"id":"28.09","name":"Accessible live-auction status"},
+    {"id":"28.10","name":"Reduced-motion support"},
+    {"id":"28.11","name":"200% zoom layout"},
+    {"id":"28.12","name":"Touch-target sizing"},
+    {"id":"28.13","name":"Desktop browser matrix"},
+    {"id":"28.14","name":"iOS/Android browser baseline"}
+  ],
+  "contrastPairs": [
+    {"name":"primary text on app background","foreground":"#f5fbf7","background":"#040806","minimumRatio":4.5},
+    {"name":"skip-link text on skip-link background","foreground":"#f7fff9","background":"#061009","minimumRatio":4.5},
+    {"name":"dark action text on ENCHEV green","foreground":"#041008","background":"#27f58a","minimumRatio":4.5},
+    {"name":"focus indicator on dark surface","foreground":"#8bffc0","background":"#041008","minimumRatio":3}
+  ],
+  "zoomBaseline": {
+    "targetPercent": 200,
+    "runtimeViewportWidths": [360,390,430],
+    "reason": "The existing Chrome/Edge visual matrix exercises all five core routes at widths narrower than the CSS viewport produced by 200% zoom on standard desktop widths.",
+    "horizontalOverflowMustRemainControlled": true
+  },
+  "browserEvidence": {
+    "desktopMatrixTask": "25.10",
+    "mobileMatrixTask": "25.11",
+    "desktopRequired": ["chrome","edge"],
+    "mobileCiBaseline": ["chrome-mobile-emulation","edge-mobile-emulation"],
+    "releaseTargets": ["android-chrome","ios-safari"],
+    "realAndroidOrIosExecutionClaimedByPhase28": false
+  },
+  "greenRules": {
+    "all14TasksMustBePresent": true,
+    "existingAccessibilityVisualVerifierMustPass": true,
+    "existingMobileFirstVerifierMustPass": true,
+    "existingCrossBrowserVisualVerifierMustPass": true,
+    "desktopBrowserMatrixMustRemainRequired": true,
+    "mobileBrowserBaselineMustRemainRequired": true,
+    "runtimeVisualMatrixMustRemainInMainCI": true,
+    "noCertificationClaimWithoutFormalAudit": true,
+    "noFalseRealDeviceClaim": true
+  }
+}
