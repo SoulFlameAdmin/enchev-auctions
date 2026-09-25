@@ -11,3 +11,5 @@ export type DomainPackageBoundary = Readonly<{
   package: typeof DOMAIN_PACKAGE_NAME;
   frameworkIndependent: true;
 }>;
+
+export * from "./data-lifecycle";
