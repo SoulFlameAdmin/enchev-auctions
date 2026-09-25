@@ -1,0 +1,118 @@
+{
+  "taskId": "27.11",
+  "name": "Capacity model",
+  "version": 1,
+  "status": "initial-provisional-model",
+  "scope": "engineering-capacity-model",
+  "sources": ["27.03", "27.04", "27.05", "27.06", "27.07", "27.08", "27.09", "27.10"],
+  "reviewPolicy": {
+    "valuesAreMeasuredProductionResults": false,
+    "valuesAreCertifiedProductionLimits": false,
+    "valuesAreInitialPlanningAssumptions": true,
+    "representativeLoadEvidenceRequiredForCertification": true,
+    "changeRequiresEvidenceAndApproval": true
+  },
+  "capacityDimensions": {
+    "authoritativeBidCommands": {
+      "unit": "commands_per_second",
+      "sourceTask": "27.03",
+      "timeoutSourceTask": "27.09",
+      "retrySourceTask": "27.10",
+      "validatedCapacity": null,
+      "certificationState": "uncertified",
+      "measurementBoundary": "server_authoritative_bid_command_boundary"
+    },
+    "realtimeDeliveries": {
+      "unit": "deliveries_per_second",
+      "sourceTask": "27.04",
+      "timeoutSourceTask": "27.09",
+      "retrySourceTask": "27.10",
+      "validatedCapacity": null,
+      "certificationState": "uncertified",
+      "measurementBoundary": "server_emit_to_transport_delivery_boundary"
+    },
+    "concurrentRealtimeConnections": {
+      "unit": "connections",
+      "sourceTask": "27.04",
+      "validatedCapacity": null,
+      "certificationState": "uncertified",
+      "measurementBoundary": "authenticated_live_realtime_connections"
+    },
+    "reconnectRecovery": {
+      "unit": "reconnects_per_second",
+      "sourceTask": "27.05",
+      "timeoutSourceTask": "27.09",
+      "retrySourceTask": "27.10",
+      "validatedCapacity": null,
+      "certificationState": "uncertified",
+      "measurementBoundary": "reconnect_attempts_requiring_authoritative_baseline"
+    },
+    "auctionFinalization": {
+      "unit": "finalizations_per_minute",
+      "sourceTask": "27.06",
+      "timeoutSourceTask": "27.09",
+      "retrySourceTask": "27.10",
+      "validatedCapacity": null,
+      "certificationState": "uncertified",
+      "measurementBoundary": "eligible_authoritative_auction_finalizations"
+    },
+    "concurrentLiveAuctions": {
+      "unit": "auctions",
+      "sourceTask": "27.01",
+      "validatedCapacity": null,
+      "certificationState": "uncertified",
+      "measurementBoundary": "simultaneously_live_authoritative_auction_rooms"
+    }
+  },
+  "derivedModel": {
+    "utilizationFormula": "observed_demand / validated_capacity",
+    "headroomFormula": "1 - utilization",
+    "realtimeFanoutDemandFormula": "sum(event_rate_per_room * active_subscribers_per_room)",
+    "uncertifiedWhenValidatedCapacityMissing": true,
+    "divisionByZeroForbidden": true,
+    "negativeDemandForbidden": true,
+    "crossDimensionCapacitySubstitutionForbidden": true
+  },
+  "planningThresholds": {
+    "minimumTargetHeadroomFraction": 0.30,
+    "scaleReviewUtilizationFraction": 0.60,
+    "capacityWatchUtilizationFraction": 0.70,
+    "capacityCriticalUtilizationFraction": 0.85,
+    "thresholdsArePlanningSignalsNotMeasuredResults": true,
+    "thresholdsDoNotAuthorizeTrafficDropping": true,
+    "thresholdsDoNotAuthorizeFeatureDegradation": true
+  },
+  "certification": {
+    "defaultState": "uncertified",
+    "validatedCapacityMustComeFromRepresentativeLoadEvidence": true,
+    "sloMustRemainSatisfiedAtValidatedCapacity": true,
+    "errorBudgetSemanticsSourceTask": "27.08",
+    "latencyTimeoutSemanticsSourceTask": "27.09",
+    "retrySemanticsSourceTask": "27.10",
+    "authoritativeStateInvariantsMustPass": true,
+    "noWinnerCorruptionUnderLoadRequired": true,
+    "loadTestPhase": "18",
+    "productionLimitClaimForbiddenUntilCertified": true
+  },
+  "downstreamOwnership": {
+    "gracefulDegradationTask": "27.12",
+    "loadSheddingTask": "27.13",
+    "scalingRunbookTask": "27.14"
+  },
+  "authority": {
+    "authoritativeAuctionSource": "postgresql",
+    "capacityTelemetryMayMutateAuctionState": false,
+    "capacityModelMayChooseWinner": false,
+    "capacityModelMayCreateAcceptedBid": false,
+    "realtimeTransportAuthoritative": false
+  },
+  "guardrails": {
+    "noInventedProductionCapacity": true,
+    "noCertifiedLimitWithoutLoadEvidence": true,
+    "noGracefulDegradationRulesInThisTask": true,
+    "noLoadSheddingRulesInThisTask": true,
+    "noScalingRunbookInThisTask": true,
+    "noMeasuredProductionPerformanceClaim": true,
+    "noProviderSpecificShortcut": true
+  }
+}
