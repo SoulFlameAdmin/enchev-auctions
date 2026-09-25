@@ -1,6 +1,6 @@
 # SYSTEM 27.11 — Capacity model
 
-Status: **YELLOW** until fail-closed verification, exact-head CI, merge, and post-merge descendant verification pass.
+Status: **GREEN** — capacity-model contract, fail-closed verification, exact-head CI, merge, READY preview, and post-merge descendant verification are complete.
 
 ## Purpose
 
@@ -83,16 +83,16 @@ SYSTEM 27.11 owns capacity dimensions, utilization/headroom formulas, and certif
 - load shedding: SYSTEM 27.13;
 - scaling runbook: SYSTEM 27.14.
 
-## Acceptance
+## GREEN evidence
 
-GREEN requires:
-
-1. fail-closed config verifier and negative self-tests;
-2. package scripts and SYSTEM pre-gate wiring;
-3. exact-head CI/security/build checks;
-4. READY exact-head Vercel preview;
-5. merge to `main`;
-6. post-merge descendant verification;
-7. GREEN evidence recorded here.
-
-Until those conditions pass, status remains YELLOW.
+- Implementation exact-head commit: `b0e5c875b30ca3f7290b0dd32de49f89ac968da0`.
+- Implementation PR #259 merged to `main` as `bd6c54de3c235a50d44fb2289d48c47f40c5ad4d`.
+- Exact-head Verify Enchev Web run `36108334640`: SUCCESS; SYSTEM pre-gates including the 27.11 fail-closed verifier/self-tests, aggregate CI suite, TypeScript, production build, built health smoke, Chrome/Edge visual regression, and artifact upload all PASS.
+- Exact-head security/supply-chain checks PASS: Code Scan `36108334504`, Secret Scan `36108334603`, SBOM Generation `36108334511`, Build Provenance `36108334594`, SYSTEM 26.05 `36108334852`, SYSTEM 24.02 `36108334583`.
+- Exact-head Vercel Preview `dpl_CCq51LXubDWVGQKyt21z5pUyt1e5` for commit `b0e5c875b30ca3f7290b0dd32de49f89ac968da0`: READY; root route returned HTTP 200.
+- This evidence branch is based directly on merged `main` commit `bd6c54de3c235a50d44fb2289d48c47f40c5ad4d`; its exact-head CI provides the required post-merge descendant verification before evidence merge.
+- All concrete production capacity values remain `uncertified`; 27.11 does not claim measured production throughput.
+- The provisional planning signals remain engineering policy values: 30% target headroom, 60% scale-review utilization, 70% capacity-watch utilization, and 85% capacity-critical utilization.
+- Graceful degradation remains owned by SYSTEM 27.12, load shedding by 27.13, and scaling runbook by 27.14.
+- PostgreSQL remains authoritative; capacity telemetry cannot manufacture accepted bids, winners, or final auction state.
+- Protected DAVID orchestrator files were not modified.
