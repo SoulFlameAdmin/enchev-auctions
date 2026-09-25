@@ -33,6 +33,7 @@ const cases = [
   ["scripts/verify-ci-quality-gates.mjs", "--self-test"],
   ["scripts/verify-mobile-first-design.mjs", "--self-test"],
   ["scripts/verify-accessibility-visual-pass.mjs", "--self-test"],
+  ["scripts/verify-accessibility-device-quality.mjs", "--self-test"],
   ["scripts/verify-cross-browser-visual-contract.mjs", "--self-test"],
   ["scripts/capture-visual-regression.mjs", "--self-test"],
   ["scripts/verify-enchev-final-consistency.mjs", "--self-test"],
