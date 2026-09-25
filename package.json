@@ -170,7 +170,9 @@
     "verify:load-shedding": "node scripts/verify-load-shedding.mjs",
     "verify:load-shedding:self-test": "node scripts/verify-load-shedding.mjs --self-test",
     "verify:scaling-runbook": "node scripts/verify-scaling-runbook.mjs",
-    "verify:scaling-runbook:self-test": "node scripts/verify-scaling-runbook.mjs --self-test"
+    "verify:scaling-runbook:self-test": "node scripts/verify-scaling-runbook.mjs --self-test",
+    "verify:accessibility-device-quality": "node scripts/verify-accessibility-device-quality.mjs",
+    "verify:accessibility-device-quality:self-test": "node scripts/verify-accessibility-device-quality.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
