@@ -1,0 +1,179 @@
+{
+  "phaseId": "30",
+  "phaseName": "Operational readiness",
+  "version": 1,
+  "reviewCompleted": true,
+  "productionLaunchApproved": false,
+  "tasks": [
+    {"id":"30.01","name":"Service ownership map"},
+    {"id":"30.02","name":"Runbook: web/API outage"},
+    {"id":"30.03","name":"Runbook: realtime outage"},
+    {"id":"30.04","name":"Runbook: worker outage"},
+    {"id":"30.05","name":"Runbook: database outage"},
+    {"id":"30.06","name":"Runbook: Redis outage"},
+    {"id":"30.07","name":"Runbook: storage/provider outage"},
+    {"id":"30.08","name":"Runbook: data corruption"},
+    {"id":"30.09","name":"Runbook: credential compromise"},
+    {"id":"30.10","name":"Incident severity model"},
+    {"id":"30.11","name":"Escalation path / incident commander"},
+    {"id":"30.12","name":"Postmortem template"},
+    {"id":"30.13","name":"Maintenance/emergency change procedure"},
+    {"id":"30.14","name":"Operational readiness review"}
+  ],
+  "sourceContracts": [
+    "config/enchev-health-endpoints.json",
+    "config/enchev-production-approval-gate.json",
+    "config/enchev-scaling-runbook.json",
+    "config/enchev-data-lifecycle-privacy.json"
+  ],
+  "serviceOwnership": [
+    {"service":"web","ownerRole":"Web platform owner","healthPath":"/api/health/web","authority":"presentation","escalation":"incident-commander"},
+    {"service":"api","ownerRole":"API platform owner","healthPath":"/api/health/api","authority":"server-boundary","escalation":"incident-commander"},
+    {"service":"realtime","ownerRole":"Realtime platform owner","healthPath":"/api/health/realtime","authority":"projection-only","escalation":"incident-commander"},
+    {"service":"worker","ownerRole":"Worker platform owner","healthPath":"/api/health/worker","authority":"background-execution","escalation":"incident-commander"},
+    {"service":"postgresql","ownerRole":"Database owner","healthPath":null,"authority":"authoritative","escalation":"incident-commander"},
+    {"service":"redis","ownerRole":"Cache/realtime-support owner","healthPath":"/api/health/redis","authority":"non-authoritative-support","escalation":"incident-commander"},
+    {"service":"object-storage","ownerRole":"Storage owner","healthPath":null,"authority":"evidence/media-store","escalation":"incident-commander"},
+    {"service":"identity","ownerRole":"Identity/security owner","healthPath":null,"authority":"identity-security","escalation":"security-incident-commander"},
+    {"service":"observability","ownerRole":"Operations/observability owner","healthPath":null,"authority":"observational","escalation":"incident-commander"}
+  ],
+  "severityModel": [
+    {"id":"SEV-0","meaning":"confirmed or suspected compromise/corruption that can affect auction authority, accepted bids, winner correctness or critical credentials","responseMinutes":5,"incidentCommanderRequired":true,"securityLeadRequired":true},
+    {"id":"SEV-1","meaning":"major customer-facing outage or severe degradation of a critical journey with no safe workaround","responseMinutes":15,"incidentCommanderRequired":true,"securityLeadRequired":false},
+    {"id":"SEV-2","meaning":"partial degradation with safe fallback or limited blast radius","responseMinutes":60,"incidentCommanderRequired":true,"securityLeadRequired":false},
+    {"id":"SEV-3","meaning":"minor operational defect with no critical journey or authority impact","responseMinutes":240,"incidentCommanderRequired":false,"securityLeadRequired":false}
+  ],
+  "escalation": {
+    "roles":["reporter","service-owner","incident-commander","communications-owner","security-lead","database-owner"],
+    "incidentCommanderDuties":[
+      "declare severity and scope",
+      "assign owners and communication cadence",
+      "protect authoritative auction correctness before availability",
+      "approve or reject emergency changes",
+      "record decisions and timestamps",
+      "close incident only after verification"
+    ],
+    "securityIncidentCommanderRequiredFor":["credential-compromise","unauthorized-access","secret-exposure"],
+    "singleIncidentCommanderAtATime":true
+  },
+  "runbooks": [
+    {
+      "id":"web-api-outage",
+      "taskId":"30.02",
+      "services":["web","api"],
+      "detect":["health endpoint failure","5xx/error-rate increase","critical journey synthetic failure"],
+      "contain":["freeze unrelated deploys","confirm last known-good commit","preserve request correlation evidence"],
+      "recover":["rollback or forward-fix one bounded change","verify web/API health endpoints","restore traffic progressively"],
+      "verify":["health endpoints healthy","critical route smoke passes","error rate returns to baseline","no authority invariant regression"],
+      "never":["invent auction state client-side","bypass production approval controls"]
+    },
+    {
+      "id":"realtime-outage",
+      "taskId":"30.03",
+      "services":["realtime"],
+      "detect":["realtime health failure","connection/reconnect SLI breach","sequence-gap increase"],
+      "contain":["stop treating stale projection as current","force authoritative refetch path","preserve event/sequence evidence"],
+      "recover":["restore realtime fanout or service","resubscribe clients","reconcile from authoritative snapshot"],
+      "verify":["reconnect SLI recovers","sequence gaps resolved","authoritative state matches client projection"],
+      "never":["make realtime projection auction authority","synthesize accepted bids"]
+    },
+    {
+      "id":"worker-outage",
+      "taskId":"30.04",
+      "services":["worker"],
+      "detect":["worker health failure","job backlog growth","missed-close/recovery alert"],
+      "contain":["pause unsafe duplicate execution","identify lease/idempotency state","preserve queue evidence"],
+      "recover":["restart or replace worker","resume idempotently","run missed-work recovery scanner"],
+      "verify":["backlog drains","idempotency checks pass","no duplicate finalization"],
+      "never":["run non-idempotent recovery blindly"]
+    },
+    {
+      "id":"database-outage",
+      "taskId":"30.05",
+      "services":["postgresql"],
+      "detect":["connection failure","transaction error spike","authoritative health failure"],
+      "contain":["fail closed on authoritative writes","stop winner/bid mutations that cannot commit","preserve incident timeline"],
+      "recover":["restore provider/database connectivity","validate migrations/schema","reconcile queued/retried work"],
+      "verify":["authoritative reads/writes pass","critical constraints intact","auction invariants pass"],
+      "never":["promote cache/browser/realtime projection to authority"]
+    },
+    {
+      "id":"redis-outage",
+      "taskId":"30.06",
+      "services":["redis"],
+      "detect":["Redis health failure","cache/realtime-support errors"],
+      "contain":["degrade non-authoritative features","prevent retry storms","keep PostgreSQL authoritative"],
+      "recover":["restore provider binding/connectivity","verify PING/PONG and bounded retries","warm only safe projections"],
+      "verify":["Redis health passes","authoritative state unchanged","retries return within budget"],
+      "never":["block authoritative recovery on stale cache","treat Redis as auction truth"]
+    },
+    {
+      "id":"storage-provider-outage",
+      "taskId":"30.07",
+      "services":["object-storage"],
+      "detect":["upload/download provider errors","signed URL failures","provider health incident"],
+      "contain":["pause affected upload flows","preserve metadata/provenance","avoid orphan creation"],
+      "recover":["restore provider access","reconcile object metadata","resume bounded queued uploads"],
+      "verify":["sample authorized objects round-trip","orphan check passes","private objects remain private"],
+      "never":["make private evidence public","delete unverified orphan candidates"]
+    },
+    {
+      "id":"data-corruption",
+      "taskId":"30.08",
+      "services":["postgresql","object-storage"],
+      "detect":["constraint/invariant violation","checksum/version mismatch","unexpected authoritative divergence"],
+      "contain":["freeze affected writes","isolate scope","preserve immutable evidence and logs","declare SEV-0 when authority may be affected"],
+      "recover":["identify last trustworthy state","restore/replay only from verified source","apply corrective migration or repair with audit"],
+      "verify":["constraints and invariants pass","affected entities reconstructed","independent review completed"],
+      "never":["overwrite evidence before capture","repair winner/bid history without audited reason"]
+    },
+    {
+      "id":"credential-compromise",
+      "taskId":"30.09",
+      "services":["identity","api","worker","observability"],
+      "detect":["secret exposure alert","unexpected privileged access","credential abuse signal"],
+      "contain":["revoke/disable suspected credential","restrict affected integration","preserve access evidence","declare security incident"],
+      "recover":["rotate credential","invalidate dependent sessions/tokens","update scoped secret stores","verify least privilege"],
+      "verify":["old credential rejected","new credential works only in intended scope","secret scan and access review pass"],
+      "never":["paste replacement secret into logs/issues/chat","delay revocation to preserve convenience"]
+    }
+  ],
+  "postmortemTemplate": {
+    "requiredSections":["summary","impact","severity","timeline","detection","root-cause","contributing-factors","response","recovery","what-went-well","what-went-poorly","corrective-actions","owners-and-dates","evidence-links"],
+    "blameless":true,
+    "authorityImpactQuestionRequired":true,
+    "customerDataImpactQuestionRequired":true
+  },
+  "changeProcedure": {
+    "normalMaintenance":["ticket/change-id","owner","scope","risk","test evidence","rollback plan","approval","execution window","post-change verification"],
+    "emergencyChange":["incident-id","incident-commander approval","smallest reversible change","before/after evidence","rollback trigger","post-incident review"],
+    "productionApprovalGateMustRemainEnforced":true,
+    "emergencyDoesNotAuthorizeSecurityBypass":true,
+    "emergencyDoesNotAuthorizeDestructiveUnreviewedDataRepair":true
+  },
+  "operationalReview": {
+    "completed":true,
+    "reviewDate":"2026-09-25",
+    "launchApproved":false,
+    "knownBlockers":[
+      "01.06 production Redis/Valkey binding not verified",
+      "29.08 authoritative backup retention alignment not verified",
+      "production authoritative database/provider readiness remains incomplete",
+      "object-storage provider binding remains incomplete",
+      "real Android Chrome and iOS Safari release evidence remains final-acceptance work",
+      "branch-protection/required-check provider settings remain externally unverified where connector access is insufficient"
+    ],
+    "reviewConclusion":"Operational runbooks and ownership model are implemented, but production launch remains fail-closed until outstanding provider/security/final-acceptance blockers are resolved."
+  },
+  "greenRules": {
+    "all14TasksRegistered":true,
+    "everyOutageClassHasDetectContainRecoverVerifyNever":true,
+    "authorityCorrectnessPrecedesAvailability":true,
+    "credentialCompromiseForcesRevocationAndRotation":true,
+    "severityModelHasSEV0ThroughSEV3":true,
+    "singleIncidentCommander":true,
+    "postmortemTemplateIsBlamelessAndActionable":true,
+    "emergencyChangesRemainAuditableAndReversible":true,
+    "reviewCompletionDoesNotEqualLaunchApproval":true
+  }
+}
