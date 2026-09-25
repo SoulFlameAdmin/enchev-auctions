@@ -166,7 +166,9 @@
     "verify:capacity-model": "node scripts/verify-capacity-model.mjs",
     "verify:capacity-model:self-test": "node scripts/verify-capacity-model.mjs --self-test",
     "verify:graceful-degradation": "node scripts/verify-graceful-degradation.mjs",
-    "verify:graceful-degradation:self-test": "node scripts/verify-graceful-degradation.mjs --self-test"
+    "verify:graceful-degradation:self-test": "node scripts/verify-graceful-degradation.mjs --self-test",
+    "verify:load-shedding": "node scripts/verify-load-shedding.mjs",
+    "verify:load-shedding:self-test": "node scripts/verify-load-shedding.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
