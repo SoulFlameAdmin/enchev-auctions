@@ -87,14 +87,20 @@ async function verifyDP204AppShell(call,viewport){
     if(before.desktopDisplay!=="none")fail(`DP2-04 ${viewport.name} desktop nav must be hidden`);
     if(before.menuDisplay==="none"||before.menu.width<44||before.menu.height<44)fail(`DP2-04 ${viewport.name} menu trigger is not visible/touch sized`);
     await call("Runtime.evaluate",{expression:"document.querySelector('.eaAppMenuButton')?.click()"});
-    await sleep(120);
-    const open=await read();
+    let open=await read();
+    for(let attempt=0;attempt<20&&(open.shellOpen!=="true"||open.expanded!=="true"||open.layerVisibility!=="visible"||!String(open.focusedClass).includes("eaAppMobileClose"));attempt++){
+      await sleep(50);
+      open=await read();
+    }
     if(open.shellOpen!=="true"||open.expanded!=="true"||open.layerVisibility!=="visible")fail(`DP2-04 ${viewport.name} mobile drawer did not open`);
     if(open.drawer.left<0||open.drawer.right>open.viewportWidth+3||open.drawer.width<280)fail(`DP2-04 ${viewport.name} drawer escapes viewport`);
     if(!String(open.focusedClass).includes("eaAppMobileClose"))fail(`DP2-04 ${viewport.name} drawer close control did not receive focus`);
     await call("Runtime.evaluate",{expression:"window.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape'}))"});
-    await sleep(100);
-    const closed=await read();
+    let closed=await read();
+    for(let attempt=0;attempt<20&&(closed.shellOpen!=="false"||closed.expanded!=="false");attempt++){
+      await sleep(50);
+      closed=await read();
+    }
     if(closed.shellOpen!=="false"||closed.expanded!=="false")fail(`DP2-04 ${viewport.name} Escape did not close drawer`);
   }else{
     if(before.desktopDisplay==="none")fail(`DP2-04 ${viewport.name} desktop nav missing`);
