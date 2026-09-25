@@ -168,7 +168,9 @@
     "verify:graceful-degradation": "node scripts/verify-graceful-degradation.mjs",
     "verify:graceful-degradation:self-test": "node scripts/verify-graceful-degradation.mjs --self-test",
     "verify:load-shedding": "node scripts/verify-load-shedding.mjs",
-    "verify:load-shedding:self-test": "node scripts/verify-load-shedding.mjs --self-test"
+    "verify:load-shedding:self-test": "node scripts/verify-load-shedding.mjs --self-test",
+    "verify:scaling-runbook": "node scripts/verify-scaling-runbook.mjs",
+    "verify:scaling-runbook:self-test": "node scripts/verify-scaling-runbook.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
