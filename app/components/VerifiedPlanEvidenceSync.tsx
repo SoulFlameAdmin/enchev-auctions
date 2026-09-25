@@ -96,6 +96,7 @@ const VERIFIED_WAVE_0: Record<string, string> = {
   "27.10": "docs/27_10_RETRY_BUDGETS.md · implementation PR #257 merged at f9df9c0d8d451289b1bfc69fb00c977d792615ea · exact-head Verify Enchev Web 36046694678 SUCCESS · Vercel dpl_w1i1935HEbJi2PCqWQsTQ8o7nZ7t READY · GREEN evidence verified",
   "27.11": "docs/27_11_CAPACITY_MODEL.md · implementation PR #259 merged at bd6c54de3c235a50d44fb2289d48c47f40c5ad4d · exact-head Verify Enchev Web 36108334640 SUCCESS · Vercel dpl_CCq51LXubDWVGQKyt21z5pUyt1e5 READY · evidence PR #260 merged at 2ef0d51b72512c914375cafa2cb01986842d5443 · GREEN evidence verified",
   "27.12": "docs/27_12_GRACEFUL_DEGRADATION_RULES.md · implementation PR #262 merged at ea05bb9b0f143b4d57bc58b0822e54b433f61fb5 · exact-head Verify Enchev Web 36109605849 SUCCESS · Vercel dpl_HfW4WCRT8pvC3ALStq6j5pABz5Au READY · GREEN evidence verified",
+  "27.13": "docs/27_13_LOAD_SHEDDING_RULES.md · implementation PR #264 merged at 78c0bc6edc909daa96afc5997158a10b28f52535 · exact-head Verify Enchev Web 36114414224 SUCCESS · Vercel dpl_5CmYQDaSBsHza8T6nL459Kg5T4bJ READY · GREEN evidence verified",
 
 };
 
