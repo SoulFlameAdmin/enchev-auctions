@@ -39,6 +39,7 @@ const cases = [
   ["scripts/verify-international-expansion-validation.mjs", "--self-test"],
   ["scripts/verify-international-expansion-validation-31-06-10.mjs", "--self-test"],
   ["scripts/verify-phase31-11-to-32-03.mjs", "--self-test"],
+  ["scripts/verify-phase32-completion.mjs", "--self-test"],
   ["scripts/verify-cross-browser-visual-contract.mjs", "--self-test"],
   ["scripts/capture-visual-regression.mjs", "--self-test"],
   ["scripts/verify-enchev-final-consistency.mjs", "--self-test"],

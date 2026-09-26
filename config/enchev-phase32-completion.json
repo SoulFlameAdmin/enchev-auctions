@@ -1,0 +1,59 @@
+{
+  "phaseId": "32",
+  "phaseName": "Master plan governance",
+  "scope": "32.04-32.10",
+  "tasks": [
+    {
+      "id": "32.04",
+      "name": "GREEN requires passing test where applicable",
+      "verifier": "scripts/verify-green-requires-passing-test.mjs"
+    },
+    {
+      "id": "32.05",
+      "name": "YELLOW = partial/error/pending verification",
+      "verifier": "scripts/verify-yellow-semantics.mjs"
+    },
+    {
+      "id": "32.06",
+      "name": "RED = not implemented",
+      "verifier": "scripts/verify-red-semantics.mjs"
+    },
+    {
+      "id": "32.07",
+      "name": "New discoveries use append-only GAP IDs",
+      "verifier": "scripts/verify-gap-append-only.mjs"
+    },
+    {
+      "id": "32.08",
+      "name": "Status history/audit trail",
+      "verifier": "scripts/verify-status-audit-trail.mjs"
+    },
+    {
+      "id": "32.09",
+      "name": "Cloud realtime status store",
+      "verifier": "scripts/verify-cloud-plan-state.mjs"
+    },
+    {
+      "id": "32.10",
+      "name": "Plan version displayed in UI",
+      "verifier": "scripts/verify-plan-version-ui.mjs"
+    }
+  ],
+  "requirements": {
+    "runInvariant": true,
+    "runNegativeSelfTests": true,
+    "preserveCanonicalImplementations": true,
+    "addParallelGovernanceImplementation": false,
+    "productionActivationUnchanged": true
+  },
+  "expected": {
+    "planVersion": "1.0 FROZEN",
+    "minimumFrozenAndExpansionTestTasks": 236,
+    "auditSequenceMonotonic": true,
+    "gapFirstPostAuditId": "GAP-095",
+    "greenNeedsPassForTestTasks": true,
+    "yellowMeans": "partial/error/pending verification",
+    "redMeans": "not implemented",
+    "cloudRealtimeUsesSse": true
+  }
+}
