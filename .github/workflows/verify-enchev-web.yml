@@ -377,6 +377,10 @@ jobs:
         run: node scripts/verify-international-expansion-validation.mjs
       - name: Phase 31.01-31.05 international expansion validation self-tests
         run: node scripts/verify-international-expansion-validation.mjs --self-test
+      - name: Phase 31.06-31.10 international expansion validation
+        run: node scripts/verify-international-expansion-validation-31-06-10.mjs
+      - name: Phase 31.06-31.10 international expansion validation self-tests
+        run: node scripts/verify-international-expansion-validation-31-06-10.mjs --self-test
       - name: Cross-browser visual contract
         run: node scripts/verify-cross-browser-visual-contract.mjs
       - name: Cross-browser visual self-tests
