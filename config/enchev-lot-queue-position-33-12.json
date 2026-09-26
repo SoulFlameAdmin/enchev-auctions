@@ -1,0 +1,30 @@
+{
+  "scope": "33.12",
+  "tasks": [
+    {"id":"33.12","name":"Lot queue position / lots-away indicator"}
+  ],
+  "authority": {
+    "lotQueue": "postgresql",
+    "realtimeTransportAuthoritative": false,
+    "projectionMayChangeAuctionState": false,
+    "projectionMayAcceptBid": false,
+    "projectionMayChooseWinner": false
+  },
+  "semantics": {
+    "singleAuctionOnly": true,
+    "deterministicQueueOrdering": true,
+    "queueOrderMustBeUnique": true,
+    "liveLotPreferredAsCurrent": true,
+    "fallbackToFirstUpcomingWhenNoLiveLot": true,
+    "lotsAwayCountsActionableLotsAhead": true,
+    "closedTargetMarkedPassed": true,
+    "sequenceGapRequiresAuthoritativeResync": true
+  },
+  "limits": {
+    "maxQueueItems": 1000
+  },
+  "persistence": {
+    "newBusinessTableRequired": false,
+    "reason": "33.12 is a derived read-only projection over the authoritative PostgreSQL lot queue; governance Supabase must not duplicate auction business state"
+  }
+}
