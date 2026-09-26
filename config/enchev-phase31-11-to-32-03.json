@@ -1,0 +1,58 @@
+{
+  "scope": "31.11-32.03",
+  "tasks": [
+    {
+      "id": "31.11",
+      "name": "Third-language dry run"
+    },
+    {
+      "id": "31.12",
+      "name": "RTL dry run"
+    },
+    {
+      "id": "32.01",
+      "name": "Master task IDs immutable"
+    },
+    {
+      "id": "32.02",
+      "name": "No silent delete/renumber"
+    },
+    {
+      "id": "32.03",
+      "name": "GREEN requires evidence"
+    }
+  ],
+  "thirdLanguageDryRun": {
+    "baselineLocales": [
+      "bg-BG",
+      "en-US"
+    ],
+    "thirdLocale": "de-DE",
+    "localeMetadata": "locales/de.json",
+    "messageCatalog": "locales/messages/de-DE.json",
+    "translationRegistry": "locales/translation-keys.json",
+    "countryConfig": "config/enchev-country-2-dry-run.json",
+    "requireExactTranslationParity": true,
+    "requireIntlDateTime": true,
+    "requireIntlNumber": true,
+    "productionActivation": false
+  },
+  "rtlDryRun": {
+    "locale": "ar-EG",
+    "direction": "rtl",
+    "productionLocale": false,
+    "existingCapabilityVerifier": "scripts/verify-rtl-layout-capability.mjs",
+    "browserFixture": "/rtl-capability",
+    "requireLogicalCss": true
+  },
+  "governance": {
+    "masterIdVerifier": "scripts/verify-master-task-ids.mjs",
+    "greenEvidenceVerifier": "scripts/verify-green-requires-evidence.mjs",
+    "expectedFrozenTaskCount": 1054,
+    "expectedFrozenSha256": "b0fd3479cfef3d88148b906568aa8c1c88eccf5fa98fe676f13a5fec70aa721e",
+    "requireDeleteRejection": true,
+    "requireRenumberRejection": true,
+    "requireIdReuseRejection": true,
+    "requireNonEmptyGreenEvidence": true
+  }
+}
