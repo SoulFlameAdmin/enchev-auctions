@@ -409,6 +409,10 @@ jobs:
         run: node scripts/verify-duplicate-notification-suppression-33-14.mjs
       - name: Phase 33.14 duplicate notification suppression self-tests
         run: node scripts/verify-duplicate-notification-suppression-33-14.mjs --self-test
+      - name: Phase 33.15 watchlist authorization tests
+        run: node scripts/verify-watchlist-authorization-33-15.mjs
+      - name: Phase 33.15 watchlist authorization self-tests
+        run: node scripts/verify-watchlist-authorization-33-15.mjs --self-test
       - name: Cross-browser visual contract
         run: node scripts/verify-cross-browser-visual-contract.mjs
       - name: Cross-browser visual self-tests
