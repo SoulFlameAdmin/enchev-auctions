@@ -393,6 +393,10 @@ jobs:
         run: node scripts/verify-buyer-auction-workspace-33-06-10.mjs
       - name: Phase 33.06-33.10 buyer auction workspace self-tests
         run: node scripts/verify-buyer-auction-workspace-33-06-10.mjs --self-test
+      - name: Phase 33.11 starting-soon reminders
+        run: node scripts/verify-starting-soon-reminders-33-11.mjs
+      - name: Phase 33.11 starting-soon reminders self-tests
+        run: node scripts/verify-starting-soon-reminders-33-11.mjs --self-test
       - name: Cross-browser visual contract
         run: node scripts/verify-cross-browser-visual-contract.mjs
       - name: Cross-browser visual self-tests

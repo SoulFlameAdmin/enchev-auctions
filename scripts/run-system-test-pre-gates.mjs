@@ -33,7 +33,8 @@ const gates = [
   ["scripts/verify-capacity-model.mjs", "--self-test"],
   ["scripts/verify-graceful-degradation.mjs", "--self-test"],
   ["scripts/verify-load-shedding.mjs", "--self-test"],
-  ["scripts/verify-scaling-runbook.mjs", "--self-test"]
+  ["scripts/verify-scaling-runbook.mjs", "--self-test"],
+  ["scripts/verify-starting-soon-reminders-33-11.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of gates) {
