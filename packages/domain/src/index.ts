@@ -13,3 +13,4 @@ export type DomainPackageBoundary = Readonly<{
 }>;
 
 export * from "./data-lifecycle";
+export * from "./buyer-workspace";

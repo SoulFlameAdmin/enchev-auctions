@@ -1,0 +1,33 @@
+{
+  "scope": "33.01-33.05",
+  "tasks": [
+    {"id":"33.01","name":"Persistent watchlist / favorites"},
+    {"id":"33.02","name":"Recently viewed vehicles"},
+    {"id":"33.03","name":"Saved searches"},
+    {"id":"33.04","name":"Saved-search result alerts"},
+    {"id":"33.05","name":"My Auctions: Watching"}
+  ],
+  "persistence": {
+    "engine": "postgresql",
+    "migration": "supabase/migrations/20260926211000_buyer_workspace_foundation.sql",
+    "liveProjectUsage": "not-applied",
+    "reason": "bound Supabase project is development-governance only and auction_authority=false"
+  },
+  "limits": {
+    "recentlyViewedPerUser": 100,
+    "savedSearchNameMax": 120,
+    "savedSearchAlertCooldownSecondsMin": 60
+  },
+  "authorization": {
+    "rowOwnershipRequired": true,
+    "crossUserReadForbidden": true,
+    "crossUserWriteForbidden": true
+  },
+  "semantics": {
+    "watchlistUniquePerUserVehicle": true,
+    "recentViewUpsertByUserVehicle": true,
+    "savedSearchFingerprintDeduplicatesExactQuery": true,
+    "alertsReferenceOwnedSavedSearch": true,
+    "watchingAuctionsDerivedFromOwnedWatchlist": true
+  }
+}

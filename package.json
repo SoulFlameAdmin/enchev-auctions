@@ -182,7 +182,9 @@
     "verify:international-expansion-validation-31-06-10": "node scripts/verify-international-expansion-validation-31-06-10.mjs",
     "verify:international-expansion-validation-31-06-10:self-test": "node scripts/verify-international-expansion-validation-31-06-10.mjs --self-test",
     "verify:phase31-11-to-32-03": "node scripts/verify-phase31-11-to-32-03.mjs",
-    "verify:phase31-11-to-32-03:self-test": "node scripts/verify-phase31-11-to-32-03.mjs --self-test"
+    "verify:phase31-11-to-32-03:self-test": "node scripts/verify-phase31-11-to-32-03.mjs --self-test",
+    "verify:buyer-workspace-33-01-05": "node scripts/verify-buyer-workspace-33-01-05.mjs",
+    "verify:buyer-workspace-33-01-05:self-test": "node scripts/verify-buyer-workspace-33-01-05.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
