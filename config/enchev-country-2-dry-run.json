@@ -48,11 +48,11 @@
     "revision": 1,
     "requirements": [
       {
-        "key": "identity.government-document",
+        "key": "identity.government.document",
         "required": true
       },
       {
-        "key": "identity.identity-match",
+        "key": "identity.identity.match",
         "required": true
       }
     ]
@@ -62,7 +62,7 @@
     "revision": 1,
     "requirements": [
       {
-        "key": "notice.auction-terms",
+        "key": "notice.auction.terms",
         "required": true,
         "authorityRef": "dry-run.de.non-authoritative.auction-terms"
       },
@@ -83,7 +83,7 @@
         "required": true
       },
       {
-        "key": "document.purchase-record",
+        "key": "document.purchase.record",
         "subject": "transaction",
         "required": true
       }
