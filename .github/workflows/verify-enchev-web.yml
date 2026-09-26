@@ -397,6 +397,10 @@ jobs:
         run: node scripts/verify-starting-soon-reminders-33-11.mjs
       - name: Phase 33.11 starting-soon reminders self-tests
         run: node scripts/verify-starting-soon-reminders-33-11.mjs --self-test
+      - name: Phase 33.12 lot queue position
+        run: node scripts/verify-lot-queue-position-33-12.mjs
+      - name: Phase 33.12 lot queue position self-tests
+        run: node scripts/verify-lot-queue-position-33-12.mjs --self-test
       - name: Cross-browser visual contract
         run: node scripts/verify-cross-browser-visual-contract.mjs
       - name: Cross-browser visual self-tests
