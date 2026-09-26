@@ -1,0 +1,36 @@
+{
+  "scope": "33.06-33.10",
+  "tasks": [
+    {"id":"33.06","name":"My Auctions: Bidding"},
+    {"id":"33.07","name":"My Auctions: Leading"},
+    {"id":"33.08","name":"My Auctions: Ended"},
+    {"id":"33.09","name":"Realtime multi-auction action panel"},
+    {"id":"33.10","name":"Auction schedule / calendar"}
+  ],
+  "authority": {
+    "auctionState": "postgresql",
+    "acceptedBidState": "authoritative bid transaction projection",
+    "realtimeTransportAuthoritative": false,
+    "buyerWorkspaceMayChooseWinner": false,
+    "buyerWorkspaceMayAcceptBid": false
+  },
+  "semantics": {
+    "biddingRequiresOwnedAcceptedBid": true,
+    "biddingExcludesEndedAuctions": true,
+    "leadingRequiresCurrentAuthoritativeLeader": true,
+    "leadingExcludesEndedAuctions": true,
+    "endedRequiresAuthoritativeClosedState": true,
+    "realtimePanelIsProjectionOnly": true,
+    "sequenceGapRequiresResync": true,
+    "calendarSortedByScheduledStart": true,
+    "calendarRejectsInvalidIntervals": true
+  },
+  "limits": {
+    "realtimePanelMaxAuctions": 12,
+    "calendarMaxEntries": 500
+  },
+  "persistence": {
+    "newBusinessTableRequired": false,
+    "reason": "33.06-33.10 are derived buyer projections over authoritative auction/bid state; duplicating that state in governance Supabase is forbidden"
+  }
+}
