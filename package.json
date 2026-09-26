@@ -190,7 +190,9 @@
     "verify:starting-soon-reminders-33-11": "node scripts/verify-starting-soon-reminders-33-11.mjs",
     "verify:starting-soon-reminders-33-11:self-test": "node scripts/verify-starting-soon-reminders-33-11.mjs --self-test",
     "verify:lot-queue-position-33-12": "node scripts/verify-lot-queue-position-33-12.mjs",
-    "verify:lot-queue-position-33-12:self-test": "node scripts/verify-lot-queue-position-33-12.mjs --self-test"
+    "verify:lot-queue-position-33-12:self-test": "node scripts/verify-lot-queue-position-33-12.mjs --self-test",
+    "verify:cross-device-workspace-sync-33-13": "node scripts/verify-cross-device-workspace-sync-33-13.mjs",
+    "verify:cross-device-workspace-sync-33-13:self-test": "node scripts/verify-cross-device-workspace-sync-33-13.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
