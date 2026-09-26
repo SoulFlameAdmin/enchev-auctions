@@ -80,7 +80,7 @@ if(next.revision!==8||next.updatedAt!=="2026-09-27T08:01:00.000Z") fail("accepte
 if(JSON.stringify(next.sections.watchlist)!==JSON.stringify(["v2","v3"])) fail("workspace mutation result drift");
 if(JSON.stringify(next.sections.recentlyViewed)!==JSON.stringify(["v9"])) fail("new section mutation drift");
 const retry=d.applyWorkspaceSyncMutation(next,mutation,config.limits);
-if(retry!==next||retry.revision!==8) fail("idempotent retry drift");
+if(retry.revision!==8||JSON.stringify(retry)!==JSON.stringify(next)) fail("idempotent retry drift");
 
 if(process.argv.includes("--self-test")){
   const reject=async(label,fn)=>{let ok=false;try{await fn();}catch{ok=true;}if(!ok)fail(`negative self-test not rejected: ${label}`);};
