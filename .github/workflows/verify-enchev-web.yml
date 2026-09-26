@@ -405,6 +405,10 @@ jobs:
         run: node scripts/verify-cross-device-workspace-sync-33-13.mjs
       - name: Phase 33.13 cross-device workspace sync self-tests
         run: node scripts/verify-cross-device-workspace-sync-33-13.mjs --self-test
+      - name: Phase 33.14 duplicate notification suppression
+        run: node scripts/verify-duplicate-notification-suppression-33-14.mjs
+      - name: Phase 33.14 duplicate notification suppression self-tests
+        run: node scripts/verify-duplicate-notification-suppression-33-14.mjs --self-test
       - name: Cross-browser visual contract
         run: node scripts/verify-cross-browser-visual-contract.mjs
       - name: Cross-browser visual self-tests

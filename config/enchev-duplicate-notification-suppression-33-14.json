@@ -1,0 +1,33 @@
+{
+  "scope": "33.14",
+  "tasks": [
+    {"id":"33.14","name":"Duplicate notification suppression","kind":"test"}
+  ],
+  "authority": {
+    "deliveryLedger": "postgresql",
+    "governanceSupabaseAuthoritative": false,
+    "realtimeTransportAuthoritative": false,
+    "suppressionMayChangeAuctionState": false,
+    "suppressionMayAcceptBid": false,
+    "suppressionMayChooseWinner": false
+  },
+  "semantics": {
+    "userScoped": true,
+    "notificationKindScoped": true,
+    "dedupeKeyRequired": true,
+    "batchDuplicatesSuppressed": true,
+    "alreadyDeliveredSuppressed": true,
+    "sameKeyDifferentUserAllowed": true,
+    "sameKeyDifferentKindAllowed": true,
+    "expiredLedgerEntryIgnored": true,
+    "deterministicOrdering": true
+  },
+  "limits": {
+    "maxCandidates": 1000,
+    "maxLedgerEntries": 5000
+  },
+  "persistence": {
+    "newGovernanceBusinessTableRequired": false,
+    "reason": "33.14 verifies deterministic suppression logic; durable notification delivery/idempotency state remains PostgreSQL business state and must not be duplicated into governance Supabase"
+  }
+}
