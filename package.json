@@ -176,7 +176,9 @@
     "verify:data-lifecycle-privacy": "node scripts/verify-data-lifecycle-privacy.mjs",
     "verify:data-lifecycle-privacy:self-test": "node scripts/verify-data-lifecycle-privacy.mjs --self-test",
     "verify:operational-readiness": "node scripts/verify-operational-readiness.mjs",
-    "verify:operational-readiness:self-test": "node scripts/verify-operational-readiness.mjs --self-test"
+    "verify:operational-readiness:self-test": "node scripts/verify-operational-readiness.mjs --self-test",
+    "verify:international-expansion-validation": "node scripts/verify-international-expansion-validation.mjs",
+    "verify:international-expansion-validation:self-test": "node scripts/verify-international-expansion-validation.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",

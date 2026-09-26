@@ -36,6 +36,7 @@ const cases = [
   ["scripts/verify-accessibility-device-quality.mjs", "--self-test"],
   ["scripts/verify-data-lifecycle-privacy.mjs", "--self-test"],
   ["scripts/verify-operational-readiness.mjs", "--self-test"],
+  ["scripts/verify-international-expansion-validation.mjs", "--self-test"],
   ["scripts/verify-cross-browser-visual-contract.mjs", "--self-test"],
   ["scripts/capture-visual-regression.mjs", "--self-test"],
   ["scripts/verify-enchev-final-consistency.mjs", "--self-test"],
