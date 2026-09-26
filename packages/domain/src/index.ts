@@ -17,3 +17,4 @@ export * from "./buyer-workspace";
 export * from "./buyer-auction-workspace";
 export * from "./starting-soon-reminders";
 export * from "./lot-queue-position";
+export * from "./cross-device-workspace-sync";
