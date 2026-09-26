@@ -1,0 +1,34 @@
+{
+  "scope": "33.13",
+  "tasks": [
+    {"id":"33.13","name":"Cross-device workspace synchronization"}
+  ],
+  "authority": {
+    "workspaceState": "postgresql",
+    "deviceStateAuthoritative": false,
+    "realtimeTransportAuthoritative": false,
+    "syncMayChangeAuctionState": false,
+    "syncMayAcceptBid": false,
+    "syncMayChooseWinner": false
+  },
+  "semantics": {
+    "userScopedOnly": true,
+    "serverRevisionAuthoritative": true,
+    "optimisticConcurrencyRequired": true,
+    "staleRevisionRejected": true,
+    "mutationIdIdempotent": true,
+    "deterministicCanonicalOrdering": true,
+    "deviceIdIsAuditOnly": true,
+    "conflictRequiresAuthoritativeRefetch": true
+  },
+  "limits": {
+    "maxSections": 32,
+    "maxEntriesPerSection": 1000,
+    "maxAppliedMutationIds": 256,
+    "maxOperationsPerMutation": 500
+  },
+  "persistence": {
+    "newGovernanceBusinessTableRequired": false,
+    "reason": "33.13 defines the cross-device synchronization contract over PostgreSQL-authoritative buyer workspace state; governance Supabase is not auction/workspace business-state authority"
+  }
+}
