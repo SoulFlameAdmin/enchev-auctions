@@ -16,3 +16,4 @@ export * from "./data-lifecycle";
 export * from "./buyer-workspace";
 export * from "./buyer-auction-workspace";
 export * from "./starting-soon-reminders";
+export * from "./lot-queue-position";
