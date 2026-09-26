@@ -1,0 +1,31 @@
+{
+  "scope": "33.11",
+  "tasks": [
+    {"id":"33.11","name":"Starting-soon reminders"}
+  ],
+  "authority": {
+    "auctionSchedule": "postgresql",
+    "reminderProjectionAuthoritative": false,
+    "reminderMayChangeAuctionState": false,
+    "reminderMayAcceptBid": false,
+    "reminderMayChooseWinner": false
+  },
+  "semantics": {
+    "userScopedOnly": true,
+    "scheduledAuctionsOnly": true,
+    "futureAuctionsOnly": true,
+    "leadWindowInclusive": true,
+    "defaultLeadMinutes": 15,
+    "deterministicReminderKey": true,
+    "duplicateSuppressionOwnershipTask": "33.14",
+    "deliveryProviderOwnershipDeferred": true
+  },
+  "limits": {
+    "maxLeadMinutes": 1440,
+    "maxCandidates": 500
+  },
+  "persistence": {
+    "newBusinessTableRequired": false,
+    "reason": "33.11 defines deterministic reminder eligibility only; delivery/dedupe persistence is owned by later notification tasks and must not duplicate authoritative auction schedule state"
+  }
+}
