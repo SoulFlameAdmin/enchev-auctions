@@ -1,0 +1,28 @@
+{
+  "scope": "33.15",
+  "tasks": [
+    {"id":"33.15","name":"Watchlist authorization tests","kind":"security"}
+  ],
+  "authority": {
+    "watchlist": "postgresql",
+    "governanceSupabaseAuthoritative": false,
+    "authorizationEnforcedBy": ["postgresql-rls","domain-user-scope"],
+    "clientProvidedOwnershipTrusted": false
+  },
+  "security": {
+    "rlsRequired": true,
+    "ownerSelectOnly": true,
+    "ownerInsertOnly": true,
+    "ownerDeleteOnly": true,
+    "crossUserReadForbidden": true,
+    "crossUserInsertForbidden": true,
+    "crossUserDeleteForbidden": true,
+    "sameVehicleDifferentUsersIndependent": true,
+    "watchingProjectionUserScoped": true
+  },
+  "persistence": {
+    "migration": "supabase/migrations/20260926211000_buyer_workspace_foundation.sql",
+    "liveGovernanceProjectApply": false,
+    "reason": "the connected Supabase project is development-governance only and auction_authority=false; this security task validates the PostgreSQL migration contract without duplicating business state there"
+  }
+}
