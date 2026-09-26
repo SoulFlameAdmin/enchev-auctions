@@ -1,0 +1,174 @@
+{
+  "phaseId": "31",
+  "phaseName": "International expansion validation",
+  "scope": "31.01-31.05",
+  "dryRunOnly": true,
+  "marketActivationApproved": false,
+  "legalValidated": false,
+  "productionProvidersBound": false,
+  "realCustomerDataAllowed": false,
+  "tasks": [
+    {
+      "id": "31.01",
+      "name": "Country #2 configuration dry run"
+    },
+    {
+      "id": "31.02",
+      "name": "Country #2 locale package"
+    },
+    {
+      "id": "31.03",
+      "name": "Country #2 KYC/legal/document profiles"
+    },
+    {
+      "id": "31.04",
+      "name": "Country #2 provider routing"
+    },
+    {
+      "id": "31.05",
+      "name": "Country #2 data-residency check"
+    }
+  ],
+  "countryProfile": {
+    "countryCode": "DE",
+    "defaultLocale": "de-DE",
+    "supportedLocales": [
+      "de-DE",
+      "en-US"
+    ],
+    "timeZone": "Europe/Berlin"
+  },
+  "localePackage": {
+    "path": "locales/messages/de-DE.json",
+    "translationKeyRegistry": "locales/translation-keys.json",
+    "completeAgainstRegistry": true
+  },
+  "kycProfile": {
+    "countryCode": "DE",
+    "revision": 1,
+    "requirements": [
+      {
+        "key": "identity.government-document",
+        "required": true
+      },
+      {
+        "key": "identity.identity-match",
+        "required": true
+      }
+    ]
+  },
+  "legalProfile": {
+    "countryCode": "DE",
+    "revision": 1,
+    "requirements": [
+      {
+        "key": "notice.auction-terms",
+        "required": true,
+        "authorityRef": "dry-run.de.non-authoritative.auction-terms"
+      },
+      {
+        "key": "notice.privacy",
+        "required": true,
+        "authorityRef": "dry-run.de.non-authoritative.privacy"
+      }
+    ]
+  },
+  "documentProfile": {
+    "countryCode": "DE",
+    "revision": 1,
+    "documents": [
+      {
+        "key": "document.identity",
+        "subject": "participant",
+        "required": true
+      },
+      {
+        "key": "document.purchase-record",
+        "subject": "transaction",
+        "required": true
+      }
+    ]
+  },
+  "providerRoutes": [
+    {
+      "countryCode": "DE",
+      "capability": "documents",
+      "providerKey": "dry-run-storage",
+      "mode": "dry-run",
+      "enabled": true
+    },
+    {
+      "countryCode": "DE",
+      "capability": "identity",
+      "providerKey": "dry-run-identity",
+      "mode": "dry-run",
+      "enabled": true
+    },
+    {
+      "countryCode": "DE",
+      "capability": "notifications",
+      "providerKey": "dry-run-notifications",
+      "mode": "dry-run",
+      "enabled": true
+    },
+    {
+      "countryCode": "DE",
+      "capability": "transport",
+      "providerKey": "dry-run-transport",
+      "mode": "dry-run",
+      "enabled": true
+    }
+  ],
+  "residencyPolicy": {
+    "countryCode": "DE",
+    "allowedRegions": [
+      "eu-central-1",
+      "eu-west-1"
+    ],
+    "requireKnownRegionForCustomerData": true
+  },
+  "dataPlanes": [
+    {
+      "id": "development-governance-db",
+      "region": "eu-west-1",
+      "configured": true,
+      "customerData": false
+    },
+    {
+      "id": "object-storage",
+      "region": null,
+      "configured": false,
+      "customerData": true
+    },
+    {
+      "id": "production-authoritative-db",
+      "region": null,
+      "configured": false,
+      "customerData": true
+    },
+    {
+      "id": "runtime-compute",
+      "region": null,
+      "configured": true,
+      "customerData": true
+    },
+    {
+      "id": "runtime-observability",
+      "region": null,
+      "configured": true,
+      "customerData": true
+    }
+  ],
+  "expectedResidencyResult": {
+    "completed": true,
+    "approved": false,
+    "minimumBlockers": 4
+  },
+  "sourceContracts": [
+    "packages/config/src/country-profile.ts",
+    "packages/config/src/country-market-bundle.ts",
+    "packages/config/src/country-provider-routing.ts",
+    "packages/config/src/country-data-residency-check.ts",
+    "config/enchev-regional-data-residency-review.json"
+  ]
+}
