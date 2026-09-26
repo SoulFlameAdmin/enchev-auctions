@@ -22,6 +22,8 @@ export * from "./country-legal-profile";
 export * from "./country-document-profile";
 export * from "./market-activation-gate";
 export * from "./country-market-bundle";
+export * from "./country-provider-routing";
+export * from "./country-data-residency-check";
 export * from "./regional-cdn-strategy";
 export * from "./unicode-normalization";
 export * from "./locale-fallback-chain";
