@@ -1,0 +1,130 @@
+{
+  "phaseId": "31",
+  "phaseName": "International expansion validation",
+  "scope": "31.06-31.10",
+  "countryConfigSource": "config/enchev-country-2-dry-run.json",
+  "tasks": [
+    {
+      "id": "31.06",
+      "name": "Country #2 timezone/DST tests"
+    },
+    {
+      "id": "31.07",
+      "name": "Country #2 Unicode/search tests"
+    },
+    {
+      "id": "31.08",
+      "name": "Country activation feature flag"
+    },
+    {
+      "id": "31.09",
+      "name": "Country activation rollback test"
+    },
+    {
+      "id": "31.10",
+      "name": "No core-auction rewrite verification"
+    }
+  ],
+  "timezoneDst": {
+    "timeZone": "Europe/Berlin",
+    "locale": "de-DE",
+    "springForward": [
+      {
+        "instant": "2026-03-29T00:30:00Z",
+        "expectedOffsetMinutes": 60
+      },
+      {
+        "instant": "2026-03-29T01:30:00Z",
+        "expectedOffsetMinutes": 120
+      }
+    ],
+    "fallBack": [
+      {
+        "instant": "2026-10-25T00:30:00Z",
+        "expectedOffsetMinutes": 120
+      },
+      {
+        "instant": "2026-10-25T01:30:00Z",
+        "expectedOffsetMinutes": 60
+      }
+    ]
+  },
+  "unicodeSearch": {
+    "normalization": [
+      {
+        "input": "München",
+        "expected": "München"
+      },
+      {
+        "input": "Köln",
+        "expected": "Köln"
+      }
+    ],
+    "searchCases": [
+      {
+        "query": "munchen",
+        "text": [
+          "München"
+        ],
+        "identifiers": [],
+        "expected": true
+      },
+      {
+        "query": "koln",
+        "text": [
+          "Köln"
+        ],
+        "identifiers": [],
+        "expected": true
+      },
+      {
+        "query": "Audi",
+        "text": [
+          "Ауди A6"
+        ],
+        "identifiers": [],
+        "expected": true
+      },
+      {
+        "query": "WVWZZZ",
+        "text": [
+          "Volkswagen Golf"
+        ],
+        "identifiers": [
+          "WVWZZZ1JZXW000001"
+        ],
+        "expected": true
+      }
+    ]
+  },
+  "activationFeatureFlag": {
+    "countryCode": "DE",
+    "enabled": false,
+    "revision": 1
+  },
+  "rollback": {
+    "simulationOnly": true,
+    "enableForSyntheticGate": true,
+    "rollbackToEnabled": false,
+    "expectedActiveAfterEnable": true,
+    "expectedActiveAfterRollback": false
+  },
+  "noCoreRewrite": {
+    "existingInvariant": "scripts/verify-country-2-without-core-rewrite.mjs",
+    "forbiddenCountryTokens": [
+      "de-DE",
+      "Europe/Berlin",
+      "dry-run.de.non-authoritative"
+    ],
+    "protectedRoots": [
+      "apps/api",
+      "apps/realtime",
+      "apps/worker",
+      "packages/domain",
+      "packages/contracts"
+    ],
+    "expectedExistingInvariantPass": true
+  },
+  "dryRunOnly": true,
+  "marketActivationApproved": false
+}
