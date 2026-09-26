@@ -186,7 +186,9 @@
     "verify:buyer-workspace-33-01-05": "node scripts/verify-buyer-workspace-33-01-05.mjs",
     "verify:buyer-workspace-33-01-05:self-test": "node scripts/verify-buyer-workspace-33-01-05.mjs --self-test",
     "verify:buyer-auction-workspace-33-06-10": "node scripts/verify-buyer-auction-workspace-33-06-10.mjs",
-    "verify:buyer-auction-workspace-33-06-10:self-test": "node scripts/verify-buyer-auction-workspace-33-06-10.mjs --self-test"
+    "verify:buyer-auction-workspace-33-06-10:self-test": "node scripts/verify-buyer-auction-workspace-33-06-10.mjs --self-test",
+    "verify:starting-soon-reminders-33-11": "node scripts/verify-starting-soon-reminders-33-11.mjs",
+    "verify:starting-soon-reminders-33-11:self-test": "node scripts/verify-starting-soon-reminders-33-11.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
