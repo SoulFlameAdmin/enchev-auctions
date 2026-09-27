@@ -77,6 +77,15 @@ ${RELAY_MARKER}`;
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const hashText = (text) => createHash("sha256").update(String(text || "")).digest("hex");
+const canonicalPromptText = (text) => String(text || "")
+  .normalize("NFKC")
+  .replace(/\r\n?/g, "\n")
+  .replace(/\u00a0/g, " ")
+  .replace(/[ \t]+/g, " ")
+  .replace(/ *\n */g, "\n")
+  .replace(/\n{3,}/g, "\n\n")
+  .trim();
+const promptHash = (text) => hashText(canonicalPromptText(text));
 function cleanConversationUrl(url) {
   const m = String(url || "").match(/^https:\/\/chatgpt\.com\/c\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}(?=[/?#]|$)/i);
   return m ? m[0] : null;
@@ -307,6 +316,17 @@ async function latestUserText(page) {
   } catch { return ""; }
 }
 
+async function latestUserTurnId(page) {
+  if (!usable(page)) return null;
+  try {
+    const user = page.locator('[data-message-author-role="user"]').last();
+    if (!await user.count()) return null;
+    const article = user.locator('xpath=ancestor::article[@data-testid][1]');
+    if (!await article.count()) return null;
+    return await article.getAttribute("data-testid");
+  } catch { return null; }
+}
+
 async function messageCounts(page) {
   if (!usable(page)) return { user: 0, assistant: 0 };
   try {
@@ -316,8 +336,17 @@ async function messageCounts(page) {
   } catch { return { user: 0, assistant: 0 }; }
 }
 
-function promptAcceptedSignal(currentUserCount, baselineUserCount, latestUserHash, outgoingHash) {
-  return currentUserCount > baselineUserCount && Boolean(outgoingHash) && latestUserHash === outgoingHash;
+function promptAcceptedSignal(
+  currentUserCount,
+  baselineUserCount,
+  latestUserHash,
+  outgoingHash,
+  currentUserTurnId = null,
+  baselineUserTurnId = null
+) {
+  if (!outgoingHash || latestUserHash !== outgoingHash) return false;
+  if (currentUserCount > baselineUserCount) return true;
+  return Boolean(currentUserTurnId && baselineUserTurnId && currentUserTurnId !== baselineUserTurnId);
 }
 
 function sameTurnPromptPresent(latestUserHash, outgoingHash) {
@@ -683,7 +712,7 @@ async function waitPlatform(context, page, state, blocker) {
   return page;
 }
 
-async function waitForResponseStart(context, page, baselineHash, baselineUserCount, outgoingHash, state) {
+async function waitForResponseStart(context, page, baselineHash, baselineUserCount, baselineUserTurnId, outgoingHash, state) {
   const until = Date.now() + RESPONSE_START_TIMEOUT_MS;
   while (Date.now() < until) {
     page = await waitForSession(context, page, state);
@@ -702,8 +731,16 @@ async function waitForResponseStart(context, page, baselineHash, baselineUserCou
       return { started: true, acceptedOnly: false, page };
     }
     const counts = await messageCounts(page);
-    const latestUserHash = hashText(await latestUserText(page));
-    if (promptAcceptedSignal(counts.user, baselineUserCount, latestUserHash, outgoingHash)) {
+    const latestUserHash = promptHash(await latestUserText(page));
+    const latestUserTurnId = await latestUserTurnId(page);
+    if (promptAcceptedSignal(
+      counts.user,
+      baselineUserCount,
+      latestUserHash,
+      outgoingHash,
+      latestUserTurnId,
+      baselineUserTurnId
+    )) {
       state.watchdog = "prompt-accepted-waiting-response";
       saveState(state, "User turn accepted; waiting without duplicate resend");
       return { started: true, acceptedOnly: true, page };
@@ -716,12 +753,13 @@ async function waitForResponseStart(context, page, baselineHash, baselineUserCou
 async function sendWithRecovery(context, page, state, text, kind) {
   const baselineHash = hashText(await latestAssistantText(page));
   const baselineCounts = await messageCounts(page);
+  const baselineUserTurnId = await latestUserTurnId(page);
   const outgoingText = state.justRolledOver
     ? state.freshStartPending
       ? `AUTOMATIC FRESH RESTART HANDOFF: DAVID restarted cleanly into a new ChatGPT conversation. Reconstruct the exact current state from GitHub, MASTER SYSTEM PLAN and evidence, then continue from the next unfinished dependency-safe task. Do NOT restart completed work.\n\n${text}`
       : `AUTOMATIC CHAT ROLLOVER: The previous Enchev conversation reached its maximum length. Reconstruct the exact current state from GitHub, MASTER SYSTEM PLAN and evidence, then continue from the next unfinished dependency-safe task. Do NOT restart completed work.\n\n${text}`
     : text;
-  const outgoingHash = hashText(outgoingText);
+  const outgoingHash = promptHash(outgoingText);
 
   for (let attempt = 1; attempt <= MAX_RECOVERY_ATTEMPTS; attempt++) {
     page = await waitForSession(context, page, state);
@@ -733,8 +771,16 @@ async function sendWithRecovery(context, page, state, text, kind) {
     }
 
     const countsBeforeRetry = await messageCounts(page);
-    const latestUserHashBeforeRetry = hashText(await latestUserText(page));
-    if (promptAcceptedSignal(countsBeforeRetry.user, baselineCounts.user, latestUserHashBeforeRetry, outgoingHash)) {
+    const latestUserHashBeforeRetry = promptHash(await latestUserText(page));
+    const latestUserTurnIdBeforeRetry = await latestUserTurnId(page);
+    if (promptAcceptedSignal(
+      countsBeforeRetry.user,
+      baselineCounts.user,
+      latestUserHashBeforeRetry,
+      outgoingHash,
+      latestUserTurnIdBeforeRetry,
+      baselineUserTurnId
+    )) {
       state.watchdog = "prompt-already-accepted";
       state.recoveryAttempt = attempt - 1;
       saveState(state, "Prompt already exists as accepted user turn; suppressing duplicate resend");
@@ -767,7 +813,7 @@ async function sendWithRecovery(context, page, state, text, kind) {
     console.log(`[DAVID] Sending ${kind} attempt ${attempt}/${MAX_RECOVERY_ATTEMPTS}. rateMode=${permit.mode}`);
     await sendText(page, outgoingText);
     await markGlobalSendStarted("SYSTEM");
-    const started = await waitForResponseStart(context, page, baselineHash, baselineCounts.user, outgoingHash, state);
+    const started = await waitForResponseStart(context, page, baselineHash, baselineCounts.user, baselineUserTurnId, outgoingHash, state);
     page = started.page;
     syncActiveChatUrl(page, state);
     if (started.blocker) {
@@ -1113,16 +1159,18 @@ async function main() {
 }
 
 function runSelfTest() {
-  const outgoingHash = hashText("relay");
-  const otherHash = hashText("other");
-  if (!promptAcceptedSignal(4, 3, outgoingHash, outgoingHash)) throw new Error("ENCH_EV5 self-test: accepted user turn must suppress resend");
-  if (promptAcceptedSignal(3, 3, outgoingHash, outgoingHash)) throw new Error("ENCH_EV5 self-test: unchanged user count must not claim new acceptance");
-  if (promptAcceptedSignal(4, 3, otherHash, outgoingHash)) throw new Error("ENCH_EV5 self-test: different user text must not claim acceptance");
+  const outgoingHash = promptHash("relay");
+  const otherHash = promptHash("other");
+  if (!promptAcceptedSignal(4, 3, outgoingHash, outgoingHash, "conversation-turn-8", "conversation-turn-7")) throw new Error("ENCH_EV5 self-test: accepted user turn must suppress resend");
+  if (!promptAcceptedSignal(3, 3, outgoingHash, outgoingHash, "conversation-turn-8", "conversation-turn-7")) throw new Error("ENCH_EV5 self-test: changed turn identity must survive DOM count virtualization");
+  if (promptAcceptedSignal(3, 3, outgoingHash, outgoingHash, "conversation-turn-7", "conversation-turn-7")) throw new Error("ENCH_EV5 self-test: unchanged count and unchanged turn identity must not claim new acceptance");
+  if (promptAcceptedSignal(4, 3, otherHash, outgoingHash, "conversation-turn-8", "conversation-turn-7")) throw new Error("ENCH_EV5 self-test: different user text must not claim acceptance");
+  if (promptHash("A\r\nB\u00a0 C") !== promptHash("A\nB C")) throw new Error("ENCH_EV5 self-test: prompt canonicalization must absorb render-only whitespace differences");
   if (!sameTurnPromptPresent(outgoingHash, outgoingHash)) throw new Error("ENCH_EV5 self-test: same accepted turn must survive refresh recovery");
   if (sameTurnPromptPresent(otherHash, outgoingHash)) throw new Error("ENCH_EV5 self-test: different latest user turn must permit safe resend");
   if (!runPrompt.toString().includes("stalled-resend")) throw new Error("ENCH_EV5 self-test: stalled generation must trigger bounded resend");
   if (!runPrompt.toString().includes("stalled-refresh-resend")) throw new Error("ENCH_EV5 self-test: repeated stall must refresh before resend");
-  console.log("ENCHEV_V5_RESPONSE_WATCHDOG_SELF_TEST PASS accepted_turn=3 bounded_stall_resend=1 refresh_after_repeat=1");
+  console.log("ENCHEV_V5_RESPONSE_WATCHDOG_SELF_TEST PASS accepted_turn=5 turn_identity_virtualization=1 canonical_prompt_hash=1 bounded_stall_resend=1 refresh_after_repeat=1");
 }
 
 if (process.argv.includes("--self-test")) {
