@@ -1,4 +1,4 @@
-import { spawn } from "node:child_process";
+import { spawn, spawnSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import process from "node:process";
@@ -13,6 +13,7 @@ const APK = path.join(HERE, "auto-continue-david-apk-v1.mjs");
 const CONTROL = path.join(HERE, "auto-control-watchtower-v1.mjs");
 const INTERRUPT_GUARD = path.join(HERE, "connection-interruption-guard.mjs");
 const NODE = process.execPath;
+const REPO_ROOT = path.resolve(HERE, "..", "..");
 const children = new Map();
 const MONITOR_FILE = path.join(HERE, ".david-tab-monitor.json");
 const CONTROL_COMMAND_FILE = path.join(HERE, ".david-control-command.json");
@@ -207,6 +208,24 @@ function shutdown() {
     try { child.kill("SIGTERM"); } catch {}
   }
   setTimeout(() => process.exit(0), 1000);
+}
+
+function syncRepositoryFastForward() {
+  const git = process.env.DAVID_GIT_BIN || "git";
+  const result = spawnSync(git, ["-C", REPO_ROOT, "pull", "--ff-only"], {
+    encoding: "utf8",
+    timeout: 20000,
+    env: { ...process.env, GIT_TERMINAL_PROMPT: "0" }
+  });
+  const stdout = String(result.stdout || "").trim();
+  const stderr = String(result.stderr || "").trim();
+  if (result.error) {
+    return { ok: false, detail: `git pull error: ${result.error.message}` };
+  }
+  if (result.status !== 0) {
+    return { ok: false, detail: `git pull --ff-only exit=${result.status}: ${stderr || stdout || "no output"}` };
+  }
+  return { ok: true, detail: stdout || "Already up to date." };
 }
 
 function restartWorker(name, reason) {
@@ -430,10 +449,18 @@ async function executeRecoveryRequest(context) {
     return;
   }
 
+  let repoSync = null;
+  if (target === "SYSTEM") {
+    repoSync = syncRepositoryFastForward();
+    console.log(`[DUAL] FAST RECOVERY SYSTEM repo sync: ${repoSync.ok ? "PASS" : "SKIP"} ${repoSync.detail}`);
+  }
+
   await releaseWorkerLeases(target, "fast-recovery-restart").catch(() => {});
   restartWorker(target, `FAST RECOVERY: ${request.reason || "guard escalation"}`);
   result.ok = true;
-  result.detail = "affected worker restart requested";
+  result.detail = repoSync
+    ? `affected worker restart requested; repoSync=${repoSync.ok ? "ok" : "failed"}; ${repoSync.detail}`
+    : "affected worker restart requested";
   try { fs.writeFileSync(RECOVERY_RESULT_FILE, JSON.stringify(result, null, 2), "utf8"); } catch {}
   console.log(`[DUAL] FAST RECOVERY executed RESTART ${target}: ${request.reason || "guard escalation"}`);
 }
