@@ -38,7 +38,10 @@ const gates = [
   ["scripts/verify-lot-queue-position-33-12.mjs", "--self-test"],
   ["scripts/verify-cross-device-workspace-sync-33-13.mjs", "--self-test"],
   ["scripts/verify-duplicate-notification-suppression-33-14.mjs", "--self-test"],
-  ["scripts/verify-watchlist-authorization-33-15.mjs", "--self-test"]
+  ["scripts/verify-watchlist-authorization-33-15.mjs", "--self-test"],
+  ["scripts/verify-multi-auction-realtime-consistency-33-16.mjs", "--self-test"],
+  ["scripts/verify-inspection-intelligence-34.mjs", "--self-test"],
+  ["scripts/verify-seller-listing-foundation-35-01-06.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of gates) {

@@ -1,0 +1,42 @@
+{
+  "scope": "34.01-34.20",
+  "tasks": [
+    {"id":"34.01","name":"Structured inspection report schema","kind":"feature"},
+    {"id":"34.02","name":"Seller condition declaration","kind":"feature"},
+    {"id":"34.03","name":"Inspector identity + timestamp provenance","kind":"feature"},
+    {"id":"34.04","name":"Cold-start video","kind":"feature"},
+    {"id":"34.05","name":"Walk-around video","kind":"feature"},
+    {"id":"34.06","name":"Engine audio capture","kind":"feature"},
+    {"id":"34.07","name":"Undercarriage / underside media","kind":"feature"},
+    {"id":"34.08","name":"Interactive damage map","kind":"feature"},
+    {"id":"34.09","name":"OBD diagnostic-code capture","kind":"feature"},
+    {"id":"34.10","name":"Paint / repair measurement fields","kind":"feature"},
+    {"id":"34.11","name":"Tire condition fields","kind":"feature"},
+    {"id":"34.12","name":"Glass / lights / interior condition fields","kind":"feature"},
+    {"id":"34.13","name":"Inspection photo checklist","kind":"feature"},
+    {"id":"34.14","name":"Media ordering + required-angle validation","kind":"feature"},
+    {"id":"34.15","name":"Video transcoding / playback pipeline","kind":"feature"},
+    {"id":"34.16","name":"Inspection media integrity metadata","kind":"feature"},
+    {"id":"34.17","name":"Inspection report immutable versions","kind":"feature"},
+    {"id":"34.18","name":"Inspection moderation workflow","kind":"feature"},
+    {"id":"34.19","name":"AI damage suggestion is non-authoritative","kind":"ai"},
+    {"id":"34.20","name":"Inspection completeness tests","kind":"test"}
+  ],
+  "authority": {
+    "inspectionReport": "domain-record",
+    "aiDamageAuthoritative": false,
+    "governanceSupabaseAuthoritative": false
+  },
+  "requirements": {
+    "requiredMediaKinds": ["cold-start-video","walk-around-video","engine-audio","undercarriage-video"],
+    "requiredPhotoAngles": ["front","rear","interior"],
+    "minimumPaintMeasurements": 1,
+    "minimumTires": 4,
+    "requiredComponentGroups": ["glass","lights","interior"]
+  },
+  "pipeline": {
+    "transcodeVariants": [360,720],
+    "manifestRequiredForReady": true,
+    "codecExecutionProviderOutsideDomain": true
+  }
+}

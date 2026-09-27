@@ -1,0 +1,25 @@
+{
+  "scope": "33.16",
+  "tasks": [
+    {"id":"33.16","name":"Multi-auction realtime consistency test","kind":"test"}
+  ],
+  "authority": {
+    "auctionState": "postgresql",
+    "realtimeProjectionAuthoritative": false,
+    "governanceSupabaseAuthoritative": false
+  },
+  "semantics": {
+    "authenticatedUserScoped": true,
+    "perAuctionSequenceMonotonic": true,
+    "interleavedAuctionsIndependent": true,
+    "duplicateEventsIdempotent": true,
+    "sequenceGapMarksOnlyAffectedAuctionStale": true,
+    "bidRegressionRejected": true,
+    "closedAndCancelledBecomeEnded": true
+  },
+  "limits": {
+    "maxAuctions": 100,
+    "maxEvents": 1000,
+    "eventHistory": 128
+  }
+}
