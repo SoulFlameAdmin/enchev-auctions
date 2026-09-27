@@ -1,0 +1,32 @@
+{
+  "scope": "35.01-35.06",
+  "tasks": [
+    {"id":"35.01","name":"Seller listing wizard","kind":"feature"},
+    {"id":"35.02","name":"Draft autosave","kind":"feature"},
+    {"id":"35.03","name":"Required-field readiness checklist","kind":"feature"},
+    {"id":"35.04","name":"Required-media readiness checklist","kind":"feature"},
+    {"id":"35.05","name":"Seller preview before submit","kind":"feature"},
+    {"id":"35.06","name":"Vehicle public Q&A thread","kind":"feature"}
+  ],
+  "requirements": {
+    "vehicleFields": ["vin","make","model","year"],
+    "conditionFields": ["condition"],
+    "pricingFields": ["reservePriceCents"],
+    "requiredMediaKinds": ["exterior-photo","interior-photo","vin-photo"]
+  },
+  "autosave": {
+    "optimisticRevision": true,
+    "mutationIdIdempotent": true,
+    "crossSellerWriteForbidden": true,
+    "historyLimit": 256
+  },
+  "preview": {
+    "sellerIdentityExcluded": true,
+    "submitRequiresFieldsAndMediaReady": true
+  },
+  "qa": {
+    "publicPublishedOnly": true,
+    "maxBodyLength": 1000,
+    "defaultThreadLimit": 500
+  }
+}
