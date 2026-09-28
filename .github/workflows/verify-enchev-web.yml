@@ -413,6 +413,10 @@ jobs:
         run: node scripts/verify-watchlist-authorization-33-15.mjs
       - name: Phase 33.15 watchlist authorization self-tests
         run: node scripts/verify-watchlist-authorization-33-15.mjs --self-test
+      - name: Phase 37.01 vehicle activity timeline
+        run: node scripts/verify-vehicle-activity-timeline-37-01.mjs
+      - name: Phase 37.01 vehicle activity timeline self-tests
+        run: node scripts/verify-vehicle-activity-timeline-37-01.mjs --self-test
       - name: Cross-browser visual contract
         run: node scripts/verify-cross-browser-visual-contract.mjs
       - name: Cross-browser visual self-tests
