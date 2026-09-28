@@ -349,7 +349,9 @@ async function verifyD27BidFeedback(call,viewport){
 
   let previousPrice=Number((initial.priceText.match(/[0-9\s]+/)?.[0]||"0").replace(/\s/g,""));
   for(const [feedbackState,label,delta] of expected){
-    await call("Runtime.evaluate",{expression:"document.querySelector('.liveBidButton')?.click()"});
+    await call("Runtime.evaluate",{expression:"document.querySelector('.proLiveBidDock button')?.click()"});
+    await sleep(60);
+    await call("Runtime.evaluate",{expression:"document.querySelector('.proLiveBidDock button')?.click()"});
     let state=null;
     for(let attempt=0;attempt<30;attempt++){
       await sleep(80);
