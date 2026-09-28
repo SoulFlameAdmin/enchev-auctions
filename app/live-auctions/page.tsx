@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./live-auctions.css";
 import "./live-d24.css";
+import ProfessionalLiveAuctionUx from "./ProfessionalLiveAuctionUx";
 
 const LOT_SECONDS=10;
 const RESYNC_INTERVAL_MS=3000;
@@ -39,6 +40,7 @@ export default function LiveAuctionsPage(){
   const [bidFeedback,setBidFeedback]=useState<BidFeedback|null>(null);
   const [connectionState,setConnectionState]=useState<ConnectionState>("syncing");
   const [connectionAgeSeconds,setConnectionAgeSeconds]=useState(0);
+  const [lastRttMs,setLastRttMs]=useState<number|null>(null);
 
   const deadlineRef=useRef<number|null>(null);
   const serverOffsetRef=useRef(0);
@@ -67,6 +69,7 @@ export default function LiveAuctionsPage(){
 
     const midpoint=sentAt+(receivedAt-sentAt)/2;
     const offset=data.serverNow-midpoint;
+    setLastRttMs(receivedAt-sentAt);
     const previousIndex=activeRef.current;
     const hadServerState=lastServerNowRef.current>0;
 
@@ -151,6 +154,13 @@ export default function LiveAuctionsPage(){
   const sold=useMemo(()=>lots.filter((_,i)=>i<active),[active]);
   const price=prices[current.lot]??current.price;
   const bid=async()=>{
+    if(connectionState!=="connected")return;
+    const TAB_LEASE_KEY="enchev-live-auction-active-tab-v1";
+    try{
+      const lease=JSON.parse(localStorage.getItem(TAB_LEASE_KEY)??"null") as {tabId?:string;heartbeat?:number}|null;
+      const mine=sessionStorage.getItem("enchev-live-tab-id");
+      if(lease?.tabId&&mine&&lease.tabId!==mine&&typeof lease.heartbeat==="number"&&Date.now()-lease.heartbeat<5000)return;
+    }catch{return;}
     const bidLot=current;
     const sentAt=Date.now();
     try{
@@ -207,6 +217,19 @@ export default function LiveAuctionsPage(){
       </div>
     </section>
 
+    <ProfessionalLiveAuctionUx
+      lots={lots}
+      active={active}
+      remaining={remaining}
+      prices={prices}
+      bidFeedback={bidFeedback}
+      connectionState={connectionState}
+      connectionAgeSeconds={connectionAgeSeconds}
+      lastRttMs={lastRttMs}
+      onBid={bid}
+      onResync={syncClock}
+    />
+
     <section className="liveStage" data-design-task="D24" data-auto-advance-task="D26" aria-label="Live auction room: текущ и следващ лот">
       <div className="liveVisual" data-live-slot="current" data-lot-id={current.lot} aria-labelledby="live-current-lot-title">
         <img src={current.image} alt={current.title}/>
@@ -232,7 +255,7 @@ export default function LiveAuctionsPage(){
           <b>{bidFeedback==="accepted"?"ОФЕРТАТА Е ПРИЕТА":bidFeedback==="leading"?"ВОДИШ В ТЪРГА":bidFeedback==="outbid"?"НАДДАВАН СИ":bidFeedback==="rejected"?"ОФЕРТАТА Е ОТХВЪРЛЕНА":"ГОТОВ ЗА ОФЕРТА"}</b>
           <span>{bidFeedback==="accepted"?"Server demo прие офертата.":bidFeedback==="leading"?"Server demo потвърди водеща позиция.":bidFeedback==="outbid"?"Server demo отчете по-висока конкурентна оферта.":bidFeedback==="rejected"?"Server demo отхвърли офертата без промяна на цената.":"Резултатът от demo офертата идва от server session state."}</span>
         </div>
-        <button className="liveBidButton" onClick={()=>void bid()}>Оферирай +€100 <span>→</span></button>
+        <button className="liveBidButton" type="button" onClick={()=>document.querySelector(".proLiveBidDock")?.scrollIntoView({behavior:"smooth",block:"center"})}>PRO BIDDER контрол <span>↑</span></button>
         <a className="liveLotLink" href={`/lot/${current.lot}`}>Отвори детайлите на лота</a>
 
         <section className="liveNextPreview" data-live-slot="next" data-lot-id={next.lot} aria-labelledby="live-next-lot-title">
