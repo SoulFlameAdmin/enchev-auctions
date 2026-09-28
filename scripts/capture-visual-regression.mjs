@@ -201,6 +201,12 @@ async function verifyD24LiveRoom(call,viewport){
 
 
 async function verifyD25ServerClock(call,viewport){
+  // Each viewport is a fresh single-tab test. Clear any active-tab lease left by the
+  // previously closed CDP target so Phase 36 multi-tab safety does not couple tests.
+  await call("Runtime.evaluate",{expression:"localStorage.removeItem('enchev-live-auction-active-tab-v1');sessionStorage.removeItem('enchev-live-tab-id')"});
+  await call("Page.reload",{ignoreCache:true});
+  await sleep(250);
+
   const read=async()=>{
     const result=await call("Runtime.evaluate",{expression:`(()=>{const hero=document.querySelector('.liveHeroClock[data-design-task="D25"]');const ring=document.querySelector('.liveRing');const current=document.querySelector('.liveVisual[data-live-slot="current"]');const price=document.querySelector('.liveBidTop b');if(!hero||!ring||!current||!price)return null;const remaining=Number((hero.querySelector('b')?.textContent||'').split(':').pop());const bid=Number((price.textContent||'').replace(/\\D/g,''));return {mode:hero.getAttribute('data-clock-mode')||'',ringMode:ring.getAttribute('data-clock-mode')||'',authority:hero.getAttribute('data-auction-authority')||'',lotId:current.getAttribute('data-lot-id')||'',remaining,bid,viewportWidth:innerWidth,scrollWidth:document.documentElement.scrollWidth};})()`,returnByValue:true});
     return result?.result?.value;
