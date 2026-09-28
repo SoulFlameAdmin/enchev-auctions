@@ -198,7 +198,9 @@
     "verify:watchlist-authorization-33-15": "node scripts/verify-watchlist-authorization-33-15.mjs",
     "verify:watchlist-authorization-33-15:self-test": "node scripts/verify-watchlist-authorization-33-15.mjs --self-test",
     "verify:vehicle-activity-timeline-37-01": "node scripts/verify-vehicle-activity-timeline-37-01.mjs",
-    "verify:vehicle-activity-timeline-37-01:self-test": "node scripts/verify-vehicle-activity-timeline-37-01.mjs --self-test"
+    "verify:vehicle-activity-timeline-37-01:self-test": "node scripts/verify-vehicle-activity-timeline-37-01.mjs --self-test",
+    "verify:auction-rules-snapshot-37-02": "node scripts/verify-auction-rules-snapshot-37-02.mjs",
+    "verify:auction-rules-snapshot-37-02:self-test": "node scripts/verify-auction-rules-snapshot-37-02.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
