@@ -220,7 +220,7 @@ async function verifyD25ServerClock(call,viewport){
 
   let after=initial;
   for(let clickAttempt=0;clickAttempt<2&&after.bid===initial.bid;clickAttempt++){
-    await call("Runtime.evaluate",{expression:"document.querySelector('.liveBidButton')?.click()"});
+    await call("Runtime.evaluate",{expression:"document.querySelector('.proLiveBidDock button')?.click()"});
     for(let poll=0;poll<10;poll++){
       await sleep(100);
       after=await read();
