@@ -25,3 +25,4 @@ export * from "./inspection-intelligence";
 export * from "./seller-listing-foundation";
 export * from "./seller-workflow";
 export * from "./live-auction-ux";
+export * from "./auction-trust-record";
