@@ -1,0 +1,113 @@
+{
+  "phase": "36",
+  "title": "Professional live-auction UX",
+  "tasks": [
+    {
+      "id": "36.01",
+      "name": "Dedicated bidder focus mode",
+      "kind": "feature"
+    },
+    {
+      "id": "36.02",
+      "name": "Multi-lot live dashboard",
+      "kind": "feature"
+    },
+    {
+      "id": "36.03",
+      "name": "Current lot + next lot panel",
+      "kind": "feature"
+    },
+    {
+      "id": "36.04",
+      "name": "Queue / lane position",
+      "kind": "feature"
+    },
+    {
+      "id": "36.05",
+      "name": "Lots-away countdown",
+      "kind": "feature"
+    },
+    {
+      "id": "36.06",
+      "name": "Server-time sync indicator",
+      "kind": "feature"
+    },
+    {
+      "id": "36.07",
+      "name": "Network quality indicator",
+      "kind": "feature"
+    },
+    {
+      "id": "36.08",
+      "name": "Connection-loss banner",
+      "kind": "feature"
+    },
+    {
+      "id": "36.09",
+      "name": "Automatic reconnect progress",
+      "kind": "feature"
+    },
+    {
+      "id": "36.10",
+      "name": "Authoritative resync after reconnect",
+      "kind": "feature"
+    },
+    {
+      "id": "36.11",
+      "name": "Stale-state detection and hard refresh",
+      "kind": "feature"
+    },
+    {
+      "id": "36.12",
+      "name": "Bid action confirmation state",
+      "kind": "feature"
+    },
+    {
+      "id": "36.13",
+      "name": "Bid accepted / rejected reason UX",
+      "kind": "feature"
+    },
+    {
+      "id": "36.14",
+      "name": "Outbid realtime UX",
+      "kind": "feature"
+    },
+    {
+      "id": "36.15",
+      "name": "Late-extension realtime UX",
+      "kind": "feature"
+    },
+    {
+      "id": "36.16",
+      "name": "Multi-tab conflict handling",
+      "kind": "feature"
+    },
+    {
+      "id": "36.17",
+      "name": "Keyboard bidding controls",
+      "kind": "feature"
+    },
+    {
+      "id": "36.18",
+      "name": "Mobile live-room layout",
+      "kind": "feature"
+    },
+    {
+      "id": "36.19",
+      "name": "Accessible live announcements",
+      "kind": "test"
+    },
+    {
+      "id": "36.20",
+      "name": "Two-device same-account behavior test",
+      "kind": "test"
+    }
+  ],
+  "invariants": {
+    "authoritativeState": "server snapshot sequence never regresses",
+    "unsafeBidGuard": "bidding requires connected state and active tab ownership",
+    "stalePolicy": "stale state disables unsafe bid actions until authoritative resync",
+    "accessibility": "status changes use polite/assertive live announcements without color-only meaning",
+    "devicePolicy": "all same-account devices converge to the same authoritative snapshot sequence"
+  }
+}
