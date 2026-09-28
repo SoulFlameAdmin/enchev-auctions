@@ -1,0 +1,45 @@
+{
+  "scope": "35.07-35.18",
+  "tasks": [
+    {"id":"35.07","name":"Seller verified replies","kind":"feature"},
+    {"id":"35.08","name":"Additional media attached to answers","kind":"feature"},
+    {"id":"35.09","name":"Question moderation / abuse controls","kind":"security"},
+    {"id":"35.10","name":"Immutable Q&A timestamps","kind":"feature"},
+    {"id":"35.11","name":"Seller live-auction presence state","kind":"feature"},
+    {"id":"35.12","name":"Inspection / viewing request workflow","kind":"feature"},
+    {"id":"35.13","name":"Reserve-lowering workflow","kind":"feature"},
+    {"id":"35.14","name":"Reserve-not-met follow-up state","kind":"feature"},
+    {"id":"35.15","name":"Listing change history","kind":"feature"},
+    {"id":"35.16","name":"Republish/review after critical edit","kind":"feature"},
+    {"id":"35.17","name":"Seller response notification","kind":"feature"},
+    {"id":"35.18","name":"Seller workflow end-to-end test","kind":"test"}
+  ],
+  "qa": {
+    "replyMaxLength": 2000,
+    "answerMediaLimit": 10,
+    "maxLinksBeforeAbuseBlock": 2,
+    "timestampsImmutable": true
+  },
+  "presence": {
+    "monotonicSequenceRequired": true,
+    "timeRegressionForbidden": true
+  },
+  "viewing": {
+    "acceptedRequiresSchedule": true,
+    "terminalStates": ["declined","cancelled","completed"]
+  },
+  "reserve": {
+    "sellerScoped": true,
+    "lowerOnly": true,
+    "optimisticRevision": true,
+    "mutationIdIdempotent": true
+  },
+  "listingHistory": {
+    "monotonicSequenceRequired": true,
+    "criticalPublishedEditRequiresReview": true
+  },
+  "notification": {
+    "channels": ["in-app","email"],
+    "replyChannelDedupe": true
+  }
+}
