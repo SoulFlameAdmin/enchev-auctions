@@ -214,3 +214,44 @@ export function visibleAuctionRulesSnapshotAfterClose(
     closedAt,
   });
 }
+
+
+export type AuctionStartVehicleSnapshot = Readonly<{
+  snapshotId: string;
+  auctionId: string;
+  vehicleId: string;
+  sourceRevision: string;
+  sourceRef: string;
+  auctionStartedAt: string;
+  capturedAt: string;
+  vehicle: Readonly<Record<string, TrustRecordJson>>;
+}>;
+
+/**
+ * Captures the authoritative vehicle state exactly at auction start.
+ *
+ * The payload is copied and deeply frozen so later listing/vehicle edits cannot
+ * mutate the historical auction-start record. This function does not invent
+ * vehicle fields; callers supply the authoritative source payload and revision.
+ */
+export function createImmutableAuctionStartVehicleSnapshot(
+  input: AuctionStartVehicleSnapshot,
+): AuctionStartVehicleSnapshot {
+  assertNonBlank(input.snapshotId, "snapshotId");
+  assertNonBlank(input.auctionId, "auctionId");
+  assertNonBlank(input.vehicleId, "vehicleId");
+  assertNonBlank(input.sourceRevision, "sourceRevision");
+  assertNonBlank(input.sourceRef, "sourceRef");
+  assertUtcIso(input.auctionStartedAt);
+  assertUtcIso(input.capturedAt);
+  if (input.capturedAt !== input.auctionStartedAt) {
+    throw new Error("auction-start vehicle snapshot must be captured exactly at auctionStartedAt");
+  }
+  assertJsonValue(input.vehicle, "vehicle");
+
+  const vehicle = cloneAndFreezeJson(input.vehicle) as Readonly<Record<string, TrustRecordJson>>;
+  return Object.freeze({
+    ...input,
+    vehicle,
+  });
+}
