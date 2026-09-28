@@ -1253,9 +1253,14 @@ function runSelfTest() {
   if (promptHash("A\r\nB\u00a0 C") !== promptHash("A\nB C")) throw new Error("ENCH_EV5 self-test: prompt canonicalization must absorb render-only whitespace differences");
   if (!sameTurnPromptPresent(outgoingHash, outgoingHash)) throw new Error("ENCH_EV5 self-test: same accepted turn must survive refresh recovery");
   if (sameTurnPromptPresent(otherHash, outgoingHash)) throw new Error("ENCH_EV5 self-test: different latest user turn must permit safe resend");
-  if (!runPrompt.toString().includes("stalled-resend")) throw new Error("ENCH_EV5 self-test: stalled generation must trigger bounded resend");
+  if (!waitForCompletion.toString().includes("gpt-active-no-progress")) throw new Error("ENCH_EV5 self-test: active no-progress must remain WAIT telemetry");
+  if (waitForCompletion.toString().includes("GPT generation stalled without text progress")) throw new Error("ENCH_EV5 self-test: active generation must never be converted into a stall recovery");
+  if (!runPrompt.toString().includes("stalled-resend")) throw new Error("ENCH_EV5 self-test: inactive stalled response must retain bounded recovery");
   if (!runPrompt.toString().includes("stalled-refresh-resend")) throw new Error("ENCH_EV5 self-test: repeated stall must refresh before resend");
-  console.log("ENCHEV_V5_RESPONSE_WATCHDOG_SELF_TEST PASS accepted_turn=5 turn_identity_virtualization=1 canonical_prompt_hash=1 bounded_stall_resend=1 refresh_after_repeat=1");
+  if (!semanticTerminalCandidate("Implementation completed successfully. Tests PASS. Evidence commit abc123 is recorded.")) throw new Error("ENCH_EV5 self-test: proven stable completion should allow semantic terminal fallback");
+  if (semanticTerminalCandidate("CI is still running and pending. Please wait for the workflow.")) throw new Error("ENCH_EV5 self-test: pending work must not be terminal");
+  if (semanticTerminalCandidate("Please log in and approve MFA before I can continue.")) throw new Error("ENCH_EV5 self-test: human gate must not auto-continue");
+  console.log("ENCHEV_V5_RESPONSE_WATCHDOG_SELF_TEST PASS accepted_turn=5 turn_identity_virtualization=1 canonical_prompt_hash=1 bounded_stall_resend=1 refresh_after_repeat=1 semantic_terminal=3 active_wait=2");
 }
 
 if (process.argv.includes("--self-test")) {
