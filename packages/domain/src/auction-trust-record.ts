@@ -214,3 +214,60 @@ export function visibleAuctionRulesSnapshotAfterClose(
     closedAt,
   });
 }
+
+
+
+export type VehicleTrustSnapshot = Readonly<{
+  snapshotId: string;
+  auctionId: string;
+  vehicleId: string;
+  sourceRevision: string;
+  sourceRef: string;
+  capturedAt: string;
+  vehicle: Readonly<Record<string, TrustRecordJson>>;
+}>;
+
+export type VisibleVehicleSnapshot = VehicleTrustSnapshot & Readonly<{
+  visibleAfterClose: true;
+  closedAt: string;
+}>;
+
+/**
+ * Exposes an immutable authoritative vehicle snapshot only after auction close.
+ *
+ * The function never invents vehicle fields. It validates provenance and
+ * chronology, deep-clones/freezes the supplied authoritative payload, and
+ * withholds it until a post-close lifecycle state exists.
+ */
+export function visibleVehicleSnapshotAfterClose(
+  snapshot: VehicleTrustSnapshot,
+  lifecycleState: AuctionLifecycleForTrustRecord,
+  closedAt: string | null,
+): VisibleVehicleSnapshot | null {
+  assertNonBlank(snapshot.snapshotId, "snapshotId");
+  assertNonBlank(snapshot.auctionId, "auctionId");
+  assertNonBlank(snapshot.vehicleId, "vehicleId");
+  assertNonBlank(snapshot.sourceRevision, "sourceRevision");
+  assertNonBlank(snapshot.sourceRef, "sourceRef");
+  assertUtcIso(snapshot.capturedAt);
+  assertJsonValue(snapshot.vehicle, "vehicle");
+
+  if (!isPostCloseState(lifecycleState)) {
+    if (closedAt !== null) throw new Error("closedAt must be null before auction close");
+    return null;
+  }
+
+  if (closedAt === null) throw new Error("closedAt is required after auction close");
+  assertUtcIso(closedAt);
+  if (Date.parse(snapshot.capturedAt) > Date.parse(closedAt)) {
+    throw new Error("vehicle snapshot cannot be captured after close");
+  }
+
+  const vehicle = cloneAndFreezeJson(snapshot.vehicle) as Readonly<Record<string, TrustRecordJson>>;
+  return Object.freeze({
+    ...snapshot,
+    vehicle,
+    visibleAfterClose: true,
+    closedAt,
+  });
+}
