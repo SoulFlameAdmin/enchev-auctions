@@ -102,3 +102,115 @@ export function buildVehicleActivityTimeline(
     ),
   );
 }
+
+
+export type TrustRecordJson =
+  | null
+  | boolean
+  | number
+  | string
+  | readonly TrustRecordJson[]
+  | Readonly<{ [key: string]: TrustRecordJson }>;
+
+export type AuctionRulesSnapshot = Readonly<{
+  snapshotId: string;
+  auctionId: string;
+  rulesVersion: string;
+  capturedAt: string;
+  sourceRef: string;
+  rules: Readonly<Record<string, TrustRecordJson>>;
+}>;
+
+export type AuctionLifecycleForTrustRecord =
+  | "draft"
+  | "published"
+  | "live"
+  | "closed"
+  | "sold"
+  | "unsold"
+  | "void"
+  | "seller-approval-pending";
+
+export type VisibleAuctionRulesSnapshot = AuctionRulesSnapshot & Readonly<{
+  visibleAfterClose: true;
+  closedAt: string;
+}>;
+
+function isPostCloseState(state: AuctionLifecycleForTrustRecord): boolean {
+  return state === "closed"
+    || state === "sold"
+    || state === "unsold"
+    || state === "void"
+    || state === "seller-approval-pending";
+}
+
+function assertJsonValue(value: unknown, path: string): asserts value is TrustRecordJson {
+  if (value === null || typeof value === "string" || typeof value === "boolean") return;
+  if (typeof value === "number") {
+    if (!Number.isFinite(value)) throw new Error(`${path} must contain only finite JSON numbers`);
+    return;
+  }
+  if (Array.isArray(value)) {
+    value.forEach((item, index) => assertJsonValue(item, `${path}[${index}]`));
+    return;
+  }
+  if (typeof value === "object" && value) {
+    for (const [key, item] of Object.entries(value)) {
+      assertNonBlank(key, `${path} key`);
+      assertJsonValue(item, `${path}.${key}`);
+    }
+    return;
+  }
+  throw new Error(`${path} must be JSON-safe`);
+}
+
+function cloneAndFreezeJson(value: TrustRecordJson): TrustRecordJson {
+  if (Array.isArray(value)) {
+    return Object.freeze(value.map((item) => cloneAndFreezeJson(item)));
+  }
+  if (value && typeof value === "object") {
+    const clone: Record<string, TrustRecordJson> = {};
+    for (const [key, item] of Object.entries(value)) clone[key] = cloneAndFreezeJson(item);
+    return Object.freeze(clone);
+  }
+  return value;
+}
+
+/**
+ * Exposes the exact versioned auction-rules snapshot only after auction close.
+ *
+ * The function does not author rules. It accepts a provenance-bearing snapshot
+ * captured by the authoritative auction configuration path and returns a
+ * read-only view after a terminal/post-close state is reached.
+ */
+export function visibleAuctionRulesSnapshotAfterClose(
+  snapshot: AuctionRulesSnapshot,
+  lifecycleState: AuctionLifecycleForTrustRecord,
+  closedAt: string | null,
+): VisibleAuctionRulesSnapshot | null {
+  assertNonBlank(snapshot.snapshotId, "snapshotId");
+  assertNonBlank(snapshot.auctionId, "auctionId");
+  assertNonBlank(snapshot.rulesVersion, "rulesVersion");
+  assertNonBlank(snapshot.sourceRef, "sourceRef");
+  assertUtcIso(snapshot.capturedAt);
+  assertJsonValue(snapshot.rules, "rules");
+
+  if (!isPostCloseState(lifecycleState)) {
+    if (closedAt !== null) throw new Error("closedAt must be null before auction close");
+    return null;
+  }
+
+  if (closedAt === null) throw new Error("closedAt is required after auction close");
+  assertUtcIso(closedAt);
+  if (Date.parse(snapshot.capturedAt) > Date.parse(closedAt)) {
+    throw new Error("auction rules snapshot cannot be captured after close");
+  }
+
+  const rules = cloneAndFreezeJson(snapshot.rules) as Readonly<Record<string, TrustRecordJson>>;
+  return Object.freeze({
+    ...snapshot,
+    rules,
+    visibleAfterClose: true,
+    closedAt,
+  });
+}
