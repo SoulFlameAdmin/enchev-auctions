@@ -423,8 +423,8 @@ jobs:
         run: node scripts/verify-auction-rules-snapshot-37-02.mjs --self-test
       - name: Phase 37.03 vehicle snapshot visible after close
         run: node scripts/verify-vehicle-snapshot-37-03.mjs
-      - name: Phase 37.03 auction-start vehicle snapshot self-tests
-        run: node scripts/verify-auction-start-vehicle-snapshot-37-03.mjs --self-test
+      - name: Phase 37.03 vehicle snapshot visible after close self-tests
+        run: node scripts/verify-vehicle-snapshot-37-03.mjs --self-test
       - name: Cross-browser visual contract
         run: node scripts/verify-cross-browser-visual-contract.mjs
       - name: Cross-browser visual self-tests
