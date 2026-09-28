@@ -90,6 +90,20 @@ function clearSendTimeoutTracking(url) {
   sendTimeoutRecoveryRequestedAt.delete(url);
 }
 
+function managedStateFile(kind) {
+  const k = String(kind || "").toUpperCase();
+  if (k === "SYSTEM") return path.join(HERE, ".david-enchev-state.json");
+  if (k === "DESIGN") return path.join(HERE, ".david-enchev-design-state.json");
+  if (k === "APP2") return path.join(HERE, ".david-app2-state-6aac2dbb.json");
+  if (k === "APK") return path.join(HERE, ".david-apk-state.json");
+  if (k === "CONTROL") return path.join(HERE, ".david-control-state.json");
+  return null;
+}
+
+function userTurnAcceptanceRecoveryExhausted(state) {
+  const problem = String(state?.problem || "");
+  return /gpt did not accept the user turn after (?:bounded )?recovery attempts/i.test(problem);
+}
 
 function managedConversationUrls() {
   const defs = [
@@ -843,6 +857,26 @@ async function main() {
 
     for (const page of pages) {
       try {
+        const managedKind = managedKindFromUrl(page.url());
+        const stateFile = managedStateFile(managedKind);
+        const workerState = stateFile ? readState(stateFile) : {};
+        if (managedKind === "SYSTEM" && userTurnAcceptanceRecoveryExhausted(workerState)) {
+          const requested = requestWorkerRecovery(
+            page,
+            "SYSTEM user-turn acceptance recovery exhausted; reload latest worker code",
+            {
+              problem: String(workerState.problem || ""),
+              watchdog: String(workerState.watchdog || ""),
+              updatedAt: workerState.updatedAt || null
+            }
+          );
+          if (requested) {
+            console.log("[INTERRUPT] SYSTEM acceptance-recovery exhaustion escalated to allowlisted restart with repo sync.");
+          }
+          await sleep(POLL_MS);
+          continue;
+        }
+
         // HARD PRIORITY: explicit message-send timeout / Try Again must be
         // recovered before any global rate-limit classification. This prevents
         // stale conversation text mentioning "rate limit" from swallowing the
