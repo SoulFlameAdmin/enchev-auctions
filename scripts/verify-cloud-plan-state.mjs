@@ -47,6 +47,9 @@ assert(workflow.includes("needs: verify-web"), "cloud write must happen only aft
 assert(workflow.includes("node scripts/sync-cloud-plan-state.mjs"), "workflow must invoke cloud sync script");
 assert(syncScript.includes('audience = "enchev-plan-state"'), "sync must request dedicated OIDC audience");
 assert(syncScript.includes('method: "POST"'), "sync must write through Edge Function POST");
+assert(syncScript.includes("MAX_BATCH_BODY_CHARS = 60000"), "sync must stay below Edge Function 65,536-char payload limit");
+assert(syncScript.includes("function buildBatches("), "sync must split verified rows into bounded request batches");
+assert(syncScript.includes("for (let index = 0; index < batches.length; index += 1)"), "sync must write every bounded batch sequentially");
 assert(syncScript.includes("Cloud read-back mismatch"), "sync must verify cloud read-back after write");
 assert(!syncScript.includes("SUPABASE_SERVICE_ROLE_KEY"), "CI sync must not require a Supabase service-role secret");
 

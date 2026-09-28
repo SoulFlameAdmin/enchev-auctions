@@ -2,6 +2,7 @@ import fs from "node:fs";
 
 const endpoint = "https://frhletkiuupgksmgxoxc.supabase.co/functions/v1/enchev-plan-state";
 const audience = "enchev-plan-state";
+const MAX_BATCH_BODY_CHARS = 60000;
 const verifiedSource = fs.readFileSync("app/components/VerifiedPlanEvidenceSync.tsx", "utf8");
 
 function extractVerifiedRows(source) {
@@ -27,6 +28,33 @@ function extractVerifiedRows(source) {
   return rows;
 }
 
+function buildBatches(rows, maxBodyChars = MAX_BATCH_BODY_CHARS) {
+  const batches = [];
+  let current = [];
+
+  for (const row of rows) {
+    const candidate = [...current, row];
+    if (JSON.stringify({ rows: candidate }).length <= maxBodyChars) {
+      current = candidate;
+      continue;
+    }
+
+    if (!current.length) {
+      throw new Error(`Single cloud plan row exceeds batch limit: ${row.taskId}`);
+    }
+
+    batches.push(current);
+    current = [row];
+
+    if (JSON.stringify({ rows: current }).length > maxBodyChars) {
+      throw new Error(`Single cloud plan row exceeds batch limit: ${row.taskId}`);
+    }
+  }
+
+  if (current.length) batches.push(current);
+  return batches;
+}
+
 async function getOidcToken() {
   const requestUrl = process.env.ACTIONS_ID_TOKEN_REQUEST_URL;
   const requestToken = process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;
@@ -40,15 +68,25 @@ async function getOidcToken() {
   return body.value;
 }
 
+async function writeBatch(token, batch, index, total) {
+  const write = await fetch(endpoint, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ rows: batch }),
+  });
+  const writeText = await write.text();
+  if (!write.ok) {
+    throw new Error(`Cloud plan write failed for batch ${index}/${total}: HTTP ${write.status} ${writeText.slice(0, 300)}`);
+  }
+}
+
 const rows = extractVerifiedRows(verifiedSource);
+const batches = buildBatches(rows);
 const token = await getOidcToken();
-const write = await fetch(endpoint, {
-  method: "POST",
-  headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-  body: JSON.stringify({ rows }),
-});
-const writeText = await write.text();
-if (!write.ok) throw new Error(`Cloud plan write failed: HTTP ${write.status} ${writeText.slice(0, 300)}`);
+
+for (let index = 0; index < batches.length; index += 1) {
+  await writeBatch(token, batches[index], index + 1, batches.length);
+}
 
 const read = await fetch(endpoint, { headers: { "Cache-Control": "no-cache" } });
 if (!read.ok) throw new Error(`Cloud plan read-back failed: HTTP ${read.status}`);
@@ -62,4 +100,4 @@ for (const row of rows) {
   if (expectedCommit && cloud.source_commit !== expectedCommit) throw new Error(`Cloud source commit mismatch for ${row.taskId}`);
 }
 
-console.log(`CLOUD_PLAN_STATE_SYNC PASS rows=${rows.length} commit=${expectedCommit || "unknown"}`);
+console.log(`CLOUD_PLAN_STATE_SYNC PASS rows=${rows.length} batches=${batches.length} commit=${expectedCommit || "unknown"}`);
