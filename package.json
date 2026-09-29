@@ -206,7 +206,9 @@
     "verify:accepted-bid-chronology-37-04": "node scripts/verify-accepted-bid-chronology-37-04.mjs",
     "verify:accepted-bid-chronology-37-04:self-test": "node scripts/verify-accepted-bid-chronology-37-04.mjs --self-test",
     "verify:auction-reconstruction-37-05-15": "node scripts/verify-auction-reconstruction-37-05-15.mjs",
-    "verify:auction-reconstruction-37-05-15:self-test": "node scripts/verify-auction-reconstruction-37-05-15.mjs --self-test"
+    "verify:auction-reconstruction-37-05-15:self-test": "node scripts/verify-auction-reconstruction-37-05-15.mjs --self-test",
+    "verify:exact-vin-search-38-01": "node scripts/verify-exact-vin-search-38-01.mjs",
+    "verify:exact-vin-search-38-01:self-test": "node scripts/verify-exact-vin-search-38-01.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
