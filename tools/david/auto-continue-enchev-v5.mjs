@@ -117,12 +117,27 @@ function loadState() {
   }
 }
 
+function writeStateAtomic(filePath, value) {
+  const dir = path.dirname(filePath);
+  fs.mkdirSync(dir, { recursive: true });
+  const tmp = filePath + "." + process.pid + "." + Date.now() + ".tmp";
+  const payload = JSON.stringify(value, null, 2);
+  fs.writeFileSync(tmp, payload, "utf8");
+  try {
+    if (fs.existsSync(filePath)) fs.rmSync(filePath, { force: true });
+    fs.renameSync(tmp, filePath);
+  } catch (error) {
+    try { fs.rmSync(tmp, { force: true }); } catch {}
+    throw error;
+  }
+}
+
 function saveState(state, action = null) {
   if (action) state.lastAction = action;
   state.updatedAt = new Date().toISOString();
   state.stopped = false;
   delete state.stopReason;
-  fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2), "utf8");
+  writeStateAtomic(STATE_FILE, state);
 }
 
 function usable(page) { return Boolean(page && !page.isClosed()); }
@@ -1019,6 +1034,9 @@ async function runPrompt(context, page, state, prompt, kind) {
 }
 async function main() {
   const { chromium } = await import("playwright-core");
+  const state = loadState();
+  state.watchdog = "cdp-connecting";
+  saveState(state, "SYSTEM worker booted; waiting for CDP/session");
   console.log(`[DAVID] Connecting to browser CDP: ${CDP_URL}`);
   let browser = null;
   let context = null;
@@ -1028,13 +1046,16 @@ async function main() {
       context = browser.contexts()[0] || null;
       if (!context) throw new Error("No active Chromium context on CDP port.");
     } catch (error) {
+      state.watchdog = "cdp-reconnect-wait";
+      saveState(state, `CDP not ready; reconnecting: ${error?.message || error}`);
       console.log(`[DAVID] CDP not ready: ${error?.message || error}. WAIT 5s -> reconnect. Worker stays alive.`);
       browser = null;
       context = null;
       await sleep(5000);
     }
   }
-  const state = loadState();
+  state.watchdog = "session-connecting";
+  saveState(state, "CDP connected; resolving owned ChatGPT session");
   if (/ChatGPT platform: (?:global )?rate limit/i.test(String(state.problem || ""))) {
     state.problem = null;
     state.problemAttempts = 0;
