@@ -66,6 +66,23 @@ while ((Get-Date) -lt $deadline) {
       "-"
     }
 
+    if ($status -eq "probe") {
+      $leaseExpired = $false
+      try {
+        $leaseExpired = (-not $rate.probeLeaseUntil) -or ([DateTimeOffset]::Parse([string]$rate.probeLeaseUntil) -le [DateTimeOffset]::Now)
+      } catch { $leaseExpired = $true }
+
+      if ($leaseExpired) {
+        $node = Join-Path $Root "tools\node\node.exe"
+        if (-not (Test-Path $node)) { $node = "node" }
+        $coordinator = Join-Path $DavidDir "chatgpt-rate-limit-coordinator.mjs"
+        Write-Host "[REPAIR] Expired probe lease detected. Running coordinator-safe reconciliation..." -ForegroundColor Yellow
+        & $node $coordinator --repair-expired-probe
+        Start-Sleep -Milliseconds 750
+        continue
+      }
+    }
+
     $owner = if ($rate.probeOwner) { [string]$rate.probeOwner } else { "none" }
     $line = "[WAIT] status=$status owner=$owner remaining=$remaining"
   }
