@@ -1,0 +1,71 @@
+{
+  "phase": "40",
+  "range": "40.01-40.10",
+  "title": "Production failure certification — first ten drills",
+  "execution": {
+    "mode": "deterministic-ci-failure-simulation",
+    "productionMutationForbidden": true,
+    "realProviderFaultInjectionForbidden": true,
+    "realCustomerDataForbidden": true
+  },
+  "tasks": [
+    {
+      "id": "40.01",
+      "name": "Realtime process crash during active auction",
+      "kind": "test"
+    },
+    {
+      "id": "40.02",
+      "name": "Worker crash during active auction",
+      "kind": "test"
+    },
+    {
+      "id": "40.03",
+      "name": "Worker crash during finalization",
+      "kind": "test"
+    },
+    {
+      "id": "40.04",
+      "name": "Redis connection loss",
+      "kind": "test"
+    },
+    {
+      "id": "40.05",
+      "name": "Database connection interruption",
+      "kind": "test"
+    },
+    {
+      "id": "40.06",
+      "name": "Object-storage outage",
+      "kind": "test"
+    },
+    {
+      "id": "40.07",
+      "name": "KYC provider outage",
+      "kind": "test"
+    },
+    {
+      "id": "40.08",
+      "name": "Notification provider outage",
+      "kind": "test"
+    },
+    {
+      "id": "40.09",
+      "name": "Client offline/reconnect during bidding",
+      "kind": "test"
+    },
+    {
+      "id": "40.10",
+      "name": "Network partition simulation",
+      "kind": "test"
+    }
+  ],
+  "invariants": {
+    "auctionAuthorityNeverMovesToClient": true,
+    "unsafeBidPathFailsClosed": true,
+    "partialFinalizationSuccessForbidden": true,
+    "providerOutageCannotChangeWinner": true,
+    "recoveryRequiresAuthoritativeSequence": true,
+    "deterministicEvidenceOnly": true
+  }
+}
