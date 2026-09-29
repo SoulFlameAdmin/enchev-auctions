@@ -8,6 +8,8 @@ $Repo = Join-Path $Root "enchev-auctions"
 $DavidDir = Join-Path $Repo "tools\david"
 $RequestFile = Join-Path $DavidDir ".david-recovery-request.json"
 $ResultFile = Join-Path $DavidDir ".david-recovery-result.json"
+$ScientistCommandFile = Join-Path $DavidDir ".sf-scientist-supervisor-command.json"
+$ScientistResultFile = Join-Path $DavidDir ".sf-scientist-supervisor-result.json"
 $StateFile = Join-Path $DavidDir ".david-enchev-state.json"
 $RateFile = Join-Path $DavidDir ".david-global-chatgpt-rate-limit.json"
 
@@ -45,50 +47,115 @@ if ($supervisors -ne 1) {
 }
 
 $rate = Read-JsonSafe $RateFile
-if ($rate -and @("blocked","probe") -contains ([string]$rate.status).ToLowerInvariant()) {
-  Write-Host ("[WAIT] Global ChatGPT rate-limit coordinator is {0}. SYSTEM restart remains deferred until status=clear." -f $rate.status) -ForegroundColor Yellow
-  Write-Host "[INFO] This matches the supervisor's active-work/rate-limit recovery gate." -ForegroundColor Yellow
-  exit 2
-}
+$useScientistChannel = $false
+if ($rate) {
+  $rateStatus = ([string]$rate.status).ToLowerInvariant()
 
-$id = [guid]::NewGuid().ToString()
-$request = [ordered]@{
-  id = $id
-  target = "SYSTEM"
-  action = "RESTART"
-  createdAt = [DateTimeOffset]::Now.ToString("o")
-  reason = "SYSTEM state telemetry was zero-byte/stale; apply atomic state persistence fix"
-}
+  if ($rateStatus -eq "probe") {
+    Write-Host ("[WAIT] Active global probe owner={0}. SYSTEM restart remains deferred." -f $rate.probeOwner) -ForegroundColor Yellow
+    exit 2
+  }
 
-$tmp = $RequestFile + ".tmp"
-$json = $request | ConvertTo-Json -Depth 6
-$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
-[System.IO.File]::WriteAllText($tmp, $json, $utf8NoBom)
-Move-Item -LiteralPath $tmp -Destination $RequestFile -Force
+  if ($rateStatus -eq "blocked") {
+    $blockedExpired = $false
+    try {
+      $blockedExpired = (-not $rate.blockedUntil) -or ([DateTimeOffset]::Parse([string]$rate.blockedUntil) -le [DateTimeOffset]::Now)
+    } catch { $blockedExpired = $false }
 
-Write-Host ("[REQUEST] Safe SYSTEM restart requested. id={0}" -f $id) -ForegroundColor Cyan
+    if (-not $blockedExpired) {
+      Write-Host ("[WAIT] Global cooldown is still active until {0}. SYSTEM restart remains deferred." -f $rate.blockedUntil) -ForegroundColor Yellow
+      exit 2
+    }
 
-$deadline = (Get-Date).AddSeconds([math]::Max(10,$TimeoutSeconds))
-$result = $null
-while ((Get-Date) -lt $deadline) {
-  Start-Sleep -Milliseconds 500
-  $candidate = Read-JsonSafe $ResultFile
-  if ($candidate -and $candidate.id -eq $id) {
-    $result = $candidate
-    break
+    $useScientistChannel = $true
+    Write-Host "[SAFE] Cooldown has expired but coordinator is still marked blocked." -ForegroundColor Yellow
+    Write-Host "[SAFE] Using SF Scientist supervisor channel; it will reject restart if SYSTEM/ChatGPT shows active work." -ForegroundColor Yellow
   }
 }
 
-if (-not $result) {
-  throw "Supervisor recovery result timed out."
-}
+$id = [guid]::NewGuid().ToString()
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 
-if (-not $result.ok) {
-  Write-Host ("[SAFE-NO-RESTART] " + $result.detail) -ForegroundColor Yellow
-  exit 3
-}
+if ($useScientistChannel) {
+  $command = [ordered]@{
+    id = $id
+    createdAt = [DateTimeOffset]::Now.ToString("o")
+    sourceChatUrl = $null
+    actions = @(
+      [ordered]@{
+        type = "RESTART"
+        target = "SYSTEM"
+      }
+    )
+  }
 
-Write-Host ("[RECOVERY] " + $result.detail) -ForegroundColor Green
+  $tmp = $ScientistCommandFile + ".tmp"
+  $json = $command | ConvertTo-Json -Depth 8
+  [System.IO.File]::WriteAllText($tmp, $json, $utf8NoBom)
+  Move-Item -LiteralPath $tmp -Destination $ScientistCommandFile -Force
+  Write-Host ("[REQUEST] Protected SF Scientist SYSTEM restart requested. id={0}" -f $id) -ForegroundColor Cyan
+
+  $deadline = (Get-Date).AddSeconds([math]::Max(10,$TimeoutSeconds))
+  $scientistResult = $null
+  while ((Get-Date) -lt $deadline) {
+    Start-Sleep -Milliseconds 500
+    $candidate = Read-JsonSafe $ScientistResultFile
+    if ($candidate -and $candidate.id -eq $id) {
+      $scientistResult = $candidate
+      break
+    }
+  }
+
+  if (-not $scientistResult) {
+    throw "SF Scientist supervisor result timed out."
+  }
+
+  $actionResult = @($scientistResult.results) | Select-Object -First 1
+  if (-not $actionResult -or -not $actionResult.ok) {
+    $detail = if ($actionResult) { $actionResult.detail } else { "missing action result" }
+    Write-Host ("[SAFE-NO-RESTART] " + $detail) -ForegroundColor Yellow
+    exit 3
+  }
+
+  Write-Host ("[RECOVERY] " + $actionResult.detail) -ForegroundColor Green
+} else {
+  $request = [ordered]@{
+    id = $id
+    target = "SYSTEM"
+    action = "RESTART"
+    createdAt = [DateTimeOffset]::Now.ToString("o")
+    reason = "SYSTEM state telemetry was zero-byte/stale; apply atomic state persistence fix"
+  }
+
+  $tmp = $RequestFile + ".tmp"
+  $json = $request | ConvertTo-Json -Depth 6
+  [System.IO.File]::WriteAllText($tmp, $json, $utf8NoBom)
+  Move-Item -LiteralPath $tmp -Destination $RequestFile -Force
+
+  Write-Host ("[REQUEST] Safe SYSTEM restart requested. id={0}" -f $id) -ForegroundColor Cyan
+
+  $deadline = (Get-Date).AddSeconds([math]::Max(10,$TimeoutSeconds))
+  $result = $null
+  while ((Get-Date) -lt $deadline) {
+    Start-Sleep -Milliseconds 500
+    $candidate = Read-JsonSafe $ResultFile
+    if ($candidate -and $candidate.id -eq $id) {
+      $result = $candidate
+      break
+    }
+  }
+
+  if (-not $result) {
+    throw "Supervisor recovery result timed out."
+  }
+
+  if (-not $result.ok) {
+    Write-Host ("[SAFE-NO-RESTART] " + $result.detail) -ForegroundColor Yellow
+    exit 3
+  }
+
+  Write-Host ("[RECOVERY] " + $result.detail) -ForegroundColor Green
+}
 
 $stateDeadline = (Get-Date).AddSeconds([math]::Max(15,$TimeoutSeconds))
 $state = $null
