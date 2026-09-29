@@ -33,10 +33,12 @@ function Age([object]$Iso) {
   } catch { return "?" }
 }
 
-function Count-Proc([string]$Needle) {
+function Count-Proc([string]$Needle, [string[]]$Names = @("node.exe")) {
   try {
     return @(Get-CimInstance Win32_Process | Where-Object {
-      ([string]$_.CommandLine) -like "*$Needle*"
+      $name = ([string]$_.Name).ToLowerInvariant()
+      $cmd = [string]$_.CommandLine
+      ($Names -contains $name) -and $cmd -and $cmd -like "*$Needle*"
     }).Count
   } catch { return 0 }
 }
