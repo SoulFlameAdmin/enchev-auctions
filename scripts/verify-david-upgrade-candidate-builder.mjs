@@ -1,0 +1,13 @@
+import assert from "node:assert/strict";
+import { validateProposal, classifyChangeRisk, buildCandidatePackage, candidateReadyForTesting } from "../src/david/upgrade-candidate-builder.mjs";
+const proposal={goal:"Improve DAVID repeated CDP failure safely",weakness:{type:"repeated_failure"},hypothesis:"use alternate path",acceptance:{benchmarkRequired:true}};
+assert.equal(validateProposal(proposal).valid,true);
+assert.equal(classifyChangeRisk({path:"tools/david/worker.mjs"}),"blocked");
+assert.equal(classifyChangeRisk({path:"src/david/new-strategy.mjs"}),"low");
+const blocked=buildCandidatePackage(proposal,[{path:"tools/david/worker.mjs"}],{});
+assert.equal(blocked.allowed,false);
+const pkg=buildCandidatePackage(proposal,[{path:"src/david/new-strategy.mjs",description:"candidate only"}],{baseRevision:"a",backupRef:"backup-a",branch:"test-candidate"});
+assert.equal(pkg.allowed,true);
+assert.equal(candidateReadyForTesting(pkg).ready,true);
+assert.equal(candidateReadyForTesting({...pkg,sandbox:{...pkg.sandbox,backupRef:null}}).ready,false);
+console.log("PASS david upgrade candidate builder v1");
