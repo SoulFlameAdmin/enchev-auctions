@@ -1,0 +1,112 @@
+{
+  "phase": "38",
+  "title": "Search, discovery & personalization",
+  "tasks": [
+    {
+      "id": "38.01",
+      "name": "Exact VIN search",
+      "kind": "feature"
+    },
+    {
+      "id": "38.02",
+      "name": "Exact lot-number search",
+      "kind": "feature"
+    },
+    {
+      "id": "38.03",
+      "name": "Full-text vehicle search",
+      "kind": "feature"
+    },
+    {
+      "id": "38.04",
+      "name": "Faceted filtering",
+      "kind": "feature"
+    },
+    {
+      "id": "38.05",
+      "name": "Typo tolerance",
+      "kind": "feature"
+    },
+    {
+      "id": "38.06",
+      "name": "Make/model synonym normalization",
+      "kind": "feature"
+    },
+    {
+      "id": "38.07",
+      "name": "Transliteration-aware search",
+      "kind": "global"
+    },
+    {
+      "id": "38.08",
+      "name": "Cross-script matching",
+      "kind": "global"
+    },
+    {
+      "id": "38.09",
+      "name": "Search sort consistency",
+      "kind": "feature"
+    },
+    {
+      "id": "38.10",
+      "name": "Index freshness pipeline",
+      "kind": "feature"
+    },
+    {
+      "id": "38.11",
+      "name": "Search index rebuild",
+      "kind": "feature"
+    },
+    {
+      "id": "38.12",
+      "name": "Search outage fallback",
+      "kind": "feature"
+    },
+    {
+      "id": "38.13",
+      "name": "Similar-vehicle recommendations",
+      "kind": "feature"
+    },
+    {
+      "id": "38.14",
+      "name": "Recently-viewed recommendations",
+      "kind": "feature"
+    },
+    {
+      "id": "38.15",
+      "name": "Saved-filter presets",
+      "kind": "feature"
+    },
+    {
+      "id": "38.16",
+      "name": "Search result URL state",
+      "kind": "feature"
+    },
+    {
+      "id": "38.17",
+      "name": "Search analytics instrumentation",
+      "kind": "feature"
+    },
+    {
+      "id": "38.18",
+      "name": "Search performance baseline",
+      "kind": "test"
+    },
+    {
+      "id": "38.19",
+      "name": "Large-catalog search load test",
+      "kind": "test"
+    }
+  ],
+  "boundaries": {
+    "identifiers": "VIN/LOT exact search accepts ASCII canonical identifiers only",
+    "humanText": "human-readable search is normalized in a derived search projection; canonical data is unchanged",
+    "authority": "search ranking and recommendations never decide auction authority, bid acceptance, winner selection or final result",
+    "fallback": "source fallback is read-only search degradation, not a second source of auction truth"
+  },
+  "performance": {
+    "baselineCatalogSize": 1000,
+    "largeCatalogSize": 20000,
+    "maxCiDurationMs": 5000
+  }
+}
