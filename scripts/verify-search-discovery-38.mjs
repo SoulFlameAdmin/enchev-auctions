@@ -36,7 +36,7 @@ async function loadDomain(){
   const tsc=path.resolve("node_modules/typescript/bin/tsc");
   const result=spawnSync(process.execPath,[
     tsc,DOMAIN_PATH,CROSS_SCRIPT_PATH,
-    "--ignoreConfig","--target","ES2022","--module","CommonJS","--moduleResolution","Node",
+    "--ignoreConfig","--target","ES2022","--module","Node16","--moduleResolution","Node16",
     "--skipLibCheck","--rootDir","packages","--outDir",tmp,"--pretty","false"
   ],{encoding:"utf8"});
   if(result.status!==0)fail("domain TypeScript compile failed: "+(result.stderr||result.stdout||"").trim());
