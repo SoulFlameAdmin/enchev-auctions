@@ -120,7 +120,7 @@ const complete=await d.completeAuctionReconstruction({
   auctionId,vehicleId,generatedAt,rulesSnapshot,vehicleSnapshot,acceptedBids,extensions,finalResults,
   sellerChanges,inspectionVersions,qaHistory,adminActions
 });
-if(complete.auditExport.entryCount!==12)fail("37.11 audit entry count drift: "+complete.auditExport.entryCount);
+if(complete.auditExport.entryCount!==14)fail("37.11 audit entry count drift: "+complete.auditExport.entryCount);
 if(!Object.isFrozen(complete.auditExport)||!Object.isFrozen(complete.auditExport.entries)||!/^[a-f0-9]{64}$/.test(complete.auditExport.sha256))fail("37.11 immutable audit export drift");
 
 const repeat=await d.createImmutableAuditExport(auctionId,vehicleId,generatedAt,complete.auditExport.entries);
@@ -163,7 +163,7 @@ if(process.argv.includes("--self-test")){
   const pendingOnly=d.buildFinalResultChronology(auctionId,vehicleId,[finalResults[0]]);
   await reject("complete without terminal result",()=>d.completeAuctionReconstruction({...complete.disputeBundle,generatedAt,finalResults:pendingOnly}));
   await reject("invalid inspection fingerprint",()=>d.buildInspectionVersionChronology(auctionId,vehicleId,"inspection-37",[{...inspectionVersions[0],payloadSha256:"not-a-sha"}]));
-  console.log("AUCTION_RECONSTRUCTION_37_05_15_SELF_TEST PASS tasks=11 negative_cases=12 audit_entries=12 critical_chain=6 deterministic_sha256=true complete=true");
+  console.log("AUCTION_RECONSTRUCTION_37_05_15_SELF_TEST PASS tasks=11 negative_cases=12 audit_entries=14 critical_chain=6 deterministic_sha256=true complete=true");
 }else{
-  console.log("AUCTION_RECONSTRUCTION_37_05_15 PASS tasks=11 audit_entries=12 critical_chain=6 complete=true");
+  console.log("AUCTION_RECONSTRUCTION_37_05_15 PASS tasks=11 audit_entries=14 critical_chain=6 complete=true");
 }
