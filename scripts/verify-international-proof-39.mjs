@@ -183,7 +183,7 @@ const normalizedText=m.proof.normalizeInternationalUserText(config.userTextFixtu
 const normalizedJson=JSON.stringify(normalizedText);
 if(!normalizedJson.includes("Mitüko")||!normalizedJson.includes("München")||!normalizedJson.includes("Köln")||normalizedJson.includes("\\u0308"))fail("39.11 recursive NFC user-text normalization drift");
 
-const rtl=m.rtl.layoutDirectionAttributes(config.rtlDryRun);
+const rtl=m.rtl.layoutDirectionAttributes({locale:config.rtlDryRun.locale,direction:config.rtlDryRun.direction});
 if(!rtl||rtl.dir!=="rtl"||rtl.lang!=="ar-SA")fail("39.12 RTL direction dry-run drift");
 const rtlPage=fs.readFileSync(RTL_PAGE_PATH,"utf8");
 for(const token of ["dir={direction}","lang={lang}","data-rtl-probe"]){
