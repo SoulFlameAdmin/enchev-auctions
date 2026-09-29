@@ -202,7 +202,9 @@
     "verify:auction-rules-snapshot-37-02": "node scripts/verify-auction-rules-snapshot-37-02.mjs",
     "verify:auction-rules-snapshot-37-02:self-test": "node scripts/verify-auction-rules-snapshot-37-02.mjs --self-test",
     "verify:vehicle-snapshot-37-03": "node scripts/verify-vehicle-snapshot-37-03.mjs",
-    "verify:vehicle-snapshot-37-03:self-test": "node scripts/verify-vehicle-snapshot-37-03.mjs --self-test"
+    "verify:vehicle-snapshot-37-03:self-test": "node scripts/verify-vehicle-snapshot-37-03.mjs --self-test",
+    "verify:accepted-bid-chronology-37-04": "node scripts/verify-accepted-bid-chronology-37-04.mjs",
+    "verify:accepted-bid-chronology-37-04:self-test": "node scripts/verify-accepted-bid-chronology-37-04.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
