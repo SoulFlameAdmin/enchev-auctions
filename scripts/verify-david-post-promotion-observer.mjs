@@ -1,0 +1,12 @@
+import assert from "node:assert/strict";
+import { evaluatePostPromotionHealth, postPromotionDecision, buildObservationWindow } from "../src/david/post-promotion-observer.mjs";
+const candidate={backup_ref:"backup-1",candidate_revision:"rev-b",active_revision:"rev-b"};
+const baseline={successRate:.8};
+let health=evaluatePostPromotionHealth(baseline,{successRate:.9,integrityOk:true});
+assert.equal(health.healthy,true);
+let decision=postPromotionDecision(candidate,baseline,{successRate:.5,integrityOk:true});
+assert.equal(decision.action,"auto_rollback");
+decision=postPromotionDecision({...candidate,backup_ref:null},baseline,{successRate:.5});
+assert.equal(decision.action,"escalate");
+assert.equal(buildObservationWindow({minRuns:20}).minRuns,20);
+console.log("PASS david post-promotion observer v1");
