@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { accountNavigation, primaryNavigation } from "../site-navigation";
+import { matchesCrossScriptSearch } from "../../packages/config/src/cross-script-search";
 import { searchVehicleCatalog } from "../../packages/domain/src/search-discovery";
 import "./inventory.css";
 import "./inventory-v2.css";
@@ -149,26 +150,35 @@ export default function InventoryPage(){
     setBrand("Всички");setModel("Всички");setRegion("Всички");setLocation("Всички");setDamage("Всички");setTitleStatus("Всички");setAuctionStatus("Всички");setYearFrom(2010);setYearTo(2026);setBuyNow(false);setLiveOnly(false);setQuery("");setCurrentPage(1);
   };
 
-  const searchMatchLots=useMemo(()=>new Set(searchVehicleCatalog(
-    auctionCars.map(car=>({
-      id:car.lot,
-      lot:car.lot,
-      vin:car.vin,
-      title:car.title,
-      make:car.brand,
-      model:car.model,
-      year:car.year,
-      region:car.region,
-      location:car.location,
-      damage:car.damage,
-      titleStatus:car.titleStatus,
-      status:car.status==="next"?"upcoming":car.status,
-      priceCents:Math.round(car.price*100),
-      buyNowCents:Math.round(car.buyNow*100),
-      updatedAt:"2026-09-29T00:00:00.000Z",
-    })),
-    {query,typoTolerance:true,sort:"recommended"},
-  ).map(result=>result.vehicle.lot)),[auctionCars,query]);
+  const searchMatchLots=useMemo(()=>{
+    const lots=new Set(searchVehicleCatalog(
+      auctionCars.map(car=>({
+        id:car.lot,
+        lot:car.lot,
+        vin:car.vin,
+        title:car.title,
+        make:car.brand,
+        model:car.model,
+        year:car.year,
+        region:car.region,
+        location:car.location,
+        damage:car.damage,
+        titleStatus:car.titleStatus,
+        status:car.status==="next"?"upcoming":car.status,
+        priceCents:Math.round(car.price*100),
+        buyNowCents:Math.round(car.buyNow*100),
+        updatedAt:"2026-09-29T00:00:00.000Z",
+      })),
+      {query,typoTolerance:true,sort:"recommended"},
+    ).map(result=>result.vehicle.lot));
+    for(const car of auctionCars){
+      if(matchesCrossScriptSearch(query,{
+        text:[car.title,car.brand,car.model,car.location,car.damage,car.titleStatus],
+        identifiers:[car.vin,car.lot],
+      }))lots.add(car.lot);
+    }
+    return lots;
+  },[auctionCars,query]);
 
   const filtered=useMemo(()=>{
     let list=auctionCars.filter(car=>{
