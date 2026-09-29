@@ -58,6 +58,18 @@ while ((Get-Date) -lt $deadline) {
       break
     }
 
+    if ($status -eq "blocked") {
+      $blockedExpired = $false
+      try {
+        $blockedExpired = (-not $rate.blockedUntil) -or ([DateTimeOffset]::Parse([string]$rate.blockedUntil) -le [DateTimeOffset]::Now)
+      } catch { $blockedExpired = $false }
+
+      if ($blockedExpired) {
+        Write-Host "[RECOVERY-SAFE] Global cooldown expired; protected supervisor channel can now evaluate SYSTEM restart." -ForegroundColor Yellow
+        break
+      }
+    }
+
     $remaining = if ($status -eq "probe") {
       Format-Remaining $rate.probeLeaseUntil
     } elseif ($status -eq "blocked") {
@@ -97,8 +109,14 @@ while ((Get-Date) -lt $deadline) {
 
 $finalRate = Read-JsonSafe $RateFile
 $finalStatus = if ($finalRate) { ([string]$finalRate.status).ToLowerInvariant() } else { "" }
-if (-not $finalRate -or $finalStatus -ne "clear") {
-  Write-Host "[TIMEOUT] Coordinator did not reach status=clear within the wait window." -ForegroundColor Yellow
+$recoverySafe = $finalStatus -eq "clear"
+if ($finalStatus -eq "blocked") {
+  try {
+    $recoverySafe = (-not $finalRate.blockedUntil) -or ([DateTimeOffset]::Parse([string]$finalRate.blockedUntil) -le [DateTimeOffset]::Now)
+  } catch { $recoverySafe = $false }
+}
+if (-not $finalRate -or -not $recoverySafe) {
+  Write-Host "[TIMEOUT] Coordinator did not reach a recovery-safe state within the wait window." -ForegroundColor Yellow
   if ($finalRate) {
     Write-Host ("[STATE] status={0} probeOwner={1} probeLeaseUntil={2} blockedUntil={3}" -f
       $finalRate.status,$finalRate.probeOwner,$finalRate.probeLeaseUntil,$finalRate.blockedUntil) -ForegroundColor Yellow
