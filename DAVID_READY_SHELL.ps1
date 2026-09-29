@@ -126,12 +126,45 @@ if (-not (Test-Path (Join-Path $Repo ".git"))) {
 $Git = Resolve-Git
 $Node = Resolve-Node
 
-$dirty = & $Git -C $Repo status --porcelain
+$dirty = @(& $Git -C $Repo status --porcelain)
 if ($LASTEXITCODE -ne 0) { throw "git status failed." }
-if ($dirty) {
-  Write-Host "[BLOCKED] Local uncommitted changes detected. Nothing was overwritten." -ForegroundColor Red
-  & $Git -C $Repo status --short
-  throw "Clean/stash/commit local changes before stabilization."
+
+# DAVID/SF Scientist emits local runtime telemetry under tools/david/.sf-scientist-*.
+# These files are operational state, not source changes. Preserve them and ignore
+# them for the clean-tree safety gate. Any other tracked/untracked change still blocks.
+$runtimeOnlyPatterns = @(
+  "tools/david/.sf-scientist-captures/",
+  "tools/david/.sf-scientist-command.json",
+  "tools/david/.sf-scientist-decisions.jsonl",
+  "tools/david/.sf-scientist-memory.jsonl",
+  "tools/david/.sf-scientist-operator.jsonl",
+  "tools/david/.sf-scientist-response.json",
+  "tools/david/.sf-scientist-state.json",
+  "tools/david/.sf-scientist-state.json.tmp",
+  "tools/david/.sf-scientist.lock"
+)
+
+$materialDirty = @()
+foreach ($line in $dirty) {
+  $path = ([string]$line).Substring([math]::Min(3, ([string]$line).Length)).Trim()
+  $isRuntimeOnly = $false
+  foreach ($pattern in $runtimeOnlyPatterns) {
+    if ($path -eq $pattern -or $path.StartsWith($pattern)) {
+      $isRuntimeOnly = $true
+      break
+    }
+  }
+  if (-not $isRuntimeOnly) { $materialDirty += $line }
+}
+
+if ($materialDirty.Count -gt 0) {
+  Write-Host "[BLOCKED] Material local changes detected. Nothing was overwritten." -ForegroundColor Red
+  $materialDirty | ForEach-Object { Write-Host $_ -ForegroundColor Yellow }
+  throw "Commit/stash material local changes before stabilization."
+}
+
+if ($dirty.Count -gt 0) {
+  Write-Host "[SAFE] Runtime-only SF Scientist telemetry detected; preserving and ignoring for source clean gate." -ForegroundColor DarkYellow
 }
 
 Write-Host "[SYNC] Fetching verified DAVID branch..." -ForegroundColor Cyan
