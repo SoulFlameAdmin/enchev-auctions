@@ -58,11 +58,6 @@ while ((Get-Date) -lt $deadline) {
       break
     }
 
-    if ($status -eq "blocked") {
-      Write-Host "[SAFE] Coordinator is in blocked cooldown. Process recovery may proceed; outgoing sends remain blocked by the coordinator." -ForegroundColor Yellow
-      break
-    }
-
     $remaining = if ($status -eq "probe") {
       Format-Remaining $rate.probeLeaseUntil
     } elseif ($status -eq "blocked") {
@@ -102,8 +97,8 @@ while ((Get-Date) -lt $deadline) {
 
 $finalRate = Read-JsonSafe $RateFile
 $finalStatus = if ($finalRate) { ([string]$finalRate.status).ToLowerInvariant() } else { "" }
-if (-not $finalRate -or @("clear","blocked") -notcontains $finalStatus) {
-  Write-Host "[TIMEOUT] Coordinator did not reach a recovery-safe state within the wait window." -ForegroundColor Yellow
+if (-not $finalRate -or $finalStatus -ne "clear") {
+  Write-Host "[TIMEOUT] Coordinator did not reach status=clear within the wait window." -ForegroundColor Yellow
   if ($finalRate) {
     Write-Host ("[STATE] status={0} probeOwner={1} probeLeaseUntil={2} blockedUntil={3}" -f
       $finalRate.status,$finalRate.probeOwner,$finalRate.probeLeaseUntil,$finalRate.blockedUntil) -ForegroundColor Yellow
