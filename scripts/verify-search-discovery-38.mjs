@@ -36,11 +36,15 @@ async function loadDomain(){
   const tsc=path.resolve("node_modules/typescript/bin/tsc");
   const result=spawnSync(process.execPath,[
     tsc,DOMAIN_PATH,CROSS_SCRIPT_PATH,
-    "--ignoreConfig","--target","ES2022","--module","Node16","--moduleResolution","Node16",
+    "--ignoreConfig","--target","ES2022","--module","ES2022","--moduleResolution","Bundler",
     "--skipLibCheck","--rootDir","packages","--outDir",tmp,"--pretty","false"
   ],{encoding:"utf8"});
   if(result.status!==0)fail("domain TypeScript compile failed: "+(result.stderr||result.stdout||"").trim());
-  const imported=await import(pathToFileURL(path.join(tmp,"domain/src/search-discovery.js")).href+"?v="+Date.now());
+  const compiled=path.join(tmp,"domain/src/search-discovery.js");
+  const emitted=fs.readFileSync(compiled,"utf8")
+    .replace("../../config/src/cross-script-search", "../../config/src/cross-script-search.js");
+  fs.writeFileSync(compiled,emitted);
+  const imported=await import(pathToFileURL(compiled).href+"?v="+Date.now());
   const mod=imported.default??imported;
   setTimeout(()=>fs.rmSync(tmp,{recursive:true,force:true}),0);
   return mod;
