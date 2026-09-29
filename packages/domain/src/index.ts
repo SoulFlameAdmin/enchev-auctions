@@ -27,3 +27,4 @@ export * from "./seller-workflow";
 export * from "./live-auction-ux";
 export * from "./auction-trust-record";
 export * from "./auction-reconstruction";
+export * from "./search-discovery";

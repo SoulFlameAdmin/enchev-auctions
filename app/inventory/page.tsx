@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { accountNavigation, primaryNavigation } from "../site-navigation";
 import { matchesCrossScriptSearch } from "../../packages/config/src/cross-script-search";
+import { searchVehicleCatalog } from "../../packages/domain/src/search-discovery";
 import "./inventory.css";
 import "./inventory-v2.css";
 import "./inventory-d13.css";
@@ -149,12 +150,39 @@ export default function InventoryPage(){
     setBrand("Всички");setModel("Всички");setRegion("Всички");setLocation("Всички");setDamage("Всички");setTitleStatus("Всички");setAuctionStatus("Всички");setYearFrom(2010);setYearTo(2026);setBuyNow(false);setLiveOnly(false);setQuery("");setCurrentPage(1);
   };
 
+  const searchMatchLots=useMemo(()=>{
+    const lots=new Set(searchVehicleCatalog(
+      auctionCars.map(car=>({
+        id:car.lot,
+        lot:car.lot,
+        vin:car.vin,
+        title:car.title,
+        make:car.brand,
+        model:car.model,
+        year:car.year,
+        region:car.region,
+        location:car.location,
+        damage:car.damage,
+        titleStatus:car.titleStatus,
+        status:car.status==="next"?"upcoming":car.status,
+        priceCents:Math.round(car.price*100),
+        buyNowCents:Math.round(car.buyNow*100),
+        updatedAt:"2026-09-29T00:00:00.000Z",
+      })),
+      {query,typoTolerance:true,sort:"recommended"},
+    ).map(result=>result.vehicle.lot));
+    for(const car of auctionCars){
+      if(matchesCrossScriptSearch(query,{
+        text:[car.title,car.brand,car.model,car.location,car.damage,car.titleStatus],
+        identifiers:[car.vin,car.lot],
+      }))lots.add(car.lot);
+    }
+    return lots;
+  },[auctionCars,query]);
+
   const filtered=useMemo(()=>{
     let list=auctionCars.filter(car=>{
-      const matchesQuery=matchesCrossScriptSearch(query,{
-        text:[car.title,car.brand,car.model,car.location,car.damage,car.titleStatus],
-        identifiers:[car.vin,car.lot]
-      });
+      const matchesQuery=searchMatchLots.has(car.lot);
       const matchesBrand=brand==="Всички"||car.brand===brand;
       const matchesModel=model==="Всички"||car.model===model;
       const matchesRegion=region==="Всички"||car.region===region;
@@ -173,7 +201,7 @@ export default function InventoryPage(){
     if(sort==="yearNewest")list=[...list].sort((a,b)=>b.year-a.year||a.lot.localeCompare(b.lot));
     if(sort==="yearOldest")list=[...list].sort((a,b)=>a.year-b.year||a.lot.localeCompare(b.lot));
     return list;
-  },[auctionCars,query,brand,model,region,location,damage,titleStatus,auctionStatus,yearFrom,yearTo,buyNow,liveOnly,sort]);
+  },[auctionCars,searchMatchLots,brand,model,region,location,damage,titleStatus,auctionStatus,yearFrom,yearTo,buyNow,liveOnly,sort]);
 
   const totalPages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
   useEffect(()=>{
