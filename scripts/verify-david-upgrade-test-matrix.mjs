@@ -1,0 +1,14 @@
+import assert from "node:assert/strict";
+import { buildUpgradeTestMatrix, evaluateUpgradeTestMatrix, buildTestRunRecord } from "../src/david/upgrade-test-matrix.mjs";
+const pkg={changes:[{risk:"low"}]};
+const matrix=buildUpgradeTestMatrix(pkg);
+assert.equal(matrix.length,4);
+const results={unit:{status:"passed"},integration:{status:"passed"},regression:{status:"passed"},benchmark:{status:"passed"}};
+const benchmark={before:{successRate:.5},after:{successRate:.8},delta:{successRate:.3,durationImprovementPct:12,actionReductionPct:5,failureReduction:1}};
+const evaluation=evaluateUpgradeTestMatrix(matrix,results,benchmark,{minSuccessDelta:.1,minDurationImprovementPct:5});
+assert.equal(evaluation.pass,true);
+const fail=evaluateUpgradeTestMatrix(matrix,{...results,regression:{status:"failed"}},benchmark);
+assert.equal(fail.pass,false);
+const record=buildTestRunRecord({id:"c1",user_id:"u1"},evaluation,{artifactSha256:"a".repeat(64)});
+assert.equal(record.status,"passed");
+console.log("PASS david upgrade test matrix v1");
