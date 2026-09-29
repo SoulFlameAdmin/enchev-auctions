@@ -45,16 +45,10 @@ if ($supervisors -ne 1) {
 }
 
 $rate = Read-JsonSafe $RateFile
-if ($rate) {
-  $rateStatus = ([string]$rate.status).ToLowerInvariant()
-  if ($rateStatus -eq "probe") {
-    Write-Host ("[WAIT] Global ChatGPT rate-limit coordinator has an active probe owner={0}. SYSTEM restart is intentionally deferred." -f $rate.probeOwner) -ForegroundColor Yellow
-    Write-Host "[INFO] Active probe ownership must finish or expire before SYSTEM recovery." -ForegroundColor Yellow
-    exit 2
-  }
-  if ($rateStatus -eq "blocked") {
-    Write-Host "[SAFE] Global send cooldown is blocked, but SYSTEM process recovery is allowed; all new sends remain coordinator-gated." -ForegroundColor Yellow
-  }
+if ($rate -and @("blocked","probe") -contains ([string]$rate.status).ToLowerInvariant()) {
+  Write-Host ("[WAIT] Global ChatGPT rate-limit coordinator is {0}. SYSTEM restart remains deferred until status=clear." -f $rate.status) -ForegroundColor Yellow
+  Write-Host "[INFO] This matches the supervisor's active-work/rate-limit recovery gate." -ForegroundColor Yellow
+  exit 2
 }
 
 $id = [guid]::NewGuid().ToString()
@@ -67,7 +61,9 @@ $request = [ordered]@{
 }
 
 $tmp = $RequestFile + ".tmp"
-$request | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $tmp -Encoding UTF8
+$json = $request | ConvertTo-Json -Depth 6
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+[System.IO.File]::WriteAllText($tmp, $json, $utf8NoBom)
 Move-Item -LiteralPath $tmp -Destination $RequestFile -Force
 
 Write-Host ("[REQUEST] Safe SYSTEM restart requested. id={0}" -f $id) -ForegroundColor Cyan
