@@ -271,3 +271,99 @@ export function visibleVehicleSnapshotAfterClose(
     closedAt,
   });
 }
+
+export type AuctionBidTrustOutcome = "accepted" | "rejected";
+
+export type AuctionBidTrustRecord = Readonly<{
+  bidId: string;
+  auctionId: string;
+  vehicleId: string;
+  bidderRef: string;
+  outcome: AuctionBidTrustOutcome;
+  occurredAt: string;
+  sequence: number;
+  amountCents: number;
+  currency: string;
+  sourceRef: string;
+  correlationId: string | null;
+}>;
+
+export type AcceptedBidChronologyItem = AuctionBidTrustRecord & Readonly<{
+  outcome: "accepted";
+  ordinal: number;
+}>;
+
+/**
+ * Reconstructs the authoritative accepted-bid chronology for one auction/vehicle.
+ *
+ * Rejected attempts may be supplied for completeness but are never exposed in
+ * the chronology. Authoritative sequence is the primary ordering key and must
+ * be unique. Accepted bids must be time-monotonic and strictly increase in
+ * amount so a reconstructed history cannot silently regress.
+ */
+export function buildAcceptedBidChronology(
+  auctionId: string,
+  vehicleId: string,
+  bids: readonly AuctionBidTrustRecord[],
+): readonly AcceptedBidChronologyItem[] {
+  assertNonBlank(auctionId, "auctionId");
+  assertNonBlank(vehicleId, "vehicleId");
+
+  const seenBidIds = new Set<string>();
+  const seenSequences = new Set<number>();
+
+  const normalized = bids.map((bid) => {
+    assertNonBlank(bid.bidId, "bidId");
+    assertNonBlank(bid.auctionId, "bid.auctionId");
+    assertNonBlank(bid.vehicleId, "bid.vehicleId");
+    assertNonBlank(bid.bidderRef, "bidderRef");
+    assertNonBlank(bid.sourceRef, "sourceRef");
+    if (bid.auctionId !== auctionId) {
+      throw new Error(`cross-auction bid is forbidden: expected ${auctionId}, received ${bid.auctionId}`);
+    }
+    if (bid.vehicleId !== vehicleId) {
+      throw new Error(`cross-vehicle bid is forbidden: expected ${vehicleId}, received ${bid.vehicleId}`);
+    }
+    if (seenBidIds.has(bid.bidId)) throw new Error(`duplicate bidId: ${bid.bidId}`);
+    if (!Number.isSafeInteger(bid.sequence) || bid.sequence < 1) {
+      throw new Error(`sequence must be a positive safe integer for ${bid.bidId}`);
+    }
+    if (seenSequences.has(bid.sequence)) throw new Error(`duplicate bid sequence: ${bid.sequence}`);
+    if (!Number.isSafeInteger(bid.amountCents) || bid.amountCents <= 0) {
+      throw new Error(`amountCents must be a positive safe integer for ${bid.bidId}`);
+    }
+    if (!/^[A-Z]{3}$/.test(bid.currency)) throw new Error(`currency must be ISO-like uppercase code for ${bid.bidId}`);
+    if (bid.outcome !== "accepted" && bid.outcome !== "rejected") {
+      throw new Error(`unsupported bid outcome for ${bid.bidId}`);
+    }
+    assertUtcIso(bid.occurredAt);
+    if (bid.correlationId !== null) assertNonBlank(bid.correlationId, "correlationId");
+    seenBidIds.add(bid.bidId);
+    seenSequences.add(bid.sequence);
+    return Object.freeze({...bid});
+  }).sort((a,b)=>a.sequence-b.sequence||a.bidId.localeCompare(b.bidId));
+
+  const accepted = normalized.filter((bid): bid is AuctionBidTrustRecord & { outcome: "accepted" } => bid.outcome === "accepted");
+  let previous: (AuctionBidTrustRecord & { outcome: "accepted" }) | null = null;
+  for (const bid of accepted) {
+    if (previous) {
+      if (Date.parse(bid.occurredAt) < Date.parse(previous.occurredAt)) {
+        throw new Error(`accepted bid time regression at ${bid.bidId}`);
+      }
+      if (bid.amountCents <= previous.amountCents) {
+        throw new Error(`accepted bid amount must strictly increase at ${bid.bidId}`);
+      }
+      if (bid.currency !== previous.currency) {
+        throw new Error(`accepted bid currency drift at ${bid.bidId}`);
+      }
+    }
+    previous = bid;
+  }
+
+  return Object.freeze(accepted.map((bid,index)=>Object.freeze({
+    ...bid,
+    outcome:"accepted" as const,
+    ordinal:index+1,
+  })));
+}
+
