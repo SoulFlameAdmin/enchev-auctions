@@ -45,7 +45,7 @@ function loadModules(){
     "packages/config/src/market-activation-feature-flag.ts"
   ];
   const result=spawnSync(process.execPath,[tsc,...sources,
-    "--ignoreConfig","--target","ES2022","--module","CommonJS","--moduleResolution","Node",
+    "--ignoreConfig","--target","ES2022","--module","Node16","--moduleResolution","Node16",
     "--skipLibCheck","--rootDir","packages/config/src","--outDir",tmp,"--pretty","false"
   ],{encoding:"utf8"});
   if(result.status!==0)fail("TypeScript compile failed: "+(result.stderr||result.stdout||"").trim());
