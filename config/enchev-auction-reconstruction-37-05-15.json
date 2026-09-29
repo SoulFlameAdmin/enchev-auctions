@@ -1,0 +1,70 @@
+{
+  "phase": "37",
+  "title": "Auction trust record & reconstruction",
+  "range": "37.05-37.15",
+  "tasks": [
+    {
+      "id": "37.05",
+      "name": "Extension-event chronology",
+      "kind": "feature"
+    },
+    {
+      "id": "37.06",
+      "name": "Final-result chronology",
+      "kind": "feature"
+    },
+    {
+      "id": "37.07",
+      "name": "Seller listing-change chronology",
+      "kind": "feature"
+    },
+    {
+      "id": "37.08",
+      "name": "Inspection-version chronology",
+      "kind": "feature"
+    },
+    {
+      "id": "37.09",
+      "name": "Q&A history preserved",
+      "kind": "feature"
+    },
+    {
+      "id": "37.10",
+      "name": "Admin exceptional-action chronology",
+      "kind": "feature"
+    },
+    {
+      "id": "37.11",
+      "name": "Internal immutable audit export",
+      "kind": "feature"
+    },
+    {
+      "id": "37.12",
+      "name": "Dispute evidence bundle",
+      "kind": "feature"
+    },
+    {
+      "id": "37.13",
+      "name": "Correlation IDs in reconstruction",
+      "kind": "feature"
+    },
+    {
+      "id": "37.14",
+      "name": "Tamper-evident critical-event hash chain",
+      "kind": "security"
+    },
+    {
+      "id": "37.15",
+      "name": "Complete auction reconstruction test",
+      "kind": "test"
+    }
+  ],
+  "invariants": {
+    "scope": "all reconstruction records fail closed across auction/vehicle boundaries",
+    "chronology": "authoritative sequence/version ordering cannot silently regress",
+    "immutability": "audit and evidence outputs are frozen and deterministic",
+    "correlation": "critical events require non-empty correlation IDs",
+    "tamperEvidence": "critical event chain uses SHA-256 event and rolling chain hashes",
+    "completeness": "complete reconstruction requires a terminal auction result"
+  }
+}
