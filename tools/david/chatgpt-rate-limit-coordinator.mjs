@@ -84,6 +84,36 @@ function msUntil(iso) {
 export function getRateLimitState() {
   return readStateRaw();
 }
+export async function repairExpiredProbeLease(reason = "expired-probe-reconcile") {
+  return withLock(async () => {
+    const st = readStateRaw();
+    if (st.status !== "probe") return { changed: false, state: st, reason: "not-probe" };
+
+    const remaining = msUntil(st.probeLeaseUntil);
+    if (st.probeLeaseUntil && remaining > 0) {
+      return { changed: false, state: st, reason: "probe-lease-active" };
+    }
+
+    const now = Date.now();
+    const probeHadStarted = Boolean(st.probeSendStartedAt);
+    const next = writeStateRaw({
+      ...st,
+      status: "blocked",
+      blockedUntil: new Date(now + (probeHadStarted ? RATE_LIMIT_COOLDOWN_MS : 0)).toISOString(),
+      probeOwner: null,
+      probeLeaseUntil: null,
+      probeSendStartedAt: null,
+      sendSlotOwner: null,
+      sendSlotLeaseUntil: null,
+      lastEvidence: `${st.lastEvidence || "probe"}; expired probe reconciled: ${reason}; sendStarted=${probeHadStarted ? "yes" : "no"}`
+    });
+    return {
+      changed: true,
+      state: next,
+      reason: probeHadStarted ? "expired-probe-after-send->cooldown" : "expired-probe-before-send->released"
+    };
+  });
+}
 export async function resetFreshBootTransientState(reason = "fresh-restart") {
   return withLock(async () => {
     const st = readStateRaw();
@@ -357,4 +387,14 @@ if (process.argv.includes("--self-test")) {
   if (BACKOFF_MS.join(",") !== [RATE_LIMIT_COOLDOWN_MS,RATE_LIMIT_COOLDOWN_MS,RATE_LIMIT_COOLDOWN_MS].join(",")) throw new Error("rate-limit self-test: fixed cooldown law mismatch");
   if (GLOBAL_SEND_INTERVAL_MS !== 10000 && !process.env.DAVID_GLOBAL_SEND_INTERVAL_MS) throw new Error("rate-limit self-test: default send interval must be 10s");
   console.log("DAVID_RATE_LIMIT_COORDINATOR_SELF_TEST PASS cooldown_s=" + Math.round(RATE_LIMIT_COOLDOWN_MS/1000) + " probe_owner=1 probe_lease_s=" + Math.round(PROBE_LEASE_MS/1000) + " global_send_interval_s=" + Math.round(GLOBAL_SEND_INTERVAL_MS/1000));
+}
+
+if (process.argv.includes("--repair-expired-probe")) {
+  const result = await repairExpiredProbeLease("cli-expired-probe-repair");
+  console.log("DAVID_RATE_LIMIT_PROBE_REPAIR " + JSON.stringify({
+    changed: result.changed,
+    reason: result.reason,
+    status: result.state?.status || null,
+    blockedUntil: result.state?.blockedUntil || null
+  }));
 }
