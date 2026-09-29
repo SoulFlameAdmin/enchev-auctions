@@ -1,0 +1,511 @@
+{
+  "phase": "39",
+  "title": "Real international proof",
+  "dryRunOnly": true,
+  "realCustomerDataAllowed": false,
+  "tasks": [
+    {
+      "id": "39.01",
+      "name": "Country #1 fully configuration-driven",
+      "kind": "global"
+    },
+    {
+      "id": "39.02",
+      "name": "Country #2 fully configuration-driven",
+      "kind": "global"
+    },
+    {
+      "id": "39.03",
+      "name": "Country #2 activated without auction-core rewrite",
+      "kind": "test"
+    },
+    {
+      "id": "39.04",
+      "name": "Third-language production dry run",
+      "kind": "test"
+    },
+    {
+      "id": "39.05",
+      "name": "Timezone + DST correctness",
+      "kind": "test"
+    },
+    {
+      "id": "39.06",
+      "name": "Locale date/time formatting",
+      "kind": "global"
+    },
+    {
+      "id": "39.07",
+      "name": "Locale number formatting",
+      "kind": "global"
+    },
+    {
+      "id": "39.08",
+      "name": "Metric / imperial unit profile",
+      "kind": "global"
+    },
+    {
+      "id": "39.09",
+      "name": "International address models",
+      "kind": "global"
+    },
+    {
+      "id": "39.10",
+      "name": "International phone models",
+      "kind": "global"
+    },
+    {
+      "id": "39.11",
+      "name": "Unicode normalization in all user text",
+      "kind": "global"
+    },
+    {
+      "id": "39.12",
+      "name": "RTL UI dry run",
+      "kind": "test"
+    },
+    {
+      "id": "39.13",
+      "name": "Locale fallback behavior",
+      "kind": "test"
+    },
+    {
+      "id": "39.14",
+      "name": "Country-specific KYC routing",
+      "kind": "global"
+    },
+    {
+      "id": "39.15",
+      "name": "Country-specific document profile",
+      "kind": "global"
+    },
+    {
+      "id": "39.16",
+      "name": "Country-specific provider routing",
+      "kind": "global"
+    },
+    {
+      "id": "39.17",
+      "name": "Regional data-flow/residency verification",
+      "kind": "global"
+    },
+    {
+      "id": "39.18",
+      "name": "Country activation rollback",
+      "kind": "test"
+    }
+  ],
+  "countries": {
+    "country1": {
+      "label": "Bulgaria",
+      "countryProfile": {
+        "countryCode": "BG",
+        "defaultLocale": "bg-BG",
+        "supportedLocales": [
+          "bg-BG",
+          "en-US"
+        ],
+        "timeZone": "Europe/Sofia"
+      },
+      "kycProfile": {
+        "countryCode": "BG",
+        "revision": 1,
+        "requirements": [
+          {
+            "key": "identity.government.document",
+            "required": true
+          },
+          {
+            "key": "identity.identity.match",
+            "required": true
+          }
+        ]
+      },
+      "legalProfile": {
+        "countryCode": "BG",
+        "revision": 1,
+        "requirements": [
+          {
+            "key": "notice.auction.terms",
+            "required": true,
+            "authorityRef": "proof.bg.non-authoritative.auction-terms"
+          },
+          {
+            "key": "notice.privacy",
+            "required": true,
+            "authorityRef": "proof.bg.non-authoritative.privacy"
+          }
+        ]
+      },
+      "documentProfile": {
+        "countryCode": "BG",
+        "revision": 1,
+        "documents": [
+          {
+            "key": "document.identity",
+            "subject": "participant",
+            "required": true
+          },
+          {
+            "key": "document.purchase.record",
+            "subject": "transaction",
+            "required": true
+          }
+        ]
+      },
+      "providerRoutes": [
+        {
+          "countryCode": "BG",
+          "capability": "documents",
+          "providerKey": "proof-bg-storage",
+          "mode": "dry-run",
+          "enabled": true
+        },
+        {
+          "countryCode": "BG",
+          "capability": "identity",
+          "providerKey": "proof-bg-identity",
+          "mode": "dry-run",
+          "enabled": true
+        },
+        {
+          "countryCode": "BG",
+          "capability": "notifications",
+          "providerKey": "proof-bg-notifications",
+          "mode": "dry-run",
+          "enabled": true
+        },
+        {
+          "countryCode": "BG",
+          "capability": "transport",
+          "providerKey": "proof-bg-transport",
+          "mode": "dry-run",
+          "enabled": true
+        }
+      ],
+      "residencyPolicy": {
+        "countryCode": "BG",
+        "allowedRegions": [
+          "eu-west-1"
+        ],
+        "requireKnownRegionForCustomerData": true
+      },
+      "dataPlanes": [
+        {
+          "id": "authoritative-db",
+          "region": "eu-west-1",
+          "configured": true,
+          "customerData": true
+        },
+        {
+          "id": "object-storage",
+          "region": "eu-west-1",
+          "configured": true,
+          "customerData": true
+        },
+        {
+          "id": "runtime-compute",
+          "region": "eu-west-1",
+          "configured": true,
+          "customerData": true
+        },
+        {
+          "id": "runtime-observability",
+          "region": "eu-west-1",
+          "configured": true,
+          "customerData": true
+        }
+      ]
+    },
+    "country2": {
+      "label": "Germany",
+      "countryProfile": {
+        "countryCode": "DE",
+        "defaultLocale": "de-DE",
+        "supportedLocales": [
+          "de-DE",
+          "en-US"
+        ],
+        "timeZone": "Europe/Berlin"
+      },
+      "kycProfile": {
+        "countryCode": "DE",
+        "revision": 1,
+        "requirements": [
+          {
+            "key": "identity.government.document",
+            "required": true
+          },
+          {
+            "key": "identity.identity.match",
+            "required": true
+          }
+        ]
+      },
+      "legalProfile": {
+        "countryCode": "DE",
+        "revision": 1,
+        "requirements": [
+          {
+            "key": "notice.auction.terms",
+            "required": true,
+            "authorityRef": "proof.de.non-authoritative.auction-terms"
+          },
+          {
+            "key": "notice.privacy",
+            "required": true,
+            "authorityRef": "proof.de.non-authoritative.privacy"
+          }
+        ]
+      },
+      "documentProfile": {
+        "countryCode": "DE",
+        "revision": 1,
+        "documents": [
+          {
+            "key": "document.identity",
+            "subject": "participant",
+            "required": true
+          },
+          {
+            "key": "document.purchase.record",
+            "subject": "transaction",
+            "required": true
+          }
+        ]
+      },
+      "providerRoutes": [
+        {
+          "countryCode": "DE",
+          "capability": "documents",
+          "providerKey": "proof-de-storage",
+          "mode": "dry-run",
+          "enabled": true
+        },
+        {
+          "countryCode": "DE",
+          "capability": "identity",
+          "providerKey": "proof-de-identity",
+          "mode": "dry-run",
+          "enabled": true
+        },
+        {
+          "countryCode": "DE",
+          "capability": "notifications",
+          "providerKey": "proof-de-notifications",
+          "mode": "dry-run",
+          "enabled": true
+        },
+        {
+          "countryCode": "DE",
+          "capability": "transport",
+          "providerKey": "proof-de-transport",
+          "mode": "dry-run",
+          "enabled": true
+        }
+      ],
+      "residencyPolicy": {
+        "countryCode": "DE",
+        "allowedRegions": [
+          "eu-central-1"
+        ],
+        "requireKnownRegionForCustomerData": true
+      },
+      "dataPlanes": [
+        {
+          "id": "authoritative-db",
+          "region": "eu-central-1",
+          "configured": true,
+          "customerData": true
+        },
+        {
+          "id": "object-storage",
+          "region": "eu-central-1",
+          "configured": true,
+          "customerData": true
+        },
+        {
+          "id": "runtime-compute",
+          "region": "eu-central-1",
+          "configured": true,
+          "customerData": true
+        },
+        {
+          "id": "runtime-observability",
+          "region": "eu-central-1",
+          "configured": true,
+          "customerData": true
+        }
+      ],
+      "syntheticActivationApproval": {
+        "countryCode": "DE",
+        "kycApproved": true,
+        "legalApproved": true,
+        "documentsApproved": true
+      },
+      "syntheticFeatureFlag": {
+        "countryCode": "DE",
+        "enabled": true,
+        "revision": 2
+      }
+    }
+  },
+  "thirdLanguageDryRun": {
+    "locale": "en-US",
+    "messagePath": "locales/messages/en-US.json",
+    "registryPath": "locales/translation-keys.json",
+    "productionShape": true,
+    "sideEffects": false,
+    "marketActivation": false
+  },
+  "timezoneDst": {
+    "BG": {
+      "timeZone": "Europe/Sofia",
+      "springForward": [
+        {
+          "instant": "2026-03-29T00:30:00.000Z",
+          "expectedOffsetMinutes": 120
+        },
+        {
+          "instant": "2026-03-29T01:30:00.000Z",
+          "expectedOffsetMinutes": 180
+        }
+      ],
+      "fallBack": [
+        {
+          "instant": "2026-10-25T00:30:00.000Z",
+          "expectedOffsetMinutes": 180
+        },
+        {
+          "instant": "2026-10-25T01:30:00.000Z",
+          "expectedOffsetMinutes": 120
+        }
+      ]
+    },
+    "DE": {
+      "timeZone": "Europe/Berlin",
+      "springForward": [
+        {
+          "instant": "2026-03-29T00:30:00.000Z",
+          "expectedOffsetMinutes": 60
+        },
+        {
+          "instant": "2026-03-29T01:30:00.000Z",
+          "expectedOffsetMinutes": 120
+        }
+      ],
+      "fallBack": [
+        {
+          "instant": "2026-10-25T00:30:00.000Z",
+          "expectedOffsetMinutes": 120
+        },
+        {
+          "instant": "2026-10-25T01:30:00.000Z",
+          "expectedOffsetMinutes": 60
+        }
+      ]
+    }
+  },
+  "localeFormatting": {
+    "dateInstant": "2026-09-29T07:15:00.000Z",
+    "numberValue": 1234567.89,
+    "currencyValue": 1234567.89
+  },
+  "unitProfiles": [
+    {
+      "countryCode": "BG",
+      "system": "metric",
+      "distanceUnit": "km",
+      "massUnit": "kg"
+    },
+    {
+      "countryCode": "US",
+      "system": "imperial",
+      "distanceUnit": "mi",
+      "massUnit": "lb"
+    }
+  ],
+  "contacts": {
+    "addresses": [
+      {
+        "countryCode": "BG",
+        "addressLines": [
+          "бул. „Цар Освободител“ 1"
+        ],
+        "locality": "Сливен",
+        "postalCode": "8800",
+        "organization": "ЕНЧЕВ"
+      },
+      {
+        "countryCode": "DE",
+        "addressLines": [
+          "Musterstraße 10"
+        ],
+        "locality": "München",
+        "postalCode": "80331",
+        "organization": "Enchev Proof"
+      }
+    ],
+    "phones": [
+      {
+        "rawInput": "+359 88 123 4567",
+        "e164": "+359881234567"
+      },
+      {
+        "rawInput": "+49 30 123456",
+        "e164": "+4930123456",
+        "extension": "12"
+      }
+    ]
+  },
+  "userTextFixture": {
+    "displayName": "Mitüko",
+    "note": "Автомобил 🚗",
+    "address": {
+      "city": "München",
+      "street": "Straße 1"
+    },
+    "tags": [
+      "Köln",
+      "Сливен"
+    ]
+  },
+  "rtlDryRun": {
+    "locale": "ar-SA",
+    "direction": "rtl",
+    "route": "/rtl-capability",
+    "sideEffects": false
+  },
+  "localeFallback": {
+    "countryCode": "DE",
+    "requestedLocale": "de-AT",
+    "expectedResolvedLocale": "de-DE"
+  },
+  "activationRollback": {
+    "initial": {
+      "countryCode": "DE",
+      "enabled": false,
+      "revision": 1
+    },
+    "enabled": {
+      "countryCode": "DE",
+      "enabled": true,
+      "revision": 2
+    },
+    "rolledBack": {
+      "countryCode": "DE",
+      "enabled": false,
+      "revision": 3
+    }
+  },
+  "coreRewriteProof": {
+    "verifier": "scripts/verify-country-2-without-core-rewrite.mjs",
+    "protectedRoots": [
+      "apps/api",
+      "apps/realtime",
+      "apps/worker",
+      "packages/domain",
+      "packages/contracts"
+    ]
+  }
+}
