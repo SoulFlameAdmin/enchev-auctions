@@ -208,7 +208,9 @@
     "verify:auction-reconstruction-37-05-15": "node scripts/verify-auction-reconstruction-37-05-15.mjs",
     "verify:auction-reconstruction-37-05-15:self-test": "node scripts/verify-auction-reconstruction-37-05-15.mjs --self-test",
     "verify:search-discovery-38": "node scripts/verify-search-discovery-38.mjs",
-    "verify:search-discovery-38:self-test": "node scripts/verify-search-discovery-38.mjs --self-test"
+    "verify:search-discovery-38:self-test": "node scripts/verify-search-discovery-38.mjs --self-test",
+    "verify:international-proof-39": "node scripts/verify-international-proof-39.mjs",
+    "verify:international-proof-39:self-test": "node scripts/verify-international-proof-39.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
