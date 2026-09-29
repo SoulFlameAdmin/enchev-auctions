@@ -49,7 +49,8 @@ const gates = [
   ["scripts/verify-vehicle-snapshot-37-03.mjs", "--self-test"],
   ["scripts/verify-accepted-bid-chronology-37-04.mjs", "--self-test"],
   ["scripts/verify-auction-reconstruction-37-05-15.mjs", "--self-test"],
-  ["scripts/verify-search-discovery-38.mjs", "--self-test"]
+  ["scripts/verify-search-discovery-38.mjs", "--self-test"],
+  ["scripts/verify-international-proof-39.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of gates) {
