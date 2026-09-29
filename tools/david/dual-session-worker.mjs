@@ -293,7 +293,10 @@ function cleanConversationUrl(url) {
 }
 
 function readState(file) {
-  try { return JSON.parse(fs.readFileSync(file, "utf8")); }
+  try {
+    const raw = fs.readFileSync(file, "utf8").replace(/^\uFEFF/, "");
+    return JSON.parse(raw);
+  }
   catch { return {}; }
 }
 
