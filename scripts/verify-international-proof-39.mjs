@@ -2,7 +2,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
-import { createRequire } from "node:module";
+import { pathToFileURL } from "node:url";
 
 const CONFIG_PATH="config/enchev-international-proof-39.json";
 const MASTER_PATH="app/components/MasterSystemPlanV1.tsx";
@@ -28,7 +28,7 @@ function frozenTasks(){
   });
 }
 
-function loadModules(){
+async function loadModules(){
   const tmp=fs.mkdtempSync(path.join(os.tmpdir(),"enchev-international-proof-"));
   const tsc=path.resolve("node_modules/typescript/bin/tsc");
   const sources=[
@@ -45,23 +45,35 @@ function loadModules(){
     "packages/config/src/market-activation-feature-flag.ts"
   ];
   const result=spawnSync(process.execPath,[tsc,...sources,
-    "--ignoreConfig","--target","ES2022","--module","Node16","--moduleResolution","Node16",
+    "--ignoreConfig","--target","ES2022","--module","ES2022","--moduleResolution","Bundler",
     "--skipLibCheck","--rootDir","packages/config/src","--outDir",tmp,"--pretty","false"
   ],{encoding:"utf8"});
   if(result.status!==0)fail("TypeScript compile failed: "+(result.stderr||result.stdout||"").trim());
-  const req=createRequire(import.meta.url);
+
+  for(const name of fs.readdirSync(tmp)){
+    if(!name.endsWith(".js"))continue;
+    const file=path.join(tmp,name);
+    const emitted=fs.readFileSync(file,"utf8")
+      .replace(/from "([.][/]?[^"]+?)(?<![.]js)";/g,'from "$1.js";')
+      .replace(/from '([.][/]?[^']+?)(?<![.]js)';/g,"from '$1.js';")
+      .replace(/import "([.][/]?[^"]+?)(?<![.]js)";/g,'import "$1.js";')
+      .replace(/import '([.][/]?[^']+?)(?<![.]js)';/g,"import '$1.js';");
+    fs.writeFileSync(file,emitted);
+  }
+
+  const load=async(name)=>await import(pathToFileURL(path.join(tmp,name+".js")).href+"?v="+Date.now());
   const modules={
-    proof:req(path.join(tmp,"international-proof.js")),
-    market:req(path.join(tmp,"country-market-bundle.js")),
-    providers:req(path.join(tmp,"country-provider-routing.js")),
-    residency:req(path.join(tmp,"country-data-residency-check.js")),
-    time:req(path.join(tmp,"timezone-aware-display.js")),
-    date:req(path.join(tmp,"locale-aware-date.js")),
-    fallback:req(path.join(tmp,"locale-fallback-chain.js")),
-    rtl:req(path.join(tmp,"rtl-layout-capability.js")),
-    contacts:req(path.join(tmp,"international-contact-models.js")),
-    gate:req(path.join(tmp,"market-activation-gate.js")),
-    flag:req(path.join(tmp,"market-activation-feature-flag.js"))
+    proof:await load("international-proof"),
+    market:await load("country-market-bundle"),
+    providers:await load("country-provider-routing"),
+    residency:await load("country-data-residency-check"),
+    time:await load("timezone-aware-display"),
+    date:await load("locale-aware-date"),
+    fallback:await load("locale-fallback-chain"),
+    rtl:await load("rtl-layout-capability"),
+    contacts:await load("international-contact-models"),
+    gate:await load("market-activation-gate"),
+    flag:await load("market-activation-feature-flag")
   };
   setTimeout(()=>fs.rmSync(tmp,{recursive:true,force:true}),0);
   return modules;
@@ -79,7 +91,7 @@ for(const token of ["dryRunOnly=true","realCustomerDataAllowed=false","does **no
 }
 if(!fs.readFileSync(INDEX_PATH,"utf8").includes('export * from "./international-proof";'))fail("international-proof public export missing");
 
-const m=loadModules();
+const m=await loadModules();
 const c1=config.countries.country1;
 const c2=config.countries.country2;
 
