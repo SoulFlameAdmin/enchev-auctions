@@ -45,10 +45,16 @@ if ($supervisors -ne 1) {
 }
 
 $rate = Read-JsonSafe $RateFile
-if ($rate -and @("blocked","probe") -contains ([string]$rate.status).ToLowerInvariant()) {
-  Write-Host ("[WAIT] Global ChatGPT rate-limit coordinator is {0}. SYSTEM restart is intentionally deferred." -f $rate.status) -ForegroundColor Yellow
-  Write-Host "[INFO] Re-run this script after the coordinator returns to clear." -ForegroundColor Yellow
-  exit 2
+if ($rate) {
+  $rateStatus = ([string]$rate.status).ToLowerInvariant()
+  if ($rateStatus -eq "probe") {
+    Write-Host ("[WAIT] Global ChatGPT rate-limit coordinator has an active probe owner={0}. SYSTEM restart is intentionally deferred." -f $rate.probeOwner) -ForegroundColor Yellow
+    Write-Host "[INFO] Active probe ownership must finish or expire before SYSTEM recovery." -ForegroundColor Yellow
+    exit 2
+  }
+  if ($rateStatus -eq "blocked") {
+    Write-Host "[SAFE] Global send cooldown is blocked, but SYSTEM process recovery is allowed; all new sends remain coordinator-gated." -ForegroundColor Yellow
+  }
 }
 
 $id = [guid]::NewGuid().ToString()
