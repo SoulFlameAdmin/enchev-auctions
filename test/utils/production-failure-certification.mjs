@@ -133,6 +133,85 @@ export function createProductionFailureCertificationHarness(options={}) {
       return freeze(s);
     },
 
+    simulateDuplicateEventDelivery({eventId="evt-duplicate-21",sequence=authoritativeSequence+1}={}) {
+      const id=required(eventId,"PFC_DUPLICATE_EVENT_ID_REQUIRED");
+      if(!Number.isInteger(sequence)||sequence!==authoritativeSequence+1) throw new Error("PFC_DUPLICATE_SEQUENCE_INVALID");
+      const s=baseState();
+      s.authoritativeSequence=sequence;
+      s.duplicateIgnored=true;
+      s.appliedEventIds=Object.freeze([id]);
+      s.notes.push("first-delivery-applied","duplicate-delivery-idempotent-ignore","no-second-authoritative-mutation");
+      return freeze(s);
+    },
+
+    simulateOutOfOrderEventDelivery({receivedSequence=authoritativeSequence+2}={}) {
+      if(!Number.isInteger(receivedSequence)||receivedSequence<=authoritativeSequence+1) throw new Error("PFC_OUT_OF_ORDER_SEQUENCE_INVALID");
+      const s=baseState();
+      s.biddingEnabled=false;
+      s.resyncRequired=true;
+      s.bufferedSequences=Object.freeze([receivedSequence]);
+      s.expectedSequence=authoritativeSequence+1;
+      s.notes.push("out-of-order-event-detected","event-not-applied","authoritative-resync-required");
+      return freeze(s);
+    },
+
+    simulateSequenceGapRecovery({receivedSequence=authoritativeSequence+3,snapshotSequence=receivedSequence}={}) {
+      if(!Number.isInteger(receivedSequence)||receivedSequence<=authoritativeSequence+1) throw new Error("PFC_GAP_RECEIVED_SEQUENCE_INVALID");
+      if(!Number.isInteger(snapshotSequence)||snapshotSequence<receivedSequence) throw new Error("PFC_GAP_SNAPSHOT_SEQUENCE_INVALID");
+      const s=baseState();
+      s.biddingEnabled=false;
+      s.resyncRequired=true;
+      s.expectedSequence=authoritativeSequence+1;
+      s.receivedSequence=receivedSequence;
+      s.notes.push("sequence-gap-detected","unsafe-bidding-paused","authoritative-snapshot-requested");
+      const recovered={...s};
+      recovered.authoritativeSequence=snapshotSequence;
+      recovered.biddingEnabled=true;
+      recovered.resyncRequired=false;
+      recovered.snapshotApplied=true;
+      recovered.notes=[...s.notes,"authoritative-snapshot-applied","sequence-gap-recovered"];
+      return freeze(recovered);
+    },
+
+    simulateStaleCacheRecovery({cacheSequence=authoritativeSequence-2,snapshotSequence=authoritativeSequence}={}) {
+      if(!Number.isInteger(cacheSequence)||cacheSequence<0) throw new Error("PFC_CACHE_SEQUENCE_INVALID");
+      if(cacheSequence>=authoritativeSequence) throw new Error("PFC_CACHE_NOT_STALE");
+      if(!Number.isInteger(snapshotSequence)||snapshotSequence<authoritativeSequence) throw new Error("PFC_CACHE_SNAPSHOT_SEQUENCE_INVALID");
+      const s=baseState();
+      s.biddingEnabled=false;
+      s.readModelAvailable=false;
+      s.resyncRequired=true;
+      s.cacheSequence=cacheSequence;
+      s.notes.push("stale-cache-detected","cache-discarded","authoritative-snapshot-requested");
+      const recovered={...s};
+      recovered.authoritativeSequence=snapshotSequence;
+      recovered.cacheSequence=snapshotSequence;
+      recovered.biddingEnabled=true;
+      recovered.readModelAvailable=true;
+      recovered.resyncRequired=false;
+      recovered.cacheDiscarded=true;
+      recovered.snapshotApplied=true;
+      recovered.notes=[...s.notes,"authoritative-cache-rebuilt"];
+      return freeze(recovered);
+    },
+
+    simulateClockSkew({clientNowMs,authoritativeNowMs,deadlineMs}) {
+      for(const [value,code] of [[clientNowMs,"PFC_CLIENT_CLOCK_INVALID"],[authoritativeNowMs,"PFC_AUTH_CLOCK_INVALID"],[deadlineMs,"PFC_DEADLINE_INVALID"]]) {
+        if(!Number.isSafeInteger(value)) throw new Error(code);
+      }
+      const s=baseState();
+      const authoritativeAccepted=authoritativeNowMs<=deadlineMs;
+      const clientWouldAccept=clientNowMs<=deadlineMs;
+      s.biddingEnabled=authoritativeAccepted;
+      s.clientClockIgnored=true;
+      s.clockSkewMs=clientNowMs-authoritativeNowMs;
+      s.authoritativeDecision=authoritativeAccepted?"accept":"reject-late-operation";
+      s.clientDecision=clientWouldAccept?"accept":"reject-late-operation";
+      s.notes.push("client-clock-ignored","authoritative-clock-decides");
+      if(authoritativeAccepted!==clientWouldAccept) s.notes.push("clock-skew-decision-divergence-contained");
+      return freeze(s);
+    },
+
     recover(result, nextAuthoritativeSequence=authoritativeSequence) {
       if(!result||typeof result!=="object") throw new Error("PFC_RESULT_REQUIRED");
       if(!Number.isInteger(nextAuthoritativeSequence)||nextAuthoritativeSequence<result.authoritativeSequence) {

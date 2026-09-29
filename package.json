@@ -212,7 +212,9 @@
     "verify:international-proof-39": "node scripts/verify-international-proof-39.mjs",
     "verify:international-proof-39:self-test": "node scripts/verify-international-proof-39.mjs --self-test",
     "verify:production-failure-certification-40-01-10": "node scripts/verify-production-failure-certification-40-01-10.mjs",
-    "verify:production-failure-certification-40-01-10:self-test": "node scripts/verify-production-failure-certification-40-01-10.mjs --self-test"
+    "verify:production-failure-certification-40-01-10:self-test": "node scripts/verify-production-failure-certification-40-01-10.mjs --self-test",
+    "verify:production-failure-certification-40-11-15": "node scripts/verify-production-failure-certification-40-11-15.mjs",
+    "verify:production-failure-certification-40-11-15:self-test": "node scripts/verify-production-failure-certification-40-11-15.mjs --self-test"
   },
   "dependencies": {
     "next": "latest",
