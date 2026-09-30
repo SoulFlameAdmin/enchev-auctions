@@ -1,0 +1,48 @@
+{
+  "phase": "40",
+  "range": "40.11-40.15",
+  "title": "Production failure certification — event ordering and time authority",
+  "execution": {
+    "mode": "deterministic-ci-failure-simulation",
+    "productionMutationForbidden": true,
+    "realProviderFaultInjectionForbidden": true,
+    "realCustomerDataForbidden": true
+  },
+  "tasks": [
+    {
+      "id": "40.11",
+      "name": "Duplicate event delivery",
+      "kind": "test"
+    },
+    {
+      "id": "40.12",
+      "name": "Out-of-order event delivery",
+      "kind": "test"
+    },
+    {
+      "id": "40.13",
+      "name": "Sequence-gap recovery",
+      "kind": "test"
+    },
+    {
+      "id": "40.14",
+      "name": "Stale-cache recovery",
+      "kind": "test"
+    },
+    {
+      "id": "40.15",
+      "name": "Clock-skew simulation",
+      "kind": "test"
+    }
+  ],
+  "invariants": {
+    "duplicateDeliveryIdempotent": true,
+    "outOfOrderEventRejected": true,
+    "sequenceGapRequiresAuthoritativeResync": true,
+    "staleCacheNeverAuthority": true,
+    "serverTimeAuthoritative": true,
+    "acceptedBidHistoryImmutable": true,
+    "winnerImmutable": true,
+    "deterministicEvidenceOnly": true
+  }
+}
