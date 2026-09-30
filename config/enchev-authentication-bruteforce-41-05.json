@@ -1,0 +1,46 @@
+{
+  "taskId": "41.05",
+  "title": "Authentication brute-force test",
+  "kind": "security",
+  "policy": {
+    "algorithm": "sliding-window-plus-escalating-principal-lockout",
+    "principalLimit": 5,
+    "principalWindowMs": 300000,
+    "sourceLimit": 20,
+    "sourceWindowMs": 60000,
+    "lockoutBaseMs": 30000,
+    "lockoutMaxMs": 900000,
+    "principalAndSourceBucketsIndependent": true,
+    "successClearsPrincipalFailures": true,
+    "sourceAttemptsRemainRateLimitedAfterSuccess": true
+  },
+  "security": {
+    "genericAuthenticationFailure": true,
+    "genericThrottleResponse": true,
+    "accountExistenceNotExposed": true,
+    "bucketReasonNotExposedToClient": true,
+    "perPrincipalDefenseAgainstDistributedGuessing": true,
+    "perSourceDefenseAgainstSprayingAndStuffing": true,
+    "captchaNotRequiredForCertification": true,
+    "mfaNotClaimedByThisTask": true
+  },
+  "abuseScenarios": [
+    "single-account-repeated-password-guessing",
+    "distributed-source-single-account-guessing",
+    "single-source-password-spraying",
+    "single-source-credential-stuffing",
+    "lockout-backoff",
+    "lockout-expiry",
+    "successful-authentication-reset",
+    "generic-user-enumeration-resistant-failure",
+    "generic-throttle-response",
+    "rate-limit-http-contract"
+  ],
+  "claimBoundary": {
+    "productionIdentityProviderIntegrationNotClaimed": true,
+    "productionDistributedStoreNotClaimed": true,
+    "adminMfaCertificationNotClaimed": true,
+    "rateLimitBypassCertificationRemains41_11": true,
+    "botBiddingCertificationRemains41_12": true
+  }
+}
