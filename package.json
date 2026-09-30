@@ -218,7 +218,9 @@
     "verify:production-failure-certification-40-16-19": "node scripts/verify-production-failure-certification-40-16-19.mjs",
     "verify:production-failure-certification-40-16-19:self-test": "node scripts/verify-production-failure-certification-40-16-19.mjs --self-test",
     "verify:owasp-asvs-mapping-41-01": "node scripts/verify-owasp-asvs-mapping-41-01.mjs",
-    "verify:owasp-asvs-mapping-41-01:self-test": "node scripts/verify-owasp-asvs-mapping-41-01.mjs --self-test"
+    "verify:owasp-asvs-mapping-41-01:self-test": "node scripts/verify-owasp-asvs-mapping-41-01.mjs --self-test",
+    "verify:security-abuse-certification-41-02-06": "node scripts/verify-security-abuse-certification-41-02-06.mjs",
+    "verify:security-abuse-certification-41-02-06:self-test": "node scripts/verify-security-abuse-certification-41-02-06.mjs --self-test"
   },
   "dependencies": {
     "next": "16.3.8",
