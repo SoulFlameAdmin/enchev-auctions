@@ -1,0 +1,40 @@
+{
+  "phase": "41",
+  "range": "41.02-41.06",
+  "title": "Security and abuse certification — API authorization and authentication controls",
+  "baseline": {
+    "owaspApiSecurityEdition": "2023",
+    "source": "https://api-security.owasp.org/editions/2023/en/0x11-t10/",
+    "mappingIsCertification": false
+  },
+  "tasks": [
+    {"id":"41.02","name":"OWASP API Security Top 10 mapping","kind":"security"},
+    {"id":"41.03","name":"Object-level authorization abuse test","kind":"security"},
+    {"id":"41.04","name":"Function-level authorization abuse test","kind":"security"},
+    {"id":"41.05","name":"Authentication brute-force test","kind":"security"},
+    {"id":"41.06","name":"Session fixation/revocation test","kind":"security"}
+  ],
+  "owaspApiTop10": [
+    {"id":"API1:2023","name":"Broken Object Level Authorization","controls":["object-scope-deny-by-default","owner-assignment-org-scope"]},
+    {"id":"API2:2023","name":"Broken Authentication","controls":["brute-force-budget","temporary-lockout","session-rotation","session-revocation"]},
+    {"id":"API3:2023","name":"Broken Object Property Level Authorization","controls":["explicit-capability-contract","server-side-object-scope"]},
+    {"id":"API4:2023","name":"Unrestricted Resource Consumption","controls":["24.08-rate-limit-response-contract"]},
+    {"id":"API5:2023","name":"Broken Function Level Authorization","controls":["registered-capability-map","default-deny-unknown-capability"]},
+    {"id":"API6:2023","name":"Unrestricted Access to Sensitive Business Flows","controls":["role-capability-boundaries","authoritative-auction-path"]},
+    {"id":"API7:2023","name":"Server Side Request Forgery","controls":["future-41.13-ssrf-assessment"]},
+    {"id":"API8:2023","name":"Security Misconfiguration","controls":["secure-defaults","ci-security-scans"]},
+    {"id":"API9:2023","name":"Improper Inventory Management","controls":["24.09-api-endpoint-inventory","24.10-api-versioning-policy"]},
+    {"id":"API10:2023","name":"Unsafe Consumption of APIs","controls":["provider-contracts","fail-closed-provider-boundaries"]}
+  ],
+  "invariants": {
+    "defaultDeny": true,
+    "clientOwnershipNeverTrusted": true,
+    "unknownCapabilityDenied": true,
+    "crossObjectAccessDenied": true,
+    "bruteForceLockoutRequired": true,
+    "authSuccessResetsFailureBudget": true,
+    "sessionIdRotatesOnAuthentication": true,
+    "revokedSessionRejected": true,
+    "preAuthSessionRejected": true
+  }
+}
