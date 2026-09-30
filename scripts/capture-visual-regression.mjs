@@ -86,11 +86,13 @@ async function verifyDP204AppShell(call,viewport){
   if(viewport.mobile){
     if(before.desktopDisplay!=="none")fail(`DP2-04 ${viewport.name} desktop nav must be hidden`);
     if(before.menuDisplay==="none"||before.menu.width<44||before.menu.height<44)fail(`DP2-04 ${viewport.name} menu trigger is not visible/touch sized`);
-    await call("Runtime.evaluate",{expression:"document.querySelector('.eaAppMenuButton')?.click()"});
     let open=await read();
-    for(let attempt=0;attempt<100&&(open.shellOpen!=="true"||open.expanded!=="true"||open.layerVisibility!=="visible"||!String(open.focusedClass).includes("eaAppMobileClose"));attempt++){
-      await sleep(50);
-      open=await read();
+    for(let clickAttempt=0;clickAttempt<10&&(open.shellOpen!=="true"||open.expanded!=="true"||open.layerVisibility!=="visible"||!String(open.focusedClass).includes("eaAppMobileClose"));clickAttempt++){
+      await call("Runtime.evaluate",{expression:"document.querySelector('.eaAppMenuButton')?.click()"});
+      for(let settleAttempt=0;settleAttempt<10&&(open.shellOpen!=="true"||open.expanded!=="true"||open.layerVisibility!=="visible"||!String(open.focusedClass).includes("eaAppMobileClose"));settleAttempt++){
+        await sleep(50);
+        open=await read();
+      }
     }
     if(open.shellOpen!=="true"||open.expanded!=="true"||open.layerVisibility!=="visible")fail(`DP2-04 ${viewport.name} mobile drawer did not open shellOpen=${open.shellOpen} expanded=${open.expanded} visibility=${open.layerVisibility}`);
     if(open.drawer.left<0||open.drawer.right>open.viewportWidth+3||open.drawer.width<280)fail(`DP2-04 ${viewport.name} drawer escapes viewport`);
