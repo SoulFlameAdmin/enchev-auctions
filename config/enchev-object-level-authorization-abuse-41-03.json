@@ -1,0 +1,63 @@
+{
+  "taskId": "41.03",
+  "title": "Object-level authorization abuse test",
+  "kind": "security",
+  "authority": {
+    "defaultDeny": true,
+    "clientProvidedOwnershipTrusted": false,
+    "uiVisibilityIsAuthorization": false,
+    "governanceSupabaseAuthoritative": false
+  },
+  "objects": [
+    {
+      "object": "watchlist-entry",
+      "ownerKey": "user_id",
+      "controls": ["postgresql-rls","domain-user-scope"],
+      "abuseCases": ["foreign-select","foreign-insert","foreign-delete","broad-policy-bypass"]
+    },
+    {
+      "object": "buyer-auction-projection",
+      "ownerKey": "userId",
+      "controls": ["domain-user-filter","authoritative-auction-projection"],
+      "abuseCases": ["foreign-bidding-read","foreign-leading-read","foreign-panel-read"]
+    },
+    {
+      "object": "seller-listing-draft",
+      "ownerKey": "sellerId",
+      "controls": ["domain-owner-check","optimistic-revision"],
+      "abuseCases": ["foreign-autosave"]
+    },
+    {
+      "object": "seller-reserve-state",
+      "ownerKey": "sellerId",
+      "controls": ["domain-owner-check","mutation-id-idempotency"],
+      "abuseCases": ["foreign-reserve-lowering"]
+    },
+    {
+      "object": "seller-verified-reply",
+      "ownerKey": "sellerId",
+      "controls": ["verification-seller-binding","question-vehicle-binding"],
+      "abuseCases": ["foreign-verification-reuse"]
+    },
+    {
+      "object": "seller-live-presence",
+      "ownerKey": "sellerId+auctionId",
+      "controls": ["domain-scope-binding","sequence-monotonicity"],
+      "abuseCases": ["foreign-seller-scope-switch","foreign-auction-scope-switch"]
+    }
+  ],
+  "acceptance": {
+    "crossObjectIdSwapRejected": true,
+    "crossUserProjectionLeakForbidden": true,
+    "crossSellerMutationRejected": true,
+    "databaseOwnerPolicyRequired": true,
+    "securityDefinerBypassForbidden": true,
+    "acceptedBidOrWinnerMutationForbidden": true,
+    "deterministicEvidenceOnly": true
+  },
+  "persistence": {
+    "watchlistMigration": "supabase/migrations/20260926211000_buyer_workspace_foundation.sql",
+    "liveGovernanceProjectApply": false,
+    "reason": "the connected Supabase project is governance-only and auction_authority=false; 41.03 certifies repository authorization contracts without copying auction business state there"
+  }
+}
