@@ -231,7 +231,7 @@ export function createProductionFailureCertificationHarness(options={}) {
       }
       const ids=scenarioIds.map((id)=>required(id,"PFC_EVIDENCE_SCENARIO_ID_REQUIRED"));
       if(new Set(ids).size!==ids.length) throw new Error("PFC_EVIDENCE_SCENARIO_DUPLICATE");
-      if(!ids.every((id)=>/^40\\.(0[1-9]|1[0-6])$/.test(id))) throw new Error("PFC_EVIDENCE_SCENARIO_ID_INVALID");
+      if(!ids.every((id)=>/^40\.(0[1-9]|1[0-6])$/.test(id))) throw new Error("PFC_EVIDENCE_SCENARIO_ID_INVALID");
       const bidHistoryIntact=states.every((state)=>JSON.stringify(state?.preservedAcceptedBidIds)===JSON.stringify(["bid-1","bid-2"]));
       const winnerIntact=states.every((state)=>state?.winnerId==="buyer-2");
       if(!bidHistoryIntact) throw new Error("PFC_BID_HISTORY_CORRUPTION");
