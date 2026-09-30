@@ -1,0 +1,50 @@
+{
+  "taskId": "41.07",
+  "title": "Admin MFA enforcement test",
+  "kind": "security",
+  "policy": {
+    "requiredAal": 2,
+    "minDistinctFactorClasses": 2,
+    "maxStepUpAgeMs": 900000,
+    "serverVerifiedAssuranceOnly": true,
+    "sessionBoundAssurance": true,
+    "securityVersionBoundAssurance": true,
+    "freshStepUpRequired": true,
+    "adminAndSecurityAdminProtected": true,
+    "roleAndPermissionChecksStillRequired": true
+  },
+  "protectedBehavior": {
+    "adminWithoutMfaRejected": true,
+    "securityAdminWithoutMfaRejected": true,
+    "aal1Rejected": true,
+    "singleFactorClassRejected": true,
+    "staleMfaRejected": true,
+    "foreignActorAssuranceRejected": true,
+    "foreignSessionAssuranceRejected": true,
+    "staleSecurityVersionRejected": true,
+    "clientAssertedMfaRejected": true,
+    "expiredSessionRejectedBeforeMfa": true,
+    "nonPrivilegedRolesDoNotGainPrivilegeFromMfa": true
+  },
+  "abuseScenarios": [
+    "admin-no-mfa",
+    "security-admin-no-mfa",
+    "aal1-only",
+    "two-factors-same-class",
+    "stale-step-up",
+    "foreign-actor-assurance",
+    "foreign-session-assurance",
+    "stale-security-version",
+    "client-asserted-assurance",
+    "expired-session-with-valid-mfa",
+    "mfa-without-role-or-permission",
+    "valid-admin-two-factor-step-up"
+  ],
+  "claimBoundary": {
+    "productionMfaProviderIntegrationNotClaimed": true,
+    "factorEnrollmentUxNotClaimed": true,
+    "recoveryFlowNotClaimed": true,
+    "phishingResistantMfaNotClaimed": true,
+    "privilegeEscalationCertificationRemains41_08": true
+  }
+}
