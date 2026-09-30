@@ -1,0 +1,44 @@
+{
+  "taskId": "41.04",
+  "title": "Function-level authorization abuse test",
+  "kind": "security",
+  "authority": {
+    "serverSessionContextRequired": true,
+    "defaultDeny": true,
+    "explicitPermissionRequired": true,
+    "roleAloneIsInsufficient": true,
+    "wildcardPermissionUnsupported": true,
+    "uiVisibilityIsAuthorization": false,
+    "inactiveAccountDenied": true
+  },
+  "capabilities": [
+    {"id":"buyer.submit-bid","roles":["buyer"],"scope":"own"},
+    {"id":"seller.autosave-listing","roles":["seller"],"scope":"own"},
+    {"id":"seller.lower-reserve","roles":["seller"],"scope":"own"},
+    {"id":"support.manage-case","roles":["support","admin"],"scope":"assigned"},
+    {"id":"compliance.review-identity","roles":["compliance","admin"],"scope":"assigned"},
+    {"id":"inspector.submit-inspection","roles":["inspector","admin"],"scope":"assigned"},
+    {"id":"yard.update-custody","roles":["yard","admin"],"scope":"assigned"},
+    {"id":"auctioneer.control-lane","roles":["auctioneer","admin"],"scope":"assigned"},
+    {"id":"admin.manage-users","roles":["admin"],"scope":"global"},
+    {"id":"admin.manage-feature-flags","roles":["admin"],"scope":"global"},
+    {"id":"security.break-glass","roles":["security-admin"],"scope":"global"}
+  ],
+  "acceptance": {
+    "horizontalFunctionEscalationRejected": true,
+    "verticalFunctionEscalationRejected": true,
+    "crossRoleFunctionReuseRejected": true,
+    "missingPermissionRejected": true,
+    "foreignOwnScopeRejected": true,
+    "unassignedScopeRejected": true,
+    "clientContextRejected": true,
+    "restrictedOrSuspendedRejected": true,
+    "acceptedBidOrWinnerMutationForbidden": true,
+    "deterministicEvidenceOnly": true
+  },
+  "claimBoundary": {
+    "doesNotClaimAdminMfaCertification": true,
+    "doesNotClaimPrivilegeEscalationTaskComplete": true,
+    "doesNotClaimWebsocketAuthorizationTaskComplete": true
+  }
+}
