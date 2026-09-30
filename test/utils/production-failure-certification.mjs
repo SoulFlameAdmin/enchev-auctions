@@ -133,6 +133,80 @@ export function createProductionFailureCertificationHarness(options={}) {
       return freeze(s);
     },
 
+    simulateDuplicateEventDelivery({eventId="evt-40-11", deliveries=2}={}) {
+      const id=required(eventId,"PFC_EVENT_ID_REQUIRED");
+      if(!Number.isInteger(deliveries)||deliveries<2||deliveries>100) throw new Error("PFC_DUPLICATE_DELIVERIES_INVALID");
+      const s=baseState();
+      s.processedEventIds=[id];
+      s.appliedMutationCount=1;
+      s.ignoredDuplicateDeliveries=deliveries-1;
+      s.notes.push("duplicate-event-detected","idempotency-key-preserved","duplicate-deliveries-ignored");
+      return freeze(s);
+    },
+
+    simulateOutOfOrderEventDelivery({lastAppliedSequence=authoritativeSequence, incomingSequence=authoritativeSequence-1}={}) {
+      if(!Number.isInteger(lastAppliedSequence)||lastAppliedSequence<1) throw new Error("PFC_LAST_APPLIED_SEQUENCE_INVALID");
+      if(!Number.isInteger(incomingSequence)||incomingSequence<0) throw new Error("PFC_INCOMING_SEQUENCE_INVALID");
+      if(incomingSequence>=lastAppliedSequence) throw new Error("PFC_OUT_OF_ORDER_SCENARIO_INVALID");
+      const s=baseState();
+      s.biddingEnabled=false;
+      s.readModelAvailable=false;
+      s.resyncRequired=true;
+      s.lastAppliedSequence=lastAppliedSequence;
+      s.rejectedIncomingSequence=incomingSequence;
+      s.notes.push("out-of-order-event-rejected","projection-frozen","authoritative-resync-required");
+      return freeze(s);
+    },
+
+    simulateSequenceGapRecovery({clientSequence=authoritativeSequence-3, incomingSequence=authoritativeSequence}={}) {
+      if(!Number.isInteger(clientSequence)||clientSequence<0) throw new Error("PFC_GAP_CLIENT_SEQUENCE_INVALID");
+      if(!Number.isInteger(incomingSequence)||incomingSequence<1) throw new Error("PFC_GAP_INCOMING_SEQUENCE_INVALID");
+      if(incomingSequence<=clientSequence+1) throw new Error("PFC_SEQUENCE_GAP_REQUIRED");
+      const s=baseState();
+      s.biddingEnabled=false;
+      s.readModelAvailable=false;
+      s.resyncRequired=true;
+      s.clientSequence=clientSequence;
+      s.incomingSequence=incomingSequence;
+      s.missingSequenceFrom=clientSequence+1;
+      s.missingSequenceTo=incomingSequence-1;
+      s.notes.push("sequence-gap-detected","incremental-state-rejected","authoritative-resync-required");
+      return freeze(s);
+    },
+
+    simulateStaleCacheRecovery({cacheSequence=authoritativeSequence-2, sourceSequence=authoritativeSequence}={}) {
+      if(!Number.isInteger(cacheSequence)||cacheSequence<0) throw new Error("PFC_CACHE_SEQUENCE_INVALID");
+      if(!Number.isInteger(sourceSequence)||sourceSequence<1) throw new Error("PFC_SOURCE_SEQUENCE_INVALID");
+      if(cacheSequence>=sourceSequence) throw new Error("PFC_STALE_CACHE_SCENARIO_INVALID");
+      const s=baseState();
+      s.biddingEnabled=false;
+      s.readModelAvailable=false;
+      s.resyncRequired=true;
+      s.cacheSequence=cacheSequence;
+      s.sourceSequence=sourceSequence;
+      s.notes.push("stale-cache-detected","cache-never-authority","authoritative-cache-rebuild-required");
+      return freeze(s);
+    },
+
+    simulateClockSkew({clientNowMs, serverNowMs, closesAtMs}={}) {
+      for(const [value,code] of [[clientNowMs,"PFC_CLIENT_TIME_INVALID"],[serverNowMs,"PFC_SERVER_TIME_INVALID"],[closesAtMs,"PFC_CLOSE_TIME_INVALID"]]) {
+        if(!Number.isFinite(value)||value<0) throw new Error(code);
+      }
+      const s=baseState();
+      const serverOpen=serverNowMs<closesAtMs;
+      const clientOpen=clientNowMs<closesAtMs;
+      s.biddingEnabled=serverOpen;
+      s.serverOpen=serverOpen;
+      s.clientOpen=clientOpen;
+      s.clientClockIgnored=clientOpen!==serverOpen;
+      s.serverNowMs=serverNowMs;
+      s.clientNowMs=clientNowMs;
+      s.closesAtMs=closesAtMs;
+      s.notes.push("server-time-authoritative");
+      if(clientOpen!==serverOpen) s.notes.push("client-clock-disagreement-ignored");
+      return freeze(s);
+    },
+
     recover(result, nextAuthoritativeSequence=authoritativeSequence) {
       if(!result||typeof result!=="object") throw new Error("PFC_RESULT_REQUIRED");
       if(!Number.isInteger(nextAuthoritativeSequence)||nextAuthoritativeSequence<result.authoritativeSequence) {
