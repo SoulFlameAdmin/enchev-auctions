@@ -88,6 +88,7 @@ function withPrunedState(
   sourceAttempts[ctx.sourceKey]=prune(sourceAttempts[ctx.sourceKey],ctx.nowMs,policy.sourceWindowMs);
   const lockout=principalLockouts[ctx.principalKey];
   if(lockout&&lockout.untilMs<=ctx.nowMs){
+    principalFailures[ctx.principalKey]=Object.freeze([]);
     principalLockouts[ctx.principalKey]=Object.freeze({untilMs:lockout.untilMs,level:lockout.level});
   }
   return Object.freeze({
