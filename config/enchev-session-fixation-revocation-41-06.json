@@ -1,0 +1,48 @@
+{
+  "taskId": "41.06",
+  "title": "Session fixation/revocation test",
+  "kind": "security",
+  "policy": {
+    "absoluteTtlMs": 43200000,
+    "idleTimeoutMs": 1800000,
+    "minSessionIdLength": 32,
+    "serverIssuedSessionIdsOnly": true,
+    "rotateOnAuthentication": true,
+    "rotateOnPrivilegeChange": true,
+    "rotateOnPasswordChange": true,
+    "oldSessionInvalidAfterRotation": true,
+    "logoutRevokesPresentedSession": true,
+    "revokeAllSupported": true,
+    "absoluteExpiryFailClosed": true,
+    "idleExpiryFailClosed": true
+  },
+  "cookie": {
+    "name": "__Host-enchev-session",
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "lax",
+    "path": "/",
+    "domain": null
+  },
+  "abuseScenarios": [
+    "client-chosen-session-id-fixation",
+    "authentication-session-id-rotation",
+    "privilege-change-session-id-rotation",
+    "password-change-session-id-rotation",
+    "old-session-replay-after-rotation",
+    "logout-replay",
+    "revoke-all-replay",
+    "cross-user-session-reuse",
+    "security-version-staleness",
+    "idle-timeout",
+    "absolute-timeout",
+    "session-id-collision"
+  ],
+  "claimBoundary": {
+    "productionIdentityProviderSessionIntegrationNotClaimed": true,
+    "productionDistributedRevocationStoreNotClaimed": true,
+    "browserCookieEmissionNotClaimed": true,
+    "adminMfaCertificationRemains41_07": true,
+    "privilegeEscalationCertificationRemains41_08": true
+  }
+}

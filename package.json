@@ -226,7 +226,9 @@
     "verify:function-level-authorization-abuse-41-04": "node scripts/verify-function-level-authorization-abuse-41-04.mjs",
     "verify:function-level-authorization-abuse-41-04:self-test": "node scripts/verify-function-level-authorization-abuse-41-04.mjs --self-test",
     "verify:authentication-bruteforce-41-05": "node scripts/verify-authentication-bruteforce-41-05.mjs",
-    "verify:authentication-bruteforce-41-05:self-test": "node scripts/verify-authentication-bruteforce-41-05.mjs --self-test"
+    "verify:authentication-bruteforce-41-05:self-test": "node scripts/verify-authentication-bruteforce-41-05.mjs --self-test",
+    "verify:session-fixation-revocation-41-06": "node scripts/verify-session-fixation-revocation-41-06.mjs",
+    "verify:session-fixation-revocation-41-06:self-test": "node scripts/verify-session-fixation-revocation-41-06.mjs --self-test"
   },
   "dependencies": {
     "next": "16.3.8",
