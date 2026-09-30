@@ -52,7 +52,9 @@ const gates = [
   ["scripts/verify-search-discovery-38.mjs", "--self-test"],
   ["scripts/verify-international-proof-39.mjs", "--self-test"],
   ["scripts/verify-production-failure-certification-40-01-10.mjs", "--self-test"],
-  ["scripts/verify-production-failure-certification-40-11-15.mjs", "--self-test"]
+  ["scripts/verify-production-failure-certification-40-11-15.mjs", "--self-test"],
+  ["scripts/verify-production-failure-certification-40-16-19.mjs", "--self-test"],
+  ["scripts/verify-owasp-asvs-mapping-41-01.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of gates) {
