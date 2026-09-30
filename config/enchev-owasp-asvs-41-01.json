@@ -1,0 +1,35 @@
+{
+  "taskId": "41.01",
+  "title": "OWASP ASVS control mapping",
+  "standard": {
+    "name": "OWASP Application Security Verification Standard",
+    "version": "5.0.0",
+    "officialUrl": "https://owasp.org/projects/asvs",
+    "requirementReferencePrefix": "v5.0.0-"
+  },
+  "claimBoundary": {
+    "mappingIsNotCertification": true,
+    "controlPassNotImplied": true,
+    "externalPenetrationTestNotImplied": true,
+    "requirementLevelEvidenceMustBeAddedBeforeClaimingASVSCertification": true
+  },
+  "mapping": [
+    {"chapter":1,"name":"Encoding and Sanitization","applicable":true,"planTasks":["24.03","16.17","41.14"],"verificationApproach":"schema validation, static analysis and injection-focused testing"},
+    {"chapter":2,"name":"Validation and Business Logic","applicable":true,"planTasks":["08.01","09.01","11.01","24.03"],"verificationApproach":"authoritative state-machine, transaction and business-rule tests"},
+    {"chapter":3,"name":"Web Frontend Security","applicable":true,"planTasks":["16.04","16.05","28.01"],"verificationApproach":"secure headers, CSRF review and browser security checks"},
+    {"chapter":4,"name":"API and Web Service","applicable":true,"planTasks":["24.01","24.07","24.08","24.11","24.12"],"verificationApproach":"OpenAPI/contracts, idempotency, rate limits, webhook signatures and WebSocket registry"},
+    {"chapter":5,"name":"File Handling","applicable":true,"planTasks":["06.08","06.09","16.06","16.07","41.14"],"verificationApproach":"signed upload, type/size validation and hostile-content testing"},
+    {"chapter":6,"name":"Authentication","applicable":true,"planTasks":["04.01","04.02","04.05","41.05"],"verificationApproach":"authentication flows, MFA and brute-force certification"},
+    {"chapter":7,"name":"Session Management","applicable":true,"planTasks":["04.06","41.06"],"verificationApproach":"session revocation, fixation and lifecycle tests"},
+    {"chapter":8,"name":"Authorization","applicable":true,"planTasks":["04.04","16.01","16.15","41.03","41.04","41.08","41.09"],"verificationApproach":"RBAC, object/function-level authorization and privilege-escalation tests"},
+    {"chapter":9,"name":"Self Contained Tokens","applicable":true,"planTasks":["04.06","16.06","24.11"],"verificationApproach":"token lifecycle, signed-resource and signature validation review"},
+    {"chapter":10,"name":"OAuth and OIDC","applicable":true,"planTasks":["04.01","26.14"],"verificationApproach":"identity-provider boundary and CI OIDC trust-policy review"},
+    {"chapter":11,"name":"Cryptography","applicable":true,"planTasks":["16.08","16.09","16.10"],"verificationApproach":"secrets, key rotation and least-privilege credential review"},
+    {"chapter":12,"name":"Secure Communication","applicable":true,"planTasks":["10.02","16.04","24.12"],"verificationApproach":"authenticated realtime transport and secure-communication configuration review"},
+    {"chapter":13,"name":"Configuration","applicable":true,"planTasks":["01.08","16.08","23.02","26.14"],"verificationApproach":"environment validation, secrets and production-configuration gates"},
+    {"chapter":14,"name":"Data Protection","applicable":true,"planTasks":["15.05","29.01","29.02","29.03","29.10","29.11"],"verificationApproach":"classification, minimization, PII redaction and sensitive-access logging"},
+    {"chapter":15,"name":"Secure Coding and Architecture","applicable":true,"planTasks":["00.03","00.04","02.10","16.13","16.14","26.11","26.12","26.13"],"verificationApproach":"architecture invariants, threat model, trust boundaries and supply-chain controls"},
+    {"chapter":16,"name":"Security Logging and Error Handling","applicable":true,"planTasks":["04.08","17.01","17.04","24.04","24.05","37.11"],"verificationApproach":"audit trails, structured errors, correlation IDs and reconstruction evidence"},
+    {"chapter":17,"name":"WebRTC","applicable":false,"planTasks":[],"verificationApproach":"not currently in Enchev auction product scope","rationale":"No WebRTC feature is part of the current Enchev Auctions authoritative or user-facing auction path.","reviewTrigger":"Any future introduction of browser peer-to-peer audio, video or data channels requires chapter 17 remapping before release."}
+  ]
+}
