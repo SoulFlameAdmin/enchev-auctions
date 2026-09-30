@@ -35,11 +35,13 @@ export function createProductionFailureCertificationHarness(options={}) {
     notes:[]
   });
 
-  const freeze=result=>Object.freeze({
-    ...result,
-    preservedAcceptedBidIds:Object.freeze([...result.preservedAcceptedBidIds]),
-    notes:Object.freeze([...result.notes])
-  });
+  const freeze=result=>{
+    const copy={...result};
+    for(const [key,value] of Object.entries(copy)){
+      if(Array.isArray(value)) copy[key]=Object.freeze([...value]);
+    }
+    return Object.freeze(copy);
+  };
 
   return {
     simulateRealtimeProcessCrashDuringActiveAuction() {
@@ -205,6 +207,46 @@ export function createProductionFailureCertificationHarness(options={}) {
       s.notes.push("server-time-authoritative");
       if(clientOpen!==serverOpen) s.notes.push("client-clock-disagreement-ignored");
       return freeze(s);
+    },
+
+    simulateServiceRestartWithActiveRooms({roomIds=["room-a","room-b"], clientSequence=authoritativeSequence-1}={}) {
+      if(!Array.isArray(roomIds)||roomIds.length<1) throw new Error("PFC_ACTIVE_ROOMS_REQUIRED");
+      const normalized=roomIds.map((id)=>required(id,"PFC_ROOM_ID_REQUIRED"));
+      if(new Set(normalized).size!==normalized.length) throw new Error("PFC_DUPLICATE_ROOM_ID");
+      if(!Number.isInteger(clientSequence)||clientSequence<0) throw new Error("PFC_RESTART_CLIENT_SEQUENCE_INVALID");
+      const s=baseState();
+      s.biddingEnabled=false;
+      s.readModelAvailable=false;
+      s.reconnectRequired=true;
+      s.resyncRequired=true;
+      s.activeRoomIds=normalized;
+      s.clientSequence=clientSequence;
+      s.notes.push("service-restarted","active-rooms-rejoin-required","authoritative-resync-before-bidding");
+      return freeze(s);
+    },
+
+    captureFailureDrillEvidence({scenarioIds, states}={}) {
+      if(!Array.isArray(scenarioIds)||!Array.isArray(states)||scenarioIds.length<1||scenarioIds.length!==states.length) {
+        throw new Error("PFC_EVIDENCE_MATRIX_INVALID");
+      }
+      const ids=scenarioIds.map((id)=>required(id,"PFC_EVIDENCE_SCENARIO_ID_REQUIRED"));
+      if(new Set(ids).size!==ids.length) throw new Error("PFC_EVIDENCE_SCENARIO_DUPLICATE");
+      if(!ids.every((id)=>/^40\.(0[1-9]|1[0-6])$/.test(id))) throw new Error("PFC_EVIDENCE_SCENARIO_ID_INVALID");
+      const bidHistoryIntact=states.every((state)=>JSON.stringify(state?.preservedAcceptedBidIds)===JSON.stringify(["bid-1","bid-2"]));
+      const winnerIntact=states.every((state)=>state?.winnerId==="buyer-2");
+      if(!bidHistoryIntact) throw new Error("PFC_BID_HISTORY_CORRUPTION");
+      if(!winnerIntact) throw new Error("PFC_WINNER_CORRUPTION");
+      return Object.freeze({
+        captureVersion:1,
+        auctionId,
+        scenarioIds:Object.freeze([...ids]),
+        scenarioCount:ids.length,
+        bidHistoryIntact,
+        winnerIntact,
+        authoritativeSequence,
+        productionMutation:false,
+        evidenceCaptured:true
+      });
     },
 
     recover(result, nextAuthoritativeSequence=authoritativeSequence) {

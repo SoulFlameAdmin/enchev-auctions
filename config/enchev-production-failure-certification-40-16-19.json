@@ -1,0 +1,24 @@
+{
+  "phase": "40",
+  "range": "40.16-40.19",
+  "title": "Production failure certification — restart integrity and captured evidence",
+  "execution": {
+    "mode": "deterministic-ci-failure-simulation",
+    "productionMutationForbidden": true,
+    "realProviderFaultInjectionForbidden": true,
+    "realCustomerDataForbidden": true
+  },
+  "tasks": [
+    {"id":"40.16","name":"Service restart with active rooms","kind":"test"},
+    {"id":"40.17","name":"No bid-history corruption after failure","kind":"test"},
+    {"id":"40.18","name":"No winner corruption after failure","kind":"test"},
+    {"id":"40.19","name":"Failure drill evidence captured","kind":"feature"}
+  ],
+  "invariants": {
+    "activeRoomsRequireRejoinAndAuthoritativeResync": true,
+    "bidHistoryImmutableAcrossFailureMatrix": true,
+    "winnerImmutableAcrossFailureMatrix": true,
+    "structuredEvidenceCaptureRequired": true,
+    "deterministicEvidenceOnly": true
+  }
+}
