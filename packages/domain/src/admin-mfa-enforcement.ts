@@ -3,12 +3,12 @@ import {
   type FunctionAuthorizationContext,
   type FunctionAuthorizationScope,
   type FunctionCapability,
-} from "./function-authorization.ts";
+} from "./function-authorization.js";
 import {
   assertAuthenticatedSession,
   type SessionSecurityPolicy,
   type SessionSecurityState,
-} from "./session-security.ts";
+} from "./session-security.js";
 
 export type MfaFactorClass = "knowledge" | "possession" | "inherence";
 export type MfaFactorEvidence = Readonly<{
