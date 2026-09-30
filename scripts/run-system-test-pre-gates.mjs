@@ -56,7 +56,8 @@ const gates = [
   ["scripts/verify-production-failure-certification-40-16-19.mjs", "--self-test"],
   ["scripts/verify-owasp-asvs-mapping-41-01.mjs", "--self-test"],
   ["scripts/verify-owasp-api-top10-mapping-41-02.mjs", "--self-test"],
-  ["scripts/verify-object-level-authorization-abuse-41-03.mjs", "--self-test"]
+  ["scripts/verify-object-level-authorization-abuse-41-03.mjs", "--self-test"],
+  ["scripts/verify-function-level-authorization-abuse-41-04.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of gates) {
