@@ -1,0 +1,79 @@
+{
+  "taskId": "41.02",
+  "title": "OWASP API Security Top 10 mapping",
+  "standard": {
+    "name": "OWASP API Security Top 10",
+    "edition": "2023",
+    "officialUrl": "https://api-security.owasp.org/editions/2023/en/0x11-t10/",
+    "riskReferencePrefix": "API"
+  },
+  "claimBoundary": {
+    "mappingIsNotCertification": true,
+    "riskPassNotImplied": true,
+    "externalPenetrationTestNotImplied": true,
+    "phase41AbuseTestsRemainRequired": true,
+    "futureEditionRequiresExplicitRemap": true
+  },
+  "mapping": [
+    {
+      "risk": "API1:2023",
+      "name": "Broken Object Level Authorization",
+      "planTasks": ["04.04","16.01","16.15","41.03"],
+      "verificationApproach": "RBAC plus object-level authorization abuse testing on every identifier-driven data access path"
+    },
+    {
+      "risk": "API2:2023",
+      "name": "Broken Authentication",
+      "planTasks": ["04.01","04.02","04.05","41.05","41.06","41.07"],
+      "verificationApproach": "authentication lifecycle, MFA, brute-force resistance, session revocation and admin enforcement"
+    },
+    {
+      "risk": "API3:2023",
+      "name": "Broken Object Property Level Authorization",
+      "planTasks": ["04.04","24.03","16.15","41.03","41.04"],
+      "verificationApproach": "request/response schema enforcement plus field/property authorization and over-posting/over-read abuse tests"
+    },
+    {
+      "risk": "API4:2023",
+      "name": "Unrestricted Resource Consumption",
+      "planTasks": ["16.02","24.08","27.09","27.10","41.11"],
+      "verificationApproach": "rate limits, timeout/retry budgets and rate-limit bypass certification for expensive or high-volume API paths"
+    },
+    {
+      "risk": "API5:2023",
+      "name": "Broken Function Level Authorization",
+      "planTasks": ["04.04","16.01","41.04","41.08"],
+      "verificationApproach": "role/function authorization matrix with privilege-escalation and restricted-function abuse tests"
+    },
+    {
+      "risk": "API6:2023",
+      "name": "Unrestricted Access to Sensitive Business Flows",
+      "planTasks": ["08.01","09.01","11.01","16.03","41.12"],
+      "verificationApproach": "authoritative auction state machines and anti-automation controls around bidding, closing and other sensitive flows"
+    },
+    {
+      "risk": "API7:2023",
+      "name": "Server Side Request Forgery",
+      "planTasks": ["16.14","41.13"],
+      "verificationApproach": "trust-boundary review plus explicit SSRF assessment for server-side outbound request capabilities"
+    },
+    {
+      "risk": "API8:2023",
+      "name": "Security Misconfiguration",
+      "planTasks": ["01.08","16.04","16.08","23.02","26.14"],
+      "verificationApproach": "environment validation, secure headers, secrets controls, production configuration review and CI secret scoping"
+    },
+    {
+      "risk": "API9:2023",
+      "name": "Improper Inventory Management",
+      "planTasks": ["24.01","24.02","24.09","24.10"],
+      "verificationApproach": "versioned OpenAPI/API inventory with deprecation and backward-compatibility governance"
+    },
+    {
+      "risk": "API10:2023",
+      "name": "Unsafe Consumption of APIs",
+      "planTasks": ["16.10","20.06","20.07","24.03","24.14"],
+      "verificationApproach": "least-privilege provider credentials, provider timeout/outage handling, schema validation and provider contract tests"
+    }
+  ]
+}
