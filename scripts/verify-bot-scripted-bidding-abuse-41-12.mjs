@@ -167,9 +167,20 @@ expectReject("foreign session challenge",()=>d.authorizeAndRecordBidAttempt(susp
   actorContext:buyerContext,sessionState,sessionPolicy,sessionId:sid("s"),requiredSecurityVersion:2,
   trustedSourceKey:"x",auctionId:"auction-1",nowMs:base+31100,challengeId:"challenge-001"
 },policy),"SESSION_USER_MISMATCH");
-expectReject("cross auction challenge",()=>d.authorizeAndRecordBidAttempt(suspicious,{
+const crossAuctionAttempts=Array.from({length:policy.actorAuctionLimit},(_,i)=>Object.freeze({
+  actorId:"buyer-1",
+  trustedSourceKey:"cross-auction-"+i,
+  auctionId:"auction-2",
+  atMs:base+31200+i*100,
+}));
+const crossAuctionState=Object.freeze({
+  attempts:Object.freeze([...suspicious.attempts,...crossAuctionAttempts]),
+  challenges:suspicious.challenges,
+  lastObservedAtMs:base+31500,
+});
+expectReject("cross auction challenge",()=>d.authorizeAndRecordBidAttempt(crossAuctionState,{
   actorContext:buyerContext,sessionState,sessionPolicy,sessionId:sid("b"),requiredSecurityVersion:2,
-  trustedSourceKey:"x",auctionId:"auction-2",nowMs:base+31100,challengeId:"challenge-001"
+  trustedSourceKey:"x",auctionId:"auction-2",nowMs:base+31600,challengeId:"challenge-001"
 },policy),"BID_ABUSE_CHALLENGE_AUCTION_MISMATCH");
 expectReject("stale security version challenge",()=>d.authorizeAndRecordBidAttempt(suspicious,{
   actorContext:buyerContext,sessionState,sessionPolicy,sessionId:sid("b"),requiredSecurityVersion:1,
