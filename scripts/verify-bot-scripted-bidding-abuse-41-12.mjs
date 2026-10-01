@@ -187,10 +187,22 @@ expectReject("stale security version challenge",()=>d.authorizeAndRecordBidAttem
   trustedSourceKey:"x",auctionId:"auction-1",nowMs:base+31100,challengeId:"challenge-001"
 },policy),"SESSION_SECURITY_VERSION_STALE");
 
-// Expired challenge.
-expectReject("expired challenge",()=>d.authorizeAndRecordBidAttempt(suspicious,{
+// Expired challenge is exercised while the current behavior is still suspicious.
+const expiryBase=base+31000+policy.challengeTtlMs;
+const expiryAttempts=Array.from({length:policy.actorAuctionLimit},(_,i)=>Object.freeze({
+  actorId:"buyer-1",
+  trustedSourceKey:"expiry-"+i,
+  auctionId:"auction-1",
+  atMs:expiryBase-500+i*100,
+}));
+const expiredChallengeState=Object.freeze({
+  attempts:Object.freeze(expiryAttempts),
+  challenges:suspicious.challenges,
+  lastObservedAtMs:expiryBase-200,
+});
+expectReject("expired challenge",()=>d.authorizeAndRecordBidAttempt(expiredChallengeState,{
   actorContext:buyerContext,sessionState,sessionPolicy,sessionId:sid("b"),requiredSecurityVersion:2,
-  trustedSourceKey:"x",auctionId:"auction-1",nowMs:base+31000+policy.challengeTtlMs,challengeId:"challenge-001"
+  trustedSourceKey:"x",auctionId:"auction-1",nowMs:expiryBase,challengeId:"challenge-001"
 },policy),"BID_ABUSE_CHALLENGE_EXPIRED");
 
 // Valid challenged bid consumes the challenge.
