@@ -232,7 +232,9 @@
     "verify:admin-mfa-enforcement-41-07": "node scripts/verify-admin-mfa-enforcement-41-07.mjs",
     "verify:admin-mfa-enforcement-41-07:self-test": "node scripts/verify-admin-mfa-enforcement-41-07.mjs --self-test",
     "verify:privilege-escalation-41-08": "node scripts/verify-privilege-escalation-41-08.mjs",
-    "verify:privilege-escalation-41-08:self-test": "node scripts/verify-privilege-escalation-41-08.mjs --self-test"
+    "verify:privilege-escalation-41-08:self-test": "node scripts/verify-privilege-escalation-41-08.mjs --self-test",
+    "verify:websocket-authorization-abuse-41-09": "node scripts/verify-websocket-authorization-abuse-41-09.mjs",
+    "verify:websocket-authorization-abuse-41-09:self-test": "node scripts/verify-websocket-authorization-abuse-41-09.mjs --self-test"
   },
   "dependencies": {
     "next": "16.3.8",

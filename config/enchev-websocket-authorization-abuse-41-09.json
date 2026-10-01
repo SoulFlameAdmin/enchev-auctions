@@ -1,0 +1,45 @@
+{
+  "taskId": "41.09",
+  "title": "WebSocket authorization abuse test",
+  "kind": "security",
+  "policy": {
+    "serverUpgradedSocketContextOnly": true,
+    "clientIdentityClaimsForbidden": true,
+    "activeSessionRequiredAtHandshake": true,
+    "activeSessionRecheckedPerRoomAction": true,
+    "grantActorBound": true,
+    "grantSessionBound": true,
+    "grantSecurityVersionBound": true,
+    "grantAuctionBound": true,
+    "grantExpiryRequired": true,
+    "bidActionRequiresBuyerFunctionAuthorization": true,
+    "operateActionRequiresAuctioneerFunctionAuthorization": true,
+    "crossAuctionRoomReuseRejected": true,
+    "staleOrRevokedSessionRejected": true
+  },
+  "abuseScenarios": [
+    "forged-client-actor-handshake",
+    "forged-client-role-handshake",
+    "restricted-account-handshake",
+    "revoked-session-handshake",
+    "foreign-actor-grant",
+    "foreign-session-grant",
+    "stale-security-version-grant",
+    "cross-auction-grant-reuse",
+    "expired-room-grant",
+    "watch-grant-used-for-bid",
+    "seller-grant-used-for-bid",
+    "buyer-grant-used-for-operate",
+    "auctioneer-without-assignment-operate",
+    "revoked-session-reuse-after-join",
+    "valid-buyer-room-bid",
+    "valid-assigned-auctioneer-operate"
+  ],
+  "claimBoundary": {
+    "productionWebSocketRuntimeNotClaimed": true,
+    "persistentSocketServiceNotClaimed": true,
+    "networkUpgradeHandlerNotClaimed": true,
+    "phase10HandshakeAndRoomTasksNotMarkedComplete": true,
+    "replayCriticalRequestCertificationRemains41_10": true
+  }
+}
