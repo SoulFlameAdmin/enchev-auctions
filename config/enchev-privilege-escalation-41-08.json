@@ -1,0 +1,40 @@
+{
+  "taskId": "41.08",
+  "title": "Privilege-escalation test",
+  "kind": "security",
+  "policy": {
+    "serverSideMutationOnly": true,
+    "adminManageUsersRequired": true,
+    "freshMfaRequired": true,
+    "selfPrivilegeMutationForbidden": true,
+    "targetSecurityVersionCompareAndSwap": true,
+    "securityVersionBumpedOnMutation": true,
+    "targetSessionsRevokedOnMutation": true,
+    "permissionMustBeBackedByRole": true,
+    "unknownRolesAndPermissionsRejected": true,
+    "securityAdminSeparationOfDuties": true,
+    "mfaDoesNotReplaceRolePermissionChecks": true
+  },
+  "abuseScenarios": [
+    "buyer-self-promotes-admin",
+    "seller-injects-admin-permission",
+    "admin-self-promotes-security-admin",
+    "admin-grants-security-admin-without-security-separation",
+    "role-without-backed-permission",
+    "permission-without-backed-role",
+    "unknown-role-injection",
+    "unknown-permission-injection",
+    "stale-target-version",
+    "replay-old-target-session-after-promotion",
+    "replay-old-target-session-after-demotion",
+    "client-context-admin-mutation",
+    "admin-without-mfa-mutation",
+    "valid-admin-promotes-other-user"
+  ],
+  "claimBoundary": {
+    "productionDirectoryProviderIntegrationNotClaimed": true,
+    "databaseRolePersistenceNotClaimed": true,
+    "securityAdminApprovalWorkflowNotClaimed": true,
+    "websocketAuthorizationCertificationRemains41_09": true
+  }
+}
