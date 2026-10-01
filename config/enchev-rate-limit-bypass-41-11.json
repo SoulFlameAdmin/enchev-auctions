@@ -1,0 +1,46 @@
+{
+  "taskId": "41.11",
+  "title": "Rate-limit bypass test",
+  "kind": "security",
+  "policy": {
+    "algorithm": "independent-sliding-windows",
+    "actorLimit": 5,
+    "actorWindowMs": 60000,
+    "sourceLimit": 12,
+    "sourceWindowMs": 60000,
+    "routeLimit": 30,
+    "routeWindowMs": 60000,
+    "trustedSourceDerivedServerSide": true,
+    "actorDerivedServerSide": true,
+    "clientActorClaimForbidden": true,
+    "clientSourceClaimForbidden": true,
+    "actorSourceAndRouteBucketsIndependent": true,
+    "everyAllowedAttemptCounts": true,
+    "clockRegressionRejected": true,
+    "genericPublic429": true
+  },
+  "abuseScenarios": [
+    "same-actor-same-source-burst",
+    "source-rotation-same-actor",
+    "actor-rotation-same-source",
+    "actor-and-source-rotation-same-route",
+    "client-forwarded-source-spoof",
+    "client-actor-spoof",
+    "same-timestamp-concurrent-burst",
+    "route-budget-cross-source-cross-actor",
+    "blocked-request-not-recorded-twice",
+    "window-expiry-recovery",
+    "clock-rollback-reset-abuse",
+    "cross-route-independent-budget",
+    "generic-429-does-not-expose-bucket",
+    "canonical-rate-limit-response-contract",
+    "blank-trusted-source",
+    "blank-route"
+  ],
+  "claimBoundary": {
+    "productionDistributedLimiterStoreNotClaimed": true,
+    "edgeProxyTrustedSourceExtractionNotClaimed": true,
+    "providerSpecificWafRateLimitNotClaimed": true,
+    "botBiddingCertificationRemains41_12": true
+  }
+}
