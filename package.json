@@ -230,7 +230,9 @@
     "verify:session-fixation-revocation-41-06": "node scripts/verify-session-fixation-revocation-41-06.mjs",
     "verify:session-fixation-revocation-41-06:self-test": "node scripts/verify-session-fixation-revocation-41-06.mjs --self-test",
     "verify:admin-mfa-enforcement-41-07": "node scripts/verify-admin-mfa-enforcement-41-07.mjs",
-    "verify:admin-mfa-enforcement-41-07:self-test": "node scripts/verify-admin-mfa-enforcement-41-07.mjs --self-test"
+    "verify:admin-mfa-enforcement-41-07:self-test": "node scripts/verify-admin-mfa-enforcement-41-07.mjs --self-test",
+    "verify:privilege-escalation-41-08": "node scripts/verify-privilege-escalation-41-08.mjs",
+    "verify:privilege-escalation-41-08:self-test": "node scripts/verify-privilege-escalation-41-08.mjs --self-test"
   },
   "dependencies": {
     "next": "16.3.8",
