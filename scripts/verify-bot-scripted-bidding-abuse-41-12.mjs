@@ -121,12 +121,20 @@ for(let i=0;i<policy.sourceDistinctActorLimit;i++){
 const multiDecision=d.assessBidAbuse(multi,{actorId:"actor-new",trustedSourceKey:"shared-source",auctionId:"multi-new",nowMs:base+8000},policy);
 if(multiDecision.allowed||multiDecision.reason!=="source-multi-account") fail("multi-account scripted source not challenged");
 
-// Regular cadence.
-let cadence=d.emptyBidAbuseState();
-for(let i=0;i<policy.regularCadenceSamples-1;i++){
-  cadence=bid(cadence,{auctionId:"cadence-auction",trustedSourceKey:"cadence-"+i,nowMs:base+10000+i*1000}).state;
-}
-const cadenceDecision=d.assessBidAbuse(cadence,{actorId:"buyer-1",trustedSourceKey:"cadence-last",auctionId:"cadence-auction",nowMs:base+10000+(policy.regularCadenceSamples-1)*1000},policy);
+// Regular cadence is isolated from the stricter velocity threshold so the cadence detector itself is proven.
+const cadencePolicy=d.validateBidAbusePolicy({...policy,actorAuctionLimit:10});
+const cadenceAttempts=Array.from({length:cadencePolicy.regularCadenceSamples-1},(_,i)=>Object.freeze({
+  actorId:"buyer-1",
+  trustedSourceKey:"cadence-"+i,
+  auctionId:"cadence-auction",
+  atMs:base+10000+i*1000,
+}));
+const cadence=Object.freeze({
+  attempts:Object.freeze(cadenceAttempts),
+  challenges:Object.freeze([]),
+  lastObservedAtMs:cadenceAttempts.at(-1).atMs,
+});
+const cadenceDecision=d.assessBidAbuse(cadence,{actorId:"buyer-1",trustedSourceKey:"cadence-last",auctionId:"cadence-auction",nowMs:base+10000+(cadencePolicy.regularCadenceSamples-1)*1000},cadencePolicy);
 if(cadenceDecision.allowed||cadenceDecision.reason!=="regular-cadence") fail("regular cadence not challenged");
 
 // Same timestamp burst counts independently and trips actor-auction threshold.
