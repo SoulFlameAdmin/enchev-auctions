@@ -60,7 +60,8 @@ const gates = [
   ["scripts/verify-function-level-authorization-abuse-41-04.mjs", "--self-test"],
   ["scripts/verify-authentication-bruteforce-41-05.mjs", "--self-test"],
   ["scripts/verify-session-fixation-revocation-41-06.mjs", "--self-test"],
-  ["scripts/verify-admin-mfa-enforcement-41-07.mjs", "--self-test"]
+  ["scripts/verify-admin-mfa-enforcement-41-07.mjs", "--self-test"],
+  ["scripts/verify-privilege-escalation-41-08.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of gates) {
