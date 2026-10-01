@@ -1,0 +1,48 @@
+{
+  "taskId": "41.10",
+  "title": "Replay / duplicate critical-request test",
+  "kind": "security",
+  "operations": [
+    "bid.submit",
+    "auction.finalize",
+    "seller.reserve.update",
+    "admin.privilege.change"
+  ],
+  "policy": {
+    "authenticatedActorScoped": true,
+    "operationScoped": true,
+    "idempotencyKeyScoped": true,
+    "canonicalFingerprintRequired": true,
+    "inProgressDuplicateRejected": true,
+    "completedDuplicateReplaysStoredResult": true,
+    "differentFingerprintConflicts": true,
+    "oneLogicalRequestOneEffect": true,
+    "completionIsIdempotentOnlyWhenIdentical": true,
+    "effectReferenceCannotBeReusedAcrossLogicalRequests": true,
+    "transportRetriesDoNotChangeAuthority": true
+  },
+  "abuseScenarios": [
+    "duplicate-bid-after-completion",
+    "duplicate-finalize-after-completion",
+    "duplicate-in-progress-bid",
+    "same-key-different-bid-payload",
+    "same-key-different-finalize-payload",
+    "same-key-different-actor",
+    "same-key-different-operation",
+    "identical-completion-retry",
+    "conflicting-completion-retry",
+    "effect-reference-reuse",
+    "malformed-idempotency-key",
+    "malformed-fingerprint",
+    "replay-before-completion",
+    "replay-stored-bid-result",
+    "replay-stored-finalization-result"
+  ],
+  "claimBoundary": {
+    "productionAtomicDatabasePersistenceNotClaimed": true,
+    "productionBidRuntimeNotClaimed": true,
+    "productionFinalizationRuntimeNotClaimed": true,
+    "paymentCaptureRuntimeNotClaimed": true,
+    "rateLimitBypassCertificationRemains41_11": true
+  }
+}

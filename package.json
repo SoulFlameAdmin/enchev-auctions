@@ -234,7 +234,9 @@
     "verify:privilege-escalation-41-08": "node scripts/verify-privilege-escalation-41-08.mjs",
     "verify:privilege-escalation-41-08:self-test": "node scripts/verify-privilege-escalation-41-08.mjs --self-test",
     "verify:websocket-authorization-abuse-41-09": "node scripts/verify-websocket-authorization-abuse-41-09.mjs",
-    "verify:websocket-authorization-abuse-41-09:self-test": "node scripts/verify-websocket-authorization-abuse-41-09.mjs --self-test"
+    "verify:websocket-authorization-abuse-41-09:self-test": "node scripts/verify-websocket-authorization-abuse-41-09.mjs --self-test",
+    "verify:critical-request-replay-41-10": "node scripts/verify-critical-request-replay-41-10.mjs",
+    "verify:critical-request-replay-41-10:self-test": "node scripts/verify-critical-request-replay-41-10.mjs --self-test"
   },
   "dependencies": {
     "next": "16.3.8",
