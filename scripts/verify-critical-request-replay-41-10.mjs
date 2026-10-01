@@ -104,7 +104,7 @@ if(actorScoped.action!=="execute") fail("same key another actor should be indepe
 ledger=actorScoped.state;
 
 // Same actor/key but another operation is independently scoped.
-let opScoped=d.beginCriticalRequest(ledger,{actorId:"buyer-1",operation:"seller.reserve.update",idempotencyKey:"bid.retry-001",requestFingerprint:fp("g"),nowMs:base+81});
+let opScoped=d.beginCriticalRequest(ledger,{actorId:"buyer-1",operation:"seller.reserve.update",idempotencyKey:"bid.retry-001",requestFingerprint:fp("1"),nowMs:base+81});
 if(opScoped.action!=="execute") fail("same key another operation should be independently scoped");
 ledger=opScoped.state;
 
@@ -128,17 +128,17 @@ expectReject("conflicting completion retry",()=>d.completeCriticalRequest(ledger
 }),"CRITICAL_REQUEST_COMPLETION_CONFLICT");
 
 // One effect ref cannot belong to two logical requests.
-let reserve=d.beginCriticalRequest(ledger,{actorId:"seller-1",operation:"seller.reserve.update",idempotencyKey:"reserve-001",requestFingerprint:fp("h"),nowMs:base+100});
+let reserve=d.beginCriticalRequest(ledger,{actorId:"seller-1",operation:"seller.reserve.update",idempotencyKey:"reserve-001",requestFingerprint:fp("2"),nowMs:base+100});
 ledger=reserve.state;
 expectReject("effect ref reused",()=>d.completeCriticalRequest(ledger,{
-  actorId:"seller-1",operation:"seller.reserve.update",idempotencyKey:"reserve-001",requestFingerprint:fp("h"),
+  actorId:"seller-1",operation:"seller.reserve.update",idempotencyKey:"reserve-001",requestFingerprint:fp("2"),
   nowMs:base+101,responseStatus:200,responseRef:"response:reserve-001",effectRef:"bid-event:009"
 }),"CRITICAL_REQUEST_EFFECT_REF_REUSED");
 
 if(process.argv.includes("--self-test")){
-  expectReject("malformed idempotency key",()=>d.beginCriticalRequest(ledger,{actorId:"buyer-1",operation:"bid.submit",idempotencyKey:"bad key",requestFingerprint:fp("i"),nowMs:base}),"IDEMPOTENCY_KEY_INVALID");
+  expectReject("malformed idempotency key",()=>d.beginCriticalRequest(ledger,{actorId:"buyer-1",operation:"bid.submit",idempotencyKey:"bad key",requestFingerprint:fp("3"),nowMs:base}),"IDEMPOTENCY_KEY_INVALID");
   expectReject("malformed fingerprint",()=>d.beginCriticalRequest(ledger,{actorId:"buyer-1",operation:"bid.submit",idempotencyKey:"valid-key",requestFingerprint:"payload-json",nowMs:base}),"CRITICAL_REQUEST_FINGERPRINT_INVALID");
-  expectReject("blank actor",()=>d.beginCriticalRequest(ledger,{actorId:" ",operation:"bid.submit",idempotencyKey:"valid-key",requestFingerprint:fp("i"),nowMs:base}),"CRITICAL_REQUEST_ACTOR_REQUIRED");
+  expectReject("blank actor",()=>d.beginCriticalRequest(ledger,{actorId:" ",operation:"bid.submit",idempotencyKey:"valid-key",requestFingerprint:fp("3"),nowMs:base}),"CRITICAL_REQUEST_ACTOR_REQUIRED");
   expectReject("time regression completion",()=>d.completeCriticalRequest(ledger,{
     actorId:"buyer-2",operation:"bid.submit",idempotencyKey:"bid.inflight",requestFingerprint:fp("d"),
     nowMs:base-1,responseStatus:201,responseRef:"response:x",effectRef:"bid-event:x"
