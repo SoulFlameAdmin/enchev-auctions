@@ -1,0 +1,30 @@
+{
+  "taskId": "41.19",
+  "title": "SBOM produced and archived",
+  "kind": "security",
+  "engine": {
+    "format": "CycloneDX",
+    "generator": "npm sbom",
+    "workflow": ".github/workflows/sbom.yml",
+    "artifactPath": "artifacts/enchev-sbom.cdx.json",
+    "artifactNamePrefix": "enchev-sbom-",
+    "retentionDays": 14
+  },
+  "policy": {
+    "exactSourceCheckoutRequired": true,
+    "packageLockOnlyRequired": true,
+    "applicationTypeRequired": true,
+    "artifactValidationRequired": true,
+    "exactHeadArtifactNameRequired": true,
+    "missingArtifactFailsRequired": true,
+    "archiveRetentionRequired": true,
+    "exactHeadSbomWorkflowSuccessRequired": true
+  },
+  "claimBoundary": {
+    "applicationDependencySbomOnly": true,
+    "containerImageSbomNotClaimed": true,
+    "infrastructureSbomNotClaimed": true,
+    "externalPenTestRemains41_20": true,
+    "allCriticalHighResolutionRemains41_21": true
+  }
+}
