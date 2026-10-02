@@ -4,7 +4,7 @@ export default function Home(){
   return (
     <main
       id="main-content"
-      aria-label="ENCHEV Auctions"
+      aria-label="ENCHEV Auctions"\n      data-cinematic-tracker="connected"
       style={{ minHeight:"100vh", background:"#000", overflow:"hidden" }}
     >
       <iframe
