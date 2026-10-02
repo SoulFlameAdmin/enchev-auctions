@@ -1,0 +1,76 @@
+name: DAST Scan
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: dast-scan-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  dast:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Verify SYSTEM 41.17 DAST contract
+        run: node scripts/verify-dast-clean-41-17.mjs --self-test
+      - name: Build exact source
+        run: npm run build
+      - name: Start isolated local application
+        shell: bash
+        run: |
+          mkdir -p artifacts/zap
+          nohup npx next start --hostname 0.0.0.0 --port 3000 > artifacts/zap/app.log 2>&1 &
+          echo $! > /tmp/enchev-dast-app.pid
+          for i in $(seq 1 60); do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/api/health/web >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+          cat artifacts/zap/app.log
+          exit 1
+      - name: Pull version-pinned OWASP ZAP
+        run: |
+          docker pull ghcr.io/zaproxy/zaproxy:2.17.0
+          docker inspect --format='{{index .RepoDigests 0}}' ghcr.io/zaproxy/zaproxy:2.17.0 | tee artifacts/zap/zap-image-digest.txt
+      - name: Run isolated OWASP ZAP full active scan
+        shell: bash
+        run: |
+          HOST_IP="$(ip -f inet -o addr show docker0 | awk '{print $4}' | cut -d '/' -f 1 | head -n1)"
+          test -n "$HOST_IP"
+          curl --fail --silent --show-error "http://$HOST_IP:3000/api/health/web" >/dev/null
+          docker run --rm             -v "$PWD/artifacts/zap:/zap/wrk/:rw"             ghcr.io/zaproxy/zaproxy:2.17.0             zap-full-scan.py             -t "http://$HOST_IP:3000"             -m 1             -T 5             -J zap-report.json             -r zap-report.html             -I
+      - name: Enforce no High/Critical DAST findings
+        run: node scripts/verify-dast-clean-41-17.mjs --report artifacts/zap/zap-report.json
+      - name: Archive DAST evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: enchev-dast-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            artifacts/zap/zap-report.json
+            artifacts/zap/zap-report.html
+            artifacts/zap/zap-image-digest.txt
+            artifacts/zap/app.log
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Stop isolated local application
+        if: always()
+        shell: bash
+        run: |
+          if [ -f /tmp/enchev-dast-app.pid ]; then
+            kill "$(cat /tmp/enchev-dast-app.pid)" 2>/dev/null || true
+          fi
