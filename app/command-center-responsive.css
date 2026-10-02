@@ -93,3 +93,35 @@
   .sideMenuItem small{font-size:14px}
   .sideStatusBox>span,.sideStatusBox>small{font-size:14px}
 }
+
+
+/* Cinematic homepage: keep the legacy SYSTEM stages control as the primary
+   top-left operator menu above the isolated Forge presentation layer. */
+[data-cinematic-tracker="connected"] .burgerButton{
+  z-index:2200;
+  left:max(20px,env(safe-area-inset-left));
+  top:max(20px,env(safe-area-inset-top));
+  width:52px;
+  height:52px;
+  border-radius:0;
+  border:1px solid rgba(255,255,255,.28);
+  background:rgba(8,8,8,.82);
+  backdrop-filter:blur(12px);
+  box-shadow:0 10px 36px rgba(0,0,0,.38);
+}
+[data-cinematic-tracker="connected"] .burgerButton span{
+  width:22px;
+  background:#fff;
+}
+[data-cinematic-tracker="connected"] .menuShade{z-index:2290}
+[data-cinematic-tracker="connected"] .sidePanel{z-index:2300}
+[data-cinematic-tracker="connected"] .controlOverlay{z-index:2400}
+
+@media(max-width:640px){
+  [data-cinematic-tracker="connected"] .burgerButton{
+    left:max(14px,env(safe-area-inset-left));
+    top:max(14px,env(safe-area-inset-top));
+    width:48px;
+    height:48px;
+  }
+}
