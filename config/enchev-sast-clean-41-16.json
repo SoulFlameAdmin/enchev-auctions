@@ -1,0 +1,37 @@
+{
+  "taskId": "41.16",
+  "title": "SAST clean of Critical/High",
+  "kind": "security",
+  "engine": {
+    "provider": "GitHub CodeQL",
+    "workflow": ".github/workflows/code-scan.yml",
+    "language": "javascript-typescript",
+    "actionPin": "977e6ceaea7361825998245d787fa3b4d6b9e5df",
+    "querySuite": "security-extended",
+    "sarifDirectory": "artifacts/codeql-sarif"
+  },
+  "severityGate": {
+    "securitySeverityThreshold": 7.0,
+    "blocksHighAndCritical": true,
+    "failsOnUnclassifiedSecurityResult": true,
+    "realSarifRequired": true,
+    "exactHeadCodeScanSuccessRequired": true,
+    "sarifUploadAfterGateRequired": true
+  },
+  "workflowPolicy": {
+    "pullRequestMainRequired": true,
+    "pushMainRequired": true,
+    "contentsReadRequired": true,
+    "securityEventsWriteRequired": true,
+    "analyzeUploadDisabledBeforeGate": true,
+    "immutableActionPinRequired": true,
+    "floatingActionRefsForbidden": true
+  },
+  "claimBoundary": {
+    "javascriptTypescriptOnly": true,
+    "codeqlCoverageOnly": true,
+    "dastRemains41_17": true,
+    "dependencyScanRemains41_18": true,
+    "externalPenTestRemains41_20": true
+  }
+}
