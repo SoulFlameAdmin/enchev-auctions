@@ -250,7 +250,9 @@
     "verify:sast-clean-41-16": "node scripts/verify-sast-clean-41-16.mjs",
     "verify:sast-clean-41-16:self-test": "node scripts/verify-sast-clean-41-16.mjs --self-test",
     "verify:dast-clean-41-17": "node scripts/verify-dast-clean-41-17.mjs",
-    "verify:dast-clean-41-17:self-test": "node scripts/verify-dast-clean-41-17.mjs --self-test"
+    "verify:dast-clean-41-17:self-test": "node scripts/verify-dast-clean-41-17.mjs --self-test",
+    "verify:dependency-scan-clean-41-18": "node scripts/verify-dependency-scan-clean-41-18.mjs",
+    "verify:dependency-scan-clean-41-18:self-test": "node scripts/verify-dependency-scan-clean-41-18.mjs --self-test"
   },
   "dependencies": {
     "next": "16.3.8",
