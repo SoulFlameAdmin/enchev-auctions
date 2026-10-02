@@ -240,7 +240,9 @@
     "verify:rate-limit-bypass-41-11": "node scripts/verify-rate-limit-bypass-41-11.mjs",
     "verify:rate-limit-bypass-41-11:self-test": "node scripts/verify-rate-limit-bypass-41-11.mjs --self-test",
     "verify:bot-scripted-bidding-abuse-41-12": "node scripts/verify-bot-scripted-bidding-abuse-41-12.mjs",
-    "verify:bot-scripted-bidding-abuse-41-12:self-test": "node scripts/verify-bot-scripted-bidding-abuse-41-12.mjs --self-test"
+    "verify:bot-scripted-bidding-abuse-41-12:self-test": "node scripts/verify-bot-scripted-bidding-abuse-41-12.mjs --self-test",
+    "verify:ssrf-assessment-41-13": "node scripts/verify-ssrf-assessment-41-13.mjs",
+    "verify:ssrf-assessment-41-13:self-test": "node scripts/verify-ssrf-assessment-41-13.mjs --self-test"
   },
   "dependencies": {
     "next": "16.3.8",
