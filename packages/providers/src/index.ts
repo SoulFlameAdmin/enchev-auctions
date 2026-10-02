@@ -12,3 +12,5 @@ export type ProvidersPackageBoundary = Readonly<{
   credentialFree: true;
   concreteProviderClients: false;
 }>;
+
+export * from "./outbound-url-policy";
