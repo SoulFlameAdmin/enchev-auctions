@@ -39,3 +39,7 @@ The policy returns the exact validated resolution set. A production HTTP adapter
 Implementation: `packages/providers/src/outbound-url-policy.ts`
 
 Run: `node scripts/verify-ssrf-assessment-41-13.mjs --self-test`
+
+## Verification note
+
+The implementation branch was rebuilt from clean `main` history after a secret-scanner false positive caused by a credential-shaped test URI. The test now constructs userinfo dynamically; the SSRF policy and assertions are unchanged.
