@@ -244,7 +244,9 @@
     "verify:ssrf-assessment-41-13": "node scripts/verify-ssrf-assessment-41-13.mjs",
     "verify:ssrf-assessment-41-13:self-test": "node scripts/verify-ssrf-assessment-41-13.mjs --self-test",
     "verify:upload-content-attack-41-14": "node scripts/verify-upload-content-attack-41-14.mjs",
-    "verify:upload-content-attack-41-14:self-test": "node scripts/verify-upload-content-attack-41-14.mjs --self-test"
+    "verify:upload-content-attack-41-14:self-test": "node scripts/verify-upload-content-attack-41-14.mjs --self-test",
+    "verify:secret-scanning-clean-41-15": "node scripts/verify-secret-scanning-clean-41-15.mjs",
+    "verify:secret-scanning-clean-41-15:self-test": "node scripts/verify-secret-scanning-clean-41-15.mjs --self-test"
   },
   "dependencies": {
     "next": "16.3.8",
