@@ -11,6 +11,8 @@ const CHANNEL_KEY = "enchev-system-realtime-v5";
 // Governance verification marker only; runtime behavior is unchanged.
 
 const VERIFIED_YELLOW: Record<string, string> = {
+  "41.20": "External penetration test is intentionally pending independent third-party evidence. Internal SAST, DAST, dependency scan and CI do not substitute for the required dated independent report with provider identity, scope, methodology, integrity hash and severity summary. See docs/41_20_21_EXTERNAL_PENETRATION_TEST.md.",
+  "41.21": "Blocked by 41.20. All Critical/High findings cannot be certified resolved until the independent penetration-test report exists; any Critical/High findings then require remediation and retest evidence with zero unresolved Critical/High. See docs/41_20_21_EXTERNAL_PENETRATION_TEST.md.",
   "29.08": "Backup retention alignment remains pending: production authoritative database/backup provider and configured retention window are not yet verified. Phase 29 exact-head Verify Enchev Web 36189225470 SUCCESS proves the fail-closed contract; it does not prove provider alignment.",
 };
 
