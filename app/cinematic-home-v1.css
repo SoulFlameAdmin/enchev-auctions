@@ -31,7 +31,22 @@
   color:rgba(255,255,255,.62);
   letter-spacing:.58em;
 }
-.eaAppShell[data-home="true"] .eaAppSearch{display:none}
+.eaAppShell[data-home="true"] .eaAppSearch{
+  display:grid;
+  max-width:210px;
+  min-height:38px;
+  justify-self:end;
+  border-color:rgba(255,255,255,.15);
+  background:rgba(0,0,0,.14);
+  -webkit-backdrop-filter:blur(10px);
+  backdrop-filter:blur(10px);
+}
+.eaAppShell[data-home="true"] .eaAppSearch input{
+  color:#fff;
+  font-size:10px;
+  letter-spacing:.03em;
+}
+.eaAppShell[data-home="true"] .eaAppSearch input::placeholder{color:rgba(255,255,255,.46)}
 .eaAppShell[data-home="true"] .eaAppDesktopNav{
   justify-content:center;
   gap:clamp(18px,2vw,38px);
