@@ -11,6 +11,7 @@ const CHANNEL_KEY = "enchev-system-realtime-v5";
 // Governance verification marker only; runtime behavior is unchanged.
 
 const VERIFIED_YELLOW: Record<string, string> = {
+  "41.13": "SSRF assessment implementation is complete and GitHub-verified: docs/41_13_SSRF_ASSESSMENT.md · config/enchev-ssrf-assessment-41-13.json · packages/providers/src/outbound-url-policy.ts · implementation PR #352 exact head 2ab9892f4c4251267771f79efa490c7acbd2ea4a · merged 888811a4ec507d9cfe1208b1564bed6766c6b424 · Verify Enchev Web 36947162052 SUCCESS · Code Scan 36947162038 SUCCESS · Secret Scan 36947162014 SUCCESS · SBOM 36947162041 SUCCESS · Build Provenance 36947162044 SUCCESS · Verify SYSTEM 24.02 36947162001 SUCCESS · Verify SYSTEM 26.05 36947162004 SUCCESS · main Verify Enchev Web 36947690639 SUCCESS · SSRF_ASSESSMENT_41_13_SELF_TEST PASS scenarios=25 · SYSTEM_TEST_PRE_GATES PASS gates=66 · Chrome+Edge regression PASS. GREEN is blocked only by external Vercel Preview rate limit: evidence PR #353 commit e7755045c24100ffb2baa34b7a9c6e3520967112 status failure 'Deployment rate limited — retry in 24 hours.' Production egress firewall, DNS socket pinning and HTTP client integration are not claimed.",
   "29.08": "Backup retention alignment remains pending: production authoritative database/backup provider and configured retention window are not yet verified. Phase 29 exact-head Verify Enchev Web 36189225470 SUCCESS proves the fail-closed contract; it does not prove provider alignment.",
 };
 
