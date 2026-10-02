@@ -1,0 +1,30 @@
+{
+  "taskId": "41.18",
+  "title": "Dependency scan clean of Critical/High",
+  "kind": "security",
+  "engine": {
+    "provider": "npm-registry",
+    "command": "npm audit --package-lock-only --audit-level=high --json",
+    "workflow": ".github/workflows/dependency-scan.yml",
+    "report": "artifacts/dependency-audit.json",
+    "exitCodeEvidence": "artifacts/dependency-audit-exit-code.txt"
+  },
+  "policy": {
+    "packageLockOnly": true,
+    "auditLevel": "high",
+    "highMustBeZero": true,
+    "criticalMustBeZero": true,
+    "realJsonReportRequired": true,
+    "npmAuditExitCodeMustBeZero": true,
+    "exactHeadDependencyScanSuccessRequired": true,
+    "reportArchivedRequired": true
+  },
+  "claimBoundary": {
+    "npmLockfileDependencyGraphOnly": true,
+    "containerImageScanNotClaimed": true,
+    "osPackageScanNotClaimed": true,
+    "runtimeReachabilityNotClaimed": true,
+    "sbomArchiveRemains41_19": true,
+    "externalPenTestRemains41_20": true
+  }
+}
