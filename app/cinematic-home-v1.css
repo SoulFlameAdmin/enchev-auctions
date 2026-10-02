@@ -86,7 +86,7 @@
   content:"";
   position:absolute;
   inset:0;
-  z-index:0;
+  z-index:1;
   pointer-events:none;
   background:
     radial-gradient(ellipse at 69% 50%,rgba(96,255,164,.09),transparent 31%),
@@ -103,6 +103,48 @@
     repeating-linear-gradient(90deg,rgba(255,255,255,.018) 0 1px,transparent 1px 12.5%);
   opacity:.78;
 }
+
+.eaForgeMotion{
+  position:absolute;
+  z-index:0;
+  inset:0 0 auto 0;
+  width:100%;
+  height:100svh;
+  overflow:hidden;
+  pointer-events:none;
+  background:#020302;
+}
+.eaForgeMotionFallback,
+.eaForgeMotionCanvas{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+}
+.eaForgeMotionFallback{
+  object-fit:cover;
+  object-position:center;
+  opacity:.58;
+  filter:saturate(.92) contrast(1.06);
+  transform:scale(1.015);
+}
+.eaForgeMotionCanvas{
+  display:block;
+  opacity:0;
+  transition:opacity .22s ease;
+}
+.eaForgeMotionCanvas--intro{z-index:2}
+.eaForgeMotionCanvas--scroll{z-index:3}
+.eaForgeMotionVignette{
+  position:absolute;
+  z-index:4;
+  inset:0;
+  background:
+    linear-gradient(90deg,rgba(0,0,0,.78) 0%,rgba(0,0,0,.43) 30%,rgba(0,0,0,.08) 61%,rgba(0,0,0,.28) 100%),
+    linear-gradient(180deg,rgba(0,0,0,.20),transparent 35%,rgba(0,0,0,.57) 100%);
+}
+.eaForgeMotion[data-motion-state="ready"] .eaForgeMotionFallback{opacity:.12}
+
 .eaCinematicStage{
   position:absolute;
   inset:0;
@@ -439,6 +481,11 @@
   .eaCinematicHero:after{
     background:linear-gradient(180deg,transparent 28%,rgba(0,0,0,.62) 48%,#030403 70%);
   }
+  .eaForgeMotion{height:72svh}
+  .eaForgeMotionFallback{object-position:center top}
+  .eaForgeMotionVignette{
+    background:linear-gradient(180deg,rgba(0,0,0,.08),rgba(0,0,0,.16) 34%,rgba(0,0,0,.77) 78%,#030403 100%);
+  }
   .eaCinematicIndex,.eaCinematicSideNote{display:none}
   .eaCinematicHalo{width:100vw;right:-44vw;top:2%}
   .eaCinematicHero .eaHeroV2Inner{
@@ -469,6 +516,7 @@
       linear-gradient(180deg,rgba(0,0,0,.28),rgba(0,0,0,.72) 40%,#030403 72%),
       #030403 url('/images/enchev-lamborghini-hero.jpg') 61% 7%/auto 42vh no-repeat!important;
   }
+  .eaForgeMotion{height:64svh}
   .eaCinematicStage:before{
     top:31%;
     font-size:32vw;
@@ -509,4 +557,6 @@
 
 @media(prefers-reduced-motion:reduce){
   .eaCinematicScrollCue i{animation:none}
+  .eaForgeMotionCanvas{display:none}
+  .eaForgeMotionFallback{opacity:.72}
 }
