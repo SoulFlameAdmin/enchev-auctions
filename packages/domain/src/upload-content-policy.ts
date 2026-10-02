@@ -167,8 +167,8 @@ function assertNoTrailingOrPolyglotPayload(bytes: Uint8Array, mime: UploadInspec
 }
 
 export function validateUploadContentPolicy(input: UploadContentPolicy = DEFAULT_POLICY): UploadContentPolicy {
-  const imageMax = input.maxBytesByPurpose?.["vehicle-image"];
-  const docMax = input.maxBytesByPurpose?.["vehicle-document"];
+  const imageMax = input.maxBytesByPurpose["vehicle-image"];
+  const docMax = input.maxBytesByPurpose["vehicle-document"];
   if (!Number.isInteger(input.minBytes) || input.minBytes < 1) reject("UPLOAD_POLICY_MIN_BYTES_INVALID");
   if (!Number.isInteger(input.maxFilenameBytes) || input.maxFilenameBytes < 32 || input.maxFilenameBytes > 512) reject("UPLOAD_POLICY_FILENAME_LIMIT_INVALID");
   if (!Number.isInteger(imageMax) || imageMax < input.minBytes) reject("UPLOAD_POLICY_IMAGE_LIMIT_INVALID");
