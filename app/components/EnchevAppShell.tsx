@@ -37,7 +37,9 @@ export default function EnchevAppShell(){
     };
   },[open]);
 
-  if(pathname==="/")return null;\n\n  return <div className="eaAppShell" data-design-task="DP2-04" data-shell-open={open?"true":"false"}>
+  if(pathname==="/")return null;
+
+  return <div className="eaAppShell" data-design-task="DP2-04" data-shell-open={open?"true":"false"}>
     <div className="eaAppUtility">
       <div className="eaAppUtilityLive"><i aria-hidden="true"/><strong>LIVE MARKET</strong><span>Европа · САЩ · Канада</span><a className="eaAppPresentationButton" href="/presentation">ПРЕЗЕНТАЦИЯ</a></div>
       <div className="eaAppUtilityMeta"><span>BG · EUR</span><a href="/support">Помощ</a></div>
