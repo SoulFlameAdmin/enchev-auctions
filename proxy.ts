@@ -12,11 +12,8 @@ export function proxy(request: NextRequest) {
     if (image) return NextResponse.rewrite(new URL(image, request.url));
     return new NextResponse(null, { status: 404 });
   }
-  // The supplied standalone frontend owns the homepage DOM and animation runtime.
-  // Keep its Next assets under /forge so auction application chunks stay isolated.
-  if (request.nextUrl.pathname === "/") {
-    return NextResponse.rewrite(new URL("/forge/index.html", request.url));
-  }
+  // The homepage is rendered by Next so the DAVID/System Command Center can
+  // stay connected above the isolated cinematic Forge presentation iframe.
   const correlationId = resolveRequestCorrelationId(
     request.headers.get(REQUEST_CORRELATION_HEADER),
   );
