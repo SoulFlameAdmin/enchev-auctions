@@ -14,3 +14,5 @@ export type ProvidersPackageBoundary = Readonly<{
 }>;
 
 export * from "./outbound-url-policy";
+
+export * from "./upload-content-policy";
