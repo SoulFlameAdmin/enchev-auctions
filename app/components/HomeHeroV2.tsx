@@ -1,5 +1,6 @@
 import HomeLiveSpotlight from "./HomeLiveSpotlight";
 import HomeDiscoveryV2 from "./HomeDiscoveryV2";
+import CinematicVehicleMotion from "./CinematicVehicleMotion";
 import { getHomeHeroCopy, HOME_HERO_KEYS } from "../home-hero-messages";
 
 function T({k,children}:{k:string;children:React.ReactNode}){
@@ -10,6 +11,8 @@ export default function HomeHeroV2(){
   const copy=getHomeHeroCopy("bg-BG");
 
   return <section className="eaHero eaHeroV2 eaCinematicHero" id="top" data-design-task="DP2-05" data-locale="bg-BG">
+    <CinematicVehicleMotion />
+
     <div className="eaCinematicStage" aria-hidden="true">
       <span className="eaCinematicIndex">01 — ENCHEV</span>
       <span className="eaCinematicSideNote">INTERNATIONAL VEHICLE AUCTIONS</span>
