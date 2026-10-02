@@ -5,6 +5,17 @@ import {
 } from "@enchev/contracts";
 
 export function proxy(request: NextRequest) {
+  // The cinematic preview must render the authorized Forge snapshot as the
+  // top-level document. Rendering it inside an iframe causes Edge/Chromium
+  // to show "This page couldn't load" on protected preview deployments.
+  if (request.nextUrl.pathname === "/") {
+    const target = request.nextUrl.clone();
+    target.pathname = "/api/forge-mirror";
+    target.search = "";
+    target.searchParams.set("path", "/");
+    return NextResponse.rewrite(target);
+  }
+
   const correlationId = resolveRequestCorrelationId(
     request.headers.get(REQUEST_CORRELATION_HEADER),
   );
@@ -20,5 +31,5 @@ export function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/api/:path*"],
+  matcher: ["/", "/api/:path*"],
 };
