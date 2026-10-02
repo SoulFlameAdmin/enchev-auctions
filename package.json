@@ -246,7 +246,9 @@
     "verify:upload-content-attack-41-14": "node scripts/verify-upload-content-attack-41-14.mjs",
     "verify:upload-content-attack-41-14:self-test": "node scripts/verify-upload-content-attack-41-14.mjs --self-test",
     "verify:secret-scanning-clean-41-15": "node scripts/verify-secret-scanning-clean-41-15.mjs",
-    "verify:secret-scanning-clean-41-15:self-test": "node scripts/verify-secret-scanning-clean-41-15.mjs --self-test"
+    "verify:secret-scanning-clean-41-15:self-test": "node scripts/verify-secret-scanning-clean-41-15.mjs --self-test",
+    "verify:sast-clean-41-16": "node scripts/verify-sast-clean-41-16.mjs",
+    "verify:sast-clean-41-16:self-test": "node scripts/verify-sast-clean-41-16.mjs --self-test"
   },
   "dependencies": {
     "next": "16.3.8",
