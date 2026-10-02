@@ -1,0 +1,68 @@
+{
+  "taskId": "41.13",
+  "title": "SSRF assessment",
+  "kind": "security",
+  "repositoryAssessment": {
+    "productionOutboundFetchFound": false,
+    "concreteProviderClientsFound": false,
+    "workerRuntimeImplemented": false,
+    "providerBoundaryCredentialFree": true
+  },
+  "policy": {
+    "exactHostAllowlistRequired": true,
+    "httpsOnly": true,
+    "allowedPortsExplicit": true,
+    "ipLiteralUrlsForbidden": true,
+    "userinfoForbidden": true,
+    "fragmentsForbidden": true,
+    "localhostAndInternalHostnamesForbidden": true,
+    "resolvedAddressesRequired": true,
+    "allResolvedAddressesMustBePublic": true,
+    "ipv4PrivateReservedBlocked": true,
+    "ipv6PrivateReservedBlocked": true,
+    "ipv4MappedIpv6Checked": true,
+    "manualRedirectHandlingRequired": true,
+    "everyRedirectRevalidated": true,
+    "dnsRebindingPrivateResolutionRejected": true,
+    "failClosed": true
+  },
+  "testPolicy": {
+    "allowedHosts": ["provider.example.com", "media.example.com"],
+    "allowedPorts": [443],
+    "maxRedirects": 3
+  },
+  "abuseScenarios": [
+    "http-scheme",
+    "file-scheme",
+    "userinfo-credential-confusion",
+    "custom-port",
+    "ip-literal-loopback",
+    "integer-ip-loopback-normalization",
+    "localhost",
+    "metadata-internal-hostname",
+    "host-not-allowlisted",
+    "dns-to-127-loopback",
+    "dns-to-rfc1918-private",
+    "dns-to-link-local-metadata",
+    "dns-to-cgnat",
+    "dns-to-ipv6-loopback",
+    "dns-to-ipv6-ula",
+    "dns-to-ipv6-link-local",
+    "ipv4-mapped-ipv6-private",
+    "mixed-public-private-dns-answer",
+    "empty-dns-answer",
+    "redirect-to-disallowed-host",
+    "redirect-to-private-resolution",
+    "redirect-limit",
+    "allowed-public-ipv4-target",
+    "allowed-public-ipv6-target",
+    "allowed-redirect-revalidated"
+  ],
+  "claimBoundary": {
+    "productionEgressFirewallNotClaimed": true,
+    "productionDnsResolverPinningNotClaimed": true,
+    "productionHttpClientIntegrationNotClaimed": true,
+    "liveProviderAllowlistNotClaimed": true,
+    "uploadContentAttackCertificationRemains41_14": true
+  }
+}
