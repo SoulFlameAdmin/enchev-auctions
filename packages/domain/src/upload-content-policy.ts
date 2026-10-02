@@ -39,8 +39,8 @@ const MIME_EXTENSIONS: Readonly<Record<UploadInspectionResult["detectedMime"], r
 });
 
 const ALLOWED_BY_PURPOSE: Readonly<Record<UploadPurpose, readonly UploadInspectionResult["detectedMime"][]>> = Object.freeze({
-  "vehicle-image": Object.freeze(["image/jpeg", "image/png", "image/webp"]),
-  "vehicle-document": Object.freeze(["application/pdf", "image/jpeg", "image/png"]),
+  "vehicle-image": ["image/jpeg", "image/png", "image/webp"] as const,
+  "vehicle-document": ["application/pdf", "image/jpeg", "image/png"] as const,
 });
 
 const DENIED_EXTENSIONS = new Set([
