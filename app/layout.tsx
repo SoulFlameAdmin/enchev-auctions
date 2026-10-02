@@ -12,8 +12,6 @@ import "./dp2-foundation.css";
 import "./dp2-app-shell.css";
 import "./dp2-home-hero.css";
 import "./dp2-home-discovery.css";
-import MouseAura from "./components/MouseAura";
-import BackgroundSwitcher from "./components/BackgroundSwitcher";
 import VerifiedPlanEvidenceSync from "./components/VerifiedPlanEvidenceSync";
 import TestPassGreenGuard from "./components/TestPassGreenGuard";
 import GapAppendOnlyGuard from "./components/GapAppendOnlyGuard";
@@ -32,8 +30,6 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <html lang="bg">
       <body>
         <a className="eaSkipLink" href="#main-content">Към основното съдържание</a>
-        <MouseAura />
-        <BackgroundSwitcher />
         <VerifiedPlanEvidenceSync />
         <TestPassGreenGuard />
         <GapAppendOnlyGuard />
