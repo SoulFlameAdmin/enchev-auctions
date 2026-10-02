@@ -1,3 +1,4 @@
+// SYSTEM 41.13 preview verification marker; SSRF policy semantics are unchanged.
 import { isIP } from "node:net";
 
 export type OutboundUrlPolicy = Readonly<{
