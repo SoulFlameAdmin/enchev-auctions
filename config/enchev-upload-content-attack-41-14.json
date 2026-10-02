@@ -1,0 +1,81 @@
+{
+  "taskId": "41.14",
+  "title": "Upload-content attack test",
+  "kind": "security",
+  "repositoryAssessment": {
+    "productionUploadRouteFound": false,
+    "concreteObjectStorageUploadAdapterFound": false,
+    "reusableFailClosedBoundaryImplemented": true
+  },
+  "policy": {
+    "contentSignatureAuthoritative": true,
+    "declaredMimeMustMatch": true,
+    "extensionMustMatch": true,
+    "imagesOnlyJpegPngWebp": true,
+    "documentsOnlyPdfJpegPng": true,
+    "svgForbidden": true,
+    "htmlXmlForbidden": true,
+    "executableForbidden": true,
+    "archiveForbidden": true,
+    "activePdfFeaturesForbidden": true,
+    "pathTraversalForbidden": true,
+    "encodedTraversalForbidden": true,
+    "unicodeBidiControlForbidden": true,
+    "controlCharactersForbidden": true,
+    "trailingPayloadForbidden": true,
+    "embeddedArchiveMarkerForbidden": true,
+    "boundedSizeRequired": true,
+    "minimumSizeRequired": true,
+    "failClosed": true
+  },
+  "defaultLimits": {
+    "vehicleImageMaxBytes": 12582912,
+    "vehicleDocumentMaxBytes": 20971520,
+    "maxFilenameBytes": 180,
+    "minBytes": 16
+  },
+  "abuseScenarios": [
+    "filename-path-traversal",
+    "filename-encoded-traversal",
+    "filename-bidi-extension-spoof",
+    "filename-control-character",
+    "filename-too-long",
+    "double-extension-executable",
+    "extension-vs-content-mismatch",
+    "declared-mime-vs-content-mismatch",
+    "unknown-content",
+    "svg-active-content",
+    "html-active-content",
+    "pe-executable",
+    "elf-executable",
+    "zip-archive",
+    "gzip-archive",
+    "jpeg-appended-zip-polyglot",
+    "jpeg-trailing-payload",
+    "png-missing-iend",
+    "webp-riff-size-mismatch",
+    "pdf-trailing-payload",
+    "pdf-javascript-action",
+    "pdf-launch-action",
+    "oversized-upload",
+    "undersized-upload",
+    "webp-document-purpose-confusion",
+    "pdf-image-purpose-confusion"
+  ],
+  "allowedPositiveFixtures": [
+    "jpeg-vehicle-image",
+    "png-vehicle-image",
+    "webp-vehicle-image",
+    "pdf-vehicle-document",
+    "jpeg-vehicle-document",
+    "png-vehicle-document"
+  ],
+  "claimBoundary": {
+    "productionUploadEndpointNotClaimed": true,
+    "objectStorageIamNotClaimed": true,
+    "antivirusProviderNotClaimed": true,
+    "imageDecoderReencodingNotClaimed": true,
+    "contentDisarmReconstructionNotClaimed": true,
+    "secretScanningRemains41_15": true
+  }
+}

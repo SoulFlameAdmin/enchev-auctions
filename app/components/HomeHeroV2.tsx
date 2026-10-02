@@ -1,6 +1,5 @@
 import HomeLiveSpotlight from "./HomeLiveSpotlight";
 import HomeDiscoveryV2 from "./HomeDiscoveryV2";
-import CinematicVehicleMotion from "./CinematicVehicleMotion";
 import { getHomeHeroCopy, HOME_HERO_KEYS } from "../home-hero-messages";
 
 function T({k,children}:{k:string;children:React.ReactNode}){
@@ -10,15 +9,7 @@ function T({k,children}:{k:string;children:React.ReactNode}){
 export default function HomeHeroV2(){
   const copy=getHomeHeroCopy("bg-BG");
 
-  return <section className="eaHero eaHeroV2 eaCinematicHero" id="top" data-design-task="DP2-05" data-locale="bg-BG">
-    <CinematicVehicleMotion />
-
-    <div className="eaCinematicStage" aria-hidden="true">
-      <span className="eaCinematicIndex">01 — ENCHEV</span>
-      <span className="eaCinematicSideNote">INTERNATIONAL VEHICLE AUCTIONS</span>
-      <span className="eaCinematicHalo"/>
-    </div>
-
+  return <section className="eaHero eaHeroV2" id="top" data-design-task="DP2-05" data-locale="bg-BG">
     <div className="eaHeroV2Inner">
       <div className="eaHeroV2Content">
         <div className="eaHeroV2Eyebrow"><i aria-hidden="true"/><T k={HOME_HERO_KEYS.eyebrow}>{copy.eyebrow}</T></div>
@@ -58,8 +49,6 @@ export default function HomeHeroV2(){
         <HomeLiveSpotlight />
       </div>
     </div>
-
-    <div className="eaCinematicScrollCue" aria-hidden="true"><i/>SCROLL TO DISCOVER</div>
 
     <HomeDiscoveryV2 />
 

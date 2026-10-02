@@ -1,0 +1,11 @@
+# Supplied Forge frontend integration
+
+The owner requested the Forge Automotive design and supplied `forgeautomotive-full-frontend.zip`: 352,634,868 bytes, 1,235 files, source `https://forgeautomotive.co.uk/`. ZIP integrity passes. No GLB/GLTF or video files are present; the captured frontend also references custom ActiveFrame `.af` animations. Three omitted `.af` files were recovered directly from the original public host and their hashes are pinned.
+
+The homepage is served from the supplied HTML and its original animation chunks/styles, isolated under `public/forge`. `proxy.ts` rewrites only `/`; API correlation behavior and the auction application remain intact. The existing homepage and master plan remain at `/workspace`. Navigation bridges the original marketing buttons to inventory, live auctions and support. Original company contacts are hidden; branding and selected presentation copy are adapted to Enchev.
+
+The archive's 133 unique external image sources are local, with duplicate responsive variants consolidated to the closest supplied 1,920px variant. Fonts, CSS and JavaScript are local. This preserves the original animation implementation, but exact visual equivalence across devices must be assessed in a browser; consolidating responsive image variants is an intentional packaging tradeoff. Captured original stock/build detail pages are not published as Enchev auction lots.
+
+`scripts/import-forge-reference.py` reproduces the packaged frontend from the supplied ZIP. Run it only with the source archive available. The adapted HTML, CSS and JavaScript are pinned in `config/forge-frontend.json.gz`. `scripts/restore-forge-assets.mjs` restores them and fetches binary assets from the pinned manifest during a clean build, verifying SHA-256 hashes. Existing matching local assets are reused. A clean build requires the original binary hosts to remain reachable and unchanged; runtime serves all assets locally.
+
+The source report contains 234 failed discovery requests; many are incorrect inferred paths. Deployment readiness is determined by actual packaged runtime references and checks, not by the count alone. Visual review remains incomplete: the HTTP preview cannot decode ActiveFrame, and the loader exit and hero fallback need additional verification. This integration has not been published.
