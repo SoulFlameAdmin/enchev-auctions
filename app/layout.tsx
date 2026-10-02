@@ -13,6 +13,7 @@ import "./dp2-app-shell.css";
 import "./dp2-home-hero.css";
 import "./dp2-home-discovery.css";
 import "./cinematic-home-v1.css";
+import "./forge-mirror.css";
 import MouseAura from "./components/MouseAura";
 import BackgroundSwitcher from "./components/BackgroundSwitcher";
 import VerifiedPlanEvidenceSync from "./components/VerifiedPlanEvidenceSync";
