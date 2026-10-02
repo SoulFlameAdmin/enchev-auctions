@@ -254,7 +254,9 @@
     "verify:dependency-scan-clean-41-18": "node scripts/verify-dependency-scan-clean-41-18.mjs",
     "verify:dependency-scan-clean-41-18:self-test": "node scripts/verify-dependency-scan-clean-41-18.mjs --self-test",
     "verify:sbom-produced-archived-41-19": "node scripts/verify-sbom-produced-archived-41-19.mjs",
-    "verify:sbom-produced-archived-41-19:self-test": "node scripts/verify-sbom-produced-archived-41-19.mjs --self-test"
+    "verify:sbom-produced-archived-41-19:self-test": "node scripts/verify-sbom-produced-archived-41-19.mjs --self-test",
+    "verify:external-pentest-contract-41-20-21": "node scripts/verify-external-pentest-contract-41-20-21.mjs",
+    "verify:external-pentest-contract-41-20-21:self-test": "node scripts/verify-external-pentest-contract-41-20-21.mjs --self-test"
   },
   "dependencies": {
     "next": "16.3.8",
