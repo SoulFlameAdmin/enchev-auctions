@@ -72,7 +72,8 @@ const gates = [
   ["scripts/verify-sast-clean-41-16.mjs", "--self-test"],
   ["scripts/verify-dast-clean-41-17.mjs", "--self-test"],
   ["scripts/verify-dependency-scan-clean-41-18.mjs", "--self-test"],
-  ["scripts/verify-sbom-produced-archived-41-19.mjs", "--self-test"]
+  ["scripts/verify-sbom-produced-archived-41-19.mjs", "--self-test"],
+  ["scripts/verify-external-pentest-contract-41-20-21.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of gates) {
