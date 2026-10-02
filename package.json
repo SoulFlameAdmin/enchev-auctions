@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "node scripts/generate-master-test-task-ids.mjs && node scripts/prepare-forge-snapshot.mjs",
-    "build": "next build",
+    "prebuild": "node scripts/generate-master-test-task-ids.mjs",
+    "build": "node scripts/prepare-forge-snapshot.mjs && next build",
     "start": "next start",
     "verify:env": "node scripts/verify-environment-variables.mjs",
     "verify:env:self-test": "node scripts/verify-environment-variables.mjs --self-test",
