@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "prebuild": "node scripts/generate-master-test-task-ids.mjs",
+    "dev": "node scripts/dev-preview.mjs",
+    "prebuild": "node scripts/restore-forge-assets.mjs && node scripts/generate-master-test-task-ids.mjs",
     "build": "next build",
     "start": "next start",
     "verify:env": "node scripts/verify-environment-variables.mjs",
