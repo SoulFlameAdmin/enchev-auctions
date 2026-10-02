@@ -1,0 +1,48 @@
+name: Dependency Scan
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: dependency-scan-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Verify SYSTEM 41.18 dependency-scan contract
+        run: node scripts/verify-dependency-scan-clean-41-18.mjs --self-test
+      - name: Generate exact-head npm audit evidence
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          set +e
+          npm audit --package-lock-only --audit-level=high --json > artifacts/dependency-audit.json 2> artifacts/dependency-audit.stderr.log
+          AUDIT_EXIT=$?
+          set -e
+          printf '%s\n' "$AUDIT_EXIT" > artifacts/dependency-audit-exit-code.txt
+      - name: Enforce no High/Critical dependency findings
+        run: node scripts/verify-dependency-scan-clean-41-18.mjs --report artifacts/dependency-audit.json --exit-code-file artifacts/dependency-audit-exit-code.txt
+      - name: Archive dependency-scan evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: enchev-dependency-audit-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            artifacts/dependency-audit.json
+            artifacts/dependency-audit-exit-code.txt
+            artifacts/dependency-audit.stderr.log
+          if-no-files-found: error
+          retention-days: 14
