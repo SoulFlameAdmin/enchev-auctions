@@ -1,0 +1,44 @@
+{
+  "taskId": "41.20",
+  "title": "External penetration test completed",
+  "kind": "security",
+  "status": "pending_external_evidence",
+  "completionClaim": false,
+  "requirements": {
+    "independentThirdPartyRequired": true,
+    "datedReportRequired": true,
+    "providerIdentityRequired": true,
+    "scopeStatementRequired": true,
+    "methodologyRequired": true,
+    "reportIntegrityHashRequired": true,
+    "findingSeveritySummaryRequired": true,
+    "requiredScopeAreas": [
+      "web",
+      "api",
+      "authentication",
+      "authorization",
+      "auction-bidding",
+      "realtime-websocket",
+      "upload-content",
+      "ssrf-outbound"
+    ],
+    "internalDastCannotSubstitute": true,
+    "internalSastCannotSubstitute": true
+  },
+  "evidence": {
+    "providerName": null,
+    "providerIndependenceStatement": null,
+    "reportDate": null,
+    "reportArtifactReference": null,
+    "reportSha256": null,
+    "methodology": null,
+    "scopeAreas": [],
+    "findings": {
+      "critical": null,
+      "high": null,
+      "medium": null,
+      "low": null,
+      "informational": null
+    }
+  }
+}
