@@ -252,7 +252,9 @@
     "verify:dast-clean-41-17": "node scripts/verify-dast-clean-41-17.mjs",
     "verify:dast-clean-41-17:self-test": "node scripts/verify-dast-clean-41-17.mjs --self-test",
     "verify:dependency-scan-clean-41-18": "node scripts/verify-dependency-scan-clean-41-18.mjs",
-    "verify:dependency-scan-clean-41-18:self-test": "node scripts/verify-dependency-scan-clean-41-18.mjs --self-test"
+    "verify:dependency-scan-clean-41-18:self-test": "node scripts/verify-dependency-scan-clean-41-18.mjs --self-test",
+    "verify:sbom-produced-archived-41-19": "node scripts/verify-sbom-produced-archived-41-19.mjs",
+    "verify:sbom-produced-archived-41-19:self-test": "node scripts/verify-sbom-produced-archived-41-19.mjs --self-test"
   },
   "dependencies": {
     "next": "16.3.8",
