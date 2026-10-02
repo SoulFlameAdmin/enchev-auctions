@@ -12,7 +12,6 @@ export function proxy(request: NextRequest) {
     const target = request.nextUrl.clone();
     target.pathname = "/api/forge-mirror";
     target.search = "";
-    target.searchParams.set("path", "/");
     return NextResponse.rewrite(target);
   }
 
