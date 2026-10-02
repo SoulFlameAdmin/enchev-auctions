@@ -20,7 +20,18 @@ jobs:
         uses: github/codeql-action/init@977e6ceaea7361825998245d787fa3b4d6b9e5df
         with:
           languages: javascript-typescript
-      - name: Analyze
+          queries: security-extended
+      - name: Analyze to local SARIF
         uses: github/codeql-action/analyze@977e6ceaea7361825998245d787fa3b4d6b9e5df
         with:
+          category: "/language:javascript-typescript"
+          output: artifacts/codeql-sarif
+          upload: never
+      - name: Enforce no High/Critical SAST findings
+        run: node scripts/verify-sast-clean-41-16.mjs --dir artifacts/codeql-sarif
+      - name: Upload CodeQL SARIF
+        if: always()
+        uses: github/codeql-action/upload-sarif@977e6ceaea7361825998245d787fa3b4d6b9e5df
+        with:
+          sarif_file: artifacts/codeql-sarif
           category: "/language:javascript-typescript"
