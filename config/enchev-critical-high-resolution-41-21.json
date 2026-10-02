@@ -1,0 +1,23 @@
+{
+  "taskId": "41.21",
+  "title": "All Critical/High findings resolved",
+  "kind": "security",
+  "status": "blocked_by_41_20",
+  "completionClaim": false,
+  "requirements": {
+    "externalPenTest41_20CompletedRequired": true,
+    "criticalUnresolvedMustBeZero": true,
+    "highUnresolvedMustBeZero": true,
+    "remediationEvidenceRequiredWhenFindingsExist": true,
+    "retestEvidenceRequiredForCriticalHighFindings": true
+  },
+  "evidence": {
+    "sourcePenTestReportSha256": null,
+    "criticalFound": null,
+    "highFound": null,
+    "criticalUnresolved": null,
+    "highUnresolved": null,
+    "remediationArtifactReferences": [],
+    "retestArtifactReferences": []
+  }
+}
