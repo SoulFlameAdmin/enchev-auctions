@@ -80,7 +80,7 @@ function runSelfTest(config){
   const workflow=fs.readFileSync(WORKFLOW_PATH,"utf8");
   const mutations=[
     workflow.replace("zap-full-scan.py","zap-baseline.py"),
-    workflow.replace(config.engine.dockerImage,"ghcr.io/zaproxy/zaproxy:weekly"),
+    workflow.replaceAll(config.engine.dockerImage,"ghcr.io/zaproxy/zaproxy:weekly"),
     workflow.replace("node scripts/verify-dast-clean-41-17.mjs --report "+config.engine.reportJson,"node --version"),
     workflow.replace("next start --hostname 0.0.0.0 --port 3000","next start --port 3000"),
     workflow+"\ncontinue-on-error: true\n"
