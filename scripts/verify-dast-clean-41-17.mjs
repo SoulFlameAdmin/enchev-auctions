@@ -47,6 +47,7 @@ export function verifyWorkflow(text,config){
   if(!text.includes("npm ci --no-audit --no-fund")) failures.push("locked install missing");
   if(!text.includes("npm run build")) failures.push("production build missing");
   if(!text.includes("next start --hostname 0.0.0.0 --port 3000")) failures.push("isolated local app start missing");
+  if(!text.includes("chmod 0777 artifacts/zap")) failures.push("container-writable ZAP artifact directory missing");
   if(!text.includes(config.target.healthPath)) failures.push("local health gate missing");
   if(!text.includes(config.engine.dockerImage)) failures.push("ZAP version-pinned image missing");
   if(!text.includes("zap-full-scan.py")) failures.push("ZAP full active scan missing");
@@ -83,12 +84,13 @@ function runSelfTest(config){
     workflow.replaceAll(config.engine.dockerImage,"ghcr.io/zaproxy/zaproxy:weekly"),
     workflow.replace("node scripts/verify-dast-clean-41-17.mjs --report "+config.engine.reportJson,"node --version"),
     workflow.replace("next start --hostname 0.0.0.0 --port 3000","next start --port 3000"),
+    workflow.replace("chmod 0777 artifacts/zap","true"),
     workflow+"\ncontinue-on-error: true\n"
   ];
   for(let i=0;i<mutations.length;i++){
     if(verifyWorkflow(mutations[i],config).length===0) fail("unsafe workflow mutation accepted index="+i);
   }
-  console.log("DAST_CLEAN_41_17_SELF_TEST PASS high_blocked=true medium_allowed=true unclassified_blocked=true clean_allowed=true workflow_negative_cases=5 isolated_local_target=true");
+  console.log("DAST_CLEAN_41_17_SELF_TEST PASS high_blocked=true medium_allowed=true unclassified_blocked=true clean_allowed=true workflow_negative_cases=6 isolated_local_target=true");
 }
 
 const config=readJson(CONFIG_PATH);
