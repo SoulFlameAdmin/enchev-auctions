@@ -6,6 +6,7 @@ export default function Home(){
       id="main-content"
       aria-label="ENCHEV Auctions"
       data-cinematic-tracker="connected"
+      data-release="official-cinematic-v1"
       style={{ minHeight:"100vh", background:"#000", overflow:"hidden" }}
     >
       <iframe
