@@ -250,7 +250,17 @@
     "verify:sast-clean-41-16": "node scripts/verify-sast-clean-41-16.mjs",
     "verify:sast-clean-41-16:self-test": "node scripts/verify-sast-clean-41-16.mjs --self-test",
     "verify:dast-clean-41-17": "node scripts/verify-dast-clean-41-17.mjs",
-    "verify:dast-clean-41-17:self-test": "node scripts/verify-dast-clean-41-17.mjs --self-test"
+    "verify:dast-clean-41-17:self-test": "node scripts/verify-dast-clean-41-17.mjs --self-test",
+    "verify:dependency-scan-41-18": "node scripts/verify-dependency-scan-41-18.mjs",
+    "verify:dependency-scan-41-18:self-test": "node scripts/verify-dependency-scan-41-18.mjs --self-test",
+    "verify:sbom-archived-41-19": "node scripts/verify-sbom-archived-41-19.mjs",
+    "verify:sbom-archived-41-19:self-test": "node scripts/verify-sbom-archived-41-19.mjs --self-test",
+    "verify:external-pentest-41-20": "node scripts/verify-external-pentest-41-20.mjs",
+    "verify:external-pentest-41-20:self-test": "node scripts/verify-external-pentest-41-20.mjs --self-test",
+    "verify:critical-high-resolution-41-21": "node scripts/verify-critical-high-resolution-41-21.mjs",
+    "verify:critical-high-resolution-41-21:self-test": "node scripts/verify-critical-high-resolution-41-21.mjs --self-test",
+    "verify:performance-baseline-42-01": "node scripts/verify-production-like-performance-baseline-42-01.mjs",
+    "verify:performance-baseline-42-01:self-test": "node scripts/verify-production-like-performance-baseline-42-01.mjs --self-test"
   },
   "dependencies": {
     "next": "16.3.8",
