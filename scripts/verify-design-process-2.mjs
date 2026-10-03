@@ -163,7 +163,7 @@ function validateHomeHero(component,spotlight,messages,css,layout,page,translati
   ]) assert(keys.includes(key), `DP2-05 translation registry missing ${key}`);
 
   assert(layout.includes('import "./dp2-home-hero.css";'), "Root layout must import DP2-05 hero CSS");
-  assert(page.includes("<HomeHeroV2 />"), "Homepage must render HomeHeroV2");
+  assert(page.includes('src="/forge/index.html"') && page.includes("<MasterSystemPlanV1 />"), "Homepage must render the official Forge cinematic surface with MasterSystemPlanV1");
   assert(!page.includes('<section className="eaHero" id="top">'), "Legacy campaign hero must be removed from homepage DOM");
   assert(!page.includes("10K+"), "DP2-05 must not present unverified inventory-volume claims");
   assert(!page.includes("Европа · САЩ · Канада"), "DP2-05 must not hardcode market availability in the hero");
