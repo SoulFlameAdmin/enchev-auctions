@@ -1,0 +1,65 @@
+name: Performance Baseline 42.01
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: performance-baseline-42-01-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  baseline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Verify 42.01 contract
+        run: node scripts/verify-production-like-performance-baseline-42-01.mjs --self-test
+      - name: Build exact source
+        run: npm run build
+      - name: Start production build locally
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          nohup npx next start --hostname 127.0.0.1 --port 3000 > artifacts/performance-baseline-app.log 2>&1 &
+          echo $! > /tmp/enchev-baseline.pid
+          for i in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:3000/api/health/web >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat artifacts/performance-baseline-app.log
+          exit 1
+      - name: Run production-like baseline
+        env:
+          BASELINE_HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+        run: node scripts/verify-production-like-performance-baseline-42-01.mjs --run --base-url http://127.0.0.1:3000 --out artifacts/performance-baseline-42-01.json
+      - name: Verify baseline evidence
+        run: node scripts/verify-production-like-performance-baseline-42-01.mjs --report artifacts/performance-baseline-42-01.json
+      - name: Archive baseline evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: enchev-performance-baseline-42-01-${{ github.event.pull_request.head.sha || github.sha }}
+          path: |
+            artifacts/performance-baseline-42-01.json
+            artifacts/performance-baseline-app.log
+          if-no-files-found: error
+          retention-days: 30
+      - name: Stop local application
+        if: always()
+        shell: bash
+        run: |
+          if [ -f /tmp/enchev-baseline.pid ]; then kill "$(cat /tmp/enchev-baseline.pid)" 2>/dev/null || true; fi
