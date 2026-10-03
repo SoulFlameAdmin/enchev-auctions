@@ -70,7 +70,12 @@ const gates = [
   ["scripts/verify-upload-content-attack-41-14.mjs", "--self-test"],
   ["scripts/verify-secret-scanning-clean-41-15.mjs", "--self-test"],
   ["scripts/verify-sast-clean-41-16.mjs", "--self-test"],
-  ["scripts/verify-dast-clean-41-17.mjs", "--self-test"]
+  ["scripts/verify-dast-clean-41-17.mjs", "--self-test"],
+  ["scripts/verify-dependency-scan-41-18.mjs", "--self-test"],
+  ["scripts/verify-sbom-archived-41-19.mjs", "--self-test"],
+  ["scripts/verify-external-pentest-41-20.mjs", "--self-test"],
+  ["scripts/verify-critical-high-resolution-41-21.mjs", "--self-test"],
+  ["scripts/verify-production-like-performance-baseline-42-01.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of gates) {
