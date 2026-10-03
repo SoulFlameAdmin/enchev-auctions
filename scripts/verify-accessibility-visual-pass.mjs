@@ -31,9 +31,10 @@ export function validateAccessibilityContract(sources) {
     live: sources.live,
     profile: sources.profile,
   })) {
-    need(source, /<main id="main-content" /, `${route} main-content target missing`);
+    need(source, /<main[^>]*id="main-content"[^>]*>/, `${route} main-content target missing`);
   }
 
+  need(sources.home, /<iframe[\s\S]*title="ENCHEV Auctions cinematic homepage"/, "official homepage iframe title missing");
   need(sources.accessibility, /\.eaSkipLink\{/, "skip-link visual style missing");
   need(sources.accessibility, /:where\(a,button,input,select,textarea,\[tabindex\]\):focus-visible\{[\s\S]*outline:3px solid #8bffc0!important/, "strong shared focus-visible ring missing");
   need(sources.accessibility, /@media\(prefers-contrast:more\)/, "increased-contrast fallback missing");
