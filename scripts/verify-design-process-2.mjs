@@ -163,7 +163,7 @@ function validateHomeHero(component,spotlight,messages,css,layout,page,translati
   ]) assert(keys.includes(key), `DP2-05 translation registry missing ${key}`);
 
   assert(layout.includes('import "./dp2-home-hero.css";'), "Root layout must import DP2-05 hero CSS");
-  assert(page.includes("<HomeHeroV2 />"), "Homepage must render HomeHeroV2");
+  assert(page.includes('src="/forge/index.html"') && page.includes("<MasterSystemPlanV1 />"), "Homepage must render the official Forge cinematic surface with MasterSystemPlanV1");
   assert(!page.includes('<section className="eaHero" id="top">'), "Legacy campaign hero must be removed from homepage DOM");
   assert(!page.includes("10K+"), "DP2-05 must not present unverified inventory-volume claims");
   assert(!page.includes("Европа · САЩ · Канада"), "DP2-05 must not hardcode market availability in the hero");
@@ -339,7 +339,7 @@ function selfTest() {
   const heroMessagesFixture='"bg-BG" "en-US" home.hero.title.primary home.hero.availability.note home.hero.spotlight.status home.hero.spotlight.cta активирания market profile activated market profile';
   const heroCssFixture='@media(max-width:430px) @media(max-width:360px) @media(min-width:1920px) .eaHeroV2Proof .eaHeroDiscovery';
   const heroLayoutFixture='import "./dp2-home-hero.css";';
-  const heroPageFixture='<HomeHeroV2 />';
+  const heroPageFixture='src="/forge/index.html" <MasterSystemPlanV1 />';
   const heroKeysFixture=JSON.stringify({keys:["home.hero.actions.browse","home.hero.actions.live","home.hero.availability.note","home.hero.eyebrow","home.hero.lead","home.hero.proof.identity","home.hero.proof.status","home.hero.proof.transport","home.hero.title.accent","home.hero.title.primary","home.hero.title.secondary"]});
   const heroCaptureFixture='verifyDP205HomeHero spotlight must stack below hero content desktop hero columns overlap';
   const heroSpotlightFixture="HOME_HERO_KEYS.spotlightStatus HOME_HERO_KEYS.spotlightCta";

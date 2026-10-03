@@ -1,0 +1,33 @@
+{
+  "taskId": "42.01",
+  "title": "Production-like performance baseline",
+  "kind": "test",
+  "environment": {
+    "runtime": "Next.js production build",
+    "host": "isolated GitHub Actions runner",
+    "nodeVersion": 24,
+    "externalProductionTargetForbidden": true
+  },
+  "workload": {
+    "paths": [
+      "/api/health/web",
+      "/"
+    ],
+    "warmupRequests": 20,
+    "totalRequests": 240,
+    "concurrency": 12,
+    "requestTimeoutMs": 5000
+  },
+  "report": "artifacts/performance-baseline-42-01.json",
+  "greenGate": {
+    "zeroNetworkErrors": true,
+    "zeroNonSuccessResponses": true,
+    "latencyPercentilesRecorded": [
+      "p50",
+      "p95",
+      "p99"
+    ],
+    "throughputRecorded": true,
+    "exactHeadWorkflowSuccessRequired": true
+  }
+}

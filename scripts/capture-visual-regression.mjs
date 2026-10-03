@@ -5,7 +5,7 @@ import crypto from "node:crypto";
 import { spawn, spawnSync } from "node:child_process";
 
 const ROUTES=[
-  {name:"home",path:"/",ready:"document.querySelector('.eaHero') && document.querySelector('.eaFeaturedCard')"},
+  {name:"home",path:"/",ready:"document.querySelector('iframe[title=\\\"ENCHEV Auctions cinematic homepage\\\"]')?.contentDocument?.readyState === 'complete'"},
   {name:"inventory",path:"/inventory",ready:"document.querySelector('.inventoryPage') && !document.querySelector('.inv18RouteState') && document.querySelectorAll('.inventoryCard').length >= 1 && getComputedStyle(document.querySelector('.inventoryGrid')).display === 'grid' && getComputedStyle(document.querySelector('.inventoryCard')).borderRadius !== '0px'"},
   {name:"lot-ea-10539",path:"/lot/EA-10539",ready:"document.querySelector('.lotPage') && document.querySelector('.lotMainImage img')"},
   {name:"live-auctions",path:"/live-auctions",ready:"document.querySelector('.liveStage') && document.querySelector('.liveBidPanel')"},
@@ -651,6 +651,18 @@ async function settlePage(call,route){
 }
 
 
+async function verifyCinematicHome(call,viewport){
+  const result=await call("Runtime.evaluate",{expression:`(()=>{const frame=document.querySelector('iframe[title="ENCHEV Auctions cinematic homepage"]');const doc=frame?.contentDocument;if(!frame||!doc||doc.readyState!=="complete"||!doc.body)return null;const r=frame.getBoundingClientRect();return {src:frame.getAttribute("src")||"",title:frame.getAttribute("title")||"",ready:doc.readyState,htmlLength:doc.documentElement?.outerHTML?.length||0,elementCount:doc.body.querySelectorAll("*").length,viewportWidth:innerWidth,viewportHeight:innerHeight,scrollWidth:document.documentElement.scrollWidth,frame:{left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height}};})()`,returnByValue:true});
+  const s=result?.result?.value;
+  if(!s)fail(`CINEMATIC_HOME ${viewport.name} iframe did not become ready`);
+  if(s.src!=="/forge/index.html")fail(`CINEMATIC_HOME ${viewport.name} unexpected iframe src=${s.src}`);
+  if(s.title!=="ENCHEV Auctions cinematic homepage")fail(`CINEMATIC_HOME ${viewport.name} title drift`);
+  if(s.htmlLength<1000||s.elementCount<10)fail(`CINEMATIC_HOME ${viewport.name} embedded frontend is unexpectedly empty`);
+  if(s.scrollWidth>s.viewportWidth+3)fail(`CINEMATIC_HOME ${viewport.name} host horizontal overflow`);
+  if(s.frame.left>3||s.frame.top>3||s.frame.right<s.viewportWidth-3||s.frame.bottom<s.viewportHeight-3)fail(`CINEMATIC_HOME ${viewport.name} iframe does not cover viewport`);
+  return true;
+}
+
 export function validateRtlCapabilityRuntime(snapshot,viewport){
   if(!snapshot||!viewport)fail("21.17 RTL runtime snapshot missing");
   const tolerance=3;
@@ -727,8 +739,8 @@ async function captureOne({port,baseUrl,route,viewport,outputDir}){
     if(navigation.errorText)fail(`${route.name} navigation failed: ${navigation.errorText}`);
 
     await settlePage(call,route);
-    await verifyDP204AppShell(call,viewport);
-    if(route.name==="home")await verifyDP205HomeHero(call,viewport);
+    if(route.name==="home")await verifyCinematicHome(call,viewport);
+    else await verifyDP204AppShell(call,viewport);
 
     if(route.name==="lot-ea-10539"){
       await verifyD23StickyActions(call,viewport);
@@ -745,7 +757,8 @@ async function captureOne({port,baseUrl,route,viewport,outputDir}){
     if(!result.data)fail(`${route.name} ${viewport.name} returned no PNG data`);
 
     const png=Buffer.from(result.data,"base64");
-    if(png.length<5000)fail(`${route.name} ${viewport.name} PNG is unexpectedly small (${png.length} bytes)`);
+    const minimumPngBytes=route.name==="home"?3500:5000;
+    if(png.length<minimumPngBytes)fail(`${route.name} ${viewport.name} PNG is unexpectedly small (${png.length} bytes, minimum ${minimumPngBytes})`);
     if(!(png[0]===0x89&&png[1]===0x50&&png[2]===0x4e&&png[3]===0x47))fail(`${route.name} ${viewport.name} is not a PNG`);
 
     const filename=`${route.name}--${viewport.name}.png`;

@@ -1,0 +1,21 @@
+{
+  "taskId": "41.19",
+  "title": "SBOM produced and archived",
+  "kind": "security",
+  "engine": {
+    "format": "CycloneDX JSON",
+    "workflow": ".github/workflows/sbom.yml",
+    "artifact": "artifacts/enchev-sbom.cdx.json",
+    "digest": "artifacts/enchev-sbom.sha256"
+  },
+  "archive": {
+    "retentionDays": 30,
+    "exactHeadNamedArtifact": true,
+    "ifNoFilesFound": "error"
+  },
+  "greenGate": {
+    "validCycloneDx": true,
+    "digestRequired": true,
+    "exactHeadWorkflowSuccessRequired": true
+  }
+}

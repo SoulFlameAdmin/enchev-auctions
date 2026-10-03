@@ -39,7 +39,7 @@ export function validate(config,sources){
   need(sources.layout,/className="eaSkipLink" href="#main-content"/,"28.02 skip link missing");
   need(sources.layout,/import "\.\/accessibility-quality\.css";/,"accessibility layer not loaded");
   for(const [name,source] of Object.entries({home:sources.home,inventory:sources.inventory,lot:sources.lot,live:sources.live,profile:sources.profile})){
-    need(source,/<main id="main-content"/,`28.02 main-content target missing on ${name}`);
+    need(source,/<main[^>]*id="main-content"/,`28.02 main-content target missing on ${name}`);
   }
 
   need(sources.accessibility,/:where\(a,button,input,select,textarea,\[tabindex\]\):focus-visible/,"28.03 shared focus-visible rule missing");

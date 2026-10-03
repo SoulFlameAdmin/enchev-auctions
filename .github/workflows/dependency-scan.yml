@@ -1,0 +1,48 @@
+name: Dependency Security Scan
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+concurrency:
+  group: dependency-security-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  dependency-security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Verify dependency scan contract
+        run: node scripts/verify-dependency-scan-41-18.mjs --self-test
+      - name: Run locked dependency audit
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          set +e
+          npm audit --json > artifacts/npm-audit.json
+          AUDIT_EXIT=$?
+          set -e
+          echo "npm audit exit=$AUDIT_EXIT; severity decision is enforced from the archived JSON report"
+          test -s artifacts/npm-audit.json
+      - name: Enforce no Critical/High dependency vulnerabilities
+        run: node scripts/verify-dependency-scan-41-18.mjs --report artifacts/npm-audit.json
+      - name: Archive dependency audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: enchev-dependency-audit-${{ github.event.pull_request.head.sha || github.sha }}
+          path: artifacts/npm-audit.json
+          if-no-files-found: error
+          retention-days: 30

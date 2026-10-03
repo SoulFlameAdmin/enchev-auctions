@@ -35,7 +35,9 @@ export function validateMobileContract(sources) {
   need(sources.mobile, /\.liveHero,[\s\S]*\.liveStage,[\s\S]*\.liveQueue,[\s\S]*\.liveSold[\s\S]*width:calc\(100% - 24px\)!important/, "live mobile gutters must use the compact width contract");
   need(sources.mobile, /@media\(max-width:380px\)/, "extra-narrow mobile fallback missing");
 
-  need(sources.homePage, /<main[^>]*className="eaHome"[^>]*>/, "homepage root marker missing");
+  need(sources.homePage, /<main[\s\S]*id="main-content"[\s\S]*aria-label="ENCHEV Auctions"/, "official homepage root contract missing");
+  need(sources.homePage, /src="\/forge\/index\.html"/, "official Forge homepage iframe missing");
+  need(sources.homePage, /width:"100vw"[\s\S]*height:"100dvh"/, "Forge homepage must fill the mobile viewport");
   need(sources.homeCss, /@media\(max-width:560px\)/, "homepage mobile breakpoint missing");
   need(sources.homeCss, /\.eaFeaturedGrid\{grid-template-columns:1fr\}/, "homepage featured cards must collapse to one column");
 
