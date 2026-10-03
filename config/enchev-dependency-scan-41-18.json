@@ -1,0 +1,25 @@
+{
+  "taskId": "41.18",
+  "title": "Dependency scan clean of Critical/High",
+  "kind": "security",
+  "engine": {
+    "provider": "npm audit",
+    "workflow": ".github/workflows/dependency-scan.yml",
+    "report": "artifacts/npm-audit.json",
+    "lockfile": "package-lock.json",
+    "nodeVersion": 24
+  },
+  "severityGate": {
+    "blocked": [
+      "critical",
+      "high"
+    ],
+    "realReportRequired": true,
+    "failClosedOnInvalidReport": true,
+    "exactHeadWorkflowSuccessRequired": true
+  },
+  "scope": {
+    "lockedDependencies": true,
+    "productionAndDevelopmentDependencies": true
+  }
+}
