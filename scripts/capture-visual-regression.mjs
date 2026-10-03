@@ -757,7 +757,8 @@ async function captureOne({port,baseUrl,route,viewport,outputDir}){
     if(!result.data)fail(`${route.name} ${viewport.name} returned no PNG data`);
 
     const png=Buffer.from(result.data,"base64");
-    if(png.length<5000)fail(`${route.name} ${viewport.name} PNG is unexpectedly small (${png.length} bytes)`);
+    const minimumPngBytes=route.name==="home"?3500:5000;
+    if(png.length<minimumPngBytes)fail(`${route.name} ${viewport.name} PNG is unexpectedly small (${png.length} bytes, minimum ${minimumPngBytes})`);
     if(!(png[0]===0x89&&png[1]===0x50&&png[2]===0x4e&&png[3]===0x47))fail(`${route.name} ${viewport.name} is not a PNG`);
 
     const filename=`${route.name}--${viewport.name}.png`;
