@@ -26,10 +26,16 @@ jobs:
           npm sbom --package-lock-only --sbom-format=cyclonedx --sbom-type=application > artifacts/enchev-sbom.cdx.json
       - name: Validate SBOM artifact
         run: node scripts/verify-sbom-generation.mjs --file artifacts/enchev-sbom.cdx.json
+      - name: Create SBOM SHA-256 digest
+        run: sha256sum artifacts/enchev-sbom.cdx.json > artifacts/enchev-sbom.sha256
+      - name: Verify SYSTEM 41.19 SBOM archive evidence
+        run: node scripts/verify-sbom-archived-41-19.mjs --file artifacts/enchev-sbom.cdx.json --sha-file artifacts/enchev-sbom.sha256
       - name: Upload exact-head SBOM
         uses: actions/upload-artifact@v4
         with:
           name: enchev-sbom-${{ github.event.pull_request.head.sha || github.sha }}
-          path: artifacts/enchev-sbom.cdx.json
+          path: |
+            artifacts/enchev-sbom.cdx.json
+            artifacts/enchev-sbom.sha256
           if-no-files-found: error
-          retention-days: 14
+          retention-days: 30
