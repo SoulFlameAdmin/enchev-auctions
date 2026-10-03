@@ -1,0 +1,45 @@
+{
+  "taskId": "41.17",
+  "title": "DAST clean of Critical/High",
+  "kind": "security",
+  "engine": {
+    "provider": "OWASP ZAP",
+    "version": "2.17.0",
+    "dockerImage": "ghcr.io/zaproxy/zaproxy:2.17.0",
+    "workflow": ".github/workflows/dast-scan.yml",
+    "reportJson": "artifacts/zap/zap-report.json",
+    "reportHtml": "artifacts/zap/zap-report.html"
+  },
+  "target": {
+    "environment": "isolated-ci-local",
+    "bindHost": "0.0.0.0",
+    "port": 3000,
+    "healthPath": "/api/health/web",
+    "productionTargetForbidden": true,
+    "previewTargetForbidden": true,
+    "externalTargetForbidden": true,
+    "authenticatedScanClaimed": false
+  },
+  "scan": {
+    "fullActiveScanRequired": true,
+    "traditionalSpiderMinutes": 1,
+    "zapStartupPassiveTimeoutMinutes": 5,
+    "ignoreDefaultWarningExitCode": true,
+    "jsonReportRequired": true,
+    "htmlReportRequired": true
+  },
+  "severityGate": {
+    "zapRiskCodeThreshold": 3,
+    "blocksHighAndCritical": true,
+    "unclassifiedAlertsFailClosed": true,
+    "realReportRequired": true,
+    "exactHeadDastWorkflowSuccessRequired": true
+  },
+  "claimBoundary": {
+    "unauthenticatedLocalSurfaceOnly": true,
+    "productionDastNotClaimed": true,
+    "authenticatedDastNotClaimed": true,
+    "externalPenTestRemains41_20": true,
+    "allCriticalHighResolutionRemains41_21": true
+  }
+}
