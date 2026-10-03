@@ -339,7 +339,7 @@ function selfTest() {
   const heroMessagesFixture='"bg-BG" "en-US" home.hero.title.primary home.hero.availability.note home.hero.spotlight.status home.hero.spotlight.cta активирания market profile activated market profile';
   const heroCssFixture='@media(max-width:430px) @media(max-width:360px) @media(min-width:1920px) .eaHeroV2Proof .eaHeroDiscovery';
   const heroLayoutFixture='import "./dp2-home-hero.css";';
-  const heroPageFixture='<HomeHeroV2 />';
+  const heroPageFixture='src="/forge/index.html" <MasterSystemPlanV1 />';
   const heroKeysFixture=JSON.stringify({keys:["home.hero.actions.browse","home.hero.actions.live","home.hero.availability.note","home.hero.eyebrow","home.hero.lead","home.hero.proof.identity","home.hero.proof.status","home.hero.proof.transport","home.hero.title.accent","home.hero.title.primary","home.hero.title.secondary"]});
   const heroCaptureFixture='verifyDP205HomeHero spotlight must stack below hero content desktop hero columns overlap';
   const heroSpotlightFixture="HOME_HERO_KEYS.spotlightStatus HOME_HERO_KEYS.spotlightCta";
