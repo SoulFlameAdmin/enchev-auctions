@@ -144,7 +144,7 @@ const runtimeChecks = [
   [guardSource.includes("test task изисква PASS/SUCCESS evidence"), "runtime guard must expose a clear blocker"],
   [layoutSource.includes('import TestPassGreenGuard from "./components/TestPassGreenGuard"'), "root layout must import TestPassGreenGuard"],
   [layoutSource.includes("<TestPassGreenGuard />"), "root layout must mount TestPassGreenGuard"],
-  [packageJson.scripts?.prebuild === "node scripts/generate-master-test-task-ids.mjs", "prebuild must regenerate test task IDs"],
+  [String(packageJson.scripts?.prebuild || "").includes("node scripts/generate-master-test-task-ids.mjs"), "prebuild must regenerate test task IDs"],
   [workflowSource.includes("Generate frozen test task registry"), "CI must generate test task registry before verification"],
   [workflowSource.includes("GREEN passing-test invariant"), "CI must verify passing-test invariant"],
   [workflowSource.includes("GREEN passing-test rejection tests"), "CI must run passing-test self-tests"],
