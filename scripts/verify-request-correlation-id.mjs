@@ -24,7 +24,7 @@ function verifyRepositoryContract() {
   requireTrue(config.maxLength === 128, "max length drift");
 
   const proxy = fs.readFileSync("proxy.ts", "utf8");
-  requireTrue(proxy.includes('matcher: ["/api/:path*"]'), "API-wide proxy matcher missing");
+  requireTrue(/matcher\s*:\s*\[[\s\S]*["']\/api\/:path\*["'][\s\S]*\]/.test(proxy), "API-wide proxy matcher missing");
   requireTrue(proxy.includes("resolveRequestCorrelationId"), "proxy resolver wiring missing");
   requireTrue(proxy.includes("requestHeaders.set(REQUEST_CORRELATION_HEADER, correlationId)"), "downstream request propagation missing");
   requireTrue(proxy.includes("response.headers.set(REQUEST_CORRELATION_HEADER, correlationId)"), "response propagation missing");
