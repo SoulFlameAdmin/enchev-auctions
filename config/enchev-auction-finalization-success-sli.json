@@ -7,7 +7,7 @@
   "eventRegistrySource": "config/enchev-websocket-event-registry.json",
   "authoritativeAuctionSource": "postgresql",
   "telemetryMayMutateAuctionState": false,
-  "runtimeFinalizationImplemented": false,
+  "runtimeFinalizationImplemented": true,
   "indicator": {
     "name": "auction_finalization_success_ratio",
     "type": "ratio",
