@@ -9,8 +9,8 @@ const taskId = String(process.argv[3] || "");
 const output = String(process.argv[4] || "");
 
 if (!databaseUrl) throw new Error("POSTGRES_CONCURRENCY_CERT FAIL: DATABASE_URL missing");
-if (![10, 50].includes(count)) throw new Error("POSTGRES_CONCURRENCY_CERT FAIL: count must be 10 or 50");
-if (!/^42\.(02|03)$/.test(taskId)) throw new Error("POSTGRES_CONCURRENCY_CERT FAIL: invalid taskId");
+if (![10, 50, 100].includes(count)) throw new Error("POSTGRES_CONCURRENCY_CERT FAIL: count must be 10, 50 or 100");
+if (!/^42\.(02|03|04)$/.test(taskId)) throw new Error("POSTGRES_CONCURRENCY_CERT FAIL: invalid taskId");
 if (!output) throw new Error("POSTGRES_CONCURRENCY_CERT FAIL: output path missing");
 
 function psql(sql) {
