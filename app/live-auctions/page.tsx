@@ -192,15 +192,15 @@ export default function LiveAuctionsPage(){
   const fmt=(v:number)=>`00:${String(v).padStart(2,"0")}`;
 
   return <main id="main-content" className="livePage">
-    <div className="liveUtility"><span><i/> ENCHEV LIVE NETWORK</span><span>Server-session demo · 10 sec per lot</span></div>
+    <div className="liveUtility"><span><i/> EAUCTIONS LIVE NETWORK</span><span>Server-session demo · 10 sec per lot</span></div>
     <header className="liveHeader">
-      <a href="/" className="liveLogo"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
+      <a href="/" className="liveLogo"><strong>EAUCTIONS</strong><span>AUCTIONS</span></a>
       <nav><a href="/inventory">Инвентар</a><a className="active" href="/live-auctions">Търгове на живо</a><a href="/transport">Транспорт</a><a href="/#how">Как да купя</a></nav>
       <div><button>Вход</button><button className="liveRegister">Регистрация</button></div>
     </header>
 
     <section className="liveHero">
-      <div><span className="liveEyebrow">● LIVE AUCTION ROOM</span><h1>Наддавай в реално време</h1><p>10-секундният demo брояч се води от ENCHEV server session clock. При потвърдена demo оферта сървърът задава нов краен момент; при изтичане клиентът взема актуалния lot state от сървъра.</p></div>
+      <div><span className="liveEyebrow">● LIVE AUCTION ROOM</span><h1>Наддавай в реално време</h1><p>10-секундният demo брояч се води от EAuctions server session clock. При потвърдена demo оферта сървърът задава нов краен момент; при изтичане клиентът взема актуалния lot state от сървъра.</p></div>
       <div className="liveHeroStatusStack">
         <div
           className={`liveConnectionState is-${connectionState}`}
