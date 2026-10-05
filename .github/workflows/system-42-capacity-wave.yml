@@ -1,0 +1,193 @@
+name: SYSTEM 42 Capacity Wave
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: system-42-capacity-wave-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify-capacity-wave:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: enchev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d enchev"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/enchev
+      ENCHEV_42_06_GATEWAY_PORT: "4012"
+      ENCHEV_42_06_PUBLISHABLE_KEY: ci-publishable
+      ENCHEV_42_06_SECRET_KEY: ci-secret
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      - name: Create Supabase-equivalent roles
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          create role anon nologin;
+          create role authenticated nologin;
+          create role service_role nologin bypassrls;
+          grant service_role to postgres;
+          SQL
+      - name: Apply authoritative auction migrations
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20261005031500_authoritative_bid_foundation.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20261005041000_authoritative_auction_finalization.sql
+      - name: Certification harness syntax
+        run: |
+          node --check scripts/certify-soak-42-14-15.mjs
+          node --check scripts/certify-cpu-saturation-42-16.mjs
+          node --check scripts/certify-horizontal-integrity-42-17-19.mjs
+          node --check scripts/certify-load-shedding-42-18.mjs
+          node --check scripts/verify-launch-capacity-42-20.mjs
+      - name: Start local auth/RPC gateway
+        shell: bash
+        run: |
+          node scripts/local-supabase-gateway-42-06.mjs > /tmp/enchev-42-capacity-gateway.log 2>&1 &
+          echo $! > /tmp/enchev-42-capacity-gateway.pid
+          for attempt in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:4012/health >/dev/null; then exit 0; fi
+            if [ "$attempt" -eq 30 ]; then cat /tmp/enchev-42-capacity-gateway.log; exit 1; fi
+            sleep 1
+          done
+      - name: Build exact source
+        run: npm run build
+      - name: Start API instance A
+        shell: bash
+        run: |
+          ENCHEV_AUTH_SUPABASE_URL=http://127.0.0.1:4012 \
+          ENCHEV_AUTH_SUPABASE_PUBLISHABLE_KEY=ci-publishable \
+          ENCHEV_AUCTION_SUPABASE_URL=http://127.0.0.1:4012 \
+          ENCHEV_AUCTION_SUPABASE_SECRET_KEY=ci-secret \
+          node node_modules/next/dist/bin/next start --hostname 127.0.0.1 -p 3016 > /tmp/enchev-42-app-a.log 2>&1 &
+          APP_A_PID=$!
+          echo "$APP_A_PID" > /tmp/enchev-42-app-a.pid
+          echo "APP_A_PID=$APP_A_PID" >> "$GITHUB_ENV"
+          for attempt in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:3016/api/health/web >/dev/null; then exit 0; fi
+            if [ "$attempt" -eq 30 ]; then cat /tmp/enchev-42-app-a.log; exit 1; fi
+            sleep 1
+          done
+      - name: Certify SYSTEM 42.14–42.15 — long soak and memory observation
+        shell: bash
+        env:
+          ENCHEV_42_14_DURATION_SECONDS: "600"
+          ENCHEV_42_14_RPS: "4"
+          ENCHEV_42_14_OUTPUT: artifacts/42-14-15/soak-memory.json
+        run: |
+          ENCHEV_42_APP_PID="$APP_A_PID" node scripts/certify-soak-42-14-15.mjs http://127.0.0.1:3016
+      - name: Reset authoritative rows after soak
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "truncate table public.enchev_auction_finalizations, public.enchev_bids, public.enchev_auctions restart identity;"
+      - name: Certify SYSTEM 42.16 — CPU saturation behavior
+        env:
+          ENCHEV_42_16_DURATION_SECONDS: "30"
+          ENCHEV_42_16_RPS: "2"
+          ENCHEV_42_16_OUTPUT: artifacts/42-16/cpu-saturation.json
+        run: node scripts/certify-cpu-saturation-42-16.mjs http://127.0.0.1:3016
+      - name: Reset authoritative rows after CPU certification
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "truncate table public.enchev_auction_finalizations, public.enchev_bids, public.enchev_auctions restart identity;"
+      - name: Start API instance B
+        shell: bash
+        run: |
+          ENCHEV_AUTH_SUPABASE_URL=http://127.0.0.1:4012 \
+          ENCHEV_AUTH_SUPABASE_PUBLISHABLE_KEY=ci-publishable \
+          ENCHEV_AUCTION_SUPABASE_URL=http://127.0.0.1:4012 \
+          ENCHEV_AUCTION_SUPABASE_SECRET_KEY=ci-secret \
+          node node_modules/next/dist/bin/next start --hostname 127.0.0.1 -p 3017 > /tmp/enchev-42-app-b.log 2>&1 &
+          APP_B_PID=$!
+          echo "$APP_B_PID" > /tmp/enchev-42-app-b.pid
+          for attempt in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:3017/api/health/web >/dev/null; then exit 0; fi
+            if [ "$attempt" -eq 30 ]; then cat /tmp/enchev-42-app-b.log; exit 1; fi
+            sleep 1
+          done
+      - name: Certify SYSTEM 42.17 + 42.19 — horizontal scale and integrity
+        env:
+          ENCHEV_42_17_AUCTIONS: "100"
+          ENCHEV_42_19_BIDS_PER_AUCTION: "5"
+          ENCHEV_42_17_OUTPUT: artifacts/42-17-19/horizontal-integrity.json
+        run: node scripts/certify-horizontal-integrity-42-17-19.mjs http://127.0.0.1:3016 http://127.0.0.1:3017
+      - name: Reset authoritative rows before load shedding
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -c "truncate table public.enchev_auction_finalizations, public.enchev_bids, public.enchev_auctions restart identity;"
+      - name: Restart gateway with controlled RPC hold
+        shell: bash
+        run: |
+          kill "$(cat /tmp/enchev-42-capacity-gateway.pid)" 2>/dev/null || true
+          for attempt in {1..20}; do
+            if ! curl --silent http://127.0.0.1:4012/health >/dev/null 2>&1; then break; fi
+            sleep .25
+          done
+          ENCHEV_42_GATEWAY_RPC_DELAY_MS=500 node scripts/local-supabase-gateway-42-06.mjs > /tmp/enchev-42-capacity-gateway-shed.log 2>&1 &
+          echo $! > /tmp/enchev-42-capacity-gateway.pid
+          for attempt in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:4012/health >/dev/null; then exit 0; fi
+            if [ "$attempt" -eq 30 ]; then cat /tmp/enchev-42-capacity-gateway-shed.log; exit 1; fi
+            sleep 1
+          done
+      - name: Start load-shedding API instance
+        shell: bash
+        run: |
+          ENCHEV_AUTH_SUPABASE_URL=http://127.0.0.1:4012 \
+          ENCHEV_AUTH_SUPABASE_PUBLISHABLE_KEY=ci-publishable \
+          ENCHEV_AUCTION_SUPABASE_URL=http://127.0.0.1:4012 \
+          ENCHEV_AUCTION_SUPABASE_SECRET_KEY=ci-secret \
+          ENCHEV_BID_ADMISSION_MAX_INFLIGHT=4 \
+          node node_modules/next/dist/bin/next start --hostname 127.0.0.1 -p 3018 > /tmp/enchev-42-app-shed.log 2>&1 &
+          echo $! > /tmp/enchev-42-app-shed.pid
+          for attempt in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:3018/api/health/web >/dev/null; then exit 0; fi
+            if [ "$attempt" -eq 30 ]; then cat /tmp/enchev-42-app-shed.log; exit 1; fi
+            sleep 1
+          done
+      - name: Certify SYSTEM 42.18 — load-shedding behavior
+        env:
+          ENCHEV_42_18_REQUESTS: "40"
+          ENCHEV_42_18_EXPECTED_LIMIT: "4"
+          ENCHEV_42_18_OUTPUT: artifacts/42-18/load-shedding.json
+        run: node scripts/certify-load-shedding-42-18.mjs http://127.0.0.1:3018
+      - name: Verify SYSTEM 42.20 — launch capacity envelope
+        run: node scripts/verify-launch-capacity-42-20.mjs
+      - name: Upload SYSTEM 42.14–42.20 evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-42-capacity-wave-${{ github.sha }}
+          path: |
+            artifacts/42-14-15/soak-memory.json
+            artifacts/42-16/cpu-saturation.json
+            artifacts/42-17-19/horizontal-integrity.json
+            artifacts/42-18/load-shedding.json
+            config/enchev-launch-capacity-42-20.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Stop local certification services
+        if: always()
+        shell: bash
+        run: |
+          for pidfile in /tmp/enchev-42-app-a.pid /tmp/enchev-42-app-b.pid /tmp/enchev-42-app-shed.pid /tmp/enchev-42-capacity-gateway.pid; do
+            if [ -f "$pidfile" ]; then kill "$(cat "$pidfile")" 2>/dev/null || true; fi
+          done
