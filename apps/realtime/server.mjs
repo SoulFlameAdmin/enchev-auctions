@@ -63,8 +63,8 @@ function validateEnvelope(event) {
   return null;
 }
 
-function websocketFrame(payloadText, opcode = 0x1) {
-  const payload = Buffer.from(payloadText);
+function websocketFrame(payloadInput, opcode = 0x1) {
+  const payload = Buffer.isBuffer(payloadInput) ? payloadInput : Buffer.from(payloadInput);
   let header;
   if (payload.length < 126) {
     header = Buffer.from([0x80 | opcode, payload.length]);
@@ -123,13 +123,13 @@ function parseClientFrames(socket, chunk) {
     }
 
     if (opcode === 0x8) {
-      try { socket.write(websocketFrame(payload.toString("utf8"), 0x8)); } catch {}
+      try { socket.write(websocketFrame(payload, 0x8)); } catch {}
       socket.end();
       offset += frameLength;
       break;
     }
     if (opcode === 0x9) {
-      try { socket.write(websocketFrame(payload.toString("utf8"), 0xA)); } catch {}
+      try { socket.write(websocketFrame(payload, 0xA)); } catch {}
     }
 
     offset += frameLength;
