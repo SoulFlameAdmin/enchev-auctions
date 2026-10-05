@@ -55,12 +55,24 @@ async function fingerprintBid(auctionId: string, amountCents: number) {
 }
 
 export async function POST(request: Request) {
-  const supabaseUrl = process.env.ENCHEV_AUCTION_SUPABASE_URL?.replace(/\/$/, "");
-  const publishableKey = process.env.ENCHEV_AUCTION_SUPABASE_PUBLISHABLE_KEY;
-  const secretKey = process.env.ENCHEV_AUCTION_SUPABASE_SECRET_KEY;
+  const authUrl = process.env.ENCHEV_AUTH_SUPABASE_URL?.replace(/\/$/, "");
+  const authPublishableKey = process.env.ENCHEV_AUTH_SUPABASE_PUBLISHABLE_KEY;
+  const auctionUrl = process.env.ENCHEV_AUCTION_SUPABASE_URL?.replace(/\/$/, "");
+  const auctionSecretKey = process.env.ENCHEV_AUCTION_SUPABASE_SECRET_KEY;
 
-  if (!supabaseUrl || !publishableKey || !secretKey) {
-    return error(503, "AUCTION_AUTHORITY_NOT_CONFIGURED", "Authoritative auction database is not configured.");
+  if (!authUrl || !authPublishableKey || !auctionUrl || !auctionSecretKey) {
+    return error(503, "AUCTION_AUTHORITY_NOT_CONFIGURED", "Auth and authoritative auction database bindings are required.");
+  }
+
+  let auctionHost: string;
+  try {
+    auctionHost = new URL(auctionUrl).hostname;
+  } catch {
+    return error(503, "AUCTION_AUTHORITY_NOT_CONFIGURED", "Authoritative auction database URL is invalid.");
+  }
+
+  if (auctionHost === "frhletkiuupgksmgxoxc.supabase.co") {
+    return error(503, "AUCTION_AUTHORITY_MUST_BE_DEDICATED", "The shared development project cannot be used as auction authority.");
   }
 
   const token = bearerToken(request);
@@ -83,10 +95,10 @@ export async function POST(request: Request) {
   const body = parseAuthoritativeBidRequest(rawBody);
   if (!body) return error(400, "INVALID_BID_REQUEST", "auctionId and a positive integer amountCents are required.");
 
-  const userResponse = await fetch(`${supabaseUrl}/auth/v1/user`, {
+  const userResponse = await fetch(`${authUrl}/auth/v1/user`, {
     method: "GET",
     headers: {
-      apikey: publishableKey,
+      apikey: authPublishableKey,
       Authorization: `Bearer ${token}`,
       "Cache-Control": "no-store",
     },
@@ -101,10 +113,10 @@ export async function POST(request: Request) {
   if (typeof user.id !== "string") return error(401, "AUTHENTICATION_REQUIRED", "Buyer identity could not be verified.");
 
   const requestFingerprint = await fingerprintBid(body.auctionId, body.amountCents);
-  const rpcResponse = await fetch(`${supabaseUrl}/rest/v1/rpc/enchev_place_bid`, {
+  const rpcResponse = await fetch(`${auctionUrl}/rest/v1/rpc/enchev_place_bid`, {
     method: "POST",
     headers: {
-      apikey: secretKey,
+      apikey: auctionSecretKey,
       "Content-Type": "application/json",
       Accept: "application/json",
       "Cache-Control": "no-store",
