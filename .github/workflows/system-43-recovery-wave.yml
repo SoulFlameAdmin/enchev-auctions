@@ -1,0 +1,72 @@
+name: SYSTEM 43 Recovery Wave
+on:
+  pull_request:
+    branches: [system-42-authoritative-bid-foundation]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: system-43-recovery-wave-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  certify-postgres-recovery:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: enchev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d enchev"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/enchev
+      ENCHEV_43_RESTORE_DB: enchev_restore
+      ENCHEV_43_OUTPUT: artifacts/43-01-08/postgres-recovery.json
+      ENCHEV_43_BACKUP_FILE: artifacts/43-01-08/enchev-recovery.dump
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@v4
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      - name: Create Supabase-equivalent roles
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          create role anon nologin;
+          create role authenticated nologin;
+          create role service_role nologin bypassrls;
+          grant service_role to postgres;
+          SQL
+      - name: Apply authoritative auction migrations
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20261005031500_authoritative_bid_foundation.sql
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20261005041000_authoritative_auction_finalization.sql
+      - name: Recovery harness syntax
+        run: node --check scripts/certify-postgres-recovery-43-01-08.mjs
+      - name: Certify SYSTEM 43.01–43.08 — backup, clean restore and recovery drills
+        env:
+          ENCHEV_43_AUCTIONS: "20"
+          ENCHEV_43_BIDS_PER_AUCTION: "3"
+        run: node scripts/certify-postgres-recovery-43-01-08.mjs
+      - name: Upload SYSTEM 43.01–43.08 evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-43-recovery-wave-${{ github.sha }}
+          path: |
+            artifacts/43-01-08/postgres-recovery.json
+            artifacts/43-01-08/enchev-recovery.dump
+          if-no-files-found: error
+          retention-days: 90
