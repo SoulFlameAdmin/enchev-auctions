@@ -537,6 +537,8 @@ jobs:
           SQL
       - name: Apply authoritative bid migration
         run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20261005031500_authoritative_bid_foundation.sql
+      - name: Apply authoritative finalization migration
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20261005041000_authoritative_auction_finalization.sql
       - name: Certify SYSTEM 42.02 — 10 concurrent bidders
         run: node scripts/certify-postgres-concurrency-42.mjs 10 42.02 artifacts/42-02/postgres-concurrency.json
       - name: Reset authoritative auction rows
@@ -560,6 +562,17 @@ jobs:
           SQL
       - name: Certify SYSTEM 42.05 — 500 concurrent bidders
         run: node scripts/certify-postgres-concurrency-42.mjs 500 42.05 artifacts/42-05/postgres-concurrency.json
+      - name: Reset authoritative rows before close certification
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          truncate table public.enchev_auction_finalizations, public.enchev_bids, public.enchev_auctions restart identity;
+          SQL
+      - name: Certify SYSTEM 42.08 — Auction close latency
+        env:
+          ENCHEV_42_08_AUCTIONS: "50"
+          ENCHEV_42_08_DB_CONCURRENCY: "25"
+          ENCHEV_42_08_OUTPUT: artifacts/42-08/auction-close-latency.json
+        run: node scripts/certify-auction-close-latency-42-08.mjs
       - name: Upload SYSTEM 42 concurrency evidence
         uses: actions/upload-artifact@v4
         with:
@@ -569,6 +582,7 @@ jobs:
             artifacts/42-03/postgres-concurrency.json
             artifacts/42-04/postgres-concurrency.json
             artifacts/42-05/postgres-concurrency.json
+            artifacts/42-08/auction-close-latency.json
           if-no-files-found: error
           retention-days: 90
 
