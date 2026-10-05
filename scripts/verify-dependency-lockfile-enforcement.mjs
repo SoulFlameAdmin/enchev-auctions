@@ -8,6 +8,10 @@ const preGate=fs.readFileSync("scripts/run-system-test-pre-gates.mjs","utf8");
 
 function fail(message){throw new Error("DEPENDENCY_LOCKFILE_GATE FAIL: "+message);}
 function same(a,b){return JSON.stringify(a||{})===JSON.stringify(b||{});}
+function workflowValues(source,key){
+  const pattern=new RegExp("^\\s*"+key+":\\s*(.+?)\\s*$","gm");
+  return [...source.matchAll(pattern)].map(match=>match[1].trim().replace(/^[\'\"]|[\'\"]$/g,""));
+}
 
 export function validate(c,p,l,w,g){
   if(c?.taskId!=="26.08"||c?.name!=="Dependency lockfile enforcement"||c?.gateVersion!==1)fail("identity drift");
@@ -21,7 +25,9 @@ export function validate(c,p,l,w,g){
   if(!same(root.dependencies,p.dependencies))fail("dependencies drift");
   if(!same(root.devDependencies,p.devDependencies))fail("devDependencies drift");
   if(JSON.stringify(root.workspaces||[])!==JSON.stringify(p.workspaces||[]))fail("workspaces drift");
-  if(!w.includes("cache-dependency-path: package-lock.json"))fail("cache path drift");
+  const cachePaths=workflowValues(w,"cache-dependency-path");
+  if(cachePaths.length===0)fail("cache path missing");
+  if(cachePaths.some(path=>path!=="package-lock.json"))fail("cache path drift: "+cachePaths.join(","));
   const canonical=["npm","ci","--no-audit","--no-fund"].join(" ");
   if(!w.includes("run: "+canonical))fail("canonical CI install missing");
   const resolving=["npm","install"].join(" ");
@@ -45,6 +51,7 @@ if(process.argv.includes("--self-test")){
   reject("lock version",x=>{x.lock.lockfileVersion=2;});
   reject("dependency drift",x=>{x.lock.packages[""].dependencies.next="0.0.0";});
   reject("cache drift",x=>{x.workflow=x.workflow.replace("cache-dependency-path: package-lock.json","cache-dependency-path: package.json");});
+  reject("cache path removed",x=>{x.workflow=x.workflow.replaceAll("cache-dependency-path: package-lock.json","");});
   reject("CI install drift",x=>{x.workflow=x.workflow.replace(["npm","ci"].join(" "),["npm","install"].join(" "));});
   reject("pre-gate removed",x=>{x.preGate=x.preGate.replace('["scripts/verify-dependency-lockfile-enforcement.mjs", "--self-test"]',"");});
   console.log("DEPENDENCY_LOCKFILE_GATE_SELF_TEST PASS cases="+cases+" fail_closed=true");
