@@ -5,6 +5,7 @@ const MIGRATION = "supabase/migrations/20261005031500_authoritative_bid_foundati
 const OPENAPI = "packages/contracts/openapi/enchev-api.v1.json";
 const SLI = "config/enchev-bid-acceptance-latency-sli.json";
 const MASTER = "app/components/MasterSystemPlanV1.tsx";
+const AUTHORITY = "config/enchev-auction-authority.json";
 
 function fail(message){ throw new Error("CONCURRENT_BIDDERS_42_02 FAIL: " + message); }
 function requireText(source, marker, label){ if(!source.includes(marker)) fail(label + " missing: " + marker); }
@@ -15,14 +16,20 @@ function staticVerify(){
   const openapi=JSON.parse(fs.readFileSync(OPENAPI,"utf8"));
   const sli=JSON.parse(fs.readFileSync(SLI,"utf8"));
   const master=fs.readFileSync(MASTER,"utf8");
+  const authority=JSON.parse(fs.readFileSync(AUTHORITY,"utf8"));
 
   requireText(master,'["42","Performance certification"', "phase 42");
   requireText(master,'"10 concurrent bidders certified||test"', "42.02 identity");
   requireText(route,'export async function POST', "authoritative POST");
   requireText(route,'requireIdempotencyKey', "idempotency boundary");
+  requireText(route,'ENCHEV_AUTH_SUPABASE_URL', "separate identity authority URL");
+  requireText(route,'ENCHEV_AUTH_SUPABASE_PUBLISHABLE_KEY', "identity authority publishable key");
   requireText(route,'/auth/v1/user', "buyer JWT validation");
+  requireText(route,'ENCHEV_AUCTION_SUPABASE_URL', "dedicated auction authority URL");
   requireText(route,'/rest/v1/rpc/enchev_place_bid', "PostgreSQL RPC boundary");
   requireText(route,'ENCHEV_AUCTION_SUPABASE_SECRET_KEY', "backend authority credential");
+  requireText(route,'AUCTION_AUTHORITY_MUST_BE_DEDICATED', "shared-project fail-closed guard");
+  requireText(route,'frhletkiuupgksmgxoxc.supabase.co', "shared development project denylist");
   if(route.includes("NEXT_PUBLIC_ENCHEV_AUCTION_SUPABASE_SECRET_KEY")) fail("secret key exposed to browser namespace");
 
   for(const marker of [
@@ -37,6 +44,10 @@ function staticVerify(){
   if(!openapi.paths?.["/api/bids"]?.post) fail("OpenAPI POST /api/bids missing");
   if(sli.authoritativeBidRouteImplemented !== true) fail("27.03 implementation truth not updated");
   if(sli.authoritativeAuctionSource !== "postgresql") fail("auction authority drift");
+  if(authority?.auctionAuthority?.datastore !== "postgresql") fail("authority datastore drift");
+  if(authority?.auctionAuthority?.dedicatedDatabaseRequired !== true) fail("dedicated database gate disabled");
+  if(authority?.auctionAuthority?.forbiddenSharedProjectRef !== "frhletkiuupgksmgxoxc") fail("shared project guard drift");
+  if(authority?.identityAuthority?.mayBeSeparateFromAuctionDatabase !== true) fail("identity/database separation disabled");
 
   return true;
 }
