@@ -502,6 +502,63 @@ jobs:
           retention-days: 14
 
 
+  certify-postgres-concurrency:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: enchev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d enchev"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/enchev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      - name: Create Supabase-equivalent roles
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          create role anon nologin;
+          create role authenticated nologin;
+          create role service_role nologin bypassrls;
+          grant service_role to postgres;
+          SQL
+      - name: Apply authoritative bid migration
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20261005031500_authoritative_bid_foundation.sql
+      - name: Certify SYSTEM 42.02 — 10 concurrent bidders
+        run: node scripts/certify-postgres-concurrency-42.mjs 10 42.02 artifacts/42-02/postgres-concurrency.json
+      - name: Reset authoritative auction rows
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          set role service_role;
+          delete from public.enchev_bids;
+          delete from public.enchev_auctions;
+          SQL
+      - name: Certify SYSTEM 42.03 — 50 concurrent bidders
+        run: node scripts/certify-postgres-concurrency-42.mjs 50 42.03 artifacts/42-03/postgres-concurrency.json
+      - name: Upload SYSTEM 42 concurrency evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-42-postgres-concurrency-${{ github.sha }}
+          path: |
+            artifacts/42-02/postgres-concurrency.json
+            artifacts/42-03/postgres-concurrency.json
+          if-no-files-found: error
+          retention-days: 90
+
+
   verify-secret-bindings:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: verify-web
