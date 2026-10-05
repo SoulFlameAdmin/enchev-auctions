@@ -573,6 +573,101 @@ jobs:
           retention-days: 90
 
 
+  certify-bid-api-latency:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: enchev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d enchev"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 20
+    env:
+      DATABASE_URL: postgres://postgres:postgres@127.0.0.1:5432/enchev
+      ENCHEV_42_06_OUTPUT: artifacts/42-06/bid-api-latency.json
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+      - name: Create Supabase-equivalent roles
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          create role anon nologin;
+          create role authenticated nologin;
+          create role service_role nologin bypassrls;
+          grant service_role to postgres;
+          SQL
+      - name: Apply authoritative bid migration
+        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f supabase/migrations/20261005031500_authoritative_bid_foundation.sql
+      - name: Start local Supabase auth/RPC gateway
+        shell: bash
+        run: |
+          ENCHEV_42_06_PUBLISHABLE_KEY=ci-publishable \
+          ENCHEV_42_06_SECRET_KEY=ci-secret \
+          node scripts/local-supabase-gateway-42-06.mjs > /tmp/enchev-42-06-gateway.log 2>&1 &
+          echo $! > /tmp/enchev-42-06-gateway.pid
+          for attempt in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:4011/health > /dev/null; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              cat /tmp/enchev-42-06-gateway.log
+              exit 1
+            fi
+            sleep 1
+          done
+      - name: Build Enchev web
+        run: npm run build
+      - name: Start Enchev with isolated CI authorities
+        shell: bash
+        run: |
+          ENCHEV_AUTH_SUPABASE_URL=http://127.0.0.1:4011 \
+          ENCHEV_AUTH_SUPABASE_PUBLISHABLE_KEY=ci-publishable \
+          ENCHEV_AUCTION_SUPABASE_URL=http://127.0.0.1:4011 \
+          ENCHEV_AUCTION_SUPABASE_SECRET_KEY=ci-secret \
+          npm run start -- --hostname 127.0.0.1 -p 3013 > /tmp/enchev-42-06-next.log 2>&1 &
+          echo $! > /tmp/enchev-42-06-next.pid
+          for attempt in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:3013/api/health/web > /dev/null; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              cat /tmp/enchev-42-06-next.log
+              exit 1
+            fi
+            sleep 1
+          done
+      - name: Certify SYSTEM 42.06 — Bid API p50/p95/p99
+        env:
+          ENCHEV_42_06_REQUEST_COUNT: "50"
+        run: node scripts/certify-bid-api-latency-42-06.mjs http://127.0.0.1:3013
+      - name: Upload SYSTEM 42.06 API latency evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-42-06-bid-api-latency-${{ github.sha }}
+          path: artifacts/42-06/bid-api-latency.json
+          if-no-files-found: error
+          retention-days: 90
+
+
   verify-secret-bindings:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: verify-web
