@@ -49,8 +49,11 @@ jobs:
           echo "deb [signed-by=/usr/share/postgresql-common/pgdg/apt.postgresql.org.asc] https://apt.postgresql.org/pub/repos/apt ${VERSION_CODENAME}-pgdg main" | sudo tee /etc/apt/sources.list.d/pgdg.list >/dev/null
           sudo apt-get update
           sudo apt-get install -y postgresql-client-17
-          pg_dump --version | grep -E ' 17\\.'
-          pg_restore --version | grep -E ' 17\\.'
+          echo "/usr/lib/postgresql/17/bin" >> "$GITHUB_PATH"
+          export PATH="/usr/lib/postgresql/17/bin:$PATH"
+          /usr/lib/postgresql/17/bin/pg_dump --version | grep -E ' 17\\.'
+          /usr/lib/postgresql/17/bin/pg_restore --version | grep -E ' 17\\.'
+          /usr/lib/postgresql/17/bin/psql --version | grep -E ' 17\\.'
       - name: Create Supabase-equivalent roles
         run: |
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
