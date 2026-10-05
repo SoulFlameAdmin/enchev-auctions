@@ -9,8 +9,8 @@ const taskId = String(process.argv[3] || "");
 const output = String(process.argv[4] || "");
 
 if (!databaseUrl) throw new Error("POSTGRES_CONCURRENCY_CERT FAIL: DATABASE_URL missing");
-if (![10, 50, 100].includes(count)) throw new Error("POSTGRES_CONCURRENCY_CERT FAIL: count must be 10, 50 or 100");
-if (!/^42\.(02|03|04)$/.test(taskId)) throw new Error("POSTGRES_CONCURRENCY_CERT FAIL: invalid taskId");
+if (![10, 50, 100, 500].includes(count)) throw new Error("POSTGRES_CONCURRENCY_CERT FAIL: count must be 10, 50, 100 or 500");
+if (!/^42\.(02|03|04|05)$/.test(taskId)) throw new Error("POSTGRES_CONCURRENCY_CERT FAIL: invalid taskId");
 if (!output) throw new Error("POSTGRES_CONCURRENCY_CERT FAIL: output path missing");
 
 function psql(sql) {
@@ -38,6 +38,26 @@ function fingerprint(value) {
 function percentile(values, p) {
   const sorted = [...values].sort((a,b)=>a-b);
   return sorted[Math.min(sorted.length - 1, Math.max(0, Math.ceil(p * sorted.length) - 1))] || 0;
+}
+
+const dbConcurrencyLimit = count >= 500 ? 50 : count;
+let activeDbCalls = 0;
+const dbWaiters = [];
+async function withDbSlot(fn) {
+  const queuedAt = process.hrtime.bigint();
+  if (activeDbCalls >= dbConcurrencyLimit) {
+    await new Promise((resolve) => dbWaiters.push(resolve));
+  }
+  activeDbCalls += 1;
+  const acquiredAt = process.hrtime.bigint();
+  try {
+    const value = await fn();
+    return { value, queueWaitMs: Number(acquiredAt - queuedAt) / 1e6 };
+  } finally {
+    activeDbCalls -= 1;
+    const next = dbWaiters.shift();
+    if (next) next();
+  }
 }
 
 const startAmount = 1_000_000;
@@ -73,7 +93,7 @@ const tasks = Array.from({ length: count }, (_, index) => {
   return (async () => {
     const t0 = process.hrtime.bigint();
     try {
-      const raw = await psql(`
+      const slot = await withDbSlot(() => psql(`
         set role service_role;
         select public.enchev_place_bid(
           '${auctionId}'::uuid,
@@ -82,9 +102,9 @@ const tasks = Array.from({ length: count }, (_, index) => {
           '${idempotencyKey}'::text,
           '${requestFingerprint}'::text
         )::text;
-      `);
+      `));
       const latencyMs = Number(process.hrtime.bigint() - t0) / 1e6;
-      return { index, bidderId, latencyMs, result: JSON.parse(raw) };
+      return { index, bidderId, latencyMs, queueWaitMs: slot.queueWaitMs, result: JSON.parse(slot.value) };
     } catch (error) {
       const latencyMs = Number(process.hrtime.bigint() - t0) / 1e6;
       return { index, bidderId, latencyMs, error: String(error) };
@@ -129,6 +149,7 @@ if (Number(state.maxSequence) !== 1) throw new Error("POSTGRES_CONCURRENCY_CERT 
 if (state.leaderBidderId !== accepted[0].result.bidderId) throw new Error("POSTGRES_CONCURRENCY_CERT FAIL: leader identity drift");
 
 const latencies = results.map((item) => item.latencyMs);
+const queueWaits = results.map((item) => Number(item.queueWaitMs || 0));
 const artifact = {
   taskId,
   title: `${count} concurrent bidders certified on clean PostgreSQL 17`,
@@ -138,6 +159,8 @@ const artifact = {
   authority: "postgresql",
   postgresMajor: 17,
   bidderCount: count,
+  clientLaunchConcurrency: count,
+  dbConcurrencyLimit,
   distinctBidderCount: new Set(results.map((item) => item.bidderId)).size,
   acceptedCount: accepted.length,
   rejectedCount: rejected.length,
@@ -149,6 +172,12 @@ const artifact = {
     p95: percentile(latencies, .95),
     p99: percentile(latencies, .99),
     max: Math.max(...latencies),
+  },
+  queueWaitMs: {
+    p50: percentile(queueWaits, .50),
+    p95: percentile(queueWaits, .95),
+    p99: percentile(queueWaits, .99),
+    max: Math.max(...queueWaits),
   },
   startedAt,
   completedAt: new Date().toISOString(),
