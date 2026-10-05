@@ -25,7 +25,9 @@ type RpcBidResult = {
   replayed?: boolean;
 };
 
-function error(status: number, code: string, message: string) {
+let activeBidRequests = 0;
+
+function error(status: number, code: string, message: string, extraHeaders: HeadersInit = {}) {
   const body = assertContractResponse(
     "ErrorEnvelope",
     createApiErrorEnvelope(code, message),
@@ -33,7 +35,7 @@ function error(status: number, code: string, message: string) {
   );
   return Response.json(body, {
     status,
-    headers: { "Cache-Control": "no-store, max-age=0" },
+    headers: { "Cache-Control": "no-store, max-age=0", ...extraHeaders },
   });
 }
 
@@ -54,7 +56,7 @@ async function fingerprintBid(auctionId: string, amountCents: number) {
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-export async function POST(request: Request) {
+async function handlePost(request: Request) {
   const authUrl = process.env.ENCHEV_AUTH_SUPABASE_URL?.replace(/\/$/, "");
   const authPublishableKey = process.env.ENCHEV_AUTH_SUPABASE_PUBLISHABLE_KEY;
   const auctionUrl = process.env.ENCHEV_AUCTION_SUPABASE_URL?.replace(/\/$/, "");
@@ -163,4 +165,34 @@ export async function POST(request: Request) {
     status: result.replayed ? 200 : 201,
     headers: { "Cache-Control": "no-store, max-age=0" },
   });
+}
+
+
+export async function POST(request: Request) {
+  const rawLimit = process.env.ENCHEV_BID_ADMISSION_MAX_INFLIGHT;
+  let limit: number | null = null;
+
+  if (rawLimit) {
+    const parsed = Number(rawLimit);
+    if (!Number.isSafeInteger(parsed) || parsed < 1 || parsed > 10000) {
+      return error(503, "AUCTION_ADMISSION_CONFIG_INVALID", "Bid admission control is misconfigured.");
+    }
+    limit = parsed;
+  }
+
+  if (limit !== null && activeBidRequests >= limit) {
+    return error(
+      503,
+      "OVERLOADED_RETRYABLE",
+      "Bid admission is temporarily saturated. Retry after capacity recovers.",
+      { "X-Enchev-Load-Shed": "capacity" },
+    );
+  }
+
+  activeBidRequests += 1;
+  try {
+    return await handlePost(request);
+  } finally {
+    activeBidRequests = Math.max(0, activeBidRequests - 1);
+  }
 }
