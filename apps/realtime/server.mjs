@@ -5,6 +5,10 @@ import fs from "node:fs";
 const host = process.env.ENCHEV_REALTIME_HOST || "127.0.0.1";
 const port = Number(process.env.ENCHEV_REALTIME_PORT || 4020);
 const internalKey = process.env.ENCHEV_REALTIME_INTERNAL_KEY || "";
+const loopbackHosts = new Set(["127.0.0.1", "::1", "localhost"]);
+if (!loopbackHosts.has(host)) {
+  throw new Error("REALTIME_RUNTIME FAIL: unauthenticated certification runtime must remain loopback-only until production session authorization is integrated");
+}
 const registry = JSON.parse(fs.readFileSync("config/enchev-websocket-event-registry.json", "utf8"));
 
 if (registry.transportAuthority !== false) {

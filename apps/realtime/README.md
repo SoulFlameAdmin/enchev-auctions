@@ -2,7 +2,7 @@
 
 This workspace owns the Enchev Auctions realtime delivery service.
 
-The runtime is implemented in `apps/realtime/server.mjs` as a non-authoritative WebSocket transport. It validates canonical events against `config/enchev-websocket-event-registry.json`, groups eligible subscribers by auction subject, and delivers projection events to connected clients.
+The runtime is implemented in `apps/realtime/server.mjs` as a non-authoritative WebSocket transport for local/CI certification. It validates canonical events against `config/enchev-websocket-event-registry.json`, groups eligible subscribers by auction subject, and delivers projection events to connected clients. Until production session authorization is integrated, the service is intentionally fail-closed to loopback hosts only (`127.0.0.1`, `::1`, or `localhost`).
 
 ## Authority boundary
 
@@ -36,6 +36,10 @@ WebSocket subscription:
 Internal projection publisher:
 
 `POST /publish` with `x-enchev-realtime-key`. Only canonical registered events are accepted.
+
+## Security boundary
+
+This runtime is not yet a production-authenticated WebSocket service. The repository-side handshake and room authorization contract lives in `packages/domain/src/websocket-authorization.ts`, but production session-state integration is still pending. Because of that, `server.mjs` refuses non-loopback binding. Removing that guard requires a separate security review and integration of the server-side session/room authorization path.
 
 ## Verification
 

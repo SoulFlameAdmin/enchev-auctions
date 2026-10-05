@@ -24,6 +24,8 @@ export function validateAppsRealtime(rootPackage, workspacePackage, boundary, fs
   if (boundary.runtime !== "node-realtime-service") fail("runtime drift");
   if (boundary.source_mode !== "runtime") fail("source_mode must reflect implemented runtime");
   if (boundary.implementation_state !== "implemented") fail("realtime runtime must remain explicitly implemented");
+  if (boundary.network_exposure !== "loopback-only") fail("realtime runtime must remain loopback-only until production authorization is integrated");
+  if (boundary.production_session_authorization_integrated !== false) fail("production session authorization must not be claimed before integration");
   if (boundary.single_source !== true) fail("single_source must stay true");
 
   const owns = new Set(boundary.owns || []);
@@ -44,7 +46,9 @@ export function validateAppsRealtime(rootPackage, workspacePackage, boundary, fs
     'registry.transportAuthority !== false',
     'server.on("upgrade"',
     'url.pathname === "/publish"',
-    'socket.write(encoded)'
+    'socket.write(encoded)',
+    'const loopbackHosts = new Set(["127.0.0.1", "::1", "localhost"]);',
+    'if (!loopbackHosts.has(host))'
   ]) {
     if (!runtimeSource.includes(marker)) fail(`runtime contract missing marker: ${marker}`);
   }
@@ -90,11 +94,13 @@ if (process.argv.includes("--self-test")) {
   expectRejected("wrong frozen task", (x) => ({ ...x, boundary: { ...x.boundary, task: "02.04" } }));
   expectRejected("runtime state reverted", (x) => ({ ...x, boundary: { ...x.boundary, implementation_state: "not-implemented" } }));
   expectRejected("runtime source mode reverted", (x) => ({ ...x, boundary: { ...x.boundary, source_mode: "workspace-shell" } }));
+  expectRejected("network exposure widened", (x) => ({ ...x, boundary: { ...x.boundary, network_exposure: "public" } }));
+  expectRejected("production auth falsely claimed", (x) => ({ ...x, boundary: { ...x.boundary, production_session_authorization_integrated: true } }));
   expectRejected("auction authority leaked to realtime", (x) => ({
     ...x,
     boundary: { ...x.boundary, does_not_own: x.boundary.does_not_own.filter((v) => v !== "auction-authority") }
   }));
-  console.log("APPS_REALTIME_BOUNDARY_SELF_TEST PASS negative_cases=6");
+  console.log("APPS_REALTIME_BOUNDARY_SELF_TEST PASS negative_cases=8");
 } else {
   console.log("APPS_REALTIME_BOUNDARY PASS workspace=apps/realtime package=@enchev/realtime implementation_state=implemented");
 }

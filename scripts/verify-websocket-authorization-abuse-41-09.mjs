@@ -8,6 +8,7 @@ const CONFIG_PATH="config/enchev-websocket-authorization-abuse-41-09.json";
 const DOMAIN_PATH="packages/domain/src/websocket-authorization.ts";
 const MASTER_PATH="app/components/MasterSystemPlanV1.tsx";
 const REALTIME_BOUNDARY_PATH="apps/realtime/boundary.json";
+const REALTIME_RUNTIME_PATH="apps/realtime/server.mjs";
 
 function fail(message){throw new Error("WEBSOCKET_AUTHORIZATION_ABUSE_41_09 FAIL: "+message);}
 function readJson(p){return JSON.parse(fs.readFileSync(p,"utf8"));}
@@ -32,13 +33,28 @@ if(config.taskId!=="41.09"||config.title!=="WebSocket authorization abuse test"|
 for(const key of ["serverUpgradedSocketContextOnly","clientIdentityClaimsForbidden","activeSessionRequiredAtHandshake","activeSessionRecheckedPerRoomAction","grantActorBound","grantSessionBound","grantSecurityVersionBound","grantAuctionBound","grantExpiryRequired","bidActionRequiresBuyerFunctionAuthorization","operateActionRequiresAuctioneerFunctionAuthorization","crossAuctionRoomReuseRejected","staleOrRevokedSessionRejected"]){
   if(config.policy?.[key]!==true) fail("policy guardrail disabled: "+key);
 }
-for(const key of ["productionWebSocketRuntimeNotClaimed","persistentSocketServiceNotClaimed","networkUpgradeHandlerNotClaimed","phase10HandshakeAndRoomTasksNotMarkedComplete","replayCriticalRequestCertificationRemains41_10"]){
+for(const key of ["productionWebSocketRuntimeNotClaimed","persistentSocketServiceImplementedForLoopbackCertification","networkUpgradeHandlerImplementedForLoopbackCertification","loopbackOnlyUntilProductionAuthorization","phase10HandshakeAndRoomTasksNotMarkedComplete","replayCriticalRequestCertificationRemains41_10"]){
   if(config.claimBoundary?.[key]!==true) fail("claim boundary disabled: "+key);
+}
+for(const key of ["productionSessionAuthorizationIntegrated","productionRoomAuthorizationIntegrated"]){
+  if(config.claimBoundary?.[key]!==false) fail("production authorization must remain unclaimed until integrated: "+key);
 }
 if(!Array.isArray(config.abuseScenarios)||config.abuseScenarios.length!==16) fail("abuse scenario coverage drift");
 
 const boundary=readJson(REALTIME_BOUNDARY_PATH);
-if(boundary.implementation_state!=="not-implemented"||boundary.source_mode!=="workspace-shell") fail("realtime boundary changed; claim boundary requires review");
+if(boundary.implementation_state!=="implemented"||boundary.source_mode!=="runtime") fail("realtime runtime boundary drift");
+if(boundary.network_exposure!=="loopback-only") fail("unauthenticated certification runtime must remain loopback-only");
+if(boundary.production_session_authorization_integrated!==false) fail("production session authorization claim requires review");
+
+const realtimeRuntime=fs.readFileSync(REALTIME_RUNTIME_PATH,"utf8");
+for(const marker of [
+  'const loopbackHosts = new Set(["127.0.0.1", "::1", "localhost"]);',
+  'if (!loopbackHosts.has(host))',
+  'unauthenticated certification runtime must remain loopback-only'
+]){
+  if(!realtimeRuntime.includes(marker)) fail("loopback safety guard missing: "+marker);
+}
+if(realtimeRuntime.includes("authorizeWebSocketHandshake(")) fail("production auth integration detected; 41.09 claim boundary requires review");
 
 const master=fs.readFileSync(MASTER_PATH,"utf8");
 const p41Start=master.indexOf('["41","Security & abuse certification"');
@@ -149,9 +165,9 @@ if(process.argv.includes("--self-test")){
     sessionState:state,sessionPolicy,connectionId:" ",actorId:"buyer-1",sessionId:id("b"),securityVersion:2,
     accountStatus:"active",roles:["buyer"],permissions:["buyer.submit-bid"],scopeKeys:[],connectedAtMs:base+100
   }),"WS_CONNECTION_ID_REQUIRED");
-  console.log("WEBSOCKET_AUTHORIZATION_ABUSE_41_09_SELF_TEST PASS scenarios=16 server_identity_only=true session_rechecked=true actor_bound=true session_bound=true security_version_bound=true auction_bound=true cross_auction_reuse_rejected=true stale_session_rejected=true bid_function_auth=true operate_assignment_auth=true production_runtime_claim=false negative_cases=4");
+  console.log("WEBSOCKET_AUTHORIZATION_ABUSE_41_09_SELF_TEST PASS scenarios=16 server_identity_only=true session_rechecked=true actor_bound=true session_bound=true security_version_bound=true auction_bound=true cross_auction_reuse_rejected=true stale_session_rejected=true bid_function_auth=true operate_assignment_auth=true local_runtime=true loopback_only=true production_auth_integrated=false negative_cases=4");
 }else{
-  console.log("WEBSOCKET_AUTHORIZATION_ABUSE_41_09 PASS scenarios=16 authorization_contract=true production_runtime_claim=false");
+  console.log("WEBSOCKET_AUTHORIZATION_ABUSE_41_09 PASS scenarios=16 authorization_contract=true local_runtime=true loopback_only=true production_auth_integrated=false");
 }
 
 setTimeout(()=>fs.rmSync(tmp,{recursive:true,force:true}),0);

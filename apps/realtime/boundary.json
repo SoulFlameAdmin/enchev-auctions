@@ -16,5 +16,7 @@
     "http-api-authority",
     "worker-jobs",
     "browser-ui"
-  ]
+  ],
+  "network_exposure": "loopback-only",
+  "production_session_authorization_integrated": false
 }
