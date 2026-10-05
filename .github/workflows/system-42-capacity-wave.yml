@@ -1,8 +1,17 @@
 name: SYSTEM 42 Capacity Wave
 on:
-  pull_request:
-    branches: [main]
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'app/api/bids/route.ts'
+      - 'scripts/certify-*-42-*.mjs'
+      - 'scripts/local-supabase-gateway-42-06.mjs'
+      - 'scripts/verify-launch-capacity-42-20.mjs'
+      - 'config/enchev-launch-capacity-42-20.json'
+      - 'supabase/migrations/20261005031500_authoritative_bid_foundation.sql'
+      - 'supabase/migrations/20261005041000_authoritative_auction_finalization.sql'
+      - '.github/workflows/system-42-capacity-wave.yml'
 permissions:
   contents: read
 concurrency:
