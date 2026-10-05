@@ -542,9 +542,7 @@ jobs:
       - name: Reset authoritative auction rows
         run: |
           psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
-          set role service_role;
-          delete from public.enchev_bids;
-          delete from public.enchev_auctions;
+          truncate table public.enchev_bids, public.enchev_auctions restart identity;
           SQL
       - name: Certify SYSTEM 42.03 — 50 concurrent bidders
         run: node scripts/certify-postgres-concurrency-42.mjs 50 42.03 artifacts/42-03/postgres-concurrency.json
