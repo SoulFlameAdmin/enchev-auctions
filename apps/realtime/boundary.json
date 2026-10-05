@@ -3,8 +3,8 @@
   "workspace": "apps/realtime",
   "package": "@enchev/realtime",
   "runtime": "node-realtime-service",
-  "source_mode": "workspace-shell",
-  "implementation_state": "not-implemented",
+  "source_mode": "runtime",
+  "implementation_state": "implemented",
   "single_source": true,
   "owns": [
     "realtime-service-boundary",
