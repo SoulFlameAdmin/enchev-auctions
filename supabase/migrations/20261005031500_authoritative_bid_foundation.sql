@@ -38,6 +38,8 @@ alter table public.enchev_bids enable row level security;
 
 revoke all on table public.enchev_auctions from anon, authenticated;
 revoke all on table public.enchev_bids from anon, authenticated;
+grant select, insert, update on table public.enchev_auctions to service_role;
+grant select, insert, update on table public.enchev_bids to service_role;
 
 create or replace function public.enchev_place_bid(
   p_auction_id uuid,
