@@ -584,6 +584,18 @@ jobs:
           ENCHEV_42_09_BLOCKER_SECONDS: "2"
           ENCHEV_42_09_OUTPUT: artifacts/42-09/database-lock-contention.json
         run: node scripts/certify-database-lock-contention-42-09.mjs
+      - name: Reset authoritative rows before pool saturation
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          truncate table public.enchev_auction_finalizations, public.enchev_bids, public.enchev_auctions restart identity;
+          SQL
+      - name: Certify SYSTEM 42.10 — Database pool saturation
+        env:
+          ENCHEV_42_10_CLIENTS: "200"
+          ENCHEV_42_10_POOL_LIMIT: "20"
+          ENCHEV_42_10_DB_HOLD_SECONDS: "0.1"
+          ENCHEV_42_10_OUTPUT: artifacts/42-10/database-pool-saturation.json
+        run: node scripts/certify-database-pool-saturation-42-10.mjs
       - name: Upload SYSTEM 42 concurrency evidence
         uses: actions/upload-artifact@v4
         with:
@@ -595,6 +607,7 @@ jobs:
             artifacts/42-05/postgres-concurrency.json
             artifacts/42-08/auction-close-latency.json
             artifacts/42-09/database-lock-contention.json
+            artifacts/42-10/database-pool-saturation.json
           if-no-files-found: error
           retention-days: 90
 
@@ -733,11 +746,19 @@ jobs:
           ENCHEV_42_07_SUBSCRIBERS: "50"
           ENCHEV_42_07_EVENTS: "100"
         run: node scripts/certify-realtime-latency-42-07.mjs http://127.0.0.1:4020
+      - name: Certify SYSTEM 42.11 — WebSocket fanout saturation
+        env:
+          ENCHEV_42_11_SUBSCRIBERS: "500"
+          ENCHEV_42_11_EVENTS: "20"
+          ENCHEV_42_11_OUTPUT: artifacts/42-11/websocket-fanout-saturation.json
+        run: node scripts/certify-websocket-fanout-42-11.mjs http://127.0.0.1:4020
       - name: Upload SYSTEM 42.07 realtime latency evidence
         uses: actions/upload-artifact@v4
         with:
           name: system-42-07-realtime-latency-${{ github.sha }}
-          path: artifacts/42-07/realtime-latency.json
+          path: |
+            artifacts/42-07/realtime-latency.json
+            artifacts/42-11/websocket-fanout-saturation.json
           if-no-files-found: error
           retention-days: 90
 
