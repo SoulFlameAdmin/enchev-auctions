@@ -5,9 +5,13 @@ const databaseUrl = process.env.DATABASE_URL;
 const port = Number(process.env.ENCHEV_42_06_GATEWAY_PORT || 4011);
 const publishableKey = process.env.ENCHEV_42_06_PUBLISHABLE_KEY || "ci-publishable";
 const secretKey = process.env.ENCHEV_42_06_SECRET_KEY || "ci-secret";
+const rpcDelayMs = Number(process.env.ENCHEV_42_GATEWAY_RPC_DELAY_MS || 0);
 const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/i;
 
 if (!databaseUrl) throw new Error("42.06 gateway requires DATABASE_URL");
+if (!Number.isFinite(rpcDelayMs) || rpcDelayMs < 0 || rpcDelayMs > 5000) throw new Error("42.06 gateway RPC delay must be 0..5000ms");
+
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 function respond(res, status, body) {
   const payload = JSON.stringify(body);
@@ -66,7 +70,7 @@ const server = http.createServer(async (req, res) => {
     const url = new URL(req.url || "/", `http://127.0.0.1:${port}`);
 
     if (req.method === "GET" && url.pathname === "/health") {
-      return respond(res, 200, { ok: true, dbConcurrencyLimit: maxDbConcurrency });
+      return respond(res, 200, { ok: true, dbConcurrencyLimit: maxDbConcurrency, rpcDelayMs });
     }
 
     if (req.method === "GET" && url.pathname === "/auth/v1/user") {
@@ -89,6 +93,8 @@ const server = http.createServer(async (req, res) => {
       if (!UUID_RE.test(auctionId) || !UUID_RE.test(bidderId) || !Number.isSafeInteger(amount)) {
         return respond(res, 400, { error: "invalid-rpc-payload" });
       }
+
+      if (rpcDelayMs > 0) await delay(rpcDelayMs);
 
       const raw = await withSlot(() => psql(`
         set role service_role;
