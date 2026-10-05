@@ -342,3 +342,48 @@ export function isRateLimitResponseContract(value: unknown): value is RateLimitR
     && remainingValue <= limitValue
     && resetValue !== null;
 }
+
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+export type AuthoritativeBidRequest = {
+  auctionId: string;
+  amountCents: number;
+};
+
+export type AuthoritativeBidAcceptedResponse = {
+  ok: true;
+  authority: "postgresql";
+  auctionId: string;
+  bidId: string;
+  bidderId: string;
+  amountCents: number;
+  currency: string;
+  sequence: number;
+  acceptedAt: string;
+  replayed: boolean;
+};
+
+export function parseAuthoritativeBidRequest(value: unknown): AuthoritativeBidRequest | null {
+  if (!isRecord(value) || !hasOnlyKeys(value, ["auctionId", "amountCents"])) return null;
+  if (typeof value.auctionId !== "string" || !UUID_PATTERN.test(value.auctionId)) return null;
+  if (!isInteger(value.amountCents) || value.amountCents <= 0 || !Number.isSafeInteger(value.amountCents)) return null;
+  return { auctionId: value.auctionId, amountCents: value.amountCents };
+}
+
+export function isAuthoritativeBidAcceptedResponse(value: unknown): value is AuthoritativeBidAcceptedResponse {
+  if (!isRecord(value) || !hasOnlyKeys(value, [
+    "ok", "authority", "auctionId", "bidId", "bidderId", "amountCents",
+    "currency", "sequence", "acceptedAt", "replayed"
+  ])) return false;
+  return value.ok === true
+    && value.authority === "postgresql"
+    && typeof value.auctionId === "string" && UUID_PATTERN.test(value.auctionId)
+    && typeof value.bidId === "string" && UUID_PATTERN.test(value.bidId)
+    && typeof value.bidderId === "string" && UUID_PATTERN.test(value.bidderId)
+    && isInteger(value.amountCents) && value.amountCents > 0
+    && typeof value.currency === "string" && /^[A-Z]{3}$/.test(value.currency)
+    && isInteger(value.sequence) && value.sequence > 0
+    && typeof value.acceptedAt === "string" && !Number.isNaN(Date.parse(value.acceptedAt))
+    && typeof value.replayed === "boolean";
+}
