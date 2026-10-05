@@ -1,0 +1,42 @@
+name: Certify SYSTEM 42.02
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  concurrent-bidders-42-02:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ENCHEV_42_02_BASE_URL: ${{ secrets.ENCHEV_42_02_BASE_URL }}
+      ENCHEV_42_02_AUCTION_ID: ${{ secrets.ENCHEV_42_02_AUCTION_ID }}
+      ENCHEV_42_02_TOKENS_JSON: ${{ secrets.ENCHEV_42_02_TOKENS_JSON }}
+      ENCHEV_42_02_START_AMOUNT_CENTS: ${{ secrets.ENCHEV_42_02_START_AMOUNT_CENTS }}
+      ENCHEV_42_02_INCREMENT_CENTS: ${{ secrets.ENCHEV_42_02_INCREMENT_CENTS }}
+      ENCHEV_42_02_OUTPUT: artifacts/42-02/concurrent-bidders.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Fail closed when certification inputs are absent
+        shell: bash
+        run: |
+          test -n "$ENCHEV_42_02_BASE_URL"
+          test -n "$ENCHEV_42_02_AUCTION_ID"
+          test -n "$ENCHEV_42_02_TOKENS_JSON"
+          test -n "$ENCHEV_42_02_START_AMOUNT_CENTS"
+          test -n "$ENCHEV_42_02_INCREMENT_CENTS"
+      - name: Run 10 concurrent bidder certification
+        run: node scripts/certify-concurrent-bidders-42-02.mjs
+      - uses: actions/upload-artifact@v4
+        with:
+          name: system-42-02-concurrent-bidders-${{ github.sha }}
+          path: artifacts/42-02/concurrent-bidders.json
+          if-no-files-found: error
+          retention-days: 90
