@@ -573,6 +573,17 @@ jobs:
           ENCHEV_42_08_DB_CONCURRENCY: "25"
           ENCHEV_42_08_OUTPUT: artifacts/42-08/auction-close-latency.json
         run: node scripts/certify-auction-close-latency-42-08.mjs
+      - name: Reset authoritative rows before lock contention profile
+        run: |
+          psql "$DATABASE_URL" -v ON_ERROR_STOP=1 <<'SQL'
+          truncate table public.enchev_auction_finalizations, public.enchev_bids, public.enchev_auctions restart identity;
+          SQL
+      - name: Certify SYSTEM 42.09 — Database lock contention
+        env:
+          ENCHEV_42_09_WAITERS: "50"
+          ENCHEV_42_09_BLOCKER_SECONDS: "2"
+          ENCHEV_42_09_OUTPUT: artifacts/42-09/database-lock-contention.json
+        run: node scripts/certify-database-lock-contention-42-09.mjs
       - name: Upload SYSTEM 42 concurrency evidence
         uses: actions/upload-artifact@v4
         with:
@@ -583,6 +594,7 @@ jobs:
             artifacts/42-04/postgres-concurrency.json
             artifacts/42-05/postgres-concurrency.json
             artifacts/42-08/auction-close-latency.json
+            artifacts/42-09/database-lock-contention.json
           if-no-files-found: error
           retention-days: 90
 
