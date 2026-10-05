@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "taskId": "42.02",
+  "identityAuthority": {
+    "mayBeSeparateFromAuctionDatabase": true,
+    "urlEnv": "ENCHEV_AUTH_SUPABASE_URL",
+    "publishableKeyEnv": "ENCHEV_AUTH_SUPABASE_PUBLISHABLE_KEY"
+  },
+  "auctionAuthority": {
+    "datastore": "postgresql",
+    "dedicatedDatabaseRequired": true,
+    "urlEnv": "ENCHEV_AUCTION_SUPABASE_URL",
+    "secretKeyEnv": "ENCHEV_AUCTION_SUPABASE_SECRET_KEY",
+    "forbiddenSharedProjectRef": "frhletkiuupgksmgxoxc",
+    "forbiddenSharedProjectName": "soulflame-twins"
+  },
+  "invariants": [
+    "buyer identity is verified by the configured auth authority",
+    "accepted bid ordering and current price are decided only by the dedicated PostgreSQL auction database",
+    "the shared development-governance Supabase project is never auction authority",
+    "auction secret credentials are server-side only"
+  ]
+}
