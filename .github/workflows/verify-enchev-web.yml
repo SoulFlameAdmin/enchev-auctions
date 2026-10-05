@@ -668,6 +668,54 @@ jobs:
           retention-days: 90
 
 
+  certify-realtime-latency:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ENCHEV_REALTIME_INTERNAL_KEY: ci-realtime
+      ENCHEV_REALTIME_HOST: 127.0.0.1
+      ENCHEV_REALTIME_PORT: "4020"
+      ENCHEV_42_07_OUTPUT: artifacts/42-07/realtime-latency.json
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Realtime runtime syntax
+        run: |
+          node --check apps/realtime/server.mjs
+          node --check scripts/certify-realtime-latency-42-07.mjs
+      - name: Start non-authoritative WebSocket realtime service
+        shell: bash
+        run: |
+          node apps/realtime/server.mjs > /tmp/enchev-realtime.log 2>&1 &
+          echo $! > /tmp/enchev-realtime.pid
+          for attempt in {1..30}; do
+            if curl --silent --fail http://127.0.0.1:4020/health > /dev/null; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 30 ]; then
+              cat /tmp/enchev-realtime.log
+              exit 1
+            fi
+            sleep 1
+          done
+      - name: Certify SYSTEM 42.07 — Realtime p50/p95/p99
+        env:
+          ENCHEV_42_07_SUBSCRIBERS: "50"
+          ENCHEV_42_07_EVENTS: "100"
+        run: node scripts/certify-realtime-latency-42-07.mjs http://127.0.0.1:4020
+      - name: Upload SYSTEM 42.07 realtime latency evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: system-42-07-realtime-latency-${{ github.sha }}
+          path: artifacts/42-07/realtime-latency.json
+          if-no-files-found: error
+          retention-days: 90
+
+
   verify-secret-bindings:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: verify-web
