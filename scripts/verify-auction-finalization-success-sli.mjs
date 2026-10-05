@@ -5,12 +5,13 @@ const REGISTRY_PATH = "config/enchev-websocket-event-registry.json";
 const JOURNEY_PATH = "config/enchev-critical-user-journey-slis.json";
 const PACKAGE_PATH = "package.json";
 const PRE_GATE_PATH = "scripts/run-system-test-pre-gates.mjs";
+const FINALIZATION_MIGRATION_PATH = "supabase/migrations/20261005041000_authoritative_auction_finalization.sql";
 
 function fail(message) {
   throw new Error(`AUCTION_FINALIZATION_SUCCESS_SLI FAIL: ${message}`);
 }
 
-export function validate(config, registry, journeys, pkg, preGateSource) {
+export function validate(config, registry, journeys, pkg, preGateSource, finalizationMigration) {
   if (config?.taskId !== "27.06") fail("taskId must be 27.06");
   if (config?.name !== "Auction finalization success SLI") fail("name drift");
   if (config?.version !== 1) fail("version must be 1");
@@ -19,7 +20,13 @@ export function validate(config, registry, journeys, pkg, preGateSource) {
   if (config?.eventRegistrySource !== REGISTRY_PATH) fail("registry source drift");
   if (config?.authoritativeAuctionSource !== "postgresql") fail("auction authority drift");
   if (config?.telemetryMayMutateAuctionState !== false) fail("telemetry must not mutate auction state");
-  if (config?.runtimeFinalizationImplemented !== false) fail("runtime finalization implementation must not be falsely claimed");
+  const runtimeImplemented =
+    finalizationMigration.includes("create table if not exists public.enchev_auction_finalizations")
+    && finalizationMigration.includes("create or replace function public.enchev_finalize_auction")
+    && finalizationMigration.toLowerCase().includes("for update")
+    && finalizationMigration.includes("grant execute on function public.enchev_finalize_auction");
+  if (config?.runtimeFinalizationImplemented !== runtimeImplemented) fail("runtimeFinalizationImplemented must match authoritative migration truth");
+  if (!runtimeImplemented) fail("authoritative finalization runtime missing");
 
   if (registry?.task !== "24.12") fail("registry task drift");
   if (registry?.transportAuthority !== false) fail("realtime transport must remain non-authoritative");
@@ -108,7 +115,8 @@ const registry = JSON.parse(fs.readFileSync(REGISTRY_PATH, "utf8"));
 const journeys = JSON.parse(fs.readFileSync(JOURNEY_PATH, "utf8"));
 const pkg = JSON.parse(fs.readFileSync(PACKAGE_PATH, "utf8"));
 const preGateSource = fs.readFileSync(PRE_GATE_PATH, "utf8");
-const result = validate(config, registry, journeys, pkg, preGateSource);
+const finalizationMigration = fs.readFileSync(FINALIZATION_MIGRATION_PATH, "utf8");
+const result = validate(config, registry, journeys, pkg, preGateSource, finalizationMigration);
 
 if (process.argv.includes("--self-test")) {
   let cases = 0;
@@ -116,7 +124,7 @@ if (process.argv.includes("--self-test")) {
     const candidate = structuredClone(config);
     mutate(candidate);
     let rejected = false;
-    try { validate(candidate, registry, journeys, pkg, preGateSource); } catch { rejected = true; }
+    try { validate(candidate, registry, journeys, pkg, preGateSource, finalizationMigration); } catch { rejected = true; }
     if (!rejected) fail(`negative self-test not rejected: ${label}`);
     cases += 1;
   };
@@ -129,28 +137,35 @@ if (process.argv.includes("--self-test")) {
   reject("synthetic attempts excluded", c => { c.eligibility.syntheticAttemptsExcluded = true; });
   reject("winner id metric dimension allowed", c => { c.measurement.winnerIdAsMetricDimensionForbidden = false; });
   reject("browser finalization allowed", c => { c.guardrails.noBrowserDerivedFinalization = false; });
-  reject("runtime implementation falsely claimed", c => { c.runtimeFinalizationImplemented = true; });
+  reject("runtime implementation truth falsified", c => { c.runtimeFinalizationImplemented = !c.runtimeFinalizationImplemented; });
   reject("SLO target invented", c => { c.sloPercent = 99.9; });
 
   let registryRejected = false;
   const badRegistry = structuredClone(registry);
   badRegistry.events = badRegistry.events.filter(item => item.type !== "enchev.auction.closed.v1");
-  try { validate(config, badRegistry, journeys, pkg, preGateSource); } catch { registryRejected = true; }
+  try { validate(config, badRegistry, journeys, pkg, preGateSource, finalizationMigration); } catch { registryRejected = true; }
   if (!registryRejected) fail("missing closed-event registry self-test not rejected");
   cases += 1;
 
   let journeyRejected = false;
   const badJourneys = structuredClone(journeys);
   badJourneys.journeys = badJourneys.journeys.filter(item => item.id !== "auction_result_visibility");
-  try { validate(config, registry, badJourneys, pkg, preGateSource); } catch { journeyRejected = true; }
+  try { validate(config, registry, badJourneys, pkg, preGateSource, finalizationMigration); } catch { journeyRejected = true; }
   if (!journeyRejected) fail("missing result journey self-test not rejected");
   cases += 1;
 
   let preGateRejected = false;
   try {
-    validate(config, registry, journeys, pkg, preGateSource.replace('["scripts/verify-auction-finalization-success-sli.mjs", "--self-test"]', ""));
+    validate(config, registry, journeys, pkg, preGateSource.replace('["scripts/verify-auction-finalization-success-sli.mjs", "--self-test"]', ""), finalizationMigration);
   } catch { preGateRejected = true; }
   if (!preGateRejected) fail("negative pre-gate self-test not rejected");
+  cases += 1;
+
+  let migrationRejected = false;
+  try {
+    validate(config, registry, journeys, pkg, preGateSource, finalizationMigration.replace("for update", ""));
+  } catch { migrationRejected = true; }
+  if (!migrationRejected) fail("missing row lock migration self-test not rejected");
   cases += 1;
 
   console.log(`AUCTION_FINALIZATION_SUCCESS_SLI_SELF_TEST PASS cases=${cases} events=${result.events} journey=${result.resultJourney} fail_closed=true`);
