@@ -225,6 +225,147 @@
           }
         }
       }
+    },
+    "/api/bids": {
+      "post": {
+        "operationId": "postAuthoritativeBid",
+        "summary": "Submit an authenticated bid to the PostgreSQL-authoritative transaction",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AuthoritativeBidRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Previously accepted idempotent request replayed without duplicate side effects",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthoritativeBidAccepted"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
+          },
+          "201": {
+            "description": "Bid durably accepted by PostgreSQL",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthoritativeBidAccepted"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid JSON, bid payload, or idempotency key",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, invalid, or expired buyer session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
+          },
+          "409": {
+            "description": "Idempotency key was reused with different request intent",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
+          },
+          "422": {
+            "description": "Authoritative auction transaction rejected the bid",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
+          },
+          "503": {
+            "description": "Authoritative auction database is not configured or unavailable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            },
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
@@ -450,6 +591,79 @@
             }
           }
         }
+      },
+      "AuthoritativeBidRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "auctionId",
+          "amountCents"
+        ],
+        "properties": {
+          "auctionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amountCents": {
+            "type": "integer",
+            "minimum": 1
+          }
+        }
+      },
+      "AuthoritativeBidAccepted": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ok",
+          "authority",
+          "auctionId",
+          "bidId",
+          "bidderId",
+          "amountCents",
+          "currency",
+          "sequence",
+          "acceptedAt",
+          "replayed"
+        ],
+        "properties": {
+          "ok": {
+            "const": true
+          },
+          "authority": {
+            "const": "postgresql"
+          },
+          "auctionId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bidId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "bidderId": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "amountCents": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "currency": {
+            "type": "string",
+            "pattern": "^[A-Z]{3}$"
+          },
+          "sequence": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "acceptedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "replayed": {
+            "type": "boolean"
+          }
+        }
       }
     },
     "headers": {
@@ -461,6 +675,13 @@
           "maxLength": 128,
           "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
         }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
       }
     }
   }
