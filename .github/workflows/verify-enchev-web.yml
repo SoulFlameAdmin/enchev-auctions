@@ -698,11 +698,18 @@ jobs:
         env:
           ENCHEV_42_06_REQUEST_COUNT: "50"
         run: node scripts/certify-bid-api-latency-42-06.mjs http://127.0.0.1:3013
+      - name: Certify SYSTEM 42.13 — Traffic spike
+        env:
+          ENCHEV_42_13_REQUESTS: "200"
+          ENCHEV_42_13_OUTPUT: artifacts/42-13/traffic-spike.json
+        run: node scripts/certify-traffic-spike-42-13.mjs http://127.0.0.1:3013
       - name: Upload SYSTEM 42.06 API latency evidence
         uses: actions/upload-artifact@v4
         with:
           name: system-42-06-bid-api-latency-${{ github.sha }}
-          path: artifacts/42-06/bid-api-latency.json
+          path: |
+            artifacts/42-06/bid-api-latency.json
+            artifacts/42-13/traffic-spike.json
           if-no-files-found: error
           retention-days: 90
 
@@ -726,6 +733,8 @@ jobs:
         run: |
           node --check apps/realtime/server.mjs
           node --check scripts/certify-realtime-latency-42-07.mjs
+          node --check scripts/certify-websocket-fanout-42-11.mjs
+          node --check scripts/certify-reconnect-storm-42-12.mjs
       - name: Start non-authoritative WebSocket realtime service
         shell: bash
         run: |
@@ -752,6 +761,12 @@ jobs:
           ENCHEV_42_11_EVENTS: "20"
           ENCHEV_42_11_OUTPUT: artifacts/42-11/websocket-fanout-saturation.json
         run: node scripts/certify-websocket-fanout-42-11.mjs http://127.0.0.1:4020
+      - name: Certify SYSTEM 42.12 — Reconnect storm
+        env:
+          ENCHEV_42_12_CLIENTS: "200"
+          ENCHEV_42_12_CYCLES: "5"
+          ENCHEV_42_12_OUTPUT: artifacts/42-12/reconnect-storm.json
+        run: node scripts/certify-reconnect-storm-42-12.mjs http://127.0.0.1:4020
       - name: Upload SYSTEM 42.07 realtime latency evidence
         uses: actions/upload-artifact@v4
         with:
@@ -759,6 +774,7 @@ jobs:
           path: |
             artifacts/42-07/realtime-latency.json
             artifacts/42-11/websocket-fanout-saturation.json
+            artifacts/42-12/reconnect-storm.json
           if-no-files-found: error
           retention-days: 90
 
