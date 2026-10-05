@@ -6,7 +6,7 @@
   "targetOwnershipTask": "27.07",
   "eventRegistrySource": "config/enchev-websocket-event-registry.json",
   "realtimeWorkspace": "apps/realtime",
-  "realtimeRuntimeImplemented": false,
+  "realtimeRuntimeImplemented": true,
   "authoritativeAuctionSource": "postgresql",
   "telemetryMayMutateAuctionState": false,
   "indicator": {
@@ -40,8 +40,16 @@
     "syntheticAttemptsExcluded": false
   },
   "measurement": {
-    "requiredDimensions": ["environment", "outcome"],
-    "optionalDimensions": ["region", "country_profile", "browser_family", "device_class"],
+    "requiredDimensions": [
+      "environment",
+      "outcome"
+    ],
+    "optionalDimensions": [
+      "region",
+      "country_profile",
+      "browser_family",
+      "device_class"
+    ],
     "correlationIdAllowedForDiagnostics": true,
     "correlationIdAsMetricDimensionForbidden": true,
     "auctionIdAsMetricDimensionForbidden": true,
