@@ -79,7 +79,8 @@ const cases = [
   ["scripts/verify-cross-script-search.mjs", "--self-test"],
   ["scripts/verify-build-provenance.mjs", "--self-test"],
   ["scripts/verify-environment-scoped-ci-secrets.mjs", "--self-test"],
-  ["scripts/verify-concurrent-bidders-42-02.mjs", "--self-test"]
+  ["scripts/verify-concurrent-bidders-42-02.mjs", "--self-test"],
+  ["scripts/verify-concurrent-bidders-42-03.mjs", "--self-test"]
 ];
 
 for (const [file, ...args] of cases) {
