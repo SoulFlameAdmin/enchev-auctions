@@ -14,13 +14,13 @@ const BLOCKS: Record<string, BlockConfig> = {
     heading: "ТЪРГУВАЙ",
     description: "Влез директно в търговете на живо, следи текущия лот и наддавай през реалната EAuctions система.",
     href: "/live-auctions",
-    cta: "ОТВОРИ ТЪРГОВЕТЕ",
+    cta: "ТЪРГУВАЙ",
   },
   Insight: {
     heading: "КУПИ",
     description: "Разгледай реалния каталог, търси по марка, модел, VIN или LOT и отвори детайлите на автомобила.",
     href: "/inventory",
-    cta: "РАЗГЛЕДАЙ АВТОМОБИЛИТЕ",
+    cta: "КУПИ",
   },
   Identity: {
     heading: "ДОКУМЕНТИ И ТРАНСПОРТ",
@@ -32,13 +32,13 @@ const BLOCKS: Record<string, BlockConfig> = {
     heading: "ПРОВЕРИ",
     description: "Провери VIN, историята на автомобила, статуса и наличната информация преди да вземеш решение.",
     href: "/vehicle-history",
-    cta: "ПРОВЕРИ АВТОМОБИЛ",
+    cta: "ПРОВЕРИ",
   },
   Inspection: {
     heading: "ЗА НАС",
     description: "Виж как EAuctions by SoulFlame свързва автомобилите, търговете, проверките, документите и транспорта.",
     href: "/presentation",
-    cta: "НАУЧИ ПОВЕЧЕ",
+    cta: "ЗА НАС",
   },
   Auctions: {
     heading: "ТЪРГОВЕ НА ЖИВО",
@@ -138,10 +138,15 @@ function applyBulgarianHome(doc: Document) {
     );
     if (description) description.textContent = config.description;
 
-    const cta = section.querySelector<HTMLAnchorElement>(
-      'a[href*="/contact"], a[href*="/builds"], a[href*="/stock"]',
-    );
-    if (cta) setTopNavigation(cta, config.href, config.cta);
+    const ctas = Array.from(section.querySelectorAll<HTMLAnchorElement>("a")).filter((anchor) => {
+      const text = anchor.textContent?.replace(/\s+/g, " ").trim() ?? "";
+      const href = anchor.getAttribute("href") ?? "";
+      return /start your project/i.test(text) ||
+        href.includes("/contact") ||
+        href.includes("/builds") ||
+        href.includes("/stock");
+    });
+    for (const cta of ctas) setTopNavigation(cta, config.href, config.cta);
   }
 
   for (const heading of Array.from(doc.querySelectorAll("h2"))) {
