@@ -178,3 +178,16 @@ Do not invent secrets, results, deployments or test evidence.
 - Every actual CONTROL/SYSTEM/DESIGN/APP2/APK send marks the global pacer, so a second session cannot send until at least 10 seconds later. This prevents five-tab burst sends even when no explicit rate-limit popup is visible.
 - Matrix must show both the active rate-limit countdown and the next normal send countdown.
 - The 60-second interval is a DAVID safety policy, not a published OpenAI ChatGPT requests-per-minute entitlement.
+
+
+## 5. Active-work timer law
+1. Active time is counted only while a DAVID worker is in proven ACTIVE execution and bound to one exact task/mission step.
+2. No task ID means no active-work time.
+3. Elapsed duration uses a monotonic high-resolution clock; wall-clock timestamps are audit metadata only.
+4. UI may display milliseconds, but the system must not claim guaranteed 1 ms crash detection.
+5. HEARTBEAT and concrete execution evidence keep an interval proven active.
+6. On unexpected stop/freeze/session loss, close the interval at the last confirmed active heartbeat/evidence timestamp; recovery delay is not active work.
+7. PAUSED, BLOCKED, WAIT_EXTERNAL, STOPPED and ERROR time are stored separately and never merged into active work.
+8. A task switch atomically closes the old interval before opening the new one.
+9. Timing history is append-only. Corrections require a separate correction event with actor, reason, old value and new value.
+10. P0 ENCHEV mission details are defined in `docs/URGENT_DAVID_AGI_ENCHEV_CLOSED_DEMO_V1.md`.
