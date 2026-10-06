@@ -160,3 +160,44 @@ ENCHEV is not “100% complete” until phase 47 can pass its runtime gate acros
 - required production/country evidence.
 
 No task count is a quality target by itself. New tasks are added only when they represent a real missing requirement, control, test, operating process, legal gate, recovery path or production proof.
+
+
+## P0 urgent execution overlay — DAVID AGI Closed Demo
+
+Status: **ACTIVE / P0**
+
+The frozen Master Plan remains immutable and the unified 4,374 SYSTEM task identities are not renumbered.
+
+Until the first end-to-end closed transaction demo is evidence-GREEN, DAVID AGI must use the dedicated execution overlay:
+
+- `docs/URGENT_DAVID_AGI_ENCHEV_CLOSED_DEMO_V1.md`
+
+Priority transaction path:
+
+`Seller -> Vehicle -> Approval -> Lot -> Auction -> Bid -> Winner -> DEMO Documents -> DEMO Payment -> Release -> Handover -> Audit -> Completed`
+
+This overlay is an execution-priority layer, not a replacement for SYSTEM dependencies or acceptance rules. Security, integrity, authorization, deterministic bidding, payment/release gating, audit, and required reliability blockers still apply.
+
+### Mandatory DAVID timing telemetry
+
+Every active DAVID work interval for this P0 mission must:
+- be bound to one exact mission step and, where applicable, one immutable Master Plan task ID;
+- use a monotonic high-resolution clock;
+- expose elapsed time to millisecond display precision;
+- stop counting when work is paused, blocked, stopped, crashed, or no longer proven active;
+- record wait/blocked time separately from active work;
+- persist append-only timing/audit events;
+- close an unexpected-stop interval at the last confirmed active heartbeat/evidence timestamp rather than counting recovery delay;
+- show per-point active time, total active time, attempts, PASS/FAIL evidence, commit SHA, blocker, and next action.
+
+No task ID = no active-work time.
+
+The first action when DAVID is reconnected on the user's PC is **ENCHEV CLOSED DEMO GAP ANALYSIS**, followed by the shortest actionable RED blocker on the P0 path.
+
+Post-demo sequence is fixed:
+1. Enchev operational interview;
+2. Legal & Operational Document Map;
+3. Live Pilot #1 with one real vehicle after legal/accounting/payment readiness;
+4. reconciliation;
+5. Market Pilot with 1–2 real vehicles and controlled advertising;
+6. controlled launch.
