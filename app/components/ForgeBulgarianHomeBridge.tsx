@@ -11,91 +11,91 @@ type BlockConfig = {
 
 const BLOCKS: Record<string, BlockConfig> = {
   Cohesion: {
-    heading: "Търгувай",
-    description: "Влез в търговете на живо, следи текущата цена и наддавай през EAuctions.",
-    href: "/live-auctions",
-    cta: "ВИЖ ТЪРГОВЕТЕ",
-  },
-  Insight: {
-    heading: "Провери",
-    description: "Провери историята на автомобила, VIN данните и ключовата информация преди покупка.",
-    href: "/vehicle-history",
-    cta: "ПРОВЕРИ АВТОМОБИЛ",
-  },
-  Identity: {
-    heading: "За нас",
-    description: "EAuctions by SoulFlame събира търгове, история, транспорт и поддръжка в една платформа.",
-    href: "/presentation",
-    cta: "НАУЧИ ПОВЕЧЕ",
-  },
-  Discovery: {
-    heading: "Автомобили",
-    description: "Разгледай наличния инвентар и открий автомобил по марка, модел, VIN или LOT.",
-    href: "/inventory",
-    cta: "ВИЖ АВТОМОБИЛИТЕ",
-  },
-  Inspection: {
-    heading: "Регистрация",
-    description: "Създай профил, за да запазваш автомобили, да участваш в търгове и да управляваш покупките си.",
-    href: "/profile?view=register",
-    cta: "РЕГИСТРИРАЙ СЕ",
-  },
-  Auctions: {
-    heading: "Търгове на живо",
-    description: "Следи активните търгове и текущите лотове в реално време.",
+    heading: "ТЪРГУВАЙ",
+    description: "Влез директно в търговете на живо, следи текущия лот и наддавай през реалната EAuctions система.",
     href: "/live-auctions",
     cta: "ОТВОРИ ТЪРГОВЕТЕ",
   },
-  History: {
-    heading: "История на МПС",
-    description: "Провери историята и наличните данни за автомобила преди решение.",
+  Insight: {
+    heading: "КУПИ",
+    description: "Разгледай реалния каталог, търси по марка, модел, VIN или LOT и отвори детайлите на автомобила.",
+    href: "/inventory",
+    cta: "РАЗГЛЕДАЙ АВТОМОБИЛИТЕ",
+  },
+  Identity: {
+    heading: "ДОКУМЕНТИ И ТРАНСПОРТ",
+    description: "След покупката управлявай транспорта, доставката и свързаните документи в един ясен процес.",
+    href: "/transport",
+    cta: "ДОКУМЕНТИ И ТРАНСПОРТ",
+  },
+  Discovery: {
+    heading: "ПРОВЕРИ",
+    description: "Провери VIN, историята на автомобила, статуса и наличната информация преди да вземеш решение.",
     href: "/vehicle-history",
-    cta: "ПРОВЕРИ ИСТОРИЯ",
+    cta: "ПРОВЕРИ АВТОМОБИЛ",
+  },
+  Inspection: {
+    heading: "ЗА НАС",
+    description: "Виж как EAuctions by SoulFlame свързва автомобилите, търговете, проверките, документите и транспорта.",
+    href: "/presentation",
+    cta: "НАУЧИ ПОВЕЧЕ",
+  },
+  Auctions: {
+    heading: "ТЪРГОВЕ НА ЖИВО",
+    description: "Следи активните търгове, текущите лотове, цената и наддаването в реално време.",
+    href: "/live-auctions",
+    cta: "КЪМ LIVE ТЪРГОВЕТЕ",
+  },
+  History: {
+    heading: "ИСТОРИЯ НА МПС",
+    description: "Направи проверка на VIN и виж наличните данни за автомобила преди покупка.",
+    href: "/vehicle-history",
+    cta: "ПРОВЕРИ VIN",
   },
   Transport: {
-    heading: "Транспорт",
-    description: "Организирай транспорт и проследявай следващите стъпки след покупката.",
+    heading: "ДОСТАВКА И ДОКУМЕНТИ",
+    description: "Провери ориентировъчния маршрут, транспортния процес и документите след спечелен автомобил.",
     href: "/transport",
-    cta: "ВИЖ ТРАНСПОРТА",
+    cta: "ОТВОРИ ТРАНСПОРТА",
   },
   Support: {
-    heading: "Поддръжка",
-    description: "Получавай помощ за профил, търгове, автомобили, плащания и транспорт.",
+    heading: "ПОДДРЪЖКА",
+    description: "Получавай помощ за профил, търгове, автомобили, плащания, документи и транспорт.",
     href: "/support",
     cta: "ПОЛУЧИ ПОМОЩ",
   },
 };
 
 const H2_TRANSLATIONS: Record<string, string> = {
-  "We connect you with vehiclesYou choose your next one": "Свързваме те с автомобилите. Ти избираш следващия.",
-  "Your Route To Your Next Vehicle": "Пътят към следващия ти автомобил",
-  "A vehicle should say something before it moves. Every line, material, and finish is considered.": "Открий, провери и купи следващия си автомобил на едно място.",
+  "We connect you with vehiclesYou choose your next one": "Избираш автомобил. Ние свързваме целия процес.",
+  "Your Route To Your Next Vehicle": "Твоят път към следващия автомобил",
+  "A vehicle should say something before it moves. Every line, material, and finish is considered.": "Търгове, автомобили, проверки, документи и транспорт в една система.",
   "Ends Here": "Всичко започва тук",
   "Vehicle Inventory": "Автомобили",
   "Live Auctions": "Търгове на живо",
-  "Refuse Ordinary": "Избери различното",
+  "Refuse Ordinary": "Избери следващия си автомобил",
 };
 
 const PARAGRAPH_TRANSLATIONS: Record<string, string> = {
-  "Every decision is intentional, every detail has purpose based on your taste, your lifestyle, and your standards.": "Всяко действие в EAuctions е насочено към една цел: сигурна, прозрачна и лесна покупка на автомобил.",
+  "Every decision is intentional, every detail has purpose based on your taste, your lifestyle, and your standards.": "EAuctions води клиента от откриването на автомобила до търга, проверката, документите и транспорта.",
   "A vehicle should say something before it moves. Every line, material, and finish is considered.": "Открий, провери и купи следващия си автомобил чрез една свързана платформа.",
-  "Our services are shaped with intent, from exterior styling and interior refinement to performance upgrades, detailing and bespoke finishes; each detail sharpens the vehicle’s character without overpowering it.": "Всички ключови функции са събрани на едно място: автомобили, търгове, история на МПС, транспорт, профил и поддръжка.",
-  "A collection of previous bespoke builds, shaped by craft, character and the people behind the wheel.": "Разгледай наличните автомобили и намери подходящия за теб.",
+  "Our services are shaped with intent, from exterior styling and interior refinement to performance upgrades, detailing and bespoke finishes; each detail sharpens the vehicle’s character without overpowering it.": "Всички ключови функции са на едно място: каталог, търгове на живо, история на МПС, документи, транспорт, профил и поддръжка.",
+  "A collection of previous bespoke builds, shaped by craft, character and the people behind the wheel.": "Разгледай наличните автомобили и отвори реалния каталог.",
   "Builds available for purchase, refined with intent, engineered with purpose, and ready to make a statement.": "Следи активните търгове и участвай в наддаването.",
-  "Vehicle auctions with inventory, live bidding, vehicle history and transport in one place.": "Автомобили, търгове на живо, история на МПС и транспорт на едно място.",
+  "Vehicle auctions with inventory, live bidding, vehicle history and transport in one place.": "Автомобили, търгове на живо, история на МПС, документи и транспорт на едно място.",
   "Service": "Услуга",
   "Are you ready to": "Готов ли си да",
 };
 
 const NAV_TRANSLATIONS: Record<string, { label: string; href: string }> = {
   Home: { label: "Начало", href: "/" },
-  Builds: { label: "Автомобили", href: "/inventory" },
-  Stock: { label: "Търгове", href: "/live-auctions" },
+  Builds: { label: "Купи", href: "/inventory" },
+  Stock: { label: "Търгувай", href: "/live-auctions" },
   Contact: { label: "Поддръжка", href: "/support" },
   Cookies: { label: "Регистрация", href: "/profile?view=register" },
-  Privacy: { label: "История", href: "/vehicle-history" },
-  Terms: { label: "Транспорт", href: "/transport" },
-  Sitemap: { label: "Профил", href: "/profile" },
+  Privacy: { label: "Провери", href: "/vehicle-history" },
+  Terms: { label: "Документи и транспорт", href: "/transport" },
+  Sitemap: { label: "За нас", href: "/presentation" },
 };
 
 function setAnimatedLabel(anchor: HTMLAnchorElement, label: string) {
@@ -165,14 +165,14 @@ function applyBulgarianHome(doc: Document) {
     }
 
     if (anchor.getAttribute("href") === "/builds/") {
-      setTopNavigation(anchor, "/inventory", "ВИЖ АВТОМОБИЛИТЕ");
+      setTopNavigation(anchor, "/inventory", "КУПИ");
     } else if (anchor.getAttribute("href") === "/stock/") {
-      setTopNavigation(anchor, "/inventory", "РАЗГЛЕДАЙ ИНВЕНТАРА");
+      setTopNavigation(anchor, "/live-auctions", "ТЪРГУВАЙ");
     } else if (
       anchor.getAttribute("href") === "/contact/" &&
       /start your project/i.test(original)
     ) {
-      setTopNavigation(anchor, "/profile?view=register", "РЕГИСТРАЦИЯ");
+      setTopNavigation(anchor, "/presentation", "ЗА НАС");
     } else if (original === "Skip to content") {
       anchor.textContent = "Към съдържанието";
     }
