@@ -10,25 +10,21 @@ export default function Home(){
     >
       <iframe
         src="/forge/index.html"
-        title="EAuctions by SoulFlame cinematic marketplace"
-        style={{
-          position:"fixed",
-          inset:0,
-          width:"100vw",
-          height:"100dvh",
-          border:0,
-          background:"#000",
-          zIndex:0,
-        }}
+        title="EAuctions by SoulFlame cinematic homepage"
+        style={{position:"fixed",inset:0,width:"100vw",height:"100dvh",border:0,background:"#000",zIndex:0}}
       />
-      <nav
-        aria-label="EAuctions marketplace"
-        style={{position:"fixed",right:18,bottom:18,zIndex:4,display:"flex",gap:8,flexWrap:"wrap",justifyContent:"flex-end"}}
+      <a
+        href="/live-auctions"
+        aria-label="Старт търгове"
+        style={{
+          position:"fixed",left:"50%",bottom:28,transform:"translateX(-50%)",zIndex:5,
+          padding:"15px 24px",borderRadius:999,background:"#b7ff2a",color:"#0b0d0b",
+          fontWeight:900,fontSize:14,letterSpacing:".08em",textDecoration:"none",
+          boxShadow:"0 8px 30px rgba(0,0,0,.38)",whiteSpace:"nowrap"
+        }}
       >
-        <a href="/inventory" style={{padding:"12px 16px",borderRadius:999,background:"#f3efe5",color:"#10110f",fontWeight:800,textDecoration:"none"}}>АВТОМОБИЛИ</a>
-        <a href="/live-auctions" style={{padding:"12px 16px",borderRadius:999,background:"#b7ff2a",color:"#10110f",fontWeight:900,textDecoration:"none"}}>LIVE ТЪРГОВЕ</a>
-        <a href="/profile" style={{padding:"12px 16px",borderRadius:999,background:"rgba(10,10,10,.78)",color:"#fff",border:"1px solid rgba(255,255,255,.28)",fontWeight:800,textDecoration:"none"}}>ПРОФИЛ</a>
-      </nav>
+        START ТЪРГОВЕ
+      </a>
       <MasterSystemPlanV1 />
     </main>
   );
