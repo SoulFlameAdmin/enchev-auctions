@@ -11,22 +11,22 @@ type BlockConfig = {
 
 const BLOCKS: Record<string, BlockConfig> = {
   Cohesion: {
-    heading: "ТЪРГУВАЙ",
-    description: "Влез директно в търговете на живо, следи текущия лот и наддавай през реалната EAuctions система.",
-    href: "/live-auctions",
-    cta: "ТЪРГУВАЙ",
-  },
-  Insight: {
     heading: "КУПИ",
     description: "Разгледай реалния каталог, търси по марка, модел, VIN или LOT и отвори детайлите на автомобила.",
     href: "/inventory",
     cta: "КУПИ",
   },
-  Identity: {
+  Insight: {
     heading: "ДОКУМЕНТИ И ТРАНСПОРТ",
     description: "След покупката управлявай транспорта, доставката и свързаните документи в един ясен процес.",
     href: "/transport",
     cta: "ДОКУМЕНТИ И ТРАНСПОРТ",
+  },
+  Identity: {
+    heading: "ТЪРГУВАЙ",
+    description: "Влез директно в търговете на живо, следи текущия лот и наддавай през реалната EAuctions система.",
+    href: "/live-auctions",
+    cta: "ТЪРГУВАЙ",
   },
   Discovery: {
     heading: "ПРОВЕРИ",
