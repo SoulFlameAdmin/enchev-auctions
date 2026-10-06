@@ -1,0 +1,591 @@
+{
+  "schemaVersion": 1,
+  "missionId": "ENCHEV_CLOSED_DEMO_V1",
+  "priority": "P0",
+  "status": "ACTIVE",
+  "parentMaster": "docs/MASTER_SYSTEM_EXPANSION_V2.md",
+  "humanPlan": "docs/URGENT_DAVID_AGI_ENCHEV_CLOSED_DEMO_V1.md",
+  "immutableSystemTaskCount": 4374,
+  "note": "Execution overlay only. Does not renumber immutable SYSTEM tasks.",
+  "timer": {
+    "required": true,
+    "activeRequiresMissionStepId": true,
+    "activeRequiresProvenWorkerState": true,
+    "elapsedClock": "monotonic-high-resolution",
+    "recommendedNodeClock": "process.hrtime.bigint",
+    "displayPrecision": "milliseconds",
+    "unexpectedStopPolicy": "close-at-last-confirmed-heartbeat-or-evidence",
+    "blockedTimeCountsAsActive": false,
+    "waitTimeCountsAsActive": false,
+    "appendOnlyEvents": true
+  },
+  "steps": [
+    {
+      "id": "MISSION-001",
+      "order": 1,
+      "title": "Closed Demo gap analysis",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Run evidence-based repo/deployment/DB/test gap analysis"
+    },
+    {
+      "id": "MISSION-002",
+      "order": 2,
+      "title": "Safe work branch and isolated demo environment",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-001"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-003",
+      "order": 3,
+      "title": "Demo identity and role model",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-002"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-004",
+      "order": 4,
+      "title": "Vehicle intake",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-003"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-005",
+      "order": 5,
+      "title": "Vehicle Intake Record DEMO",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-004"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-006",
+      "order": 6,
+      "title": "Seller Declaration DEMO",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-005"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-007",
+      "order": 7,
+      "title": "Vehicle approval workflow",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-006"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-008",
+      "order": 8,
+      "title": "Lot creation",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-007"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-009",
+      "order": 9,
+      "title": "Auction Listing Snapshot",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-008"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-010",
+      "order": 10,
+      "title": "Terms acceptance",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-009"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-011",
+      "order": 11,
+      "title": "Server-authoritative auction clock",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-010"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-012",
+      "order": 12,
+      "title": "Authoritative bid API",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-011"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-013",
+      "order": 13,
+      "title": "Bid concurrency safety",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-012"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-014",
+      "order": 14,
+      "title": "Append-only Bid Ledger",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-013"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-015",
+      "order": 15,
+      "title": "Realtime auction UI and reconnect",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-014"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-016",
+      "order": 16,
+      "title": "Deterministic auction close",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-015"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-017",
+      "order": 17,
+      "title": "Auction Close Certificate DEMO",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-016"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-018",
+      "order": 18,
+      "title": "Winner Confirmation DEMO",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-017"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-019",
+      "order": 19,
+      "title": "Purchase Summary DEMO",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-018"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-020",
+      "order": 20,
+      "title": "DEMO Pro Forma",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-019"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-021",
+      "order": 21,
+      "title": "Safe demo payment instruction",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-020"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-022",
+      "order": 22,
+      "title": "Payment sandbox state machine",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-021"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-023",
+      "order": 23,
+      "title": "Payment Confirmation DEMO",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-022"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-024",
+      "order": 24,
+      "title": "No Payment = No Release backend gate",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-023"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-025",
+      "order": 25,
+      "title": "Vehicle Release Order DEMO",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-024"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-026",
+      "order": 26,
+      "title": "Release validation and single-use credential",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-025"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-027",
+      "order": 27,
+      "title": "Handover Protocol DEMO",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-026"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-028",
+      "order": 28,
+      "title": "Single-use completion transition",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-027"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-029",
+      "order": 29,
+      "title": "Transaction Completion Certificate DEMO",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-028"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-030",
+      "order": 30,
+      "title": "Transaction Document Vault",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-029"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-031",
+      "order": 31,
+      "title": "Document versioning and integrity hash",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-030"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-032",
+      "order": 32,
+      "title": "End-to-end audit timeline",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-031"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-033",
+      "order": 33,
+      "title": "Failure injection suite",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-032"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-034",
+      "order": 34,
+      "title": "Internal rehearsal",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-033"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    },
+    {
+      "id": "MISSION-035",
+      "order": 35,
+      "title": "Official Closed Demo acceptance",
+      "priority": "P0",
+      "status": "RED",
+      "dependsOn": [
+        "MISSION-034"
+      ],
+      "mappedMasterTaskIds": [],
+      "activeMs": 0,
+      "blockedMs": 0,
+      "attempts": 0,
+      "evidence": [],
+      "nextAction": "Wait for dependency and gap-analysis mapping"
+    }
+  ],
+  "postDemoGates": [
+    "GATE-A Enchev operational interview",
+    "GATE-B Legal & Operational Document Map",
+    "GATE-C Live Pilot #1",
+    "GATE-D Reconciliation",
+    "GATE-E Market Pilot 1-2 vehicles + controlled ads",
+    "GATE-F Controlled Launch"
+  ],
+  "firstActionOnPc": "Bind DAVID ENCHEV worker to MISSION-001 and run ENCHEV CLOSED DEMO GAP ANALYSIS before broad feature development."
+}
