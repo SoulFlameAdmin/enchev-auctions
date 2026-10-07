@@ -6,7 +6,7 @@ import "./profile-shell.css";
 export default function ProfilePage(){
   return <main id="main-content" className="navigationPage">
     <header className="navigationRouteHeader">
-      <a href="/" className="navigationRouteBrand"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
+      <a href="/" className="navigationRouteBrand"><strong>ENCHEV</strong><span>АУКЦИОНИ</span></a>
       <nav className="navigationRouteNav" aria-label="Основна навигация">
         {primaryNavigation.map(item=><a key={item.key} href={item.href}>{item.label}</a>)}
         <a href="/profile" aria-current="page">ПРОФИЛ</a>
@@ -19,8 +19,8 @@ export default function ProfilePage(){
           <div className="profileAccountIdentity">
             <span className="profileAccountAvatar" aria-hidden="true">EA</span>
             <div>
-              <small>BUYER WORKSPACE</small>
-              <strong>ENCHEV Account</strong>
+              <small>РАБОТНО ПРОСТРАНСТВО НА КУПУВАЧА</small>
+              <strong>Профил ENCHEV</strong>
             </div>
           </div>
 
@@ -39,13 +39,13 @@ export default function ProfilePage(){
 
         <div className="profileDashboardContent">
           <section className="profileOverview" id="overview" aria-labelledby="profile-overview-heading">
-            <span className="navigationRouteKicker">BUYER WORKSPACE</span>
+            <span className="navigationRouteKicker">РАБОТНО ПРОСТРАНСТВО НА КУПУВАЧА</span>
             <h1 id="profile-overview-heading">Твоят ENCHEV профил</h1>
-            <p>Следи запазените автомобили и използвай buyer workspace като изходна точка към инвентара и LIVE търговете.</p>
+            <p>Следи запазените автомобили и използвай работното пространство на купувача като изходна точка към инвентара и търговете на живо.</p>
 
             <div className="profileOverviewActions" aria-label="Бързи действия">
               <a href="/inventory">Търси автомобили</a>
-              <a href="/live-auctions">LIVE търгове</a>
+              <a href="/live-auctions">Търгове на живо</a>
             </div>
           </section>
 
@@ -54,12 +54,12 @@ export default function ProfilePage(){
 
           <section className="profileQuickLinks" aria-labelledby="profile-quick-links-heading">
             <div className="profileSectionHeading">
-              <span>QUICK LINKS</span>
+              <span>БЪРЗИ ВРЪЗКИ</span>
               <h2 id="profile-quick-links-heading">Продължи от профила</h2>
             </div>
             <div className="navigationRouteGrid">
               <article className="navigationRouteCard"><b>Инвентар</b><p>Продължи към търсенето и намери следващ автомобил или лот.</p><a href="/inventory">Към инвентара →</a></article>
-              <article className="navigationRouteCard"><b>LIVE търгове</b><p>Влез в отделната търгова зала и следи активния лот.</p><a href="/live-auctions">Отвори LIVE →</a></article>
+              <article className="navigationRouteCard"><b>Търгове на живо</b><p>Влез в отделната търгова зала и следи активния лот.</p><a href="/live-auctions">Отвори търга →</a></article>
               <article className="navigationRouteCard"><b>Поддръжка</b><p>Отвори помощния център за транспорт, история на МПС и работа с платформата.</p><a href="/support">Отвори помощ →</a></article>
             </div>
           </section>
