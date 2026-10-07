@@ -4,52 +4,6 @@ import { useMemo, useState } from "react";
 import process2 from "../design-process-2-evidence.json";
 
 type Status = "green" | "yellow" | "red";
-
-const DP2_BG_GROUPS: Record<string,string> = {
-  "Foundation":"Основа",
-  "Homepage":"Начална страница",
-  "Inventory":"Инвентар",
-  "Vehicle detail":"Детайли за автомобил",
-  "LIVE auction":"Търг на живо",
-  "Buyer workspace":"Работно пространство на купувача",
-  "Responsive & accessibility":"Адаптивност и достъпност",
-  "Polish & certification":"Финална полировка и сертифициране"
-};
-
-const DP2_BG_TITLES: Record<string,string> = {
-  "DP2-01":"Одит на текущия UX/UI и доклад за пропуските",
-  "DP2-02":"Премиум дизайн токени на ENCHEV",
-  "DP2-03":"Типография, отстояния, плътност и адаптивна мрежа",
-  "DP2-04":"Единна адаптивна обвивка на приложението и навигация",
-  "DP2-05":"Премиум композиция на началния екран и ясно стойностно предложение",
-  "DP2-06":"Търсене, бързо откриване и преки категории",
-  "DP2-07":"Карти на избрани автомобили и йерархия на състоянието на търга",
-  "DP2-08":"Доверие, процес, логистика, поддръжка и финален призив за действие",
-  "DP2-09":"Информационна архитектура за търсене/филтри и система за филтри на компютър",
-  "DP2-10":"Мобилен панел за филтри и работа с активни филтри",
-  "DP2-11":"Премиум карти в инвентара и режими мрежа/списък",
-  "DP2-12":"Сортиране, странициране, брой резултати, запазени действия и празни състояния",
-  "DP2-13":"Галерия, миниатюри, увеличение/преглед и медийна йерархия",
-  "DP2-14":"Заглавие, идентификатори, характеристики, щети, документи и йерархия на състоянието",
-  "DP2-15":"Панел за наддаване/Купи сега и фиксиран адаптивен призив за действие",
-  "DP2-16":"История, такси и контекст, транспорт, подобни автомобили и доверие",
-  "DP2-17":"Композиция и визуален приоритет на сцената за търг на живо",
-  "DP2-18":"Състояния при оферта и безопасност на действията",
-  "DP2-19":"Следващ лот, опашка, продадени резултати и непрекъснатост",
-  "DP2-20":"Таймер, връзка, повторно свързване и увереност при остаряло състояние",
-  "DP2-21":"Обвивка на профила/таблото и навигация на профила",
-  "DP2-22":"Запазени автомобили и Моите търгове",
-  "DP2-23":"Последователност между поддръжка, транспорт, история и профил",
-  "DP2-24":"Приемане на телефон при 360/390/430px",
-  "DP2-25":"Приемане на таблет и компютър при 768px–1920px+",
-  "DP2-26":"Клавиатура, фокус, контраст, увеличение, намалено движение и размери за докосване",
-  "DP2-27":"Състояния при зареждане, празно, грешка, офлайн и успех и последователност на текста",
-  "DP2-28":"Дизайн, ориентиран към производителност и стабилност на оформлението",
-  "DP2-29":"Визуална регресия в Chrome и Edge на компютър и телефон",
-  "DP2-30":"Финална последователност, оригиналност и продукционно приемане на ENCHEV"
-};
-
-
 type Task = {
   id: string;
   group: string;
@@ -82,29 +36,29 @@ export default function DesignProcess2({open,onClose}:{open:boolean;onClose:()=>
   return <section className="controlOverlay" data-design-process="2">
     <header className="controlHeader">
       <div>
-        <div className="eyebrow">ENCHEV ДИЗАЙН ПРОЦЕС 2 · ПРЕМИУМ МОБИЛЕН + КОМПЮТЪРЕН ИЗГЛЕД</div>
-        <h1>Дизайн процес 2</h1>
-        <p>Новият премиум процес за редизайн е отделен от завършения Дизайн план V1. DAVID работи последователно по DP2-01 → DP2-30 и маркира ЗЕЛЕНО само при имплементация + тест + доказателство.</p>
+        <div className="eyebrow">ENCHEV DESIGN PROCESS 2 · WORLD-CLASS MOBILE + DESKTOP</div>
+        <h1>Design Process 2</h1>
+        <p>Новият premium redesign процес е отделен от завършения Design Plan V1. DAVID работи последователно по DP2-01 → DP2-30 и маркира GREEN само с implementation + test + evidence.</p>
       </div>
-      <button className="closeControl" onClick={onClose} aria-label="Затвори Дизайн процес 2">×</button>
+      <button className="closeControl" onClick={onClose} aria-label="Затвори Design Process 2">×</button>
     </header>
 
     <div className="controlKpis">
       <div><span>ПРОГРЕС</span><b>{progress}%</b><small>{tasks.length} DP2 задачи</small></div>
-      <div className="kGreen"><span>ЗЕЛЕНО</span><b>{counts.green}</b><small>доказано</small></div>
-      <div className="kYellow"><span>ЖЪЛТО</span><b>{counts.yellow}</b><small>частично / чака доказателство</small></div>
-      <div className="kRed"><span>ЧЕРВЕНО</span><b>{counts.red}</b><small>не е завършено</small></div>
-      <div><span>СЛЕДВАЩО</span><b className="clockText">{next?.id||"ЗАВЪРШЕНО"}</b><small>{next?DP2_BG_TITLES[next.id]||next.title:"Всичко е ЗЕЛЕНО"}</small></div>
+      <div className="kGreen"><span>GREEN</span><b>{counts.green}</b><small>доказано</small></div>
+      <div className="kYellow"><span>YELLOW</span><b>{counts.yellow}</b><small>частично / чака proof</small></div>
+      <div className="kRed"><span>RED</span><b>{counts.red}</b><small>не е завършено</small></div>
+      <div><span>NEXT</span><b className="clockText">{next?.id||"COMPLETE"}</b><small>{next?.title||"Всичко е GREEN"}</small></div>
     </div>
 
     <div className="nextGrid">
-      <div className="nextCard"><span>АКТИВНА ЦЕЛ НА DAVID</span><b>{next?`${next.id} · ${DP2_BG_TITLES[next.id]||next.title}`:"ДИЗАЙН ПРОЦЕС 2 ЗАВЪРШЕН"}</b></div>
-      <div className="nextCard client"><span>ПРИЕМАНЕ</span><b>Телефон 360 / 390 / 430px · Компютър 1366 / 1440 / клас 1920 · Chrome + Edge</b></div>
+      <div className="nextCard"><span>DAVID ACTIVE TARGET</span><b>{next?`${next.id} · ${next.title}`:"DESIGN PROCESS 2 COMPLETE"}</b></div>
+      <div className="nextCard client"><span>ACCEPTANCE</span><b>Phone 360 / 390 / 430px · Desktop 1366 / 1440 / 1920-class · Chrome + Edge</b></div>
     </div>
 
     <div className="controlTools">
-      <div className="filterGroup">{(["all","green","yellow","red"] as const).map(v=><button key={v} className={filter===v?"active":""} onClick={()=>setFilter(v)}>{v==="all"?"Всички":v==="green"?"ЗЕЛЕНО":v==="yellow"?"ЖЪЛТО":"ЧЕРВЕНО"}</button>)}</div>
-      <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Търси DP2 задача..." aria-label="Търси в Дизайн процес 2"/>
+      <div className="filterGroup">{(["all","green","yellow","red"] as const).map(v=><button key={v} className={filter===v?"active":""} onClick={()=>setFilter(v)}>{v==="all"?"Всички":v.toUpperCase()}</button>)}</div>
+      <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Търси DP2 задача..." aria-label="Търси в Design Process 2"/>
     </div>
 
     <div className="phaseList">
@@ -118,7 +72,7 @@ export default function DesignProcess2({open,onClose}:{open:boolean;onClose:()=>
         const pct=Math.round((green/allGroup.length)*100);
         return <details className="phaseBlock" key={group} open>
           <summary className="phaseHead">
-            <div><span>ДИЗАЙН ПРОЦЕС 2</span><b>{DP2_BG_GROUPS[group]||group}</b><small>Премиум редизайн със запазени зависимости</small></div>
+            <div><span>DESIGN PROCESS 2</span><b>{group}</b><small>Dependency-safe premium redesign</small></div>
             <div className="phaseCounts"><i className="greenDot">{green}</i><i className="yellowDot">{yellow}</i><i className="redDot">{red}</i><strong>{pct}%</strong></div>
           </summary>
           <div className="phaseTasks">
@@ -126,15 +80,15 @@ export default function DesignProcess2({open,onClose}:{open:boolean;onClose:()=>
               <div className="taskTop">
                 <div className="taskMain">
                   <span className="taskId">{task.id}</span>
-                  <b>{DP2_BG_TITLES[task.id]||task.title}</b>
-                  <small>{task.status==="green"?"Имплементация + тест + доказателство":task.status==="yellow"?"Частично / чака доказателство / блокер":"Не е завършено"}</small>
+                  <b>{task.title}</b>
+                  <small>{task.status==="green"?"Implementation + test + evidence":task.status==="yellow"?"Partial / pending proof / blocker":"Not completed"}</small>
                 </div>
-                <div className="statusButtons"><button className={task.status}>{task.status==="green"?"ЗЕЛЕНО":task.status==="yellow"?"ЖЪЛТО":"ЧЕРВЕНО"}</button></div>
+                <div className="statusButtons"><button className={task.status}>{task.status.toUpperCase()}</button></div>
               </div>
               {(task.evidence||task.blocker)&&<div className="taskDetails">
-                <input readOnly value={task.evidence||""} placeholder="Доказателството ще се попълни от DAVID"/>
-                <input readOnly value={task.blocker||""} placeholder="Няма блокер"/>
-                <span>{task.updatedAt?`Обновено ${new Date(task.updatedAt).toLocaleString("bg-BG")}`:"Все още няма обновяване"}</span>
+                <input readOnly value={task.evidence||""} placeholder="Evidence ще се попълни от DAVID"/>
+                <input readOnly value={task.blocker||""} placeholder="Няма blocker"/>
+                <span>{task.updatedAt?`Update ${new Date(task.updatedAt).toLocaleString("bg-BG")}`:"No update yet"}</span>
               </div>}
             </article>)}
           </div>
@@ -142,6 +96,6 @@ export default function DesignProcess2({open,onClose}:{open:boolean;onClose:()=>
       })}
     </div>
 
-    <footer className="controlFooter"><b>Правило на процес 2:</b> V1 остава заключен. DP2 задачите се изпълняват DP2-01 → DP2-30. ЗЕЛЕНО само с доказателство. DP2-31 не се създава автоматично. Основен източник: docs/DESIGN_PROCESS_2.md + app/design-process-2-evidence.json.</footer>
+    <footer className="controlFooter"><b>Process 2 law:</b> V1 остава frozen. DP2 задачите се изпълняват DP2-01 → DP2-30. GREEN само с evidence. Не се създава DP2-31 автоматично. Source of truth: docs/DESIGN_PROCESS_2.md + app/design-process-2-evidence.json.</footer>
   </section>;
 }
