@@ -25,27 +25,27 @@ export default function ProfilePage(){
           </div>
 
           <nav className="profileAccountNav" aria-label="Секции на профила">
-            <a href="#overview"><span aria-hidden="true">⌂</span><b>Обзор</b></a>
-            <a href="#watchlist"><span aria-hidden="true">☆</span><b>Запазени</b></a>
-            <a href="#my-auctions"><span aria-hidden="true">↗</span><b>Моите търгове</b></a>
-            <a href="/support"><span aria-hidden="true">?</span><b>Помощ</b></a>
+            <a href="#overview"><span aria-hidden="true">⌂</span><b>Overview</b></a>
+            <a href="#watchlist"><span aria-hidden="true">☆</span><b>Saved</b></a>
+            <a href="#my-auctions"><span aria-hidden="true">↗</span><b>My Auctions</b></a>
+            <a href="/support"><span aria-hidden="true">?</span><b>Help</b></a>
           </nav>
 
           <div className="profileAccountRailNote">
-            <span>Бърз достъп</span>
-            <p>Следи запазени лотове и търгове от едно място.</p>
+            <span>Quick access</span>
+            <p>Track saved lots and auctions from one place.</p>
           </div>
         </aside>
 
         <div className="profileDashboardContent">
           <section className="profileOverview" id="overview" aria-labelledby="profile-overview-heading">
             <span className="navigationRouteKicker">BUYER WORKSPACE</span>
-            <h1 id="profile-overview-heading">Твоят ENCHEV профил</h1>
-            <p>Следи запазените автомобили и използвай buyer workspace като изходна точка към инвентара и LIVE търговете.</p>
+            <h1 id="profile-overview-heading">Your ENCHEV account</h1>
+            <p>Track saved vehicles and use the buyer workspace as your starting point for inventory and live auctions.</p>
 
             <div className="profileOverviewActions" aria-label="Бързи действия">
-              <a href="/inventory">Търси автомобили</a>
-              <a href="/live-auctions">LIVE търгове</a>
+              <a href="/inventory">Search vehicles</a>
+              <a href="/live-auctions">Live auctions</a>
             </div>
           </section>
 
@@ -55,12 +55,12 @@ export default function ProfilePage(){
           <section className="profileQuickLinks" aria-labelledby="profile-quick-links-heading">
             <div className="profileSectionHeading">
               <span>QUICK LINKS</span>
-              <h2 id="profile-quick-links-heading">Продължи от профила</h2>
+              <h2 id="profile-quick-links-heading">Continue from your account</h2>
             </div>
             <div className="navigationRouteGrid">
-              <article className="navigationRouteCard"><b>Инвентар</b><p>Продължи към търсенето и намери следващ автомобил или лот.</p><a href="/inventory">Към инвентара →</a></article>
-              <article className="navigationRouteCard"><b>LIVE търгове</b><p>Влез в отделната търгова зала и следи активния лот.</p><a href="/live-auctions">Отвори LIVE →</a></article>
-              <article className="navigationRouteCard"><b>Поддръжка</b><p>Отвори помощния център за транспорт, история на МПС и работа с платформата.</p><a href="/support">Отвори помощ →</a></article>
+              <article className="navigationRouteCard"><b>Inventory</b><p>Continue searching and find your next vehicle or lot.</p><a href="/inventory">Go to inventory →</a></article>
+              <article className="navigationRouteCard"><b>Live auctions</b><p>Enter the dedicated auction room and follow the active lot.</p><a href="/live-auctions">Open live →</a></article>
+              <article className="navigationRouteCard"><b>Поддръжка</b><p>Open the help center for transport, vehicle history and platform use.</p><a href="/support">Open help →</a></article>
             </div>
           </section>
         </div>
