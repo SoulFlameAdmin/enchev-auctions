@@ -143,7 +143,7 @@ export default function ProfessionalLiveAuctionUx(props:Props){
       <div data-phase-task="36.07"><span>МРЕЖА</span><b>{networkQuality}</b><small>възраст на синхронизацията {props.connectionAgeSeconds} сек.</small></div>
       <div data-phase-task="36.09"><span>ПОВТОРНО СВЪРЗВАНЕ</span><b>{props.connectionState==="reconnecting"?"ПОВТОРЕН ОПИТ":props.connectionState==="stale"?"НУЖНО Е СИНХРОНИЗИРАНЕ":"ГОТОВО"}</b><progress max={5} value={Math.min(5,props.connectionAgeSeconds)} /></div>
       <div data-phase-task="36.10"><span>ИЗТОЧНИК</span><b>СЪРВЪРНО СЪСТОЯНИЕ</b><small>само визуализация в клиента</small></div>
-      <div data-phase-task="36.16"><span>АКТИВЕН РАЗДЕЛ</span><b>{readOnlyTab?"САМО ПРЕГЛЕД":"АКТИВЕН НАДДАВАЧ"}</b><small>{tabId?tabId.slice(0,8):"initializing"}</small></div>
+      <div data-phase-task="36.16"><span>АКТИВЕН РАЗДЕЛ</span><b>{readOnlyTab?"САМО ПРЕГЛЕД":"АКТИВЕН НАДДАВАЧ"}</b><small>{tabId?tabId.slice(0,8):"стартира"}</small></div>
     </div>
 
     <div className="proLiveNowNext" data-phase-task="36.03">
