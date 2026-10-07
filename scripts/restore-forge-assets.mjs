@@ -65,6 +65,24 @@ a[data-enchev-cta-label]{
   text-align:center!important;
   line-height:1.2!important;
 }
+/* Bulgarian Ordinary section */
+.sc-dd0c2790-3,
+.sc-dd0c2790-3 > div,
+.sc-dd0c2790-3 em,
+.sc-dd0c2790-3 h2{
+  max-width:92vw!important;
+  box-sizing:border-box!important;
+  white-space:normal!important;
+  overflow-wrap:normal!important;
+  word-break:normal!important;
+  text-wrap:balance!important;
+}
+.sc-dd0c2790-3 em,
+.sc-dd0c2790-3 h2{
+  font-size:clamp(4.5rem,8.8vw,10rem)!important;
+  line-height:.88!important;
+  letter-spacing:-.055em!important;
+}
 @media (max-width:767px){
   [data-sanity*="path=introductionHeading"]{
     width:min(88vw,560px)!important;
@@ -118,6 +136,24 @@ a[data-enchev-cta-label]{
   [data-sanity*="path=heading"]{
     white-space:normal!important;
   }
+  .sc-dd0c2790-3,
+  .sc-dd0c2790-3 > div{
+    width:90vw!important;
+    max-width:90vw!important;
+    margin-inline:auto!important;
+    text-align:center!important;
+  }
+  .sc-dd0c2790-3 em,
+  .sc-dd0c2790-3 h2{
+    display:block!important;
+    width:90vw!important;
+    max-width:90vw!important;
+    margin-inline:auto!important;
+    font-size:clamp(3rem,12.5vw,4.9rem)!important;
+    line-height:.9!important;
+    letter-spacing:-.05em!important;
+    text-align:center!important;
+  }
   a[data-enchev-cta-label]{
     width:min(88vw,430px)!important;
     max-width:88vw!important;
@@ -158,7 +194,11 @@ const ctaMapScript = String.raw`(() => {
     { heading: "Търгове", label: "НАДДАВАЙ", href: "/live-auctions" },
     { heading: "История", label: "ПРОВЕРИ АВТОМОБИЛА", href: "/vehicle-history" },
     { heading: "Транспорт", label: "ДОКУМЕНТИ И ТРАНСПОРТ", href: "/transport" },
-    { heading: "Поддръжка", label: "ПОДДРЪЖКА", href: "/support" }
+    { heading: "Поддръжка", label: "ПОДДРЪЖКА", href: "/support" },
+    { heading: "A vehicle should say something before it moves. Every line, material, and finish is considered.", label: "РАЗГЛЕДАЙ АВТОМОБИЛИТЕ", href: "/inventory" },
+    { heading: "Автомобилът трябва да казва нещо още преди да потегли. Всяка линия, материал и завършек са обмислени.", label: "РАЗГЛЕДАЙ АВТОМОБИЛИТЕ", href: "/inventory" },
+    { heading: "Refuse Ordinary", label: "РАЗГЛЕДАЙ АВТОМОБИЛИТЕ", href: "/inventory" },
+    { heading: "Избери различното", label: "РАЗГЛЕДАЙ АВТОМОБИЛИТЕ", href: "/inventory" }
   ];
 
   function nearestRule(element) {
@@ -240,7 +280,12 @@ const ctaMapScript = String.raw`(() => {
     ["privacy","Поверителност"],
     ["terms","Условия"],
     ["sitemap","Карта на сайта"],
-    ["vehicle auctions with inventory, live bidding, vehicle history and transport in one place.","Автомобили, търгове на живо, история на МПС и транспорт на едно място."]
+    ["vehicle auctions with inventory, live bidding, vehicle history and transport in one place.","Автомобили, търгове на живо, история на МПС и транспорт на едно място."],
+    ["start your project","Разгледай автомобилите"],
+    ["contact us","Поддръжка"],
+    ["explore inventory","Разгледай автомобилите"],
+    ["browse auctions","Търгове на живо"],
+    ["back to top","Нагоре"]
   ]);
 
   const forcedCopy = [
@@ -279,7 +324,18 @@ const ctaMapScript = String.raw`(() => {
     }
   }
 
+  function forceOrdinarySection(){
+    document.querySelectorAll(".sc-dd0c2790-3 em").forEach((element)=>setCopy(element,"Обикновеното"));
+    document.querySelectorAll(".sc-dd0c2790-3 .sr-only").forEach((element)=>{
+      if(normalize(element.textContent)==="ordinary") setCopy(element,"Обикновеното");
+    });
+    document.querySelectorAll(".sc-dd0c2790-3 h2").forEach((element)=>{
+      if(normalize(element.textContent)==="ends here") setCopy(element,"Свършва тук");
+    });
+  }
+
   function forceBulgarianHomeCopy(){
+    forceOrdinarySection();
     for(const [selector,value] of forcedCopy){
       document.querySelectorAll(selector).forEach((element)=>setCopy(element,value));
     }
@@ -516,9 +572,18 @@ const staticBulgarianReplacements = [
   [">Privacy<",">Поверителност<"],
   [">Terms<",">Условия<"],
   [">Sitemap<",">Карта на сайта<"],
-  ["Vehicle auctions with inventory, live bidding, vehicle history and transport in one place.","Автомобили, търгове на живо, история на МПС и транспорт на едно място."]
+  ["Vehicle auctions with inventory, live bidding, vehicle history and transport in one place.","Автомобили, търгове на живо, история на МПС и транспорт на едно място."],
+  ["A vehicle should say something before it moves. Every line, material, and finish is considered.","Автомобилът трябва да казва нещо още преди да потегли. Всяка линия, материал и завършек са обмислени."],
+  ["From aero styling to carbon details and exterior refinement,  bodywork is designed to change the vehicle’s presence without compromising its original character.","Открий автомобила, който отговаря на твоите изисквания, с ясна информация за лота и състоянието му."],
+  [">Ordinary<",">Обикновеното<"],
+  [">Ends Here<",">Свършва тук<"],
+  ["aria-label=\"Start Your Project\"","aria-label=\"Разгледай автомобилите\""],
+  ["aria-label=\"Contact Us\"","aria-label=\"Поддръжка\""],
+  ["aria-label=\"Explore Inventory\"","aria-label=\"Разгледай автомобилите\""],
+  ["aria-label=\"Browse Auctions\"","aria-label=\"Търгове на живо\""]
 ];
 for(const [from,to] of staticBulgarianReplacements) forgeIndex=forgeIndex.replaceAll(from,to);
+forgeIndex=forgeIndex.replace(/<title>[\s\S]*?<\/title>/i,'<title>Автомобилни търгове | ENCHEV Аукциони</title>');
 if(!forgeIndex.includes('/forge/enchev-bg-responsive.css')){
   forgeIndex=forgeIndex.replace('</head>','<link rel="stylesheet" href="/forge/enchev-bg-responsive.css"></head>');
 }
