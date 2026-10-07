@@ -22,14 +22,14 @@ import EnchevAppShell from "./components/EnchevAppShell";
 
 export const metadata: Metadata = {
   title: "ENCHEV Auctions",
-  description: "ENCHEV — международна платформа за автомобилни търгове, LIVE наддаване, история и транспорт.",
+  description: "ENCHEV — international vehicle auctions, live bidding, vehicle history and transport.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="bg">
+    <html lang="en">
       <body>
-        <a className="eaSkipLink" href="#main-content">Към основното съдържание</a>
+        <a className="eaSkipLink" href="#main-content">Skip to main content</a>
         <VerifiedPlanEvidenceSync />
         <TestPassGreenGuard />
         <GapAppendOnlyGuard />
