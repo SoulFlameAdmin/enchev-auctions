@@ -12,14 +12,14 @@ import "./inventory-d14.css";
 const LOT_SECONDS = 10;
 const PAGE_SIZE = 4;
 const cars = [
-  {lot:"EA-10482",vin:"WBS3R9C50JAK10482",title:"2018 BMW M4 F82",year:2018,model:"M4 F82",brand:"BMW",location:"София, България",region:"Европа",damage:"Леки вдлъбнатини",titleStatus:"Чист",mileage:"82 410 km",price:12750,buyNow:18900,badge:"ПАЛИ И СЕ ДВИЖИ",image:"https://images.unsplash.com/photo-1658558195433-1af533e3309c?auto=format&fit=crop&w=1200&q=82"},
-  {lot:"EA-10511",vin:"WDC0G4KB1MF10511",title:"2021 Mercedes-Benz GLC",year:2021,model:"GLC",brand:"Mercedes",location:"Мюнхен, Германия",region:"Европа",damage:"Повреда отпред",titleStatus:"За възстановяване",mileage:"64 900 km",price:18400,buyNow:24900,badge:"КУПИ СЕГА",image:"https://images.unsplash.com/photo-1612280782903-d34dcdc10107?auto=format&fit=crop&w=1200&q=82"},
-  {lot:"EA-10539",vin:"WUAZZZ8Y2NA10539",title:"2022 Audi RS3 Sportback",year:2022,model:"RS3 Sportback",brand:"Audi",location:"Крю, Великобритания",region:"Европа",damage:"Леки драскотини",titleStatus:"Чист",mileage:"41 280 km",price:21900,buyNow:0,badge:"ГОРЕЩ ЛОТ",image:"https://images.unsplash.com/photo-1655283733642-f1d813b40616?auto=format&fit=crop&w=1200&q=82"},
-  {lot:"EA-10603",vin:"WVWZZZCD6TW10603",title:"2026 Volkswagen Golf GTI",year:2026,model:"Golf GTI",brand:"Volkswagen",location:"Лондон, Великобритания",region:"Европа",damage:"Без заявени щети",titleStatus:"Чист",mileage:"9 870 km",price:16250,buyNow:20500,badge:"ЧИСТ ТАЛОН",image:"https://images.unsplash.com/photo-1767949374162-5cbb31071b8f?auto=format&fit=crop&w=1200&q=82"},
-  {lot:"EA-10627",vin:"5UXCR6C02L910627",title:"2020 BMW X5 xDrive40i",year:2020,model:"X5 xDrive40i",brand:"BMW",location:"Тексас, САЩ",region:"САЩ",damage:"Повреда отзад",titleStatus:"За възстановяване",mileage:"96 210 km",price:15100,buyNow:22400,badge:"ПАЛИ И СЕ ДВИЖИ",image:"https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=82"},
-  {lot:"EA-10644",vin:"WDDWJ6EB5KF10644",title:"2019 Mercedes-AMG C43",year:2019,model:"AMG C43",brand:"Mercedes",location:"Флорида, САЩ",region:"САЩ",damage:"Странична повреда",titleStatus:"За възстановяване",mileage:"72 030 km",price:13800,buyNow:19800,badge:"ГОРЕЩ ЛОТ",image:"https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1200&q=82"},
-  {lot:"EA-10671",vin:"WA1LXAF75MD10671",title:"2021 Audi Q7 55 TFSI",year:2021,model:"Q7 55 TFSI",brand:"Audi",location:"Ню Джърси, САЩ",region:"САЩ",damage:"Нормално износване",titleStatus:"Чист",mileage:"58 440 km",price:19900,buyNow:26900,badge:"КУПИ СЕГА",image:"https://images.unsplash.com/photo-1606152421802-db97b9c7a11b?auto=format&fit=crop&w=1200&q=82"},
-  {lot:"EA-10702",vin:"WP1AB2A59PL10702",title:"2023 Porsche Macan S",year:2023,model:"Macan S",brand:"Porsche",location:"Калифорния, САЩ",region:"САЩ",damage:"Повреда отпред",titleStatus:"За възстановяване",mileage:"21 540 km",price:28750,buyNow:0,badge:"ПРЕМИУМ",image:"https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1200&q=82"},
+  {lot:"EA-10482",vin:"WBS3R9C50JAK10482",title:"2018 BMW M4 F82",year:2018,model:"M4 F82",brand:"BMW",location:"София, България",region:"Европа",damage:"Леки вдлъбнатини",titleStatus:"Чист",mileage:"82 410 км",price:12750,buyNow:18900,badge:"ПАЛИ И СЕ ДВИЖИ",image:"https://images.unsplash.com/photo-1658558195433-1af533e3309c?auto=format&fit=crop&w=1200&q=82"},
+  {lot:"EA-10511",vin:"WDC0G4KB1MF10511",title:"2021 Mercedes-Benz GLC",year:2021,model:"GLC",brand:"Mercedes",location:"Мюнхен, Германия",region:"Европа",damage:"Повреда отпред",titleStatus:"За възстановяване",mileage:"64 900 км",price:18400,buyNow:24900,badge:"КУПИ СЕГА",image:"https://images.unsplash.com/photo-1612280782903-d34dcdc10107?auto=format&fit=crop&w=1200&q=82"},
+  {lot:"EA-10539",vin:"WUAZZZ8Y2NA10539",title:"2022 Audi RS3 Sportback",year:2022,model:"RS3 Sportback",brand:"Audi",location:"Крю, Великобритания",region:"Европа",damage:"Леки драскотини",titleStatus:"Чист",mileage:"41 280 км",price:21900,buyNow:0,badge:"ГОРЕЩ ЛОТ",image:"https://images.unsplash.com/photo-1655283733642-f1d813b40616?auto=format&fit=crop&w=1200&q=82"},
+  {lot:"EA-10603",vin:"WVWZZZCD6TW10603",title:"2026 Volkswagen Golf GTI",year:2026,model:"Golf GTI",brand:"Volkswagen",location:"Лондон, Великобритания",region:"Европа",damage:"Без заявени щети",titleStatus:"Чист",mileage:"9 870 км",price:16250,buyNow:20500,badge:"ЧИСТ ТАЛОН",image:"https://images.unsplash.com/photo-1767949374162-5cbb31071b8f?auto=format&fit=crop&w=1200&q=82"},
+  {lot:"EA-10627",vin:"5UXCR6C02L910627",title:"2020 BMW X5 xDrive40i",year:2020,model:"X5 xDrive40i",brand:"BMW",location:"Тексас, САЩ",region:"САЩ",damage:"Повреда отзад",titleStatus:"За възстановяване",mileage:"96 210 км",price:15100,buyNow:22400,badge:"ПАЛИ И СЕ ДВИЖИ",image:"https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=82"},
+  {lot:"EA-10644",vin:"WDDWJ6EB5KF10644",title:"2019 Mercedes-AMG C43",year:2019,model:"AMG C43",brand:"Mercedes",location:"Флорида, САЩ",region:"САЩ",damage:"Странична повреда",titleStatus:"За възстановяване",mileage:"72 030 км",price:13800,buyNow:19800,badge:"ГОРЕЩ ЛОТ",image:"https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1200&q=82"},
+  {lot:"EA-10671",vin:"WA1LXAF75MD10671",title:"2021 Audi Q7 55 TFSI",year:2021,model:"Q7 55 TFSI",brand:"Audi",location:"Ню Джърси, САЩ",region:"САЩ",damage:"Нормално износване",titleStatus:"Чист",mileage:"58 440 км",price:19900,buyNow:26900,badge:"КУПИ СЕГА",image:"https://images.unsplash.com/photo-1606152421802-db97b9c7a11b?auto=format&fit=crop&w=1200&q=82"},
+  {lot:"EA-10702",vin:"WP1AB2A59PL10702",title:"2023 Porsche Macan S",year:2023,model:"Macan S",brand:"Porsche",location:"Калифорния, САЩ",region:"САЩ",damage:"Повреда отпред",titleStatus:"За възстановяване",mileage:"21 540 км",price:28750,buyNow:0,badge:"ПРЕМИУМ",image:"https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1200&q=82"},
 ];
 
 const brands=["BMW","Mercedes","Audi","Volkswagen","Porsche"];
@@ -220,11 +220,11 @@ export default function InventoryPage(){
   if(region!=="Всички")activeFilters.push({key:"region",label:`Регион: ${region}`,clear:()=>{setRegion("Всички");setLocation("Всички");setCurrentPage(1);}});
   if(location!=="Всички")activeFilters.push({key:"location",label:`Локация: ${location}`,clear:()=>{setLocation("Всички");setCurrentPage(1);}});
   if(damage!=="Всички")activeFilters.push({key:"damage",label:`Повреда: ${damage}`,clear:()=>{setDamage("Всички");setCurrentPage(1);}});
-  if(titleStatus!=="Всички")activeFilters.push({key:"title",label:`Талон: ${titleStatus==="Clean"?"Clean title":"Salvage title"}`,clear:()=>{setTitleStatus("Всички");setCurrentPage(1);}});
-  if(auctionStatus!=="Всички")activeFilters.push({key:"status",label:`Статус: ${auctionStatus}`,clear:()=>{setAuctionStatus("Всички");setCurrentPage(1);}});
+  if(titleStatus!=="Всички")activeFilters.push({key:"title",label:`Талон: ${titleStatus}`,clear:()=>{setTitleStatus("Всички");setCurrentPage(1);}});
+  if(auctionStatus!=="Всички")activeFilters.push({key:"status",label:`Статус: ${auctionStatus==="LIVE"?"НА ЖИВО":auctionStatus==="UPCOMING"?"ПРЕДСТОЯЩ":auctionStatus==="SOLD"?"ПРОДАДЕН":"ОТВОРЕН"}`,clear:()=>{setAuctionStatus("Всички");setCurrentPage(1);}});
   if(yearFrom!==2010||yearTo!==2026)activeFilters.push({key:"year",label:`Година: ${Math.min(yearFrom,yearTo)}–${Math.max(yearFrom,yearTo)}`,clear:()=>{setYearFrom(2010);setYearTo(2026);setCurrentPage(1);}});
-  if(buyNow)activeFilters.push({key:"buyNow",label:"Buy Now",clear:()=>{setBuyNow(false);setCurrentPage(1);}});
-  if(liveOnly)activeFilters.push({key:"live",label:"Само LIVE",clear:()=>{setLiveOnly(false);setCurrentPage(1);}});
+  if(buyNow)activeFilters.push({key:"buyNow",label:"Купи сега",clear:()=>{setBuyNow(false);setCurrentPage(1);}});
+  if(liveOnly)activeFilters.push({key:"live",label:"Само на живо",clear:()=>{setLiveOnly(false);setCurrentPage(1);}});
 
   const formatTime=(seconds:number)=>`00:${String(seconds).padStart(2,"0")}`;
   const liveCar=auctionCars.find(car=>car.status==="live");
@@ -234,14 +234,14 @@ export default function InventoryPage(){
 
     <header className="inventoryHeader">
       <a href="/" className="inventoryLogo"><strong>ENCHEV</strong><span>АУКЦИОНИ</span></a>
-      <div className="inventorySearch"><span>⌕</span><input value={query} onChange={e=>{setQuery(e.target.value);setCurrentPage(1);}} placeholder="Търси марка, модел, VIN, LOT, повреда или локация..." aria-label="Търсене по марка, модел, VIN или LOT"/><button>Търси</button></div>
+      <div className="inventorySearch"><span>⌕</span><input value={query} onChange={e=>{setQuery(e.target.value);setCurrentPage(1);}} placeholder="Търси марка, модел, VIN, лот, повреда или локация..." aria-label="Търсене по марка, модел, VIN или лот"/><button>Търси</button></div>
       <div className="inventoryAccount"><a href={accountNavigation.profile}>Вход / Профил</a><a className="registerBtn" href={accountNavigation.register}>Регистрация</a></div>
     </header>
 
     <nav className="inventoryNav" aria-label="Основна навигация"><a href="/">Начало</a>{primaryNavigation.map(item=><a key={item.key} className={`${item.key==="inventory"?"active":""} ${item.key==="live"?"navLive":""}`.trim()} href={item.href}>{item.label}</a>)}</nav>
 
     <section className="inv2Hero">
-      <div className="inventoryIntro"><div><span>ПАЗАР ENCHEV</span><h1>Автомобили от международни търгове</h1><p>Филтрирай, следи и наддавай. LIVE лотът има 10-секунден брояч; всяка нова оферта връща времето на 10 секунди.</p></div></div>
+      <div className="inventoryIntro"><div><span>ПАЗАР ENCHEV</span><h1>Автомобили от международни търгове</h1><p>Филтрирай, следи и наддавай. Лотът на живо има 10-секунден брояч; всяка нова оферта връща времето на 10 секунди.</p></div></div>
       <div className="inv2HeroStats"><div className="inv2HeroStat"><b>{cars.length}</b><span>активни лота</span></div><div className="inv2HeroStat"><b>{cars.filter(c=>c.buyNow>0).length}</b><span>купи сега</span></div><div className="inv2HeroStat"><b>{formatTime(remaining)}</b><span>таймер на живо</span></div></div>
     </section>
 
@@ -260,7 +260,7 @@ export default function InventoryPage(){
     <div className="inventoryShell">
       <aside id="inventory-filter-panel" className={`inventoryFilters ${mobileFiltersOpen?"isMobileOpen":""}`} aria-label="Филтри за инвентара">
         <div className="filterTitle"><b>Филтри за търсене</b><button onClick={resetFilters}>Изчисти{activeFilters.length>0?` (${activeFilters.length})`:""}</button></div>
-        <label className="filterSearchLabel">Търси в резултатите<input value={query} onChange={e=>{setQuery(e.target.value);setCurrentPage(1);}} placeholder="BMW, EA-10482, WBS3R9..."/></label>
+        <label className="filterSearchLabel">Търси в резултатите<input value={query} onChange={e=>{setQuery(e.target.value);setCurrentPage(1);}} placeholder="Напр. BMW, EA-10482, WBS3R9..."/></label>
         <div className="filterBlock"><div className="inv2FilterGroupTitle"><b>Бързи филтри</b><small>НА ЖИВО / КУПИ СЕГА</small></div><label><input type="checkbox" checked={liveOnly} onChange={e=>{setLiveOnly(e.target.checked);setCurrentPage(1);}}/> Само на живо</label><label><input type="checkbox" checked={buyNow} onChange={e=>{setBuyNow(e.target.checked);setCurrentPage(1);}}/> Купи сега</label></div>
         <div className="filterBlock filterBlock--select"><b>Марка</b><select className="inv2Select" value={brand} onChange={e=>{setBrand(e.target.value);setCurrentPage(1);}} aria-label="Филтър по марка">{["Всички",...brands].map(x=><option key={x} value={x}>{x}</option>)}</select></div>
         <div className="filterBlock filterBlock--select"><b>Модел</b><select className="inv2Select" value={model} onChange={e=>{setModel(e.target.value);setCurrentPage(1);}} aria-label="Филтър по модел">{models.map(x=><option key={x} value={x}>{x}</option>)}</select></div>
