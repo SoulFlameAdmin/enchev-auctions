@@ -23,11 +23,11 @@ const TAB_LEASE_KEY="enchev-live-auction-active-tab-v1";
 const TAB_LEASE_TTL_MS=5000;
 
 function feedbackReason(feedback:BidFeedback|null){
-  if(feedback==="accepted")return "Демонстрационното състояние на сървъра прие офертата.";
-  if(feedback==="leading")return "Приета — този раздел в момента води.";
-  if(feedback==="outbid")return "Вече има по-висока потвърдена демонстрационна оферта.";
-  if(feedback==="rejected")return "Отхвърлена от демонстрационното състояние; цената не е променена.";
-  return "Все още няма резултат от оферта.";
+  if(feedback==="accepted")return "Authoritative demo state accepted the bid.";
+  if(feedback==="leading")return "Accepted — this tab is currently leading.";
+  if(feedback==="outbid")return "A higher authoritative demo bid is now active.";
+  if(feedback==="rejected")return "Rejected by authoritative demo state; the price was not changed.";
+  return "No bid result yet.";
 }
 
 export default function ProfessionalLiveAuctionUx(props:Props){
@@ -48,10 +48,10 @@ export default function ProfessionalLiveAuctionUx(props:Props){
   })),[props.lots,props.active]);
 
   const networkQuality=props.connectionState!=="connected"
-    ? "ИЗВЪН ЛИНИЯ / ВЛОШЕНА ВРЪЗКА"
+    ? "OFFLINE / DEGRADED"
     : props.lastRttMs===null
-      ? "СИНХРОНИЗИРАНЕ"
-      : props.lastRttMs<=250?"ОТЛИЧНА":props.lastRttMs<=750?"ДОБРА":"ВЛОШЕНА";
+      ? "SYNCING"
+      : props.lastRttMs<=250?"EXCELLENT":props.lastRttMs<=750?"GOOD":"DEGRADED";
 
   useEffect(()=>{
     const previous=previousRemainingRef.current;
@@ -122,68 +122,68 @@ export default function ProfessionalLiveAuctionUx(props:Props){
   const connectionBanner=props.connectionState==="connected"
     ? null
     : props.connectionState==="stale"
-      ? "ОСТАРЯЛО СЪСТОЯНИЕ — нужно е повторно синхронизиране преди наддаване."
+      ? "STALE STATE — authoritative resync required before bidding."
       : props.connectionState==="reconnecting"
-        ? "ВРЪЗКАТА Е ПРЕКЪСНАТА — автоматично възстановяване; наддаването е временно спряно."
-        : "Синхронизиране с потвърденото състояние на сървъра.";
+        ? "CONNECTION LOST — automatic reconnect in progress; bidding paused."
+        : "Synchronizing authoritative server state.";
 
-  return <section className={`proLiveUx ${focus?"is-focus":""}`} aria-label="Професионални контроли за търг на живо" data-phase="36">
+  return <section className={`proLiveUx ${focus?"is-focus":""}`} aria-label="Professional live-auction controls" data-phase="36">
     <div className="proLiveTop" data-phase-task="36.01">
-      <div><span>ПРОФЕСИОНАЛЕН РЕЖИМ</span><b>{focus?"ФОКУСЪТ Е АКТИВЕН":"СТАНДАРТЕН ИЗГЛЕД"}</b></div>
-      <button type="button" onClick={()=>setFocus(x=>!x)} aria-pressed={focus}>{focus?"Излез от фокус":"Влез във фокус"}</button>
+      <div><span>PRO BIDDER MODE</span><b>{focus?"FOCUS ACTIVE":"STANDARD VIEW"}</b></div>
+      <button type="button" onClick={()=>setFocus(x=>!x)} aria-pressed={focus}>{focus?"Exit focus":"Enter focus"}</button>
     </div>
 
     {connectionBanner&&<div className={`proLiveBanner is-${props.connectionState}`} role="alert" data-phase-task="36.08">
       <b>{connectionBanner}</b>
-      <button type="button" onClick={()=>void props.onResync()} data-phase-task="36.11">Повторна синхронизация</button>
+      <button type="button" onClick={()=>void props.onResync()} data-phase-task="36.11">Hard resync</button>
     </div>}
 
     <div className="proLiveStatusGrid">
-      <div data-phase-task="36.06"><span>СЪРВЪРНО ВРЕМЕ</span><b>{props.connectionState==="connected"?"СИНХРОНИЗИРАНО":"ПРОВЕРКА"}</b><small>{props.lastRttMs===null?"Измерване на закъснението":`Закъснение ${props.lastRttMs} мс`}</small></div>
-      <div data-phase-task="36.07"><span>МРЕЖА</span><b>{networkQuality}</b><small>възраст на синхронизацията {props.connectionAgeSeconds} сек.</small></div>
-      <div data-phase-task="36.09"><span>ПОВТОРНО СВЪРЗВАНЕ</span><b>{props.connectionState==="reconnecting"?"ПОВТОРЕН ОПИТ":props.connectionState==="stale"?"НУЖНО Е СИНХРОНИЗИРАНЕ":"ГОТОВО"}</b><progress max={5} value={Math.min(5,props.connectionAgeSeconds)} /></div>
-      <div data-phase-task="36.10"><span>ИЗТОЧНИК</span><b>СЪРВЪРНО СЪСТОЯНИЕ</b><small>само визуализация в клиента</small></div>
-      <div data-phase-task="36.16"><span>АКТИВЕН РАЗДЕЛ</span><b>{readOnlyTab?"САМО ПРЕГЛЕД":"АКТИВЕН НАДДАВАЧ"}</b><small>{tabId?tabId.slice(0,8):"стартира"}</small></div>
+      <div data-phase-task="36.06"><span>SERVER TIME</span><b>{props.connectionState==="connected"?"SYNCED":"VERIFYING"}</b><small>{props.lastRttMs===null?"RTT pending":`RTT ${props.lastRttMs} ms`}</small></div>
+      <div data-phase-task="36.07"><span>NETWORK</span><b>{networkQuality}</b><small>sync age {props.connectionAgeSeconds}s</small></div>
+      <div data-phase-task="36.09"><span>RECONNECT</span><b>{props.connectionState==="reconnecting"?"RETRYING":props.connectionState==="stale"?"RESYNC REQUIRED":"READY"}</b><progress max={5} value={Math.min(5,props.connectionAgeSeconds)} /></div>
+      <div data-phase-task="36.10"><span>AUTHORITY</span><b>SERVER SNAPSHOT</b><small>client display only</small></div>
+      <div data-phase-task="36.16"><span>TAB OWNERSHIP</span><b>{readOnlyTab?"READ ONLY":"ACTIVE BIDDER"}</b><small>{tabId?tabId.slice(0,8):"initializing"}</small></div>
     </div>
 
     <div className="proLiveNowNext" data-phase-task="36.03">
-      <article><span>ТЕКУЩ ЛОТ</span><b>{current.lot}</b><strong>{current.title}</strong></article>
-      <article><span>СЛЕДВАЩ ЛОТ</span><b>{next.lot}</b><strong>{next.title}</strong></article>
+      <article><span>CURRENT LOT</span><b>{current.lot}</b><strong>{current.title}</strong></article>
+      <article><span>NEXT LOT</span><b>{next.lot}</b><strong>{next.title}</strong></article>
     </div>
 
     <div className="proLiveDashboard" data-phase-task="36.02">
       {dashboard.map((lot,index)=><article key={lot.lot} className={`is-${lot.relation}`}>
-        <span>{lot.relation==="current"?"ТЕКУЩ":lot.relation==="passed"?"МИНАЛ":"ПРЕДСТОЯЩ"}</span>
+        <span>{lot.relation.toUpperCase()}</span>
         <b>{lot.lot}</b>
         <strong>{lot.title}</strong>
-        <small data-phase-task="36.04">ПОЗИЦИЯ {index+1}</small>
-        <small data-phase-task="36.05">{lot.relation==="upcoming"?`${lot.lotsAway} ЛОТА ДО НЕГО`:lot.relation==="current"?"СЕГА":"МИНАЛ"}</small>
+        <small data-phase-task="36.04">LANE {index+1}</small>
+        <small data-phase-task="36.05">{lot.relation==="upcoming"?`${lot.lotsAway} LOTS AWAY`:lot.relation==="current"?"NOW":"PASSED"}</small>
         <em>€{(props.prices[lot.lot]??lot.price).toLocaleString("bg-BG")}</em>
       </article>)}
     </div>
 
     <div className="proLiveBidDock" data-phase-task="36.12">
       <div>
-        <span>{armed?"ПОТВЪРДИ ОФЕРТАТА":"СЛЕДВАЩА ОФЕРТА"}</span>
+        <span>{armed?"CONFIRM BID":"NEXT BID"}</span>
         <b>€{((props.prices[current.lot]??current.price)+100).toLocaleString("bg-BG")}</b>
-        <small>{readOnlyTab?"Друг раздел управлява наддаването":props.connectionState!=="connected"?"Изчакване на стабилно състояние от сървъра":armed?"Натисни Enter или потвърди отново":"B / Интервал подготвя · Enter потвърждава"}</small>
+        <small>{readOnlyTab?"Another tab owns bidding":props.connectionState!=="connected"?"Waiting for safe server state":armed?"Press Enter or confirm again":"B / Space arms · Enter confirms"}</small>
       </div>
       <button type="button" disabled={!safeToBid} onClick={()=>void confirmBid()}>
-        {submitting?"Изпращане…":armed?"Потвърди офертата":"Подготви оферта"}
+        {submitting?"Submitting…":armed?"Confirm bid":"Arm bid"}
       </button>
     </div>
 
     <div className={`proLiveResult is-${props.bidFeedback??"idle"}`} role="status" aria-live="polite" data-phase-task="36.13">
-      <b>{props.bidFeedback==="accepted"?"ПРИЕТА":props.bidFeedback==="leading"?"ВОДИШ":props.bidFeedback==="outbid"?"НАДДАДЕНА":props.bidFeedback==="rejected"?"ОТХВЪРЛЕНА":"ГОТОВО"}</b><span>{feedbackReason(props.bidFeedback)}</span>
+      <b>{props.bidFeedback?.toUpperCase()??"READY"}</b><span>{feedbackReason(props.bidFeedback)}</span>
     </div>
-    {props.bidFeedback==="outbid"&&<div className="proLiveOutbid" role="alert" data-phase-task="36.14">НАДДАДЕНА ОФЕРТА — прегледай новата потвърдена цена преди следващо наддаване.</div>}
-    {lateExtension&&<div className="proLiveExtension" role="status" aria-live="assertive" data-phase-task="36.15">УДЪЛЖАВАНЕ ПРИ КЪСНА ОФЕРТА — таймерът е удължен от сървъра.</div>}
+    {props.bidFeedback==="outbid"&&<div className="proLiveOutbid" role="alert" data-phase-task="36.14">OUTBID — review the new authoritative price before bidding again.</div>}
+    {lateExtension&&<div className="proLiveExtension" role="status" aria-live="assertive" data-phase-task="36.15">LATE BID EXTENSION — timer extended by server state.</div>}
 
-    <div className="proLiveKeyboard" data-phase-task="36.17">Клавиатура: <kbd>B</kbd>/<kbd>Интервал</kbd> подготвя · <kbd>Enter</kbd> потвърждава · <kbd>Esc</kbd> отказва</div>
-    <div className="proLiveMobileMarker" data-phase-task="36.18">Адаптивният изглед за наддаване е включен</div>
+    <div className="proLiveKeyboard" data-phase-task="36.17">Keyboard: <kbd>B</kbd>/<kbd>Space</kbd> arm · <kbd>Enter</kbd> confirm · <kbd>Esc</kbd> cancel</div>
+    <div className="proLiveMobileMarker" data-phase-task="36.18">Responsive bidder layout enabled</div>
     <div className="srOnly" aria-live="polite" aria-atomic="true" data-phase-task="36.19">
-      {connectionBanner??`Свързано. Текущ лот ${current.lot}. Остават ${props.remaining} секунди. ${feedbackReason(props.bidFeedback)}`}
+      {connectionBanner??`Connected. Current lot ${current.lot}. ${props.remaining} seconds remaining. ${feedbackReason(props.bidFeedback)}`}
     </div>
-    <div className="srOnly" data-phase-task="36.20">Устройствата с един и същ профил трябва да се синхронизират към потвърденото състояние на сървъра.</div>
+    <div className="srOnly" data-phase-task="36.20">Same-account devices must converge to authoritative snapshot sequence.</div>
   </section>;
 }
