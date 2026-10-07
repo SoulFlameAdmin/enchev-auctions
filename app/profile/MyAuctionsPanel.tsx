@@ -28,7 +28,7 @@ const items: AuctionItem[] = [
   {
     lot: "EA-10539",
     title: "2022 Audi RS3 Sportback",
-    location: "Крю, Великобритания",
+    location: "Crewe, UK",
     state: "leading",
     stateLabel: "ВОДИШ",
     bid: 21900,
@@ -38,7 +38,7 @@ const items: AuctionItem[] = [
   {
     lot: "EA-10511",
     title: "2021 Mercedes-Benz GLC",
-    location: "Мюнхен, Германия",
+    location: "Munich, DE",
     state: "bidding",
     stateLabel: "НАДДАВАШ",
     bid: 18500,
@@ -48,7 +48,7 @@ const items: AuctionItem[] = [
   {
     lot: "EA-10627",
     title: "2020 BMW X5 xDrive40i",
-    location: "Тексас, САЩ",
+    location: "Texas, USA",
     state: "watching",
     stateLabel: "СЛЕДИШ",
     bid: 15100,
@@ -58,7 +58,7 @@ const items: AuctionItem[] = [
   {
     lot: "EA-10488",
     title: "2019 Porsche Macan S",
-    location: "Ротердам, Нидерландия",
+    location: "Rotterdam, NL",
     state: "ended",
     stateLabel: "ПРИКЛЮЧИЛ",
     bid: 24700,
@@ -74,11 +74,11 @@ export default function MyAuctionsPanel(){
   return <section id="my-auctions" className="myAuctions" data-design-task="D30" aria-labelledby="my-auctions-heading">
     <div className="myAuctionsHead">
       <div>
-        <span className="myAuctionsKicker">МОИТЕ ТЪРГОВЕ</span>
+        <span className="myAuctionsKicker">MY AUCTIONS</span>
         <h2 id="my-auctions-heading">Моите търгове</h2>
         <p>Единен изглед за лотовете, които следиш, за които наддаваш, водиш или вече са приключили.</p>
       </div>
-      <a href="/live-auctions" className="myAuctionsLiveLink">Отвори залата на живо →</a>
+      <a href="/live-auctions" className="myAuctionsLiveLink">Отвори LIVE залата →</a>
     </div>
 
     <div className="myAuctionsTabs" role="tablist" aria-label="Филтър на моите търгове">
@@ -102,7 +102,7 @@ export default function MyAuctionsPanel(){
           <img src={item.image} alt={item.title}/>
         </a>
         <div className="myAuctionMain">
-          <span className="myAuctionLot">ЛОТ {item.lot}</span>
+          <span className="myAuctionLot">LOT {item.lot}</span>
           <h3><a href={`/lot/${item.lot}`}>{item.title}</a></h3>
           <p>{item.location}</p>
         </div>
