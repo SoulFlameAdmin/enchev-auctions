@@ -148,7 +148,17 @@ const ctaMapScript = String.raw`(() => {
     { heading: "Auctions", label: "НАДДАВАЙ", href: "/live-auctions" },
     { heading: "History", label: "ПРОВЕРИ АВТОМОБИЛА", href: "/vehicle-history" },
     { heading: "Transport", label: "ДОКУМЕНТИ И ТРАНСПОРТ", href: "/transport" },
-    { heading: "Support", label: "ПОДДРЪЖКА", href: "/support" }
+    { heading: "Support", label: "ПОДДРЪЖКА", href: "/support" },
+    { heading: "Твоят път към следващия автомобил", label: "НАДДАВАЙ", href: "/live-auctions" },
+    { heading: "Идентичност", label: "НАДДАВАЙ", href: "/live-auctions" },
+    { heading: "Поглед отвъд детайла", label: "ДОКУМЕНТИ И ТРАНСПОРТ", href: "/transport" },
+    { heading: "Цялостност", label: "КУПИ", href: "/inventory" },
+    { heading: "Откриване", label: "ПРОВЕРИ АВТОМОБИЛА", href: "/vehicle-history" },
+    { heading: "Проверка", label: "ЗА НАС", href: "/presentation" },
+    { heading: "Търгове", label: "НАДДАВАЙ", href: "/live-auctions" },
+    { heading: "История", label: "ПРОВЕРИ АВТОМОБИЛА", href: "/vehicle-history" },
+    { heading: "Транспорт", label: "ДОКУМЕНТИ И ТРАНСПОРТ", href: "/transport" },
+    { heading: "Поддръжка", label: "ПОДДРЪЖКА", href: "/support" }
   ];
 
   function nearestRule(element) {
@@ -470,7 +480,43 @@ const staticBulgarianReplacements = [
   ["A vehicle should say something before it moves. Every line, material, and finish is considered.","Автомобилът трябва да казва нещо още преди да потегли. Всяка линия, материал и завършек са обмислени."],
   ["Vehicle Inventory","Автомобили"],
   ["Live Auctions","Търгове на живо"],
-  ["Refuse Ordinary","Избери различното"]
+  ["Refuse Ordinary","Избери различното"],
+  ["Bespoke Vehicle Builds & Styling | ENCHEV Auctions","Автомобилни търгове | ENCHEV Аукциони"],
+  ["Skip to content","Към съдържанието"],
+  ["Navigate","Навигация"],
+  ["Close","Затвори"],
+  ["Every build begins with the person behind the wheel, shaped around their individual taste, lifestyle, presence and personal sense of identity on the road.","Всичко започва с човека зад волана — неговия вкус, начин на живот, присъствие и личен стил на пътя."],
+  ["Exterior, interior and performance are brought together through a considered, detail-led approach, creating one complete and fully resolved vision.","Екстериорът, интериорът и представянето се обединяват в цялостна, прецизно изградена визия."],
+  ["Every modification is chosen with precision, ensuring each detail adds purpose, balance and distinction to the final bespoke automotive build.","Всеки избор е направен прецизно, така че всеки детайл да добавя смисъл, баланс и характер."],
+  ["Our services are shaped with intent, from exterior styling and interior refinement to performance upgrades, detailing and bespoke finishes; each detail sharpens the vehicle’s character without overpowering it.","Услугите ни са изградени с ясна цел — от откриването и проверката на автомобил до търга, историята, транспорта и поддръжката."],
+  [">Service<",">Услуга<"],
+  [">Discovery<",">Откриване<"],
+  ["From aero styling to carbon details and exterior refinement, bodywork is designed to change the vehicle’s presence without compromising its original character.","Открий автомобила, който отговаря на твоите изисквания, с ясна информация за лота и състоянието му."],
+  [">Inspection<",">Проверка<"],
+  ["Material, stitching, trim and finish are selected to create an interior that feels personal, tactile and composed. We turn the cabin into a space of identity, comfort and control.","Провери автомобила преди покупка — данни, състояние, история и ключови детайли на едно място."],
+  [">Auctions<",">Търгове<"],
+  ["Bespoke wheel upgrades designed to enhance stance, proportion and road presence, with fitments selected to complement the vehicle’s character and performance.","Наддавай в реално време и следи текущата цена, оставащото време и резултата от търга."],
+  [">History<",">История<"],
+  ["History gives a vehicle its expression. From subtle tinting to signature illumination and refined visual details, we use light to sharpen character, presence and atmosphere.","Провери VIN, известни щети, пробег, регистрационен статус и налични аукционни записи."],
+  [">Transport<",">Транспорт<"],
+  ["Transport upgrades are chosen for tone, response and presence. Not noise for the sake of noise, but a sound profile that gives the vehicle more character and depth.","Организираме пътя на автомобила от площадката до България и до избрания от теб адрес."],
+  [">Support<",">Поддръжка<"],
+  ["Paint protective film solutions that preserve the finish of the vehicle while allowing for satin finishes, coloured films and full visual transformation.","Една ясна точка за помощ при автомобили, търгове, документи, транспорт и работа с платформата."],
+  ["Ordinary Ends Here","Обикновеното свършва тук"],
+  ["Complete expressions of taste, intent and individuality, shaped through detail, restraint and presence.","Подбрани автомобили, ясни данни и единен процес от избора до доставката."],
+  ["A collection of previous bespoke builds, shaped by craft, character and the people behind the wheel.","Разгледай наличните автомобили и намери следващия лот за теб."],
+  ["Builds available for purchase, refined with intent, engineered with purpose, and ready to make a statement.","Следи активните търгове и наддавай в реално време."],
+  ["Are you ready to","Готов ли си да"],
+  ["Back to Top","Нагоре"],
+  [">Home<",">Начало<"],
+  [">Builds<",">Автомобили<"],
+  [">Stock<",">Търгове<"],
+  [">Contact<",">Поддръжка<"],
+  [">Cookies<",">Бисквитки<"],
+  [">Privacy<",">Поверителност<"],
+  [">Terms<",">Условия<"],
+  [">Sitemap<",">Карта на сайта<"],
+  ["Vehicle auctions with inventory, live bidding, vehicle history and transport in one place.","Автомобили, търгове на живо, история на МПС и транспорт на едно място."]
 ];
 for(const [from,to] of staticBulgarianReplacements) forgeIndex=forgeIndex.replaceAll(from,to);
 if(!forgeIndex.includes('/forge/enchev-bg-responsive.css')){
