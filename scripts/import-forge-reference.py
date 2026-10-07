@@ -102,6 +102,90 @@ cta_map_script=r'''(() => {
     }
   }
 
+  const navItems = [
+    { label: "HOME", href: "/" },
+    { label: "BUY", href: "/inventory" },
+    { label: "LIVE AUCTIONS", href: "/live-auctions" },
+    { label: "CHECK VEHICLE", href: "/vehicle-history" },
+    { label: "DOCUMENTS & TRANSPORT", href: "/transport" },
+    { label: "ABOUT US", href: "/presentation" },
+    { label: "SUPPORT", href: "/support" }
+  ];
+
+  function setAnchor(anchor, item) {
+    anchor.setAttribute("href", item.href);
+    anchor.setAttribute("aria-label", item.label);
+    anchor.textContent = item.label;
+  }
+
+  function findLegacyNavContainer(anchor) {
+    let node = anchor.parentElement;
+    for (let depth = 0; node && node !== document.body && depth < 7; depth += 1, node = node.parentElement) {
+      const links = Array.from(node.querySelectorAll("a"));
+      const hrefs = new Set(links.map((link) => link.getAttribute("href")));
+      if (hrefs.has("/") && hrefs.has("/builds/") && hrefs.has("/stock/") && hrefs.has("/contact/")) return node;
+    }
+    return null;
+  }
+
+  function cloneNavUnit(templateAnchor, item) {
+    const unit = templateAnchor.closest("li") || templateAnchor;
+    const clone = unit.cloneNode(true);
+    const anchor = clone.tagName === "A" ? clone : clone.querySelector("a");
+    if (!anchor) return null;
+    setAnchor(anchor, item);
+    return clone;
+  }
+
+  function applyNavigation() {
+    const legacyAnchors = Array.from(document.querySelectorAll('a[href="/builds/"],a[href="/stock/"],a[href="/contact/"]'));
+    const containers = new Set();
+
+    for (const anchor of legacyAnchors) {
+      const container = findLegacyNavContainer(anchor);
+      if (container) containers.add(container);
+    }
+
+    for (const container of containers) {
+      if (container.dataset.enchevNavSignature === "v1") continue;
+
+      const links = Array.from(container.querySelectorAll("a"));
+      const byHref = new Map(links.map((link) => [link.getAttribute("href"), link]));
+      const home = byHref.get("/");
+      const builds = byHref.get("/builds/");
+      const stock = byHref.get("/stock/");
+      const contact = byHref.get("/contact/");
+      if (!home || !builds || !stock || !contact) continue;
+
+      setAnchor(home, navItems[0]);
+      setAnchor(builds, navItems[1]);
+      setAnchor(stock, navItems[2]);
+
+      const supportUnit = contact.closest("li") || contact;
+      const parent = supportUnit.parentElement;
+      if (parent) {
+        for (const item of navItems.slice(3, 6)) {
+          const clone = cloneNavUnit(contact, item);
+          if (clone) parent.insertBefore(clone, supportUnit);
+        }
+      }
+      setAnchor(contact, navItems[6]);
+      container.dataset.enchevNavSignature = "v1";
+    }
+
+    const directMap = new Map([
+      ["/builds/", navItems[1]],
+      ["/stock/", navItems[2]],
+      ["/contact/", navItems[6]]
+    ]);
+    for (const [href, item] of directMap) {
+      for (const anchor of document.querySelectorAll(`a[href="${href}"]`)) {
+        if (anchor.closest(".site-nav")) continue;
+        setAnchor(anchor, item);
+      }
+    }
+  }
+
   let scheduled = false;
   function scheduleApply() {
     if (scheduled) return;
@@ -109,13 +193,18 @@ cta_map_script=r'''(() => {
     requestAnimationFrame(() => {
       scheduled = false;
       applyCtas();
+      applyNavigation();
     });
   }
 
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", applyCtas, { once: true });
+    document.addEventListener("DOMContentLoaded", () => {
+      applyCtas();
+      applyNavigation();
+    }, { once: true });
   } else {
     applyCtas();
+    applyNavigation();
   }
 
   new MutationObserver(scheduleApply).observe(document.documentElement, {
