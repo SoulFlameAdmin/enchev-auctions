@@ -61,7 +61,7 @@ for n in z.namelist():
  if n.endswith(('.js','.css','.json','.svg')):data=adapt(data.decode()).encode()
  p.write_bytes(data)
 cta_map_script=r'''(() => {
-  const normalize = (value) => String(value || "").replace(/\\s+/g, " ").trim().toLowerCase();
+  const normalize = (value) => String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
   const rules = [
     { heading: "Your Route To Your Next Vehicle", label: "BID NOW", href: "/live-auctions" },
     { heading: "Identity", label: "BID NOW", href: "/live-auctions" },
