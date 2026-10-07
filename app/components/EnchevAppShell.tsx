@@ -42,7 +42,7 @@ export default function EnchevAppShell(){
   return <div className="eaAppShell" data-design-task="DP2-04" data-shell-open={open?"true":"false"}>
     <div className="eaAppUtility">
       <div className="eaAppUtilityLive"><i aria-hidden="true"/><strong>ПАЗАР НА ЖИВО</strong><span>Европа · САЩ · Канада</span><a className="eaAppPresentationButton" href="/presentation">ПРЕЗЕНТАЦИЯ</a></div>
-      <div className="eaAppUtilityMeta"><span>BG · EUR</span><a href="/support">Помощ</a></div>
+      <div className="eaAppUtilityMeta"><span>БГ · ЕВРО</span><a href="/support">Помощ</a></div>
     </div>
 
     <header className="eaAppHeader">
@@ -111,7 +111,7 @@ export default function EnchevAppShell(){
           <a href={accountNavigation.register}>Регистрация</a>
         </div>
 
-        <div className="eaAppMobileFoot"><span>BG · EUR</span><a href="/support">Помощ и поддръжка</a></div>
+        <div className="eaAppMobileFoot"><span>БГ · ЕВРО</span><a href="/support">Помощ и поддръжка</a></div>
       </aside>
     </div>
   </div>;
