@@ -10,8 +10,8 @@ type Phase = { id: string; title: string; tasks: Task[]; wave: number; dependsOn
 type Notes = Record<string, { evidence?: string; blocker?: string; updatedAt?: string }>;
 type RawPhase = [string, string, string[]];
 
-const PLAN_VERSION = "1.0 FROZEN";
-const EXPANSION_VERSION = "2.0 APPEND-ONLY";
+const PLAN_VERSION = "1.0 ЗАКЛЮЧЕН";
+const EXPANSION_VERSION = "2.0 САМО ДОБАВЯНЕ";
 const FINAL_PHASE = "47";
 
 const raw: RawPhase[] = [
@@ -80,22 +80,22 @@ const raw: RawPhase[] = [
 ];
 
 const WAVE_LABELS: Record<number,string> = {
-  0:"Definition & governance",
-  1:"Engineering foundation & cross-cutting design",
-  2:"Core data & reliability infrastructure",
-  3:"Identity, security & compliance foundations",
-  4:"Vehicle, seller & physical domain",
-  5:"Authoritative auction core",
-  6:"Realtime, events & communications",
-  7:"Product, admin, search & trust surfaces",
-  8:"International, accessibility & frontend proof",
-  9:"Hardening, security & load certification",
-  10:"SLO, operations & recovery certification",
-  11:"Closed pre-production pilot",
-  12:"Production readiness & closed production pilot",
-  13:"Controlled public launch",
-  14:"International production expansion & advanced features",
-  15:"Final system acceptance"
+  0:"Дефиниция и управление",
+  1:"Инженерна основа и общ системен дизайн",
+  2:"Основни данни и надеждна инфраструктура",
+  3:"Идентичност, сигурност и съответствие",
+  4:"Автомобили, продавачи и физически операции",
+  5:"Основно ядро на търга",
+  6:"Реално време, събития и комуникации",
+  7:"Продукт, администрация, търсене и доверие",
+  8:"Международност, достъпност и проверка на интерфейса",
+  9:"Укрепване, сигурност и натоварване",
+  10:"Нива на услуга, операции и възстановяване",
+  11:"Затворен предпроизводствен пилот",
+  12:"Готовност за продукция и затворен производствен пилот",
+  13:"Контролирано публично стартиране",
+  14:"Международно разширяване и разширени функции",
+  15:"Финално приемане на системата"
 };
 
 const PHASE_WAVE: Record<string,number> = {
@@ -152,6 +152,62 @@ function mapExpansionParts(parts: ExpansionPart[]): Phase[] {
 
 function sortPhases(items: Phase[]): Phase[] {
   return [...items].sort((a,b)=>a.wave-b.wave || a.id.localeCompare(b.id,undefined,{numeric:true}));
+}
+
+const PLAN_TEXT_REPLACEMENTS: Array<[RegExp,string]> = [
+  [/System/gi,"Система"],[/definition/gi,"дефиниция"],[/invariants/gi,"инварианти"],[/scope/gi,"обхват"],[/boundaries/gi,"граници"],
+  [/Actors/gi,"Участници"],[/permission/gi,"права"],[/map/gi,"карта"],[/Authoritative/gi,"Основни"],[/components/gi,"компоненти"],
+  [/Critical/gi,"Критични"],[/requirements/gi,"изисквания"],[/documented/gi,"документирани"],[/Dependency/gi,"Зависимости"],
+  [/inventory/gi,"инвентар"],[/Data/gi,"Данни"],[/classification/gi,"класификация"],[/Failure/gi,"Отказ"],[/assumptions/gi,"допускания"],
+  [/Definition of GREEN acceptance/gi,"Критерий за приемане в зелено"],[/Final production acceptance criteria/gi,"Финални критерии за продукционно приемане"],
+  [/Clean foundation/gi,"Чиста основа"],[/Private/gi,"Частен"],[/automatic deploy/gi,"автоматично внедряване"],[/environment/gi,"среда"],
+  [/validation/gi,"проверка"],[/health endpoints/gi,"крайни точки за здравен статус"],[/Architecture/gi,"Архитектура"],[/repository/gi,"хранилище"],
+  [/Database/gi,"База данни"],[/integrity/gi,"цялост"],[/Migration/gi,"Миграция"],[/runner/gi,"изпълнител"],[/schema/gi,"схема"],
+  [/timestamps/gi,"времеви печати"],[/Archival/gi,"Архивиране"],[/Immutable/gi,"Неизменяем"],[/history/gi,"история"],[/transaction/gi,"транзакция"],
+  [/recovery/gi,"възстановяване"],[/Foreign-key/gi,"Външни ключове"],[/constraints/gi,"ограничения"],[/Index strategy/gi,"Стратегия за индекси"],
+  [/Connection pooling/gi,"Пул от връзки"],[/timeouts/gi,"таймаути"],[/isolation/gi,"изолация"],[/Auction/gi,"Търг"],[/strategy/gi,"стратегия"],
+  [/retry/gi,"повторен опит"],[/security/gi,"сигурност"],[/Identity/gi,"Идентичност"],[/access/gi,"достъп"],[/Register/gi,"Регистрация"],
+  [/login/gi,"вход"],[/logout/gi,"изход"],[/recovery/gi,"възстановяване"],[/Buyer/gi,"Купувач"],[/Seller/gi,"Продавач"],
+  [/Support/gi,"Поддръжка"],[/Admin/gi,"Администратор"],[/roles/gi,"роли"],[/Session/gi,"Сесия"],[/revocation/gi,"отнемане"],
+  [/Active/gi,"Активни"],[/restricted/gi,"ограничени"],[/suspended/gi,"спрени"],[/accounts/gi,"профили"],[/audit/gi,"одит"],
+  [/Verification/gi,"Проверка"],[/Manual review/gi,"Ръчен преглед"],[/eligibility/gi,"допустимост"],[/workflow/gi,"процес"],
+  [/Vehicle/gi,"Автомобил"],[/make/gi,"марка"],[/model/gi,"модел"],[/year/gi,"година"],[/Engine/gi,"Двигател"],[/fuel/gi,"гориво"],
+  [/transmission/gi,"скоростна кутия"],[/drivetrain/gi,"задвижване"],[/Odometer/gi,"Пробег"],[/Condition/gi,"Състояние"],[/damage/gi,"щети"],
+  [/status/gi,"статус"],[/Country/gi,"Държава"],[/region/gi,"регион"],[/city/gi,"град"],[/Secure/gi,"Защитено"],[/uploads/gi,"качване"],
+  [/provenance/gi,"произход"],[/Publish/gi,"Публикуване"],[/Marketplace/gi,"Пазар"],[/discovery/gi,"откриване"],[/Homepage/gi,"Начална страница"],
+  [/listing/gi,"обява"],[/detail page/gi,"страница с детайли"],[/Search/gi,"Търсене"],[/Filters/gi,"Филтри"],[/Sorting/gi,"Сортиране"],
+  [/Pagination/gi,"Странициране"],[/Responsive/gi,"Адаптивен"],[/Accessibility/gi,"Достъпност"],[/configuration/gi,"конфигурация"],
+  [/state machine/gi,"машина на състоянията"],[/Reserve/gi,"Резерв"],[/Buy-now/gi,"Купи сега"],[/rules/gi,"правила"],[/Bid/gi,"Оферта"],
+  [/increment/gi,"стъпка"],[/timestamps/gi,"времеви печати"],[/snapshot/gi,"моментна снимка"],[/Pre-Bid/gi,"Предварителна оферта"],
+  [/Max Bid/gi,"Максимална оферта"],[/Proxy bidding/gi,"Автоматично наддаване"],[/algorithm/gi,"алгоритъм"],[/priority/gi,"приоритет"],
+  [/Duplicate/gi,"Дублирана"],[/protection/gi,"защита"],[/accepted/gi,"приета"],[/ordering/gi,"подреждане"],[/Live/gi,"На живо"],
+  [/realtime/gi,"реално време"],[/rooms/gi,"зали"],[/events/gi,"събития"],[/Current leader/gi,"Текущ водач"],[/Outbid/gi,"Наддадена оферта"],
+  [/timer/gi,"таймер"],[/extension/gi,"удължаване"],[/Reconnect/gi,"Повторно свързване"],[/network/gi,"мрежа"],[/detection/gi,"засичане"],
+  [/handling/gi,"обработка"],[/Finalization/gi,"Финализиране"],[/winner/gi,"победител"],[/close/gi,"затваряне"],[/result/gi,"резултат"],
+  [/Notifications/gi,"Известия"],[/Email/gi,"Имейл"],[/SMS/gi,"SMS"],[/alerts/gi,"сигнали"],[/preferences/gi,"настройки"],
+  [/Release/gi,"Освобождаване"],[/pickup/gi,"вземане"],[/logistics/gi,"логистика"],[/Transport/gi,"Транспорт"],[/Shipment/gi,"Пратка"],
+  [/operations/gi,"операции"],[/dashboard/gi,"табло"],[/queue/gi,"опашка"],[/tickets/gi,"заявки"],[/Complaints/gi,"Оплаквания"],
+  [/Legal/gi,"Правни"],[/privacy/gi,"поверителност"],[/transparency/gi,"прозрачност"],[/Terms/gi,"Условия"],[/notice/gi,"уведомление"],
+  [/Cookie consent/gi,"Съгласие за бисквитки"],[/policy/gi,"политика"],[/hardening/gi,"укрепване"],[/Rate limiting/gi,"Ограничаване на честотата"],
+  [/Secrets/gi,"Тайни"],[/management/gi,"управление"],[/Key rotation/gi,"Ротация на ключове"],[/scanning/gi,"сканиране"],[/penetration test/gi,"тест за проникване"],
+  [/Threat model/gi,"Модел на заплахи"],[/Observability/gi,"Наблюдаемост"],[/Structured logs/gi,"Структурирани логове"],[/Metrics/gi,"Метрики"],
+  [/Error tracking/gi,"Следене на грешки"],[/Uptime monitoring/gi,"Наблюдение на достъпността"],[/backups/gi,"резервни копия"],[/Load/gi,"Натоварване"],
+  [/concurrency/gi,"конкурентност"],[/chaos/gi,"хаос"],[/stress test/gi,"стрес тест"],[/Closed pilot/gi,"Затворен пилот"],[/Production/gi,"Продукционен"],
+  [/providers/gi,"доставчици"],[/International/gi,"Международна"],[/readiness/gi,"готовност"],[/Locale/gi,"Езикова настройка"],[/Translation/gi,"Превод"],
+  [/features/gi,"функции"],[/Natural-language/gi,"Естествен език"],[/assistant/gi,"асистент"],[/summary/gi,"обобщение"],[/launch/gi,"стартиране"],
+  [/Testing/gi,"Тестване"],[/strategy/gi,"стратегия"],[/Unit-test/gi,"Юнит тест"],[/Integration-test/gi,"Интеграционен тест"],[/End-to-end/gi,"От край до край"],
+  [/Protected main branch/gi,"Защитен главен клон"],[/deployment/gi,"внедряване"],[/approval gate/gi,"контрол за одобрение"],[/capacity/gi,"капацитет"],
+  [/resilience/gi,"устойчивост"],[/availability/gi,"достъпност"],[/latency/gi,"закъснение"],[/Operational/gi,"Оперативна"],[/readiness/gi,"готовност"],
+  [/Incident/gi,"Инцидент"],[/runbook/gi,"оперативна инструкция"],[/International expansion/gi,"Международно разширяване"],[/governance/gi,"управление"],
+  [/Buyer workspace/gi,"Работно пространство на купувача"],[/watchlist/gi,"запазени"],[/alerts/gi,"сигнали"],[/inspection/gi,"инспекция"],
+  [/Seller listing/gi,"Обява на продавач"],[/Professional/gi,"Професионален"],[/trust/gi,"доверие"],[/reconstruction/gi,"възстановяване на историята"],
+  [/personalization/gi,"персонализация"],[/proof/gi,"доказателство"],[/failure/gi,"отказ"],[/certification/gi,"сертификация"],[/payments/gi,"плащания"],
+  [/tax/gi,"данъци"],[/customs/gi,"митници"],[/finance/gi,"финанси"],[/country launch/gi,"стартиране по държава"],[/Final/gi,"Финално"],
+  [/organization/gi,"организация"],[/member/gi,"член"],[/authority/gi,"правомощие"],[/Yard/gi,"Площадка"],[/document/gi,"документ"],
+  [/physical/gi,"физически"],[/chain-of-custody/gi,"верига на съхранение"],[/lane/gi,"лента"],[/auctioneer/gi,"аукционер"]
+];
+function bgPlanText(value:string){
+  return PLAN_TEXT_REPLACEMENTS.reduce((text,[pattern,replacement])=>text.replace(pattern,replacement),value);
 }
 
 const VERIFIED_EVIDENCE: Record<string,string> = {
@@ -230,14 +286,14 @@ export default function MasterSystemPlanV1(){
   const visible=useMemo(()=>{ const q=query.trim().toLowerCase(), src:Phase[]=gaps.length?[...phases,{id:"GAP",title:"Открити пропуски",wave:99,tasks:gaps}]:phases; return src.map(p=>({...p,tasks:p.tasks.filter(t=>{const s=statuses[t.id]||t.defaultStatus;return(filter==="all"||s===filter)&&(!q||`${t.id} ${t.label} ${p.title}`.toLowerCase().includes(q));})})).filter(p=>p.tasks.length); },[phases,gaps,query,filter,statuses]);
 
   return <>
-    <button className="burgerButton" aria-label="Отвори меню" onClick={()=>setMenu(true)}><span/><span/><span/></button>{menu&&<div className="menuShade" onClick={()=>setMenu(false)}/>}<aside className={`sidePanel ${menu?"sideOpen":""}`}><div className="sidePanelTop"><div><div className="miniLabel">ENCHEV AUCTIONS</div><strong>System Command Center</strong></div><button className="iconButton" onClick={()=>setMenu(false)}>×</button></div><button className="sideMenuItem" onClick={()=>{setOpen(true);setMenu(false);}}><span className="sideMenuIcon">◫</span><span><b>Етапи</b><small>Master System Plan v{PLAN_VERSION} + Expansion v{EXPANSION_VERSION} · 0 → 100%</small></span><span>›</span></button><button className="sideMenuItem" onClick={()=>{setDesign2Open(true);setMenu(false);}}><span className="sideMenuIcon">✦</span><span><b>Design Process 2</b><small>World-class mobile + desktop redesign · DAVID</small></span><span>›</span></button><div className="sideStatusBox"><div className="liveLine"><i/> {expansionState==="ready"?"SYSTEM 00–99 LOADED":expansionState==="error"?"EXPANSION LOAD ERROR":"SYSTEM EXPANSION LAZY"}</div><span>Системен прогрес</span><b>{progress}%</b><div className="miniProgress"><i style={{width:`${progress}%`}}/></div><small>{totals.green} работят · {totals.yellow} тест/грешка · {totals.red} липсват</small></div></aside>
-    {open&&<section className="controlOverlay"><header className="controlHeader"><div><div className="eyebrow">MASTER SYSTEM PLAN v{PLAN_VERSION} + INTERNATIONAL COMPANY EXPANSION v{EXPANSION_VERSION} · SOURCE OF TRUTH · 0 → 100%</div><h1>Enchev Auctions — Етапи</h1><p>Frozen 00–61 остават immutable; append-only 62–99 разширяват системата до реална международна компания: corporate/commercial → payments/tax/customs → logistics/operations → CRM/support → finance/BI → country launch → final operating acceptance.</p></div><button className="closeControl" onClick={()=>setOpen(false)}>×</button></header>
-      <div className="controlKpis"><div><span>ПРОГРЕС</span><b>{progress}%</b><small>{all.length} системни точки</small></div><div className="kGreen"><span>РАБОТИ</span><b>{totals.green}</b><small>доказано</small></div><div className="kYellow"><span>ТЕСТ / ГРЕШКА</span><b>{totals.yellow}</b><small>не е приключено</small></div><div className="kRed"><span>ОБЩО ЛИПСВАЩИ</span><b>{totalMissingLabel}</b><small>{expansionState==="ready"?`Frozen + Expansion + GAP · от ${all.length} общо`:expansionState==="error"?"Expansion load error":"зарежда целия SYSTEM tracker…"}</small></div><div><span>LIVE</span><b className="clockText">{now.toLocaleTimeString("bg-BG")}</b><small>локален realtime</small></div></div>
-      <div className="nextGrid"><div className="nextCard"><span>NEXT SYSTEM BLOCKER</span><b>{next?`${next.id} · ${next.label}`:"Всичко е GREEN"}</b></div><div className="nextCard"><span>EXECUTION WAVE</span><b>{nextPhase?`WAVE ${nextPhase.wave} · ${WAVE_LABELS[nextPhase.wave]}`:"FINAL COMPLETE"}</b></div><div className="nextCard"><span>FINAL 100% GATE</span><b>{preFinalOpen===0?"Готов за Етап 47":`${preFinalOpen} точки извън финалния етап остават`}</b></div></div>
+    <button className="burgerButton" aria-label="Отвори меню" onClick={()=>setMenu(true)}><span/><span/><span/></button>{menu&&<div className="menuShade" onClick={()=>setMenu(false)}/>}<aside className={`sidePanel ${menu?"sideOpen":""}`}><div className="sidePanelTop"><div><div className="miniLabel">ENCHEV АУКЦИОНИ</div><strong>Системен команден център</strong></div><button className="iconButton" onClick={()=>setMenu(false)}>×</button></div><button className="sideMenuItem" onClick={()=>{setOpen(true);setMenu(false);}}><span className="sideMenuIcon">◫</span><span><b>Етапи</b><small>Главен системен план v{PLAN_VERSION} + Разширение v{EXPANSION_VERSION} · 0 → 100%</small></span><span>›</span></button><button className="sideMenuItem" onClick={()=>{setDesign2Open(true);setMenu(false);}}><span className="sideMenuIcon">✦</span><span><b>Дизайн процес 2</b><small>Премиум редизайн за телефон и компютър · DAVID</small></span><span>›</span></button><div className="sideStatusBox"><div className="liveLine"><i/> {expansionState==="ready"?"СИСТЕМА 00–99 ЗАРЕДЕНА":expansionState==="error"?"ГРЕШКА ПРИ РАЗШИРЕНИЕТО":"РАЗШИРЕНИЕТО СЕ ЗАРЕЖДА ПРИ НУЖДА"}</div><span>Системен прогрес</span><b>{progress}%</b><div className="miniProgress"><i style={{width:`${progress}%`}}/></div><small>{totals.green} работят · {totals.yellow} тест/грешка · {totals.red} липсват</small></div></aside>
+    {open&&<section className="controlOverlay"><header className="controlHeader"><div><div className="eyebrow">ГЛАВЕН СИСТЕМЕН ПЛАН v{PLAN_VERSION} + МЕЖДУНАРОДНО РАЗШИРЕНИЕ v{EXPANSION_VERSION} · ОСНОВЕН ИЗТОЧНИК · 0 → 100%</div><h1>ENCHEV Аукциони — Етапи</h1><p>Етапи 00–61 остават заключени; 62–99 се разширяват само чрез добавяне до реална международна компания: корпоративни и търговски процеси → плащания, данъци и митници → логистика и операции → CRM и поддръжка → финанси и BI → стартиране по държави → финално оперативно приемане.</p></div><button className="closeControl" onClick={()=>setOpen(false)}>×</button></header>
+      <div className="controlKpis"><div><span>ПРОГРЕС</span><b>{progress}%</b><small>{all.length} системни точки</small></div><div className="kGreen"><span>РАБОТИ</span><b>{totals.green}</b><small>доказано</small></div><div className="kYellow"><span>ТЕСТ / ГРЕШКА</span><b>{totals.yellow}</b><small>не е приключено</small></div><div className="kRed"><span>ОБЩО ЛИПСВАЩИ</span><b>{totalMissingLabel}</b><small>{expansionState==="ready"?`Frozen + Expansion + GAP · от ${all.length} общо`:expansionState==="error"?"грешка при зареждане на разширението":"зарежда целия системен тракер…"}</small></div><div><span>НА ЖИВО</span><b className="clockText">{now.toLocaleTimeString("bg-BG")}</b><small>локално реално време</small></div></div>
+      <div className="nextGrid"><div className="nextCard"><span>СЛЕДВАЩ СИСТЕМЕН БЛОКЕР</span><b>{next?`${next.id} · ${bgPlanText(next.label)}`:"Всичко е ЗЕЛЕНО"}</b></div><div className="nextCard"><span>ВЪЛНА НА ИЗПЪЛНЕНИЕ</span><b>{nextPhase?`ВЪЛНА ${nextPhase.wave} · ${WAVE_LABELS[nextPhase.wave]}`:"ФИНАЛНО ЗАВЪРШЕНО"}</b></div><div className="nextCard"><span>ФИНАЛЕН КОНТРОЛ 100%</span><b>{preFinalOpen===0?"Готов за Етап 47":`${preFinalOpen} точки извън финалния етап остават`}</b></div></div>
       <div className="controlTools"><div className="filterGroup">{(["all","green","yellow","red"] as const).map(v=><button key={v} className={filter===v?"active":""} onClick={()=>setFilter(v)}>{v==="all"?"Всички":v==="green"?"Работи":v==="yellow"?"Тест/грешка":"Липсва"}</button>)}</div><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Търси функция, тест, етап..."/></div>
-      <div className="gapBox"><div><b>Execution model</b><small>Етапните IDs са постоянни. Подреждането е по WAVE, за да следваме зависимости без да преномерираме старите точки. Нови бъдещи открития се добавят append-only като GAP.</small></div><div className="gapInput"><input value={gapText} onChange={e=>setGapText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addGap()} placeholder="Нова липсваща системна стъпка..."/><button onClick={addGap}>Добави GAP</button></div></div>
-      <div className="phaseList">{visible.map(p=>{const g=p.tasks.filter(t=>(statuses[t.id]||t.defaultStatus)==="green").length,y=p.tasks.filter(t=>(statuses[t.id]||t.defaultStatus)==="yellow").length,r=p.tasks.length-g-y,pct=Math.round(g/p.tasks.length*100);return <details className={`phaseBlock ${p.id==="GAP"?"gapPhase":""}`} key={p.id} open={p.wave===0||p.id==="01"||p.id==="47"||p.id==="GAP"}><summary className="phaseHead"><div><span>{p.id==="GAP"?"GAP":`WAVE ${p.wave} · ЕТАП ${p.id}`}</span><b>{p.title}</b><small>{p.id==="GAP"?"Append-only discoveries":`${WAVE_LABELS[p.wave]}${p.dependsOn?.length?` · DEPENDS ${p.dependsOn.join(", ")}`:""}`}</small></div><div className="phaseCounts"><i className="greenDot">{g}</i><i className="yellowDot">{y}</i><i className="redDot">{r}</i><strong>{pct}%</strong></div></summary><div className="phaseTasks">{p.tasks.map(t=>{const st=statuses[t.id]||t.defaultStatus,n=notes[t.id]||{},evidence=n.evidence||VERIFIED_EVIDENCE[t.id]||"";return <article key={t.id} className={`taskCard task-${st}`}><div className="taskTop"><div className="taskMain"><span className="taskId">{t.id}</span>{t.kind!=="core"&&<span className={`kind kind-${t.kind}`}>{t.kind.toUpperCase()}</span>}<b>{t.label}</b><small>{st==="green"?"Работи, проверено е и има evidence":st==="yellow"?"Има тест, грешка, blocker или липсва evidence":"Още не е построено"}</small></div><div className="statusButtons"><button className={st==="green"?"green":""} onClick={()=>setStatus(t.id,"green")}>РАБОТИ</button><button className={st==="yellow"?"yellow":""} onClick={()=>setStatus(t.id,"yellow")}>ТЕСТ/ГРЕШКА</button><button className={st==="red"?"red":""} onClick={()=>setStatus(t.id,"red")}>ЛИПСВА</button></div></div><div className="taskDetails"><input value={evidence} onChange={e=>setNote(t.id,"evidence",e.target.value)} placeholder="Evidence: URL / commit / test result"/><input value={n.blocker||""} onChange={e=>setNote(t.id,"blocker",e.target.value)} placeholder="Грешка / blocker / какво остава"/><span>{n.updatedAt?`Update ${new Date(n.updatedAt).toLocaleString("bg-BG")}`:"No update yet"}</span></div></article>;})}</div></details>;})}</div>
-      <footer className="controlFooter"><b>Правило v{PLAN_VERSION} + Expansion v{EXPANSION_VERSION}:</b> Frozen 00–61 и expansion 62–99 IDs не се преномерират. Изпълняваме по WAVE, не по цифров номер на етапа. GREEN се допуска само с evidence. Етап 47 не може да стане GREEN, докато всяка друга системна точка не е GREEN. YELLOW = частично/грешка/липсваща проверка; RED = липсва. Бъдещи открития се добавят append-only като GAP.</footer>
+      <div className="gapBox"><div><b>Модел на изпълнение</b><small>Идентификаторите на етапите са постоянни. Подреждането е по ВЪЛНА, за да следваме зависимостите без преномериране. Нови открития се добавят само чрез нови GAP точки.</small></div><div className="gapInput"><input value={gapText} onChange={e=>setGapText(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addGap()} placeholder="Нова липсваща системна стъпка..."/><button onClick={addGap}>Добави пропуск</button></div></div>
+      <div className="phaseList">{visible.map(p=>{const g=p.tasks.filter(t=>(statuses[t.id]||t.defaultStatus)==="green").length,y=p.tasks.filter(t=>(statuses[t.id]||t.defaultStatus)==="yellow").length,r=p.tasks.length-g-y,pct=Math.round(g/p.tasks.length*100);return <details className={`phaseBlock ${p.id==="GAP"?"gapPhase":""}`} key={p.id} open={p.wave===0||p.id==="01"||p.id==="47"||p.id==="GAP"}><summary className="phaseHead"><div><span>{p.id==="GAP"?"ПРОПУСК":`ВЪЛНА ${p.wave} · ЕТАП ${p.id}`}</span><b>{bgPlanText(p.title)}</b><small>{p.id==="GAP"?"Нови открития само чрез добавяне":`${WAVE_LABELS[p.wave]}${p.dependsOn?.length?` · ЗАВИСИ ОТ ${p.dependsOn.join(", ")}`:""}`}</small></div><div className="phaseCounts"><i className="greenDot">{g}</i><i className="yellowDot">{y}</i><i className="redDot">{r}</i><strong>{pct}%</strong></div></summary><div className="phaseTasks">{p.tasks.map(t=>{const st=statuses[t.id]||t.defaultStatus,n=notes[t.id]||{},evidence=n.evidence||VERIFIED_EVIDENCE[t.id]||"";return <article key={t.id} className={`taskCard task-${st}`}><div className="taskTop"><div className="taskMain"><span className="taskId">{t.id}</span>{t.kind!=="core"&&<span className={`kind kind-${t.kind}`}>{t.kind==="test"?"ТЕСТ":t.kind==="security"?"СИГУРНОСТ":t.kind==="legal"?"ПРАВНО":t.kind==="global"?"ГЛОБАЛНО":t.kind==="ai"?"ИИ":"ОСНОВНО"}</span>}<b>{bgPlanText(t.label)}</b><small>{st==="green"?"Работи, проверено е и има доказателство":st==="yellow"?"Има тест, грешка, блокер или липсва доказателство":"Още не е построено"}</small></div><div className="statusButtons"><button className={st==="green"?"green":""} onClick={()=>setStatus(t.id,"green")}>РАБОТИ</button><button className={st==="yellow"?"yellow":""} onClick={()=>setStatus(t.id,"yellow")}>ТЕСТ/ГРЕШКА</button><button className={st==="red"?"red":""} onClick={()=>setStatus(t.id,"red")}>ЛИПСВА</button></div></div><div className="taskDetails"><input value={evidence} onChange={e=>setNote(t.id,"evidence",e.target.value)} placeholder="Доказателство: URL / commit / резултат от тест"/><input value={n.blocker||""} onChange={e=>setNote(t.id,"blocker",e.target.value)} placeholder="Грешка / блокер / какво остава"/><span>{n.updatedAt?`Обновено ${new Date(n.updatedAt).toLocaleString("bg-BG")}`:"Все още няма обновяване"}</span></div></article>;})}</div></details>;})}</div>
+      <footer className="controlFooter"><b>Правило v{PLAN_VERSION} + Разширение v{EXPANSION_VERSION}:</b> Етапи 00–61 и 62–99 не се преномерират. Изпълняваме по ВЪЛНА, не по цифров номер. ЗЕЛЕНО се допуска само с доказателство. Етап 47 не може да стане ЗЕЛЕН, докато всяка друга системна точка не е ЗЕЛЕНА. ЖЪЛТО = частично/грешка/липсваща проверка; ЧЕРВЕНО = липсва. Бъдещи открития се добавят само като нови пропуски.</footer>
     </section>}
     <DesignProcess2 open={design2Open} onClose={()=>setDesign2Open(false)} />
   </>;
