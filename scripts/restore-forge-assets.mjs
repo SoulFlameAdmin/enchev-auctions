@@ -135,7 +135,7 @@ const ctaMapScript = String.raw`(() => {
       ["/contact/", navItems[6]]
     ]);
     for (const [href, item] of directMap) {
-      for (const anchor of document.querySelectorAll(`a[href="${href}"]`)) {
+      for (const anchor of document.querySelectorAll('a[href="' + href + '"]')) {
         if (anchor.closest(".site-nav")) continue;
         setAnchor(anchor, item);
       }
