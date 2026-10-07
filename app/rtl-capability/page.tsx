@@ -17,9 +17,9 @@ function Probe({ direction, lang }: { direction: "ltr" | "rtl"; lang: string }) 
     <section className={styles.probe} dir={direction} lang={lang} data-rtl-probe={direction}>
       <div className={styles.inlineMarker} data-inline-marker />
       <div className={styles.copy}>
-        <span className={styles.kicker}>DIRECTION · {direction.toUpperCase()}</span>
-        <strong>ENCHEV international layout probe</strong>
-        <p>The same markup preserves logical spacing, borders, alignment and action placement.</p>
+        <span className={styles.kicker}>ПОСОКА · {direction.toUpperCase()}</span>
+        <strong>Тест на международния изглед на ENCHEV</strong>
+        <p>Една и съща структура запазва логическите отстояния, рамки, подравняване и позициониране на действията.</p>
       </div>
       <div className={styles.rail} data-rtl-rail>
         <span data-rail-item="lead">01</span>
@@ -27,8 +27,8 @@ function Probe({ direction, lang }: { direction: "ltr" | "rtl"; lang: string }) 
         <span data-rail-item="tail">03</span>
       </div>
       <div className={styles.actions}>
-        <button type="button">Secondary</button>
-        <button type="button">Primary</button>
+        <button type="button">Вторично</button>
+        <button type="button">Основно</button>
       </div>
     </section>
   );
@@ -39,8 +39,8 @@ export default function RtlCapabilityPage() {
     <main className={styles.page} data-rtl-capability-page>
       <header className={styles.header}>
         <span>21.17</span>
-        <h1>RTL layout capability</h1>
-        <p>Isolated acceptance surface. This is not a production locale or market activation.</p>
+        <h1>Поддръжка на оформление отдясно наляво</h1>
+        <p>Изолиран тестов екран. Това не е активиран производствен език или пазар.</p>
       </header>
       <div className={styles.grid}>
         <Probe direction={ltr.dir} lang={ltr.lang} />
