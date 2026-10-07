@@ -15,10 +15,10 @@ const gallery=[
 ];
 
 const history=[
-  ["Bidder #A91","€21 900","преди 12 сек."],
-  ["Bidder #K44","€21 800","преди 21 сек."],
-  ["Bidder #D17","€21 500","преди 1 мин."],
-  ["Bidder #R03","€21 200","преди 3 мин."],
+  ["Bidder #A91","€21 900","12 sec ago"],
+  ["Bidder #K44","€21 800","21 sec ago"],
+  ["Bidder #D17","€21 500","1 min ago"],
+  ["Bidder #R03","€21 200","3 min ago"],
 ];
 
 export default function LotPage(){
@@ -92,99 +92,99 @@ export default function LotPage(){
   return <main id="main-content" className="lotPage">
     <header className="lotHeader">
       <a className="lotLogo" href="/"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
-      <nav className="lotNav"><a href="/inventory">Инвентар</a><a href="/live-auctions">LIVE търгове</a><a href="/#how">Как работи</a><a href="/transport">Транспорт</a></nav>
-      <div className="lotHeaderActions"><a href="/inventory">← Назад</a><button className="lotGreen">Вход</button></div>
+      <nav className="lotNav"><a href="/inventory">Inventory</a><a href="/live-auctions">Live auctions</a><a href="/#how">How it works</a><a href="/transport">Transport</a></nav>
+      <div className="lotHeaderActions"><a href="/inventory">← Back</a><button className="lotGreen">Вход</button></div>
     </header>
 
     <div className="lotWrap">
-      <div className="lotBreadcrumb"><a href="/">Начало</a> / <a href="/inventory">Инвентар</a> / {lot}</div>
-      <div className="lotTitleRow"><div><div className="lotTitleMeta"><span className="lotPill green">● LIVE AUCTION</span><span className="lotPill">LOT {lot}</span><span className="lotPill">✓ VERIFIED</span></div><h1>{title}</h1></div><div className="lotTitleMeta"><span className="lotPill">♡ Запази</span><span className="lotPill">↗ Сподели</span></div></div>
+      <div className="lotBreadcrumb"><a href="/">Home</a> / <a href="/inventory">Inventory</a> / {lot}</div>
+      <div className="lotTitleRow"><div><div className="lotTitleMeta"><span className="lotPill green">● LIVE AUCTION</span><span className="lotPill">LOT {lot}</span><span className="lotPill">✓ VERIFIED</span></div><h1>{title}</h1></div><div className="lotTitleMeta"><span className="lotPill">♡ Save</span><span className="lotPill">↗ Share</span></div></div>
 
       <div className="lotGrid">
         <div>
           <div className="lotGallery" data-design-task="D19" aria-label={`Галерия за ${title}`}>
-            <button ref={viewerTriggerRef} type="button" className="lotMainImage" onClick={()=>setViewerOpen(true)} aria-label={`Отвори изображение ${activeImage+1} от ${gallery.length} на цял екран`}>
+            <button ref={viewerTriggerRef} type="button" className="lotMainImage" onClick={()=>setViewerOpen(true)} aria-label={`Open изображение ${activeImage+1} от ${gallery.length} на цял екран`}>
               <img src={gallery[activeImage]} alt={`${title} — изображение ${activeImage+1}`}/>
               <span className="lotImageBadge">RUN & DRIVE · {activeImage+1}/{gallery.length}</span>
-              <span className="lotZoomHint" aria-hidden="true">⛶ Цял екран</span>
+              <span className="lotZoomHint" aria-hidden="true">⛶ Full screen</span>
             </button>
             <div className="lotThumbs" role="list" aria-label="Миниатюри на автомобила">{gallery.map((src,index)=><button type="button" key={src} className={`lotThumb ${index===activeImage?"active":""}`} onClick={()=>setActiveImage(index)} aria-label={`Покажи изображение ${index+1} от ${gallery.length}`} aria-pressed={index===activeImage}><img src={src} alt=""/></button>)}</div>
           </div>
 
           <section className="lotSection" data-design-task="D20" aria-labelledby="lot-key-facts-title" aria-describedby="lot-key-facts-description" style={{borderColor:"rgba(39,245,138,.18)",background:"linear-gradient(180deg,rgba(13,23,16,.96),rgba(8,16,11,.96))"}}>
-            <div className="lotSectionHead"><div><h2 id="lot-key-facts-title">Ключови данни за лота</h2><span id="lot-key-facts-description">Най-важната информация преди офериране</span></div><span className="lotPill green">6 проверени полета</span></div>
+            <div className="lotSectionHead"><div><h2 id="lot-key-facts-title">Key lot data</h2><span id="lot-key-facts-description">The most important information before bidding</span></div><span className="lotPill green">6 verified fields</span></div>
             <div className="lotSpecs" role="list" aria-label="Ключови данни за автомобила" style={{gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))"}}>
               <div className="lotSpec" role="listitem"><span>VIN</span><b style={{overflowWrap:"anywhere"}}>WAUZZZ8V5KA123456</b></div>
               <div className="lotSpec" role="listitem"><span>LOT</span><b>{lot}</b></div>
-              <div className="lotSpec" role="listitem"><span>Пробег</span><b>41 280 км</b></div>
-              <div className="lotSpec" role="listitem"><span>Основна повреда</span><b>Леки драскотини / козметични следи</b></div>
+              <div className="lotSpec" role="listitem"><span>Mileage</span><b>41 280 км</b></div>
+              <div className="lotSpec" role="listitem"><span>Primary damage</span><b>Minor scratches / cosmetic marks</b></div>
               <div className="lotSpec" role="listitem"><span>Документ</span><b>Clean Title</b></div>
-              <div className="lotSpec" role="listitem"><span>Локация</span><b style={{overflowWrap:"anywhere"}}>Crewe, United Kingdom</b></div>
+              <div className="lotSpec" role="listitem"><span>Location</span><b style={{overflowWrap:"anywhere"}}>Crewe, United Kingdom</b></div>
             </div>
           </section>
 
           <section className="lotSection lotConditionSection" data-design-task="D22" aria-labelledby="lot-condition-title" aria-describedby="lot-condition-description">
-            <div className="lotSectionHead lotConditionHead"><div><h2 id="lot-condition-title">Състояние, инспекция и произход</h2><span id="lot-condition-description">Подреден преглед на наличните данни и на това какво още не е потвърдено.</span></div><span className="lotPill green">LOT DATA SNAPSHOT</span></div>
+            <div className="lotSectionHead lotConditionHead"><div><h2 id="lot-condition-title">Condition, inspection and provenance</h2><span id="lot-condition-description">A structured view of available data and what is not yet confirmed.</span></div><span className="lotPill green">LOT DATA SNAPSHOT</span></div>
             <div className="lotConditionGrid">
               <article className="lotConditionCard" aria-labelledby="lot-condition-summary-title">
-                <div className="lotConditionCardHead"><span className="lotConditionIcon" aria-hidden="true">01</span><div><strong id="lot-condition-summary-title">Състояние</strong><small>Данни от аукционния лот</small></div></div>
-                <dl className="lotConditionList"><div><dt>Статус на движение</dt><dd><span className="lotConditionStatus positive">Run &amp; Drive</span></dd></div><div><dt>Основна повреда</dt><dd>Леки драскотини / козметични следи</dd></div><div><dt>Вторична повреда</dt><dd>Не е посочена</dd></div></dl>
+                <div className="lotConditionCardHead"><span className="lotConditionIcon" aria-hidden="true">01</span><div><strong id="lot-condition-summary-title">Condition</strong><small>Auction lot data</small></div></div>
+                <dl className="lotConditionList"><div><dt>Run status</dt><dd><span className="lotConditionStatus positive">Run &amp; Drive</span></dd></div><div><dt>Primary damage</dt><dd>Minor scratches / cosmetic marks</dd></div><div><dt>Secondary damage</dt><dd>Not specified</dd></div></dl>
               </article>
 
               <article className="lotConditionCard" aria-labelledby="lot-inspection-title">
-                <div className="lotConditionCardHead"><span className="lotConditionIcon" aria-hidden="true">02</span><div><strong id="lot-inspection-title">Инспекция</strong><small>Ясно разграничение на провереното</small></div></div>
-                <ul className="lotInspectionList"><li><span>Визуални щети</span><b className="lotConditionStatus positive">Описани</b></li><li><span>Механична инспекция</span><b className="lotConditionStatus neutral">Няма свързан доклад</b></li><li><span>Диагностика</span><b className="lotConditionStatus neutral">Няма свързан доклад</b></li></ul>
+                <div className="lotConditionCardHead"><span className="lotConditionIcon" aria-hidden="true">02</span><div><strong id="lot-inspection-title">Inspection</strong><small>Clear separation of verified data</small></div></div>
+                <ul className="lotInspectionList"><li><span>Visual damage</span><b className="lotConditionStatus positive">Documented</b></li><li><span>Mechanical inspection</span><b className="lotConditionStatus neutral">No linked report</b></li><li><span>Diagnostics</span><b className="lotConditionStatus neutral">No linked report</b></li></ul>
               </article>
 
               <article className="lotConditionCard" aria-labelledby="lot-provenance-title">
-                <div className="lotConditionCardHead"><span className="lotConditionIcon" aria-hidden="true">03</span><div><strong id="lot-provenance-title">Произход и документи</strong><small>Идентификация и история</small></div></div>
-                <dl className="lotConditionList"><div><dt>Документ</dt><dd>Clean Title</dd></div><div><dt>VIN</dt><dd className="lotConditionVin">WAUZZZ8V5KA123456</dd></div><div><dt>Локация</dt><dd>Crewe, United Kingdom</dd></div></dl>
-                <a className="lotHistoryLink" href="/vehicle-history" aria-label={`Провери историята на ${title}`}>Провери история на автомобила →</a>
+                <div className="lotConditionCardHead"><span className="lotConditionIcon" aria-hidden="true">03</span><div><strong id="lot-provenance-title">Provenance & documents</strong><small>Identification & history</small></div></div>
+                <dl className="lotConditionList"><div><dt>Документ</dt><dd>Clean Title</dd></div><div><dt>VIN</dt><dd className="lotConditionVin">WAUZZZ8V5KA123456</dd></div><div><dt>Location</dt><dd>Crewe, United Kingdom</dd></div></dl>
+                <a className="lotHistoryLink" href="/vehicle-history" aria-label={`Провери историята на ${title}`}>Check vehicle history →</a>
               </article>
             </div>
-            <p className="lotConditionDisclosure" role="note">Това е ENCHEV демо представяне на lot данни. Липсващите външни инспекционни или provenance доклади са означени като непотвърдени, вместо да се показват като факт.</p>
+            <p className="lotConditionDisclosure" role="note">This is an ENCHEV demo presentation of lot data. Missing external inspection or provenance reports are marked as unverified instead of being shown as fact.</p>
           </section>
 
-          <section className="lotSection"><div className="lotSectionHead"><div><h2>История на офертите</h2><span>Последни bid събития</span></div></div><div className="lotHistory">{history.map(row=><div className="lotHistoryRow" key={row.join("-")}><b>{row[0]}</b><b>{row[1]}</b><span>{row[2]}</span></div>)}</div></section>
+          <section className="lotSection"><div className="lotSectionHead"><div><h2>Bid history</h2><span>Latest bid events</span></div></div><div className="lotHistory">{history.map(row=><div className="lotHistoryRow" key={row.join("-")}><b>{row[0]}</b><b>{row[1]}</b><span>{row[2]}</span></div>)}</div></section>
 
-          <section className="lotSection"><div className="lotSectionHead"><div><h2>Транспорт</h2><span>Ориентировъчна цена до България</span></div></div><div className="lotTransport"><div className="lotTransportBox"><label>Дестинация<select defaultValue="sofia"><option value="sofia">София, България</option><option value="varna">Варна, България</option><option value="sliven">Сливен, България</option></select></label><label style={{marginTop:10}}>Пощенски код<input placeholder="1000"/></label></div><div className="lotTransportPrice"><span>Ориентировъчен транспорт</span><b>€1 480</b><small>7–14 работни дни · застрахован транспорт</small></div></div></section>
+          <section className="lotSection"><div className="lotSectionHead"><div><h2>Transport</h2><span>Estimated transport cost to Bulgaria</span></div></div><div className="lotTransport"><div className="lotTransportBox"><label>Destination<select defaultValue="sofia"><option value="sofia">Sofia, Bulgaria</option><option value="varna">Varna, Bulgaria</option><option value="sliven">Sliven, Bulgaria</option></select></label><label style={{marginTop:10}}>Postal code<input placeholder="1000"/></label></div><div className="lotTransportPrice"><span>Estimated transport</span><b>€1 480</b><small>7–14 business days · insured transport</small></div></div></section>
 
-          <section className="lotSection"><div className="lotSectionHead"><div><h2>Подобни автомобили</h2><span>Други активни лотове</span></div></div><div className="lotRelated"><a href="/lot/EA-10482"><img src="https://images.unsplash.com/photo-1658558195433-1af533e3309c?auto=format&fit=crop&w=900&q=82" alt="BMW M4"/><div><b>2018 BMW M4 F82</b><span>€12 750 · LOT EA-10482</span></div></a><a href="/lot/EA-10511"><img src="https://images.unsplash.com/photo-1612280782903-d34dcdc10107?auto=format&fit=crop&w=900&q=82" alt="Mercedes GLC"/><div><b>2021 Mercedes-Benz GLC</b><span>€18 400 · LOT EA-10511</span></div></a><a href="/lot/EA-10702"><img src="https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=900&q=82" alt="Porsche Macan"/><div><b>2023 Porsche Macan S</b><span>€28 750 · LOT EA-10702</span></div></a></div></section>
+          <section className="lotSection"><div className="lotSectionHead"><div><h2>Similar vehicles</h2><span>Other active lots</span></div></div><div className="lotRelated"><a href="/lot/EA-10482"><img src="https://images.unsplash.com/photo-1658558195433-1af533e3309c?auto=format&fit=crop&w=900&q=82" alt="BMW M4"/><div><b>2018 BMW M4 F82</b><span>€12 750 · LOT EA-10482</span></div></a><a href="/lot/EA-10511"><img src="https://images.unsplash.com/photo-1612280782903-d34dcdc10107?auto=format&fit=crop&w=900&q=82" alt="Mercedes GLC"/><div><b>2021 Mercedes-Benz GLC</b><span>€18 400 · LOT EA-10511</span></div></a><a href="/lot/EA-10702"><img src="https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=900&q=82" alt="Porsche Macan"/><div><b>2023 Porsche Macan S</b><span>€28 750 · LOT EA-10702</span></div></a></div></section>
         </div>
 
         <aside id="lot-bid-panel" className="lotBidPanel" data-design-task="D21" data-sticky-task="D23" aria-labelledby="lot-auction-panel-title">
-          <div className="lotLiveRow"><span className="lotLiveBadge"><i/> ПРОДАВА СЕ НА ЖИВО</span><span className="lotCountdown" data-urgent={countdown<=3?"true":"false"} role="timer" aria-live="polite" aria-label={`Оставащо време ${countdown} секунди`}>00:{String(countdown).padStart(2,"0")}</span></div>
-          <h2 id="lot-auction-panel-title">Текуща ставка</h2><div className="lotCurrentBid" aria-live="polite">€{bid.toLocaleString("bg-BG")}</div><div className="lotBidHint" id="lot-bid-minimum">Следваща минимална оферта: €{minimumBid.toLocaleString("bg-BG")}</div>
-          <label className="lotBidLabel" htmlFor="lot-bid-input">Твоя оферта</label>
-          <div className="lotBidInputRow"><input ref={bidInputRef} id="lot-bid-input" className="lotBidInput" value={bidInput} onChange={e=>setBidInput(e.target.value)} inputMode="numeric" aria-describedby="lot-bid-minimum"/><button type="button" className="lotBidBtn" onClick={placeBid}>Оферирай</button></div>
+          <div className="lotLiveRow"><span className="lotLiveBadge"><i/> LIVE</span><span className="lotCountdown" data-urgent={countdown<=3?"true":"false"} role="timer" aria-live="polite" aria-label={`Remainingщо време ${countdown} секунди`}>00:{String(countdown).padStart(2,"0")}</span></div>
+          <h2 id="lot-auction-panel-title">Current bid</h2><div className="lotCurrentBid" aria-live="polite">€{bid.toLocaleString("bg-BG")}</div><div className="lotBidHint" id="lot-bid-minimum">Next minimum bid: €{minimumBid.toLocaleString("bg-BG")}</div>
+          <label className="lotBidLabel" htmlFor="lot-bid-input">Your bid</label>
+          <div className="lotBidInputRow"><input ref={bidInputRef} id="lot-bid-input" className="lotBidInput" value={bidInput} onChange={e=>setBidInput(e.target.value)} inputMode="numeric" aria-describedby="lot-bid-minimum"/><button type="button" className="lotBidBtn" onClick={placeBid}>Bid</button></div>
           <div className="lotMaxBid" aria-labelledby="lot-max-bid-title">
-            <div className="lotMaxBidHead"><div><strong id="lot-max-bid-title">Max bid</strong><span>Запази максимален лимит за тази сесия</span></div>{maxBid!==null&&<b aria-live="polite">€{maxBid.toLocaleString("bg-BG")}</b>}</div>
-            <label className="lotBidLabel" htmlFor="lot-max-bid-input">Максимална оферта</label>
-            <div className="lotMaxBidRow"><input id="lot-max-bid-input" className="lotMaxBidInput" value={maxBidInput} onChange={e=>setMaxBidInput(e.target.value)} inputMode="numeric" aria-describedby="lot-max-bid-help"/><button type="button" className="lotMaxBidBtn" onClick={saveMaxBid}>Задай max</button></div>
-            <small id="lot-max-bid-help">Минимум €{minimumBid.toLocaleString("bg-BG")} · стойността е локална демо настройка до backend свързването.</small>
+            <div className="lotMaxBidHead"><div><strong id="lot-max-bid-title">Max bid</strong><span>Save максимален лимит за тази сесия</span></div>{maxBid!==null&&<b aria-live="polite">€{maxBid.toLocaleString("bg-BG")}</b>}</div>
+            <label className="lotBidLabel" htmlFor="lot-max-bid-input">Maximum bid</label>
+            <div className="lotMaxBidRow"><input id="lot-max-bid-input" className="lotMaxBidInput" value={maxBidInput} onChange={e=>setMaxBidInput(e.target.value)} inputMode="numeric" aria-describedby="lot-max-bid-help"/><button type="button" className="lotMaxBidBtn" onClick={saveMaxBid}>Set max</button></div>
+            <small id="lot-max-bid-help">Minimum €{minimumBid.toLocaleString("bg-BG")} · the value is a local demo setting until backend integration.</small>
           </div>
-          <button className="lotBuyNow">Купи сега · €29 900</button>
-          <div className="lotFees"><div><span>Текуща ставка</span><b>€{bid.toLocaleString("bg-BG")}</b></div><div><span>Ориентировъчни такси</span><b>€980</b></div><div><span>Транспорт</span><b>от €1 480</b></div></div>
-          <div className="lotNotice">Това е визуалният ENCHEV Lot Details flow. Реалните плащания, identity verification и server-side bid locking ще бъдат вързани към backend етапа.</div>
+          <button className="lotBuyNow">Buy now · €29 900</button>
+          <div className="lotFees"><div><span>Current bid</span><b>€{bid.toLocaleString("bg-BG")}</b></div><div><span>Estimated fees</span><b>€980</b></div><div><span>Transport</span><b>от €1 480</b></div></div>
+          <div className="lotNotice">This is the visual ENCHEV Lot Details flow. Real payments, identity verification and server-side bid locking will be connected in the backend stage.</div>
         </aside>
       </div>
     </div>
 
     {!viewerOpen&&<section className="lotMobileBidDock" data-design-task="D23" aria-label="Бързи действия за офериране">
-      <div className="lotMobileBidSummary"><span>Текуща ставка</span><strong>€{bid.toLocaleString("bg-BG")}</strong><small>Минимум €{minimumBid.toLocaleString("bg-BG")}</small></div>
-      <button type="button" className="lotMobileBidAction" onClick={focusBidPanel} aria-controls="lot-bid-panel">Към офертата</button>
+      <div className="lotMobileBidSummary"><span>Current bid</span><strong>€{bid.toLocaleString("bg-BG")}</strong><small>Minimum €{minimumBid.toLocaleString("bg-BG")}</small></div>
+      <button type="button" className="lotMobileBidAction" onClick={focusBidPanel} aria-controls="lot-bid-panel">Go to bid</button>
     </section>}
 
     {viewerOpen&&<div className="lotViewer" role="dialog" aria-modal="true" aria-labelledby="lot-viewer-title" onMouseDown={event=>{if(event.target===event.currentTarget)setViewerOpen(false)}}>
       <div className="lotViewerShell">
         <div className="lotViewerTop">
           <div><span>ENCHEV MEDIA VIEWER</span><strong id="lot-viewer-title">{title}</strong></div>
-          <button ref={viewerCloseRef} type="button" className="lotViewerClose" onClick={()=>setViewerOpen(false)} aria-label="Затвори галерията">✕</button>
+          <button ref={viewerCloseRef} type="button" className="lotViewerClose" onClick={()=>setViewerOpen(false)} aria-label="Close галерията">✕</button>
         </div>
         <div className="lotViewerStage">
           <button type="button" className="lotViewerNav lotViewerPrev" onClick={showPreviousImage} aria-label="Предишно изображение">‹</button>
           <img src={gallery[activeImage]} alt={`${title} — изображение ${activeImage+1} на цял екран`}/>
-          <button type="button" className="lotViewerNav lotViewerNext" onClick={showNextImage} aria-label="Следващо изображение">›</button>
+          <button type="button" className="lotViewerNav lotViewerNext" onClick={showNextImage} aria-label="Nextо изображение">›</button>
         </div>
         <div className="lotViewerBottom">
           <span className="lotViewerCount" aria-live="polite">Изображение {activeImage+1} от {gallery.length}</span>
