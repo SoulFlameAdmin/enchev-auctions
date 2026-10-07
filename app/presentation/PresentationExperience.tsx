@@ -6,7 +6,7 @@ import s from "./presentation.module.css";
 
 const CAR = "https://images.unsplash.com/photo-1655283733642-f1d813b40616?auto=format&fit=crop&w=1600&q=90";
 const scenes = [
-  ["EAUCTIONS ОТ ENCHEV", "Една кола.", "Безкрайни възможности.", "От първата снимка до ключовете в ръцете ти.", "Начало"],
+  ["EАУКЦИОНИ ОТ ENCHEV", "Една кола.", "Безкрайни възможности.", "От първата снимка до ключовете в ръцете ти.", "Начало"],
   ["01 / ПРИЕМАНЕ", "Всичко започва", "с един автомобил.", "Добавяме автомобила. Създаваме неговото досие.", "Приемане"],
   ["02 / ПРОВЕРКА", "Познаваш колата.", "Преди да наддаваш.", "Снимки, състояние и документи. На едно място.", "Проверка"],
   ["03 / ИЗБОР", "Твоята следваща кола.", "Вече е тук.", "Разглеждаш информацията. Избираш. Следиш търга.", "Обява"],
@@ -17,7 +17,7 @@ const scenes = [
   ["08 / ПЪЛНА ИСТОРИЯ", "Ключовете са твои.", "Историята остава.", "Автомобилът, сделката и документите. Винаги свързани.", "История"],
   ["СЛЕДВАЩО НИВО / ИИ", "По-малко повторения.", "Повече възможности.", "ИИ помага с задачи, липсващи документи и важни действия.", "ИИ"],
   ["СЛЕДВАЩО НИВО / ПАЗАРИ", "Започваме тук.", "Мислим отвъд границите.", "Повече държави, езици и партньори. Една система.", "Пазари"],
-  ["ENCHEV / ЦЕНТЪР ЗА УПРАВЛЕНИЕ", "Целият път.", "В една система.", "Автомобили. Търгове. Сделки. Доставки. EAuctions от SOULFLAME.", "ENCHEV"],
+  ["ENCHEV / ЦЕНТЪР ЗА УПРАВЛЕНИЕ", "Целият път.", "В една система.", "Автомобили. Търгове. Сделки. Доставки. EАукциони от SOULFLAME.", "ENCHEV"],
 ] as const;
 
 const voiceTracks = [
@@ -140,7 +140,7 @@ export default function PresentationExperience() {
   return <main id="main-content" ref={root} className={s.presentation} data-playing={playing && visible} data-reduced={reduced}
     onKeyDown={event => { if ((event.target as HTMLElement).closest("button,a,input")) return; if (event.key === "ArrowRight") { event.preventDefault(); go(active + 1); } if (event.key === "ArrowLeft") { event.preventDefault(); go(active - 1); } }} tabIndex={-1}>
     <audio ref={audioRef} preload="auto" aria-hidden="true" />
-    <header className={s.topbar}><a href="/" className={s.brand}><b>E<span>Auctions</span></b><small>ОТ ENCHEV</small></a><span className={s.edition}>ЕДИН АВТОМОБИЛ. ЦЕЛИЯТ ПЪТ.</span><a className={s.exit} href="/">Към сайта ↗</a></header>
+    <header className={s.topbar}><a href="/" className={s.brand}><b>E<span>Аукциони</span></b><small>ОТ ENCHEV</small></a><span className={s.edition}>ЕДИН АВТОМОБИЛ. ЦЕЛИЯТ ПЪТ.</span><a className={s.exit} href="/">Към сайта ↗</a></header>
     <section className={s.stage} aria-label="Анимирана продуктова презентация">
       <div className={s.ambient}/><div className={s.grain}/>
       <div key={`copy-${active}`} className={s.copy}>
@@ -152,7 +152,7 @@ export default function PresentationExperience() {
       </div>
       <div key={`visual-${active}`} className={`${s.visual} ${active === 0 ? s.hero : ""}`}>
         {active <= 8 && <div className={s.carFrame} data-scene={active}>
-          <Image unoptimized src={CAR} alt="Автомобилът в демонстрационната история на EAuctions" fill sizes="(max-width: 760px) 100vw, 65vw" priority className={s.car}/>
+          <Image unoptimized src={CAR} alt="Автомобилът в демонстрационната история на EАукциони" fill sizes="(max-width: 760px) 100vw, 65vw" priority className={s.car}/>
           <div className={s.carShade}/><span className={s.lot}>EA–10539 <i/> ДЕМО</span>
           {active === 0 && <div className={s.orbit}><span>01 / Избираш</span><span>02 / Наддаваш</span><span>03 / Получаваш</span></div>}
           {active === 1 && <div className={s.glass}><small>ДИГИТАЛНО ДОСИЕ</small><h2>EA–10539 <em>✓</em></h2><Row label="Автомобил" value="Регистриран"/><Row label="Местоположение" value="Площадка ENCHEV"/><Row label="Следва" value="Проверка →"/></div>}
@@ -166,7 +166,7 @@ export default function PresentationExperience() {
         </div>}
         {active === 9 && <div className={s.ai}><div className={s.aiCore}>E<span>ИИ ПОМОЩНИК</span></div><div className={s.aiCards}>{[["01","Липсва документ","Напомняне до екипа"],["02","Предстои доставка","Следваща задача"],["03","Дневен отчет","Информация за управителя"]].map(([n,t,d])=><div key={n}><small>{n} / АВТОМАТИЗАЦИЯ</small><h3>{t}</h3><p>{d}</p></div>)}</div><span className={s.protected}>✓ Резултатът от търга се определя от основната система</span></div>}
         {active === 10 && <div className={s.world}><div className={s.worldRing}/><div className={s.worldRing}/><div className={s.worldRing}/><strong>ENCHEV<small>ЕДНО ЯДРО. НОВИ ПАЗАРИ.</small></strong>{["България", "Германия", "Гърция", "Румъния", "Италия"].map((v,i)=><span key={v} className={s.market} style={{animationDelay:`${i*.3}s`}}>{v}<i/></span>)}</div>}
-        {active === 11 && <div className={s.dashboard}><div className={s.dashboardHead}><b>ENCHEV <span>/ ЦЕНТЪР ЗА УПРАВЛЕНИЕ</span></b><small>ПРИМЕРНИ ДАННИ</small></div><div className={s.metrics}>{[["247","Автомобили"],["12","Търгове"],["22","Доставки"]].map(([n,l])=><div key={l}><small>{l}</small><strong>{n}</strong><span>Всичко пред теб ↗</span></div>)}</div><div className={s.chart}>{[30,45,38,55,48,70,62,78,73,89,85,100].map((h,i)=><i key={i} style={{height:`${h}%`,animationDelay:`${i*.06}s`}}/>)}</div><Row label="EA–10539" value="✓ Доставен"/><Row label="EA–10614" value="↗ В транспорт"/><Row label="EA–10633" value="▤ Документи"/><div className={s.dashboardFoot}>EAuctions от SOULFLAME.</div></div>}
+        {active === 11 && <div className={s.dashboard}><div className={s.dashboardHead}><b>ENCHEV <span>/ ЦЕНТЪР ЗА УПРАВЛЕНИЕ</span></b><small>ПРИМЕРНИ ДАННИ</small></div><div className={s.metrics}>{[["247","Автомобили"],["12","Търгове"],["22","Доставки"]].map(([n,l])=><div key={l}><small>{l}</small><strong>{n}</strong><span>Всичко пред теб ↗</span></div>)}</div><div className={s.chart}>{[30,45,38,55,48,70,62,78,73,89,85,100].map((h,i)=><i key={i} style={{height:`${h}%`,animationDelay:`${i*.06}s`}}/>)}</div><Row label="EA–10539" value="✓ Доставен"/><Row label="EA–10614" value="↗ В транспорт"/><Row label="EA–10633" value="▤ Документи"/><div className={s.dashboardFoot}>EАукциони от SOULFLAME.</div></div>}
       </div>
       <span className={s.watermark}>EA</span>
     </section>
