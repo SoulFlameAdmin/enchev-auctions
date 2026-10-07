@@ -37,28 +37,28 @@ export default function DesignProcess2({open,onClose}:{open:boolean;onClose:()=>
     <header className="controlHeader">
       <div>
         <div className="eyebrow">ENCHEV DESIGN PROCESS 2 · WORLD-CLASS MOBILE + DESKTOP</div>
-        <h1>Design Process 2</h1>
-        <p>Новият premium redesign процес е отделен от завършения Design Plan V1. DAVID работи последователно по DP2-01 → DP2-30 и маркира GREEN само с implementation + test + evidence.</p>
+        <h1>Дизайн процес 2</h1>
+        <p>Новият premium redesign процес е отделен от завършения Design Plan V1. DAVID работи последователно по DP2-01 → DP2-30 и маркира ЗЕЛЕНО само с implementation + test + evidence.</p>
       </div>
-      <button className="closeControl" onClick={onClose} aria-label="Затвори Design Process 2">×</button>
+      <button className="closeControl" onClick={onClose} aria-label="Затвори Дизайн процес 2">×</button>
     </header>
 
     <div className="controlKpis">
       <div><span>ПРОГРЕС</span><b>{progress}%</b><small>{tasks.length} DP2 задачи</small></div>
-      <div className="kGreen"><span>GREEN</span><b>{counts.green}</b><small>доказано</small></div>
-      <div className="kYellow"><span>YELLOW</span><b>{counts.yellow}</b><small>частично / чака proof</small></div>
-      <div className="kRed"><span>RED</span><b>{counts.red}</b><small>не е завършено</small></div>
-      <div><span>NEXT</span><b className="clockText">{next?.id||"COMPLETE"}</b><small>{next?.title||"Всичко е GREEN"}</small></div>
+      <div className="kGreen"><span>ЗЕЛЕНО</span><b>{counts.green}</b><small>доказано</small></div>
+      <div className="kYellow"><span>ЖЪЛТО</span><b>{counts.yellow}</b><small>частично / чака доказателство</small></div>
+      <div className="kRed"><span>ЧЕРВЕНО</span><b>{counts.red}</b><small>не е завършено</small></div>
+      <div><span>СЛЕДВАЩО</span><b className="clockText">{next?.id||"ЗАВЪРШЕНО"}</b><small>{next?.title||"Всичко е ЗЕЛЕНО"}</small></div>
     </div>
 
     <div className="nextGrid">
-      <div className="nextCard"><span>DAVID ACTIVE TARGET</span><b>{next?`${next.id} · ${next.title}`:"DESIGN PROCESS 2 COMPLETE"}</b></div>
-      <div className="nextCard client"><span>ACCEPTANCE</span><b>Phone 360 / 390 / 430px · Desktop 1366 / 1440 / 1920-class · Chrome + Edge</b></div>
+      <div className="nextCard"><span>АКТИВНА ЦЕЛ НА DAVID</span><b>{next?`${next.id} · ${next.title}`:"ДИЗАЙН ПРОЦЕС 2 ЗАВЪРШЕН"}</b></div>
+      <div className="nextCard client"><span>ПРИЕМАНЕ</span><b>Телефон 360 / 390 / 430px · Компютър 1366 / 1440 / клас 1920 · Chrome + Edge</b></div>
     </div>
 
     <div className="controlTools">
       <div className="filterGroup">{(["all","green","yellow","red"] as const).map(v=><button key={v} className={filter===v?"active":""} onClick={()=>setFilter(v)}>{v==="all"?"Всички":v.toUpperCase()}</button>)}</div>
-      <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Търси DP2 задача..." aria-label="Търси в Design Process 2"/>
+      <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Търси DP2 задача..." aria-label="Търси в Дизайн процес 2"/>
     </div>
 
     <div className="phaseList">
@@ -81,14 +81,14 @@ export default function DesignProcess2({open,onClose}:{open:boolean;onClose:()=>
                 <div className="taskMain">
                   <span className="taskId">{task.id}</span>
                   <b>{task.title}</b>
-                  <small>{task.status==="green"?"Implementation + test + evidence":task.status==="yellow"?"Partial / pending proof / blocker":"Not completed"}</small>
+                  <small>{task.status==="green"?"Имплементация + тест + доказателство":task.status==="yellow"?"Частично / чака доказателство / блокер":"Не е завършено"}</small>
                 </div>
                 <div className="statusButtons"><button className={task.status}>{task.status.toUpperCase()}</button></div>
               </div>
               {(task.evidence||task.blocker)&&<div className="taskDetails">
-                <input readOnly value={task.evidence||""} placeholder="Evidence ще се попълни от DAVID"/>
-                <input readOnly value={task.blocker||""} placeholder="Няма blocker"/>
-                <span>{task.updatedAt?`Update ${new Date(task.updatedAt).toLocaleString("bg-BG")}`:"No update yet"}</span>
+                <input readOnly value={task.evidence||""} placeholder="Доказателството ще се попълни от DAVID"/>
+                <input readOnly value={task.blocker||""} placeholder="Няма блокер"/>
+                <span>{task.updatedAt?`Обновено ${new Date(task.updatedAt).toLocaleString("bg-BG")}`:"Все още няма обновяване"}</span>
               </div>}
             </article>)}
           </div>
@@ -96,6 +96,6 @@ export default function DesignProcess2({open,onClose}:{open:boolean;onClose:()=>
       })}
     </div>
 
-    <footer className="controlFooter"><b>Process 2 law:</b> V1 остава frozen. DP2 задачите се изпълняват DP2-01 → DP2-30. GREEN само с evidence. Не се създава DP2-31 автоматично. Source of truth: docs/DESIGN_PROCESS_2.md + app/design-process-2-evidence.json.</footer>
+    <footer className="controlFooter"><b>Process 2 law:</b> V1 остава frozen. DP2 задачите се изпълняват DP2-01 → DP2-30. ЗЕЛЕНО само с evidence. Не се създава DP2-31 автоматично. Source of truth: docs/DESIGN_PROCESS_2.md + app/design-process-2-evidence.json.</footer>
   </section>;
 }
