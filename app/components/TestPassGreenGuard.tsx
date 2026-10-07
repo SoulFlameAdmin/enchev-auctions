@@ -10,7 +10,7 @@ const STATUS_KEY = "enchev-system-status-v5";
 const NOTES_KEY = "enchev-system-notes-v5";
 const CHANNEL_KEY = "enchev-system-realtime-v5";
 const TEST_IDS = new Set<string>(MASTER_TEST_TASK_IDS);
-const TEST_BLOCKER = "GREEN блокиран: test task изисква PASS/SUCCESS evidence.";
+const TEST_BLOCKER = "GREEN blocked: test task requires PASS/SUCCESS evidence.";
 const PASS_RE = /\b(PASS|PASSED|SUCCESS|SUCCEEDED)\b/i;
 const NON_PASS_RE = /\b(FAIL|FAILED|ERROR|PENDING|CANCELLED|CANCELED|BLOCKED)\b/i;
 
