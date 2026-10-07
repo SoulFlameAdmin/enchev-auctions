@@ -21,8 +21,8 @@ import LotNavigationBridge from "./components/LotNavigationBridge";
 import EnchevAppShell from "./components/EnchevAppShell";
 
 export const metadata: Metadata = {
-  title: "ENCHEV Auctions",
-  description: "ENCHEV — международна платформа за автомобилни търгове, LIVE наддаване, история и транспорт.",
+  title: "ENCHEV Аукциони",
+  description: "ENCHEV — международна платформа за автомобилни търгове, наддаване на живо, история и транспорт.",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
