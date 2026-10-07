@@ -125,7 +125,7 @@ export default function ProfessionalLiveAuctionUx(props:Props){
       ? "ОСТАРЯЛО СЪСТОЯНИЕ — нужно е повторно синхронизиране преди наддаване."
       : props.connectionState==="reconnecting"
         ? "ВРЪЗКАТА Е ПРЕКЪСНАТА — автоматично възстановяване; наддаването е временно спряно."
-        : "Synchronizing authoritative server state.";
+        : "Синхронизиране с потвърденото състояние на сървъра.";
 
   return <section className={`proLiveUx ${focus?"is-focus":""}`} aria-label="Професионални контроли за търг на живо" data-phase="36">
     <div className="proLiveTop" data-phase-task="36.01">
