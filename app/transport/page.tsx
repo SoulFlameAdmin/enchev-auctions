@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import "./transport.css";
 
 const baseByOrigin:Record<string,number>={"Европа":780,"Източно крайбрежие на САЩ":1650,"Западно крайбрежие на САЩ":2150,"Канада":1850};
-const typeExtra:Record<string,number>={"Седан":0,"SUV":180,"Пикап":260,"Електромобил":120};
+const typeExtra:Record<string,number>={"Седан":0,"Високопроходим автомобил":180,"Пикап":260,"Електромобил":120};
 
 export default function TransportPage(){
   const [origin,setOrigin]=useState("Източно крайбрежие на САЩ");
