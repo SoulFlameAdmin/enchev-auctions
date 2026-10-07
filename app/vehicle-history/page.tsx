@@ -9,7 +9,7 @@ export default function VehicleHistoryPage(){
   const submit=(e:FormEvent)=>{e.preventDefault();setCheckedVin(vin.trim().toUpperCase());};
 
   return <main id="main-content" className="historyPage">
-    <header className="historyHeader"><a href="/" className="historyLogo"><strong>ENCHEV</strong><span>АУКЦИОНИ</span></a><nav><a href="/inventory">Инвентар</a><a href="/live-auctions">LIVE търгове</a><a href="/transport">Транспорт</a><a className="active" href="/vehicle-history">История на МПС</a></nav><div><button>Вход</button><button className="historyGreen">Регистрация</button></div></header>
+    <header className="historyHeader"><a href="/" className="historyLogo"><strong>ENCHEV</strong><span>АУКЦИОНИ</span></a><nav><a href="/inventory">Инвентар</a><a href="/live-auctions">Търгове на живо</a><a href="/transport">Транспорт</a><a className="active" href="/vehicle-history">История на МПС</a></nav><div><button>Вход</button><button className="historyGreen">Регистрация</button></div></header>
 
     <section className="historyHero"><div><span>ИНТЕЛИГЕНТНА ПРОВЕРКА ENCHEV</span><h1>Провери историята преди да наддаваш</h1><p>VIN, регистрационен статус, известни щети, пробег и аукционни записи на едно място. Текущият екран е демонстрационен интерфейс; реалните отчети ще се свържат към външен доставчик на данни.</p></div><form className="historySearch" onSubmit={submit}><label>VIN номер<input value={vin} onChange={e=>setVin(e.target.value)} placeholder="Напр. WAUZZZ8V5KA123456" maxLength={24}/></label><button type="submit">Провери VIN →</button><small>Демонстрационен режим · не извършва реална VIN справка</small></form></section>
 
