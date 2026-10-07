@@ -60,9 +60,75 @@ for n in z.namelist():
  p=out/n;p.parent.mkdir(parents=True,exist_ok=True);data=z.read(n)
  if n.endswith(('.js','.css','.json','.svg')):data=adapt(data.decode()).encode()
  p.write_bytes(data)
+cta_map_script=r'''(() => {
+  const normalize = (value) => String(value || "").replace(/\\s+/g, " ").trim().toLowerCase();
+  const rules = [
+    { heading: "Your Route To Your Next Vehicle", label: "BID NOW", href: "/live-auctions" },
+    { heading: "Identity", label: "BID NOW", href: "/live-auctions" },
+    { heading: "Insight", label: "DOCUMENTS & TRANSPORT", href: "/transport" },
+    { heading: "Cohesion", label: "BUY", href: "/inventory" },
+    { heading: "Discovery", label: "CHECK VEHICLE", href: "/vehicle-history" },
+    { heading: "Inspection", label: "ABOUT US", href: "/presentation" },
+    { heading: "Auctions", label: "BID NOW", href: "/live-auctions" },
+    { heading: "History", label: "CHECK VEHICLE", href: "/vehicle-history" },
+    { heading: "Transport", label: "DOCUMENTS & TRANSPORT", href: "/transport" },
+    { heading: "Support", label: "SUPPORT", href: "/support" }
+  ];
+
+  function nearestRule(element) {
+    let node = element.parentElement;
+    while (node && node !== document.body) {
+      const headings = Array.from(node.querySelectorAll("h1,h2,h3,h4,h5"));
+      for (const heading of headings) {
+        const value = normalize(heading.textContent);
+        const match = rules.find((rule) => value === normalize(rule.heading) || value.includes(normalize(rule.heading)));
+        if (match) return match;
+      }
+      node = node.parentElement;
+    }
+    return null;
+  }
+
+  function applyCtas() {
+    const candidates = Array.from(document.querySelectorAll("a,button")).filter((element) => normalize(element.textContent) === "start your project");
+    for (const element of candidates) {
+      const rule = nearestRule(element);
+      if (!rule) continue;
+      if (element.dataset.enchevCtaLabel === rule.label) continue;
+      element.textContent = rule.label;
+      if (element.tagName === "A") element.setAttribute("href", rule.href);
+      element.setAttribute("aria-label", rule.label);
+      element.dataset.enchevCtaLabel = rule.label;
+    }
+  }
+
+  let scheduled = false;
+  function scheduleApply() {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      scheduled = false;
+      applyCtas();
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", applyCtas, { once: true });
+  } else {
+    applyCtas();
+  }
+
+  new MutationObserver(scheduleApply).observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+    characterData: true
+  });
+})();'''
+(out/'enchev-cta-map.js').write_text(cta_map_script)
 h=adapt(z.read('index.html').decode())
 h=re.sub(r'<script[^>]*type="application/ld\+json"[^>]*>.*?</script>','',h,flags=re.S)
 h=h.replace('</head>','<link rel="stylesheet" href="/forge/enchev-adaptation.css"><script src="/forge/enchev-adaptation.js" defer></script></head>')
+h=h.replace('</body>','<script src="/forge/enchev-cta-map.js" defer></script></body>')
 (out/'index.html').write_text(h)
 (out/'source-manifest.json').write_text(json.dumps({'source':r['page'],'externalAssets':choices,'sourceFiles':len(z.namelist()),'failedSourceRequests':r['failed']},indent=2))
 (root/'config/forge-image-paths.json').write_text(json.dumps({urllib.parse.urlsplit(base).path:local for base,local in choices.items()},indent=2))
