@@ -13,7 +13,7 @@ for (const [relative, content] of Object.entries(frontend)) {
   await writeFile(target, content);
 }
 const ctaMapScript = String.raw`(() => {
-  const normalize = (value) => String(value || "").replace(/\\s+/g, " ").trim().toLowerCase();
+  const normalize = (value) => String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
   const rules = [
     { heading: "Your Route To Your Next Vehicle", label: "BID NOW", href: "/live-auctions" },
     { heading: "Identity", label: "BID NOW", href: "/live-auctions" },
