@@ -1,10 +1,10 @@
 export const primaryNavigation = [
-  { href: "/inventory", label: "АВТОМОБИЛИ", key: "inventory" },
-  { href: "/live-auctions", label: "ТЪРГОВЕ НА ЖИВО", key: "live" },
-  { href: "/#how", label: "КАК ДА КУПЯ", key: "how" },
-  { href: "/transport", label: "ТРАНСПОРТ", key: "transport" },
-  { href: "/vehicle-history", label: "ИСТОРИЯ НА МПС", key: "history" },
-  { href: "/support", label: "ПОДДРЪЖКА", key: "support" },
+  { href: "/inventory", label: "VEHICLES", key: "inventory" },
+  { href: "/live-auctions", label: "LIVE AUCTIONS", key: "live" },
+  { href: "/#how", label: "HOW TO BUY", key: "how" },
+  { href: "/transport", label: "TRANSPORT", key: "transport" },
+  { href: "/vehicle-history", label: "VEHICLE HISTORY", key: "history" },
+  { href: "/support", label: "SUPPORT", key: "support" },
 ] as const;
 
 export const accountNavigation = {
