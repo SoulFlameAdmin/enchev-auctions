@@ -12,6 +12,84 @@ for (const [relative, content] of Object.entries(frontend)) {
   await mkdir(path.dirname(target), { recursive: true });
   await writeFile(target, content);
 }
+const ctaMapScript = String.raw`(() => {
+  const normalize = (value) => String(value || "").replace(/\\s+/g, " ").trim().toLowerCase();
+  const rules = [
+    { heading: "Your Route To Your Next Vehicle", label: "BID NOW", href: "/live-auctions" },
+    { heading: "Identity", label: "BID NOW", href: "/live-auctions" },
+    { heading: "Insight", label: "DOCUMENTS & TRANSPORT", href: "/transport" },
+    { heading: "Cohesion", label: "BUY", href: "/inventory" },
+    { heading: "Discovery", label: "CHECK VEHICLE", href: "/vehicle-history" },
+    { heading: "Inspection", label: "ABOUT US", href: "/presentation" },
+    { heading: "Auctions", label: "BID NOW", href: "/live-auctions" },
+    { heading: "History", label: "CHECK VEHICLE", href: "/vehicle-history" },
+    { heading: "Transport", label: "DOCUMENTS & TRANSPORT", href: "/transport" },
+    { heading: "Support", label: "SUPPORT", href: "/support" }
+  ];
+
+  function nearestRule(element) {
+    let node = element.parentElement;
+    while (node && node !== document.body) {
+      const headings = Array.from(node.querySelectorAll("h1,h2,h3,h4,h5"));
+      for (const heading of headings) {
+        const value = normalize(heading.textContent);
+        const match = rules.find((rule) => value === normalize(rule.heading) || value.includes(normalize(rule.heading)));
+        if (match) return match;
+      }
+      node = node.parentElement;
+    }
+    return null;
+  }
+
+  function applyCtas() {
+    const candidates = Array.from(document.querySelectorAll("a,button")).filter((element) => {
+      const value = normalize(element.textContent);
+      return value === "start your project" || value === "start your project";
+    });
+
+    for (const element of candidates) {
+      const rule = nearestRule(element);
+      if (!rule) continue;
+      if (element.dataset.enchevCtaLabel === rule.label) continue;
+      element.textContent = rule.label;
+      if (element.tagName === "A") element.setAttribute("href", rule.href);
+      element.setAttribute("aria-label", rule.label);
+      element.dataset.enchevCtaLabel = rule.label;
+    }
+  }
+
+  let scheduled = false;
+  function scheduleApply() {
+    if (scheduled) return;
+    scheduled = true;
+    requestAnimationFrame(() => {
+      scheduled = false;
+      applyCtas();
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", applyCtas, { once: true });
+  } else {
+    applyCtas();
+  }
+
+  new MutationObserver(scheduleApply).observe(document.documentElement, {
+    childList: true,
+    subtree: true,
+    characterData: true
+  });
+})();`;
+
+const ctaScriptPath = path.join(output, 'enchev-cta-map.js');
+await writeFile(ctaScriptPath, ctaMapScript);
+const forgeIndexPath = path.join(output, 'index.html');
+let forgeIndex = await readFile(forgeIndexPath, 'utf8');
+if (!forgeIndex.includes('/forge/enchev-cta-map.js')) {
+  forgeIndex = forgeIndex.replace('</body>', '<script src="/forge/enchev-cta-map.js" defer></script></body>');
+  await writeFile(forgeIndexPath, forgeIndex);
+}
+
 const pending = JSON.parse(await readFile(path.join(root, 'config/forge-assets.json'), 'utf8'));
 let downloaded = 0;
 await Promise.all(Array.from({ length: 6 }, async () => {
