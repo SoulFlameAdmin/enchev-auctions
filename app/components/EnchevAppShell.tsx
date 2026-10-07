@@ -41,21 +41,21 @@ export default function EnchevAppShell(){
 
   return <div className="eaAppShell" data-design-task="DP2-04" data-shell-open={open?"true":"false"}>
     <div className="eaAppUtility">
-      <div className="eaAppUtilityLive"><i aria-hidden="true"/><strong>LIVE MARKET</strong><span>Европа · САЩ · Канада</span><a className="eaAppPresentationButton" href="/presentation">ПРЕЗЕНТАЦИЯ</a></div>
-      <div className="eaAppUtilityMeta"><span>BG · EUR</span><a href="/support">Помощ</a></div>
+      <div className="eaAppUtilityLive"><i aria-hidden="true"/><strong>LIVE MARKET</strong><span>Europe · USA · Canada</span><a className="eaAppPresentationButton" href="/presentation">PRESENTATION</a></div>
+      <div className="eaAppUtilityMeta"><span>BG · EUR</span><a href="/support">Help</a></div>
     </div>
 
     <header className="eaAppHeader">
-      <a href="/" className="eaAppBrand" aria-label="ENCHEV Auctions начало">
+      <a href="/" className="eaAppBrand" aria-label="ENCHEV Auctions home">
         <strong>ENCHEV</strong><span>AUCTIONS</span>
       </a>
 
       <form className="eaAppSearch" action="/inventory" role="search">
         <span aria-hidden="true">⌕</span>
-        <input name="q" type="search" placeholder="Марка, модел, VIN, LOT..." aria-label="Търси автомобили"/>
+        <input name="q" type="search" placeholder="Make, model, VIN, LOT..." aria-label="Search vehicles"/>
       </form>
 
-      <nav className="eaAppDesktopNav" aria-label="Основна навигация">
+      <nav className="eaAppDesktopNav" aria-label="Main navigation">
         {primaryNavigation.map(item=><a
           key={item.key}
           href={item.href}
@@ -65,8 +65,8 @@ export default function EnchevAppShell(){
       </nav>
 
       <div className="eaAppAccount">
-        <a className="eaAppAccountGhost" href={accountNavigation.profile}>Вход / Профил</a>
-        <a className="eaAppAccountPrimary" href={accountNavigation.register}>Регистрация</a>
+        <a className="eaAppAccountGhost" href={accountNavigation.profile}>Login / Profile</a>
+        <a className="eaAppAccountPrimary" href={accountNavigation.register}>Register</a>
       </div>
 
       <button
@@ -74,7 +74,7 @@ export default function EnchevAppShell(){
         type="button"
         aria-expanded={open}
         aria-controls="ea-mobile-navigation"
-        aria-label={open?"Затвори менюто":"Отвори менюто"}
+        aria-label={open?"Close menu":"Open menu"}
         onClick={()=>setOpen(value=>!value)}
       >
         <span/><span/><span/>
@@ -82,22 +82,22 @@ export default function EnchevAppShell(){
     </header>
 
     <div className={`eaAppMobileLayer ${open?"is-open":""}`} aria-hidden={!open}>
-      <button className="eaAppMobileBackdrop" type="button" tabIndex={open?0:-1} aria-label="Затвори менюто" onClick={()=>setOpen(false)}/>
-      <aside id="ea-mobile-navigation" className="eaAppMobileDrawer" role="dialog" aria-modal="true" aria-label="Мобилна навигация">
+      <button className="eaAppMobileBackdrop" type="button" tabIndex={open?0:-1} aria-label="Close menu" onClick={()=>setOpen(false)}/>
+      <aside id="ea-mobile-navigation" className="eaAppMobileDrawer" role="dialog" aria-modal="true" aria-label="Mobile navigation">
         <div className="eaAppMobileTop">
-          <a href="/" className="eaAppBrand" aria-label="ENCHEV Auctions начало"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
-          <button ref={closeRef} className="eaAppMobileClose" type="button" onClick={()=>setOpen(false)} aria-label="Затвори менюто">×</button>
+          <a href="/" className="eaAppBrand" aria-label="ENCHEV Auctions home"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
+          <button ref={closeRef} className="eaAppMobileClose" type="button" onClick={()=>setOpen(false)} aria-label="Close menu">×</button>
         </div>
 
         <form className="eaAppMobileSearch" action="/inventory" role="search">
           <span aria-hidden="true">⌕</span>
-          <input name="q" type="search" placeholder="Търси автомобил..." aria-label="Търси автомобили"/>
-          <button type="submit">Търси</button>
+          <input name="q" type="search" placeholder="Search vehicle..." aria-label="Search vehicles"/>
+          <button type="submit">Search</button>
         </form>
 
-        <div className="eaAppMobileLive"><i aria-hidden="true"/><div><strong>LIVE MARKET</strong><span>Следи текущия търг в реално време</span></div></div>
+        <div className="eaAppMobileLive"><i aria-hidden="true"/><div><strong>LIVE MARKET</strong><span>Follow the current auction in real time</span></div></div>
 
-        <nav className="eaAppMobileNav" aria-label="Мобилна основна навигация">
+        <nav className="eaAppMobileNav" aria-label="Mobile main navigation">
           {primaryNavigation.map((item,index)=><a
             key={item.key}
             href={item.href}
@@ -107,11 +107,11 @@ export default function EnchevAppShell(){
         </nav>
 
         <div className="eaAppMobileAccount">
-          <a href={accountNavigation.profile}>Вход / Профил</a>
-          <a href={accountNavigation.register}>Регистрация</a>
+          <a href={accountNavigation.profile}>Login / Profile</a>
+          <a href={accountNavigation.register}>Register</a>
         </div>
 
-        <div className="eaAppMobileFoot"><span>BG · EUR</span><a href="/support">Помощ и поддръжка</a></div>
+        <div className="eaAppMobileFoot"><span>BG · EUR</span><a href="/support">Help & Support</a></div>
       </aside>
     </div>
   </div>;
