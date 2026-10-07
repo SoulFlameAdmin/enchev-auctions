@@ -19,6 +19,7 @@ import PlanStatusAuditTrail from "./components/PlanStatusAuditTrail";
 import CloudPlanStateSync from "./components/CloudPlanStateSync";
 import LotNavigationBridge from "./components/LotNavigationBridge";
 import EnchevAppShell from "./components/EnchevAppShell";
+import EnglishUiEnforcer from "./components/EnglishUiEnforcer";
 
 export const metadata: Metadata = {
   title: "ENCHEV Auctions",
@@ -36,6 +37,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <PlanStatusAuditTrail />
         <CloudPlanStateSync />
         <LotNavigationBridge />
+        <EnglishUiEnforcer />
         <EnchevAppShell />
         {children}
       </body>
