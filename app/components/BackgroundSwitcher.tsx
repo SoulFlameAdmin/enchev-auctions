@@ -65,14 +65,14 @@ export default function BackgroundSwitcher() {
   return (
     <div className="backgroundSwitcher">
       <button className="backgroundSwitcherToggle" onClick={() => setOpen((value) => !value)} aria-expanded={open}>
-        ◩ <span>Фон</span>
+        ◩ <span>Background</span>
       </button>
       {open && (
         <div className="backgroundSwitcherPanel">
-          <b>Смяна на фона</b>
-          <small>Качи PNG/JPG/WebP и снимката веднага ще стане фон на голямата hero секция.</small>
-          <button className="backgroundSwitcherPrimary" onClick={() => inputRef.current?.click()}>Качи снимка</button>
-          {hasCustom && <button className="backgroundSwitcherReset" onClick={reset}>Върни оригиналния фон</button>}
+          <b>Change background</b>
+          <small>Upload PNG/JPG/WebP and the image will immediately become the hero background.</small>
+          <button className="backgroundSwitcherPrimary" onClick={() => inputRef.current?.click()}>Upload image</button>
+          {hasCustom && <button className="backgroundSwitcherReset" onClick={reset}>Restore original background</button>}
         </div>
       )}
       <input ref={inputRef} style={{ display: "none" }} type="file" accept="image/png,image/jpeg,image/webp,image/avif" onChange={chooseImage} />
