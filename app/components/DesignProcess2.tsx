@@ -38,17 +38,17 @@ export default function DesignProcess2({open,onClose}:{open:boolean;onClose:()=>
       <div>
         <div className="eyebrow">ENCHEV DESIGN PROCESS 2 · WORLD-CLASS MOBILE + DESKTOP</div>
         <h1>Design Process 2</h1>
-        <p>Новият premium redesign процес е отделен от завършения Design Plan V1. DAVID работи последователно по DP2-01 → DP2-30 и маркира GREEN само с implementation + test + evidence.</p>
+        <p>The new premium redesign process is separate from the completed Design Plan V1. DAVID works sequentially through DP2-01 → DP2-30 and marks GREEN only with implementation + test + evidence.</p>
       </div>
       <button className="closeControl" onClick={onClose} aria-label="Close Design Process 2">×</button>
     </header>
 
     <div className="controlKpis">
-      <div><span>ПРОГРЕС</span><b>{progress}%</b><small>{tasks.length} DP2 задачи</small></div>
-      <div className="kGreen"><span>GREEN</span><b>{counts.green}</b><small>доказано</small></div>
-      <div className="kYellow"><span>YELLOW</span><b>{counts.yellow}</b><small>частично / чака proof</small></div>
-      <div className="kRed"><span>RED</span><b>{counts.red}</b><small>не е завършено</small></div>
-      <div><span>NEXT</span><b className="clockText">{next?.id||"COMPLETE"}</b><small>{next?.title||"Всичко е GREEN"}</small></div>
+      <div><span>PROGRESS</span><b>{progress}%</b><small>{tasks.length} DP2 tasks</small></div>
+      <div className="kGreen"><span>GREEN</span><b>{counts.green}</b><small>proven</small></div>
+      <div className="kYellow"><span>YELLOW</span><b>{counts.yellow}</b><small>partial / awaiting proof</small></div>
+      <div className="kRed"><span>RED</span><b>{counts.red}</b><small>not complete</small></div>
+      <div><span>NEXT</span><b className="clockText">{next?.id||"COMPLETE"}</b><small>{next?.title||"Everything is GREEN"}</small></div>
     </div>
 
     <div className="nextGrid">
@@ -58,7 +58,7 @@ export default function DesignProcess2({open,onClose}:{open:boolean;onClose:()=>
 
     <div className="controlTools">
       <div className="filterGroup">{(["all","green","yellow","red"] as const).map(v=><button key={v} className={filter===v?"active":""} onClick={()=>setFilter(v)}>{v==="all"?"All":v.toUpperCase()}</button>)}</div>
-      <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search DP2 задача..." aria-label="Search в Design Process 2"/>
+      <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search DP2 task..." aria-label="Search in Design Process 2"/>
     </div>
 
     <div className="phaseList">
@@ -86,8 +86,8 @@ export default function DesignProcess2({open,onClose}:{open:boolean;onClose:()=>
                 <div className="statusButtons"><button className={task.status}>{task.status.toUpperCase()}</button></div>
               </div>
               {(task.evidence||task.blocker)&&<div className="taskDetails">
-                <input readOnly value={task.evidence||""} placeholder="Evidence ще се попълни от DAVID"/>
-                <input readOnly value={task.blocker||""} placeholder="Няма blocker"/>
+                <input readOnly value={task.evidence||""} placeholder="Evidence will be filled by DAVID"/>
+                <input readOnly value={task.blocker||""} placeholder="No blocker"/>
                 <span>{task.updatedAt?`Update ${new Date(task.updatedAt).toLocaleString("bg-BG")}`:"No update yet"}</span>
               </div>}
             </article>)}
@@ -96,6 +96,6 @@ export default function DesignProcess2({open,onClose}:{open:boolean;onClose:()=>
       })}
     </div>
 
-    <footer className="controlFooter"><b>Process 2 law:</b> V1 остава frozen. DP2 задачите се изпълняват DP2-01 → DP2-30. GREEN само с evidence. Не се създава DP2-31 автоматично. Source of truth: docs/DESIGN_PROCESS_2.md + app/design-process-2-evidence.json.</footer>
+    <footer className="controlFooter"><b>Process 2 law:</b> V1 остава frozen. DP2 tasksте се изпълняват DP2-01 → DP2-30. GREEN само с evidence. Не се създава DP2-31 автоматично. Source of truth: docs/DESIGN_PROCESS_2.md + app/design-process-2-evidence.json.</footer>
   </section>;
 }
