@@ -26,30 +26,30 @@ const BRIDGE = "http://127.0.0.1:9445";
 
 const watchdogLabel = (value?: string | null) => {
   switch (value) {
-    case "monitoring": return "Следи ChatGPT";
-    case "gpt-thinking": return "GPT мисли / генерира";
-    case "gpt-writing": return "GPT пише";
-    case "response-started": return "GPT тръгна";
-    case "sending-relay": return "Праща следващия етап";
-    case "recovering-relay": return "Повтаря relay";
-    case "refreshing-chat": return "Refresh и нов опит";
-    case "stalled": return "GPT е забил — recovery";
-    case "answer-complete": return "Етапът приключи";
-    case "problem-detected": return "Засечен проблем";
-    case "fixing-problem": return "Оправя проблема";
-    case "problem-backoff": return "Нов fix след кратко изчакване";
-    case "problem-fixed": return "Проблемът е оправен";
-    case "human-blocked": return "Чака човешка намеса";
-    case "platform-backoff": return "Платформен лимит";
-    default: return value || "Готов";
+    case "monitoring": return "Monitoring ChatGPT";
+    case "gpt-thinking": return "GPT thinking / generating";
+    case "gpt-writing": return "GPT writing";
+    case "response-started": return "GPT response started";
+    case "sending-relay": return "Sending next stage";
+    case "recovering-relay": return "Retrying relay";
+    case "refreshing-chat": return "Refresh and retry";
+    case "stalled": return "GPT stalled — recovery";
+    case "answer-complete": return "Stage complete";
+    case "problem-detected": return "Problem detected";
+    case "fixing-problem": return "Fixing problem";
+    case "problem-backoff": return "New fix after short backoff";
+    case "problem-fixed": return "Problem fixed";
+    case "human-blocked": return "Waiting for human intervention";
+    case "platform-backoff": return "Platform limit";
+    default: return value || "Ready";
   }
 };
 
 export default function AiWorkerControl() {
   const [visible, setVisible] = useState(false);
   const [status, setStatus] = useState<WorkerStatus | null>(null);
-  const [nextTask, setNextTask] = useState("Чакам етапите...");
-  const [wave, setWave] = useState("Чакам WAVE...");
+  const [nextTask, setNextTask] = useState("Waiting for stages...");
+  const [wave, setWave] = useState("Waiting for WAVE...");
 
   const readTracker = useCallback(() => {
     const cards = Array.from(document.querySelectorAll<HTMLElement>(".nextGrid .nextCard b"));
@@ -88,15 +88,15 @@ export default function AiWorkerControl() {
 
   const running = Boolean(status?.online && status?.workerRunning);
   const hasProblem = Boolean(status?.problem || status?.platformBlocker);
-  const stateText = running ? (hasProblem ? "AI РАБОТИ · ИМА ПРОБЛЕМ" : "AI РАБОТИ") : "AI НЕ РАБОТИ";
-  const actionText = status?.lastAction || status?.lastLog || (running ? "AI е активен" : "Няма активна AI сесия");
+  const stateText = running ? (hasProblem ? "AI WORKING · PROBLEM DETECTED" : "AI WORKING") : "AI NOT WORKING";
+  const actionText = status?.lastAction || status?.lastLog || (running ? "AI is active" : "No active AI session");
   const syncText = status?.lastGitSync
     ? status.lastGitSync.ok
-      ? "кодът е синхронизиран"
+      ? "code synchronized"
       : status.lastGitSync.skipped
-        ? `sync пропуснат: ${status.lastGitSync.reason || "неизвестно"}`
-        : "sync грешка"
-    : "няма sync данни";
+        ? `sync skipped: ${status.lastGitSync.reason || "unknown"}`
+        : "sync error"
+    : "no sync data";
 
   return (
     <div className="aiWorkerStatus" style={{
@@ -144,13 +144,13 @@ export default function AiWorkerControl() {
           fontWeight: 900,
           letterSpacing: ".04em",
           whiteSpace: "nowrap"
-        }}>{running ? "AI РАБОТИ" : "AI НЕ РАБОТИ"}</div>
+        }}>{running ? "AI WORKING" : "AI NOT WORKING"}</div>
       </div>
 
       <div className="aiWorkerMeta" style={{ marginTop: 8, display: "grid", gridTemplateColumns: "1fr auto", gap: 10, alignItems: "center", color: "#8e9aa6", fontSize: 11 }}>
         <div style={{ minWidth: 0 }}>
           <span style={{ color: "#cfd6dd", fontWeight: 700 }}>{wave}</span>
-          <span> · цикли: {status?.turnsSent ?? 0}</span>
+          <span> · cycles: {status?.turnsSent ?? 0}</span>
           <span> · relay: {status?.relayAttempts ?? 0}</span>
           {status?.pid ? <span> · PID {status.pid}</span> : null}
         </div>
@@ -161,25 +161,25 @@ export default function AiWorkerControl() {
       </div>
 
       <div className="aiWorkerAction" style={{ marginTop: 6, paddingTop: 6, borderTop: "1px solid rgba(255,255,255,.07)", display: "grid", gridTemplateColumns: "auto 1fr auto", gap: 8, alignItems: "center", fontSize: 11 }}>
-        <b style={{ color: "#7f8b96", letterSpacing: ".05em" }}>КАКВО ПРАВИ:</b>
+        <b style={{ color: "#7f8b96", letterSpacing: ".05em" }}>CURRENT ACTION:</b>
         <span style={{ color: "#d3d9df", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{actionText}</span>
         <span style={{ color: status?.lastGitSync?.ok ? "#64e99a" : "#86929e", whiteSpace: "nowrap" }}>{syncText}</span>
       </div>
 
       {status?.problem ? (
         <div style={{ marginTop: 8, padding: "7px 9px", borderRadius: 9, background: "rgba(255,178,45,.10)", border: "1px solid rgba(255,178,45,.28)", color: "#ffd27a", fontSize: 11 }}>
-          <b>ПРОБЛЕМ:</b> {status.problem}
-          {(status.problemAttempts ?? 0) > 0 ? ` · DAVID fix опит ${status.problemAttempts}` : ""}
-          {status.problemRetryAt ? ` · следващ опит ${new Date(status.problemRetryAt).toLocaleTimeString("bg-BG")}` : ""}
+          <b>PROBLEM:</b> {status.problem}
+          {(status.problemAttempts ?? 0) > 0 ? ` · DAVID fix attempt ${status.problemAttempts}` : ""}
+          {status.problemRetryAt ? ` · next attempt ${new Date(status.problemRetryAt).toLocaleTimeString("en-GB")}` : ""}
         </div>
       ) : status?.lastResult === "OK" ? (
-        <div style={{ marginTop: 7, color: "#62e99a", fontSize: 11, fontWeight: 800 }}>ПОСЛЕДЕН РЕЗУЛТАТ: OK · продължава към следващия етап</div>
+        <div style={{ marginTop: 7, color: "#62e99a", fontSize: 11, fontWeight: 800 }}>LAST RESULT: OK · continuing to next stage</div>
       ) : null}
 
       {status?.platformBlocker ? (
         <div style={{ marginTop: 7, color: "#ffca59", fontSize: 11 }}>
-          Платформен blocker: {status.platformBlocker}
-          {status.platformRetryAt ? ` · автоматичен нов опит: ${new Date(status.platformRetryAt).toLocaleTimeString("bg-BG")}` : ""}
+          Platform blocker: {status.platformBlocker}
+          {status.platformRetryAt ? ` · automatic retry: ${new Date(status.platformRetryAt).toLocaleTimeString("en-GB")}` : ""}
         </div>
       ) : null}
     </div>
