@@ -40,7 +40,7 @@ export default function DesignProcess2({open,onClose}:{open:boolean;onClose:()=>
         <h1>Design Process 2</h1>
         <p>Новият premium redesign процес е отделен от завършения Design Plan V1. DAVID работи последователно по DP2-01 → DP2-30 и маркира GREEN само с implementation + test + evidence.</p>
       </div>
-      <button className="closeControl" onClick={onClose} aria-label="Затвори Design Process 2">×</button>
+      <button className="closeControl" onClick={onClose} aria-label="Close Design Process 2">×</button>
     </header>
 
     <div className="controlKpis">
@@ -57,8 +57,8 @@ export default function DesignProcess2({open,onClose}:{open:boolean;onClose:()=>
     </div>
 
     <div className="controlTools">
-      <div className="filterGroup">{(["all","green","yellow","red"] as const).map(v=><button key={v} className={filter===v?"active":""} onClick={()=>setFilter(v)}>{v==="all"?"Всички":v.toUpperCase()}</button>)}</div>
-      <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Търси DP2 задача..." aria-label="Търси в Design Process 2"/>
+      <div className="filterGroup">{(["all","green","yellow","red"] as const).map(v=><button key={v} className={filter===v?"active":""} onClick={()=>setFilter(v)}>{v==="all"?"All":v.toUpperCase()}</button>)}</div>
+      <input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search DP2 задача..." aria-label="Search в Design Process 2"/>
     </div>
 
     <div className="phaseList">
