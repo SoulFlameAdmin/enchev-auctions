@@ -133,7 +133,7 @@ a[data-enchev-cta-label]{
   [data-sanity*="path=approachHeading"],
   [data-sanity*="path=approachHeading"] h2{font-size:clamp(4.8rem,8.5vw,7.4rem)!important}
 }
-\`;
+`;
 await writeFile(path.join(output, 'enchev-bg-responsive.css'), bgResponsiveCss);
 
 const ctaMapScript = String.raw`(() => {
