@@ -12,7 +12,7 @@ for (const [relative, content] of Object.entries(frontend)) {
   await mkdir(path.dirname(target), { recursive: true });
   await writeFile(target, content);
 }
-const bgResponsiveCss = String.raw\`
+const bgResponsiveCss = String.raw`
 /* ENCHEV Bulgarian copy + responsive safety layer */
 html,body{max-width:100%;overflow-x:hidden}
 [data-sanity*="path=introductionHeading"],
