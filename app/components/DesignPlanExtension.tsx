@@ -14,7 +14,7 @@ export default function DesignPlanExtension() {
   const [open, setOpen] = useState(false);
   const [filter, setFilter] = useState<"all" | DesignStatus>("all");
   const [systemProgress, setSystemProgress] = useState<number | null>(null);
-  const [systemNext, setSystemNext] = useState("зарежда се...");
+  const [systemNext, setSystemNext] = useState("loading...");
 
   useEffect(() => {
     const patch = () => {
@@ -59,8 +59,8 @@ export default function DesignPlanExtension() {
   }, []);
   const progress = tasks.length ? Math.round((totals.green / tasks.length) * 100) : 0;
   const nextDesignTask = tasks.find((t) => t.status !== "green");
-  const designNext = nextDesignTask ? `${nextDesignTask.id} · ${nextDesignTask.title}` : "Всички дизайн точки са GREEN";
-  const summarySentence = `Системата е ${systemProgress ?? "—"}% готова, дизайнът е ${progress}%; следва System: ${systemNext}, а Design: ${designNext}.`;
+  const designNext = nextDesignTask ? `${nextDesignTask.id} · ${nextDesignTask.title}` : "All design points are GREEN";
+  const summarySentence = `System is ${systemProgress ?? "—"}% ready, design is ${progress}%; next System: ${systemNext}, and Design: ${designNext}.`;
 
   const groups = useMemo(() => {
     const map = new Map<string, DesignTask[]>();
@@ -85,7 +85,7 @@ export default function DesignPlanExtension() {
     >
       <span className="sideMenuIcon">◇</span>
       <span>
-        <b>Дизайн план</b>
+        <b>Design Plan</b>
         <small>AutoBidMaster UX reference · ENCHEV identity · {progress}%</small>
       </span>
       <span>›</span>
@@ -93,14 +93,14 @@ export default function DesignPlanExtension() {
 
     <div className="sideStatusBox designStatusBox" style={{ marginTop: 12 }}>
       <div className="liveLine"><i/> DESIGN</div>
-      <span>Дизайн прогрес</span>
+      <span>Design progress</span>
       <b>{progress}%</b>
       <div className="miniProgress"><i style={{ width: `${progress}%` }}/></div>
-      <small>{totals.green} готово · {totals.yellow} работи се · {totals.red} остава</small>
+      <small>{totals.green} done · {totals.yellow} in progress · {totals.red} remaining</small>
     </div>
 
     <div className="sideStatusBox conciseStatusBox" style={{ marginTop: 12 }}>
-      <div className="liveLine" style={{ color: "#cfd6dd" }}>НАКРАТКО</div>
+      <div className="liveLine" style={{ color: "#cfd6dd" }}>SUMMARY</div>
       <p style={{ margin: "8px 0 0", color: "#d7dde3", fontSize: 12, lineHeight: 1.55 }}>
         {summarySentence}
       </p>
@@ -113,17 +113,17 @@ export default function DesignPlanExtension() {
       <header className="controlHeader">
         <div>
           <div className="eyebrow">DESIGN PLAN v{designData.version} · ENCHEV AUCTIONS</div>
-          <h1>Enchev Auctions — Дизайн план</h1>
-          <p>Следваме доказани UX модели от AutoBidMaster като референция, но запазваме оригинални ENCHEV бранд, код, текстове, assets и визуална идентичност.</p>
+          <h1>Enchev Auctions — Design Plan</h1>
+          <p>We use proven AutoBidMaster UX patterns as a reference while keeping ENCHEV branding, code, copy, assets and visual identity original.</p>
         </div>
         <button className="closeControl" onClick={() => setOpen(false)}>×</button>
       </header>
 
       <div className="controlKpis">
-        <div><span>ДИЗАЙН ПРОГРЕС</span><b>{progress}%</b><small>{tasks.length} дизайн точки</small></div>
-        <div className="kGreen"><span>ГОТОВО</span><b>{totals.green}</b><small>с evidence</small></div>
-        <div className="kYellow"><span>РАБОТИ СЕ</span><b>{totals.yellow}</b><small>частично / тест</small></div>
-        <div className="kRed"><span>ОСТАВА</span><b>{totals.red}</b><small>не е доказано</small></div>
+        <div><span>DESIGN PROGRESS</span><b>{progress}%</b><small>{tasks.length} design points</small></div>
+        <div className="kGreen"><span>DONE</span><b>{totals.green}</b><small>with evidence</small></div>
+        <div className="kYellow"><span>IN PROGRESS</span><b>{totals.yellow}</b><small>partial / test</small></div>
+        <div className="kRed"><span>REMAINING</span><b>{totals.red}</b><small>not proven</small></div>
         <div><span>REFERENCE</span><b style={{ fontSize: 14 }}>AUTOBIDMASTER</b><small>UX / IA research only</small></div>
       </div>
 
@@ -135,7 +135,7 @@ export default function DesignPlanExtension() {
 
       <div className="controlTools">
         <div className="filterGroup">
-          {(["all", "green", "yellow", "red"] as const).map((v) => <button key={v} className={filter === v ? "active" : ""} onClick={() => setFilter(v)}>{v === "all" ? "Всички" : v === "green" ? "Готово" : v === "yellow" ? "Работи се" : "Остава"}</button>)}
+          {(["all", "green", "yellow", "red"] as const).map((v) => <button key={v} className={filter === v ? "active" : ""} onClick={() => setFilter(v)}>{v === "all" ? "All" : v === "green" ? "Done" : v === "yellow" ? "In progress" : "Остава"}</button>)}
         </div>
         <div style={{ color: "#8e9aa6", fontSize: 12 }}>Source of truth: app/design-plan-evidence.json</div>
       </div>
@@ -146,23 +146,23 @@ export default function DesignPlanExtension() {
           const pct = items.length ? Math.round(done / items.length * 100) : 0;
           return <details className="phaseBlock" key={group} open>
             <summary className="phaseHead">
-              <div><span>DESIGN</span><b>{group}</b><small>Оригинален ENCHEV UX, вдъхновен от auction best practices</small></div>
+              <div><span>DESIGN</span><b>{group}</b><small>Original ENCHEV UX inspired by auction best practices</small></div>
               <div className="phaseCounts"><i className="greenDot">{done}</i><i className="yellowDot">{items.filter((x) => x.status === "yellow").length}</i><i className="redDot">{items.filter((x) => x.status === "red").length}</i><strong>{pct}%</strong></div>
             </summary>
             <div className="phaseTasks">
               {items.map((t) => <article key={t.id} className={`taskCard task-${t.status}`}>
                 <div className="taskTop">
-                  <div className="taskMain"><span className="taskId">{t.id}</span><span className="kind kind-global">DESIGN</span><b>{t.title}</b><small>{t.status === "green" ? "Готово и доказано" : t.status === "yellow" ? "Работи се / чака визуален тест" : "Остава за изпълнение"}</small></div>
-                  <div className="statusButtons"><button className={t.status === "green" ? "green" : ""}>ГОТОВО</button><button className={t.status === "yellow" ? "yellow" : ""}>РАБОТИ СЕ</button><button className={t.status === "red" ? "red" : ""}>ОСТАВА</button></div>
+                  <div className="taskMain"><span className="taskId">{t.id}</span><span className="kind kind-global">DESIGN</span><b>{t.title}</b><small>{t.status === "green" ? "Done и доказано" : t.status === "yellow" ? "In progress / чака визуален тест" : "Pending implementation"}</small></div>
+                  <div className="statusButtons"><button className={t.status === "green" ? "green" : ""}>DONE</button><button className={t.status === "yellow" ? "yellow" : ""}>IN PROGRESS</button><button className={t.status === "red" ? "red" : ""}>REMAINING</button></div>
                 </div>
-                <div className="taskDetails"><input readOnly value={t.evidence || ""} placeholder="Evidence ще се добави от DAVID/GPT след тест"/><span>Статусът идва от source-controlled design evidence</span></div>
+                <div className="taskDetails"><input readOnly value={t.evidence || ""} placeholder="Evidence will be added by DAVID/GPT after testing"/><span>Status comes from source-controlled design evidence</span></div>
               </article>)}
             </div>
           </details>;
         })}
       </div>
 
-      <footer className="controlFooter"><b>Design правило:</b> AutoBidMaster е само UX/IA референция. Не копираме чужди logo, assets, proprietary copy, source code или точна визуална идентичност. DAVID следва D01 → D36 и обновява evidence само след реална промяна + тест.</footer>
+      <footer className="controlFooter"><b>Design rule:</b> AutoBidMaster is only a UX/IA reference. We do not copy third-party logos, assets, proprietary copy, source code or exact visual identity. DAVID follows D01 → D36 and updates evidence only after a real change + test.</footer>
     </section> : null}
   </>;
 }
