@@ -11,14 +11,14 @@ export default function SupportPage(){
     </header>
     <section className="navigationRouteMain">
       <span className="navigationRouteKicker">ENCHEV SUPPORT</span>
-      <h1>Помощ и поддръжка</h1>
-      <p>Една ясна входна точка за въпроси за търсене на автомобили, LIVE търгове, транспорт, история на МПС и работа с профила.</p>
+      <h1>Help & Support</h1>
+      <p>One clear entry point for questions about vehicle search, live auctions, transport, vehicle history and account use.</p>
       <div className="navigationRouteGrid">
-        <article className="navigationRouteCard"><b>Търсене и инвентар</b><p>Отиди към автомобилите и използвай филтрите по марка, локация и състояние.</p></article>
-        <article className="navigationRouteCard"><b>LIVE търгове</b><p>Отвори отделната LIVE зала и проследи текущия и следващия лот.</p></article>
-        <article className="navigationRouteCard"><b>Транспорт и история</b><p>Използвай специализираните ENCHEV маршрути за доставка и проверка на автомобил.</p></article>
+        <article className="navigationRouteCard"><b>Search & inventory</b><p>Go to vehicles and use filters by make, location and condition.</p></article>
+        <article className="navigationRouteCard"><b>Live auctions</b><p>Open the dedicated live room and follow the current and next lot.</p></article>
+        <article className="navigationRouteCard"><b>Transport & history</b><p>Use ENCHEV's dedicated transport and vehicle-check flows.</p></article>
       </div>
-      <div className="navigationRouteActions"><a href="/inventory">Отвори инвентара</a><a href="/live-auctions">LIVE търгове</a><a href="/profile">Профил</a></div>
+      <div className="navigationRouteActions"><a href="/inventory">Open inventory</a><a href="/live-auctions">Live auctions</a><a href="/profile">Profile</a></div>
     </section>
   </main>;
 }
