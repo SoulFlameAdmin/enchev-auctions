@@ -9,10 +9,10 @@ const LOT_SECONDS=10;
 const RESYNC_INTERVAL_MS=3000;
 const STALE_AFTER_MS=4500;
 const lots=[
-  {lot:"EA-10511",title:"2021 Mercedes-Benz GLC",location:"Мюнхен, Германия",damage:"Повреда отпред",mileage:"64 900 km",price:18400,image:"https://images.unsplash.com/photo-1612280782903-d34dcdc10107?auto=format&fit=crop&w=1500&q=86"},
-  {lot:"EA-10539",title:"2022 Audi RS3 Sportback",location:"Крю, Великобритания",damage:"Леки драскотини",mileage:"41 280 km",price:21900,image:"https://images.unsplash.com/photo-1655283733642-f1d813b40616?auto=format&fit=crop&w=1500&q=86"},
-  {lot:"EA-10603",title:"2026 Volkswagen Golf GTI",location:"Лондон, Великобритания",damage:"Без заявени щети",mileage:"9 870 km",price:16250,image:"https://images.unsplash.com/photo-1767949374162-5cbb31071b8f?auto=format&fit=crop&w=1500&q=86"},
-  {lot:"EA-10627",title:"2020 BMW X5 xDrive40i",location:"Тексас, САЩ",damage:"Повреда отзад",mileage:"96 210 km",price:15100,image:"https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1500&q=86"},
+  {lot:"EA-10511",title:"2021 Mercedes-Benz GLC",location:"Мюнхен, Германия",damage:"Повреда отпред",mileage:"64 900 км",price:18400,image:"https://images.unsplash.com/photo-1612280782903-d34dcdc10107?auto=format&fit=crop&w=1500&q=86"},
+  {lot:"EA-10539",title:"2022 Audi RS3 Sportback",location:"Крю, Великобритания",damage:"Леки драскотини",mileage:"41 280 км",price:21900,image:"https://images.unsplash.com/photo-1655283733642-f1d813b40616?auto=format&fit=crop&w=1500&q=86"},
+  {lot:"EA-10603",title:"2026 Volkswagen Golf GTI",location:"Лондон, Великобритания",damage:"Без заявени щети",mileage:"9 870 км",price:16250,image:"https://images.unsplash.com/photo-1767949374162-5cbb31071b8f?auto=format&fit=crop&w=1500&q=86"},
+  {lot:"EA-10627",title:"2020 BMW X5 xDrive40i",location:"Тексас, САЩ",damage:"Повреда отзад",mileage:"96 210 км",price:15100,image:"https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1500&q=86"},
 ];
 
 type BidFeedback="accepted"|"leading"|"outbid"|"rejected";
