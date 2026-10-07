@@ -55,12 +55,12 @@ export default function WatchlistPanel(){
     <div className="profileWatchlistHead">
       <div>
         <span className="profileWatchlistKicker">WATCHLIST</span>
-        <h2 id="watchlist-heading">Запазени автомобили</h2>
-        <p>Следи лотовете, които искаш да сравниш или да отвориш отново преди търга.</p>
+        <h2 id="watchlist-heading">Saved vehicles</h2>
+        <p>Track lots you want to compare or reopen before the auction.</p>
       </div>
       <div className="profileWatchlistSummary" aria-live="polite" data-saved-count={saved.length} data-live-count={liveCount}>
         <strong>{saved.length}</strong>
-        <span>запазени</span>
+        <span>saved</span>
         <small>{liveCount} LIVE</small>
       </div>
     </div>
@@ -73,7 +73,7 @@ export default function WatchlistPanel(){
           <button
             type="button"
             className="profileWatchlistRemove"
-            aria-label={`Премахни ${vehicle.title} от запазени`}
+            aria-label={`Премахни ${vehicle.title} от saved`}
             onClick={()=>remove(vehicle.lot)}
           >
             ×
@@ -83,24 +83,24 @@ export default function WatchlistPanel(){
           <span className="profileWatchlistLot">LOT {vehicle.lot}</span>
           <h3>{vehicle.title}</h3>
           <dl className="profileWatchlistFacts">
-            <div><dt>Локация</dt><dd>{vehicle.location}</dd></div>
-            <div><dt>Състояние</dt><dd>{vehicle.damage}</dd></div>
+            <div><dt>Location</dt><dd>{vehicle.location}</dd></div>
+            <div><dt>Condition</dt><dd>{vehicle.damage}</dd></div>
           </dl>
           <div className="profileWatchlistBid">
-            <span>{vehicle.state==="BUY NOW" ? "Цена" : "Текуща ставка"}</span>
+            <span>{vehicle.state==="BUY NOW" ? "Price" : "Current bid"}</span>
             <strong>€{vehicle.bid.toLocaleString("bg-BG")}</strong>
           </div>
           <div className="profileWatchlistActions">
-            <a href={`/lot/${vehicle.lot}`}>Отвори лота</a>
-            <a href="/live-auctions">LIVE зала</a>
+            <a href={`/lot/${vehicle.lot}`}>Open lot</a>
+            <a href="/live-auctions">LIVE room</a>
           </div>
         </div>
       </article>)}
     </div> : <div className="profileWatchlistEmpty" role="status">
       <span>☆</span>
-      <h3>Няма запазени автомобили</h3>
+      <h3>Няма saved автомобили</h3>
       <p>Добави лотове от инвентара и те ще се появяват тук.</p>
-      <a href="/inventory">Отвори инвентара</a>
+      <a href="/inventory">Open inventory</a>
     </div>}
   </section>;
 }
