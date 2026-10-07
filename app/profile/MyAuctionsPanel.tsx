@@ -17,11 +17,11 @@ type AuctionItem = {
 };
 
 const tabs: { key: "all" | AuctionState; label: string }[] = [
-  { key: "all", label: "Всички" },
+  { key: "all", label: "All" },
   { key: "watching", label: "Следя" },
-  { key: "bidding", label: "Наддавам" },
-  { key: "leading", label: "Водя" },
-  { key: "ended", label: "Приключили" },
+  { key: "bidding", label: "Bidding" },
+  { key: "leading", label: "Leading" },
+  { key: "ended", label: "Ended" },
 ];
 
 const items: AuctionItem[] = [
@@ -30,9 +30,9 @@ const items: AuctionItem[] = [
     title: "2022 Audi RS3 Sportback",
     location: "Crewe, UK",
     state: "leading",
-    stateLabel: "ВОДИШ",
+    stateLabel: "LEADING",
     bid: 21900,
-    note: "Твоята оферта е най-висока",
+    note: "Your bid is highest",
     image: "https://images.unsplash.com/photo-1655283733642-f1d813b40616?auto=format&fit=crop&w=1000&q=84",
   },
   {
@@ -40,9 +40,9 @@ const items: AuctionItem[] = [
     title: "2021 Mercedes-Benz GLC",
     location: "Munich, DE",
     state: "bidding",
-    stateLabel: "НАДДАВАШ",
+    stateLabel: "BIDDING",
     bid: 18500,
-    note: "Нужна е по-висока оферта",
+    note: "A higher bid is needed",
     image: "https://images.unsplash.com/photo-1612280782903-d34dcdc10107?auto=format&fit=crop&w=1000&q=84",
   },
   {
@@ -50,9 +50,9 @@ const items: AuctionItem[] = [
     title: "2020 BMW X5 xDrive40i",
     location: "Texas, USA",
     state: "watching",
-    stateLabel: "СЛЕДИШ",
+    stateLabel: "WATCHING",
     bid: 15100,
-    note: "Още не си наддавал",
+    note: "You have not bid yet",
     image: "https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1000&q=84",
   },
   {
@@ -60,9 +60,9 @@ const items: AuctionItem[] = [
     title: "2019 Porsche Macan S",
     location: "Rotterdam, NL",
     state: "ended",
-    stateLabel: "ПРИКЛЮЧИЛ",
+    stateLabel: "ENDED",
     bid: 24700,
-    note: "Търгът е приключил",
+    note: "The auction has ended",
     image: "https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=1000&q=84",
   },
 ];
@@ -75,10 +75,10 @@ export default function MyAuctionsPanel(){
     <div className="myAuctionsHead">
       <div>
         <span className="myAuctionsKicker">MY AUCTIONS</span>
-        <h2 id="my-auctions-heading">Моите търгове</h2>
-        <p>Единен изглед за лотовете, които следиш, за които наддаваш, водиш или вече са приключили.</p>
+        <h2 id="my-auctions-heading">My Auctions</h2>
+        <p>One view for lots you watch, bid on, lead or that have ended.</p>
       </div>
-      <a href="/live-auctions" className="myAuctionsLiveLink">Отвори LIVE залата →</a>
+      <a href="/live-auctions" className="myAuctionsLiveLink">Open live room →</a>
     </div>
 
     <div className="myAuctionsTabs" role="tablist" aria-label="Филтър на моите търгове">
@@ -98,7 +98,7 @@ export default function MyAuctionsPanel(){
 
     <div className="myAuctionsList" role="tabpanel" data-active-tab={active} data-visible-count={visible.length}>
       {visible.map(item=><article className="myAuctionRow" data-lot-id={item.lot} data-auction-state={item.state} key={item.lot}>
-        <a className="myAuctionMedia" href={`/lot/${item.lot}`} aria-label={`Отвори ${item.title}`}>
+        <a className="myAuctionMedia" href={`/lot/${item.lot}`} aria-label={`Open ${item.title}`}>
           <img src={item.image} alt={item.title}/>
         </a>
         <div className="myAuctionMain">
@@ -111,12 +111,12 @@ export default function MyAuctionsPanel(){
           <small>{item.note}</small>
         </div>
         <div className="myAuctionBid">
-          <span>{item.state==="ended" ? "Финална цена" : "Текуща ставка"}</span>
+          <span>{item.state==="ended" ? "Final price" : "Current bid"}</span>
           <strong>€{item.bid.toLocaleString("bg-BG")}</strong>
         </div>
         <div className="myAuctionAction">
           <a href={item.state==="ended" ? `/lot/${item.lot}` : "/live-auctions"}>
-            {item.state==="ended" ? "Детайли" : "Към търга"}
+            {item.state==="ended" ? "Details" : "Към търга"}
           </a>
         </div>
       </article>)}
