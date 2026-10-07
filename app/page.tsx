@@ -4,13 +4,13 @@ export default function Home(){
   return (
     <main
       id="main-content"
-      aria-label="ENCHEV Аукциони"
+      aria-label="ENCHEV Auctions"
       data-cinematic-tracker="connected"
       style={{ minHeight:"100vh", background:"#000", overflow:"hidden" }}
     >
       <iframe
         src="/forge/index.html"
-        title="Кинематографична начална страница на ENCHEV Аукциони"
+        title="ENCHEV Auctions cinematic homepage"
         style={{
           position:"fixed",
           inset:0,
