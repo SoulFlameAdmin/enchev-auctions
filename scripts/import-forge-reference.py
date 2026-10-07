@@ -63,16 +63,16 @@ for n in z.namelist():
 cta_map_script=r'''(() => {
   const normalize = (value) => String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
   const rules = [
-    { heading: "Your Route To Your Next Vehicle", label: "BID NOW", href: "/live-auctions" },
-    { heading: "Identity", label: "BID NOW", href: "/live-auctions" },
-    { heading: "Insight", label: "DOCUMENTS & TRANSPORT", href: "/transport" },
-    { heading: "Cohesion", label: "BUY", href: "/inventory" },
-    { heading: "Discovery", label: "CHECK VEHICLE", href: "/vehicle-history" },
-    { heading: "Inspection", label: "ABOUT US", href: "/presentation" },
-    { heading: "Auctions", label: "BID NOW", href: "/live-auctions" },
-    { heading: "History", label: "CHECK VEHICLE", href: "/vehicle-history" },
-    { heading: "Transport", label: "DOCUMENTS & TRANSPORT", href: "/transport" },
-    { heading: "Support", label: "SUPPORT", href: "/support" }
+    { heading: "Your Route To Your Next Vehicle", label: "НАДДАВАЙ", href: "/live-auctions" },
+    { heading: "Identity", label: "НАДДАВАЙ", href: "/live-auctions" },
+    { heading: "Insight", label: "ДОКУМЕНТИ И ТРАНСПОРТ", href: "/transport" },
+    { heading: "Cohesion", label: "КУПИ", href: "/inventory" },
+    { heading: "Discovery", label: "ПРОВЕРИ АВТОМОБИЛА", href: "/vehicle-history" },
+    { heading: "Inspection", label: "ЗА НАС", href: "/presentation" },
+    { heading: "Auctions", label: "НАДДАВАЙ", href: "/live-auctions" },
+    { heading: "History", label: "ПРОВЕРИ АВТОМОБИЛА", href: "/vehicle-history" },
+    { heading: "Transport", label: "ДОКУМЕНТИ И ТРАНСПОРТ", href: "/transport" },
+    { heading: "Support", label: "ПОДДРЪЖКА", href: "/support" }
   ];
 
   function nearestRule(element) {
@@ -102,14 +102,110 @@ cta_map_script=r'''(() => {
     }
   }
 
+  const textTranslations = new Map([
+    ["skip to content","Към съдържанието"],
+    ["navigate","Навигация"],
+    ["close","Затвори"],
+    ["we connect you with vehicles","Свързваме те с правилния автомобил"],
+    ["you choose your next one","Ти избираш следващия"],
+    ["for those who refuse ordinary","За тези, които отказват обикновеното"],
+    ["an international vehicle auction marketplace for discovery, bidding and delivery.","Международна платформа за автомобили, търгове и доставка на едно място."],
+    ["your route to your next vehicle","Твоят път към следващия автомобил"],
+    ["every decision is intentional, every detail has purpose based on your taste, your lifestyle, and your standards.","Всяко решение е премерено, а всеки детайл има смисъл според твоя вкус, начин на живот и стандарти."],
+    ["identity","Идентичност"],
+    ["every build begins with the person behind the wheel, shaped around their individual taste, lifestyle, presence and personal sense of identity on the road.","Всичко започва с човека зад волана — неговия вкус, начин на живот, присъствие и личен стил на пътя."],
+    ["insight","Поглед отвъд детайла"],
+    ["exterior, interior and performance are brought together through a considered, detail-led approach, creating one complete and fully resolved vision.","Екстериорът, интериорът и представянето се обединяват в цялостна, прецизно изградена визия."],
+    ["cohesion","Цялостност"],
+    ["every modification is chosen with precision, ensuring each detail adds purpose, balance and distinction to the final bespoke automotive build.","Всеки избор е направен прецизно, така че всеки детайл да добавя смисъл, баланс и характер."],
+    ["a vehicle should say something before it moves. every line, material, and finish is considered.","Автомобилът трябва да казва нещо още преди да потегли. Всяка линия, материал и завършек са обмислени."],
+    ["our services are shaped with intent, from exterior styling and interior refinement to performance upgrades, detailing and bespoke finishes; each detail sharpens the vehicle’s character without overpowering it.","Услугите ни са изградени с ясна цел — от откриването и проверката на автомобил до търга, историята, транспорта и поддръжката."],
+    ["service","Услуга"],
+    ["discovery","Откриване"],
+    ["from aero styling to carbon details and exterior refinement, bodywork is designed to change the vehicle’s presence without compromising its original character.","Открий автомобила, който отговаря на твоите изисквания, с ясна информация за лота и състоянието му."],
+    ["inspection","Проверка"],
+    ["material, stitching, trim and finish are selected to create an interior that feels personal, tactile and composed. we turn the cabin into a space of identity, comfort and control.","Провери автомобила преди покупка — данни, състояние, история и ключови детайли на едно място."],
+    ["auctions","Търгове"],
+    ["bespoke wheel upgrades designed to enhance stance, proportion and road presence, with fitments selected to complement the vehicle’s character and performance.","Наддавай в реално време и следи текущата цена, оставащото време и резултата от търга."],
+    ["history","История"],
+    ["history gives a vehicle its expression. from subtle tinting to signature illumination and refined visual details, we use light to sharpen character, presence and atmosphere.","Провери VIN, известни щети, пробег, регистрационен статус и налични аукционни записи."],
+    ["transport","Транспорт"],
+    ["transport upgrades are chosen for tone, response and presence. not noise for the sake of noise, but a sound profile that gives the vehicle more character and depth.","Организираме пътя на автомобила от площадката до България и до избрания от теб адрес."],
+    ["support","Поддръжка"],
+    ["paint protective film solutions that preserve the finish of the vehicle while allowing for satin finishes, coloured films and full visual transformation.","Една ясна точка за помощ при автомобили, търгове, документи, транспорт и работа с платформата."],
+    ["ordinary","Обикновеното"],
+    ["ends here","свършва тук"],
+    ["complete expressions of taste, intent and individuality, shaped through detail, restraint and presence.","Подбрани автомобили, ясни данни и единен процес от избора до доставката."],
+    ["vehicle inventory","Автомобили"],
+    ["a collection of previous bespoke builds, shaped by craft, character and the people behind the wheel.","Разгледай наличните автомобили и намери следващия лот за теб."],
+    ["live auctions","Търгове на живо"],
+    ["builds available for purchase, refined with intent, engineered with purpose, and ready to make a statement.","Следи активните търгове и наддавай в реално време."],
+    ["are you ready to","Готов ли си да"],
+    ["refuse ordinary","избереш различното"],
+    ["home","Начало"],
+    ["builds","Автомобили"],
+    ["stock","Търгове"],
+    ["contact","Поддръжка"],
+    ["cookies","Бисквитки"],
+    ["privacy","Поверителност"],
+    ["terms","Условия"],
+    ["sitemap","Карта на сайта"],
+    ["vehicle auctions with inventory, live bidding, vehicle history and transport in one place.","Автомобили, търгове на живо, история на МПС и транспорт на едно място."]
+  ]);
+
+  function translateVisibleText(){
+    document.documentElement.lang = "bg";
+    document.title = "Автомобилни търгове | ENCHEV Auctions";
+    const metaDescription = document.querySelector('meta[name="description"]');
+    if(metaDescription) metaDescription.setAttribute("content","Автомобили, търгове на живо, проверка на история и транспорт в една система.");
+
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    let node;
+    while((node = walker.nextNode())){
+      const key = normalize(node.nodeValue);
+      const translated = textTranslations.get(key);
+      if(translated) node.nodeValue = translated;
+    }
+
+    for(const element of document.querySelectorAll("[aria-label],[title],[placeholder]")){
+      for(const attribute of ["aria-label","title","placeholder"]){
+        const value = element.getAttribute(attribute);
+        const translated = value ? textTranslations.get(normalize(value)) : null;
+        if(translated) element.setAttribute(attribute, translated);
+      }
+    }
+
+    const actionMap = new Map([
+      ["/builds/", {label:"РАЗГЛЕДАЙ АВТОМОБИЛИТЕ", href:"/inventory"}],
+      ["/stock/", {label:"ТЪРГОВЕ НА ЖИВО", href:"/live-auctions"}],
+      ["/contact/", {label:"ПОДДРЪЖКА", href:"/support"}]
+    ]);
+    for(const [href, item] of actionMap){
+      for(const anchor of document.querySelectorAll('a[href="' + href + '"]')){
+        if(anchor.closest(".site-nav")) continue;
+        anchor.setAttribute("href",item.href);
+        anchor.setAttribute("aria-label",item.label);
+        anchor.textContent=item.label;
+      }
+    }
+
+    for(const button of document.querySelectorAll("button")){
+      const value=normalize(button.textContent);
+      if(value==="back to top"){
+        button.textContent="НАГОРЕ";
+        button.setAttribute("aria-label","Нагоре");
+      }
+    }
+  }
+
   const navItems = [
-    { label: "HOME", href: "/" },
-    { label: "BUY", href: "/inventory" },
-    { label: "LIVE AUCTIONS", href: "/live-auctions" },
-    { label: "CHECK VEHICLE", href: "/vehicle-history" },
-    { label: "DOCUMENTS & TRANSPORT", href: "/transport" },
-    { label: "ABOUT US", href: "/presentation" },
-    { label: "SUPPORT", href: "/support" }
+    { label: "НАЧАЛО", href: "/" },
+    { label: "КУПИ", href: "/inventory" },
+    { label: "ТЪРГОВЕ НА ЖИВО", href: "/live-auctions" },
+    { label: "ПРОВЕРИ АВТОМОБИЛА", href: "/vehicle-history" },
+    { label: "ДОКУМЕНТИ И ТРАНСПОРТ", href: "/transport" },
+    { label: "ЗА НАС", href: "/presentation" },
+    { label: "ПОДДРЪЖКА", href: "/support" }
   ];
 
   function setAnchor(anchor, item) {
@@ -194,6 +290,7 @@ cta_map_script=r'''(() => {
       scheduled = false;
       applyCtas();
       applyNavigation();
+      translateVisibleText();
     });
   }
 
@@ -201,10 +298,12 @@ cta_map_script=r'''(() => {
     document.addEventListener("DOMContentLoaded", () => {
       applyCtas();
       applyNavigation();
+      translateVisibleText();
     }, { once: true });
   } else {
     applyCtas();
     applyNavigation();
+    translateVisibleText();
   }
 
   new MutationObserver(scheduleApply).observe(document.documentElement, {
