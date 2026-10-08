@@ -1,0 +1,56 @@
+name: ENCHEV Visual Review — PC and Phone
+on:
+  push:
+    branches:
+      - fix/cinematic-intro-platform-navigation
+    paths:
+      - scripts/capture-enchev-visual-review.mjs
+      - .github/workflows/visual-review-screenshots.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  screenshots:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Build real Next.js marketplace
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+      - name: Install isolated Chromium
+        run: |
+          npm install --prefix /tmp/enchev-browser --no-save --no-package-lock playwright@1.55.1
+          /tmp/enchev-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Run actual website on local preview port
+        run: |
+          (npm start > /tmp/enchev-preview-server.log 2>&1 & echo $! > /tmp/enchev-preview.pid)
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:3000/platform >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/enchev-preview-server.log
+          exit 1
+      - name: Capture desktop and phone pages including intro
+        run: node scripts/capture-enchev-visual-review.mjs
+      - name: Upload visual review (18 real browser PNGs)
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: enchev-visual-review-pc-and-phone
+          path: visual-review/
+          if-no-files-found: error
+          retention-days: 14
+      - name: Report site errors
+        if: failure()
+        run: tail -100 /tmp/enchev-preview-server.log || true
+      - name: Stop local preview server
+        if: always()
+        run: if test -f /tmp/enchev-preview.pid; then kill "$(cat /tmp/enchev-preview.pid)" || true; fi
