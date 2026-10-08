@@ -58,6 +58,21 @@ try {
         }
         await page.waitForURL(url=>url.pathname==="/platform");
       });
+      await caseRun(`Working preview price filters and saved vehicles ${size.width}`, async () => {
+        await page.goto(base+"/inventory?priceMin=12000&priceMax=13000",{waitUntil:"domcontentloaded"});
+        await page.waitForFunction(()=>document.querySelector("main.inventoryPage")?.getAttribute("data-result-count")==="1");
+        const car=page.locator(".inventoryCard").first();
+        assert.ok((await car.innerText()).includes("BMW M4 F82"),"Price filter must return matching BMW");
+        const heart=page.getByRole("button",{name:/Save 2018 BMW M4 F82 to preview watchlist/});
+        await heart.click();
+        assert.equal(await heart.getAttribute("aria-pressed"),"true","Saved heart must update state");
+        await page.goto(base+"/profile",{waitUntil:"domcontentloaded"});
+        await page.locator('.profileWatchlistCard[data-lot-id="EA-10482"]').waitFor();
+        await page.reload({waitUntil:"domcontentloaded"});
+        await page.locator('.profileWatchlistCard[data-lot-id="EA-10482"]').waitFor();
+        await page.locator('.profileWatchlistCard[data-lot-id="EA-10482"] .profileWatchlistRemove').click();
+        await page.locator('.profileWatchlistCard[data-lot-id="EA-10482"]').waitFor({state:"detached"});
+      });
       await caseRun(`LIVE and vehicle-history routes ${size.width}`, async () => {
         await page.goto(base+"/live-auctions",{waitUntil:"domcontentloaded"});
         await page.locator(".livePage").waitFor();
