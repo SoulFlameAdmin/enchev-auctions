@@ -33,6 +33,41 @@ try {
         await page.waitForURL(url=>url.pathname==="/inventory",{timeout:15000});
         assert.ok(!page.url().includes("/forge/"),"Destination must not remain inside Forge iframe");
       });
+      await caseRun(`Every cinematic gateway opens a real top-level page ${size.width}`, async () => {
+        await page.goto(base+"/",{waitUntil:"domcontentloaded"});
+        const frame=page.frameLocator('iframe[src="/forge/index.html"]');
+        const endpoints=[
+          {href:"/platform",name:"PLATFORM"},
+          {href:"/inventory",name:"BUY"},
+          {href:"/live-auctions",name:"LIVE AUCTIONS"},
+          {href:"/vehicle-history",name:"CHECK VEHICLE"},
+          {href:"/transport",name:"TRANSPORT"},
+          {href:"/presentation",name:"ABOUT"},
+          {href:"/support",name:"SUPPORT"}
+        ];
+        for(const endpoint of endpoints){
+          const anchor=frame.locator('a[href="'+endpoint.href+'"]').first();
+          await anchor.waitFor({timeout:15000,state:"attached"});
+          assert.equal(await anchor.getAttribute("target"),"_top",endpoint.name+" must leave intro frame");
+          await anchor.evaluate(element=>element.click());
+          await page.waitForURL(url=>url.pathname===endpoint.href,{timeout:15000});
+          assert.ok(await page.locator("main#main-content").count()>0,endpoint.name+" must open real Next.js page");
+          await page.goto(base+"/",{waitUntil:"domcontentloaded"});
+        }
+        const ctas=frame.locator('[data-enchev-cta-label]');
+        const count=await ctas.count();
+        assert.ok(count>=1,"At least one cinematic CTA must be mapped");
+        for(let i=0;i<count;i++){
+          const el=ctas.nth(i);
+          const data=await el.evaluate(node=>({
+            tag:node.tagName,
+            href:node.getAttribute("href")||node.getAttribute("data-enchev-cta-href"),
+            target:node.getAttribute("target")
+          }));
+          assert.ok(data.href && data.href.startsWith("/") && !data.href.startsWith("//"),"CTA "+i+" needs real internal destination");
+          if(data.tag==="A")assert.equal(data.target,"_top","CTA "+i+" must be top-level");
+        }
+      });
       await caseRun(`Classic marketplace and brand/model discovery ${size.width}`, async () => {
         await page.goto(base+"/platform",{waitUntil:"domcontentloaded"});
         await page.locator(".eaHomeDiscoveryV2").waitFor({timeout:12000});
