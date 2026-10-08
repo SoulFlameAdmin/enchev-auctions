@@ -195,7 +195,7 @@ export default function LiveAuctionsPage(){
     <div className="liveUtility"><span><i/> ENCHEV LIVE NETWORK</span><span>Server-session demo · 10 sec per lot</span></div>
     <header className="liveHeader">
       <a href="/" className="liveLogo"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
-      <nav><a href="/inventory">Inventory</a><a className="active" href="/live-auctions">Auctionове на живо</a><a href="/transport">Transport</a><a href="/#how">How to Buy</a></nav>
+      <nav><a href="/inventory">Inventory</a><a className="active" href="/live-auctions">Auctionове на живо</a><a href="/transport">Transport</a><a href="/platform#how">How to Buy</a></nav>
       <div><button>Вход</button><button className="liveRegister">Register</button></div>
     </header>
 
