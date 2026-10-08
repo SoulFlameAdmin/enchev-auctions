@@ -2,6 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { PREVIEW_VEHICLES } from "../../data/preview-vehicles";
 import "../lot.css";
 import "../lot-d21.css";
 import "../lot-d22.css";
@@ -24,17 +25,28 @@ const history=[
 export default function LotPage(){
   const params=useParams<{id:string}>();
   const lot=String(params?.id||"EA-10539").toUpperCase();
+  const vehicle=PREVIEW_VEHICLES[lot];
+  const lotGallery=useMemo(()=>lot==="EA-10539"?gallery:vehicle?[vehicle.image]:gallery,[lot,vehicle]);
+  const title=vehicle?.title||`Unrecognized preview lot ${lot}`;
   const [activeImage,setActiveImage]=useState(0);
   const [viewerOpen,setViewerOpen]=useState(false);
   const viewerTriggerRef=useRef<HTMLButtonElement|null>(null);
   const viewerCloseRef=useRef<HTMLButtonElement|null>(null);
   const bidInputRef=useRef<HTMLInputElement|null>(null);
-  const [bid,setBid]=useState(21900);
-  const [bidInput,setBidInput]=useState("22000");
+  const [bid,setBid]=useState(vehicle?.price??0);
+  const [bidInput,setBidInput]=useState(String((vehicle?.price??0)+100));
+  const [buyNowNotice,setBuyNowNotice]=useState("");
   const [countdown,setCountdown]=useState(10);
-  const [maxBidInput,setMaxBidInput]=useState("25000");
+  const [maxBidInput,setMaxBidInput]=useState(String((vehicle?.price??0)+3000));
   const [maxBid,setMaxBid]=useState<number|null>(null);
-  const title=useMemo(()=>lot==="EA-10482"?"2018 BMW M4 F82":lot==="EA-10511"?"2021 Mercedes-Benz GLC":"2022 Audi RS3 Sportback",[lot]);
+  useEffect(()=>{
+    setBid(vehicle?.price??0);
+    setBidInput(String((vehicle?.price??0)+100));
+    setMaxBidInput(String((vehicle?.price??0)+3000));
+    setMaxBid(null);
+    setBuyNowNotice("");
+    setActiveImage(0);
+  },[lot,vehicle]);
   const minimumBid=bid+100;
 
   const placeBid=()=>{
@@ -54,8 +66,8 @@ export default function LotPage(){
     }
   };
 
-  const showPreviousImage=()=>setActiveImage(index=>(index-1+gallery.length)%gallery.length);
-  const showNextImage=()=>setActiveImage(index=>(index+1)%gallery.length);
+  const showPreviousImage=()=>setActiveImage(index=>(index-1+lotGallery.length)%lotGallery.length);
+  const showNextImage=()=>setActiveImage(index=>(index+1)%lotGallery.length);
   const focusBidPanel=()=>{
     const input=bidInputRef.current;
     if(!input)return;
@@ -76,8 +88,8 @@ export default function LotPage(){
     const focusFrame=window.requestAnimationFrame(()=>viewerCloseRef.current?.focus());
     const onKeyDown=(event:KeyboardEvent)=>{
       if(event.key==="Escape")setViewerOpen(false);
-      if(event.key==="ArrowLeft")setActiveImage(index=>(index-1+gallery.length)%gallery.length);
-      if(event.key==="ArrowRight")setActiveImage(index=>(index+1)%gallery.length);
+      if(event.key==="ArrowLeft")setActiveImage(index=>(index-1+lotGallery.length)%lotGallery.length);
+      if(event.key==="ArrowRight")setActiveImage(index=>(index+1)%lotGallery.length);
     };
     document.body.style.overflow="hidden";
     window.addEventListener("keydown",onKeyDown);
@@ -103,12 +115,12 @@ export default function LotPage(){
       <div className="lotGrid">
         <div>
           <div className="lotGallery" data-design-task="D19" aria-label={`Галерия за ${title}`}>
-            <button ref={viewerTriggerRef} type="button" className="lotMainImage" onClick={()=>setViewerOpen(true)} aria-label={`Open изображение ${activeImage+1} от ${gallery.length} на цял екран`}>
+            <button ref={viewerTriggerRef} type="button" className="lotMainImage" onClick={()=>setViewerOpen(true)} aria-label={`Open изображение ${activeImage+1} от ${lotGallery.length} на цял екран`}>
               <img src={gallery[activeImage]} alt={`${title} — изображение ${activeImage+1}`}/>
-              <span className="lotImageBadge">RUN & DRIVE · {activeImage+1}/{gallery.length}</span>
+              <span className="lotImageBadge">RUN & DRIVE · {activeImage+1}/{lotGallery.length}</span>
               <span className="lotZoomHint" aria-hidden="true">⛶ Full screen</span>
             </button>
-            <div className="lotThumbs" role="list" aria-label="Миниатюри на автомобила">{gallery.map((src,index)=><button type="button" key={src} className={`lotThumb ${index===activeImage?"active":""}`} onClick={()=>setActiveImage(index)} aria-label={`Покажи изображение ${index+1} от ${gallery.length}`} aria-pressed={index===activeImage}><img src={src} alt=""/></button>)}</div>
+            <div className="lotThumbs" role="list" aria-label="Миниатюри на автомобила">{gallery.map((src,index)=><button type="button" key={src} className={`lotThumb ${index===activeImage?"active":""}`} onClick={()=>setActiveImage(index)} aria-label={`Покажи изображение ${index+1} от ${lotGallery.length}`} aria-pressed={index===activeImage}><img src={src} alt=""/></button>)}</div>
           </div>
 
           <section className="lotSection" data-design-task="D20" aria-labelledby="lot-key-facts-title" aria-describedby="lot-key-facts-description" style={{borderColor:"rgba(39,245,138,.18)",background:"linear-gradient(180deg,rgba(13,23,16,.96),rgba(8,16,11,.96))"}}>
@@ -187,7 +199,7 @@ export default function LotPage(){
           <button type="button" className="lotViewerNav lotViewerNext" onClick={showNextImage} aria-label="Nextо изображение">›</button>
         </div>
         <div className="lotViewerBottom">
-          <span className="lotViewerCount" aria-live="polite">Изображение {activeImage+1} от {gallery.length}</span>
+          <span className="lotViewerCount" aria-live="polite">Изображение {activeImage+1} от {lotGallery.length}</span>
           <div className="lotViewerThumbs" aria-label="Избери изображение">{gallery.map((src,index)=><button type="button" key={`viewer-${src}`} className={`lotViewerThumb ${index===activeImage?"active":""}`} onClick={()=>setActiveImage(index)} aria-label={`Покажи изображение ${index+1}`} aria-pressed={index===activeImage}><img src={src} alt=""/></button>)}</div>
         </div>
       </div>
