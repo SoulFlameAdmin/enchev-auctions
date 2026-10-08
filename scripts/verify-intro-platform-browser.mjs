@@ -65,7 +65,7 @@ try {
         assert.ok((await car.innerText()).includes("BMW M4 F82"),"Price filter must return matching BMW");
         const heart=page.getByRole("button",{name:/Save 2018 BMW M4 F82 to preview watchlist/});
         await heart.click();
-        assert.equal(await heart.getAttribute("aria-pressed"),"true","Saved heart must update state");
+        assert.equal(await car.locator(".inventoryHeart").getAttribute("aria-pressed"),"true","Saved heart must update state");
         await page.goto(base+"/profile",{waitUntil:"domcontentloaded"});
         await page.locator('.profileWatchlistCard[data-lot-id="EA-10482"]').waitFor();
         await page.reload({waitUntil:"domcontentloaded"});
