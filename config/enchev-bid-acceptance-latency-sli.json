@@ -8,7 +8,7 @@
   "criticalJourneySource": "config/enchev-critical-user-journey-slis.json",
   "journeyId": "bid_submission",
   "authoritativeBidRoute": "POST /api/bids",
-  "authoritativeBidRouteImplemented": false,
+  "authoritativeBidRouteImplemented": true,
   "demoRouteExcluded": "POST /api/live-auction-clock",
   "authoritativeAuctionSource": "postgresql",
   "telemetryMayMutateAuctionState": false,
@@ -29,8 +29,15 @@
     "negativeDurationForbidden": true
   },
   "measurement": {
-    "requiredDimensions": ["environment", "operation_id", "outcome"],
-    "optionalDimensions": ["country_profile", "region"],
+    "requiredDimensions": [
+      "environment",
+      "operation_id",
+      "outcome"
+    ],
+    "optionalDimensions": [
+      "country_profile",
+      "region"
+    ],
     "correlationIdAllowed": true,
     "correlationIdAsMetricDimensionForbidden": true,
     "piiForbidden": true,

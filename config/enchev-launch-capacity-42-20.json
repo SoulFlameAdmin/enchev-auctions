@@ -1,0 +1,38 @@
+{
+  "taskId": "42.20",
+  "title": "Launch capacity limit documented",
+  "version": 1,
+  "status": "preproduction-certified-local",
+  "productionLaunchApproved": false,
+  "capacity": {
+    "apiInstancesCertified": 2,
+    "maxConcurrentBidRequestsPerApiInstance": 40,
+    "initialAggregateConcurrentBidRequests": 80,
+    "databasePoolConnectionsPerApiInstance": 20,
+    "realtimeSubscribersPerInstance": 400,
+    "admissionControlRecommendedMaxInflightPerApiInstance": 40
+  },
+  "evidenceSources": {
+    "soak": ["42.14", "42.15"],
+    "cpuPressure": "42.16",
+    "horizontalScale": "42.17",
+    "loadShedding": "42.18",
+    "integrity": "42.19",
+    "databasePool": "42.10",
+    "websocketFanout": "42.11",
+    "trafficSpike": "42.13"
+  },
+  "operatingRules": {
+    "doNotExceedDocumentedLimitsWithoutNewCertification": true,
+    "scaleBeforeSustainedSeventyPercentUtilization": true,
+    "authoritativeAuctionStateRemainsPostgreSQL": true,
+    "loadSheddingMustOccurBeforeAuthoritativeMutation": true,
+    "acceptedBidOrWinnerCorruptionTolerance": 0
+  },
+  "productionLaunchBlockers": [
+    "dedicated-auction-database-live-certification",
+    "production-websocket-session-authorization-integration",
+    "external-penetration-test-41.20",
+    "critical-high-resolution-41.21"
+  ]
+}

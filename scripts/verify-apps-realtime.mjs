@@ -3,6 +3,7 @@ import fs from "node:fs";
 const ROOT_PACKAGE = "package.json";
 const WORKSPACE_PACKAGE = "apps/realtime/package.json";
 const BOUNDARY_PATH = "apps/realtime/boundary.json";
+const RUNTIME_PATH = "apps/realtime/server.mjs";
 
 function fail(message) {
   throw new Error(`APPS_REALTIME_BOUNDARY FAIL: ${message}`);
@@ -14,14 +15,17 @@ export function validateAppsRealtime(rootPackage, workspacePackage, boundary, fs
 
   if (workspacePackage.name !== "@enchev/realtime") fail("workspace package name drift");
   if (workspacePackage.private !== true) fail("apps/realtime must remain private");
+  if (workspacePackage.scripts?.start !== "node server.mjs") fail("apps/realtime start script drift");
   if (workspacePackage.scripts?.verify !== "node ../../scripts/verify-apps-realtime.mjs") fail("apps/realtime verify script drift");
 
   if (boundary.task !== "02.03") fail("task must be 02.03");
   if (boundary.workspace !== "apps/realtime") fail("workspace path drift");
   if (boundary.package !== "@enchev/realtime") fail("boundary package drift");
   if (boundary.runtime !== "node-realtime-service") fail("runtime drift");
-  if (boundary.source_mode !== "workspace-shell") fail("source_mode drift");
-  if (boundary.implementation_state !== "not-implemented") fail("02.03 must not claim realtime implementation");
+  if (boundary.source_mode !== "runtime") fail("source_mode must reflect implemented runtime");
+  if (boundary.implementation_state !== "implemented") fail("realtime runtime must remain explicitly implemented");
+  if (boundary.network_exposure !== "loopback-only") fail("realtime runtime must remain loopback-only until production authorization is integrated");
+  if (boundary.production_session_authorization_integrated !== false) fail("production session authorization must not be claimed before integration");
   if (boundary.single_source !== true) fail("single_source must stay true");
 
   const owns = new Set(boundary.owns || []);
@@ -35,14 +39,29 @@ export function validateAppsRealtime(rootPackage, workspacePackage, boundary, fs
   }
 
   if (!fsApi.existsSync("app/api/health/realtime/route.ts")) fail("realtime health endpoint contract missing");
-  for (const forbiddenRuntime of [
-    "apps/realtime/server.ts",
-    "apps/realtime/server.mjs",
-    "apps/realtime/src/server.ts",
-    "apps/realtime/src/index.ts"
+  if (!fsApi.existsSync(RUNTIME_PATH)) fail("realtime runtime source missing");
+
+  const runtimeSource = fsApi.readFileSync(RUNTIME_PATH, "utf8");
+  for (const marker of [
+    'registry.transportAuthority !== false',
+    'server.on("upgrade"',
+    'url.pathname === "/publish"',
+    'socket.write(encoded)',
+    'const loopbackHosts = new Set(["127.0.0.1", "::1", "localhost"]);',
+    'if (!loopbackHosts.has(host))'
   ]) {
-    if (fsApi.existsSync(forbiddenRuntime)) {
-      fail(`runtime source present while implementation_state is not-implemented: ${forbiddenRuntime}`);
+    if (!runtimeSource.includes(marker)) fail(`runtime contract missing marker: ${marker}`);
+  }
+
+  for (const forbiddenAuthorityToken of [
+    "DATABASE_URL",
+    "SUPABASE_SERVICE_ROLE_KEY",
+    "enchev_place_bid",
+    "public.enchev_auctions",
+    "public.enchev_bids"
+  ]) {
+    if (runtimeSource.includes(forbiddenAuthorityToken)) {
+      fail(`realtime runtime must not own auction persistence: ${forbiddenAuthorityToken}`);
     }
   }
 
@@ -73,12 +92,15 @@ if (process.argv.includes("--self-test")) {
   expectRejected("workspace registration removed", (x) => ({ ...x, rootPackage: { ...x.rootPackage, workspaces: [] } }));
   expectRejected("workspace package renamed", (x) => ({ ...x, workspacePackage: { ...x.workspacePackage, name: "@enchev/other" } }));
   expectRejected("wrong frozen task", (x) => ({ ...x, boundary: { ...x.boundary, task: "02.04" } }));
-  expectRejected("false runtime implementation claim", (x) => ({ ...x, boundary: { ...x.boundary, implementation_state: "ready" } }));
+  expectRejected("runtime state reverted", (x) => ({ ...x, boundary: { ...x.boundary, implementation_state: "not-implemented" } }));
+  expectRejected("runtime source mode reverted", (x) => ({ ...x, boundary: { ...x.boundary, source_mode: "workspace-shell" } }));
+  expectRejected("network exposure widened", (x) => ({ ...x, boundary: { ...x.boundary, network_exposure: "public" } }));
+  expectRejected("production auth falsely claimed", (x) => ({ ...x, boundary: { ...x.boundary, production_session_authorization_integrated: true } }));
   expectRejected("auction authority leaked to realtime", (x) => ({
     ...x,
     boundary: { ...x.boundary, does_not_own: x.boundary.does_not_own.filter((v) => v !== "auction-authority") }
   }));
-  console.log("APPS_REALTIME_BOUNDARY_SELF_TEST PASS negative_cases=5");
+  console.log("APPS_REALTIME_BOUNDARY_SELF_TEST PASS negative_cases=8");
 } else {
-  console.log("APPS_REALTIME_BOUNDARY PASS workspace=apps/realtime package=@enchev/realtime implementation_state=not-implemented");
+  console.log("APPS_REALTIME_BOUNDARY PASS workspace=apps/realtime package=@enchev/realtime implementation_state=implemented");
 }

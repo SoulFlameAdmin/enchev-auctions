@@ -113,17 +113,37 @@ function runSelfTest(config, workflow) {
   validateRuntimeEnv(config, { REDIS_URL: "rediss://cache.example.test:6380" });
   validateRuntimeEnv(config, { UPSTASH_REDIS_REST_URL: "https://redis.example.test", UPSTASH_REDIS_REST_TOKEN: "x" });
   validateRuntimeEnv(config, { KV_REST_API_URL: "https://kv.example.test", KV_REST_API_TOKEN: "x" });
+  validateRuntimeEnv(config, {
+    ENCHEV_AUTH_SUPABASE_URL: "https://auth.example.supabase.co",
+    ENCHEV_AUTH_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_test",
+    ENCHEV_AUCTION_SUPABASE_URL: "https://auction.example.supabase.co",
+    ENCHEV_AUCTION_SUPABASE_SECRET_KEY: "sb_secret_test"
+  }); // complete Enchev auth pair + dedicated auction pair
 
   expectRejected("remote Redis without TLS", () => validateRuntimeEnv(config, { REDIS_URL: "redis://cache.example.test:6379" }));
   expectRejected("invalid Redis URL", () => validateRuntimeEnv(config, { REDIS_URL: "not-a-url" }));
   expectRejected("partial Upstash pair", () => validateRuntimeEnv(config, { UPSTASH_REDIS_REST_URL: "https://redis.example.test" }));
   expectRejected("partial KV pair", () => validateRuntimeEnv(config, { KV_REST_API_TOKEN: "x" }));
+  expectRejected("partial Enchev auth pair", () => validateRuntimeEnv(config, {
+    ENCHEV_AUTH_SUPABASE_URL: "https://auth.example.supabase.co"
+  }));
+  expectRejected("partial Enchev auction pair", () => validateRuntimeEnv(config, {
+    ENCHEV_AUCTION_SUPABASE_SECRET_KEY: "sb_secret_test"
+  }));
+  expectRejected("Enchev auth URL without HTTPS", () => validateRuntimeEnv(config, {
+    ENCHEV_AUTH_SUPABASE_URL: "http://auth.example.supabase.co",
+    ENCHEV_AUTH_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_test"
+  }));
+  expectRejected("Enchev auction URL without HTTPS", () => validateRuntimeEnv(config, {
+    ENCHEV_AUCTION_SUPABASE_URL: "http://auction.example.supabase.co",
+    ENCHEV_AUCTION_SUPABASE_SECRET_KEY: "sb_secret_test"
+  }));
   expectRejected("REST URL without HTTPS", () => validateRuntimeEnv(config, { UPSTASH_REDIS_REST_URL: "http://redis.example.test", UPSTASH_REDIS_REST_TOKEN: "x" }));
   expectRejected("duplicate descriptor", () => validateConfig({ ...config, variables: [...config.variables, config.variables[0]] }));
   expectRejected("embedded value", () => validateConfig({ ...config, variables: config.variables.map((v, i) => i === 0 ? { ...v, value: "x" } : v) }));
   expectRejected("public secret descriptor", () => validateConfig({ ...config, variables: [...config.variables, { name: "NEXT_PUBLIC_API_TOKEN", kind: "string", required: false, secret: true }] }));
 
-  console.log("ENV_VAR_VALIDATION_SELF_TEST PASS positive_cases=5 negative_cases=8");
+  console.log("ENV_VAR_VALIDATION_SELF_TEST PASS positive_cases=6 negative_cases=12");
 }
 
 const config = JSON.parse(fs.readFileSync(CONFIG_PATH, "utf8"));

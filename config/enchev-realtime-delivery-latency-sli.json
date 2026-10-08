@@ -7,7 +7,7 @@
   "latencyBudgetOwnershipTask": "27.09",
   "eventRegistrySource": "config/enchev-websocket-event-registry.json",
   "realtimeWorkspace": "apps/realtime",
-  "realtimeRuntimeImplemented": false,
+  "realtimeRuntimeImplemented": true,
   "authoritativeAuctionSource": "postgresql",
   "telemetryMayMutateAuctionState": false,
   "indicator": {
@@ -36,8 +36,15 @@
     "duplicateDeliveryMayNotCreateSecondLatencySample": true
   },
   "measurement": {
-    "requiredDimensions": ["environment", "event_type", "outcome"],
-    "optionalDimensions": ["region", "country_profile"],
+    "requiredDimensions": [
+      "environment",
+      "event_type",
+      "outcome"
+    ],
+    "optionalDimensions": [
+      "region",
+      "country_profile"
+    ],
     "correlationIdAllowedForDiagnostics": true,
     "correlationIdAsMetricDimensionForbidden": true,
     "auctionIdAsMetricDimensionForbidden": true,

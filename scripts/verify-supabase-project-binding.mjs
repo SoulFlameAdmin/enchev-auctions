@@ -4,6 +4,7 @@ const CONFIG_PATH = 'config/enchev-supabase-project.json';
 const CLIENT_PATH = 'app/components/CloudPlanStateSync.tsx';
 const SYNC_PATH = 'scripts/sync-cloud-plan-state.mjs';
 const WORKFLOW_PATH = '.github/workflows/verify-enchev-web.yml';
+const FUNCTION_SOURCE_PATH = 'supabase/functions/enchev-plan-state/index.ts';
 
 const EXPECTED = {
   project_ref: 'frhletkiuupgksmgxoxc',
@@ -54,6 +55,12 @@ export function validateBinding(config, sources) {
   if (!sources.workflow.includes('Supabase project binding self-tests')) fail('CI self-test step missing');
   if (!sources.workflow.includes('Supabase project live endpoint')) fail('CI live endpoint step missing');
 
+  if (!sources.edgeFunctionSource.includes("retry: 30000")) fail('plan-state stream reconnect contract missing');
+  if (!sources.edgeFunctionSource.includes("if (url.searchParams.get('stream') === '1') return await streamState();")) fail('plan-state stream route contract missing');
+  if (sources.edgeFunctionSource.includes('new ReadableStream')) fail('long-lived Edge Function stream is forbidden');
+  if (sources.edgeFunctionSource.includes('setInterval(')) fail('polling loop inside Edge Function is forbidden');
+  if (sources.edgeFunctionSource.includes('55000')) fail('legacy 55-second stream timeout is forbidden');
+
   return { endpoint, projectRef: config.project_ref, region: config.region };
 }
 
@@ -84,7 +91,16 @@ function runSelfTest(config, sources) {
     if (!rejected) fail(`negative self-test ${index + 1} was not rejected`);
   }
 
-  console.log(`SUPABASE_PROJECT_BINDING_SELF_TEST PASS cases=${badCases.length}`);
+  let legacyStreamRejected = false;
+  try {
+    validateBinding(config, {
+      ...sources,
+      edgeFunctionSource: sources.edgeFunctionSource + "\nnew ReadableStream();\nsetInterval(()=>{},3000);\n55000\n",
+    });
+  } catch { legacyStreamRejected = true; }
+  if (!legacyStreamRejected) fail('legacy long-lived stream regression was not rejected');
+
+  console.log(`SUPABASE_PROJECT_BINDING_SELF_TEST PASS cases=${badCases.length + 1}`);
 }
 
 const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
@@ -92,6 +108,7 @@ const sources = {
   client: fs.readFileSync(CLIENT_PATH, 'utf8'),
   sync: fs.readFileSync(SYNC_PATH, 'utf8'),
   workflow: fs.readFileSync(WORKFLOW_PATH, 'utf8'),
+  edgeFunctionSource: fs.readFileSync(FUNCTION_SOURCE_PATH, 'utf8'),
 };
 
 if (process.argv.includes('--self-test')) {
