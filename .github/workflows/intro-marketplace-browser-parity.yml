@@ -1,0 +1,54 @@
+name: Intro and Marketplace Browser Parity
+on:
+  pull_request:
+    paths:
+      - app/**
+      - config/forge-frontend.json.gz
+      - scripts/restore-forge-assets.mjs
+      - scripts/verify-intro-platform-browser.mjs
+      - .github/workflows/intro-marketplace-browser-parity.yml
+  push:
+    branches:
+      - fix/cinematic-intro-platform-navigation
+    paths:
+      - scripts/verify-intro-platform-browser.mjs
+      - .github/workflows/intro-marketplace-browser-parity.yml
+permissions:
+  contents: read
+jobs:
+  browser-parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install project and build restored marketplace
+        run: |
+          npm ci --no-audit --no-fund
+          npm run build
+      - name: Install isolated pinned Playwright Chromium
+        run: |
+          npm install --prefix /tmp/enchev-browser --no-save --no-package-lock playwright@1.55.1
+          /tmp/enchev-browser/node_modules/.bin/playwright install --with-deps chromium
+      - name: Start local marketplace
+        run: |
+          (npm start > /tmp/enchev-server.log 2>&1 & echo $! > /tmp/enchev-server.pid)
+          for i in $(seq 1 45); do
+            if curl -fsS http://127.0.0.1:3000/platform >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/enchev-server.log
+          exit 1
+      - name: Smoke-test intro to full marketplace on desktop and mobile
+        run: BASE_URL=http://127.0.0.1:3000 node scripts/verify-intro-platform-browser.mjs
+      - name: Server diagnostics on failure
+        if: failure()
+        run: tail -100 /tmp/enchev-server.log || true
+      - name: Stop test server
+        if: always()
+        run: if test -f /tmp/enchev-server.pid; then kill "$(cat /tmp/enchev-server.pid)" || true; fi
