@@ -101,6 +101,14 @@ export default function LotPage(){
     };
   },[viewerOpen]);
 
+  if(!vehicle)return <main id="main-content" className="lotPage">
+    <section className="lotWrap" role="status">
+      <h1>Preview lot not found</h1>
+      <p>This LOT is not in the sample inventory. No vehicle details or bids are available.</p>
+      <a href="/inventory">Back to vehicle catalog</a>
+    </section>
+  </main>;
+
   return <main id="main-content" className="lotPage">
     <header className="lotHeader">
       <a className="lotLogo" href="/"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
