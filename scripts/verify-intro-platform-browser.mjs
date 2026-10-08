@@ -73,6 +73,27 @@ try {
         await page.locator('.profileWatchlistCard[data-lot-id="EA-10482"] .profileWatchlistRemove').click();
         await page.locator('.profileWatchlistCard[data-lot-id="EA-10482"]').waitFor({state:"detached"});
       });
+      if(size.width===1440) {
+        await caseRun("Every sample car opens its own correct lot page", async () => {
+          const lots=[
+            ["EA-10482","2018 BMW M4 F82","WBS3R9C50JAK10482"],
+            ["EA-10511","2021 Mercedes-Benz GLC","WDC0G4KB1MF10511"],
+            ["EA-10539","2022 Audi RS3 Sportback","WUAZZZ8Y2NA10539"],
+            ["EA-10603","2026 Volkswagen Golf GTI","WVWZZZCD6TW10603"],
+            ["EA-10627","2020 BMW X5 xDrive40i","5UXCR6C02L910627"],
+            ["EA-10644","2019 Mercedes-AMG C43","WDDWJ6EB5KF10644"],
+            ["EA-10671","2021 Audi Q7 55 TFSI","WA1LXAF75MD10671"],
+            ["EA-10702","2023 Porsche Macan S","WP1AB2A59PL10702"],
+          ];
+          for(const [lot,title,vin] of lots){
+            await page.goto(base+"/lot/"+lot,{waitUntil:"domcontentloaded"});
+            assert.equal((await page.locator(".lotTitleRow h1").innerText()).trim(),title,lot+" correct model");
+            assert.ok((await page.locator(".lotSpecs").innerText()).includes(vin),lot+" correct VIN");
+          }
+          await page.goto(base+"/lot/EA-99999",{waitUntil:"domcontentloaded"});
+          await page.getByText("Preview lot not found",{exact:true}).waitFor();
+        });
+      }
       await caseRun(`LIVE and vehicle-history routes ${size.width}`, async () => {
         await page.goto(base+"/live-auctions",{waitUntil:"domcontentloaded"});
         await page.locator(".livePage").waitFor();
