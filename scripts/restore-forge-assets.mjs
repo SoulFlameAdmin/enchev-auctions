@@ -177,7 +177,7 @@ const ctaMapScript = String.raw`(() => {
 
     for (const element of candidates) {
       const rule = nearestRule(element);
-      const destination = rule || { label: "EXPLORE VEHICLES", href: "/inventory" };
+      const destination = rule || { label: "OPEN FULL PLATFORM", href: "/platform" };
       if (element.dataset.enchevCtaLabel === destination.label) continue;
       element.textContent = destination.label;
       if (element.tagName === "A") {
@@ -198,7 +198,8 @@ const ctaMapScript = String.raw`(() => {
     { label: "CHECK VEHICLE", href: "/vehicle-history" },
     { label: "DOCUMENTS & TRANSPORT", href: "/transport" },
     { label: "ABOUT US", href: "/presentation" },
-    { label: "SUPPORT", href: "/support" }
+    { label: "SUPPORT", href: "/support" },
+    { label: "PLATFORM", href: "/platform" }
   ];
 
   function setAnchor(anchor, item) {
@@ -254,7 +255,7 @@ const ctaMapScript = String.raw`(() => {
       const supportUnit = contact.closest("li") || contact;
       const parent = supportUnit.parentElement;
       if (parent) {
-        for (const item of navItems.slice(3, 6)) {
+        for (const item of [...navItems.slice(3, 6), navItems[7]]) {
           const clone = cloneNavUnit(contact, item);
           if (clone) parent.insertBefore(clone, supportUnit);
         }
