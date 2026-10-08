@@ -69,7 +69,7 @@ export function validate(config,sources){
   need(sources.live,/ОФЕРТАТА Е ПРИЕТА/,"28.06 bid feedback text missing");
 
   need(sources.lot,/<label className="lotBidLabel" htmlFor="lot-bid-input">/,"28.07 bid input label missing");
-  need(sources.lot,/<label>Дестинация<select/,"28.07 transport select label missing");
+  need(sources.lot,/<label>(?:Дестинация|Destination)<select/,"28.07 transport select label missing");
   need(sources.inventoryError,/role="alert" aria-labelledby="inventory-error-title"/,"28.07 accessible error alert missing");
   need(sources.inventoryLoading,/aria-busy="true" aria-live="polite"/,"28.07 accessible loading state missing");
 
