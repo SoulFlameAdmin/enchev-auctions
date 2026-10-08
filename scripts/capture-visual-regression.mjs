@@ -350,7 +350,7 @@ async function verifyD27BidFeedback(call,viewport){
 
   const expected=[
     ["accepted","ОФЕРТАТА Е ПРИЕТА",100],
-    ["leading","ВОДИШ В ТЪРГА",100],
+    ["leading","LEADING В ТЪРГА",100],
     ["outbid","НАДДАВАН СИ",100],
     ["rejected","ОФЕРТАТА Е ОТХВЪРЛЕНА",0],
   ];
