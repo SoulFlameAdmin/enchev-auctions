@@ -78,3 +78,16 @@ Current repository evidence is **not** enough to claim that the old complete pla
 - A read-only GitHub Actions resolver proposed npm lockfile updates; the branch now pins `sharp 0.35.5`, `source-map-js 1.2.2` and compatible platform binaries. The dependency-security check passed on the updated lockfile.
 - Original frozen `npm test` script restored after the CI quality guard correctly detected script drift; parity tests now run in independent CI workflows.
 - Dedicated static parity guard PASS; desktop+mobile Chromium browser-level parity check added separately and must be PASS before release.
+
+## Supabase access-control blocker
+The project security advisor reports `rls_enabled_no_policy` for all four ENCHEV-specific public tables: `enchev_cert_auctions`, `enchev_cert_bids`, `enchev_development_events`, `enchev_plan_state`. RLS enabled with no policy is generally deny-by-default for normal clients, **not** proof of a data leak, but it prevents a verified authenticated client workflow. Do not disable RLS or add permissive rules; define minimal owner/admin/worker policies against separate ENCHEV-specific roles, audit grants, and test with two distinct authenticated users before any write.
+Reference: https://supabase.com/docs/guides/database/database-linter?lint=0008_rls_enabled_no_policy
+
+## Browser parity proof
+The full desktop (1440px) and mobile (390px) Chromium browser smoke checks passed on commit `8d888ee5bb62c78fb0337f189289669d4d41cc21`:
+- cinematic frame + a top-level navigation click;
+- classic /platform homepage + brand/model search and LIVE auction status;
+- mobile filter drawer + mobile platform navigation;
+- LIVE route + demo clock response explicitly `auctionAuthority:false`;
+- VIN history route.
+This is a frontend-navigation PASS, not proof that auctions/payment/auth are operational.
