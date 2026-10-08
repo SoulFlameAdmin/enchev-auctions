@@ -39,6 +39,9 @@ try {
         await page.locator('a[href="/inventory?make=BMW"]').first().click();
         await page.waitForURL(url=>url.pathname==="/inventory" && url.searchParams.get("make")==="BMW",{timeout:12000});
         const brand = page.locator('select[aria-label="Филтър по марка"]');
+        if (size.width < 768) {
+          await page.locator(".inv2MobileFiltersToggle").click();
+        }
         await brand.waitFor();
         await page.waitForFunction(()=>document.querySelector('select[aria-label="Филтър по марка"]')?.value==="BMW");
         const model = page.locator('select[aria-label="Филтър по модел"]');
@@ -47,7 +50,12 @@ try {
         const status = page.locator('select[aria-label="Филтър по статус на търга"]');
         await status.selectOption("LIVE");
         await page.waitForFunction(()=>new URL(location.href).searchParams.get("status")==="LIVE");
-        await page.locator('a[href="/platform"]').first().click();
+        if (size.width < 768) {
+          await page.locator(".eaAppMenuButton").click();
+          await page.locator('#ea-mobile-navigation a[href="/platform"]').click();
+        } else {
+          await page.locator('.eaAppDesktopNav a[href="/platform"]').click();
+        }
         await page.waitForURL(url=>url.pathname==="/platform");
       });
       await caseRun(`LIVE and vehicle-history routes ${size.width}`, async () => {
