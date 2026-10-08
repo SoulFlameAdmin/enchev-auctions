@@ -45,12 +45,10 @@ for (const token of [
   "setBrand", "setModel", "setRegion", "setAuctionStatus",
   "setSort", "setCurrentPage", 'params.set("q"', 'params.set("make"',
   'params.set("model"', 'params.set("buyNow"', 'params.set("live"',
-  '"/lot/"',
 ]) {
-  // Lot navigation is implemented as a template literal in some releases.
-  if (token === '"/lot/"' && catalog.includes("/lot/")) continue;
   requireText(catalog, token, "Original inventory search/filter/auction-state flow");
 }
+requireText(read("app/components/LotNavigationBridge.tsx"), "/lot/", "Inventory card-to-lot navigation bridge");
 
 const nav = read("app/site-navigation.ts");
 requireText(nav, 'href: "/platform"', "Marketplace navigation");
