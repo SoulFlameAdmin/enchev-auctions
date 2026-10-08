@@ -1,14 +1,15 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { DEMO_WATCHLIST_EVENT, getDemoWatchlist, setDemoWatchlist } from "../components/demo-watchlist";
+import { DEMO_WATCHLIST_EVENT, getDemoWatchlist, setDemoWatchlist, type DemoSavedVehicle } from "../components/demo-watchlist";
 import "./watchlist.css";
 
 export default function WatchlistPanel(){
-  const [saved,setSaved]=useState(getDemoWatchlist);
+  const [saved,setSaved]=useState<DemoSavedVehicle[]>([]);
   // Browser-local preview only: authenticated cross-device sync is still missing.
   useEffect(()=>{
     const sync=()=>setSaved(getDemoWatchlist());
+    sync();
     window.addEventListener(DEMO_WATCHLIST_EVENT,sync);
     window.addEventListener("storage",sync);
     return()=>{
