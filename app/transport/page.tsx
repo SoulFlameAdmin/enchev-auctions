@@ -13,7 +13,7 @@ export default function TransportPage(){
   const estimate=useMemo(()=>baseByOrigin[origin]+typeExtra[vehicle]+(destination==="Варна"?120:destination==="Сливен"?90:0),[origin,vehicle,destination]);
 
   return <main id="main-content" className="transportPage">
-    <header className="transportHeader"><a href="/" className="transportLogo"><strong>ENCHEV</strong><span>AUCTIONS</span></a><nav><a href="/inventory">Inventory</a><a href="/live-auctions">Live auctions</a><a className="active" href="/transport">Transport</a><a href="/#how">How to Buy</a></nav><div><button>Вход</button><button className="transportGreen">Register</button></div></header>
+    <header className="transportHeader"><a href="/" className="transportLogo"><strong>ENCHEV</strong><span>AUCTIONS</span></a><nav><a href="/inventory">Inventory</a><a href="/live-auctions">Live auctions</a><a className="active" href="/transport">Transport</a><a href="/platform#how">How to Buy</a></nav><div><button>Вход</button><button className="transportGreen">Register</button></div></header>
 
     <section className="transportHero"><div><span>ENCHEV SHIPPING</span><h1>Transport from the auction to Bulgaria</h1><p>One flow for yard pickup, inland transport, port handling, international shipping and delivery to your selected city.</p><div className="transportHeroActions"><a href="#calculator">Calculate estimate</a><a className="ghost" href="/inventory">Select vehicle</a></div></div><div className="transportRouteCard"><div><span>01</span><b>Auction yard</b></div><i>→</i><div><span>02</span><b>Port / terminal</b></div><i>→</i><div><span>03</span><b>Bulgaria</b></div><i>→</i><div><span>04</span><b>To address</b></div></div></section>
 
