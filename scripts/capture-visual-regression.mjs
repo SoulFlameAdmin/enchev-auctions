@@ -721,6 +721,12 @@ async function captureOne({port,baseUrl,route,viewport,outputDir}){
   try{
     await call("Page.enable");
     await call("Runtime.enable");
+    // CDP sessions share one Chrome profile across viewports. Each D29 watchlist
+    // interaction deliberately removes a demo car, so reset only this preview
+    // fixture before each profile navigation. Never reset real user data.
+    if(route.name==="profile")await call("Page.addScriptToEvaluateOnNewDocument",{
+      source:"try { localStorage.removeItem('enchev-demo-watchlist-v1'); } catch {}",
+    });
     await call("Emulation.setDeviceMetricsOverride",{
       width:viewport.width,
       height:viewport.height,
