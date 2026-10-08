@@ -141,7 +141,7 @@ const runtimeChecks = [
   [guardSource.includes("PASS_RE"), "runtime guard must require explicit passing evidence"],
   [guardSource.includes("NON_PASS_RE"), "runtime guard must reject failing/pending evidence"],
   [guardSource.includes('nextStatuses[id] = "yellow"'), "runtime guard must downgrade invalid test GREEN to YELLOW"],
-  [guardSource.includes("test task изисква PASS/SUCCESS evidence"), "runtime guard must expose a clear blocker"],
+  [guardSource.includes("test task изисква PASS/SUCCESS evidence") || guardSource.includes("test task requires PASS/SUCCESS evidence"), "runtime guard must expose a clear blocker"],
   [layoutSource.includes('import TestPassGreenGuard from "./components/TestPassGreenGuard"'), "root layout must import TestPassGreenGuard"],
   [layoutSource.includes("<TestPassGreenGuard />"), "root layout must mount TestPassGreenGuard"],
   [String(packageJson.scripts?.prebuild || "").includes("node scripts/generate-master-test-task-ids.mjs"), "prebuild must regenerate test task IDs"],
