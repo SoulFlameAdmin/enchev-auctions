@@ -92,7 +92,7 @@ export default function LotPage(){
   return <main id="main-content" className="lotPage">
     <header className="lotHeader">
       <a className="lotLogo" href="/"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
-      <nav className="lotNav"><a href="/inventory">Inventory</a><a href="/live-auctions">Live auctions</a><a href="/#how">How it works</a><a href="/transport">Transport</a></nav>
+      <nav className="lotNav"><a href="/inventory">Inventory</a><a href="/live-auctions">Live auctions</a><a href="/platform#how">How it works</a><a href="/transport">Transport</a></nav>
       <div className="lotHeaderActions"><a href="/inventory">← Back</a><button className="lotGreen">Вход</button></div>
     </header>
 
