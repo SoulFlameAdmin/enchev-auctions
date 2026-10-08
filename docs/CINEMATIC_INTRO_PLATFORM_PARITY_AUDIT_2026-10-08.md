@@ -6,10 +6,10 @@
 - All old capabilities are retained or deliberately migrated; there is no replacement of a working flow with a screenshot, mock card or fake button.
 - A visible screen/route is not proof of production functionality. Test persisted, authorized, end-to-end behavior.
 
-## Current route inventory (checked against repository `main`)
+## Route inventory (verified against pre-intro commit `6fd2c77` and branch restore)
 | Route | Present | Current evidence and limitation |
 | --- | --- | --- |
-| `/` | Yes | Cinematic Forge iframe + Master System Plan overlay. |
+| `/` | Yes | Cinematic Forge iframe + Master System Plan overlay. |\n| `/platform` | Restored in PR #367 | Original September 19 marketplace homepage code is preserved with live spotlight, advanced make/model search entrance, brand links, live/buy-now shortcuts, featured vehicles, buyer journey and footer. |
 | `/inventory` | Yes | Filters, sorting and lot links; current catalog is a hardcoded sample array. |
 | `/lot/[id]` | Yes | Lot detail UI; current example data is static. |
 | `/live-auctions` | Yes | Browser-session demo with 10s lots; API declares `auctionAuthority: false`. |
@@ -26,7 +26,7 @@
 ## Navigation correction in this branch
 - Keep cinematic intro and existing Forge animation.
 - Map old Forge `start your project` CTAs into actual ENCHEV platform routes.
-- Use a safe catalog destination when an intro CTA has no recognized heading.
+- Use the preserved full classic marketplace (`/platform`) when an intro CTA has no recognized heading.\n- Show a **PLATFORM** nav entry; classic brand/model search and LIVE/Buy Now discovery stay accessible.\n- Preserve the `/#how` buyer-journey destination as `/platform#how` on all existing routes.\n- Structural regression guard `npm run verify:intro-platform-parity` is also run by `npm test` (this does not replace E2E tests).
 - Ensure Forge anchors to internal routes navigate `_top`, preserving the enclosing app chrome.
 - Support both `<a>` and `<button>` CTA elements.
 - Leave underlying auction, identity, payment and database behavior unchanged.
@@ -38,9 +38,27 @@
 4. Seller uploads a vehicle; data persists across logout/relogin and receives admin approval.
 5. Two independent buyers bid on one auction; authoritative server validates bids and resolves one winner with append-only ledger and restart resilience.
 6. Confirm payment sandbox, documents, release gating, handover, audit and completion in the P0 closed-demo plan.
-7. Preserve watchlist, searches, auction calendar, vehicle history and transport flows with real storage/provider integrations where required.
+7. Preserve watchlist, searches, vehicle history and transport flows with real storage/provider integrations where required. The original pre-intro commit did not expose a dedicated auction-calendar route.
 8. Verify accessibility, mobile behavior, security, 404/error pages and no regressions on existing routes.
 9. Publish only after checks and manual functional walkthrough are PASS; never infer feature completeness from Vercel READY.
 
 ## Explicitly incomplete
 Current repository evidence is **not** enough to claim that the old complete platform works in production. Main priority after route bridge: MISSION-001 evidence-based gap analysis → full P0 demo → approved live pilot. Preserve frozen Master Plan IDs and GAP append-only governance.
+
+## Bidding modes and catalog features — do not confuse UI with production engines
+| Feature | Observed code/UI | Production proof required |
+| --- | --- | --- |
+| Make / model / VIN / LOT | `/inventory` implements searchable demo catalog with make/model selectors, cross-script search and URL query state. | Real inventory persistence, authorization, scale and actual inventory feed. |
+| Filters | Region, location, damage, title status, year, auction state, live-only, buy-now; sort and pagination. | Dynamic real data + cross-device query consistency. |
+| LIVE bidding | `/live-auctions` calls `/api/live-auction-clock`; endpoint uses cookie-backed 10-second demo state, `auctionAuthority:false`. | Database authoritative auction/bid ledger, two-buyer concurrency, immutable closure. |
+| Quick bids | `/inventory` UI uses React `bidPrices` local state and increments `+100`. | Signed-in real bid API and accepted/rejected transaction validation. |
+| Buy Now | Listed/filterable in inventory; visible sample buy-now prices. | One-time purchase, eligibility, payment, settlement and release gate. |
+| Reserve / No Reserve / Seller approval | Listed in frozen Master System Plan auction configuration stage 08. | Must be implemented and end-to-end validated, not only described. |
+| Pre-Bid / Max Bid / Proxy Bid | Listed in frozen Master System Plan stage 09. | Secure private max-bid storage, deterministic algorithm, transaction-safe ledger and tests. |
+| Winning / Sold / My Auctions / Watchlist | Present as sample UI and React state. | Real persisted buyer identity, replayable transaction truth and correct auction outcome. |
+
+## Historical comparison
+- Pre-cinematic ENCHEV commit `6fd2c77fab3bd114f666c02a2d2082cf55a34de9` contained the classic homepage and platform routes.
+- The old production-parity baseline `e1617b42e272fa3f40f06d93178f6f48a4211043` still has the same core route family and more app surfaces; 111 commits later the top-level root is cinematic.
+- Do not overwrite or replace critical APIs, Supabase state, or production deployments while migrating visual navigation.
+- A browser-level click audit and full interactive data-flow audit are necessary before calling this “no functional loss” verified.
