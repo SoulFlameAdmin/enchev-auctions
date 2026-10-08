@@ -62,3 +62,19 @@ Current repository evidence is **not** enough to claim that the old complete pla
 - The old production-parity baseline `e1617b42e272fa3f40f06d93178f6f48a4211043` still has the same core route family and more app surfaces; 111 commits later the top-level root is cinematic.
 - Do not overwrite or replace critical APIs, Supabase state, or production deployments while migrating visual navigation.
 - A browser-level click audit and full interactive data-flow audit are necessary before calling this “no functional loss” verified.
+
+## Live Supabase evidence (read-only verified 2026-10-08)
+- Repository `config/enchev-supabase-project.json` explicitly names shared project `soulflame-twins`, ref `frhletkiuupgksmgxoxc`, `auction_authority: false`.
+- Authenticated Supabase connection confirms project `frhletkiuupgksmgxoxc` is `ACTIVE_HEALTHY`.
+- `public.enchev_plan_state`: 312 existing plan-state records; this is governance progress, not a live auction.
+- `public.enchev_development_events`: 0 recorded events.
+- `public.enchev_cert_auctions`: 0 rows; `public.enchev_cert_bids`: 0 rows. Both have RLS enabled and schemas representing certification/prototype bids, but zero real persisted test transactions in this database.
+- There is **no evidence of an operational, production-authoritative ENCHEV bid/auction service** from these tables, API routes or repo state. The current public clock route explicitly advertises `auctionAuthority:false`.
+- Do not repurpose shared SoulFlame/Twins tables or alter RLS/policies without an ENCHEV-specific isolation plan, separate role access and tested migrations.
+- Next engineering gate: an isolated demo domain schema, explicit role policies, concurrent bid transactions and bid audit journal — then a two-buyer sandbox demonstration. **No real-money bids before proof.**
+
+## Security and browser tests
+- Initial CI failure was traced to HIGH advisories in `sharp 0.35.4` and `source-map-js 1.2.1`.
+- A read-only GitHub Actions resolver proposed npm lockfile updates; the branch now pins `sharp 0.35.5`, `source-map-js 1.2.2` and compatible platform binaries. The dependency-security check passed on the updated lockfile.
+- Original frozen `npm test` script restored after the CI quality guard correctly detected script drift; parity tests now run in independent CI workflows.
+- Dedicated static parity guard PASS; desktop+mobile Chromium browser-level parity check added separately and must be PASS before release.
