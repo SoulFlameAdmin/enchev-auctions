@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PREVIEW_VEHICLES } from "../../data/preview-vehicles";
+import { getDemoWatchlist, setDemoWatchlist, type DemoSavedVehicle } from "../../components/demo-watchlist";
 import "../lot.css";
 import "../lot-d21.css";
 import "../lot-d22.css";
@@ -36,6 +37,8 @@ export default function LotPage(){
   const [bid,setBid]=useState(vehicle?.price??0);
   const [bidInput,setBidInput]=useState(String((vehicle?.price??0)+100));
   const [buyNowNotice,setBuyNowNotice]=useState("");
+  const [isSaved,setIsSaved]=useState(false);
+  const [shareUrl,setShareUrl]=useState("");
   const [countdown,setCountdown]=useState(10);
   const [maxBidInput,setMaxBidInput]=useState(String((vehicle?.price??0)+3000));
   const [maxBid,setMaxBid]=useState<number|null>(null);
@@ -45,9 +48,23 @@ export default function LotPage(){
     setMaxBidInput(String((vehicle?.price??0)+3000));
     setMaxBid(null);
     setBuyNowNotice("");
+    setShareUrl("");
+    setIsSaved(getDemoWatchlist().some(item=>item.lot===lot));
     setActiveImage(0);
   },[lot,vehicle]);
   const minimumBid=bid+100;
+  const toggleSaved=()=>{
+    if(!vehicle)return;
+    const entries=getDemoWatchlist();
+    const exists=entries.some(item=>item.lot===lot);
+    const next=exists?entries.filter(item=>item.lot!==lot):[...entries,{
+      lot,title:vehicle.title,location:vehicle.location,damage:vehicle.damage,bid:vehicle.price,
+      state:(vehicle.buyNow>0?"BUY NOW":"UPCOMING") as DemoSavedVehicle["state"],
+      image:vehicle.image,
+    }];
+    setDemoWatchlist(next);
+    setIsSaved(!exists);
+  };
 
   const placeBid=()=>{
     const value=Number(bidInput.replace(/[^0-9]/g,""));
@@ -118,7 +135,7 @@ export default function LotPage(){
 
     <div className="lotWrap">
       <div className="lotBreadcrumb"><a href="/">Home</a> / <a href="/inventory">Inventory</a> / {lot}</div>
-      <div className="lotTitleRow"><div><div className="lotTitleMeta"><span className="lotPill green">● PREVIEW AUCTION</span><span className="lotPill">LOT {lot}</span><span className="lotPill">DEMO DATA</span></div><h1>{title}</h1></div><div className="lotTitleMeta"><span className="lotPill">♡ Save</span><span className="lotPill">↗ Share</span></div></div>
+      <div className="lotTitleRow"><div><div className="lotTitleMeta"><span className="lotPill green">● PREVIEW AUCTION</span><span className="lotPill">LOT {lot}</span><span className="lotPill">DEMO DATA</span></div><h1>{title}</h1></div><div className="lotTitleMeta"><button type="button" className="lotPill" aria-pressed={isSaved} onClick={toggleSaved}>{isSaved?"♥ Saved preview":"♡ Save preview"}</button><button type="button" className="lotPill" onClick={()=>setShareUrl(window.location.href)}>↗ Share</button>{shareUrl&&<label>Link to lot<input type="text" readOnly value={shareUrl} onFocus={event=>event.currentTarget.select()} aria-label="Copy lot URL"/></label>}</div></div>
 
       <div className="lotGrid">
         <div>
