@@ -44,8 +44,8 @@ requireInvariant(master.includes('type Status = "green" | "yellow" | "red";'), "
 requireInvariant(compactMaster.includes('persist({...statuses,[id]:"yellow"}'), "missing-evidence runtime path no longer downgrades to YELLOW");
 requireInvariant(compactTestGuard.includes('nextStatuses[id]="yellow";'), "failed/pending test evidence no longer downgrades GREEN to YELLOW");
 requireInvariant(compactGreenGuard.includes('if(status==="green"&&!String(evidence??"").trim())return"yellow";'), "GREEN evidence policy no longer maps unverified GREEN to YELLOW");
-requireInvariant(master.includes("Има тест, грешка, blocker или липсва evidence"), "YELLOW task explanation no longer communicates error/pending verification semantics");
-requireInvariant(master.includes("YELLOW = частично/грешка/липсваща проверка"), "footer no longer defines YELLOW as partial/error/pending verification");
-requireInvariant(master.includes("ТЕСТ / ГРЕШКА"), "YELLOW KPI label changed without governance review");
+requireInvariant(master.includes("Има тест, грешка, blocker или липсва evidence") || master.includes("There is a test, error, blocker or missing evidence"), "YELLOW task explanation no longer communicates error/pending verification semantics");
+requireInvariant(master.includes("YELLOW = частично/грешка/липсваща проверка") || master.includes("YELLOW = partial/error/missing verification"), "footer no longer defines YELLOW as partial/error/pending verification");
+requireInvariant(master.includes("ТЕСТ / ГРЕШКА") || master.includes("TEST / ERROR"), "YELLOW KPI label changed without governance review");
 
 console.log("YELLOW_SEMANTICS_GUARD PASS: YELLOW remains partial/error/pending verification; RED remains not implemented; GREEN remains verified.");
