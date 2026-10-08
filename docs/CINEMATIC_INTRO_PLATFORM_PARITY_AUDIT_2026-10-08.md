@@ -91,3 +91,13 @@ The full desktop (1440px) and mobile (390px) Chromium browser smoke checks passe
 - LIVE route + demo clock response explicitly `auctionAuthority:false`;
 - VIN history route.
 This is a frontend-navigation PASS, not proof that auctions/payment/auth are operational.
+
+## Additional preserved marketplace behavior (current branch)
+- Price **minimum/maximum filters** now evaluate the catalog and persist in URL query `priceMin` / `priceMax`, surviving refresh and shareable links.
+- Inventory **heart buttons** now add/remove preview vehicles through shared `app/components/demo-watchlist.ts`; the Profile Watchlist uses the same data and survives same-browser reload through `localStorage`. This remains explicitly **device-only demo storage**; it is NOT production account data or server security.
+- The **Save search** button now stores up to 30 query URLs on this device, with a visible success/failure announcement. Cross-device synchronization and saved-search management still require authenticated backend implementation.
+- Added `app/data/preview-vehicles.ts` so all eight sample lots can render matching title, VIN, mileage, damage, document status, location, source photograph and demo price on their detail pages, instead of falsely showing the same Audi data for other cars.
+- Preview **Buy Now** no longer silently does nothing or represents a real checkout: it shows a clear demo/no-payment notice. Lots without Buy Now show an unavailable state.
+- Missing demo lot IDs now have an explicit not-found state instead of a mislabeled Audi page.
+- Lot bid history is labeled illustrative, not an authoritative history. No payment, seller approval, reserve/no-reserve, pre-bid, max-bid or proxy-bid is certified by these interface refinements.
+- Browser E2E now tests local price filtering + saved vehicle persistence and removal, plus the original cinematic intro / classic marketplace / LIVE / VIN route flows.
