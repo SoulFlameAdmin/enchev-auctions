@@ -82,7 +82,7 @@ async function verifyDP204AppShell(call,viewport){
   if(!before)fail("DP2-04 app shell snapshot missing");
   if(before.scrollWidth>before.viewportWidth+3)fail(`DP2-04 ${viewport.name} horizontal overflow`);
   if(before.shellPosition!=="sticky")fail(`DP2-04 shell must be sticky, got ${before.shellPosition}`);
-  if(before.navLinks!==6||before.mobileLinks!==6)fail(`DP2-04 navigation link count mismatch desktop=${before.navLinks} mobile=${before.mobileLinks}`);
+  if(before.navLinks!==7||before.mobileLinks!==7)fail(`DP2-04 navigation link count mismatch desktop=${before.navLinks} mobile=${before.mobileLinks} expected=7 (classic PLATFORM restored)`);
   if(viewport.mobile){
     if(before.desktopDisplay!=="none")fail(`DP2-04 ${viewport.name} desktop nav must be hidden`);
     if(before.menuDisplay==="none"||before.menu.width<44||before.menu.height<44)fail(`DP2-04 ${viewport.name} menu trigger is not visible/touch sized`);
