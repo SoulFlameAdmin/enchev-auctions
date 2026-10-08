@@ -69,12 +69,12 @@ export function validate(config,sources){
   need(sources.live,/ОФЕРТАТА Е ПРИЕТА/,"28.06 bid feedback text missing");
 
   need(sources.lot,/<label className="lotBidLabel" htmlFor="lot-bid-input">/,"28.07 bid input label missing");
-  need(sources.lot,/<label>Дестинация<select/,"28.07 transport select label missing");
+  need(sources.lot,/<label>(?:Дестинация|Destination)<select/,"28.07 transport select label missing");
   need(sources.inventoryError,/role="alert" aria-labelledby="inventory-error-title"/,"28.07 accessible error alert missing");
   need(sources.inventoryLoading,/aria-busy="true" aria-live="polite"/,"28.07 accessible loading state missing");
 
   need(sources.live,/role="status"\s+aria-live="polite"/,"28.09 live status semantics missing");
-  need(sources.live,/role="timer" aria-label={`Остават/,"28.09 live timer semantics missing");
+  need(sources.live,/role="timer" aria-label={`(?:Остават|Remaining)/,"28.09 live timer semantics missing");
   need(sources.live,/liveSoldTransition[^\n]*role="status" aria-live="polite"/,"28.09 sold transition live region missing");
   need(sources.live,/liveBidFeedback[\s\S]*role="status"[\s\S]*aria-live="polite"/,"28.09 bid feedback live region missing");
 

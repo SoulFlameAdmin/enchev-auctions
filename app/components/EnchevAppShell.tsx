@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { accountNavigation, primaryNavigation } from "../site-navigation";
 
 function activeKey(pathname:string){
+  if(pathname==="/platform")return "platform";
   if(pathname.startsWith("/inventory"))return "inventory";
   if(pathname.startsWith("/live-auctions"))return "live";
   if(pathname.startsWith("/transport"))return "transport";

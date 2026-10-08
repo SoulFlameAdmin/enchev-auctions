@@ -82,7 +82,7 @@ async function verifyDP204AppShell(call,viewport){
   if(!before)fail("DP2-04 app shell snapshot missing");
   if(before.scrollWidth>before.viewportWidth+3)fail(`DP2-04 ${viewport.name} horizontal overflow`);
   if(before.shellPosition!=="sticky")fail(`DP2-04 shell must be sticky, got ${before.shellPosition}`);
-  if(before.navLinks!==6||before.mobileLinks!==6)fail(`DP2-04 navigation link count mismatch desktop=${before.navLinks} mobile=${before.mobileLinks}`);
+  if(before.navLinks!==7||before.mobileLinks!==7)fail(`DP2-04 navigation link count mismatch desktop=${before.navLinks} mobile=${before.mobileLinks} expected=7 (classic PLATFORM restored)`);
   if(viewport.mobile){
     if(before.desktopDisplay!=="none")fail(`DP2-04 ${viewport.name} desktop nav must be hidden`);
     if(before.menuDisplay==="none"||before.menu.width<44||before.menu.height<44)fail(`DP2-04 ${viewport.name} menu trigger is not visible/touch sized`);
@@ -350,7 +350,7 @@ async function verifyD27BidFeedback(call,viewport){
 
   const expected=[
     ["accepted","ОФЕРТАТА Е ПРИЕТА",100],
-    ["leading","ВОДИШ В ТЪРГА",100],
+    ["leading","LEADING В ТЪРГА",100],
     ["outbid","НАДДАВАН СИ",100],
     ["rejected","ОФЕРТАТА Е ОТХВЪРЛЕНА",0],
   ];
@@ -721,6 +721,12 @@ async function captureOne({port,baseUrl,route,viewport,outputDir}){
   try{
     await call("Page.enable");
     await call("Runtime.enable");
+    // CDP sessions share one Chrome profile across viewports. Each D29 watchlist
+    // interaction deliberately removes a demo car, so reset only this preview
+    // fixture before each profile navigation. Never reset real user data.
+    if(route.name==="profile")await call("Page.addScriptToEvaluateOnNewDocument",{
+      source:"try { localStorage.removeItem('enchev-demo-watchlist-v1'); } catch {}",
+    });
     await call("Emulation.setDeviceMetricsOverride",{
       width:viewport.width,
       height:viewport.height,

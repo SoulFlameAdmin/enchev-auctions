@@ -177,12 +177,17 @@ const ctaMapScript = String.raw`(() => {
 
     for (const element of candidates) {
       const rule = nearestRule(element);
-      if (!rule) continue;
-      if (element.dataset.enchevCtaLabel === rule.label) continue;
-      element.textContent = rule.label;
-      if (element.tagName === "A") element.setAttribute("href", rule.href);
-      element.setAttribute("aria-label", rule.label);
-      element.dataset.enchevCtaLabel = rule.label;
+      const destination = rule || { label: "OPEN FULL PLATFORM", href: "/platform" };
+      if (element.dataset.enchevCtaLabel === destination.label) continue;
+      element.textContent = destination.label;
+      if (element.tagName === "A") {
+        element.setAttribute("href", destination.href);
+        element.setAttribute("target", "_top");
+      } else {
+        element.dataset.enchevCtaHref = destination.href;
+      }
+      element.setAttribute("aria-label", destination.label);
+      element.dataset.enchevCtaLabel = destination.label;
     }
   }
 
@@ -193,11 +198,13 @@ const ctaMapScript = String.raw`(() => {
     { label: "CHECK VEHICLE", href: "/vehicle-history" },
     { label: "DOCUMENTS & TRANSPORT", href: "/transport" },
     { label: "ABOUT US", href: "/presentation" },
-    { label: "SUPPORT", href: "/support" }
+    { label: "SUPPORT", href: "/support" },
+    { label: "PLATFORM", href: "/platform" }
   ];
 
   function setAnchor(anchor, item) {
     anchor.setAttribute("href", item.href);
+    anchor.setAttribute("target", "_top");
     anchor.setAttribute("aria-label", item.label);
     anchor.textContent = item.label;
   }
@@ -248,7 +255,7 @@ const ctaMapScript = String.raw`(() => {
       const supportUnit = contact.closest("li") || contact;
       const parent = supportUnit.parentElement;
       if (parent) {
-        for (const item of navItems.slice(3, 6)) {
+        for (const item of [...navItems.slice(3, 6), navItems[7]]) {
           const clone = cloneNavUnit(contact, item);
           if (clone) parent.insertBefore(clone, supportUnit);
         }
@@ -270,6 +277,28 @@ const ctaMapScript = String.raw`(() => {
     }
   }
 
+  // The cinematic homepage runs inside an iframe. Navigating inside that frame
+  // would leave the system command center over the functional website.
+  // Route internal platform links at the top-level page without changing the
+  // original Forge transitions, animations, or embedded intro layout.
+  function ensurePlatformNavigation() {
+    for (const anchor of document.querySelectorAll('a[href^="/"]')) {
+      const href = anchor.getAttribute("href");
+      if (!href || href.startsWith("//") || href.startsWith("/forge/")) continue;
+      anchor.setAttribute("target", "_top");
+    }
+  }
+
+  document.addEventListener("click", (event) => {
+    const target = event.target;
+    const button = target && target.closest && target.closest('button[data-enchev-cta-href]');
+    if (!button) return;
+    const href = button.dataset.enchevCtaHref;
+    if (!href || !href.startsWith("/") || href.startsWith("//")) return;
+    event.preventDefault();
+    window.top.location.assign(href);
+  });
+
   let scheduled = false;
   function scheduleApply() {
     if (scheduled) return;
@@ -278,6 +307,7 @@ const ctaMapScript = String.raw`(() => {
       scheduled = false;
       applyCtas();
       applyNavigation();
+      ensurePlatformNavigation();
     });
   }
 
@@ -285,10 +315,12 @@ const ctaMapScript = String.raw`(() => {
     document.addEventListener("DOMContentLoaded", () => {
       applyCtas();
       applyNavigation();
+      ensurePlatformNavigation();
     }, { once: true });
   } else {
     applyCtas();
     applyNavigation();
+    ensurePlatformNavigation();
   }
 
   new MutationObserver(scheduleApply).observe(document.documentElement, {

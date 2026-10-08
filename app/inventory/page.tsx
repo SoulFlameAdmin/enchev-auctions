@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { accountNavigation, primaryNavigation } from "../site-navigation";
+import { getDemoWatchlist, setDemoWatchlist, type DemoSavedVehicle } from "../components/demo-watchlist";
 import { matchesCrossScriptSearch } from "../../packages/config/src/cross-script-search";
 import { searchVehicleCatalog } from "../../packages/domain/src/search-discovery";
 import "./inventory.css";
@@ -43,6 +44,10 @@ export default function InventoryPage(){
   const [yearFrom,setYearFrom]=useState(2010);
   const [yearTo,setYearTo]=useState(2026);
   const [buyNow,setBuyNow]=useState(false);
+  const [priceMin,setPriceMin]=useState("");
+  const [priceMax,setPriceMax]=useState("");
+  const [savedLots,setSavedLots]=useState<string[]>([]);
+  const [saveSearchFeedback,setSaveSearchFeedback]=useState("");
   const [liveOnly,setLiveOnly]=useState(false);
   const [sort,setSort]=useState<SortMode>("recommended");
   const [currentPage,setCurrentPage]=useState(1);
@@ -52,6 +57,13 @@ export default function InventoryPage(){
   const [activeIndex,setActiveIndex]=useState(1);
   const [remaining,setRemaining]=useState(LOT_SECONDS);
   const [bidPrices,setBidPrices]=useState<Record<string,number>>(()=>Object.fromEntries(cars.map(car=>[car.lot,car.price])));
+
+  useEffect(()=>{
+    setSavedLots(getDemoWatchlist().map(vehicle=>vehicle.lot));
+    const onStorage=()=>setSavedLots(getDemoWatchlist().map(vehicle=>vehicle.lot));
+    window.addEventListener("storage",onStorage);
+    return()=>window.removeEventListener("storage",onStorage);
+  },[]);
 
   useEffect(()=>{
     const params=new URLSearchParams(window.location.search);
@@ -64,6 +76,10 @@ export default function InventoryPage(){
     const nextTitle=params.get("title");
     const nextStatus=params.get("status") as FilterStatus|null;
     const nextSort=params.get("sort") as SortMode|null;
+    const nextPriceMin=params.get("priceMin");
+    const nextPriceMax=params.get("priceMax");
+    if(nextPriceMin && /^\d+$/.test(nextPriceMin))setPriceMin(nextPriceMin);
+    if(nextPriceMax && /^\d+$/.test(nextPriceMax))setPriceMax(nextPriceMax);
     const nextPage=Number(params.get("page"));
     const nextYearFrom=Number(params.get("yearFrom"));
     const nextYearTo=Number(params.get("yearTo"));
@@ -98,6 +114,8 @@ export default function InventoryPage(){
     if(auctionStatus!=="All")params.set("status",auctionStatus);
     if(yearFrom!==2010)params.set("yearFrom",String(yearFrom));
     if(yearTo!==2026)params.set("yearTo",String(yearTo));
+    if(priceMin && Number.isFinite(Number(priceMin)))params.set("priceMin",priceMin);
+    if(priceMax && Number.isFinite(Number(priceMax)))params.set("priceMax",priceMax);
     if(buyNow)params.set("buyNow","1");
     if(liveOnly)params.set("live","1");
     if(sort!=="recommended")params.set("sort",sort);
@@ -105,7 +123,7 @@ export default function InventoryPage(){
     const search=params.toString();
     const nextUrl=`${window.location.pathname}${search?`?${search}`:""}${window.location.hash}`;
     window.history.replaceState(window.history.state,"",nextUrl);
-  },[urlReady,query,brand,model,region,location,damage,titleStatus,auctionStatus,yearFrom,yearTo,buyNow,liveOnly,sort,currentPage]);
+  },[urlReady,query,brand,model,region,location,damage,titleStatus,auctionStatus,yearFrom,yearTo,priceMin,priceMax,buyNow,liveOnly,sort,currentPage]);
 
   useEffect(()=>{
     const timer=window.setInterval(()=>{
@@ -146,8 +164,18 @@ export default function InventoryPage(){
     setRemaining(LOT_SECONDS);
   };
 
+  const toggleSaved=(car: typeof cars[number] & {status: AuctionStatus;price:number})=>{
+    const current=getDemoWatchlist();
+    const exists=current.some(item=>item.lot===car.lot);
+    const next=exists?current.filter(item=>item.lot!==car.lot):[...current,{
+      lot:car.lot,title:car.title,location:car.location,damage:car.damage,
+      bid:car.price,state:(car.status==="live"?"LIVE":car.buyNow>0?"BUY NOW":"UPCOMING") as DemoSavedVehicle["state"],image:car.image,
+    }];
+    setSavedLots(setDemoWatchlist(next).map(item=>item.lot));
+  };
+
   const resetFilters=()=>{
-    setBrand("All");setModel("All");setRegion("All");setLocation("All");setDamage("All");setTitleStatus("All");setAuctionStatus("All");setYearFrom(2010);setYearTo(2026);setBuyNow(false);setLiveOnly(false);setQuery("");setCurrentPage(1);
+    setBrand("All");setModel("All");setRegion("All");setLocation("All");setDamage("All");setTitleStatus("All");setAuctionStatus("All");setYearFrom(2010);setYearTo(2026);setPriceMin("");setPriceMax("");setBuyNow(false);setLiveOnly(false);setQuery("");setCurrentPage(1);
   };
 
   const searchMatchLots=useMemo(()=>{
@@ -190,18 +218,21 @@ export default function InventoryPage(){
       const matchesDamage=damage==="All"||car.damage===damage;
       const matchesTitle=titleStatus==="All"||car.titleStatus===titleStatus;
       const matchesYear=car.year>=Math.min(yearFrom,yearTo)&&car.year<=Math.max(yearFrom,yearTo);
+      const amount=car.price;
+      const matchesPriceMin=!priceMin||!Number.isFinite(Number(priceMin))||amount>=Number(priceMin);
+      const matchesPriceMax=!priceMax||!Number.isFinite(Number(priceMax))||amount<=Number(priceMax);
       const matchesBuy=!buyNow||car.buyNow>0;
       const normalizedStatus=car.status==="next"?"UPCOMING":car.status.toUpperCase();
       const matchesStatus=auctionStatus==="All"||normalizedStatus===auctionStatus;
       const matchesLive=!liveOnly||car.status==="live";
-      return matchesQuery&&matchesBrand&&matchesModel&&matchesRegion&&matchesLocation&&matchesDamage&&matchesTitle&&matchesYear&&matchesBuy&&matchesStatus&&matchesLive;
+      return matchesQuery&&matchesBrand&&matchesModel&&matchesRegion&&matchesLocation&&matchesDamage&&matchesTitle&&matchesYear&&matchesPriceMin&&matchesPriceMax&&matchesBuy&&matchesStatus&&matchesLive;
     });
     if(sort==="priceLow")list=[...list].sort((a,b)=>a.price-b.price);
     if(sort==="priceHigh")list=[...list].sort((a,b)=>b.price-a.price);
     if(sort==="yearNewest")list=[...list].sort((a,b)=>b.year-a.year||a.lot.localeCompare(b.lot));
     if(sort==="yearOldest")list=[...list].sort((a,b)=>a.year-b.year||a.lot.localeCompare(b.lot));
     return list;
-  },[auctionCars,searchMatchLots,brand,model,region,location,damage,titleStatus,auctionStatus,yearFrom,yearTo,buyNow,liveOnly,sort]);
+  },[auctionCars,searchMatchLots,brand,model,region,location,damage,titleStatus,auctionStatus,yearFrom,yearTo,priceMin,priceMax,buyNow,liveOnly,sort]);
 
   const totalPages=Math.max(1,Math.ceil(filtered.length/PAGE_SIZE));
   useEffect(()=>{
@@ -223,6 +254,8 @@ export default function InventoryPage(){
   if(titleStatus!=="All")activeFilters.push({key:"title",label:`Талон: ${titleStatus==="Clean"?"Clean title":"Salvage title"}`,clear:()=>{setTitleStatus("All");setCurrentPage(1);}});
   if(auctionStatus!=="All")activeFilters.push({key:"status",label:`Статус: ${auctionStatus}`,clear:()=>{setAuctionStatus("All");setCurrentPage(1);}});
   if(yearFrom!==2010||yearTo!==2026)activeFilters.push({key:"year",label:`Year: ${Math.min(yearFrom,yearTo)}–${Math.max(yearFrom,yearTo)}`,clear:()=>{setYearFrom(2010);setYearTo(2026);setCurrentPage(1);}});
+  if(priceMin)activeFilters.push({key:"priceMin",label:`Min: €${priceMin}`,clear:()=>{setPriceMin("");setCurrentPage(1);}});
+  if(priceMax)activeFilters.push({key:"priceMax",label:`Max: €${priceMax}`,clear:()=>{setPriceMax("");setCurrentPage(1);}});
   if(buyNow)activeFilters.push({key:"buyNow",label:"Buy Now",clear:()=>{setBuyNow(false);setCurrentPage(1);}});
   if(liveOnly)activeFilters.push({key:"live",label:"LIVE only",clear:()=>{setLiveOnly(false);setCurrentPage(1);}});
 
@@ -245,7 +278,17 @@ export default function InventoryPage(){
       <div className="inv2HeroStats"><div className="inv2HeroStat"><b>{cars.length}</b><span>active lots</span></div><div className="inv2HeroStat"><b>{cars.filter(c=>c.buyNow>0).length}</b><span>buy now</span></div><div className="inv2HeroStat"><b>{formatTime(remaining)}</b><span>live timer</span></div></div>
     </section>
 
-    <div className="inv2Quickbar"><div className="inv2Chips"><button className={`inv2Chip ${activeFilters.length===0?"active":""}`} onClick={resetFilters}>All</button><button className={`inv2Chip ${liveOnly?"active":""}`} onClick={()=>{setLiveOnly(v=>!v);setCurrentPage(1);}}>● LIVE</button><button className={`inv2Chip ${buyNow?"active":""}`} onClick={()=>{setBuyNow(v=>!v);setCurrentPage(1);}}>Buy Now</button><button className={`inv2Chip ${brand==="BMW"?"active":""}`} onClick={()=>{setBrand(brand==="BMW"?"All":"BMW");setCurrentPage(1);}}>BMW</button><button className={`inv2Chip ${brand==="Mercedes"?"active":""}`} onClick={()=>{setBrand(brand==="Mercedes"?"All":"Mercedes");setCurrentPage(1);}}>Mercedes</button><button className={`inv2Chip ${region==="САЩ"?"active":""}`} onClick={()=>{setRegion(region==="САЩ"?"All":"САЩ");setCurrentPage(1);}}>САЩ</button><button className={`inv2Chip ${region==="Европа"?"active":""}`} onClick={()=>{setRegion(region==="Европа"?"All":"Европа");setCurrentPage(1);}}>Европа</button></div><button className="inv2SaveSearch">♡ Save search</button></div>
+    <div className="inv2Quickbar"><div className="inv2Chips"><button className={`inv2Chip ${activeFilters.length===0?"active":""}`} onClick={resetFilters}>All</button><button className={`inv2Chip ${liveOnly?"active":""}`} onClick={()=>{setLiveOnly(v=>!v);setCurrentPage(1);}}>● LIVE</button><button className={`inv2Chip ${buyNow?"active":""}`} onClick={()=>{setBuyNow(v=>!v);setCurrentPage(1);}}>Buy Now</button><button className={`inv2Chip ${brand==="BMW"?"active":""}`} onClick={()=>{setBrand(brand==="BMW"?"All":"BMW");setCurrentPage(1);}}>BMW</button><button className={`inv2Chip ${brand==="Mercedes"?"active":""}`} onClick={()=>{setBrand(brand==="Mercedes"?"All":"Mercedes");setCurrentPage(1);}}>Mercedes</button><button className={`inv2Chip ${region==="САЩ"?"active":""}`} onClick={()=>{setRegion(region==="САЩ"?"All":"САЩ");setCurrentPage(1);}}>САЩ</button><button className={`inv2Chip ${region==="Европа"?"active":""}`} onClick={()=>{setRegion(region==="Европа"?"All":"Европа");setCurrentPage(1);}}>Европа</button></div><div><button type="button" className="inv2SaveSearch" onClick={()=>{
+      if(typeof window==="undefined")return;
+      try{
+        const key="enchev-demo-saved-searches-v1";
+        const previous=JSON.parse(localStorage.getItem(key)||"[]") as string[];
+        const url=window.location.pathname+window.location.search;
+        const updated=[url,...previous.filter(item=>item!==url)].slice(0,30);
+        localStorage.setItem(key,JSON.stringify(updated));
+        setSaveSearchFeedback("Preview search saved on this device");
+      }catch{setSaveSearchFeedback("Local browser storage unavailable");}
+    }}>♡ Save search</button>{saveSearchFeedback&&<small role="status" aria-live="polite">{saveSearchFeedback}</small>}</div></div>
 
     {activeFilters.length>0&&<div className="inv2ActiveFilters" aria-label="Активни филтри" data-active-filter-count={activeFilters.length}>
       <span className="inv2ActiveFiltersLabel">Активни филтри</span>
@@ -270,7 +313,7 @@ export default function InventoryPage(){
         <div className="filterBlock filterBlock--select"><b>Primary damage</b><select className="inv2Select" value={damage} onChange={e=>{setDamage(e.target.value);setCurrentPage(1);}} aria-label="Филтър по повреда">{damages.map(x=><option key={x} value={x}>{x}</option>)}</select></div>
         <div className="filterBlock filterBlock--select"><b>Title status</b><select className="inv2Select" value={titleStatus} onChange={e=>{setTitleStatus(e.target.value);setCurrentPage(1);}} aria-label="Филтър по статус на талона">{titleStatuses.map(x=><option key={x} value={x}>{x==="All"?x:x==="Clean"?"Clean title":"Salvage title"}</option>)}</select></div>
         <div className="filterBlock filterBlock--select"><b>Auction status</b><select className="inv2Select" value={auctionStatus} onChange={e=>{setAuctionStatus(e.target.value as FilterStatus);setCurrentPage(1);}} aria-label="Филтър по статус на търга">{["All",...auctionStatuses].map(x=><option key={x} value={x}>{x}</option>)}</select></div>
-        <div className="filterBlock"><div className="inv2FilterGroupTitle"><b>Price</b><small>EUR</small></div><div className="inv2Range"><input placeholder="От"/><input placeholder="До"/></div></div>
+        <div className="filterBlock"><div className="inv2FilterGroupTitle"><b>Price</b><small>EUR</small></div><div className="inv2Range"><input type="number" min="0" step="100" value={priceMin} onChange={e=>{setPriceMin(e.target.value);setCurrentPage(1);}} placeholder="Min €" aria-label="Minimum price"/><input type="number" min="0" step="100" value={priceMax} onChange={e=>{setPriceMax(e.target.value);setCurrentPage(1);}} placeholder="Max €" aria-label="Maximum price"/></div></div>
         <div className="filterBlock collapsed"><b>Vehicle type</b><span>+</span></div><div className="filterBlock collapsed"><b>Engine</b><span>+</span></div><div className="filterBlock collapsed"><b>Transmission</b><span>+</span></div><div className="filterBlock collapsed"><b>Mileage</b><span>+</span></div><div className="filterBlock collapsed"><b>Auction date</b><span>+</span></div>
       </aside>
 
@@ -291,7 +334,7 @@ export default function InventoryPage(){
             <img src={car.image} alt={car.title}/>
             <span className={`inventoryBadge ${car.status}`}>{car.stateBadge}</span>
             {car.status!=="sold"&&<span className="inventoryTimer">◷ {car.status==="live"?formatTime(remaining):car.status==="next"?"СЛЕДВАЩ":"UPCOMING"}</span>}
-            <button className="inventoryHeart">♡</button>
+            <button type="button" className="inventoryHeart" aria-pressed={savedLots.includes(car.lot)} aria-label={savedLots.includes(car.lot)?`Remove ${car.title} from preview watchlist`:`Save ${car.title} to preview watchlist`} onClick={()=>toggleSaved(car)}>{savedLots.includes(car.lot)?"♥":"♡"}</button>
             {car.status==="sold"&&<div className="soldStamp">SOLD</div>}
             {car.status==="live"&&<div className="liveBidOrb"><span className="liveBidText">NEW BID</span><span className="liveSaleText">ПРОДАВА СЕ<br/>НА ЖИВО</span><i>◉</i><strong className="liveCountdown">{remaining}</strong><small>СЕК</small></div>}
           </div>
@@ -299,7 +342,7 @@ export default function InventoryPage(){
             <div className="inventoryLot">LOT {car.lot}<span>● VERIFIED</span></div><h2>{car.title}</h2>
             <dl><div><dt>Mileage</dt><dd>{car.mileage}</dd></div><div><dt>Повреда</dt><dd>{car.damage}</dd></div><div><dt>Location</dt><dd>{car.location}</dd></div></dl>
             <button className="detailsBtn">More details <span>⌄</span></button>
-            {car.status==="sold"?<><div className="saleEnded">Sale ended</div><div className="inventoryActions soldActions"><button className="soldDetailsBtn">View details</button></div></>:<><div className="inventoryPrice"><span>{car.status==="next"?"Starting bid":"Current bid"}</span><b>€{car.price.toLocaleString("bg-BG")}</b></div><div className="inventoryActions">{car.buyNow>0&&car.status!=="next"&&<button className="buyBtn">Купи €{car.buyNow.toLocaleString("bg-BG")}</button>}<button className={`bidBtn ${car.status==="next"?"nextBidBtn":""}`} disabled={car.status==="next"} onClick={()=>car.status==="live"&&placeBid(car.lot)}>{car.status==="live"?"Bid +€100":car.status==="next"?"Next lot":"Bid"} <span>→</span></button></div></>}
+            {car.status==="sold"?<><div className="saleEnded">Sale ended</div><div className="inventoryActions soldActions"><button className="soldDetailsBtn">View details</button></div></>:<><div className="inventoryPrice"><span>{car.status==="next"?"Starting bid":"Current bid"}</span><b>€{car.price.toLocaleString("bg-BG")}</b></div><div className="inventoryActions">{car.buyNow>0&&car.status!=="next"&&<button type="button" className="buyBtn" onClick={()=>window.location.assign(`/lot/${car.lot}`)}>Preview Buy Now · €{car.buyNow.toLocaleString("bg-BG")}</button>}<button className={`bidBtn ${car.status==="next"?"nextBidBtn":""}`} disabled={car.status==="next"} onClick={()=>car.status==="live"?placeBid(car.lot):window.location.assign(`/lot/${car.lot}`)}>{car.status==="live"?"Demo bid +€100":car.status==="next"?"Next lot":"View bid options"} <span>→</span></button></div></>}
           </div>
         </article>)}</div>
 

@@ -2,6 +2,8 @@
 
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { PREVIEW_VEHICLES } from "../../data/preview-vehicles";
+import { getDemoWatchlist, setDemoWatchlist, type DemoSavedVehicle } from "../../components/demo-watchlist";
 import "../lot.css";
 import "../lot-d21.css";
 import "../lot-d22.css";
@@ -24,18 +26,45 @@ const history=[
 export default function LotPage(){
   const params=useParams<{id:string}>();
   const lot=String(params?.id||"EA-10539").toUpperCase();
+  const vehicle=PREVIEW_VEHICLES[lot];
+  const lotGallery=useMemo(()=>lot==="EA-10539"?gallery:vehicle?[vehicle.image]:gallery,[lot,vehicle]);
+  const title=vehicle?.title||`Unrecognized preview lot ${lot}`;
   const [activeImage,setActiveImage]=useState(0);
   const [viewerOpen,setViewerOpen]=useState(false);
   const viewerTriggerRef=useRef<HTMLButtonElement|null>(null);
   const viewerCloseRef=useRef<HTMLButtonElement|null>(null);
   const bidInputRef=useRef<HTMLInputElement|null>(null);
-  const [bid,setBid]=useState(21900);
-  const [bidInput,setBidInput]=useState("22000");
+  const [bid,setBid]=useState(vehicle?.price??0);
+  const [bidInput,setBidInput]=useState(String((vehicle?.price??0)+100));
+  const [buyNowNotice,setBuyNowNotice]=useState("");
+  const [isSaved,setIsSaved]=useState(false);
+  const [shareUrl,setShareUrl]=useState("");
   const [countdown,setCountdown]=useState(10);
-  const [maxBidInput,setMaxBidInput]=useState("25000");
+  const [maxBidInput,setMaxBidInput]=useState(String((vehicle?.price??0)+3000));
   const [maxBid,setMaxBid]=useState<number|null>(null);
-  const title=useMemo(()=>lot==="EA-10482"?"2018 BMW M4 F82":lot==="EA-10511"?"2021 Mercedes-Benz GLC":"2022 Audi RS3 Sportback",[lot]);
+  useEffect(()=>{
+    setBid(vehicle?.price??0);
+    setBidInput(String((vehicle?.price??0)+100));
+    setMaxBidInput(String((vehicle?.price??0)+3000));
+    setMaxBid(null);
+    setBuyNowNotice("");
+    setShareUrl("");
+    setIsSaved(getDemoWatchlist().some(item=>item.lot===lot));
+    setActiveImage(0);
+  },[lot,vehicle]);
   const minimumBid=bid+100;
+  const toggleSaved=()=>{
+    if(!vehicle)return;
+    const entries=getDemoWatchlist();
+    const exists=entries.some(item=>item.lot===lot);
+    const next=exists?entries.filter(item=>item.lot!==lot):[...entries,{
+      lot,title:vehicle.title,location:vehicle.location,damage:vehicle.damage,bid:vehicle.price,
+      state:(vehicle.buyNow>0?"BUY NOW":"UPCOMING") as DemoSavedVehicle["state"],
+      image:vehicle.image,
+    }];
+    setDemoWatchlist(next);
+    setIsSaved(!exists);
+  };
 
   const placeBid=()=>{
     const value=Number(bidInput.replace(/[^0-9]/g,""));
@@ -54,8 +83,8 @@ export default function LotPage(){
     }
   };
 
-  const showPreviousImage=()=>setActiveImage(index=>(index-1+gallery.length)%gallery.length);
-  const showNextImage=()=>setActiveImage(index=>(index+1)%gallery.length);
+  const showPreviousImage=()=>setActiveImage(index=>(index-1+lotGallery.length)%lotGallery.length);
+  const showNextImage=()=>setActiveImage(index=>(index+1)%lotGallery.length);
   const focusBidPanel=()=>{
     const input=bidInputRef.current;
     if(!input)return;
@@ -76,8 +105,8 @@ export default function LotPage(){
     const focusFrame=window.requestAnimationFrame(()=>viewerCloseRef.current?.focus());
     const onKeyDown=(event:KeyboardEvent)=>{
       if(event.key==="Escape")setViewerOpen(false);
-      if(event.key==="ArrowLeft")setActiveImage(index=>(index-1+gallery.length)%gallery.length);
-      if(event.key==="ArrowRight")setActiveImage(index=>(index+1)%gallery.length);
+      if(event.key==="ArrowLeft")setActiveImage(index=>(index-1+lotGallery.length)%lotGallery.length);
+      if(event.key==="ArrowRight")setActiveImage(index=>(index+1)%lotGallery.length);
     };
     document.body.style.overflow="hidden";
     window.addEventListener("keydown",onKeyDown);
@@ -89,37 +118,45 @@ export default function LotPage(){
     };
   },[viewerOpen]);
 
+  if(!vehicle)return <main id="main-content" className="lotPage">
+    <section className="lotWrap" role="status">
+      <h1>Preview lot not found</h1>
+      <p>This LOT is not in the sample inventory. No vehicle details or bids are available.</p>
+      <a href="/inventory">Back to vehicle catalog</a>
+    </section>
+  </main>;
+
   return <main id="main-content" className="lotPage">
     <header className="lotHeader">
       <a className="lotLogo" href="/"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
-      <nav className="lotNav"><a href="/inventory">Inventory</a><a href="/live-auctions">Live auctions</a><a href="/#how">How it works</a><a href="/transport">Transport</a></nav>
+      <nav className="lotNav"><a href="/inventory">Inventory</a><a href="/live-auctions">Live auctions</a><a href="/platform#how">How it works</a><a href="/transport">Transport</a></nav>
       <div className="lotHeaderActions"><a href="/inventory">← Back</a><button className="lotGreen">Вход</button></div>
     </header>
 
     <div className="lotWrap">
       <div className="lotBreadcrumb"><a href="/">Home</a> / <a href="/inventory">Inventory</a> / {lot}</div>
-      <div className="lotTitleRow"><div><div className="lotTitleMeta"><span className="lotPill green">● LIVE AUCTION</span><span className="lotPill">LOT {lot}</span><span className="lotPill">✓ VERIFIED</span></div><h1>{title}</h1></div><div className="lotTitleMeta"><span className="lotPill">♡ Save</span><span className="lotPill">↗ Share</span></div></div>
+      <div className="lotTitleRow"><div><div className="lotTitleMeta"><span className="lotPill green">● PREVIEW AUCTION</span><span className="lotPill">LOT {lot}</span><span className="lotPill">DEMO DATA</span></div><h1>{title}</h1></div><div className="lotTitleMeta"><button type="button" className="lotPill" aria-pressed={isSaved} onClick={toggleSaved}>{isSaved?"♥ Saved preview":"♡ Save preview"}</button><button type="button" className="lotPill" onClick={()=>setShareUrl(window.location.href)}>↗ Share</button>{shareUrl&&<label>Link to lot<input type="text" readOnly value={shareUrl} onFocus={event=>event.currentTarget.select()} aria-label="Copy lot URL"/></label>}</div></div>
 
       <div className="lotGrid">
         <div>
           <div className="lotGallery" data-design-task="D19" aria-label={`Галерия за ${title}`}>
-            <button ref={viewerTriggerRef} type="button" className="lotMainImage" onClick={()=>setViewerOpen(true)} aria-label={`Open изображение ${activeImage+1} от ${gallery.length} на цял екран`}>
-              <img src={gallery[activeImage]} alt={`${title} — изображение ${activeImage+1}`}/>
-              <span className="lotImageBadge">RUN & DRIVE · {activeImage+1}/{gallery.length}</span>
+            <button ref={viewerTriggerRef} type="button" className="lotMainImage" onClick={()=>setViewerOpen(true)} aria-label={`Open изображение ${activeImage+1} от ${lotGallery.length} на цял екран`}>
+              <img src={lotGallery[activeImage]} alt={`${title} — изображение ${activeImage+1}`}/>
+              <span className="lotImageBadge">PREVIEW PHOTO · {activeImage+1}/{lotGallery.length}</span>
               <span className="lotZoomHint" aria-hidden="true">⛶ Full screen</span>
             </button>
-            <div className="lotThumbs" role="list" aria-label="Миниатюри на автомобила">{gallery.map((src,index)=><button type="button" key={src} className={`lotThumb ${index===activeImage?"active":""}`} onClick={()=>setActiveImage(index)} aria-label={`Покажи изображение ${index+1} от ${gallery.length}`} aria-pressed={index===activeImage}><img src={src} alt=""/></button>)}</div>
+            <div className="lotThumbs" role="list" aria-label="Миниатюри на автомобила">{lotGallery.map((src,index)=><button type="button" key={src} className={`lotThumb ${index===activeImage?"active":""}`} onClick={()=>setActiveImage(index)} aria-label={`Покажи изображение ${index+1} от ${lotGallery.length}`} aria-pressed={index===activeImage}><img src={src} alt=""/></button>)}</div>
           </div>
 
           <section className="lotSection" data-design-task="D20" aria-labelledby="lot-key-facts-title" aria-describedby="lot-key-facts-description" style={{borderColor:"rgba(39,245,138,.18)",background:"linear-gradient(180deg,rgba(13,23,16,.96),rgba(8,16,11,.96))"}}>
             <div className="lotSectionHead"><div><h2 id="lot-key-facts-title">Key lot data</h2><span id="lot-key-facts-description">The most important information before bidding</span></div><span className="lotPill green">6 verified fields</span></div>
             <div className="lotSpecs" role="list" aria-label="Ключови данни за автомобила" style={{gridTemplateColumns:"repeat(auto-fit,minmax(160px,1fr))"}}>
-              <div className="lotSpec" role="listitem"><span>VIN</span><b style={{overflowWrap:"anywhere"}}>WAUZZZ8V5KA123456</b></div>
+              <div className="lotSpec" role="listitem"><span>VIN</span><b style={{overflowWrap:"anywhere"}}>{vehicle?.vin??"Unknown"}</b></div>
               <div className="lotSpec" role="listitem"><span>LOT</span><b>{lot}</b></div>
-              <div className="lotSpec" role="listitem"><span>Mileage</span><b>41 280 км</b></div>
-              <div className="lotSpec" role="listitem"><span>Primary damage</span><b>Minor scratches / cosmetic marks</b></div>
-              <div className="lotSpec" role="listitem"><span>Документ</span><b>Clean Title</b></div>
-              <div className="lotSpec" role="listitem"><span>Location</span><b style={{overflowWrap:"anywhere"}}>Crewe, United Kingdom</b></div>
+              <div className="lotSpec" role="listitem"><span>Mileage</span><b>{vehicle?.mileage??"Unknown"}</b></div>
+              <div className="lotSpec" role="listitem"><span>Primary damage</span><b>{vehicle?.damage??"Unknown"}</b></div>
+              <div className="lotSpec" role="listitem"><span>Документ</span><b>{vehicle?.titleStatus??"Unknown"}</b></div>
+              <div className="lotSpec" role="listitem"><span>Location</span><b style={{overflowWrap:"anywhere"}}>{vehicle?.location??"Unknown"}</b></div>
             </div>
           </section>
 
@@ -128,7 +165,7 @@ export default function LotPage(){
             <div className="lotConditionGrid">
               <article className="lotConditionCard" aria-labelledby="lot-condition-summary-title">
                 <div className="lotConditionCardHead"><span className="lotConditionIcon" aria-hidden="true">01</span><div><strong id="lot-condition-summary-title">Condition</strong><small>Auction lot data</small></div></div>
-                <dl className="lotConditionList"><div><dt>Run status</dt><dd><span className="lotConditionStatus positive">Run &amp; Drive</span></dd></div><div><dt>Primary damage</dt><dd>Minor scratches / cosmetic marks</dd></div><div><dt>Secondary damage</dt><dd>Not specified</dd></div></dl>
+                <dl className="lotConditionList"><div><dt>Run status</dt><dd><span className="lotConditionStatus neutral">Not independently inspected</span></dd></div><div><dt>Primary damage</dt><dd>{vehicle?.damage??"Unknown"}</dd></div><div><dt>Secondary damage</dt><dd>Not specified</dd></div></dl>
               </article>
 
               <article className="lotConditionCard" aria-labelledby="lot-inspection-title">
@@ -138,14 +175,14 @@ export default function LotPage(){
 
               <article className="lotConditionCard" aria-labelledby="lot-provenance-title">
                 <div className="lotConditionCardHead"><span className="lotConditionIcon" aria-hidden="true">03</span><div><strong id="lot-provenance-title">Provenance & documents</strong><small>Identification & history</small></div></div>
-                <dl className="lotConditionList"><div><dt>Документ</dt><dd>Clean Title</dd></div><div><dt>VIN</dt><dd className="lotConditionVin">WAUZZZ8V5KA123456</dd></div><div><dt>Location</dt><dd>Crewe, United Kingdom</dd></div></dl>
+                <dl className="lotConditionList"><div><dt>Документ</dt><dd>{vehicle?.titleStatus??"Unknown"}</dd></div><div><dt>VIN</dt><dd className="lotConditionVin">{vehicle?.vin??"Unknown"}</dd></div><div><dt>Location</dt><dd>{vehicle?.location??"Unknown"}</dd></div></dl>
                 <a className="lotHistoryLink" href="/vehicle-history" aria-label={`Провери историята на ${title}`}>Check vehicle history →</a>
               </article>
             </div>
             <p className="lotConditionDisclosure" role="note">This is an ENCHEV demo presentation of lot data. Missing external inspection or provenance reports are marked as unverified instead of being shown as fact.</p>
           </section>
 
-          <section className="lotSection"><div className="lotSectionHead"><div><h2>Bid history</h2><span>Latest bid events</span></div></div><div className="lotHistory">{history.map(row=><div className="lotHistoryRow" key={row.join("-")}><b>{row[0]}</b><b>{row[1]}</b><span>{row[2]}</span></div>)}</div></section>
+          <section className="lotSection"><div className="lotSectionHead"><div><h2>Bid history</h2><span>Illustrative demo events — not an authoritative bid ledger</span></div></div><div className="lotHistory">{lot==="EA-10539"?history.map(row=><div className="lotHistoryRow" key={row.join("-")}><b>{row[0]}</b><b>{row[1]}</b><span>{row[2]}</span></div>):<p>No preview bid history for this lot.</p>}</div></section>
 
           <section className="lotSection"><div className="lotSectionHead"><div><h2>Transport</h2><span>Estimated transport cost to Bulgaria</span></div></div><div className="lotTransport"><div className="lotTransportBox"><label>Destination<select defaultValue="sofia"><option value="sofia">Sofia, Bulgaria</option><option value="varna">Varna, Bulgaria</option><option value="sliven">Sliven, Bulgaria</option></select></label><label style={{marginTop:10}}>Postal code<input placeholder="1000"/></label></div><div className="lotTransportPrice"><span>Estimated transport</span><b>€1 480</b><small>7–14 business days · insured transport</small></div></div></section>
 
@@ -163,7 +200,7 @@ export default function LotPage(){
             <div className="lotMaxBidRow"><input id="lot-max-bid-input" className="lotMaxBidInput" value={maxBidInput} onChange={e=>setMaxBidInput(e.target.value)} inputMode="numeric" aria-describedby="lot-max-bid-help"/><button type="button" className="lotMaxBidBtn" onClick={saveMaxBid}>Set max</button></div>
             <small id="lot-max-bid-help">Minimum €{minimumBid.toLocaleString("bg-BG")} · the value is a local demo setting until backend integration.</small>
           </div>
-          <button className="lotBuyNow">Buy now · €29 900</button>
+          {vehicle?.buyNow ? <><button type="button" className="lotBuyNow" onClick={()=>setBuyNowNotice("Demo listing only. No checkout or payment was initiated.")}>Preview Buy Now · €{vehicle.buyNow.toLocaleString("bg-BG")}</button>{buyNowNotice&&<p role="status" aria-live="polite">{buyNowNotice}</p>}</> : <p role="status">Buy Now is unavailable for this preview lot.</p>}
           <div className="lotFees"><div><span>Current bid</span><b>€{bid.toLocaleString("bg-BG")}</b></div><div><span>Estimated fees</span><b>€980</b></div><div><span>Transport</span><b>от €1 480</b></div></div>
           <div className="lotNotice">This is the visual ENCHEV Lot Details flow. Real payments, identity verification and server-side bid locking will be connected in the backend stage.</div>
         </aside>
@@ -183,12 +220,12 @@ export default function LotPage(){
         </div>
         <div className="lotViewerStage">
           <button type="button" className="lotViewerNav lotViewerPrev" onClick={showPreviousImage} aria-label="Предишно изображение">‹</button>
-          <img src={gallery[activeImage]} alt={`${title} — изображение ${activeImage+1} на цял екран`}/>
+          <img src={lotGallery[activeImage]} alt={`${title} — изображение ${activeImage+1} на цял екран`}/>
           <button type="button" className="lotViewerNav lotViewerNext" onClick={showNextImage} aria-label="Nextо изображение">›</button>
         </div>
         <div className="lotViewerBottom">
-          <span className="lotViewerCount" aria-live="polite">Изображение {activeImage+1} от {gallery.length}</span>
-          <div className="lotViewerThumbs" aria-label="Избери изображение">{gallery.map((src,index)=><button type="button" key={`viewer-${src}`} className={`lotViewerThumb ${index===activeImage?"active":""}`} onClick={()=>setActiveImage(index)} aria-label={`Покажи изображение ${index+1}`} aria-pressed={index===activeImage}><img src={src} alt=""/></button>)}</div>
+          <span className="lotViewerCount" aria-live="polite">Изображение {activeImage+1} от {lotGallery.length}</span>
+          <div className="lotViewerThumbs" aria-label="Избери изображение">{lotGallery.map((src,index)=><button type="button" key={`viewer-${src}`} className={`lotViewerThumb ${index===activeImage?"active":""}`} onClick={()=>setActiveImage(index)} aria-label={`Покажи изображение ${index+1}`} aria-pressed={index===activeImage}><img src={src} alt=""/></button>)}</div>
         </div>
       </div>
     </div>}

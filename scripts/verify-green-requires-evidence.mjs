@@ -80,7 +80,13 @@ requireSourceInvariant(compactMaster.includes('if(status==="green"){'), "GREEN t
 requireSourceInvariant(compactMaster.includes('constevidence=(notes[id]?.evidence||VERIFIED_EVIDENCE[id]||"").trim();'), "GREEN evidence source/trim check is missing");
 requireSourceInvariant(compactMaster.includes('if(!evidence){'), "missing-evidence rejection branch is missing");
 requireSourceInvariant(compactMaster.includes('persist({...statuses,[id]:"yellow"}'), "missing evidence no longer downgrades GREEN to YELLOW");
-requireSourceInvariant(compactMaster.includes('GREENблокиран:добавиEvidence(URL/commit/testresult).'), "user-visible GREEN evidence blocker is missing");
+// The product UI is now English, but earlier stable builds used Bulgarian text.
+// Both visible warnings enforce the identical rejection rule.
+const supportedBlockers = [
+  'GREENблокиран:добавиEvidence(URL/commit/testresult).',
+  'GREENblocked:addEvidence(URL/commit/testresult).',
+];
+requireSourceInvariant(supportedBlockers.some(text => compactMaster.includes(text)), "user-visible GREEN evidence blocker is missing");
 
 const compactSync = sync.replace(/\s+/g, "");
 requireSourceInvariant(compactSync.includes('statuses[id]="green";'), "verified sync no longer writes GREEN status");
