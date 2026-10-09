@@ -26,9 +26,7 @@ const manifest={source:"Actual running Next.js branch site, NOT illustrative moc
 try{
   for(const device of [
     {name:"pc",width:1440,height:900,isMobile:false,deviceScaleFactor:1},
-    {name:"phone-320",width:320,height:720,isMobile:true,hasTouch:true,deviceScaleFactor:1},
-    {name:"phone-390",width:390,height:844,isMobile:true,hasTouch:true,deviceScaleFactor:1},
-    {name:"phone-430",width:430,height:932,isMobile:true,hasTouch:true,deviceScaleFactor:1}
+    {name:"phone-390",width:390,height:844,isMobile:true,hasTouch:true,deviceScaleFactor:1}
   ]){
     const ctx=await browser.newContext({viewport:{width:device.width,height:device.height},deviceScaleFactor:device.deviceScaleFactor,isMobile:device.isMobile,hasTouch:device.hasTouch??false,reducedMotion:"reduce"});
     for(const target of pages){
