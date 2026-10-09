@@ -36,7 +36,9 @@ try{
       try {
         const response=await page.goto(BASE_URL+target.path,{waitUntil:"domcontentloaded",timeout:40000});
         if(!response || response.status()>=400)throw Error("HTTP "+(response?.status()??"none"));
-        await page.locator("body").waitFor();
+        // The cinematic presentation re-renders its root during hydration; do not
+        // block screenshot capture on an unstable body locator.
+        if(target.name!=="presentation")await page.locator("body").waitFor();
         await page.evaluate(async()=>{await document.fonts.ready;});
         await page.waitForTimeout(target.name==="intro"||target.name==="workspace"?1200:550);
         const width=await page.evaluate(()=>document.documentElement.scrollWidth);
