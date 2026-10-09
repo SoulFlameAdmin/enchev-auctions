@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "./enchev-theme.css";
 import "./home-v2.css";
@@ -12,6 +12,7 @@ import "./dp2-foundation.css";
 import "./dp2-app-shell.css";
 import "./dp2-home-hero.css";
 import "./dp2-home-discovery.css";
+import "./mobile-page-parity.css";
 import VerifiedPlanEvidenceSync from "./components/VerifiedPlanEvidenceSync";
 import TestPassGreenGuard from "./components/TestPassGreenGuard";
 import GapAppendOnlyGuard from "./components/GapAppendOnlyGuard";
@@ -20,6 +21,8 @@ import CloudPlanStateSync from "./components/CloudPlanStateSync";
 import LotNavigationBridge from "./components/LotNavigationBridge";
 import EnchevAppShell from "./components/EnchevAppShell";
 import EnglishUiEnforcer from "./components/EnglishUiEnforcer";
+
+export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 export const metadata: Metadata = {
   title: "ENCHEV Auctions",
