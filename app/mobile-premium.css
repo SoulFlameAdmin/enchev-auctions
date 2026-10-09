@@ -231,7 +231,14 @@
   .livePage .liveNextPreviewCard{border-radius:13px;background:#0c1810;min-height:100px}
   .livePage .liveNextPreviewCard h3{font-size:14px}
   .livePage .liveNextPreviewCard p{font-size:11px;color:#a0b4a7}
-  .livePage .liveNextPreview{display:none!important}
+  /* D24 keeps the NEXT LOT card visible and keyboard focusable on phones. */
+  .livePage .liveNextPreview{
+    display:block!important;
+    margin-top:15px;padding-top:14px;
+    border-top:1px solid rgba(148,221,169,.14);
+  }
+  .livePage .liveNextPreviewCard{display:grid!important;min-height:93px;}
+  .livePage .liveNextPreviewCard:focus-visible{outline:2px solid #b2ffca;outline-offset:2px}
   .livePage .liveRule{display:none!important}
   .livePage .liveMobileDemoDisclaimer{
     display:block;margin-top:13px;text-align:center;color:#a4baa9;

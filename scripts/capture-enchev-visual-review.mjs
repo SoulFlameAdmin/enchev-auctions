@@ -12,17 +12,21 @@ const pages=[
   {path:"/inventory",name:"inventory"},
   {path:"/inventory?make=BMW&model=M4%20F82",name:"filtered-bmw"},
   {path:"/live-auctions",name:"live-auctions"},
-  {path:"/lot/EA-10482",name:"lot-bmw"},
+  {path:"/lot/EA-10511",name:"lot-bmw"},
   {path:"/profile",name:"profile"},
   {path:"/vehicle-history",name:"vehicle-history"},
   {path:"/transport",name:"transport"},
+  {path:"/support",name:"support"},
+  {path:"/presentation",name:"presentation"},
+  {path:"/workspace",name:"workspace"},
+  {path:"/rtl-capability",name:"rtl-capability"},
 ];
 const browser=await chromium.launch({headless:true});
 const manifest={source:"Actual running Next.js branch site, NOT illustrative mockups",branch:process.env.GITHUB_HEAD_REF||process.env.GITHUB_REF_NAME||"local",commit:process.env.GITHUB_SHA||"local",capture:new Date().toISOString(),screenshots:[]};
 try{
   for(const device of [
     {name:"pc",width:1440,height:900,isMobile:false,deviceScaleFactor:1},
-    {name:"phone",width:390,height:844,isMobile:true,hasTouch:true,deviceScaleFactor:1}
+    {name:"phone-390",width:390,height:844,isMobile:true,hasTouch:true,deviceScaleFactor:1}
   ]){
     const ctx=await browser.newContext({viewport:{width:device.width,height:device.height},deviceScaleFactor:device.deviceScaleFactor,isMobile:device.isMobile,hasTouch:device.hasTouch??false,reducedMotion:"reduce"});
     for(const target of pages){
@@ -32,9 +36,13 @@ try{
       try {
         const response=await page.goto(BASE_URL+target.path,{waitUntil:"domcontentloaded",timeout:40000});
         if(!response || response.status()>=400)throw Error("HTTP "+(response?.status()??"none"));
-        await page.locator("body").waitFor();
+        // The cinematic presentation re-renders its root during hydration; do not
+        // block screenshot capture on an unstable body locator.
+        if(target.name!=="presentation")await page.locator("body").waitFor();
         await page.evaluate(async()=>{await document.fonts.ready;});
-        await page.waitForTimeout(target.name==="intro"?1200:550);
+        await page.waitForTimeout(target.name==="intro"||target.name==="workspace"?1200:550);
+        const width=await page.evaluate(()=>document.documentElement.scrollWidth);
+        if(width>device.width+2){throw new Error(`Horizontal scroll: ${width}px at viewport ${device.width}px`);}
         const screenshot=path.join(DIR,`${device.name}-${target.name}.png`);
         await page.screenshot({path:screenshot,fullPage:target.name!=="intro",animations:"disabled",timeout:50000});
         manifest.screenshots.push({device:device.name,route:target.path,file:path.basename(screenshot),title:await page.title(),pageErrors:failures});

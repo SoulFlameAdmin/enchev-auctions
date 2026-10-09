@@ -14,6 +14,7 @@ import "./dp2-home-hero.css";
 import "./dp2-home-discovery.css";
 import "./mobile-page-parity.css";
 import "./mobile-premium.css";
+import "./mobile-all-routes.css";
 import VerifiedPlanEvidenceSync from "./components/VerifiedPlanEvidenceSync";
 import TestPassGreenGuard from "./components/TestPassGreenGuard";
 import GapAppendOnlyGuard from "./components/GapAppendOnlyGuard";

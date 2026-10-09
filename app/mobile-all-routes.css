@@ -1,0 +1,72 @@
+/* ENCHEV MOBILE · ROUTE-COMPLETE SAFETY NET, 2026-10-09
+ * Imported after existing premium and parity styles. No changes to desktop
+ * auction state, payment flows, interactive JS, or DAVID system controls.
+ * We intentionally use real responsive reflow instead of page zoom.
+ */
+@media (max-width: 1024px){
+  /* Block intrinsic min-width of wide internal panels on narrow tablet views. */
+  .eaAppShell,.eaAppHeader,.eaAppMobileDrawer{min-width:0;max-width:100%}
+  .eaAppHeader > *,.eaAppMobileDrawer > *,.eaAppMobileSearch > *,
+  .inventoryPage main,.inventoryResults,.inventoryToolbarControls,
+  .lotWrap,.lotGrid > *,.lotSection,.livePage,.liveStage > *,
+  .transportPage,.transportCalculator > *,.historyPage,.historyHero > *,
+  .profileDashboardContent,.profileDashboardShell > *,
+  .navigationRouteMain,.navigationRouteGrid > *{min-width:0}
+  .inventoryPage :is(img,video,svg),
+  .lotPage :is(img,video,svg),
+  .livePage :is(img,video,svg),
+  .profileRouteMain :is(img,video,svg),
+  .transportPage :is(img,video,svg),
+  .historyPage :is(img,video,svg){max-width:100%}
+  .eaAppMobileDrawer{overscroll-behavior:contain}
+}
+@media (max-width:760px){
+  /* 100% available device width for *every* route, not a desktop column. */
+  html,body{max-width:100%;min-width:0}
+  :is(.eaHome,.inventoryPage,.livePage,.lotPage,
+      .transportPage,.historyPage,.navigationPage){max-width:100%;min-width:0}
+  main#main-content{max-width:100%;min-width:0}
+  main#main-content :is(section,article,aside,header,footer){box-sizing:border-box}
+  .eaAppUtility,.eaAppHeader{width:100%;min-width:0}
+  .eaAppMobileDrawer{max-width:100vw}
+  .eaAppMobileTop,.eaAppMobileNav,.eaAppMobileAccount{min-width:0}
+  .eaAppMobileNav b{overflow-wrap:anywhere}
+  /* A phone sees full-size touch targets and plain readable text. */
+  :is(.inventoryPage,.livePage,.lotPage,.transportPage,
+      .historyPage,.navigationPage,.profileRouteMain)
+    :is(button,[role="button"],input[type="submit"],select){touch-action:manipulation}
+  :is(.inventoryPage,.livePage,.lotPage,.transportPage,
+      .historyPage,.navigationPage,.profileRouteMain)
+    :is(input[type="text"],input[type="email"],input[type="search"],input[type="tel"],input[type="number"],select,textarea){
+      min-width:0;max-width:100%;font-size:16px
+    }
+  .inventoryPage :is(.inventoryActions,.inv2HeroStats,.inventoryToolbarControls),
+  .lotPage :is(.lotBidInputRow,.lotTransport,.lotRelated),
+  .transportPage :is(.transportHeroActions,.transportRouteCard,.transportSteps),
+  .historyPage :is(.historySearch,.historyCta),
+  .profileRouteMain :is(.profileOverviewActions,.profileAccountNav),
+  .navigationPage :is(.navigationRouteGrid,.navigationRouteActions){max-width:100%;min-width:0}
+  .inventoryPage .inv2Chips{min-width:0;max-width:100%;overscroll-behavior-inline:contain}
+  .lotPage .lotViewerShell{max-width:100vw}
+  .lotPage .lotViewerStage,.lotPage .lotViewerBottom{min-width:0}
+  .lotPage .lotViewerStage img{max-width:100%;max-height:100%}
+  .profileRouteMain .profileAccountNav{max-width:100%;overscroll-behavior-inline:contain}
+  .historyPage .historySearch{max-width:100%}
+  .transportPage .transportCalculator select{width:100%}
+  .livePage .proLiveUx .proLiveBidDock{max-width:100%}
+  /* Focus must be unmistakable on touch-keyboard accessibility routes. */
+  :is(.eaAppMobileDrawer,.inventoryPage,.lotPage,.livePage,.transportPage,.historyPage,.profileRouteMain)
+    :is(button,a,input,select):focus-visible{outline:2px solid #b2ffca;outline-offset:2px}
+}
+@media(max-width:360px){
+  /* The smallest real phone widths must never clip two-column actions. */
+  .inventoryPage .inventoryActions,
+  .historyPage .historySearch,
+  .historyPage .historyCta,
+  .transportPage .transportHeroActions,
+  .navigationPage .navigationRouteActions{grid-template-columns:minmax(0,1fr)}
+  .inventoryPage .inv2HeroStats{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .eaAppUtility{gap:5px}
+  .eaAppUtilityLive{gap:5px}
+  .eaAppPresentationButton{font-size:8px;padding-inline:7px}
+}
