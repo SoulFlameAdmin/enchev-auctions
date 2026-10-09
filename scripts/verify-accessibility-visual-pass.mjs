@@ -45,7 +45,7 @@ export function validateAccessibilityContract(sources) {
   need(`${sources.home}\n${sources.homeHero}\n${sources.homeDiscovery}`, /role="search"/, "homepage search landmark missing");
   need(sources.inventory, /aria-pressed=\{viewMode===/, "inventory view switch pressed-state semantics missing");
   need(sources.lot, /role="dialog"/, "lot image viewer dialog semantics missing");
-  need(sources.live, /aria-label="Наддаване и следващ лот"/, "live bid-panel accessible label missing");
+  need(sources.live, /aria-label="Demo bidding and next lot"/, "live bid-panel accessible label missing");
   need(sources.profile, /aria-label="Навигация на профила"/, "profile account navigation label missing");
 
   return true;
