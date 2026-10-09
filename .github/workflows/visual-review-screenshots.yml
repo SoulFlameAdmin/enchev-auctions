@@ -6,6 +6,11 @@ on:
     paths:
       - scripts/capture-enchev-visual-review.mjs
       - .github/workflows/visual-review-screenshots.yml
+  pull_request:
+    paths:
+      - app/**
+      - scripts/capture-enchev-visual-review.mjs
+      - .github/workflows/visual-review-screenshots.yml
   workflow_dispatch:
 permissions:
   contents: read
@@ -38,9 +43,9 @@ jobs:
           done
           cat /tmp/enchev-preview-server.log
           exit 1
-      - name: Capture desktop and phone pages including intro
+      - name: Capture all ENCHEV routes on PC and phones
         run: node scripts/capture-enchev-visual-review.mjs
-      - name: Upload visual review (18 real browser PNGs)
+      - name: Upload visual review (all route screenshots at four real viewport sizes)
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
