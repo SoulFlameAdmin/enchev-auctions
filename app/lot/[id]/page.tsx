@@ -3,6 +3,7 @@
 import { useParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { PREVIEW_VEHICLES } from "../../data/preview-vehicles";
+import { GOLF_GTI_DEMO_PHOTO_CREDIT } from "../../data/demo-vehicle-media";
 import { getDemoWatchlist, setDemoWatchlist, type DemoSavedVehicle } from "../../components/demo-watchlist";
 import "../lot.css";
 import "../lot-d21.css";
@@ -145,6 +146,7 @@ export default function LotPage(){
               <span className="lotImageBadge">PREVIEW PHOTO · {activeImage+1}/{lotGallery.length}</span>
               <span className="lotZoomHint" aria-hidden="true">⛶ Full screen</span>
             </button>
+            {lot==="EA-10603"&&<a className="lotDemoPhotoCredit" href={GOLF_GTI_DEMO_PHOTO_CREDIT} target="_blank" rel="noopener noreferrer">Illustrative GTI photo · David Moffatt / Unsplash ↗</a>}
             <div className="lotThumbs" role="list" aria-label="Миниатюри на автомобила">{lotGallery.map((src,index)=><button type="button" key={src} className={`lotThumb ${index===activeImage?"active":""}`} onClick={()=>setActiveImage(index)} aria-label={`Покажи изображение ${index+1} от ${lotGallery.length}`} aria-pressed={index===activeImage}><img src={src} alt=""/></button>)}</div>
           </div>
 
