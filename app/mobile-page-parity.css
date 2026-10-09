@@ -1,0 +1,129 @@
+/* ENCHEV mobile route parity — all buyer pages share a real phone viewport.
+   Keep desktop grid/layout untouched and never simulate mobile by scaling the page. */
+html{min-width:0}
+body{min-width:0}
+.eaAppShell,.eaAppHeader{max-width:100%}
+.eaAppHeader>*,.eaAppUtility>*,main#main-content>*{min-width:0}
+
+@media(max-width:760px){
+  :root{--ea-page-gutter:12px;--ea-grid-gap:12px}
+  html,body{width:100%;max-width:100%}
+  .eaAppShell{width:100%;max-width:100vw}
+  .eaAppUtility{width:100%;min-width:0;gap:8px;padding-inline:12px}
+  .eaAppUtilityLive{flex:1;min-width:0;gap:8px}
+  .eaAppUtilityMeta{flex:0 0 auto}
+  .eaAppPresentationButton{white-space:nowrap}
+  .eaAppHeader{
+    width:100%;max-width:none;min-height:66px;
+    display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;
+    padding-inline:12px;
+  }
+  .eaAppSearch,.eaAppDesktopNav,.eaAppAccount{display:none!important}
+  .eaAppBrand{min-width:0;max-width:100%}
+  .eaAppBrand strong{font-size:25px}
+  .eaAppMenuButton{display:grid;min-width:44px;min-height:44px;justify-self:end}
+  .eaAppMobileLayer{max-width:100vw}
+  .eaAppMobileDrawer{max-width:100vw}
+  .eaAppMobileDrawer input{min-width:0}
+  .eaAppMobileNav a{min-width:0}
+  .eaAppMobileNav b{overflow-wrap:anywhere}
+
+  /* Root route containers must fill the phone, not half a viewport. */
+  .eaHome,.inventoryPage,.lotPage,.livePage,.navigationPage,
+  .transportPage,.historyPage,.profileRouteMain{
+    min-width:0;max-width:100%;box-sizing:border-box;
+  }
+  .eaHome,.inventoryPage,.lotPage,.livePage,.navigationPage,
+  .transportPage,.historyPage{width:100%!important;overflow-x:clip}
+  .eaHeroInner,.eaSection,.eaCta,.inv2Hero,.inv2Quickbar,
+  .inventoryShell,.lotWrap,.liveHero,.liveStage,.liveQueue,.liveSold,
+  .transportHero,.transportTrust,.transportCalculator,.transportFlow,.transportFaq,
+  .historyHero,.historyDemoResult,.historyFeatures,.historyCta,
+  .navigationRouteMain,.profileRouteMain{
+    width:calc(100% - 24px)!important;
+    max-width:calc(100% - 24px)!important;
+    min-width:0!important;margin-inline:auto!important;
+  }
+  .eaFeaturedGrid,.eaSteps,.inventoryGrid,.lotGrid,.liveStage,
+  .liveQueueGrid,.liveSoldGrid,.transportTrust,.transportFlowGrid,
+  .historyScoreGrid,.historyFeatureGrid,.navigationRouteGrid,
+  .profileDashboardShell,.profileWatchlistGrid{
+    grid-template-columns:minmax(0,1fr)!important;
+  }
+  .eaHeroInner,.inventoryShell,.liveStage,.lotGrid,.profileDashboardShell>*{min-width:0}
+  .inventoryGrid img,.lotPage img,.livePage img,.transportPage img,
+  .historyPage img,.profileRouteMain img{max-width:100%}
+  .eaCtaActions,.profileOverviewActions{width:100%;max-width:100%}
+  .eaCtaActions a,.profileOverviewActions a{min-height:44px}
+
+  /* Auction clock + bidder must be readable without sideways panning. */
+  .liveHero{display:flex;flex-direction:column;align-items:stretch;gap:14px}
+  .liveHero>*{width:100%;max-width:100%;min-width:0}
+  .liveHero h1{font-size:clamp(32px,9vw,44px)!important;overflow-wrap:anywhere}
+  .liveHero p{font-size:14px!important;line-height:1.5!important;overflow-wrap:anywhere}
+  .liveHeroClock,.liveConnectionState,.liveHeroStatusStack{width:100%;min-width:0;max-width:100%}
+  .liveStage{display:grid;gap:14px}
+  .liveVisual{width:100%;height:clamp(300px,72vw,440px);min-width:0}
+  .liveBidPanel{width:100%;position:static!important;min-width:0}
+  .liveVisualInfo{left:14px;right:14px;bottom:18px}
+  .liveVisualInfo h2{font-size:clamp(20px,6vw,28px)}
+  .liveVisualInfo p{font-size:12px;overflow-wrap:anywhere}
+  .liveQueueCard{grid-template-columns:96px minmax(0,1fr)!important}
+  .liveQueueCard img{width:96px}
+  .liveQueueCard>div{min-width:0}
+  .liveQueueCard h3{overflow-wrap:anywhere}
+  .liveNextPreviewCard{grid-template-columns:96px minmax(0,1fr)!important}
+  .liveNextPreviewCard img{width:96px}
+  .liveNextPreviewCard>div{min-width:0}
+
+  .proLiveUx{
+    width:calc(100% - 24px)!important;max-width:calc(100% - 24px)!important;
+    min-width:0;margin:0 auto 18px;padding:12px;box-sizing:border-box;
+  }
+  .proLiveUx>*{min-width:0;max-width:100%}
+  .proLiveTop,.proLiveBanner{flex-wrap:wrap;gap:10px}
+  .proLiveTop button,.proLiveBanner button{min-height:44px}
+  .proLiveStatusGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px}
+  .proLiveStatusGrid>div{min-width:0;overflow-wrap:anywhere}
+  .proLiveStatusGrid>div:last-child{grid-column:1/-1}
+  .proLiveNowNext{grid-template-columns:minmax(0,1fr)!important}
+  .proLiveNowNext article{grid-template-columns:auto minmax(0,1fr)}
+  .proLiveNowNext article>*{min-width:0;overflow-wrap:anywhere}
+  .proLiveDashboard{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .proLiveDashboard article{min-width:0;min-height:0}
+  .proLiveDashboard strong{overflow:hidden;text-overflow:ellipsis}
+  .proLiveBidDock{
+    position:static!important;bottom:auto!important;
+    display:flex;flex-direction:column;align-items:stretch;gap:12px;
+    box-shadow:none;margin-top:12px;
+  }
+  .proLiveBidDock>div{min-width:0}
+  .proLiveBidDock b{overflow-wrap:anywhere}
+  .proLiveBidDock button{width:100%;min-width:0;min-height:48px}
+  .proLiveResult{align-items:flex-start;flex-direction:column}
+  .livePage{padding-bottom:calc(36px + env(safe-area-inset-bottom))}
+  .lotMobileBidDock{max-width:calc(100vw - 16px);box-sizing:border-box}
+
+  /* Forms, content cards and actions stay reachable at 320–430px. */
+  .inventoryToolbarControls{flex-wrap:wrap}
+  .inventoryToolbarControls>*{min-width:0;max-width:100%}
+  .inventoryToolbar select{max-width:100%}
+  .inventoryCard,.lotSection,.transportCalcCard,.historyDemoResult,
+  .navigationRouteCard,.profileOverview,.profileWatchlistCard,.myAuctionRow{min-width:0;max-width:100%}
+  .lotTitleRow h1,.transportHero h1,.historyHero h1,.navigationRouteMain h1{
+    font-size:clamp(30px,8.5vw,42px)!important;overflow-wrap:anywhere
+  }
+  .transportCalculator input,.transportCalculator select,
+  .historyPage input,.historyPage select{max-width:100%}
+  .navigationRouteActions a{min-height:44px}
+}
+@media(max-width:360px){
+  .proLiveDashboard{grid-template-columns:minmax(0,1fr)!important}
+  .proLiveStatusGrid{grid-template-columns:minmax(0,1fr)!important}
+  .proLiveStatusGrid>div:last-child{grid-column:auto}
+  .liveQueueCard{grid-template-columns:88px minmax(0,1fr)!important}
+  .liveQueueCard img{width:88px}
+}
+@media(prefers-reduced-motion:reduce){
+  .eaAppMobileDrawer{scroll-behavior:auto}
+}
