@@ -234,13 +234,24 @@
   .livePage .liveRule{margin-top:14px;padding-top:12px}
   .livePage .liveRule p{font-size:11px!important;color:#9bb09f}
   .livePage .proLiveUx{
+    display:flex;flex-direction:column;
     width:calc(100% - (var(--ea-mobile-pad) * 2))!important;
     margin-top:15px!important;margin-bottom:12px!important;
     border:1px solid var(--ea-mobile-edge);border-radius:19px;
     padding:17px!important;background:#0e1912;
     box-shadow:0 9px 28px rgba(0,0,0,.18);
   }
-  .livePage .proLiveTop{display:flex;flex-direction:row;align-items:center;gap:8px;margin-bottom:10px}
+  .livePage .proLiveTop{display:flex;flex-direction:row;align-items:center;gap:8px;margin-bottom:10px;order:1}
+  .livePage .proLiveCompactStatus{order:2}
+  .livePage .proLiveBanner{order:3}
+  .livePage .proLiveBidDock{order:4}
+  .livePage .proLiveResult{order:5}
+  .livePage .proLiveAdvancedToggle{order:6}
+  .livePage .proLiveStatusGrid{order:7}
+  .livePage .proLiveNowNext{order:8}
+  .livePage .proLiveDashboard{order:9}
+  .livePage .proLiveOutbid,.livePage .proLiveExtension{order:10}
+  .livePage .proLiveKeyboard,.livePage .proLiveMobileMarker,.livePage .srOnly{order:11}
   .livePage .proLiveTop>div{min-width:0;flex:1}
   .livePage .proLiveTop span{font-size:10px;color:#9aaf9e}
   .livePage .proLiveTop b{font-size:15px}
