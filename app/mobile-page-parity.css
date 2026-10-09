@@ -1,5 +1,11 @@
 /* ENCHEV mobile route parity — all buyer pages share a real phone viewport.
    Keep desktop grid/layout untouched and never simulate mobile by scaling the page. */
+/* A closed off-canvas drawer must not enlarge Chromium mobile layout viewport. */
+@media(max-width:1050px){
+  .eaAppMobileLayer:not(.is-open){display:none!important}
+  .eaAppMobileLayer.is-open{display:block!important;overflow:clip;max-width:100vw}
+  .eaAppMobileLayer.is-open .eaAppMobileDrawer{transform:translateX(0)!important}
+}
 html{min-width:0}
 body{min-width:0}
 .eaAppShell,.eaAppHeader{max-width:100%}
