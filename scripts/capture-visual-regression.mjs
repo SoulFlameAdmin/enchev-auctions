@@ -349,10 +349,10 @@ async function verifyD27BidFeedback(call,viewport){
   if(initial.scrollWidth>initial.viewportWidth+3)fail(`D27 ${viewport.name} horizontal overflow before feedback test`);
 
   const expected=[
-    ["accepted","ОФЕРТАТА Е ПРИЕТА",100],
-    ["leading","LEADING В ТЪРГА",100],
-    ["outbid","НАДДАВАН СИ",100],
-    ["rejected","ОФЕРТАТА Е ОТХВЪРЛЕНА",0],
+    ["accepted","DEMO BID ACCEPTED",100],
+    ["leading","LEADING (DEMO)",100],
+    ["outbid","OUTBID (DEMO)",100],
+    ["rejected","DEMO BID REJECTED",0],
   ];
 
   let previousPrice=Number((initial.priceText.match(/[0-9\s]+/)?.[0]||"0").replace(/\s/g,""));
