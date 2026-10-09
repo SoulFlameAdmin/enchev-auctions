@@ -1,0 +1,385 @@
+/* ENCHEV · MOBILE EXPERIENCE 2.0
+   Premium, readable phone composition for 320–760px.
+   Presentation/Forge desktop remains untouched; original functionality stays intact. */
+@media(max-width:760px){
+  :root{
+    --ea-mobile-pad:16px;
+    --ea-mobile-panel:#101a14;
+    --ea-mobile-edge:rgba(163,228,181,.15);
+    --ea-mobile-quiet:#a6b9ac;
+  }
+  html{-webkit-text-size-adjust:100%;text-size-adjust:100%;scroll-padding-top:108px}
+  body{background:#050906}
+  :is(.inventoryPage,.lotPage,.livePage,.transportPage,.historyPage,.navigationPage){
+    color:#f3f8f4;
+    background:radial-gradient(ellipse 120% 320px at 50% 0%,rgba(27,80,47,.22),transparent 75%),#060b08;
+    font-size:15px;
+    line-height:1.52;
+  }
+  :is(.inventoryPage,.lotPage,.livePage,.transportPage,.historyPage,.navigationPage)
+    :is(h1,h2,h3){letter-spacing:-.035em;line-height:1.1;text-wrap:balance}
+  :is(.inventoryPage,.lotPage,.livePage,.transportPage,.historyPage,.navigationPage)
+    :is(p,small){line-height:1.52}
+  :is(.inventoryPage,.lotPage,.livePage,.transportPage,.historyPage,.navigationPage)
+    :is(button,a,input,select){-webkit-tap-highlight-color:transparent}
+  :is(.inventoryPage,.lotPage,.livePage,.transportPage,.historyPage,.navigationPage)
+    :is(button,a,input,select):focus-visible{outline:2px solid #9bf8bc;outline-offset:3px}
+  :is(.inventoryPage,.lotPage,.livePage,.transportPage,.historyPage,.navigationPage)
+    :is(input,select,textarea){font-size:16px;min-width:0}
+  :is(.inventoryPage,.lotPage,.livePage,.transportPage,.historyPage,.navigationPage)
+    img{object-position:center;max-width:100%}
+  .eaAppShell{
+    border-bottom:1px solid rgba(131,223,157,.14);
+    box-shadow:0 8px 28px rgba(0,0,0,.28);
+  }
+  .eaAppUtility{
+    min-height:27px;
+    background:#050b07;
+    padding-inline:var(--ea-mobile-pad);
+  }
+  .eaAppUtilityLive strong{font-size:10px;letter-spacing:.09em}
+  .eaAppUtilityLive i{box-shadow:0 0 9px rgba(255,107,95,.4)}
+  .eaAppPresentationButton{min-height:22px;padding:0 10px;font-size:9px;letter-spacing:.04em}
+  .eaAppUtilityMeta a{font-size:11px;color:#c4d6c9}
+  .eaAppHeader{
+    padding:0 var(--ea-mobile-pad);min-height:64px;
+    background:rgba(5,12,8,.96);
+  }
+  .eaAppBrand strong{font-size:27px!important;font-weight:850;letter-spacing:-.055em}
+  .eaAppBrand span{font-size:8px;letter-spacing:.47em;color:#94a89c}
+  .eaAppMenuButton{
+    width:44px;height:44px;background:#122018;
+    border:1px solid rgba(128,217,153,.22);
+    border-radius:13px;box-shadow:inset 0 1px rgba(255,255,255,.04);
+  }
+  .eaAppMenuButton span{width:19px;height:2px;background:#edf7ef}
+  .eaAppMobileDrawer{
+    padding:22px 17px calc(26px + env(safe-area-inset-bottom));
+    background:radial-gradient(circle at 100% 0%,rgba(36,103,61,.17),transparent 40%),#09130d;
+  }
+  .eaAppMobileSearch{min-height:53px;border-radius:12px;background:#121f17}
+  .eaAppMobileSearch input{font-size:16px}
+  .eaAppMobileNav a{min-height:62px;gap:13px;color:#e4eee6}
+  .eaAppMobileNav a b{font-size:15px;font-weight:750}
+  .eaAppMobileNav a span{font-size:10px}
+  .eaAppMobileLive{background:rgba(49,125,74,.11)}
+  .eaAppMobileAccount a{min-height:51px;font-size:13px}
+
+  /* Mobile rails: consistent 16px breathing room on every real route. */
+  .eaHeroInner,.eaSection,.eaCta,.inv2Hero,.inv2Quickbar,.inventoryShell,
+  .lotWrap,.liveHero,.liveStage,.liveQueue,.liveSold,.proLiveUx,
+  .transportHero,.transportTrust,.transportCalculator,.transportFlow,.transportFaq,
+  .historyHero,.historyDemoResult,.historyFeatures,.historyCta,
+  .navigationRouteMain,.profileRouteMain{
+    width:calc(100% - (var(--ea-mobile-pad) * 2))!important;
+    max-width:calc(100% - (var(--ea-mobile-pad) * 2))!important;
+    margin-left:auto!important;margin-right:auto!important;
+  }
+
+  /* Landing behind cinematic intro: readable classic marketplace. */
+  .eaHome .eaHeroInner{padding-block:35px 45px}
+  .eaHome .eaHeroCopy h1{font-size:clamp(34px,10.5vw,52px)!important;line-height:1.05!important}
+  .eaHome .eaHeroLead{font-size:16px!important;color:#c4d5c8}
+  .eaHome .eaSearch{height:auto;min-height:55px}
+  .eaHome .eaSection{padding-block:36px!important}
+  .eaHome .eaFeaturedGrid{gap:14px}
+  .eaHome .eaFeaturedCard{border-radius:17px;overflow:hidden}
+  .eaHome .eaFeaturedBody{padding:16px!important}
+
+  /* INVENTORY: photo-first cards and usable filters. */
+  .inventoryPage .inv2Hero{
+    display:flex;flex-direction:column;align-items:stretch;
+    padding:19px 17px!important;margin-top:16px!important;margin-bottom:14px!important;
+    gap:15px;border:1px solid var(--ea-mobile-edge);
+    border-radius:20px;background:linear-gradient(145deg,rgba(19,44,27,.97),rgba(8,17,12,.98));
+  }
+  .inventoryPage .inventoryIntro h1{
+    margin:4px 0 8px!important;
+    font-size:clamp(30px,9vw,39px)!important;
+  }
+  .inventoryPage .inventoryIntro p{font-size:14px!important;color:#b1c2b5}
+  .inventoryPage .inv2HeroStats{
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+    width:100%;gap:8px;
+  }
+  .inventoryPage .inv2HeroStat{
+    padding:12px 8px;min-width:0;border-radius:12px;text-align:center;
+    background:rgba(255,255,255,.035);
+  }
+  .inventoryPage .inv2HeroStat b{font-size:clamp(16px,4.8vw,21px)}
+  .inventoryPage .inv2HeroStat span{font-size:9px;letter-spacing:.03em;line-height:1.3}
+  .inventoryPage .inv2Quickbar{
+    align-items:stretch;flex-direction:column;gap:10px;margin-block:12px 16px;
+  }
+  .inventoryPage .inv2Chips{
+    display:flex;flex-wrap:nowrap;max-width:100%;overflow-x:auto;gap:8px;
+    padding:2px 0 8px;scrollbar-width:thin;scroll-snap-type:x proximity;
+  }
+  .inventoryPage .inv2Chip{
+    height:41px;padding-inline:16px;flex:0 0 auto;scroll-snap-align:start;
+    border-radius:12px;background:#101c14;color:#dae7dc;font-size:12px;
+  }
+  .inventoryPage .inv2Chip.active{background:#16462b;border-color:#4ddc89;color:white}
+  .inventoryPage .inv2SaveSearch{align-self:stretch;min-height:43px;border-radius:11px}
+  .inventoryPage .inv2MobileFiltersToggle{
+    width:calc(100% - (var(--ea-mobile-pad) * 2));min-height:49px;
+    margin-inline:auto;margin-bottom:13px;
+    border-radius:13px;background:#111e15;border-color:var(--ea-mobile-edge);
+    font-size:13px;
+  }
+  .inventoryPage .inventoryShell{display:grid;gap:14px}
+  .inventoryPage .inventoryToolbar{
+    display:flex;align-items:stretch;flex-direction:column;
+    gap:10px;padding:0 0 13px!important;
+  }
+  .inventoryPage .inventoryToolbar>div{min-width:0;flex-wrap:wrap}
+  .inventoryPage .inventoryToolbarControls{width:100%;display:flex;gap:9px}
+  .inventoryPage .inventoryToolbar select{
+    height:45px!important;min-height:45px!important;
+    border-radius:11px;background:#111e16;font-size:13px;
+  }
+  .inventoryPage .inventoryGrid{display:grid;gap:16px!important}
+  .inventoryPage .inventoryCard{
+    border-radius:20px!important;
+    border:1px solid rgba(141,197,152,.17)!important;
+    background:linear-gradient(180deg,#101b14,#0a120d)!important;
+    box-shadow:0 12px 36px rgba(0,0,0,.22);
+    overflow:hidden;
+  }
+  .inventoryPage .inventoryImage{height:clamp(190px,59vw,270px)!important;min-height:0}
+  .inventoryPage .inventoryCardBody{padding:18px 16px!important}
+  .inventoryPage .inventoryCard h2{font-size:clamp(19px,5.7vw,24px);line-height:1.17}
+  .inventoryPage .inventoryCard dl{font-size:12px;color:#ccd8ce}
+  .inventoryPage .inventoryPrice b{font-size:clamp(24px,7vw,32px)}
+  .inventoryPage .inventoryActions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+  .inventoryPage .inventoryActions :is(a,button){min-width:0;min-height:47px;border-radius:11px}
+  .inventoryPage .inventoryGrid--list .inventoryCard{grid-template-columns:minmax(0,1fr)!important}
+
+  /* LIVE: the car is the focus, not five server-debugging panels. */
+  .livePage{display:flex!important;flex-direction:column;gap:0}
+  .livePage>.liveHero{order:1;display:flex;flex-direction:column;gap:0;margin-top:20px!important;margin-bottom:12px!important}
+  .livePage>.liveStage{order:2}
+  .livePage>.proLiveUx{order:3}
+  .livePage>.liveQueue{order:4}
+  .livePage>.liveSold{order:5}
+  .livePage>.liveHero>div:first-child{display:grid;gap:7px}
+  .livePage .liveEyebrow{font-size:10px;letter-spacing:.15em;color:#77f1aa}
+  .livePage .liveHero h1{
+    font-size:clamp(31px,9.1vw,43px)!important;
+    line-height:1.05!important;margin:0 0 2px!important;
+    color:#f8fcf8;
+  }
+  .livePage .liveHero p{display:none}
+  .livePage .liveHeroMobileLead{
+    display:block;font-size:13px;line-height:1.5;color:#b2c4b6;
+  }
+  .livePage .liveHeroStatusStack{margin-top:9px;width:100%!important;min-width:0}
+  .livePage .liveHeroClock{display:none!important}
+  .livePage .liveConnectionState{
+    width:auto!important;max-width:100%;min-width:0!important;
+    padding:8px 11px;border-radius:10px;
+    background:rgba(24,68,39,.35);border-color:rgba(96,222,128,.24);
+  }
+  .livePage .liveConnectionState b{font-size:11px;letter-spacing:.03em}
+  .livePage .liveConnectionState small{font-size:10px;line-height:1.2}
+  .livePage .liveStage{
+    display:grid;grid-template-columns:minmax(0,1fr)!important;gap:12px!important;
+    margin-top:0!important;
+  }
+  .livePage .liveVisual{
+    height:clamp(290px,85vw,410px);
+    border-radius:22px;border-color:rgba(81,237,143,.33);
+    box-shadow:0 16px 40px rgba(0,0,0,.36);
+  }
+  .livePage .liveVisual>img{object-fit:cover;object-position:50% 50%}
+  .livePage .liveVisualShade{
+    background:linear-gradient(180deg,rgba(0,0,0,.12),transparent 29%,rgba(2,8,4,.18) 57%,rgba(2,9,5,.94) 100%);
+  }
+  .livePage .liveStatus{left:14px;top:14px;font-size:11px;padding:7px 11px;backdrop-filter:blur(5px)}
+  .livePage .liveRing{
+    width:105px;height:105px;top:45%;
+    box-shadow:0 0 0 8px rgba(3,9,6,.23),0 0 30px rgba(39,239,130,.12)
+  }
+  .livePage .liveRing strong{font-size:42px}
+  .livePage .liveRing small{font-size:9px}
+  .livePage .liveVisualInfo{left:17px;right:15px;bottom:18px}
+  .livePage .liveVisualInfo>span{font-size:10px;letter-spacing:.08em}
+  .livePage .liveVisualInfo h2{font-size:clamp(23px,6.8vw,31px);margin:5px 0}
+  .livePage .liveVisualInfo p{font-size:12px;color:#d3dfd6}
+  .livePage .liveBidPanel{
+    padding:18px!important;border-radius:20px;
+    border:1px solid var(--ea-mobile-edge);
+    background:linear-gradient(150deg,#13241a,#0b130e 72%);
+    box-shadow:0 10px 32px rgba(0,0,0,.24);
+  }
+  .livePage .liveBidTop span{font-size:10px;letter-spacing:.11em;color:#a0baaa}
+  .livePage .liveBidTop b{font-size:clamp(33px,10vw,43px)!important;margin-top:2px;letter-spacing:-.04em}
+  .livePage .liveBidMeta{margin:13px 0;gap:9px}
+  .livePage .liveBidMeta div{padding:11px;border-radius:11px;background:#09130d}
+  .livePage .liveBidMeta span{font-size:10px;color:#a0b2a4}
+  .livePage .liveBidMeta b{font-size:17px}
+  .livePage .liveBidFeedback{padding:10px 12px;margin-bottom:13px;border-radius:11px}
+  .livePage .liveBidFeedback b{font-size:11px;letter-spacing:.03em}
+  .livePage .liveBidFeedback span{font-size:11px;color:#c1d0c4}
+  .livePage .liveBidButton{
+    height:53px!important;min-height:53px;font-size:15px;
+    border-radius:13px;box-shadow:0 9px 24px rgba(18,190,91,.16);
+  }
+  .livePage .liveLotLink{height:46px;font-size:13px;border-radius:12px}
+  .livePage .liveNextPreview{margin-top:17px;padding-top:16px}
+  .livePage .liveNextPreviewHead span{font-size:10px}
+  .livePage .liveNextPreviewCard{border-radius:13px;background:#0c1810;min-height:100px}
+  .livePage .liveNextPreviewCard h3{font-size:14px}
+  .livePage .liveNextPreviewCard p{font-size:11px;color:#a0b4a7}
+  .livePage .liveRule{margin-top:14px;padding-top:12px}
+  .livePage .liveRule p{font-size:11px!important;color:#9bb09f}
+  .livePage .proLiveUx{
+    width:calc(100% - (var(--ea-mobile-pad) * 2))!important;
+    margin-top:15px!important;margin-bottom:12px!important;
+    border:1px solid var(--ea-mobile-edge);border-radius:19px;
+    padding:17px!important;background:#0e1912;
+    box-shadow:0 9px 28px rgba(0,0,0,.18);
+  }
+  .livePage .proLiveTop{display:flex;flex-direction:row;align-items:center;gap:8px;margin-bottom:10px}
+  .livePage .proLiveTop>div{min-width:0;flex:1}
+  .livePage .proLiveTop span{font-size:10px;color:#9aaf9e}
+  .livePage .proLiveTop b{font-size:15px}
+  .livePage .proLiveTop button{min-height:43px;padding:0 12px;font-size:12px}
+  .livePage .proLiveCompactStatus{
+    display:flex;align-items:center;justify-content:space-between;
+    gap:8px;padding:10px 12px;
+    border-radius:12px;background:#12251a;color:#bceac9;
+    font-size:12px;margin:0 0 12px;
+  }
+  .livePage .proLiveCompactStatus span{display:flex;align-items:center;gap:8px}
+  .livePage .proLiveCompactStatus i{width:8px;height:8px;border-radius:50%;background:#39df86}
+  .livePage .proLiveCompactStatus em{font-style:normal;color:#99ad9e;font-size:10px}
+  .livePage .proLiveUx:not(.show-advanced) :is(.proLiveStatusGrid,.proLiveNowNext,.proLiveDashboard){display:none!important}
+  .livePage .proLiveAdvancedToggle{
+    display:flex;width:100%;min-height:43px;margin-top:12px;
+    align-items:center;justify-content:space-between;
+    gap:10px;padding:0 12px;cursor:pointer;
+    border-radius:12px;border:1px solid rgba(161,223,174,.14);
+    background:#0a120d;color:#c0d6c5;font:inherit;font-size:12px;font-weight:750;
+  }
+  .livePage .proLiveAdvancedToggle:after{content:"⌄";font-size:20px}
+  .livePage .proLiveAdvancedToggle[aria-expanded="true"]:after{content:"⌃"}
+  .livePage .proLiveStatusGrid{margin-top:12px;gap:8px}
+  .livePage .proLiveNowNext{margin-top:12px}
+  .livePage .proLiveDashboard{margin-top:12px}
+  .livePage .proLiveBidDock{
+    position:static!important;bottom:auto!important;
+    padding:15px!important;margin-top:0!important;
+    border-radius:14px;
+    border:1px solid rgba(71,232,128,.36);
+    background:linear-gradient(115deg,#143b22,#102318);
+    box-shadow:none;
+  }
+  .livePage .proLiveBidDock span{font-size:10px;color:#b3e9c3}
+  .livePage .proLiveBidDock b{font-size:29px;letter-spacing:-.04em}
+  .livePage .proLiveBidDock small{font-size:11px;color:#bdcfc0}
+  .livePage .proLiveBidDock button{
+    min-width:0;width:100%;min-height:53px;
+    border-radius:12px;font-size:15px;
+  }
+  .livePage .proLiveResult{gap:4px;padding:11px;border-radius:11px}
+  .livePage .proLiveResult b{font-size:11px}
+  .livePage .proLiveResult span{font-size:11px}
+  .livePage .proLiveMobileMarker{display:none}
+  .livePage .liveQueue{margin-top:22px!important}
+  .livePage .liveSectionHead{margin-bottom:13px!important}
+  .livePage .liveSectionHead h2{font-size:clamp(23px,6.5vw,30px)!important;margin:4px 0}
+  .livePage .liveSectionHead a{font-size:12px}
+  .livePage .liveQueueGrid{gap:10px!important}
+  .livePage .liveQueueCard{min-height:114px;border-radius:14px;background:#101912}
+  .livePage .liveQueueCard>div{padding:12px!important}
+  .livePage .liveQueueCard h3{font-size:15px!important;margin:5px 0!important}
+  .livePage .liveQueueCard p{font-size:11px!important;margin-bottom:6px}
+  .livePage .liveQueueCard b{font-size:14px}
+  .livePage .liveSold{margin-top:25px!important}
+  .livePage .liveSoldGrid{gap:10px}
+
+  /* Lot details: retain thumbnail gallery and clear buy / bid controls. */
+  .lotPage .lotWrap{margin-top:18px!important}
+  .lotPage .lotBreadcrumb{font-size:11px;line-height:1.5}
+  .lotPage .lotTitleRow h1{font-size:clamp(27px,8vw,36px)!important}
+  .lotPage .lotGrid{gap:13px!important}
+  .lotPage .lotMainImage{height:clamp(225px,66vw,345px)!important;border-radius:17px}
+  .lotPage .lotThumbs{gap:7px}
+  .lotPage .lotThumb{border-radius:9px}
+  .lotPage .lotBidPanel,.lotPage .lotSection{
+    border-radius:17px;border-color:var(--ea-mobile-edge);
+    background:linear-gradient(140deg,#101c14,#0a120d);
+    padding:17px!important;
+  }
+  .lotPage .lotBidBtn,.lotPage .lotBuyNow{min-height:51px;border-radius:12px}
+
+  /* Service screens: card hierarchy, legible text, full-width CTAs. */
+  .transportPage .transportHero,.historyPage .historyHero{margin-top:22px!important;gap:17px}
+  .transportPage .transportHero h1,.historyPage .historyHero h1{
+    font-size:clamp(29px,8.4vw,39px)!important;
+  }
+  .transportPage .transportHero p,.historyPage .historyHero p{font-size:15px;color:#b2c6b7}
+  .transportPage .transportHeroActions{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+  .transportPage .transportHeroActions a{min-height:48px;display:grid;place-items:center}
+  .transportPage .transportRouteCard,
+  .transportPage .transportCalcCard,.historyPage .historySearch,
+  .historyPage .historyDemoResult,.historyPage .historyFeatureGrid article{
+    border-radius:17px;border-color:var(--ea-mobile-edge);background:#101c14;
+  }
+  .transportPage .transportTrust,.transportPage .transportFlow,
+  .transportPage .transportFaq{margin-top:26px!important}
+  .transportPage .transportCalculator{gap:15px}
+  .transportPage .transportCalcCopy h2,.historyPage .historySectionHead h2{font-size:clamp(25px,7vw,32px)!important}
+  .transportPage .transportCalcCard{padding:17px}
+  .historyPage .historySearch{padding:10px}
+  .historyPage .historySearch :is(input,button){min-height:47px;font-size:15px}
+  .historyPage .historyCta{padding:20px;gap:15px;border-radius:18px}
+  .historyPage .historyCta h2{font-size:clamp(25px,7vw,32px)}
+  .historyPage .historyCta a{min-height:49px}
+
+  .navigationPage .navigationRouteMain{padding:30px 0 45px}
+  .navigationPage .navigationRouteMain>p{font-size:15px!important;color:#b0c1b4}
+  .navigationPage .navigationRouteGrid{gap:10px}
+  .navigationPage .navigationRouteCard{
+    padding:18px!important;border-color:var(--ea-mobile-edge);
+    background:#111b14;border-radius:16px;
+  }
+  .navigationPage .navigationRouteCard b{font-size:17px}
+  .navigationPage .navigationRouteCard p{font-size:13px}
+  .navigationPage .navigationRouteActions{display:grid;gap:10px}
+  .navigationPage .navigationRouteActions a{display:grid;place-items:center;min-height:48px;text-align:center}
+
+  .profileRouteMain{padding-top:18px!important}
+  .profileRouteMain .profileAccountRail{
+    border-radius:17px;background:linear-gradient(130deg,#13221a,#0b130e);
+    border-color:var(--ea-mobile-edge);
+  }
+  .profileRouteMain .profileAccountNav{gap:8px}
+  .profileRouteMain .profileAccountNav a{min-height:44px;border-radius:10px}
+  .profileRouteMain .profileOverview,
+  .profileRouteMain .profileWatchlist,
+  .profileRouteMain .myAuctions{
+    border-radius:17px;background:#101a14;border-color:var(--ea-mobile-edge);
+  }
+  .profileRouteMain .profileOverview h1{font-size:clamp(30px,8.5vw,41px)}
+  .profileRouteMain .profileOverviewActions a{min-height:49px;border-radius:11px}
+  .profileRouteMain .profileWatchlistCard{border-radius:14px;overflow:hidden}
+}
+@media(max-width:355px){
+  :root{--ea-mobile-pad:12px}
+  .livePage .liveHero h1{font-size:30px!important}
+  .livePage .liveRing{width:94px;height:94px}
+  .livePage .liveRing strong{font-size:36px}
+  .livePage .liveBidPanel{padding:14px!important}
+  .livePage .proLiveUx{padding:13px!important}
+  .inventoryPage .inventoryActions{grid-template-columns:minmax(0,1fr)}
+}
+@media(min-width:761px){
+  .liveHeroMobileLead,.proLiveCompactStatus,.proLiveAdvancedToggle{display:none!important}
+}
+@media(prefers-reduced-motion:reduce){
+  .inventoryPage .inventoryCard,.livePage .liveBidButton{
+    transition:none!important;animation:none!important;
+  }
+}
