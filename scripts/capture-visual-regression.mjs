@@ -466,7 +466,7 @@ async function verifyD28ConnectionState(call,viewport){
   if(connected.scrollWidth>connected.viewportWidth+3)fail(`D28 ${viewport.name} horizontal overflow`);
   if(connected.display==="none"||connected.rect.width<140||connected.rect.height<44)fail(`D28 ${viewport.name} status indicator is not meaningfully visible`);
   if(connected.rect.left<-3||connected.rect.right>connected.viewportWidth+3)fail(`D28 ${viewport.name} status indicator escapes viewport`);
-  if(!connected.text.includes("СВЪРЗАН"))fail(`D28 ${viewport.name} connected label missing`);
+  if(!connected.text.includes("CONNECTED"))fail(`D28 ${viewport.name} connected label missing`);
 
   if(viewport.mobile)return;
 
@@ -481,10 +481,10 @@ async function verifyD28ConnectionState(call,viewport){
     });
     await call("Runtime.evaluate",{expression:"window.dispatchEvent(new Event('offline'))"});
     const reconnecting=await waitForD28State(call,"reconnecting",20,100);
-    if(!reconnecting.text.includes("ПОВТОРНО СВЪРЗВАНЕ"))fail("D28 reconnecting label missing");
+    if(!reconnecting.text.includes("RECONNECTING"))fail("D28 reconnecting label missing");
 
     const stale=await waitForD28State(call,"stale",60,100);
-    if(!stale.text.includes("ОСТАРЕЛИ"))fail("D28 stale label missing");
+    if(!stale.text.includes("STALE DATA"))fail("D28 stale label missing");
 
     await call("Network.emulateNetworkConditions",{
       offline:false,
@@ -495,7 +495,7 @@ async function verifyD28ConnectionState(call,viewport){
     });
     await call("Runtime.evaluate",{expression:"window.dispatchEvent(new Event('online'))"});
     const recovered=await waitForD28State(call,"connected",40,100);
-    if(!recovered.text.includes("СВЪРЗАН"))fail("D28 recovery label missing");
+    if(!recovered.text.includes("CONNECTED"))fail("D28 recovery label missing");
   }finally{
     try{
       await call("Network.emulateNetworkConditions",{
