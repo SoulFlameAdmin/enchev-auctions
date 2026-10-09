@@ -17,6 +17,7 @@ try{
       try{
         const response=await page.goto(base+route,{waitUntil:"domcontentloaded",timeout:30000});
         assert.ok(response?.ok(),route+" HTTP failure: "+response?.status());
+        await page.locator("main#main-content").waitFor({state:"visible",timeout:12000});
         const result=await page.evaluate(()=>{
           const root=document.querySelector("main#main-content")||document.querySelector("main");
           const shell=document.querySelector(".eaAppShell");
