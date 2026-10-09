@@ -5,7 +5,7 @@ import {createRequire} from "node:module";
 const require=createRequire(import.meta.url);
 const {chromium}=require("/tmp/enchev-browser/node_modules/playwright");
 const base=process.env.BASE_URL||"http://127.0.0.1:3000";
-const routes=["/platform","/inventory","/live-auctions","/lot/EA-10511","/vehicle-history","/transport","/profile","/support","/presentation"];
+const routes=["/","/platform","/inventory","/live-auctions","/lot/EA-10511","/vehicle-history","/transport","/profile","/support","/presentation","/workspace","/rtl-capability"];
 const viewports=[{width:320,height:720},{width:390,height:844},{width:430,height:932}];
 const browser=await chromium.launch({headless:true});
 let failures=0;
@@ -17,9 +17,9 @@ try{
       try{
         const response=await page.goto(base+route,{waitUntil:"domcontentloaded",timeout:30000});
         assert.ok(response?.ok(),route+" HTTP failure: "+response?.status());
-        await page.locator("main#main-content").waitFor({state:"visible",timeout:12000});
+        await page.locator("main#main-content,main[data-rtl-capability-page]").waitFor({state:"visible",timeout:12000});
         const result=await page.evaluate(()=>{
-          const root=document.querySelector("main#main-content")||document.querySelector("main");
+          const root=document.querySelector("main#main-content")||document.querySelector("main[data-rtl-capability-page]")||document.querySelector("main");
           const shell=document.querySelector(".eaAppShell");
           const mainRect=root?.getBoundingClientRect();
           const shellRect=shell?.getBoundingClientRect();
@@ -42,7 +42,7 @@ try{
         assert.ok(result.documentWidth<=viewport.width+2,route+" page overflows viewport: "+JSON.stringify(result));
         assert.ok(result.bodyWidth<=viewport.width+2,route+" body overflows viewport: "+JSON.stringify(result));
         assert.ok(result.mainWidth>=viewport.width*.87,route+" main clipped to partial width: "+JSON.stringify(result));
-        if(route!=="/presentation")assert.ok(result.shellWidth>=viewport.width*.98,route+" header clipped to partial width: "+JSON.stringify(result));
+        if(route!=="/presentation" && route!=="/" && route!=="/workspace")assert.ok(result.shellWidth>=viewport.width*.98,route+" header clipped to partial width: "+JSON.stringify(result));
         if(route==="/live-auctions"){
           assert.equal(result.dockPosition,"static","Live bid dock overlays cards on mobile");
           assert.ok(result.dockWidth>=viewport.width*.75,"Live bidder too narrow");
