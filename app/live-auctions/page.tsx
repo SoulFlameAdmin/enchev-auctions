@@ -1,3 +1,4 @@
+import { GOLF_GTI_DEMO_IMAGE, GOLF_GTI_DEMO_PHOTO_CREDIT } from "../data/demo-vehicle-media";
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
@@ -11,7 +12,7 @@ const STALE_AFTER_MS=4500;
 const lots=[
   {lot:"EA-10511",title:"2021 Mercedes-Benz GLC",location:"Munich, DE",damage:"Front end",mileage:"64 900 km",price:18400,image:"https://images.unsplash.com/photo-1612280782903-d34dcdc10107?auto=format&fit=crop&w=1500&q=86"},
   {lot:"EA-10539",title:"2022 Audi RS3 Sportback",location:"Crewe, UK",damage:"Minor scratches",mileage:"41 280 km",price:21900,image:"https://images.unsplash.com/photo-1655283733642-f1d813b40616?auto=format&fit=crop&w=1500&q=86"},
-  {lot:"EA-10603",title:"2026 Volkswagen Golf GTI",location:"London, UK",damage:"Clean title",mileage:"9 870 km",price:16250,image:"https://images.unsplash.com/photo-1767949374162-5cbb31071b8f?auto=format&fit=crop&w=1500&q=86"},
+  {lot:"EA-10603",title:"2026 Volkswagen Golf GTI",location:"London, UK",damage:"Clean title",mileage:"9 870 km",price:16250,image:GOLF_GTI_DEMO_IMAGE},
   {lot:"EA-10627",title:"2020 BMW X5 xDrive40i",location:"Texas, USA",damage:"Rear end",mileage:"96 210 km",price:15100,image:"https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1500&q=86"},
 ];
 
@@ -233,6 +234,8 @@ export default function LiveAuctionsPage(){
     <section className="liveStage" data-design-task="D24" data-auto-advance-task="D26" aria-label="Live auction room: текущ и следващ лот">
       <div className="liveVisual" data-live-slot="current" data-lot-id={current.lot} aria-labelledby="live-current-lot-title">
         <img src={current.image} alt={current.title}/>
+        {current.lot==="EA-10603"&&<a className="liveDemoPhotoCredit" href={GOLF_GTI_DEMO_PHOTO_CREDIT} target="_blank" rel="noopener noreferrer">Illustrative GTI photo · David Moffatt / Unsplash ↗</a>}
+
         <div className="liveVisualShade"/>
         <span className="liveStatus"><i/> LIVE</span>
         {soldNotice&&<div className="liveSoldTransition" data-design-task="D26" data-sold-lot={soldNotice} role="status" aria-live="polite"><b>SOLD · LOT {soldNotice}</b><span>Nextият лот е активен</span></div>}
