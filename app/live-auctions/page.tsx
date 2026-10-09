@@ -1,5 +1,6 @@
 "use client";
 
+import { GOLF_GTI_DEMO_IMAGE, GOLF_GTI_DEMO_PHOTO_CREDIT } from "../data/demo-vehicle-media";
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./live-auctions.css";
 import "./live-d24.css";
@@ -11,7 +12,7 @@ const STALE_AFTER_MS=4500;
 const lots=[
   {lot:"EA-10511",title:"2021 Mercedes-Benz GLC",location:"Munich, DE",damage:"Front end",mileage:"64 900 km",price:18400,image:"https://images.unsplash.com/photo-1612280782903-d34dcdc10107?auto=format&fit=crop&w=1500&q=86"},
   {lot:"EA-10539",title:"2022 Audi RS3 Sportback",location:"Crewe, UK",damage:"Minor scratches",mileage:"41 280 km",price:21900,image:"https://images.unsplash.com/photo-1655283733642-f1d813b40616?auto=format&fit=crop&w=1500&q=86"},
-  {lot:"EA-10603",title:"2026 Volkswagen Golf GTI",location:"London, UK",damage:"Clean title",mileage:"9 870 km",price:16250,image:"https://images.unsplash.com/photo-1767949374162-5cbb31071b8f?auto=format&fit=crop&w=1500&q=86"},
+  {lot:"EA-10603",title:"2026 Volkswagen Golf GTI",location:"London, UK",damage:"Clean title",mileage:"9 870 km",price:16250,image:GOLF_GTI_DEMO_IMAGE},
   {lot:"EA-10627",title:"2020 BMW X5 xDrive40i",location:"Texas, USA",damage:"Rear end",mileage:"96 210 km",price:15100,image:"https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1500&q=86"},
 ];
 
@@ -187,20 +188,20 @@ export default function LiveAuctionsPage(){
       markConnectionFailure();
     }
   };
-  const connectionLabel=connectionState==="connected"?"СВЪРЗАН":connectionState==="reconnecting"?"ПОВТОРНО СВЪРЗВАНЕ":connectionState==="stale"?"ДАННИТЕ СА ОСТАРЕЛИ":"SYNCING";
-  const connectionDetail=connectionState==="connected"?`Последна синхронизация преди ${connectionAgeSeconds}s`:connectionState==="reconnecting"?"Възстановяване на server-session връзката":connectionState==="stale"?`Без потвърден server state от ${connectionAgeSeconds}s`:"Waiting for initial server state";
+  const connectionLabel=connectionState==="connected"?"CONNECTED":connectionState==="reconnecting"?"RECONNECTING":connectionState==="stale"?"STALE DATA":"SYNCING";
+  const connectionDetail=connectionState==="connected"?`Synced ${connectionAgeSeconds}s ago`:connectionState==="reconnecting"?"Restoring demo server connection":connectionState==="stale"?`No fresh demo snapshot for ${connectionAgeSeconds}s`:"Waiting for demo server";
   const fmt=(v:number)=>`00:${String(v).padStart(2,"0")}`;
 
   return <main id="main-content" className="livePage">
     <div className="liveUtility"><span><i/> ENCHEV LIVE NETWORK</span><span>Server-session demo · 10 sec per lot</span></div>
     <header className="liveHeader">
       <a href="/" className="liveLogo"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
-      <nav><a href="/inventory">Inventory</a><a className="active" href="/live-auctions">Auctionове на живо</a><a href="/transport">Transport</a><a href="/platform#how">How to Buy</a></nav>
-      <div><button>Вход</button><button className="liveRegister">Register</button></div>
+      <nav><a href="/inventory">Inventory</a><a className="active" href="/live-auctions">Live auctions</a><a href="/transport">Transport</a><a href="/platform#how">How to buy</a></nav>
+      <div><button type="button">Log in</button><button type="button" className="liveRegister">Register</button></div>
     </header>
 
     <section className="liveHero">
-      <div><span className="liveEyebrow">● LIVE AUCTION ROOM</span><h1>Bid in real time</h1><span className="liveHeroMobileLead">Explore live vehicles, a synced demo timer and two-step bids.</span><p>10-секундният demo брояч се води от ENCHEV server session clock. При потвърдена demo оферта сървърът задава нов краен момент; при изтичане клиентът взема актуалния lot state от сървъра.</p></div>
+      <div><span className="liveEyebrow">● LIVE AUCTION ROOM</span><h1>Live auctions</h1><span className="liveHeroMobileLead">Vehicle previews · Live demo timer · Two-step demo bids</span><p>Demo-only auction: the server-session clock controls each 10-second lot round. A confirmed demo bid updates the session state; prices and outcomes are illustrative, not real-money transactions.</p></div>
       <div className="liveHeroStatusStack">
         <div
           className={`liveConnectionState is-${connectionState}`}
@@ -213,7 +214,7 @@ export default function LiveAuctionsPage(){
           <i aria-hidden="true"/>
           <div><b>{connectionLabel}</b><small>{connectionDetail}</small></div>
         </div>
-        <div className="liveHeroClock" data-design-task="D25" data-clock-mode={clockMode} data-auction-authority="false" role="timer" aria-label={`Remainingт ${remaining} секунди за лот ${current.lot}`}><small>{clockMode==="server"?"SERVER SYNC":"SYNCING"}</small><b>{fmt(remaining)}</b><span>LOT {current.lot}</span></div>
+        <div className="liveHeroClock" data-design-task="D25" data-clock-mode={clockMode} data-auction-authority="false" role="timer" aria-label={`Remaining ${remaining} seconds for lot ${current.lot}`}><small>{clockMode==="server"?"SERVER SYNC":"SYNCING"}</small><b>{fmt(remaining)}</b><span>LOT {current.lot}</span></div>
       </div>
     </section>
 
@@ -230,18 +231,20 @@ export default function LiveAuctionsPage(){
       onResync={syncClock}
     />
 
-    <section className="liveStage" data-design-task="D24" data-auto-advance-task="D26" aria-label="Live auction room: текущ и следващ лот">
+    <section className="liveStage" data-design-task="D24" data-auto-advance-task="D26" aria-label="Live auction room: current and next demo lots">
       <div className="liveVisual" data-live-slot="current" data-lot-id={current.lot} aria-labelledby="live-current-lot-title">
         <img src={current.image} alt={current.title}/>
+        {current.lot==="EA-10603"&&<a className="liveDemoPhotoCredit" href={GOLF_GTI_DEMO_PHOTO_CREDIT} target="_blank" rel="noopener noreferrer">Illustrative GTI photo · David Moffatt / Unsplash ↗</a>}
+
         <div className="liveVisualShade"/>
         <span className="liveStatus"><i/> LIVE</span>
-        {soldNotice&&<div className="liveSoldTransition" data-design-task="D26" data-sold-lot={soldNotice} role="status" aria-live="polite"><b>SOLD · LOT {soldNotice}</b><span>Nextият лот е активен</span></div>}
+        {soldNotice&&<div className="liveSoldTransition" data-design-task="D26" data-sold-lot={soldNotice} role="status" aria-live="polite"><b>SOLD · LOT {soldNotice}</b><span>Next demo lot active</span></div>}
         {bidFlash&&<div className="liveNewBid">NEW BID</div>}
         <div className="liveRing" data-clock-mode={clockMode}><strong>{remaining}</strong><small>SEC</small></div>
         <div className="liveVisualInfo"><span>CURRENT LOT · {current.lot}</span><h2 id="live-current-lot-title">{current.title}</h2><p>{current.location} · {current.damage} · {current.mileage}</p></div>
       </div>
 
-      <aside className="liveBidPanel" aria-label="Наддаване и следващ лот">
+      <aside className="liveBidPanel" aria-label="Demo bidding and next lot">
         <div className="liveBidTop"><span>CURRENT BID</span><b>€{price.toLocaleString("bg-BG")}</b></div>
         <div className="liveBidMeta"><div><span>Next bid</span><b>€{(price+100).toLocaleString("bg-BG")}</b></div><div><span>Remaining</span><b>{fmt(remaining)}</b></div></div>
         <div
@@ -252,8 +255,8 @@ export default function LiveAuctionsPage(){
           role="status"
           aria-live="polite"
         >
-          <b>{bidFeedback==="accepted"?"ОФЕРТАТА Е ПРИЕТА":bidFeedback==="leading"?"LEADING В ТЪРГА":bidFeedback==="outbid"?"НАДДАВАН СИ":bidFeedback==="rejected"?"ОФЕРТАТА Е ОТХВЪРЛЕНА":"READY TO BID"}</b>
-          <span>{bidFeedback==="accepted"?"Server demo прие офертата.":bidFeedback==="leading"?"Server demo потвърди водеща позиция.":bidFeedback==="outbid"?"Server demo отчете по-висока конкурентна оферта.":bidFeedback==="rejected"?"Server demo отхвърли офертата без промяна на цената.":"The demo bid result comes from server session state."}</span>
+          <b>{bidFeedback==="accepted"?"DEMO BID ACCEPTED":bidFeedback==="leading"?"LEADING (DEMO)":bidFeedback==="outbid"?"OUTBID (DEMO)":bidFeedback==="rejected"?"DEMO BID REJECTED":"READY FOR DEMO BID"}</b>
+          <span>{bidFeedback==="accepted"?"Demo server accepted this bid.":bidFeedback==="leading"?"Demo server confirms the leading bid.":bidFeedback==="outbid"?"A higher demo bid is active.":bidFeedback==="rejected"?"Demo server rejected the bid without changing the price.":"Demo results come from server session state."}</span>
         </div>
         <button className="liveBidButton" type="button" onClick={()=>document.querySelector(".proLiveBidDock")?.scrollIntoView({behavior:"smooth",block:"center"})}>Go to demo bidding <span>↓</span></button>
         <a className="liveLotLink" href={`/lot/${current.lot}`}>Open lot details</a>
@@ -267,7 +270,7 @@ export default function LiveAuctionsPage(){
               <span>LOT {next.lot}</span>
               <h3 id="live-next-lot-title">{next.title}</h3>
               <p>{next.location} · {next.damage}</p>
-              <b>Старт €{(prices[next.lot]??next.price).toLocaleString("bg-BG")}</b>
+              <b>Starts €{(prices[next.lot]??next.price).toLocaleString("bg-BG")}</b>
             </div>
           </a>
         </section>
@@ -279,11 +282,16 @@ export default function LiveAuctionsPage(){
     <section className="liveQueue">
       <div className="liveSectionHead"><div><span>AUCTION QUEUE</span><h2>Upcoming lots</h2></div><a href="/inventory">All vehicles →</a></div>
       <div className="liveQueueGrid">
-        <article className="liveQueueCard next"><img src={next.image} alt={next.title}/><div><span>NEXT LOT · {next.lot}</span><h3>{next.title}</h3><p>{next.location}</p><b>Старт €{(prices[next.lot]??next.price).toLocaleString("bg-BG")}</b></div></article>
+        <article className="liveQueueCard next"><img src={next.image} alt={next.title}/><div><span>NEXT LOT · {next.lot}</span><h3>{next.title}</h3><p>{next.location}</p><b>Starts €{(prices[next.lot]??next.price).toLocaleString("bg-BG")}</b></div></article>
         {lots.filter((_,i)=>i!==active&&i!==(active+1)%lots.length).slice(0,2).map(x=><article className="liveQueueCard" key={x.lot}><img src={x.image} alt={x.title}/><div><span>UPCOMING · {x.lot}</span><h3>{x.title}</h3><p>{x.location}</p><b>€{(prices[x.lot]??x.price).toLocaleString("bg-BG")}</b></div></article>)}
       </div>
     </section>
 
-    {sold.length>0&&<section className="liveSold"><div className="liveSectionHead"><div><span>ENDEDИ</span><h2>Продадени в този цикъл</h2></div></div><div className="liveSoldGrid">{sold.map(x=><a href={`/lot/${x.lot}`} key={x.lot}><img src={x.image} alt={x.title}/><div><span>SOLD · {x.lot}</span><b>{x.title}</b></div></a>)}</div></section>}
+    <div className="liveMobileActionBar" aria-label="Demo bid quick access">
+      <div className="liveMobileActionPrice"><span>CURRENT DEMO BID</span><strong>€{price.toLocaleString("bg-BG")}</strong></div>
+      <button type="button" onClick={()=>document.querySelector(".proLiveBidDock")?.scrollIntoView({behavior:window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth",block:"center"})}>Bid options <span aria-hidden="true">↓</span></button>
+    </div>
+
+    {sold.length>0&&<section className="liveSold"><div className="liveSectionHead"><div><span>ENDED</span><h2>Completed demo lots</h2></div></div><div className="liveSoldGrid">{sold.map(x=><a href={`/lot/${x.lot}`} key={x.lot}><img src={x.image} alt={x.title}/><div><span>SOLD · {x.lot}</span><b>{x.title}</b></div></a>)}</div></section>}
   </main>;
 }

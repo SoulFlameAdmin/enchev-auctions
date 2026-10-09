@@ -64,9 +64,9 @@ export function validate(config,sources){
     }
   }
 
-  need(sources.live,/connectionLabel=.*"СВЪРЗАН".*"ПОВТОРНО СВЪРЗВАНЕ".*"ДАННИТЕ СА ОСТАРЕЛИ"/s,"28.06 connection state text labels missing");
+  need(sources.live,/connectionLabel=.*"CONNECTED".*"RECONNECTING".*"STALE DATA"/s,"28.06 connection state text labels missing");
   need(sources.live,/SOLD · LOT/,"28.06 SOLD text state missing");
-  need(sources.live,/ОФЕРТАТА Е ПРИЕТА/,"28.06 bid feedback text missing");
+  need(sources.live,/DEMO BID ACCEPTED/,"28.06 bid feedback text missing");
 
   need(sources.lot,/<label className="lotBidLabel" htmlFor="lot-bid-input">/,"28.07 bid input label missing");
   need(sources.lot,/<label>(?:Дестинация|Destination)<select/,"28.07 transport select label missing");

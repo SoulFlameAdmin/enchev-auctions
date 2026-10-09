@@ -1,5 +1,6 @@
 "use client";
 
+import { GOLF_GTI_DEMO_IMAGE, GOLF_GTI_DEMO_PHOTO_CREDIT } from "../data/demo-vehicle-media";
 import { useEffect, useMemo, useState } from "react";
 import { accountNavigation, primaryNavigation } from "../site-navigation";
 import { getDemoWatchlist, setDemoWatchlist, type DemoSavedVehicle } from "../components/demo-watchlist";
@@ -16,7 +17,7 @@ const cars = [
   {lot:"EA-10482",vin:"WBS3R9C50JAK10482",title:"2018 BMW M4 F82",year:2018,model:"M4 F82",brand:"BMW",location:"Sofia, BG",region:"Европа",damage:"Minor dents",titleStatus:"Clean",mileage:"82 410 km",price:12750,buyNow:18900,badge:"RUN & DRIVE",image:"https://images.unsplash.com/photo-1658558195433-1af533e3309c?auto=format&fit=crop&w=1200&q=82"},
   {lot:"EA-10511",vin:"WDC0G4KB1MF10511",title:"2021 Mercedes-Benz GLC",year:2021,model:"GLC",brand:"Mercedes",location:"Munich, DE",region:"Европа",damage:"Front end",titleStatus:"Salvage",mileage:"64 900 km",price:18400,buyNow:24900,badge:"BUY NOW",image:"https://images.unsplash.com/photo-1612280782903-d34dcdc10107?auto=format&fit=crop&w=1200&q=82"},
   {lot:"EA-10539",vin:"WUAZZZ8Y2NA10539",title:"2022 Audi RS3 Sportback",year:2022,model:"RS3 Sportback",brand:"Audi",location:"Crewe, UK",region:"Европа",damage:"Minor scratches",titleStatus:"Clean",mileage:"41 280 km",price:21900,buyNow:0,badge:"HOT LOT",image:"https://images.unsplash.com/photo-1655283733642-f1d813b40616?auto=format&fit=crop&w=1200&q=82"},
-  {lot:"EA-10603",vin:"WVWZZZCD6TW10603",title:"2026 Volkswagen Golf GTI",year:2026,model:"Golf GTI",brand:"Volkswagen",location:"London, UK",region:"Европа",damage:"Clean title",titleStatus:"Clean",mileage:"9 870 km",price:16250,buyNow:20500,badge:"CLEAN TITLE",image:"https://images.unsplash.com/photo-1767949374162-5cbb31071b8f?auto=format&fit=crop&w=1200&q=82"},
+  {lot:"EA-10603",vin:"WVWZZZCD6TW10603",title:"2026 Volkswagen Golf GTI",year:2026,model:"Golf GTI",brand:"Volkswagen",location:"London, UK",region:"Европа",damage:"Clean title",titleStatus:"Clean",mileage:"9 870 km",price:16250,buyNow:20500,badge:"CLEAN TITLE",image:GOLF_GTI_DEMO_IMAGE},
   {lot:"EA-10627",vin:"5UXCR6C02L910627",title:"2020 BMW X5 xDrive40i",year:2020,model:"X5 xDrive40i",brand:"BMW",location:"Texas, USA",region:"САЩ",damage:"Rear end",titleStatus:"Salvage",mileage:"96 210 km",price:15100,buyNow:22400,badge:"RUN & DRIVE",image:"https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1200&q=82"},
   {lot:"EA-10644",vin:"WDDWJ6EB5KF10644",title:"2019 Mercedes-AMG C43",year:2019,model:"AMG C43",brand:"Mercedes",location:"Florida, USA",region:"САЩ",damage:"Side",titleStatus:"Salvage",mileage:"72 030 km",price:13800,buyNow:19800,badge:"HOT LOT",image:"https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1200&q=82"},
   {lot:"EA-10671",vin:"WA1LXAF75MD10671",title:"2021 Audi Q7 55 TFSI",year:2021,model:"Q7 55 TFSI",brand:"Audi",location:"New Jersey, USA",region:"САЩ",damage:"Normal wear",titleStatus:"Clean",mileage:"58 440 km",price:19900,buyNow:26900,badge:"BUY NOW",image:"https://images.unsplash.com/photo-1606152421802-db97b9c7a11b?auto=format&fit=crop&w=1200&q=82"},
@@ -332,6 +333,7 @@ export default function InventoryPage(){
         <div className={`inventoryGrid ${viewMode==="list"?"inventoryGrid--list":""}`} data-view={viewMode}>{paged.map(car=><article className={`inventoryCard ${car.status==="sold"?"soldCard":""} ${car.status==="live"?"liveCard":""} ${car.status==="next"?"nextCard":""}`} key={car.lot}>
           <div className="inventoryImage">
             <img src={car.image} alt={car.title}/>
+            {car.lot==="EA-10603"&&<a className="inventoryDemoPhotoCredit" href={GOLF_GTI_DEMO_PHOTO_CREDIT} target="_blank" rel="noopener noreferrer">Demo GTI photo ↗</a>}
             <span className={`inventoryBadge ${car.status}`}>{car.stateBadge}</span>
             {car.status!=="sold"&&<span className="inventoryTimer">◷ {car.status==="live"?formatTime(remaining):car.status==="next"?"СЛЕДВАЩ":"UPCOMING"}</span>}
             <button type="button" className="inventoryHeart" aria-pressed={savedLots.includes(car.lot)} aria-label={savedLots.includes(car.lot)?`Remove ${car.title} from preview watchlist`:`Save ${car.title} to preview watchlist`} onClick={()=>toggleSaved(car)}>{savedLots.includes(car.lot)?"♥":"♡"}</button>

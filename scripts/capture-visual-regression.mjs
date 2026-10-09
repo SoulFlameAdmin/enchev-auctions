@@ -64,14 +64,14 @@ export function validateD23Runtime(snapshot,viewport){
     if(snapshot.panelPosition!=="sticky")fail(`D23 desktop bid panel must be sticky, got ${snapshot.panelPosition}`);
     if(snapshot.dockDisplay!=="none")fail(`D23 desktop mobile dock must be hidden, got ${snapshot.dockDisplay}`);
     if(snapshot.panel.top<snapshot.headerBottom-tolerance)fail(`D23 desktop sticky panel overlaps header: panelTop=${snapshot.panel.top}, headerBottom=${snapshot.headerBottom}`);
-    if(snapshot.panel.bottom>snapshot.viewportHeight+tolerance)fail(`D23 desktop sticky panel escapes viewport: panelBottom=${snapshot.panel.bottom}, viewport=${snapshot.viewportHeight}`);
+    if(snapshot.panel.bottom>snapshot.viewportHeight+tolerance)fail(`D23 desktop sticky panel escapes viewport: panelBottom=${snapshot.panel.bottom}, panelTop=${snapshot.panel.top}, panelHeight=${snapshot.panel.height}, maxHeight=${snapshot.panelMaxHeight}, viewport=${snapshot.viewportHeight}`);
     if(snapshot.panel.left<-tolerance||snapshot.panel.right>snapshot.viewportWidth+tolerance)fail("D23 desktop sticky panel escapes viewport horizontally");
   }
   return true;
 }
 
 async function d23Snapshot(call){
-  const expression=`(()=>{const panel=document.querySelector('#lot-bid-panel');const dock=document.querySelector('.lotMobileBidDock');const page=document.querySelector('.lotPage');const wrap=document.querySelector('.lotWrap');const header=document.querySelector('.lotHeader');if(!panel||!dock||!page||!wrap) return null;const pr=panel.getBoundingClientRect();const dr=dock.getBoundingClientRect();const hr=header?.getBoundingClientRect();return {viewportWidth:window.innerWidth,viewportHeight:window.innerHeight,scrollWidth:document.documentElement.scrollWidth,panelPosition:getComputedStyle(panel).position,dockPosition:getComputedStyle(dock).position,dockDisplay:getComputedStyle(dock).display,pagePaddingBottom:parseFloat(getComputedStyle(page).paddingBottom)||0,panel:{top:pr.top,bottom:pr.bottom,left:pr.left,right:pr.right,height:pr.height},dock:{top:dr.top,bottom:dr.bottom,left:dr.left,right:dr.right,height:dr.height},headerBottom:hr?.bottom||0,contentBottomAtPageEnd:wrap.getBoundingClientRect().bottom,focusedId:document.activeElement?.id||"",focusedInputBottom:document.querySelector('#lot-bid-input')?.getBoundingClientRect().bottom??Infinity};})()`;
+  const expression=`(()=>{const panel=document.querySelector('#lot-bid-panel');const dock=document.querySelector('.lotMobileBidDock');const page=document.querySelector('.lotPage');const wrap=document.querySelector('.lotWrap');const header=document.querySelector('.lotHeader');if(!panel||!dock||!page||!wrap) return null;const pr=panel.getBoundingClientRect();const dr=dock.getBoundingClientRect();const hr=header?.getBoundingClientRect();return {viewportWidth:window.innerWidth,viewportHeight:window.innerHeight,scrollWidth:document.documentElement.scrollWidth,panelPosition:getComputedStyle(panel).position,panelMaxHeight:getComputedStyle(panel).maxHeight,dockPosition:getComputedStyle(dock).position,dockDisplay:getComputedStyle(dock).display,pagePaddingBottom:parseFloat(getComputedStyle(page).paddingBottom)||0,panel:{top:pr.top,bottom:pr.bottom,left:pr.left,right:pr.right,height:pr.height},dock:{top:dr.top,bottom:dr.bottom,left:dr.left,right:dr.right,height:dr.height},headerBottom:hr?.bottom||0,contentBottomAtPageEnd:wrap.getBoundingClientRect().bottom,focusedId:document.activeElement?.id||"",focusedInputBottom:document.querySelector('#lot-bid-input')?.getBoundingClientRect().bottom??Infinity};})()`;
   const result=await call("Runtime.evaluate",{expression,returnByValue:true});
   return result?.result?.value;
 }
@@ -349,10 +349,10 @@ async function verifyD27BidFeedback(call,viewport){
   if(initial.scrollWidth>initial.viewportWidth+3)fail(`D27 ${viewport.name} horizontal overflow before feedback test`);
 
   const expected=[
-    ["accepted","ОФЕРТАТА Е ПРИЕТА",100],
-    ["leading","LEADING В ТЪРГА",100],
-    ["outbid","НАДДАВАН СИ",100],
-    ["rejected","ОФЕРТАТА Е ОТХВЪРЛЕНА",0],
+    ["accepted","DEMO BID ACCEPTED",100],
+    ["leading","LEADING (DEMO)",100],
+    ["outbid","OUTBID (DEMO)",100],
+    ["rejected","DEMO BID REJECTED",0],
   ];
 
   let previousPrice=Number((initial.priceText.match(/[0-9\s]+/)?.[0]||"0").replace(/\s/g,""));
@@ -466,7 +466,7 @@ async function verifyD28ConnectionState(call,viewport){
   if(connected.scrollWidth>connected.viewportWidth+3)fail(`D28 ${viewport.name} horizontal overflow`);
   if(connected.display==="none"||connected.rect.width<140||connected.rect.height<44)fail(`D28 ${viewport.name} status indicator is not meaningfully visible`);
   if(connected.rect.left<-3||connected.rect.right>connected.viewportWidth+3)fail(`D28 ${viewport.name} status indicator escapes viewport`);
-  if(!connected.text.includes("СВЪРЗАН"))fail(`D28 ${viewport.name} connected label missing`);
+  if(!connected.text.includes("CONNECTED"))fail(`D28 ${viewport.name} connected label missing`);
 
   if(viewport.mobile)return;
 
@@ -481,10 +481,10 @@ async function verifyD28ConnectionState(call,viewport){
     });
     await call("Runtime.evaluate",{expression:"window.dispatchEvent(new Event('offline'))"});
     const reconnecting=await waitForD28State(call,"reconnecting",20,100);
-    if(!reconnecting.text.includes("ПОВТОРНО СВЪРЗВАНЕ"))fail("D28 reconnecting label missing");
+    if(!reconnecting.text.includes("RECONNECTING"))fail("D28 reconnecting label missing");
 
     const stale=await waitForD28State(call,"stale",60,100);
-    if(!stale.text.includes("ОСТАРЕЛИ"))fail("D28 stale label missing");
+    if(!stale.text.includes("STALE DATA"))fail("D28 stale label missing");
 
     await call("Network.emulateNetworkConditions",{
       offline:false,
@@ -495,7 +495,7 @@ async function verifyD28ConnectionState(call,viewport){
     });
     await call("Runtime.evaluate",{expression:"window.dispatchEvent(new Event('online'))"});
     const recovered=await waitForD28State(call,"connected",40,100);
-    if(!recovered.text.includes("СВЪРЗАН"))fail("D28 recovery label missing");
+    if(!recovered.text.includes("CONNECTED"))fail("D28 recovery label missing");
   }finally{
     try{
       await call("Network.emulateNetworkConditions",{

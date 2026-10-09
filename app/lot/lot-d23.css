@@ -1,5 +1,5 @@
 /* D23 — sticky desktop/mobile action area without content overlap */
-.lotBidPanel[data-sticky-task="D23"]{scroll-margin-top:104px;max-height:calc(100vh - 116px);max-height:calc(100svh - 116px);max-height:calc(100dvh - 116px);overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+.lotBidPanel[data-sticky-task="D23"]{scroll-margin-top:104px;max-height:calc(100vh - 176px);max-height:calc(100svh - 176px);max-height:calc(100dvh - 176px);overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
 .lotMobileBidDock{display:none}
 @media(max-width:1050px){
   .lotPage{padding-bottom:calc(104px + env(safe-area-inset-bottom))}

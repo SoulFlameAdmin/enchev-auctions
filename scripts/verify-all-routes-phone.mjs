@@ -5,7 +5,7 @@ import {createRequire} from "node:module";
 const require=createRequire(import.meta.url);
 const {chromium}=require("/tmp/enchev-browser/node_modules/playwright");
 const base=process.env.BASE_URL||"http://127.0.0.1:3000";
-const routes=["/","/platform","/inventory","/live-auctions","/lot/EA-10511","/vehicle-history","/transport","/profile","/support","/presentation","/workspace","/rtl-capability"];
+const routes=["/","/platform","/inventory","/live-auctions","/lot/EA-10511","/lot/EA-10603","/vehicle-history","/transport","/profile","/support","/presentation","/workspace","/rtl-capability"];
 const viewports=[{width:320,height:720},{width:390,height:844},{width:430,height:932}];
 const browser=await chromium.launch({headless:true});
 let failures=0;
@@ -46,6 +46,18 @@ try{
         if(route==="/live-auctions"){
           assert.equal(result.dockPosition,"static","Live bid dock overlays cards on mobile");
           assert.ok(result.dockWidth>=viewport.width*.75,"Live bidder too narrow");
+          const quickBar=page.locator(".liveMobileActionBar");
+          await quickBar.waitFor({state:"visible"});
+          const quickRect=await quickBar.boundingBox();
+          assert.ok(quickRect && quickRect.width>=viewport.width-3,"Mobile price/action bar must span phone");
+          assert.ok(quickRect.y+quickRect.height<=viewport.height+2,"Mobile price/action bar must fit phone");
+          assert.match(await quickBar.innerText(),/CURRENT DEMO BID/,"Demo-only price label must be visible");
+          assert.ok(await quickBar.locator('button').isVisible(),"Bid options shortcut must remain visible");
+          const mainHeader=page.locator(".eaAppHeader");
+          const headerRect=await mainHeader.boundingBox();
+          assert.ok(headerRect && headerRect.height<=64,"Mobile header must be compact");
+          // Hero rotates among multiple demo lots, so verify the actual GTI model inside its catalog instead of assuming the active lot.
+
           const visual=page.locator(".liveVisual");
           const bidder=page.locator(".proLiveUx");
           await visual.waitFor({state:"visible"});
@@ -62,8 +74,15 @@ try{
           const bidAction=page.locator(".proLiveBidDock button");
           assert.ok(await bidAction.isVisible(),"Primary bid control must remain visible");
         }
+        if(route==="/lot/EA-10603"){
+          const source=await page.locator(".lotMainImage img").first().getAttribute("src");
+          assert.ok(source?.includes("photo-1655285886265-835ce7541e10"),"Golf preview must show Golf GTI photo, not an SUV");
+          assert.ok(await page.locator(".lotDemoPhotoCredit").isVisible(),"Golf demo media attribution must be visible");
+        }
         // Check that mobile links are actually reachable; avoid changing real bid state.
         if(route==="/inventory"){
+          // The current page is paginated: image equality is guarded in source and lot detail too.
+          assert.ok(await page.locator(".inventoryGrid").count()>0,"Inventory must keep phone card layout");
           await page.locator(".eaAppMenuButton").click();
           const drawer=page.locator("#ea-mobile-navigation");
           await drawer.waitFor({state:"visible",timeout:5000});
