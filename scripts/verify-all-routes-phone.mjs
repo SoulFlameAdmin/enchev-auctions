@@ -46,7 +46,21 @@ try{
         if(route==="/live-auctions"){
           assert.equal(result.dockPosition,"static","Live bid dock overlays cards on mobile");
           assert.ok(result.dockWidth>=viewport.width*.75,"Live bidder too narrow");
-          assert.ok(result.nextWidth>=viewport.width*.75,"Live next-lot cards too narrow");
+          const visual=page.locator(".liveVisual");
+          const bidder=page.locator(".proLiveUx");
+          await visual.waitFor({state:"visible"});
+          const carY=(await visual.boundingBox())?.y??0;
+          const controlY=(await bidder.boundingBox())?.y??0;
+          assert.ok(carY>0 && controlY>carY+120,"Car should be the first mobile visual, above the technical bidder");
+          const diag=page.locator(".proLiveStatusGrid");
+          assert.equal(await diag.isVisible(),false,"Do not show dense diagnostics by default");
+          const toggle=page.locator(".proLiveAdvancedToggle");
+          await toggle.click();
+          assert.equal(await diag.isVisible(),true,"Diagnostics must expand on demand");
+          await toggle.click();
+          assert.equal(await diag.isVisible(),false,"Diagnostics must collapse again");
+          const bidAction=page.locator(".proLiveBidDock button");
+          assert.ok(await bidAction.isVisible(),"Primary bid control must remain visible");
         }
         // Check that mobile links are actually reachable; avoid changing real bid state.
         if(route==="/inventory"){
