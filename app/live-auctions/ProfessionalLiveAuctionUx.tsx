@@ -34,6 +34,7 @@ export default function ProfessionalLiveAuctionUx(props:Props){
   const current=props.lots[props.active];
   const next=props.lots[(props.active+1)%props.lots.length];
   const [focus,setFocus]=useState(false);
+  const [advancedVisible,setAdvancedVisible]=useState(false);
   const [armed,setArmed]=useState(false);
   const [submitting,setSubmitting]=useState(false);
   const [readOnlyTab,setReadOnlyTab]=useState(false);
@@ -127,7 +128,7 @@ export default function ProfessionalLiveAuctionUx(props:Props){
         ? "CONNECTION LOST — automatic reconnect in progress; bidding paused."
         : "Synchronizing authoritative server state.";
 
-  return <section className={`proLiveUx ${focus?"is-focus":""}`} aria-label="Professional live-auction controls" data-phase="36">
+  return <section className={`proLiveUx ${focus?"is-focus":""} ${advancedVisible?"show-advanced":""}`} aria-label="Professional live-auction controls" data-phase="36">
     <div className="proLiveTop" data-phase-task="36.01">
       <div><span>PRO BIDDER MODE</span><b>{focus?"FOCUS ACTIVE":"STANDARD VIEW"}</b></div>
       <button type="button" onClick={()=>setFocus(x=>!x)} aria-pressed={focus}>{focus?"Exit focus":"Enter focus"}</button>
@@ -137,6 +138,8 @@ export default function ProfessionalLiveAuctionUx(props:Props){
       <b>{connectionBanner}</b>
       <button type="button" onClick={()=>void props.onResync()} data-phase-task="36.11">Hard resync</button>
     </div>}
+
+    <div className="proLiveCompactStatus"><span><i aria-hidden="true"/>{props.connectionState==="connected"?"Demo server connected":"Checking demo server"}</span><em>Secure 2-step bid</em></div>
 
     <div className="proLiveStatusGrid">
       <div data-phase-task="36.06"><span>SERVER TIME</span><b>{props.connectionState==="connected"?"SYNCED":"VERIFYING"}</b><small>{props.lastRttMs===null?"RTT pending":`RTT ${props.lastRttMs} ms`}</small></div>
@@ -151,7 +154,7 @@ export default function ProfessionalLiveAuctionUx(props:Props){
       <article><span>NEXT LOT</span><b>{next.lot}</b><strong>{next.title}</strong></article>
     </div>
 
-    <div className="proLiveDashboard" data-phase-task="36.02">
+    <div className="proLiveDashboard" id="pro-live-advanced-information" data-phase-task="36.02">
       {dashboard.map((lot,index)=><article key={lot.lot} className={`is-${lot.relation}`}>
         <span>{lot.relation.toUpperCase()}</span>
         <b>{lot.lot}</b>
@@ -178,6 +181,8 @@ export default function ProfessionalLiveAuctionUx(props:Props){
     </div>
     {props.bidFeedback==="outbid"&&<div className="proLiveOutbid" role="alert" data-phase-task="36.14">OUTBID — review the new authoritative price before bidding again.</div>}
     {lateExtension&&<div className="proLiveExtension" role="status" aria-live="assertive" data-phase-task="36.15">LATE BID EXTENSION — timer extended by server state.</div>}
+
+    <button type="button" className="proLiveAdvancedToggle" aria-expanded={advancedVisible} aria-controls="pro-live-advanced-information" onClick={()=>setAdvancedVisible(value=>!value)}>{advancedVisible?"Hide technical details":"Technical details & upcoming lots"}</button>
 
     <div className="proLiveKeyboard" data-phase-task="36.17">Keyboard: <kbd>B</kbd>/<kbd>Space</kbd> arm · <kbd>Enter</kbd> confirm · <kbd>Esc</kbd> cancel</div>
     <div className="proLiveMobileMarker" data-phase-task="36.18">Responsive bidder layout enabled</div>
