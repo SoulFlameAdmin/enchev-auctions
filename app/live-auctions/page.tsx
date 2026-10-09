@@ -1,6 +1,6 @@
-import { GOLF_GTI_DEMO_IMAGE, GOLF_GTI_DEMO_PHOTO_CREDIT } from "../data/demo-vehicle-media";
 "use client";
 
+import { GOLF_GTI_DEMO_IMAGE, GOLF_GTI_DEMO_PHOTO_CREDIT } from "../data/demo-vehicle-media";
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./live-auctions.css";
 import "./live-d24.css";
