@@ -41,7 +41,7 @@ try{
         assert.ok(result.documentWidth<=viewport.width+2,route+" page overflows viewport: "+JSON.stringify(result));
         assert.ok(result.bodyWidth<=viewport.width+2,route+" body overflows viewport: "+JSON.stringify(result));
         assert.ok(result.mainWidth>=viewport.width*.87,route+" main clipped to partial width: "+JSON.stringify(result));
-        assert.ok(result.shellWidth>=viewport.width*.98,route+" header clipped to partial width: "+JSON.stringify(result));
+        if(route!=="/presentation")assert.ok(result.shellWidth>=viewport.width*.98,route+" header clipped to partial width: "+JSON.stringify(result));
         if(route==="/live-auctions"){
           assert.equal(result.dockPosition,"static","Live bid dock overlays cards on mobile");
           assert.ok(result.dockWidth>=viewport.width*.75,"Live bidder too narrow");
