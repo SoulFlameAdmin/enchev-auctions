@@ -200,7 +200,7 @@ export default function LiveAuctionsPage(){
     </header>
 
     <section className="liveHero">
-      <div><span className="liveEyebrow">● LIVE AUCTION ROOM</span><h1>Bid in real time</h1><p>10-секундният demo брояч се води от ENCHEV server session clock. При потвърдена demo оферта сървърът задава нов краен момент; при изтичане клиентът взема актуалния lot state от сървъра.</p></div>
+      <div><span className="liveEyebrow">● LIVE AUCTION ROOM</span><h1>Bid in real time</h1><span className="liveHeroMobileLead">Автомобили на живо, обратен брояч и безопасно демо наддаване.</span><p>10-секундният demo брояч се води от ENCHEV server session clock. При потвърдена demo оферта сървърът задава нов краен момент; при изтичане клиентът взема актуалния lot state от сървъра.</p></div>
       <div className="liveHeroStatusStack">
         <div
           className={`liveConnectionState is-${connectionState}`}
@@ -255,7 +255,7 @@ export default function LiveAuctionsPage(){
           <b>{bidFeedback==="accepted"?"ОФЕРТАТА Е ПРИЕТА":bidFeedback==="leading"?"LEADING В ТЪРГА":bidFeedback==="outbid"?"НАДДАВАН СИ":bidFeedback==="rejected"?"ОФЕРТАТА Е ОТХВЪРЛЕНА":"READY TO BID"}</b>
           <span>{bidFeedback==="accepted"?"Server demo прие офертата.":bidFeedback==="leading"?"Server demo потвърди водеща позиция.":bidFeedback==="outbid"?"Server demo отчете по-висока конкурентна оферта.":bidFeedback==="rejected"?"Server demo отхвърли офертата без промяна на цената.":"The demo bid result comes from server session state."}</span>
         </div>
-        <button className="liveBidButton" type="button" onClick={()=>document.querySelector(".proLiveBidDock")?.scrollIntoView({behavior:"smooth",block:"center"})}>PRO BIDDER control <span>↑</span></button>
+        <button className="liveBidButton" type="button" onClick={()=>document.querySelector(".proLiveBidDock")?.scrollIntoView({behavior:"smooth",block:"center"})}>Към демо наддаването <span>↓</span></button>
         <a className="liveLotLink" href={`/lot/${current.lot}`}>Open lot details</a>
 
         <section className="liveNextPreview" data-live-slot="next" data-lot-id={next.lot} aria-labelledby="live-next-lot-title">
