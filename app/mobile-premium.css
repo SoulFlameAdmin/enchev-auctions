@@ -231,6 +231,12 @@
   .livePage .liveNextPreviewCard{border-radius:13px;background:#0c1810;min-height:100px}
   .livePage .liveNextPreviewCard h3{font-size:14px}
   .livePage .liveNextPreviewCard p{font-size:11px;color:#a0b4a7}
+  .livePage .liveNextPreview{display:none!important}
+  .livePage .liveRule{display:none!important}
+  .livePage .liveMobileDemoDisclaimer{
+    display:block;margin-top:13px;text-align:center;color:#a4baa9;
+    font-size:11px;font-weight:650;letter-spacing:.01em;
+  }
   .livePage .liveRule{margin-top:14px;padding-top:12px}
   .livePage .liveRule p{font-size:11px!important;color:#9bb09f}
   .livePage .proLiveUx{
@@ -387,7 +393,7 @@
   .inventoryPage .inventoryActions{grid-template-columns:minmax(0,1fr)}
 }
 @media(min-width:761px){
-  .liveHeroMobileLead,.proLiveCompactStatus,.proLiveAdvancedToggle{display:none!important}
+  .liveHeroMobileLead,.liveMobileDemoDisclaimer,.proLiveCompactStatus,.proLiveAdvancedToggle{display:none!important}
 }
 @media(prefers-reduced-motion:reduce){
   .inventoryPage .inventoryCard,.livePage .liveBidButton{
