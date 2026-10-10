@@ -23,8 +23,8 @@ function verify(source) {
   for (const pattern of required) assert.match(source,pattern,`Buyer DB contract drift: ${pattern}`);
   const sqlStatementsOnly = source.replace(/--[^\n]*/g, "");
   assert.equal((sqlStatementsOnly.match(/^commit;/gm)||[]).length,1,"One atomic migration transaction required");
-  assert.equal((sqlStatementsOnly.match(/create table public\\.enchev_buyer_profiles/g)||[]).length,1,"Only one buyer table definition allowed");
-  assert.ok(sqlStatementsOnly.includes("phone_e164 ~ '^[+][1-9][0-9]{6,14}
+  assert.equal((sqlStatementsOnly.match(/create table public\.enchev_buyer_profiles/g)||[]).length,1,"Only one buyer table definition allowed");
+  assert.ok(sqlStatementsOnly.includes("phone_e164 ~ '^[+][1-9][0-9]{6,14}$'"),"E.164 constraint must be complete");
   for(const forbidden of [
     /grant\s+all\s+on\s+public\.enchev_buyer_profiles/i,
     /grant\s+(?:insert|delete)\s+on\s+public\.enchev_buyer_profiles\s+to\s+(?:authenticated|anon)/i,
