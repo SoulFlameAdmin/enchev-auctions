@@ -16,6 +16,7 @@ import "./mobile-page-parity.css";
 import "./mobile-premium.css";
 import "./mobile-all-routes.css";
 import "./mobile-live-compact.css";
+import "./home-shared-buyer-theme.css";
 import VerifiedPlanEvidenceSync from "./components/VerifiedPlanEvidenceSync";
 import TestPassGreenGuard from "./components/TestPassGreenGuard";
 import GapAppendOnlyGuard from "./components/GapAppendOnlyGuard";

@@ -1,0 +1,214 @@
+/* ENCHEV / HOME-STYLE UNIFICATION 2026-10-10
+   Canonical inspiration: the classic marketplace homepage /platform.
+   Shared type, luminous green, dark glass cards, borders, button language,
+   spacing and readable phone layouts across all customer-facing pages.
+   This layer intentionally excludes the isolated cinematic /forge homepage,
+   the presentation deck, and all operational/DAVID/admin views.
+   Do not change auction, bid, authentication or payment behavior here. */
+:root{
+  --ea-home-canvas:#050907;
+  --ea-home-surface:#0b160e;
+  --ea-home-surface-raised:#101c14;
+  --ea-home-green:#27f58a;
+  --ea-home-green-strong:#10c96b;
+  --ea-home-border:rgba(125,255,178,.16);
+  --ea-home-border-active:rgba(45,245,139,.42);
+  --ea-home-title:#f4fbf6;
+  --ea-home-subtitle:#c0cec5;
+  --ea-home-muted:#94a79b;
+  --ea-home-card-radius:18px;
+  --ea-home-action-radius:12px;
+  --ea-home-card-shadow:0 20px 54px rgba(0,0,0,.26);
+  --ea-home-glass:linear-gradient(145deg,rgba(18,37,25,.96),rgba(6,14,9,.98));
+  --ea-home-action:linear-gradient(135deg,#27f58a,#10c96b);
+}
+/* Match /platform canvas across inventory, live room, vehicle details,
+   transport, vehicle history, account and help routes. */
+:where(.inventoryPage,.lotPage,.livePage,.transportPage,.historyPage,.navigationPage){
+  color:var(--ea-home-title);
+  background:
+    radial-gradient(ellipse 75% 360px at 82% 0,rgba(33,123,67,.13),transparent 86%),
+    radial-gradient(ellipse 58% 320px at 9% 5%,rgba(35,189,98,.07),transparent 84%),
+    linear-gradient(180deg,#040906,#07100b 46%,#050907);
+  font-family:var(--ea-font-ui,Inter,Arial,sans-serif);
+  -webkit-font-smoothing:antialiased;
+}
+/* The homepage's big, clear headline hierarchy, without breaking phone sizes. */
+:where(.inventoryPage,.lotPage,.livePage,.transportPage,.historyPage,.navigationPage)
+  :is(h1,h2,h3){
+  color:var(--ea-home-title);
+  letter-spacing:-.045em;
+  text-wrap:balance;
+}
+:where(.inventoryPage,.lotPage,.livePage,.transportPage,.historyPage,.navigationPage)
+  :is(p,small){line-height:1.55}
+:where(.inventoryPage,.lotPage,.livePage,.transportPage,.historyPage,.navigationPage)
+  :is(.inventoryIntro p,.liveHeroMobileLead,.liveHero p,.transportHero p,
+      .historyHero p,.profileOverview p,.navigationRouteMain>p){
+  color:var(--ea-home-subtitle);
+}
+/* The shared app shell mirrors the /platform hero glass and primary action. */
+.eaAppShell{
+  background:rgba(4,11,7,.93);
+  border-bottom:1px solid var(--ea-home-border);
+  box-shadow:0 14px 38px rgba(0,0,0,.26);
+}
+.eaAppHeader{background:transparent}
+.eaAppBrand strong{font-weight:950;letter-spacing:-.055em}
+.eaAppMenuButton{
+  border-color:var(--ea-home-border)!important;
+  background:linear-gradient(160deg,#14271a,#0c150f)!important;
+}
+.eaAppSearch,.eaAppMobileSearch{
+  border-color:var(--ea-home-border);
+  background:rgba(5,17,9,.72);
+}
+.eaAppMobileDrawer{
+  background:linear-gradient(165deg,#0c2113,#070e09 53%,#040906);
+}
+.eaAppAccountPrimary,.eaAppMobileAccount a:last-child{
+  background:var(--ea-home-action);
+  color:#061009;
+}
+/* Brand hero panels: restrained cinematic light, not copied desktop geometry. */
+:where(.inv2Hero,.profileOverview,.liveHero,.transportHero,.historyHero,.navigationRouteMain){
+  position:relative;
+  isolation:isolate;
+}
+.inv2Hero,.profileOverview{
+  background:
+    radial-gradient(circle at 88% 4%,rgba(39,245,138,.14),transparent 34%),
+    var(--ea-home-glass)!important;
+  border:1px solid var(--ea-home-border)!important;
+  border-radius:22px;
+  box-shadow:var(--ea-home-card-shadow);
+}
+:where(.transportHero,.historyHero,.liveHero,.navigationRouteMain)::before{
+  content:"";
+  pointer-events:none;
+  position:absolute;
+  z-index:-1;
+  inset:-12px -12px 10%;
+  border-radius:28px;
+  background:radial-gradient(ellipse 78% 90% at 83% 8%,rgba(39,245,138,.08),transparent 80%);
+}
+:where(.inventoryIntro h1,.lotTitleRow h1,.liveHero h1,.transportHero h1,
+       .historyHero h1,.profileOverview h1,.navigationRouteMain h1){
+  font-weight:950;
+  letter-spacing:-.053em!important;
+}
+:where(.liveEyebrow,.inv2Hero .inventoryIntro>span,.lotBreadcrumb,
+       .transportHero>div:first-child>span,.historyHero>div>span,
+       .navigationRouteKicker,.profileSectionHeading>span){
+  color:#85f7a9;
+  font-weight:900;
+  letter-spacing:.12em;
+}
+/* The same premium home cards for every marketplace feature. */
+:where(.inventoryCard,.inventoryFilters,.inventoryToolbar,.lotBidPanel,
+       .lotSection,.liveBidPanel,.liveQueueCard,.proLiveUx,
+       .transportRouteCard,.transportCalcCard,.transportTrust>article,
+       .transportFlowGrid>article,.transportFaqGrid>article,
+       .historySearch,.historyDemoResult,.historyFeatureGrid>article,
+       .profileAccountRail,.profileOverview,.profileWatchlist,
+       .profileWatchlistCard,.myAuctions,.myAuctionRow,
+       .navigationRouteCard){
+  border:1px solid var(--ea-home-border);
+  border-radius:var(--ea-home-card-radius);
+  background:linear-gradient(150deg,rgba(15,28,19,.98),rgba(8,16,11,.98));
+  box-shadow:var(--ea-home-card-shadow);
+}
+:where(.inventoryCard,.liveQueueCard,.profileWatchlistCard,.myAuctionRow,
+       .navigationRouteCard,.transportFlowGrid>article,.historyFeatureGrid>article){
+  transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease;
+}
+@media(hover:hover) and (pointer:fine){
+  :where(.inventoryCard,.liveQueueCard,.profileWatchlistCard,.myAuctionRow,
+         .navigationRouteCard,.transportFlowGrid>article,.historyFeatureGrid>article):hover{
+    transform:translateY(-3px);
+    border-color:var(--ea-home-border-active);
+    box-shadow:0 24px 60px rgba(0,0,0,.32),0 0 28px rgba(39,245,138,.06);
+  }
+}
+:where(.inventoryCard,.liveQueueCard,.lotMainImage,.profileWatchlistCard,
+       .historyDemoResult,.transportRouteCard) img{
+  max-width:100%;
+}
+/* Buttons use identical gradient, glow, radius and readable action text. */
+:where(.inventoryPage,.lotPage,.livePage,.transportPage,.historyPage,.navigationPage)
+  :is(.detailsBtn,.inventoryActions .bidBtn,.inventoryActions .buyBtn,
+      .lotBidBtn,.liveBidButton,.proLiveBidDock button,
+      .transportHeroActions a:not(.ghost),.historySearch button,
+      .navigationRouteActions a:first-child,.profileOverviewActions a:first-child){
+  border-radius:var(--ea-home-action-radius);
+  background:var(--ea-home-action);
+  color:#061009;
+  font-weight:900;
+  border-color:transparent;
+  box-shadow:0 12px 30px rgba(16,201,106,.15);
+}
+:where(.inventoryPage,.lotPage,.livePage,.transportPage,.historyPage,.navigationPage)
+  :is(.inv2Chip,.lotPill,.liveLotLink,.transportHeroActions a.ghost,
+      .navigationRouteActions a:not(:first-child),.profileOverviewActions a:not(:first-child)){
+  border:1px solid var(--ea-home-border);
+  border-radius:var(--ea-home-action-radius);
+  background:rgba(12,27,17,.76);
+  color:#dcf7e5;
+}
+:where(.inventoryPage,.lotPage,.livePage,.transportPage,.historyPage,.navigationPage)
+  :is(input,select,textarea){
+  min-width:0;
+  border-color:var(--ea-home-border);
+  background-color:rgba(5,13,8,.8);
+  color:#f1fbf4;
+}
+:where(.inventoryPage,.lotPage,.livePage,.transportPage,.historyPage,.navigationPage)
+  :is(input,select,textarea):focus-visible{
+  outline:2px solid #9bf5b7;
+  outline-offset:2px;
+}
+/* Home-style card content uses a consistent pale-green metadata vocabulary. */
+:where(.inventoryLot,.liveVisualInfo>span,.liveQueueCard span,
+       .profileWatchlistKicker,.myAuctionsKicker,
+       .transportSectionHead>span,.historySectionHead>span){
+  color:#7deca0;
+  font-weight:900;
+}
+:where(.inventoryCardBody h2,.liveQueueCard h3,.profileWatchlistBody h3,
+       .profileOverview h1,.navigationRouteCard b){color:var(--ea-home-title)}
+:where(.inventoryCardBody dl,.liveQueueCard p,.navigationRouteCard p,
+       .profileWatchlistFacts,.profileAccountRailNote p){color:var(--ea-home-muted)}
+/* Desktop layout already has a spacing grid. Keep it; do not copy
+   the landing hero's two columns onto transactional forms. */
+@media(max-width:760px){
+  :root{--ea-home-card-radius:17px}
+  :where(.inventoryPage,.lotPage,.livePage,.transportPage,.historyPage,.navigationPage){
+    background:
+      radial-gradient(ellipse 125% 320px at 50% 0,rgba(27,94,49,.2),transparent 77%),
+      #050907;
+  }
+  :where(.inventoryCard,.inventoryFilters,.inventoryToolbar,.lotBidPanel,
+         .lotSection,.liveBidPanel,.proLiveUx,.liveQueueCard,
+         .transportRouteCard,.transportCalcCard,.historySearch,
+         .historyDemoResult,.profileAccountRail,.profileOverview,
+         .profileWatchlist,.myAuctions,.navigationRouteCard){
+    box-shadow:0 9px 26px rgba(0,0,0,.24);
+  }
+  :where(.inv2Hero,.profileOverview){border-radius:18px}
+  :where(.transportHero,.historyHero,.liveHero,.navigationRouteMain)::before{
+    inset:-6px -4px 0;border-radius:18px;
+  }
+  :where(.inventoryPage,.lotPage,.livePage,.transportPage,.historyPage,.navigationPage)
+    :is(.historySearch input,.transportCalcCard input,.transportCalcCard select,
+        .inventoryFilters input,.inventoryFilters select){
+    font-size:16px;
+  }
+  /* Keep LIVE demo dock and vehicle-detail action dock exactly where the
+     existing mobile-specific CSS puts them. No z-index/position changes. */
+  .livePage .liveMobileActionBar button{background:var(--ea-home-action)}
+  .lotPage .lotMobileBidAction{background:var(--ea-home-action)}
+}
+@media(prefers-reduced-motion:reduce){
+  :where(.inventoryCard,.liveQueueCard,.profileWatchlistCard,
+         .myAuctionRow,.navigationRouteCard){transition:none!important;transform:none!important}
+}
