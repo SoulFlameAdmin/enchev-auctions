@@ -225,6 +225,90 @@
           }
         }
       }
+    },
+    "/api/enchev-auth/[action]": {
+      "get": {
+        "operationId": "getBuyerAuthSession",
+        "summary": "Check authenticated ENCHEV buyer session, fail-closed without dedicated provider",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "action",
+            "required": true,
+            "schema": {
+              "const": "session"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "No-store authentication state, never JWTs or passwords"
+          },
+          "400": {
+            "description": "Unsupported auth action"
+          }
+        }
+      },
+      "post": {
+        "operationId": "postBuyerAuthAction",
+        "summary": "Dedicated-project buyer sign-up, sign-in or sign-out; same-origin only",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "action",
+            "required": true,
+            "schema": {
+              "enum": [
+                "sign-up",
+                "sign-in",
+                "sign-out"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {
+                  "email": {
+                    "type": "string",
+                    "format": "email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 12,
+                    "maxLength": 128
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Auth outcome with HttpOnly session cookies; credentials never returned"
+          },
+          "400": {
+            "description": "Invalid request"
+          },
+          "401": {
+            "description": "Bad credentials"
+          },
+          "403": {
+            "description": "Cross-origin POST rejected"
+          },
+          "429": {
+            "description": "Rate-limited by identity provider"
+          },
+          "503": {
+            "description": "Dedicated project not enabled or identity service unavailable"
+          }
+        }
+      }
     }
   },
   "components": {
