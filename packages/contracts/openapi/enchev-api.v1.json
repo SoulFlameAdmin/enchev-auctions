@@ -366,13 +366,28 @@
         ],
         "responses": {
           "200": {
-            "description": "Authenticated stage-one auction server snapshot"
+            "description": "Authenticated stage-one auction server snapshot",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           },
           "401": {
-            "description": "No valid signed pilot session"
+            "description": "No valid signed pilot session",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           },
           "503": {
-            "description": "Isolated project is not activated or database is unavailable"
+            "description": "Isolated project is not activated or database is unavailable",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           }
         }
       },
@@ -436,25 +451,60 @@
         },
         "responses": {
           "200": {
-            "description": "Signed pilot session or authoritative auction action result"
+            "description": "Signed pilot session or authoritative auction action result",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           },
           "400": {
-            "description": "Invalid input"
+            "description": "Invalid input",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           },
           "401": {
-            "description": "Unauthorized or code invalid"
+            "description": "Unauthorized or code invalid",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           },
           "403": {
-            "description": "Origin or role forbidden"
+            "description": "Origin or role forbidden",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           },
           "404": {
-            "description": "Action not found"
+            "description": "Action not found",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           },
           "409": {
-            "description": "Bid rejected or another demo auction active"
+            "description": "Bid rejected or another demo auction active",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           },
           "503": {
-            "description": "Isolated pilot not activated"
+            "description": "Isolated pilot not activated",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           }
         }
       }
