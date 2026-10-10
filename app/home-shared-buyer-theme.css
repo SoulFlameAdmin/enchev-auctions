@@ -71,7 +71,7 @@
   color:#061009;
 }
 /* Brand hero panels: restrained cinematic light, not copied desktop geometry. */
-:where(.inv2Hero,.profileOverview,.transportHero,.historyHero,.navigationRouteMain){
+:where(.inv2Hero,.profileOverview,.liveHero,.transportHero,.historyHero,.navigationRouteMain){
   position:relative;
   isolation:isolate;
 }
