@@ -1,0 +1,33 @@
+{
+  "project_ref": "ejfrnjhlggebzmpmxajl",
+  "project_name": "enchev-auctions",
+  "organization_name": "SoulFlameAdmin",
+  "region": "eu-central-1",
+  "project_scope": "dedicated-enchev-buyer-identity",
+  "created_date": "2026-10-10",
+  "latest_verified_status": "ACTIVE_HEALTHY",
+  "identity_provider_connected_to_vercel": false,
+  "public_signup_enabled": false,
+  "website_bidding_mode": "demo-only",
+  "schema_migration": "20261010143000_enchev_isolated_buyer_profiles.sql",
+  "database_migration_applied_version": "20261010144306",
+  "schema_verified": {
+    "buyer_profiles_table": true,
+    "rls_enabled": true,
+    "rls_forced": true,
+    "anonymous_select": false,
+    "authenticated_insert": false,
+    "authenticated_delete": false,
+    "authenticated_profile_update_only": true
+  },
+  "pending_gates": [
+    "vercel-env-permissions",
+    "email-verification-redirect-and-smtp",
+    "password-recovery",
+    "two-distinct-authenticated-user-rls-tests",
+    "rate-limits",
+    "staging-login-integration-test",
+    "explicit-production-activation"
+  ],
+  "note": "Metadata only: no API keys, credentials or customer data. The existing shared governance Supabase binding is separate and unchanged."
+}

@@ -34,7 +34,7 @@ Although the Supabase anon key is public in principle, we pass it **only from th
 7. Keep actual bids, win/loss, saved searches and payment flows in **DEMO** mode until an independent authoritative and audited auction backend proves PASS.
 
 ## Known limitations (not certified)
-- No separate identity project is currently connected. The auth screen truthfully reports activation pending.
+- A separate ENCHEV identity project has now been created and its buyer-profile migration applied (`ejfrnjhlggebzmpmxajl`, `eu-central-1`). **It is not yet connected to Vercel**, because environment-variable access returned HTTP 403. See `config/enchev-identity-project.json`. The auth screen truthfully reports activation pending.
 - Registration is not open and no real customer account has been created or tested; email delivery and password reset are not yet proven.
 - No real user-owned auction data, seller admin, payment processor, stock feed or third-party VIN/transport service.
 - This is a **first implementation slice**, not proof of complete production registration. Deployment READY alone never certifies identity or authorization security.
