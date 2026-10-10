@@ -10,5 +10,6 @@ export const primaryNavigation = [
 
 export const accountNavigation = {
   profile: "/profile",
-  register: "/profile?view=register",
+  login: "/login",
+  register: "/register",
 } as const;
