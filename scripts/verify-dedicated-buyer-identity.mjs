@@ -37,7 +37,7 @@ assert.match(docs,/separate ENCHEV Supabase project/);
 assert.match(sql,/Dedicated ENCHEV ref proven/);
 
 if(process.argv.includes("--self-test")){
-  const missing=sql.replace(/enable row level security/i,"disable row level security");
+  const missing=sql.replace("alter table public.enchev_buyer_profiles enable row level security;", "alter table public.enchev_buyer_profiles disable row level security;");
   assert.throws(()=>verify(missing));
   const open=sql+"\ngrant delete on public.enchev_buyer_profiles to authenticated;\n";
   assert.throws(()=>verify(open));
