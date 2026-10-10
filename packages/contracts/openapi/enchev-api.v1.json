@@ -242,10 +242,20 @@
         ],
         "responses": {
           "200": {
-            "description": "No-store authentication state, never JWTs or passwords"
+            "description": "No-store authentication state, never JWTs or passwords",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           },
           "400": {
-            "description": "Unsupported auth action"
+            "description": "Unsupported auth action",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           }
         }
       },
@@ -290,22 +300,52 @@
         },
         "responses": {
           "200": {
-            "description": "Auth outcome with HttpOnly session cookies; credentials never returned"
+            "description": "Auth outcome with HttpOnly session cookies; credentials never returned",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           },
           "400": {
-            "description": "Invalid request"
+            "description": "Invalid request",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           },
           "401": {
-            "description": "Bad credentials"
+            "description": "Bad credentials",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           },
           "403": {
-            "description": "Cross-origin POST rejected"
+            "description": "Cross-origin POST rejected",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           },
           "429": {
-            "description": "Rate-limited by identity provider"
+            "description": "Rate-limited by identity provider",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           },
           "503": {
-            "description": "Dedicated project not enabled or identity service unavailable"
+            "description": "Dedicated project not enabled or identity service unavailable",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           }
         }
       }
