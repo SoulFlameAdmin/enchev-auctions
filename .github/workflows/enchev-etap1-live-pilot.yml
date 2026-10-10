@@ -1,0 +1,73 @@
+name: ENCHEV ETAP1 Pilot Safety
+on:
+  pull_request:
+    paths:
+      - 'app/lib/etap1-server.ts'
+      - 'app/api/etap1/**'
+      - 'app/live-auctions/etap-1/**'
+      - 'supabase/migrations/20261010131500_enchev_etap1_live_pilot.sql'
+      - 'scripts/verify-etap1-live-contract.mjs'
+      - 'scripts/test-etap1-postgres.sh'
+      - '.github/workflows/enchev-etap1-live-pilot.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static-safety-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install exact lockfile
+        run: npm ci --no-audit --no-fund
+      - name: Verify isolated demo safety invariants
+        run: node scripts/verify-etap1-live-contract.mjs
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Build the Next.js project
+        run: npm run build
+      - name: Evidence limitation
+        run: echo 'Only static/build safety gates executed. Supabase multi-device acceptance remains RED until proven.'
+  postgres-atomicity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: pilot_test_only
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 12
+    env:
+      ENCHEV_ETAP1_TEST_DATABASE: disposable-local-ci
+      PGHOST: 127.0.0.1
+      PGPORT: 5432
+      PGUSER: postgres
+      PGDATABASE: postgres
+      PGPASSWORD: pilot_test_only
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: PostgreSQL client
+        run: |
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq && sudo apt-get install -y postgresql-client
+          fi
+      - name: Prove atomic bids, idempotency, close, RLS in disposable database
+        run: bash scripts/test-etap1-postgres.sh
+      - name: Evidence limitation
+        run: echo 'Local PostgreSQL verified. Real managed Supabase and three physical devices are not yet accepted.'

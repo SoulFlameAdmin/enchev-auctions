@@ -21,10 +21,22 @@
   "protectedOperations": [
     {
       "method": "GET",
-      "path": "/api/health/web",
-      "operationId": "getWebHealth",
+      "path": "/api/enchev-auth/[action]",
+      "operationId": "getBuyerAuthSession",
       "responseCodes": [
-        "200"
+        "200",
+        "400"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/etap1/[action]",
+      "operationId": "getEtap1PilotState",
+      "responseCodes": [
+        "200",
+        "401",
+        "503"
       ],
       "requestBodyRequired": false
     },
@@ -41,15 +53,6 @@
       "method": "GET",
       "path": "/api/health/realtime",
       "operationId": "getRealtimeHealth",
-      "responseCodes": [
-        "503"
-      ],
-      "requestBodyRequired": false
-    },
-    {
-      "method": "GET",
-      "path": "/api/health/worker",
-      "operationId": "getWorkerHealth",
       "responseCodes": [
         "503"
       ],
@@ -86,30 +89,28 @@
     },
     {
       "method": "GET",
-      "path": "/api/live-auction-clock",
-      "operationId": "getLiveAuctionDemoClock",
+      "path": "/api/health/web",
+      "operationId": "getWebHealth",
       "responseCodes": [
         "200"
       ],
       "requestBodyRequired": false
     },
     {
-      "method": "POST",
-      "path": "/api/live-auction-clock",
-      "operationId": "postLiveAuctionDemoBid",
+      "method": "GET",
+      "path": "/api/health/worker",
+      "operationId": "getWorkerHealth",
       "responseCodes": [
-        "200",
-        "400"
+        "503"
       ],
-      "requestBodyRequired": true
+      "requestBodyRequired": false
     },
     {
       "method": "GET",
-      "path": "/api/enchev-auth/[action]",
-      "operationId": "getBuyerAuthSession",
+      "path": "/api/live-auction-clock",
+      "operationId": "getLiveAuctionDemoClock",
       "responseCodes": [
-        "200",
-        "400"
+        "200"
       ],
       "requestBodyRequired": false
     },
@@ -126,6 +127,31 @@
         "503"
       ],
       "requestBodyRequired": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/etap1/[action]",
+      "operationId": "postEtap1PilotAction",
+      "responseCodes": [
+        "200",
+        "400",
+        "401",
+        "403",
+        "404",
+        "409",
+        "503"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/live-auction-clock",
+      "operationId": "postLiveAuctionDemoBid",
+      "responseCodes": [
+        "200",
+        "400"
+      ],
+      "requestBodyRequired": true
     }
   ]
 }

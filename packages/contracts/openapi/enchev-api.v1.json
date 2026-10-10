@@ -349,6 +349,165 @@
           }
         }
       }
+    },
+    "/api/etap1/[action]": {
+      "get": {
+        "operationId": "getEtap1PilotState",
+        "summary": "Get protected, server-authoritative isolated stage-one pilot auction snapshot (or inactive state)",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "action",
+            "required": true,
+            "schema": {
+              "const": "state"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Authenticated stage-one auction server snapshot",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
+          },
+          "401": {
+            "description": "No valid signed pilot session",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
+          },
+          "503": {
+            "description": "Isolated project is not activated or database is unavailable",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "postEtap1PilotAction",
+        "summary": "Same-origin signed-session login/logout, admin start, or idempotent two-bidder action",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "action",
+            "required": true,
+            "schema": {
+              "enum": [
+                "login",
+                "logout",
+                "start",
+                "bid"
+              ]
+            }
+          }
+        ],
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "description": "Action-scoped fields: login role/code, admin title/openingAmount/increment/durationSeconds, bid nonce; server ignores client-proposed bid amounts.",
+                "properties": {
+                  "role": {
+                    "enum": [
+                      "admin",
+                      "mitko",
+                      "borko",
+                      "enchev"
+                    ]
+                  },
+                  "code": {
+                    "type": "string"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "openingAmount": {
+                    "type": "number"
+                  },
+                  "increment": {
+                    "type": "number"
+                  },
+                  "durationSeconds": {
+                    "type": "integer"
+                  },
+                  "nonce": {
+                    "type": "string",
+                    "format": "uuid"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed pilot session or authoritative auction action result",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized or code invalid",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
+          },
+          "403": {
+            "description": "Origin or role forbidden",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
+          },
+          "404": {
+            "description": "Action not found",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
+          },
+          "409": {
+            "description": "Bid rejected or another demo auction active",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
+          },
+          "503": {
+            "description": "Isolated pilot not activated",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
