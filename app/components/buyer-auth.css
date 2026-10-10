@@ -1,0 +1,28 @@
+/* P0 Buyer authentication — matching ENCHEV classic homepage aesthetics */
+.buyerAuthPage{min-height:calc(100svh - 106px);color:#f4fbf6;display:grid;place-items:center;padding:clamp(30px,6vw,90px) 18px;background:radial-gradient(ellipse at 80% 10%,rgba(39,245,138,.13),transparent 48%),linear-gradient(165deg,#040906,#0b170f 55%,#040906)}
+.buyerAuthShell{width:min(1100px,100%);display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,430px);gap:clamp(24px,6vw,74px);align-items:center}
+.buyerAuthEyebrow{font-size:11px;font-weight:950;letter-spacing:.19em;color:#7ef5ab}
+.buyerAuthIntro h1{font-size:clamp(36px,5vw,65px);font-weight:950;line-height:1;letter-spacing:-.055em;margin:16px 0}
+.buyerAuthIntro>p{font-size:16px;line-height:1.65;color:#bbcec0;max-width:540px}
+.buyerAuthProof{display:flex;flex-wrap:wrap;gap:10px;margin-top:27px}
+.buyerAuthProof span{font-size:11px;font-weight:700;border:1px solid rgba(39,245,138,.19);background:#09190f;border-radius:999px;padding:9px 12px;color:#c5f2d2}
+.buyerAuthCard{border:1px solid rgba(39,245,138,.20);border-radius:22px;background:linear-gradient(155deg,rgba(17,36,23,.97),rgba(6,13,9,.98));box-shadow:0 24px 70px rgba(0,0,0,.33);padding:clamp(20px,3vw,32px);min-width:0}
+.buyerAuthCard form{display:grid;gap:15px}
+.buyerAuthCardTitle{display:block;font-size:21px;font-weight:900;letter-spacing:-.035em;margin:0 0 5px}
+.buyerAuthCard label{display:grid;gap:8px;font-size:12px;font-weight:850;color:#c6d6cb}
+.buyerAuthCard input{height:49px;border:1px solid rgba(141,211,157,.19);background:#08120c;color:#fff;border-radius:11px;padding:0 13px;font:inherit;font-size:16px;width:100%;min-width:0}
+.buyerAuthCard input:focus-visible{outline:2px solid #7cfdad;outline-offset:2px}
+.buyerAuthCard input::placeholder{color:#819988}
+.buyerAuthHint,.buyerAuthSwap{color:#a3b7aa;font-size:12px;line-height:1.5;margin:0}
+.buyerAuthSubmit{border:0;background:linear-gradient(135deg,#27f58a,#10c96b);color:#06120b;min-height:51px;border-radius:12px;font-weight:950;font-size:15px;cursor:pointer}
+.buyerAuthSubmit:disabled{opacity:.55;cursor:not-allowed}
+.buyerAuthSwap a,.buyerAuthPreview,.buyerAuthNotice a{color:#89ffb9;text-decoration:underline;text-underline-offset:3px}
+.buyerAuthPreview{font-size:12px}
+.buyerAuthError,.buyerAuthSuccess{font-size:13px;line-height:1.5;border-radius:10px;padding:11px;margin:0}
+.buyerAuthError{background:rgba(221,71,71,.13);border:1px solid rgba(255,114,114,.24);color:#ffd8d8}
+.buyerAuthSuccess{background:rgba(39,245,138,.10);border:1px solid rgba(39,245,138,.24);color:#c6f8d9}
+.buyerAuthNotice{padding:5px}
+.buyerAuthNotice strong{font-size:22px;letter-spacing:-.03em;color:#d6fce3}
+.buyerAuthNotice p{font-size:14px;line-height:1.65;color:#b4c5ba}
+@media(max-width:760px){.buyerAuthPage{padding:22px 16px 55px;place-items:start center}.buyerAuthShell{grid-template-columns:minmax(0,1fr);gap:20px}.buyerAuthIntro h1{font-size:clamp(32px,9vw,42px)}.buyerAuthIntro>p{font-size:14px}.buyerAuthProof{margin-top:15px;gap:7px}.buyerAuthProof span{font-size:10px}.buyerAuthCard{padding:21px;border-radius:18px}}
+@media(prefers-reduced-motion:reduce){.buyerAuthSubmit{transition:none}}

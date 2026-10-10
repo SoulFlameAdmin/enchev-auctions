@@ -1,5 +1,6 @@
 import { primaryNavigation } from "../site-navigation";
 import WatchlistPanel from "./WatchlistPanel";
+import BuyerSessionPanel from "../components/BuyerSessionPanel";
 import MyAuctionsPanel from "./MyAuctionsPanel";
 import "./profile-shell.css";
 
@@ -38,6 +39,7 @@ export default function ProfilePage(){
         </aside>
 
         <div className="profileDashboardContent">
+          <BuyerSessionPanel />
           <section className="profileOverview" id="overview" aria-labelledby="profile-overview-heading">
             <span className="navigationRouteKicker">BUYER WORKSPACE</span>
             <h1 id="profile-overview-heading">Your ENCHEV account</h1>

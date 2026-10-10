@@ -66,7 +66,8 @@ export default function EnchevAppShell(){
       </nav>
 
       <div className="eaAppAccount">
-        <a className="eaAppAccountGhost" href={accountNavigation.profile}>Login / Profile</a>
+        <a className="eaAppAccountGhost" href={accountNavigation.profile}>Profile</a>
+        <a className="eaAppAccountGhost" href={accountNavigation.login}>Login</a>
         <a className="eaAppAccountPrimary" href={accountNavigation.register}>Register</a>
       </div>
 
@@ -108,7 +109,8 @@ export default function EnchevAppShell(){
         </nav>
 
         <div className="eaAppMobileAccount">
-          <a href={accountNavigation.profile}>Login / Profile</a>
+          <a href={accountNavigation.profile}>Profile</a>
+          <a href={accountNavigation.login}>Login</a>
           <a href={accountNavigation.register}>Register</a>
         </div>
 

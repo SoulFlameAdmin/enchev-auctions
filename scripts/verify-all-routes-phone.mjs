@@ -5,7 +5,7 @@ import {createRequire} from "node:module";
 const require=createRequire(import.meta.url);
 const {chromium}=require("/tmp/enchev-browser/node_modules/playwright");
 const base=process.env.BASE_URL||"http://127.0.0.1:3000";
-const routes=["/","/platform","/inventory","/live-auctions","/lot/EA-10511","/lot/EA-10603","/vehicle-history","/transport","/profile","/support","/presentation","/workspace","/rtl-capability"];
+const routes=["/","/platform","/inventory","/live-auctions","/lot/EA-10511","/lot/EA-10603","/vehicle-history","/transport","/profile","/login","/register","/support","/presentation","/workspace","/rtl-capability"];
 const viewports=[{width:320,height:720},{width:390,height:844},{width:430,height:932}];
 const browser=await chromium.launch({headless:true});
 let failures=0;
@@ -80,6 +80,13 @@ try{
           const source=await page.locator(".lotMainImage img").first().getAttribute("src");
           assert.ok(source?.includes("photo-1655285886265-835ce7541e10"),"Golf preview must show Golf GTI photo, not an SUV");
           assert.ok(await page.locator(".lotDemoPhotoCredit").isVisible(),"Golf demo media attribution must be visible");
+        }
+        if(route==="/login"||route==="/register"){
+          const title=page.locator("#buyer-auth-title");
+          await title.waitFor({state:"visible"});
+          await page.getByText("Account activation pending").waitFor({state:"visible"});
+          assert.equal(await page.locator('input[type="password"]').count(),0,
+            "Authentication cannot accept passwords without a dedicated identity provider");
         }
         // Check that mobile links are actually reachable; avoid changing real bid state.
         if(route==="/inventory"){
