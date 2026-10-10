@@ -5,7 +5,7 @@ on:
       - 'app/lib/etap1-server.ts'
       - 'app/api/etap1/**'
       - 'app/live-auctions/etap-1/**'
-      - 'supabase/migrations/20261010_enchev_etap1_live_pilot.sql'
+      - 'supabase/migrations/20261010131500_enchev_etap1_live_pilot.sql'
       - 'scripts/verify-etap1-live-contract.mjs'
       - 'scripts/test-etap1-postgres.sh'
       - '.github/workflows/enchev-etap1-live-pilot.yml'
