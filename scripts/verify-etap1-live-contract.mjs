@@ -12,7 +12,7 @@ const root=resolve(dirname(fileURLToPath(import.meta.url)),"..");
 const read=(name)=>readFileSync(resolve(root,name),"utf8");
 const gateway=read("app/lib/etap1-server.ts");
 const api=read("app/api/etap1/[action]/route.ts");
-const sql=read("supabase/migrations/20261010_enchev_etap1_live_pilot.sql");
+const sql=read("supabase/migrations/20261010131500_enchev_etap1_live_pilot.sql");
 const client=read("app/live-auctions/etap-1/page.tsx");
 const css=read("app/live-auctions/etap-1/etap1.css");
 
