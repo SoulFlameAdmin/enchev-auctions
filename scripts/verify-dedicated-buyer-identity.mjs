@@ -21,12 +21,13 @@ function verify(source) {
     /after\s+insert\s+on\s+auth\.users/i,
   ];
   for (const pattern of required) assert.match(source,pattern,`Buyer DB contract drift: ${pattern}`);
+  const sqlStatementsOnly = source.replace(/--[^\n]*/g, "");
   for(const forbidden of [
     /grant\s+all\s+on\s+public\.enchev_buyer_profiles/i,
     /grant\s+(?:insert|delete)\s+on\s+public\.enchev_buyer_profiles\s+to\s+(?:authenticated|anon)/i,
     /create\s+policy\s+[^;]*\busing\s*\(\s*true\s*\)/i,
     /\b(?:is_admin|role\s+text|account_balance|wallet_balance)\b/i,
-  ])assert.doesNotMatch(source,forbidden,`Unsafe buyer profile privileges: ${forbidden}`);
+  ])assert.doesNotMatch(sqlStatementsOnly,forbidden,`Unsafe buyer profile privileges: ${forbidden}`);
 }
 
 verify(sql);
