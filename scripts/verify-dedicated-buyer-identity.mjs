@@ -40,7 +40,7 @@ if(process.argv.includes("--self-test")){
   assert.throws(()=>verify(missing));
   const open=sql+"\ngrant delete on public.enchev_buyer_profiles to authenticated;\n";
   assert.throws(()=>verify(open));
-  const crossTenant=sql.replace(/\(\(select auth\.uid\(\)\) = id\)/i,"(true)");
+  const crossTenant=sql.replaceAll("((select auth.uid()) = id)","(true)");
   assert.throws(()=>verify(crossTenant));
 }
 console.log("ENCHEV_BUYER_IDENTITY_SCHEMA_GUARD PASS (source only, no DB touched)");
