@@ -59,8 +59,18 @@ export async function bodyFields(request: NextRequest): Promise<{email:string;pa
 
 export function sameOriginPost(request: NextRequest) {
   const origin = request.headers.get("origin");
-  // The browser's same-origin fetch sets Origin for POST. Fail closed otherwise.
-  return Boolean(origin && origin === request.nextUrl.origin);
+  const host = request.headers.get("host")?.toLowerCase();
+  if (!origin || !host) return false;
+  try {
+    const parsed = new URL(origin);
+    if (parsed.host.toLowerCase() !== host || parsed.username || parsed.password) return false;
+    // Production is HTTPS; only local loopback development/test may use HTTP.
+    const loopback = parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1";
+    if (parsed.protocol !== "https:" && !(loopback && parsed.protocol === "http:")) return false;
+    const forwardedProtocol = request.headers.get("x-forwarded-proto");
+    if (forwardedProtocol && parsed.protocol !== forwardedProtocol.toLowerCase() + ":") return false;
+    return true;
+  } catch { return false; }
 }
 
 export function authCookie(request: NextRequest, key: "access"|"refresh") {
