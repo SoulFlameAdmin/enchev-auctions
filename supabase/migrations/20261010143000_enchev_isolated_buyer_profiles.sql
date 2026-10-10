@@ -10,7 +10,7 @@ create table public.enchev_buyer_profiles (
   display_name text null
     check (display_name is null or char_length(btrim(display_name)) between 1 and 120),
   phone_e164 text null
-    check (phone_e164 is null or phone_e164 ~ '^[+][1-9][0-9]{6,14},
+    check (phone_e164 is null or phone_e164 ~ '^[+][1-9][0-9]{6,14}$'),
   locale text not null default 'en' check (locale in ('bg','en')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
