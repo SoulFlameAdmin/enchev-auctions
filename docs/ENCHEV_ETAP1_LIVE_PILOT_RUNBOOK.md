@@ -22,7 +22,7 @@ The route is fail-closed until the dedicated ENCHEV database and all environment
 1. Confirm/create an **isolated ENCHEV Supabase project**. The shared SoulFlame/Twins project
    `frhletkiuupgksmgxoxc` is hard-denied. Never apply the migration there.
 2. Have the owner approve the isolated environment and database SQL.
-3. Apply `supabase/migrations/20261010_enchev_etap1_live_pilot.sql` in that isolated project.
+3. Apply `supabase/migrations/20261010131500_enchev_etap1_live_pilot.sql` in that isolated project.
 4. Add the following **server-only** environment variables to a safe Vercel Preview deployment:
    - `ENCHEV_ETAP1_ENABLED=true`
    - `ENCHEV_ETAP1_PROJECT_REF=<dedicated ENCHEV Supabase project ref>`
