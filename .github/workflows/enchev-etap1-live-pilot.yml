@@ -1,0 +1,35 @@
+name: ENCHEV ETAP1 Pilot Safety
+on:
+  pull_request:
+    paths:
+      - 'app/lib/etap1-server.ts'
+      - 'app/api/etap1/**'
+      - 'app/live-auctions/etap-1/**'
+      - 'supabase/migrations/20261010_enchev_etap1_live_pilot.sql'
+      - 'scripts/verify-etap1-live-contract.mjs'
+      - '.github/workflows/enchev-etap1-live-pilot.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  static-safety-and-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install exact lockfile
+        run: npm ci --no-audit --no-fund
+      - name: Verify isolated demo safety invariants
+        run: node scripts/verify-etap1-live-contract.mjs
+      - name: TypeScript
+        run: npm run typecheck
+      - name: Build the Next.js project
+        run: npm run build
+      - name: Evidence limitation
+        run: echo 'Only static/build safety gates executed. Supabase multi-device acceptance remains RED until proven.'
