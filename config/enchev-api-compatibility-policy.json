@@ -19,14 +19,113 @@
     ]
   },
   "protectedOperations": [
-    { "method": "GET", "path": "/api/health/web", "operationId": "getWebHealth", "responseCodes": ["200"], "requestBodyRequired": false },
-    { "method": "GET", "path": "/api/health/api", "operationId": "getApiHealth", "responseCodes": ["200"], "requestBodyRequired": false },
-    { "method": "GET", "path": "/api/health/realtime", "operationId": "getRealtimeHealth", "responseCodes": ["503"], "requestBodyRequired": false },
-    { "method": "GET", "path": "/api/health/worker", "operationId": "getWorkerHealth", "responseCodes": ["503"], "requestBodyRequired": false },
-    { "method": "GET", "path": "/api/health/redis", "operationId": "getRedisHealth", "responseCodes": ["200", "503"], "requestBodyRequired": false },
-    { "method": "GET", "path": "/api/health/redis-env", "operationId": "getRedisEnvironmentHealth", "responseCodes": ["200"], "requestBodyRequired": false },
-    { "method": "GET", "path": "/api/health/vercel-oidc-management", "operationId": "getVercelOidcManagementHealth", "responseCodes": ["200", "503"], "requestBodyRequired": false },
-    { "method": "GET", "path": "/api/live-auction-clock", "operationId": "getLiveAuctionDemoClock", "responseCodes": ["200"], "requestBodyRequired": false },
-    { "method": "POST", "path": "/api/live-auction-clock", "operationId": "postLiveAuctionDemoBid", "responseCodes": ["200", "400"], "requestBodyRequired": true }
+    {
+      "method": "GET",
+      "path": "/api/health/web",
+      "operationId": "getWebHealth",
+      "responseCodes": [
+        "200"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/health/api",
+      "operationId": "getApiHealth",
+      "responseCodes": [
+        "200"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/health/realtime",
+      "operationId": "getRealtimeHealth",
+      "responseCodes": [
+        "503"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/health/worker",
+      "operationId": "getWorkerHealth",
+      "responseCodes": [
+        "503"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/health/redis",
+      "operationId": "getRedisHealth",
+      "responseCodes": [
+        "200",
+        "503"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/health/redis-env",
+      "operationId": "getRedisEnvironmentHealth",
+      "responseCodes": [
+        "200"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/health/vercel-oidc-management",
+      "operationId": "getVercelOidcManagementHealth",
+      "responseCodes": [
+        "200",
+        "503"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/live-auction-clock",
+      "operationId": "getLiveAuctionDemoClock",
+      "responseCodes": [
+        "200"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/live-auction-clock",
+      "operationId": "postLiveAuctionDemoBid",
+      "responseCodes": [
+        "200",
+        "400"
+      ],
+      "requestBodyRequired": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/enchev-auth/[action]",
+      "operationId": "getBuyerAuthSession",
+      "responseCodes": [
+        "200",
+        "400"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/enchev-auth/[action]",
+      "operationId": "postBuyerAuthAction",
+      "responseCodes": [
+        "200",
+        "400",
+        "401",
+        "403",
+        "429",
+        "503"
+      ],
+      "requestBodyRequired": false
+    }
   ]
 }
