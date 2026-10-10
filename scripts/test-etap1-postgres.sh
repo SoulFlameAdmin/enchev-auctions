@@ -19,7 +19,7 @@ begin
   if not exists (select 1 from pg_roles where rolname='service_role') then create role service_role; end if;
 end $$;
 SQL
-psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261010_enchev_etap1_live_pilot.sql
+psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261010131500_enchev_etap1_live_pilot.sql
 
 psql -X -v ON_ERROR_STOP=1 <<'SQL'
 do $$
