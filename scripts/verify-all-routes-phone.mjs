@@ -34,11 +34,13 @@ try{
             dockPosition:bidder?getComputedStyle(bidder).position:null,
             dockWidth:bidder?.getBoundingClientRect().width??0,
             nextWidth:next?.getBoundingClientRect().width??0,
+            themeGreen:getComputedStyle(document.documentElement).getPropertyValue("--ea-home-green").trim(),
             viewportMeta:document.querySelector('meta[name="viewport"]')?.getAttribute("content")??""
           };
         });
         assert.equal(result.viewport,viewport.width,route+" wrong viewport (likely zoomed desktop layout)");
         assert.match(result.viewportMeta,/width=device-width/,route+" missing mobile viewport meta");
+        assert.equal(result.themeGreen,"#27f58a",route+" missing shared homepage theme CSS");
         assert.ok(result.documentWidth<=viewport.width+2,route+" page overflows viewport: "+JSON.stringify(result));
         assert.ok(result.bodyWidth<=viewport.width+2,route+" body overflows viewport: "+JSON.stringify(result));
         assert.ok(result.mainWidth>=viewport.width*.87,route+" main clipped to partial width: "+JSON.stringify(result));
