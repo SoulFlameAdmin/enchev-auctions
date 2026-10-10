@@ -14,6 +14,12 @@
     },
     {
       "method": "GET",
+      "path": "/api/etap1/[action]",
+      "operationId": "getEtap1PilotState",
+      "summary": "Get protected, server-authoritative isolated stage-one pilot auction snapshot (or inactive state)"
+    },
+    {
+      "method": "GET",
       "path": "/api/health/api",
       "operationId": "getApiHealth",
       "summary": "API health"
@@ -65,6 +71,12 @@
       "path": "/api/enchev-auth/[action]",
       "operationId": "postBuyerAuthAction",
       "summary": "Dedicated-project buyer sign-up, sign-in or sign-out; same-origin only"
+    },
+    {
+      "method": "POST",
+      "path": "/api/etap1/[action]",
+      "operationId": "postEtap1PilotAction",
+      "summary": "Same-origin signed-session login/logout, admin start, or idempotent two-bidder action"
     },
     {
       "method": "POST",
