@@ -22,6 +22,9 @@ function verify(source) {
   ];
   for (const pattern of required) assert.match(source,pattern,`Buyer DB contract drift: ${pattern}`);
   const sqlStatementsOnly = source.replace(/--[^\n]*/g, "");
+  assert.equal((sqlStatementsOnly.match(/^commit;/gm)||[]).length,1,"One atomic migration transaction required");
+  assert.equal((sqlStatementsOnly.match(/create table public\\.enchev_buyer_profiles/g)||[]).length,1,"Only one buyer table definition allowed");
+  assert.ok(sqlStatementsOnly.includes("phone_e164 ~ '^[+][1-9][0-9]{6,14}
   for(const forbidden of [
     /grant\s+all\s+on\s+public\.enchev_buyer_profiles/i,
     /grant\s+(?:insert|delete)\s+on\s+public\.enchev_buyer_profiles\s+to\s+(?:authenticated|anon)/i,
@@ -34,7 +37,31 @@ verify(sql);
 assert.match(auth,/ENCHEV_AUTH_ENABLED\s*!==\s*"true"/);
 assert.match(auth,/expectedRef\s*===\s*SHARED_GOVERNANCE_REF/);
 assert.match(docs,/separate ENCHEV Supabase project/);
-assert.match(sql,/Dedicated ENCHEV ref proven/);
+assert.match(sql,/dedicated ENCHEV Supabase database/i);
+
+if(process.argv.includes("--self-test")){
+  const missing=sql.replace("alter table public.enchev_buyer_profiles enable row level security;", "alter table public.enchev_buyer_profiles disable row level security;");
+  assert.throws(()=>verify(missing));
+  const open=sql+"\ngrant delete on public.enchev_buyer_profiles to authenticated;\n";
+  assert.throws(()=>verify(open));
+  const crossTenant=sql.replaceAll("((select auth.uid()) = id)","(true)");
+  assert.throws(()=>verify(crossTenant));
+}
+console.log("ENCHEV_BUYER_IDENTITY_SCHEMA_GUARD PASS (source only, no DB touched)");
+"),"E.164 constraint must be complete");
+  for(const forbidden of [
+    /grant\s+all\s+on\s+public\.enchev_buyer_profiles/i,
+    /grant\s+(?:insert|delete)\s+on\s+public\.enchev_buyer_profiles\s+to\s+(?:authenticated|anon)/i,
+    /create\s+policy\s+[^;]*\busing\s*\(\s*true\s*\)/i,
+    /\b(?:is_admin|role\s+text|account_balance|wallet_balance)\b/i,
+  ])assert.doesNotMatch(sqlStatementsOnly,forbidden,`Unsafe buyer profile privileges: ${forbidden}`);
+}
+
+verify(sql);
+assert.match(auth,/ENCHEV_AUTH_ENABLED\s*!==\s*"true"/);
+assert.match(auth,/expectedRef\s*===\s*SHARED_GOVERNANCE_REF/);
+assert.match(docs,/separate ENCHEV Supabase project/);
+assert.match(sql,/dedicated ENCHEV Supabase database/i);
 
 if(process.argv.includes("--self-test")){
   const missing=sql.replace("alter table public.enchev_buyer_profiles enable row level security;", "alter table public.enchev_buyer_profiles disable row level security;");
