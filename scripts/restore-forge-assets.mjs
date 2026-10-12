@@ -194,7 +194,7 @@ const ctaMapScript = String.raw`(() => {
   const navItems = [
     { label: "HOME", href: "/" },
     { label: "BUY", href: "/inventory" },
-    { label: "LIVE AUCTIONS", href: "/live-auctions" },
+    { label: "LIVE AUCTIONS", href: "/live-auctions/etap-1" },
     { label: "DEMO BIDDING", href: "/live-auctions/etap-1" },
     { label: "CHECK VEHICLE", href: "/vehicle-history" },
     { label: "DOCUMENTS & TRANSPORT", href: "/transport" },
@@ -278,6 +278,35 @@ const ctaMapScript = String.raw`(() => {
     }
   }
 
+  // The large Forge mobile overlay renders its LIVE link dynamically; the
+  // static site-nav mapping alone cannot guarantee that LIVE opens the demo.
+  // Only the explicit LIVE / LIVE AUCTIONS menu links are redirected here.
+  const liveDemoHref = "/live-auctions/etap-1";
+  const isLiveMenuLink = (anchor) => {
+    const label = normalize(anchor.textContent);
+    const ariaLabel = normalize(anchor.getAttribute("aria-label"));
+    return ["live", "live auctions"].includes(label) ||
+      ["live", "live auctions"].includes(ariaLabel);
+  };
+
+  function applyLiveDemoLinks() {
+    for (const anchor of document.querySelectorAll("a")) {
+      if (!isLiveMenuLink(anchor)) continue;
+      if (anchor.getAttribute("href") !== liveDemoHref) anchor.setAttribute("href", liveDemoHref);
+      if (anchor.getAttribute("target") !== "_top") anchor.setAttribute("target", "_top");
+      anchor.setAttribute("data-enchev-live-demo", "true");
+    }
+  }
+
+  // Capture the click before the animated Forge menu can swallow navigation.
+  document.addEventListener("click", (event) => {
+    const anchor = event.target && event.target.closest && event.target.closest("a");
+    if (!anchor || !isLiveMenuLink(anchor)) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    window.top.location.assign(liveDemoHref);
+  }, true);
+
   // The cinematic homepage runs inside an iframe. Navigating inside that frame
   // would leave the system command center over the functional website.
   // Route internal platform links at the top-level page without changing the
@@ -308,6 +337,7 @@ const ctaMapScript = String.raw`(() => {
       scheduled = false;
       applyCtas();
       applyNavigation();
+      applyLiveDemoLinks();
       ensurePlatformNavigation();
     });
   }
@@ -316,11 +346,13 @@ const ctaMapScript = String.raw`(() => {
     document.addEventListener("DOMContentLoaded", () => {
       applyCtas();
       applyNavigation();
+      applyLiveDemoLinks();
       ensurePlatformNavigation();
     }, { once: true });
   } else {
     applyCtas();
     applyNavigation();
+    applyLiveDemoLinks();
     ensurePlatformNavigation();
   }
 
