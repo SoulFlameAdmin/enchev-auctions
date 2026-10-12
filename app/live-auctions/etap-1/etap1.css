@@ -264,3 +264,10 @@
  .ev9App .eaEtap1Footer{margin:20px 14px 0;padding-bottom:22px}
 }
 @media(prefers-reduced-motion:reduce){.ev9App *{animation:none!important;transition:none!important}}
+
+/* The global ENCHEV shell already owns search/navigation; do not duplicate it. */
+.ev9ContextHeader{margin:0;padding:13px 26px;border-bottom:1px solid #164438;background:linear-gradient(90deg,#03100c,#042018 50%,#03100c);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.ev9ContextHeader>div:first-child{display:flex;flex-wrap:wrap;align-items:center;gap:10px;min-width:0}
+.ev9ContextHeader>div:first-child strong{color:#00deb1;font-size:12px;letter-spacing:.07em}
+.ev9ContextHeader>div:first-child span{font-size:10px;color:#9dbbae}
+@media(max-width:650px){.ev9ContextHeader{padding:12px 14px;align-items:flex-start;flex-direction:column}.ev9ContextHeader .ev9HeaderRight{margin-left:0;justify-content:flex-start}}
