@@ -262,12 +262,12 @@ export default function EnchevStageOnePage(){
   const timeUntil=Math.max(0,Math.ceil(remainingMs/1000));
   const serverSeconds=localNow+offsetRef.current;
   const clockTotalMs=auction?Math.max(10000,Date.parse(auction.endsAt)-Date.parse(auction.startedAt)):10000;
-  const clockProgress=status==="live"?Math.min(100,Math.max(0,remainingMs/clockTotalMs*100)):status==="closed"?0:100;
+  const clockProgress=status==="live"?Math.min(100,Math.max(0,remainingMs/clockTotalMs*100)):status==="closed"?100:100;
   const clockStyle={"--ev9-progress":clockProgress+"%"} as CSSProperties;
   const currentRoundKey=(auction?.id??"none")+":"+Math.floor(serverSeconds/5000);
   const roundLocked=roundLockKey===currentRoundKey;
   const canBid=status==="live"&&bidder&&connected&&!busy&&timeUntil>0&&!roundLocked;
-  const phaseStep=status==="live"?2:status==="closed"?3:0;
+  const phaseStep=status==="live"?2:status==="closed"?3:1;
   const views=["FRONT","REAR","INTERIOR","DETAIL","SIDE"];
   const visibleRound=5-Math.floor(serverSeconds/1000)%5;
   const tabs=["Details","Photos","History","Documents","Transport","Condition"];
@@ -332,9 +332,9 @@ export default function EnchevStageOnePage(){
       <section className="ev9AuctionBar" aria-label="Auction phases">
         <div className="ev9AuctionTop"><b>● ENCHEV LIVE · LANE A</b><span>{auction?"LOT "+auction.id.slice(0,8).toUpperCase():"AWAITING READY"} · DEMO GOLF GTI</span></div>
         <div className="ev9PhaseRail">
-          {["WAITING","COUNTDOWN","LIVE AUCTION","WINNER"].map((ph,i)=>
+          {["ACCESS","READY CHECK","LIVE AUCTION","WINNER"].map((ph,i)=>
             <div key={ph} className={"ev9Phase "+(phaseStep===i?"active step"+i:phaseStep>i?"done":"")}>
-              <span className="ev9PhaseDot"/><div><b>{ph}</b><small>{i===0?"READY LOBBY":i===1?"PRE-START":i===2?status==="live"?minutes+":"+seconds:"00:00":"FINAL RESULT"}</small></div>
+              <span className="ev9PhaseDot"/><div><b>{ph}</b><small>{i===0?"PRIVATE ENTRY":i===1?"WAITING FOR ALL":i===2?status==="live"?minutes+":"+seconds:"00:00":"FINAL RESULT"}</small></div>
             </div>)}
         </div>
       </section>
@@ -393,7 +393,7 @@ export default function EnchevStageOnePage(){
             </div>
             <div className="ev9BidActions">
               <label>YOUR NEXT BID (€)<input type="text" readOnly value={nextPrice.toLocaleString("bg-BG",{maximumFractionDigits:2})} aria-label="Server-controlled next bid amount"/></label>
-              <div className="ev9QuickButtons"><button type="button" disabled>+250</button><button type="button" disabled>+500</button><button type="button" disabled>+1000</button><span>Custom steps pending backend approval</span></div>
+              <details className="ev9QuickDetails"><summary>Advanced bids · upcoming</summary><div className="ev9QuickButtons"><button type="button" disabled>+250</button><button type="button" disabled>+500</button><button type="button" disabled>+1000</button><span>Not enabled in this demo; the server accepts the displayed €100 step only.</span></div></details>
               {status==="live"&&bidder?<button className="ev9PrimaryBid" type="button" onClick={()=>void bid()} disabled={!canBid}>
                 {busy?"PROCESSING…":roundLocked?"NEXT ROUND IN "+visibleRound+"s":"PLACE DEMO BID · "+money(nextPrice)}
               </button>:<div className="ev9BidDisabled">{status==="closed"?"AUCTION ENDED · BIDDING LOCKED":!bidder?"OBSERVE ONLY · NO BID PERMISSION":"WAITING FOR READY / AUCTION START"}</div>}
