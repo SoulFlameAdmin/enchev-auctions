@@ -4,13 +4,13 @@ import { etap1Config, etap1Json, etap1Rpc, etap1Session } from "../../../lib/eta
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-type Role = "mitko" | "borko" | "enchev" | "krum";
+type Role = "mitko" | "borko" | "enchev";
 type Presence = { role: string; is_ready: boolean; last_seen: string; session_id: string | null };
 type Admission = { role: string; session_id: string };
 type Auction = { id: string; currentAmount: number; sequence: number; winnerRole: string | null };
 type State = { status: "idle" | "live" | "closed"; serverNow: string; auction: Auction | null; bids: unknown[] };
 type LobbyResponse = { state: State; lobby: { count: number; readyCount: number; participants: unknown[] } };
-const ROSTER: readonly Role[] = ["mitko","borko","enchev","krum"];
+const ROSTER: readonly Role[] = ["mitko","borko","enchev"];
 
 async function readTable<T>(url: string, key: string): Promise<T> {
   const result = await fetch(url, {
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
     const connected = participants.filter(p=>p.online).length;
     const ready = participants.filter(p=>p.ready).length;
     const inGame = participants.filter(p=>p.inGame).length;
-    const required = participants.some(p=>p.role==="krum" && p.online) ? 4 : 3;
+    const required = 3;
     return etap1Json({
       ok:true,serverNow:state.serverNow, status:state.status,auction:state.auction,
       bids:Array.isArray(state.bids)?state.bids:[],
