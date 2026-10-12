@@ -201,6 +201,7 @@ echo "ETAP1 READY LOBBY INTEGRATION PASS: 2/3-person barrier, atomic start, dist
 
 # Check that every new LOGIN gets a fresh session and READY is required per round.
 psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261012170000_enchev_etap1_session_admission.sql
+psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261012210000_enchev_etap1_expected_roster_barrier.sql
 psql -X -v ON_ERROR_STOP=1 <<'SQL'
 do $$
 declare
@@ -208,6 +209,7 @@ declare
   m2 uuid:='11111111-1111-4111-8111-222222222222';
   b1 uuid:='22222222-2222-4222-8222-111111111111';
   k1 uuid:='33333333-3333-4333-8333-111111111111';
+  e1 uuid:='44444444-4444-4444-8444-111111111111';
   v jsonb;
   round_one uuid;
   round_two uuid;
@@ -221,6 +223,7 @@ begin
 
   perform public.etap1_ready_lobby_secure('mitko',m1,false,true);
   perform public.etap1_ready_lobby_secure('borko',b1,false,true);
+  perform public.etap1_ready_lobby_secure('enchev',e1,false,true);
   v:=public.etap1_ready_lobby_secure('mitko',m1,null,false);
   if v->'state'->>'status'='live' or (v->'lobby'->>'readyCount')::int<>0 then
     raise exception 'Login or polling auto-started round'; end if;
@@ -228,8 +231,11 @@ begin
   v:=public.etap1_ready_lobby_secure('mitko',m1,true,false);
   if v->'state'->>'status'='live' then raise exception 'Single READY auto-started'; end if;
   v:=public.etap1_ready_lobby_secure('borko',b1,true,false);
+  if v->'state'->>'status'='live' then
+    raise exception 'Two READY started before Enchev'; end if;
+  v:=public.etap1_ready_lobby_secure('enchev',e1,true,false);
   if v->'state'->>'status'<>'live' or v->'lobby'->>'admitted'<>'true' then
-    raise exception 'Both READY did not start or admit bidder'; end if;
+    raise exception 'Third mandatory READY did not start session-bound round'; end if;
   round_one:=(v->'state'->'auction'->>'id')::uuid;
   v:=public.etap1_ready_lobby_secure('mitko',m1,null,false);
   if v->'lobby'->>'admitted'<>'true' then
@@ -286,8 +292,11 @@ begin
   if v->'state'->>'status'='live' then
     raise exception 'First READY after winner started round'; end if;
   v:=public.etap1_ready_lobby_secure('mitko',m2,true,false);
+  if v->'state'->>'status'='live' then
+    raise exception 'Two explicit READY must not start without Enchev'; end if;
+  v:=public.etap1_ready_lobby_secure('enchev',e1,true,false);
   if v->'state'->>'status'<>'live' then
-    raise exception 'Second explicit READY did not start NEW round'; end if;
+    raise exception 'Third mandatory READY did not start NEW round'; end if;
   round_two:=(v->'state'->'auction'->>'id')::uuid;
   if round_two=round_one or v->'lobby'->>'admitted'<>'true' then
     raise exception 'New auction reused prior ID or session not admitted'; end if;
@@ -296,4 +305,4 @@ begin
     raise exception 'Borko not admitted to new round'; end if;
 end $$;
 SQL
-echo "ETAP1 SESSION ADMISSION INTEGRATION PASS: login->lobby, READY-only start, winner->lobby, re-login blocked, admitted bids."
+echo "ETAP1 SESSION ADMISSION INTEGRATION PASS: three-person minimum roster, session-bound READY, winner->lobby, re-login blocked, admitted bids."
