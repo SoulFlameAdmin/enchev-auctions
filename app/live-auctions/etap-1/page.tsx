@@ -286,7 +286,7 @@ export default function EnchevStageOnePage(){
     {role&&<div className="ev9Utility">
       <div className="ev9UtilityIdentity"><span className="ev9RoleDot">●</span><strong>{labelRole(role)}</strong><span>{connected?"ONLINE":"RECONNECTING"}</span></div>
       <div className="ev9UtilityButtons">
-        <button className="ev9SoundBtn" type="button" onClick={()=>void enableSound()}>{soundOn?"🔊 SOUND ON":"🔇 SOUND OFF"}</button>
+        <button className="ev9SoundBtn" type="button" aria-label={soundOn?"Sound enabled":"ENABLE SOUND"} onClick={()=>void enableSound()}>{soundOn?"🔊 SOUND ON":"🔇 SOUND OFF"}</button>
         <div className="ev9MoreWrap">
           <button type="button" aria-controls="ev9MoreMenu" aria-expanded={moreOpen} onClick={()=>setMoreOpen(v=>!v)}>⚙ More</button>
           {moreOpen&&<div className="ev9MoreMenu" id="ev9MoreMenu">
