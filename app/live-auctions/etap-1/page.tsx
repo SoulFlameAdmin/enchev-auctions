@@ -200,11 +200,12 @@ export default function EnchevStageOnePage(){
     finally{setBusy(false);}
   };
   const bid=async()=>{
-    const auctionId=snapshot?.auction?.id;
+    const activeAuction=snapshot?.auction;
+    if(!activeAuction||snapshot?.status!=="live")return;
     const timeKey=Math.floor((Date.now()+offsetRef.current)/5000);
-    const lockKey=auctionId+":"+timeKey;
-    if(busy||!connected||snapshot?.status!=="live"||!auctionId||
-      Date.parse(snapshot.auction.endsAt)<=Date.now()+offsetRef.current||roundLockKey===lockKey)return;
+    const lockKey=activeAuction.id+":"+timeKey;
+    if(busy||!connected||
+      Date.parse(activeAuction.endsAt)<=Date.now()+offsetRef.current||roundLockKey===lockKey)return;
     setBusy(true);setError("");
     try{
       await post("bid",{nonce:crypto.randomUUID()});
