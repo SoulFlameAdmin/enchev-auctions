@@ -3,13 +3,13 @@
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import "./monitor.css";
 
-type Role = "mitko" | "borko" | "enchev" | "krum";
+type Role = "mitko" | "borko" | "enchev";
 type Person = {role:Role;online:boolean;ready:boolean;inGame:boolean;lastSeen:string|null};
 type Auction = {id:string;title?:string;currentAmount:number;sequence:number;leadingRole?:string|null;winnerRole:string|null;endsAt?:string;closedAt?:string|null};
 type Bid = {sequence:number;role:string;amount:number;at:string};
 type Monitor = {ok:true;serverNow:string;status:"idle"|"live"|"closed";auction:Auction|null;
   bids:Bid[];participants:Person[];connected:number;ready:number;inGame:number;required:number;allReady:boolean};
-const roleName:Record<Role,string>={mitko:"MITKO",borko:"BORKO",enchev:"ENCHEV",krum:"KRUM"};
+const roleName:Record<Role,string>={mitko:"MITKO",borko:"BORKO",enchev:"ENCHEV"};
 const euro=(n:number)=>new Intl.NumberFormat("en-IE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(n);
 const when=(date:string|null)=>date?new Date(date).toLocaleTimeString("bg-BG",{hour:"2-digit",minute:"2-digit",second:"2-digit"}):"—";
 
@@ -92,18 +92,18 @@ export default function Etap1AdminMonitor() {
       </div>
       {offline&&<p className="eaMonitorError" role="alert">⚠ Connection interrupted. Showing last known status only. {error}</p>}
       <section className="eaMonitorMetrics" aria-label="Live lobby counts">
-        <article><span>IN LOBBY / ONLINE</span><strong>{monitor?.connected??"—"}<small> / 4</small></strong><p>Connected within 15 seconds</p></article>
+        <article><span>IN LOBBY / ONLINE</span><strong>{monitor?.connected??"—"}<small> / 3</small></strong><p>Connected within 15 seconds</p></article>
         <article><span>READY</span><strong>{monitor?.ready??"—"}<small> / {monitor?.required??3} minimum</small></strong><p>Participants waiting for start</p></article>
         <article><span>IN LIVE ROUND</span><strong>{monitor?.inGame??"—"}<small> admitted</small></strong><p>Server-verified participants</p></article>
-        <article><span>AUCTION STATE</span><strong className="eaMonitorState">{monitor?.status?.toUpperCase()??"—"}</strong><p>{monitor?.allReady?"All online participants READY": "Waiting for the required roster"}</p></article>
+        <article><span>AUCTION STATE</span><strong className="eaMonitorState">{monitor?.status?.toUpperCase()??"—"}</strong><p>{monitor?.status==="live"?"Three admitted bidders can bid":monitor?.allReady?"Ready to start": "Waiting for Mitko, Borko and Enchev"}</p></article>
       </section>
       <section className="eaMonitorRoster">
         <div className="eaMonitorSectionTitle"><div><span className="eaMonitorEyebrow">REAL-TIME LOBBY</span><h2>Participants</h2></div><b>{monitor?.connected??0} ONLINE</b></div>
         <div className="eaMonitorGrid">
-          {(monitor?.participants??(["mitko","borko","enchev","krum"] as Role[]).map(role=>({role,online:false,ready:false,inGame:false,lastSeen:null}))).map(p=>
+          {(monitor?.participants??(["mitko","borko","enchev"] as Role[]).map(role=>({role,online:false,ready:false,inGame:false,lastSeen:null}))).map(p=>
             <article className={"eaMonitorPerson "+(p.online?"online":"offline")} key={p.role}>
               <div className="eaMonitorAvatar">{roleName[p.role].slice(0,1)}</div>
-              <div className="eaMonitorPersonBody"><strong>{roleName[p.role]}</strong><small>{p.role==="enchev"?"OBSERVER":"BIDDER"}</small>
+              <div className="eaMonitorPersonBody"><strong>{roleName[p.role]}</strong><small>BIDDER</small>
                 <span className={"eaMonitorBadge "+(p.inGame?"playing":p.ready?"ready":p.online?"waiting":"away")}>
                   {p.inGame?"● IN AUCTION":p.ready?"✓ READY":p.online?"○ WAITING":"— OFFLINE"}
                 </span>
@@ -113,7 +113,7 @@ export default function Etap1AdminMonitor() {
         </div>
         <div className="eaMonitorHelp">
           <strong>ROUND ADMISSION RULE</strong>
-          <p>Mitko, Borko and Enchev must join. Krum is optional, but if online before the last READY, also has to press READY. Only a fresh explicit READY admits a session; refresh/login alone cannot start an auction. Admin is not counted as a bidder.</p>
+          <p>Exactly three bidders: Mitko, Borko, and Enchev. The first round starts automatically when all three log in. After the winner, everyone must explicitly READY to begin the next round. Admin can watch at any time and is never counted.</p>
         </div>
       </section>
       <section className="eaMonitorBottom">
