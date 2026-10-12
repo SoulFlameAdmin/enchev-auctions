@@ -11,7 +11,8 @@ type Auction = {
   startedAt:string;endsAt:string;closedAt:string|null;
 };
 type Snapshot = {status:"idle"|"live"|"closed";demo:true;serverNow:string;auction:Auction|null;bids:Bid[]};
-type StateReply = {authenticated?:boolean;available?:boolean;role?:Role;state?:Snapshot;error?:string};
+type Lobby = {count:number;readyCount:number;minPlayers:number;participants:{role:string;ready:boolean}[]};
+type StateReply = {authenticated?:boolean;available?:boolean;role?:Role;state?:Snapshot;lobby?:Lobby;error?:string};
 
 const labelRole=(role:string|null)=>role==="mitko"?"Mitko":role==="borko"?"Borko":role==="enchev"?"Enchev":role==="admin"?"Admin":"No bidder";
 const money=(value:number)=>new Intl.NumberFormat("bg-BG",{style:"currency",currency:"EUR",maximumFractionDigits:2}).format(value);
@@ -21,6 +22,7 @@ export default function EnchevStageOnePage(){
   const [loginRole,setLoginRole]=useState<Role>("mitko");
   const [code,setCode]=useState("");
   const [snapshot,setSnapshot]=useState<Snapshot|null>(null);
+  const [lobby,setLobby]=useState<Lobby|null>(null);
   const [available,setAvailable]=useState(true);
   const [connected,setConnected]=useState(false);
   const [error,setError]=useState("");
@@ -80,6 +82,7 @@ export default function EnchevStageOnePage(){
       }
       if(!response.ok||!data.authenticated||!data.state)throw new Error(data.error??"Service unavailable");
       setRole(data.role??null);setConnected(true);
+      if(data.lobby)setLobby(data.lobby);
       applySnapshot(data.state);
     }catch{
       setConnected(false);
@@ -102,6 +105,7 @@ export default function EnchevStageOnePage(){
     const result=await response.json() as StateReply&{ok?:boolean};
     if(!response.ok)throw new Error(result.error??"Request rejected");
     if(result.state)applySnapshot(result.state);
+    if(result.lobby)setLobby(result.lobby);
     return result;
   };
 
@@ -118,7 +122,7 @@ export default function EnchevStageOnePage(){
   const logOut=async()=>{
     if(busy)return;
     setBusy(true);
-    try{await post("logout",{});setRole(null);setSnapshot(null);lastRef.current=null;}
+    try{await post("logout",{});setRole(null);setSnapshot(null);setLobby(null);lastRef.current=null;}
     catch{setError("Sign out failed");}
     finally{setBusy(false);}
   };
@@ -127,6 +131,13 @@ export default function EnchevStageOnePage(){
     setBusy(true);setError("");
     try{await post("start",{title:lotTitle,openingAmount:opening,increment,durationSeconds:duration});}
     catch(e){setError(e instanceof Error?e.message:"Cannot start auction");}
+    finally{setBusy(false);}
+  };
+  const setReady=async(next:boolean)=>{
+    if(busy||!connected||snapshot?.status==="live")return;
+    setBusy(true);setError("");
+    try{await post("ready",{ready:next});}
+    catch(e){setError(e instanceof Error?e.message:"Cannot change READY status");void poll();}
     finally{setBusy(false);}
   };
   const bid=async()=>{
@@ -152,6 +163,8 @@ export default function EnchevStageOnePage(){
   const minutes=String(Math.floor(remaining/60)).padStart(2,"0");
   const seconds=String(remaining%60).padStart(2,"0");
   const bidder=role==="mitko"||role==="borko";
+  const participant=bidder||role==="enchev";
+  const myReady=Boolean(lobby?.participants.some(p=>p.role===role&&p.ready));
   const latest=snapshot?.bids??[];
 
   return <main id="main-content" className="eaEtap1">
@@ -187,8 +200,19 @@ export default function EnchevStageOnePage(){
         <div><button type="button" onClick={()=>void enableSound()} aria-pressed={soundOn}>{soundOn?"🔊 SOUND ON":"🔇 ENABLE SOUND"}</button>
           <button type="button" onClick={()=>void poll()}>↻ Sync</button><button type="button" onClick={()=>void logOut()}>Sign out</button></div>
       </div>
+      {snapshot?.status!=="live"&&<section className="eaEtap1Ready">
+        <div><span className="eaEtap1Kicker">AUTOMATIC LIVE START · DEMO ROOM</span>
+          <h2>READY lobby</h2>
+          <p>Търгът започва автоматично, когато поне двама присъстващи са натиснали READY и всички онлайн участници са готови. Третият участник също се изчаква, ако вече е влязъл.</p>
+          <strong>{lobby?.readyCount??0} / {lobby?.count??0} READY · Minimum 2 participants</strong>
+          <div className="eaEtap1ReadyUsers">{(lobby?.participants??[]).map(p=><span key={p.role}>{labelRole(p.role)} · {p.ready?"✅ READY":"⏳ WAITING"}</span>)}</div>
+        </div>
+        {participant?<button type="button" className="eaEtap1ReadyButton" onClick={()=>void setReady(!myReady)} disabled={!connected||busy}>
+          {busy?"Updating…":myReady?"✓ READY — Cancel":"✓ I AM READY"}
+        </button>:<div className="eaEtap1Observer">Admin is not counted. Participants start the demo themselves.</div>}
+      </section>}
       {role==="admin"&&snapshot?.status!=="live"&&<section className="eaEtap1Admin">
-        <div><span className="eaEtap1Kicker">AUCTION CONTROL</span><h2>Start a new test vehicle</h2><p>Each start creates a new immutable auction ID. Previous bids remain preserved.</p></div>
+        <div><span className="eaEtap1Kicker">AUCTION CONTROL</span><h2>Optional admin override</h2><p>Participants normally start automatically through READY. Use this form only for manual recovery tests. Each round gets a new auction ID.</p></div>
         <form onSubmit={start}>
           <label>VEHICLE<input value={lotTitle} onChange={e=>setLotTitle(e.target.value)} minLength={4} maxLength={120} required/></label>
           <label>OPENING €<input type="number" min="100" max="10000000" step="1" value={opening} onChange={e=>setOpening(Number(e.target.value))} required/></label>
@@ -223,7 +247,7 @@ export default function EnchevStageOnePage(){
           ):<p>Waiting for first bid…</p>}</div>
           <div className="eaEtap1Notes"><b>ANTI-SNIPING ACTIVE</b><p>Accepted bids in the final 10 seconds extend the authoritative deadline to 10 seconds after the bid.</p><b>SYNC INTERVAL · 1 SECOND</b><p>Near-real-time updates use repeated server snapshots. No fake browser-only bidding.</p></div>
         </aside>
-      </section>:<section className="eaEtap1Waiting"><span className="eaEtap1Kicker">STANDBY</span><h2>Awaiting auction start</h2><p>The admin starts a round; every authenticated device then sees the same lot and server deadline.</p></section>}
+      </section>:<section className="eaEtap1Waiting"><span className="eaEtap1Kicker">STANDBY</span><h2>Waiting for READY</h2><p>At least two online participants press READY. The server then starts the same demo lot for everyone automatically.</p></section>}
     </>}
     <footer className="eaEtap1Footer">ENCHEV AUCTIONS · ETAP 1 PILOT · ISOLATED TEST DATA · NOT AN OFFER OR PAYMENT SERVICE</footer>
   </main>;
