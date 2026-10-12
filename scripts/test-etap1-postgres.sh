@@ -306,3 +306,95 @@ begin
 end $$;
 SQL
 echo "ETAP1 SESSION ADMISSION INTEGRATION PASS: three-person minimum roster, session-bound READY, winner->lobby, re-login blocked, admitted bids."
+
+# ENCHEV 3-BIDDER AUTO-JOIN: this is a NEW migration, after the historical
+# four-user fixture above. Old Krum bids remain, but Krum cannot rejoin.
+psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261013000100_enchev_three_bidder_auto_join.sql
+psql -X -v ON_ERROR_STOP=1 <<'SQL'
+do $$
+declare
+  m1 uuid := 'c1111111-1111-4111-8111-111111111111';
+  b1 uuid := 'c2222222-2222-4222-8222-222222222222';
+  e1 uuid := 'c3333333-3333-4333-8333-333333333333';
+  e2 uuid := 'c4444444-4444-4444-8444-444444444444';
+  v jsonb;
+  first_auction uuid;
+begin
+  -- Leave the prior fixture closed, and prevent ghost legacy sessions.
+  update public.enchev_etap1_auctions set ends_at=clock_timestamp()-interval '1 second'
+    where id=(select active_auction_id from public.enchev_etap1_rooms where name='stage-one');
+  perform public.etap1_snapshot();
+  update public.enchev_etap1_presence set last_seen=clock_timestamp()-interval '1 minute',is_ready=false;
+  -- Even if a Krum session is still present, it cannot participate in START.
+  update public.enchev_etap1_presence set last_seen=clock_timestamp(),is_ready=true
+    where role='krum';
+
+  v := public.etap1_join_lobby_automatic('mitko',m1);
+  if v->'state'->>'status'='live' or (v->'lobby'->>'readyCount')::int<>1 then
+    raise exception 'First login wrongly started auction: %',v;
+  end if;
+  v := public.etap1_join_lobby_automatic('borko',b1);
+  if v->'state'->>'status'='live' or (v->'lobby'->>'readyCount')::int<>2
+       or (v->'lobby'->>'count')::int<>2 then
+    raise exception 'Second login or old Krum started auction: %',v;
+  end if;
+  v := public.etap1_ready_lobby_secure('admin',null,null,false);
+  if v->'state'->>'status'='live' then
+    raise exception 'Admin opened monitor and accidentally started round';
+  end if;
+  v := public.etap1_join_lobby_automatic('enchev',e1);
+  if v->'state'->>'status'<>'live' or v->'lobby'->>'admitted'<>'true'
+      or (v->'lobby'->>'count')::int<>3 then
+    raise exception 'Third login did not start exactly three-bidder auction: %',v;
+  end if;
+  first_auction := (v->'state'->'auction'->>'id')::uuid;
+
+  v := public.etap1_bid_admitted('enchev',e1,gen_random_uuid());
+  if v->'auction'->>'leadingRole'<>'enchev'
+      or (v->'auction'->>'currentAmount')::numeric<>16350 then
+    raise exception 'Enchev did not receive server-confirmed 100 EUR bid: %',v;
+  end if;
+
+  begin
+    perform public.etap1_join_lobby_automatic('krum',gen_random_uuid());
+    raise exception 'Krum was incorrectly admitted';
+  exception when raise_exception then
+    if sqlerrm='Krum was incorrectly admitted' then raise; end if;
+  end;
+
+  -- Same-role relogin DURING LIVE stays in the lobby and cannot bid.
+  v := public.etap1_join_lobby_automatic('enchev',e2);
+  if v->'lobby'->>'admitted' <> 'false'
+     or (v->'state'->'auction'->>'id')::uuid<>first_auction then
+    raise exception 'Late/replaced Enchev session bypassed admission';
+  end if;
+  begin
+    perform public.etap1_bid_admitted('enchev',e2,gen_random_uuid());
+    raise exception 'Re-login inherited an admission';
+  exception when raise_exception then
+    if sqlerrm='Re-login inherited an admission' then raise; end if;
+  end;
+
+  -- Winner -> no automatic next round on GET/heartbeat/admin refresh.
+  update public.enchev_etap1_auctions set ends_at=clock_timestamp()-interval '1 second' where id=first_auction;
+  perform public.etap1_snapshot();
+  perform public.etap1_ready_lobby_secure('admin',null,null,false);
+  v := public.etap1_ready_lobby_secure('mitko',m1,null,false);
+  if v->'state'->>'status'<>'closed' then raise exception 'Polling restarted after winner'; end if;
+
+  v:=public.etap1_ready_lobby_secure('mitko',m1,true,false);
+  if v->'state'->>'status'='live' then raise exception 'One READY started a new round'; end if;
+  v:=public.etap1_ready_lobby_secure('borko',b1,true,false);
+  if v->'state'->>'status'='live' then raise exception 'Two READY started a new round'; end if;
+  v:=public.etap1_ready_lobby_secure('enchev',e2,true,false);
+  if v->'state'->>'status'<>'live' or v->'lobby'->>'admitted'<>'true'
+     or (v->'state'->'auction'->>'id')::uuid=first_auction then
+    raise exception 'Second round failed or reused auction ID: %',v;
+  end if;
+end $$;
+SQL
+
+if psql -X -v ON_ERROR_STOP=1 -c "set role anon; select public.etap1_join_lobby_automatic('mitko',gen_random_uuid());" >/tmp/etap1_join_anon.out 2>&1; then
+  echo "FAIL: anon can call privileged auto-join RPC" >&2; exit 1
+fi
+echo "ETAP1 THREE BIDDER INTEGRATION PASS: 3-person login auto-start, Enchev bid, Krum excluded, admin independent, secure winner/rejoin."
