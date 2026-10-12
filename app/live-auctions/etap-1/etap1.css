@@ -291,3 +291,19 @@ body:has(.eaRoom){background:#060a08;color:#effaf3}
 .eaMonitorEntry a{display:inline-flex;align-items:center;min-height:42px;padding:10px 16px;border:1px solid #80ffb3;border-radius:8px;background:#76eaaa;color:#062017;font-size:12px;font-weight:950;text-decoration:none}
 .eaMonitorEntry small{color:#b5e0c2;font-size:11px}
 .eaOperatorNote{color:#aadfba;background:#122819;border-left:3px solid #5cf29d;padding:12px;font-size:11px;line-height:1.6}
+
+/* Durable server-confirmed DEMO closing result, visible after refresh and on all devices. */
+.eaFinalResult{margin:16px 0;padding:clamp(16px,3vw,25px);border:1px solid #62d597;border-radius:15px;background:linear-gradient(130deg,#102919,#18351e);color:#f6fff7}
+.eaFinalEyebrow{display:block;color:#93f7bb;font-size:10px;letter-spacing:.14em;font-weight:900}
+.eaFinalResult h2{margin:12px 0 6px!important;color:#fafff9;font-size:clamp(20px,3vw,29px)!important;line-height:1.2!important}
+.eaFinalResult p{color:#c9e9d4;font-size:12px;line-height:1.6}
+.eaFinalAmount{display:block;margin:9px 0 16px;font-size:clamp(30px,6vw,45px);font-weight:950;color:#adffca}
+.eaFinalFacts{display:flex;flex-wrap:wrap;gap:10px;margin:0 0 16px}
+.eaFinalFacts span{flex:1 1 120px;padding:9px 11px;background:#0b2216;border:1px solid #365d41;border-radius:8px;color:#a4cbb2;font-size:10px}
+.eaFinalFacts b{display:block;margin-top:4px;color:#fff;font-size:14px;overflow-wrap:anywhere}
+.eaFinalNext{padding:11px;border-left:3px solid #a2ffb8;background:#0b2316}
+.eaFinalActions{display:flex;gap:10px;flex-wrap:wrap;margin:14px 0}
+.eaFinalResult .eaFinalActions button{padding:12px 16px;min-height:44px;border:1px solid #8af8b5;border-radius:9px;background:#b2ffd2;color:#063118;font-size:12px;font-weight:900;cursor:pointer}
+.eaFinalResult .eaFinalActions button+button{background:transparent;color:#dcffeb}
+.eaFinalResult small{color:#c2e7cc;font-size:10px;line-height:1.5}
+@media(max-width:480px){.eaFinalResult{padding:15px 13px}.eaFinalResult .eaFinalActions button{width:100%}.eaFinalFacts span{flex-basis:45%;min-width:0}.eaFinalFacts b{font-size:12px}}
