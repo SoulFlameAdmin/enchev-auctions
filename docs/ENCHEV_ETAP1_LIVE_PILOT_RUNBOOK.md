@@ -81,3 +81,23 @@ This catches implementation safety contracts, not actual database behavior.
 - DNS, live DB configuration and acceptance on real devices are still external gates.
 - This code is **not** intended to be merged into or activated on production before
   evidence review and explicit release approval.
+
+
+## READY lobby upgrade — 12 October 2026
+- Pilot participants Mitko, Borko and observer Enchev can each mark themselves READY.
+- A server-side presence heartbeat via signed-in `GET /api/etap1/state` updates their
+  last-seen timestamp every second; disconnected roles disappear after 15 seconds.
+- With **at least two** online participants, when **every online participant** is READY,
+  the dedicated Supabase database automatically starts a **120-second** fake-money
+  Golf GTI lot at **€16,250**, €100 increments.
+- If all three participants are online, the server waits for all three.
+  Enchev can READY but cannot bid. The administrator is not required and is excluded.
+- Concurrency is serialized on the singleton room row; each new round uses a new UUID
+  and resets READY flags. No duplicate start or erased bid history.
+- This feature has a new **additive** database migration:
+  `supabase/migrations/20261012033000_enchev_etap1_ready_lobby.sql`.
+- Privileged READY RPC remains service_role-only; role is sourced from the signed
+  HTTP-only session cookie, never from a browser-provided actor field.
+- Keep the existing manual admin start as fallback; new participant self-start is default.
+- A successful CI build or database migration does not prove device-level readiness.
+  Verify on 2 and 3 real devices, sound opt-in, bid ordering, timer and winner.
