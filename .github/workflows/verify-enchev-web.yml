@@ -111,8 +111,16 @@ jobs:
         run: node scripts/verify-supabase-project-binding.mjs
       - name: Supabase project binding self-tests
         run: node scripts/verify-supabase-project-binding.mjs --self-test
+      # Shared development-governance is not the isolated auction authority.
+      # Main must fail closed if the legacy governance store cannot be checked.
       - name: Supabase project live endpoint
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: node scripts/verify-supabase-project-binding.mjs --live
+      # Pilot PR builds only: explicit HTTP 402 warning, no silent catch-all.
+      # The separate ENCHEV ETAP1 Pilot Safety workflow stays a hard gate.
+      - name: Legacy governance preview status
+        if: github.event_name == 'pull_request'
+        run: node scripts/verify-supabase-project-binding.mjs --preview-live
       - name: 01.07 Local / staging / production environments
         run: node scripts/verify-runtime-environments.mjs
       - name: 01.07 Local / staging / production environments self-tests
