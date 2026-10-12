@@ -35,7 +35,7 @@ const gates=[
   ["database deterministic close",sql.includes("set status='closed'") && sql.includes("v_auction.leading_role")],
   ["database RLS on all three tables",["auctions","rooms","bids"].every(x=>sql.includes("alter table public.enchev_etap1_"+x+" enable row level security"))],
   ["explicit service_role-only RPC",sql.includes("grant execute on function public.etap1_bid(text,uuid) to service_role")],
-  ["independent live observer and bidders",client.includes('role==="mitko"||role==="borko"') && client.includes("Enchev · observer")],
+  ["three live bidders with independent admin",client.includes('role==="mitko"||role==="borko"||role==="enchev"') && client.includes('Enchev — bidder')],
   ["exact three current invited bidders and independent admin",
     !gateway.includes('ENCHEV_ETAP1_KRUM_CODE') &&
     !client.includes('<option value="krum">') &&
