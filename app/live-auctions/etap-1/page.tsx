@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import Etap1DemoVehicle from "./Etap1DemoVehicle";
 import "./etap1.css";
 
 type Role = "admin"|"mitko"|"borko"|"enchev";
@@ -37,6 +38,9 @@ export default function EnchevStageOnePage(){
   const [detailTab,setDetailTab]=useState("History");
   const [voiceLang,setVoiceLang]=useState("en-IE");
   const [voiceOn,setVoiceOn]=useState(false);
+  const [bidFlash,setBidFlash]=useState<{sequence:number;amount:number;role:string}|null>(null);
+  const [celebratingId,setCelebratingId]=useState<string|null>(null);
+  const [roundLockKey,setRoundLockKey]=useState<string|null>(null);
   const voiceRef=useRef(false);
   const voiceLangRef=useRef("en-IE");
   const audioRef=useRef<AudioContext|null>(null);
@@ -67,6 +71,8 @@ export default function EnchevStageOnePage(){
       const prior=lastRef.current;
       if(prior?.id===next.auction.id){
         if(next.auction.sequence>prior.sequence){
+          const lastAccepted=next.bids[0];
+          if(lastAccepted)setBidFlash({sequence:lastAccepted.sequence,amount:Number(lastAccepted.amount),role:lastAccepted.role});
           play("bid");
           if(voiceRef.current&&typeof window!=="undefined"&&"speechSynthesis" in window){
             const last=next.bids[0];
@@ -87,12 +93,20 @@ export default function EnchevStageOnePage(){
           }
         }
         if(next.status==="closed"&&prior.status!=="closed"){
+          if(next.auction.winnerRole)setCelebratingId(next.auction.id);
           play("close");
           if(voiceRef.current&&typeof window!=="undefined"&&"speechSynthesis" in window){
-            const speech=new SpeechSynthesisUtterance(next.auction.winnerRole
-              ? ("Auction finished. Winner "+labelRole(next.auction.winnerRole))
-              : "Auction finished. No bids.");
+            const bg=voiceLangRef.current.startsWith("bg");
+            const speech=new SpeechSynthesisUtterance(
+              next.auction.winnerRole
+                ? (bg?"Търгът приключи. Победител ": "Auction finished. Winner ")+labelRole(next.auction.winnerRole)+
+                  (bg?" с цена ":" with final price ")+Math.round(Number(next.auction.currentAmount))+(bg?" евро.":" euros.")
+                : (bg?"Търгът приключи без оферти.":"Auction finished. No bids.")
+            );
             speech.lang=voiceLangRef.current;
+            const preferred=window.speechSynthesis.getVoices().find(v=>v.lang===speech.lang&&v.name.includes("Emily"))||
+              window.speechSynthesis.getVoices().find(v=>v.lang===speech.lang);
+            if(preferred)speech.voice=preferred;
             window.speechSynthesis.cancel();window.speechSynthesis.speak(speech);
           }
         }
@@ -130,6 +144,17 @@ export default function EnchevStageOnePage(){
     return()=>{window.clearInterval(id);window.clearInterval(tick);void audioRef.current?.close();};
   },[poll]);
 
+  useEffect(()=>{
+    if(!bidFlash)return;
+    const timeout=window.setTimeout(()=>setBidFlash(null),3400);
+    return()=>window.clearTimeout(timeout);
+  },[bidFlash]);
+  useEffect(()=>{
+    if(!celebratingId)return;
+    const timeout=window.setTimeout(()=>setCelebratingId(null),5600);
+    return()=>window.clearTimeout(timeout);
+  },[celebratingId]);
+
   const post=async(action:string,data:Record<string,unknown>)=>{
     const response=await fetch("/api/etap1/"+action,{
       method:"POST",credentials:"same-origin",
@@ -156,7 +181,7 @@ export default function EnchevStageOnePage(){
   const logOut=async()=>{
     if(busy)return;
     setBusy(true);
-    try{await post("logout",{});setRole(null);setSnapshot(null);setLobby(null);lastRef.current=null;}
+    try{await post("logout",{});setRole(null);setSnapshot(null);setLobby(null);setBidFlash(null);setCelebratingId(null);setRoundLockKey(null);lastRef.current=null;}
     catch{setError("Sign out failed");}
     finally{setBusy(false);}
   };
@@ -175,11 +200,41 @@ export default function EnchevStageOnePage(){
     finally{setBusy(false);}
   };
   const bid=async()=>{
-    if(busy||!connected||snapshot?.status!=="live")return;
+    const auctionId=snapshot?.auction?.id;
+    const timeKey=Math.floor((Date.now()+offsetRef.current)/5000);
+    const lockKey=auctionId+":"+timeKey;
+    if(busy||!connected||snapshot?.status!=="live"||!auctionId||
+      Date.parse(snapshot.auction.endsAt)<=Date.now()+offsetRef.current||roundLockKey===lockKey)return;
     setBusy(true);setError("");
-    try{await post("bid",{nonce:crypto.randomUUID()});}
+    try{
+      await post("bid",{nonce:crypto.randomUUID()});
+      // This is a browser UI click guard, not a new server-side bidding rule.
+      setRoundLockKey(lockKey);
+    }
     catch(e){setError(e instanceof Error?e.message:"Bid rejected");void poll();}
     finally{setBusy(false);}
+  };
+  const enableVoice=()=>{
+    if(voiceOn){
+      voiceRef.current=false;setVoiceOn(false);
+      if("speechSynthesis" in window)window.speechSynthesis.cancel();
+      return;
+    }
+    if(!("speechSynthesis" in window)||!("SpeechSynthesisUtterance" in window)){
+      setError("This device does not support auctioneer voice. Bid tones can still work.");
+      return;
+    }
+    voiceRef.current=true;setVoiceOn(true);
+    const speech=new SpeechSynthesisUtterance(voiceLangRef.current.startsWith("bg")
+      ?"Гласът на търга е включен. Готови за наддаване."
+      :"Auctioneer ready. Welcome to ENCHEV.");
+    speech.lang=voiceLangRef.current;
+    const voices=window.speechSynthesis.getVoices();
+    const preferred=voices.find(v=>v.lang===speech.lang&&v.name.includes("Emily"))||
+      voices.find(v=>v.lang===speech.lang)||
+      voices.find(v=>v.lang.split("-")[0]===speech.lang.split("-")[0]);
+    if(preferred)speech.voice=preferred;
+    window.speechSynthesis.cancel();window.speechSynthesis.speak(speech);
   };
   const enableSound=async()=>{
     try{
@@ -203,10 +258,17 @@ export default function EnchevStageOnePage(){
   const currentPrice=auction?.currentAmount??opening;
   const nextPrice=currentPrice+(auction?.increment??increment);
   const status=snapshot?.status??"idle";
-  const timeUntil=Math.max(0,Math.round(remainingMs/1000));
+  const timeUntil=Math.max(0,Math.ceil(remainingMs/1000));
+  const serverSeconds=localNow+offsetRef.current;
+  const clockTotalMs=auction?Math.max(10000,Date.parse(auction.endsAt)-Date.parse(auction.startedAt)):10000;
+  const clockProgress=status==="live"?Math.min(100,Math.max(0,remainingMs/clockTotalMs*100)):status==="closed"?0:100;
+  const clockStyle={"--ev9-progress":clockProgress+"%"} as CSSProperties;
+  const currentRoundKey=(auction?.id??"none")+":"+Math.floor(serverSeconds/5000);
+  const roundLocked=roundLockKey===currentRoundKey;
+  const canBid=status==="live"&&bidder&&connected&&!busy&&timeUntil>0&&!roundLocked;
   const phaseStep=status==="live"?2:status==="closed"?3:0;
   const views=["FRONT","REAR","INTERIOR","DETAIL","SIDE"];
-  const visibleRound=5-Math.floor((localNow+offsetRef.current)/1000)%5;
+  const visibleRound=5-Math.floor(serverSeconds/1000)%5;
   const tabs=["Details","Photos","History","Documents","Transport","Condition"];
 
   return <main id="main-content" className="eaEtap1 ev9App">
@@ -280,7 +342,9 @@ export default function EnchevStageOnePage(){
           <div className="ev9ColHead"><b>VEHICLE MEDIA</b><span>5 VIEWS · ILLUSTRATIVE</span></div>
           <div className="ev9Media">
             <div className="ev9CarBackdrop">
-              <svg viewBox="0 0 680 430" role="img" aria-label="Illustrative demo vehicle — no actual listing photography">
+              <Etap1DemoVehicle view={mediaView}/>
+              <div hidden>
+              <svg viewBox="0 0 680 430" role="img" aria-label="Legacy concept vehicle graphic">
                 <defs>
                   <linearGradient id="ev9Paint" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#f4f9f7"/><stop offset=".5" stopColor="#9bb9b3"/><stop offset="1" stopColor="#43665d"/></linearGradient>
                   <linearGradient id="ev9Glass"><stop stopColor="#12312d"/><stop offset="1" stopColor="#071614"/></linearGradient>
@@ -300,10 +364,11 @@ export default function EnchevStageOnePage(){
                 <text x="26" y="51" fill="#b0f9e0" fontSize="17" fontWeight="800">ENCHEV · DEMO VEHICLE</text>
                 <text x="26" y="80" fill="#7aa599" fontSize="12">{mediaView+" VIEW · ARTIST ILLUSTRATION"}</text>
               </svg>
+              </div>
             </div>
             <div className="ev9MediaBadges"><span>LOT · DEMO</span><span className="good">✓ TEST VEHICLE</span></div>
             <div className="ev9CarOverlay">
-              <div className={"ev9ClockRing "+(status==="live"?"live":status==="closed"?"closed":"idle")}>
+              <div className={"ev9ClockRing "+(status==="live"?(timeUntil<=10?"live is-urgent":"live"):status==="closed"?"closed":"idle")} style={clockStyle}>
                 <span>{status==="live"?"SERVER TIME":status==="closed"?"COMPLETE":"WAITING"}</span>
                 <strong>{status==="live"?minutes+":"+seconds:status==="closed"?"🏆":"READY"}</strong>
                 <small>{status==="live"?"UNTIL CLOSE":status==="closed"?"WINNER":"TO START"}</small>
@@ -339,35 +404,32 @@ export default function EnchevStageOnePage(){
                 <div className="ev9NextBox"><small>NEXT VALID OFFER</small><b>{money(nextPrice)}</b></div>
                 <div className="ev9Increment">SERVER BID STEP <b>+ {money(auction?.increment??increment)}</b></div>
               </div>
-              <div className={"ev9BidCircle "+(status==="live"?"is-live":status==="closed"?"is-closed":"is-pending")}>
+              <div className={"ev9BidCircle "+(status==="live"?(timeUntil<=10?"is-live is-urgent":"is-live"):status==="closed"?"is-closed":"is-pending")} style={clockStyle}>
                 <div className="ev9CircleInner"><small>ENCHEV</small><b>{status==="live"?"BID":status==="closed"?"SOLD":"READY"}</b><span>{status==="live"?minutes+":"+seconds:status==="closed"?"🏆":"●"}</span></div>
               </div>
             </div>
             <div className="ev9Round">
-              <div className="ev9RoundHead"><strong>5-SECOND AUCTION RHYTHM</strong><small>Visual pacing · bids controlled by server</small></div>
+              <div className="ev9RoundHead"><strong>5-SECOND BID RHYTHM</strong><small>{roundLocked?"Your next click unlocks after this round":"Local click guard · final authority on server"}</small></div>
               <div className="ev9RoundSteps">{[5,4,3,2,1].map(n=><span key={n} className={visibleRound===n?"active":""}>{n}</span>)}<b>BID</b></div>
             </div>
             <div className="ev9BidActions">
               <label>YOUR NEXT BID (€)<input type="text" readOnly value={nextPrice.toLocaleString("bg-BG",{maximumFractionDigits:2})} aria-label="Server-controlled next bid amount"/></label>
               <div className="ev9QuickButtons"><button type="button" disabled>+250</button><button type="button" disabled>+500</button><button type="button" disabled>+1000</button><span>Custom steps pending backend approval</span></div>
-              {status==="live"&&bidder?<button className="ev9PrimaryBid" type="button" onClick={()=>void bid()} disabled={!connected||busy||timeUntil<=0}>
-                {busy?"PROCESSING…":"PLACE LIVE DEMO BID · "+money(nextPrice)}
+              {status==="live"&&bidder?<button className="ev9PrimaryBid" type="button" onClick={()=>void bid()} disabled={!canBid}>
+                {busy?"PROCESSING…":roundLocked?"NEXT ROUND IN "+visibleRound+"s":"PLACE DEMO BID · "+money(nextPrice)}
               </button>:<div className="ev9BidDisabled">{status==="closed"?"AUCTION ENDED · BIDDING LOCKED":!bidder?"OBSERVE ONLY · NO BID PERMISSION":"WAITING FOR READY / AUCTION START"}</div>}
             </div>
             {status==="closed"&&<div className="ev9Winner"><span>🏆 SERVER-VERIFIED RESULT</span>
               <strong>{auction?.winnerRole?labelRole(auction.winnerRole)+" WINS":"NO BIDS · NO SALE"}</strong>
               <b>{money(currentPrice)}</b><small>Demo result only. No payment or vehicle transfer.</small>
-              <div className="ev9Confetti" aria-hidden="true">✦ ✧ ✦ ✧ ✦</div>
+              <div className="ev9WinVerification"><span>LOT {auction?.id.slice(0,8).toUpperCase()} · ACCEPTED BIDS {auction?.sequence??0}</span><b>SERVER CONFIRMED · DEMO ONLY</b></div>
             </div>}
             <div className="ev9VoicePanel">
               <div><b>🔊 AUCTIONEER VOICE</b><small>System speech synthesis · optional</small></div>
               <select aria-label="Auctioneer voice language" value={voiceLang} onChange={e=>{setVoiceLang(e.target.value);voiceLangRef.current=e.target.value;}}>
                 <option value="en-IE">EN · English (Ireland)</option><option value="bg-BG">BG · Български</option>
               </select>
-              <button type="button" aria-pressed={voiceOn} onClick={()=>{
-                const next=!voiceOn;voiceRef.current=next;setVoiceOn(next);
-                if(!next&&typeof window!=="undefined"&&"speechSynthesis" in window)window.speechSynthesis.cancel();
-              }}>{voiceOn?"VOICE ON":"VOICE OFF"}</button>
+              <button type="button" aria-pressed={voiceOn} onClick={enableVoice}>{voiceOn?"VOICE ON":"VOICE OFF · PREVIEW"}</button>
             </div>
           </div>
         </div>
@@ -403,6 +465,22 @@ export default function EnchevStageOnePage(){
           <><h3>{detailTab.toUpperCase()} · PREVIEW</h3><p>This tab is a UI placeholder for the future ENCHEV marketplace. No {detailTab.toLowerCase()} services or documents are connected in this closed pilot.</p></>}
         </div>
       </section>
+      {bidFlash&&<div className="ev9AcceptedToast" role="status" aria-live="polite" key={bidFlash.sequence}>
+        <span>✓ SERVER ACCEPTED · BID #{bidFlash.sequence}</span><strong>{money(bidFlash.amount)}</strong><small>New leader · {labelRole(bidFlash.role)}</small>
+      </div>}
+      {celebratingId===auction?.id&&auction?.winnerRole&&
+        <div className="ev9Celebration" aria-hidden="true" key={celebratingId}>
+          {Array.from({length:34},(_,i)=><i key={i} style={{
+            "--ev9-x":((i*37)%100)+"%",
+            "--ev9-delay":((i*17)%15)*.08+"s",
+            "--ev9-drift":((i%2?1:-1)*(18+i%7*7))+"px",
+            "--ev9-turn":((i%2?1:-1)*540)+"deg",
+          } as CSSProperties}/>)}
+        </div>}
+      {status==="live"&&bidder&&<div className="ev9MobileBidDock">
+        <div><small>SERVER BID · {minutes}:{seconds} LEFT</small><strong>{money(nextPrice)}</strong></div>
+        <button type="button" onClick={()=>void bid()} disabled={!canBid}>{busy?"…":roundLocked?"WAIT "+visibleRound+"s":"BID NOW ↗"}</button>
+      </div>}
       {!connected&&<div className="eaEtap1Alert" role="alert">Disconnected — server bids disabled until connection returns.</div>}
     </>}
     <footer className="eaEtap1Footer">ENCHEV AUCTIONS · PR #375 CLOSED PILOT · FAKE MONEY · NOT A REAL OFFER OR PAYMENT SERVICE</footer>
