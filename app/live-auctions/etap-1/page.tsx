@@ -179,7 +179,7 @@ export default function EnchevStageOnePage(){
         <option value="mitko">Mitko · bidder</option><option value="borko">Borko · bidder</option>
         <option value="enchev">Enchev · observer</option><option value="admin">Admin · auction operator</option>
       </select></label>
-        <label>INVITATION CODE<input type="password" autoComplete="off" minLength={16} maxLength={256} value={code} onChange={event=>setCode(event.target.value)} placeholder="Private pilot access code" required/></label>
+        <label>INVITATION CODE<input type="password" autoComplete="off" minLength={loginRole==="admin"?16:4} maxLength={256} value={code} onChange={event=>setCode(event.target.value)} placeholder="Private pilot access code" required/></label>
         <button type="submit" disabled={busy||!available}>{busy?"Connecting…":"Enter auction room →"}</button>
       </form>
     </section>:<>
