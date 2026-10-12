@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from "re
 import Etap1DemoVehicle from "./Etap1DemoVehicle";
 import "./etap1.css";
 
-type Role = "admin"|"mitko"|"borko"|"krum"|"enchev";
+type Role = "admin"|"mitko"|"borko"|"enchev";
 type Bid = {sequence:number;role:string;amount:number;at:string};
 type Auction = {
   id:string;title:string;currency:"EUR";openingAmount:number;currentAmount:number;
@@ -15,7 +15,7 @@ type Snapshot = {status:"idle"|"live"|"closed";demo:true;serverNow:string;auctio
 type Lobby = {count:number;readyCount:number;minPlayers:number;admitted?:boolean;sessionCurrent?:boolean;participants:{role:string;ready:boolean}[]};
 type StateReply = {authenticated?:boolean;available?:boolean;role?:Role;state?:Snapshot;lobby?:Lobby;error?:string};
 
-const labelRole=(role:string|null)=>role==="mitko"?"Mitko":role==="borko"?"Borko":role==="krum"?"Krum":role==="enchev"?"Enchev":role==="admin"?"Admin":"No bidder";
+const labelRole=(role:string|null)=>role==="mitko"?"Mitko":role==="borko"?"Borko":role==="enchev"?"Enchev":role==="admin"?"Admin":"No bidder";
 const money=(value:number)=>new Intl.NumberFormat("bg-BG",{style:"currency",currency:"EUR",maximumFractionDigits:2}).format(value);
 
 export default function EnchevStageOnePage(){
@@ -263,8 +263,8 @@ export default function EnchevStageOnePage(){
   const remaining= Math.max(0,Math.ceil(remainingMs/1000));
   const minutes=String(Math.floor(remaining/60)).padStart(2,"0");
   const seconds=String(remaining%60).padStart(2,"0");
-  const bidder=role==="mitko"||role==="borko"||role==="krum";
-  const participant=bidder||role==="enchev";
+  const bidder=role==="mitko"||role==="borko"||role==="enchev";
+  const participant=bidder;
   const myReady=Boolean(lobby?.participants.some(p=>p.role===role&&p.ready));
   const corePresent=["mitko","borko","enchev"].every(expected=>lobby?.participants.some(p=>p.role===expected));
   const minPlayers=lobby?.minPlayers??3;
@@ -280,7 +280,7 @@ export default function EnchevStageOnePage(){
   const currentRoundKey=(auction?.id??"none")+":"+Math.floor(serverSeconds/5000);
   const roundLocked=roundLockKey===currentRoundKey;
   // A login/refresh never grants access to an already-running round.
-  // Admission is bound to the exact signed browser session that pressed READY.
+  // Admission is bound to the signed browser session that joined before the first round or explicitly pressed READY for the next.
   const admitted=lobby?.admitted===true;
   const showAuction=status==="live"&&(admitted||role==="admin");
   const canBid=status==="live"&&bidder&&admitted&&connected&&!busy&&timeUntil>0&&!roundLocked;
@@ -312,7 +312,7 @@ export default function EnchevStageOnePage(){
       </div>
     </header>
     <div className="eaRoomStatus">
-      <span>{role?<><i className="eaLiveDot"/> {labelRole(role)} <b>{bidder?"· BIDDER":role==="enchev"?"· OBSERVER":"· OPERATOR"}</b></>:"WELCOME TO THE LIVE ROOM"}</span>
+      <span>{role?<><i className="eaLiveDot"/> {labelRole(role)} <b>{bidder?"· BIDDER":"· OPERATOR"}</b></>:"WELCOME TO THE LIVE ROOM"}</span>
       <span>DEMO ONLY <span className="eaStatusSep">·</span> NO REAL PAYMENTS</span>
     </div>
     {!available&&<div className="eaRoomAlert" role="alert">This private pilot is not active. Bidding is disabled.</div>}
@@ -320,16 +320,14 @@ export default function EnchevStageOnePage(){
     {!role?<section className="eaLoginCard">
       <div className="eaLoginWelcome"><span className="eaEyebrow">ENCHEV · INVITATION ACCESS</span>
         <h1>Enter the live room.</h1>
-        <p>Private test room. Every bidder must press READY before EACH new round. Demo euros only.</p>
-        <div className="eaLoginDecor"><span>01 · JOIN</span><span>02 · READY</span><span>03 · BID</span><span>04 · WIN</span></div>
+        <p>Private test room. The first round starts when all three bidders have logged in. Later rounds need three fresh READY clicks. Demo euros only.</p>
+        <div className="eaLoginDecor"><span>01 · JOIN</span><span>02 · 3 JOIN</span><span>03 · BID</span><span>04 · WIN</span></div>
       </div>
       <form onSubmit={logIn}>
         <label>Your role<select value={loginRole} onChange={e=>setLoginRole(e.target.value as Role)}>
           <option value="mitko">Mitko — bidder</option>
           <option value="borko">Borko — bidder</option>
-          <option value="krum">Krum — bidder</option>
-          <option value="enchev">Enchev · observer</option>
-          <option value="admin">Admin — operator</option>
+          <option value="enchev">Enchev — bidder</option>
         </select></label>
         <label>Invitation code<input value={code} type="password" autoComplete="off" minLength={loginRole==="admin"?16:4} maxLength={256} required placeholder="Your private code" onChange={e=>setCode(e.target.value)}/></label>
         <button className="eaActionPrimary" type="submit" disabled={!available||busy}>{busy?"CONNECTING…":"ENTER AUCTION ROOM →"}</button>
@@ -345,8 +343,8 @@ export default function EnchevStageOnePage(){
           </div>
           <p>{status==="live"
             ?"This round started without your current login. You cannot bid; when it ends, press I'M READY for the next one."
-            :((lobby?.count??0)<minPlayers||!corePresent)?"Mitko, Borko and Enchev must join. Krum can join before the last READY."
-            :(lobby?.readyCount??0)===(lobby?.count??0)?"The auction is starting…":"Everyone online must press READY."}</p>
+            :((lobby?.count??0)<minPlayers||!corePresent)?"Mitko, Borko and Enchev must join. The first round starts automatically on the third login."
+            :(lobby?.readyCount??0)===(lobby?.count??0)?"The auction is starting…":"For another round, all three must press READY."}</p>
         </div>
         <div className="eaReadyControl">
           <span>{lobby?.readyCount??0}/{lobby?.count??0} READY</span>
@@ -357,7 +355,7 @@ export default function EnchevStageOnePage(){
         </div>
       </section>}
       {role==="admin"&&<div className="eaMonitorEntry"><a href="/live-auctions/etap-1/admin" aria-label="Open live admin dashboard">▣ OPEN ADMIN CONTROL ROOM →</a><small>Full-screen PC monitor · LIVE roster · READY · active bidders</small></div>}
-      {role==="admin"&&preparingRound&&<p className="eaOperatorNote">🔒 Start is automatic only after every required invited participant presses READY. The operator cannot bypass this barrier.</p>}
+      {role==="admin"&&preparingRound&&<p className="eaOperatorNote">🔒 The first round starts on three bidder logins; later rounds require three READY clicks. The operator never starts or blocks the auction.</p>}
       {status==="closed"&&auction&&<details className="eaPreviousRound">
         <summary><span>🏆</span><strong>Previous winner: {auction.winnerRole?labelRole(auction.winnerRole):"No bids"}</strong><b>{money(auction.currentAmount)}</b><small>Details ▾</small></summary>
         <div>Lot {auction.id.slice(0,8).toUpperCase()} · {auction.sequence} accepted bids · server-confirmed demo result.
@@ -399,7 +397,7 @@ export default function EnchevStageOnePage(){
           <div className="eaNextBid"><span>NEXT VALID BID</span><strong>{money(status==="live"?nextPrice:opening+increment)}</strong><small>+ {money(status==="live"?auction?.increment??increment:increment)} minimum step</small></div>
           {status==="live"&&bidder?
             <button className="eaActionPrimary eaPlaceBid" type="button" onClick={()=>void bid()} disabled={!canBid}>{busy?"CONFIRMING…":roundLocked?"WAIT "+visibleRound+"s":"PLACE BID · "+money(nextPrice)+" →"}</button>
-            :<div className="eaBidStandby">{status==="live"?"Observer mode · you can follow bids in real time":(lobby?.count??0)<2?"Waiting for a second participant…":"Press READY above to start the next round"}</div>}
+            :<div className="eaBidStandby">{status==="live"?"Observer mode · you can follow bids in real time":(lobby?.count??0)<3?"Waiting for all three bidders…":"Press READY above for the next round"}</div>}
           {status==="live"&&<div className="eaBidRhythm"><span>5-SECOND BID RHYTHM</span><b>{visibleRound}s</b><div><i style={{width:(100-visibleRound*20)+"%"}}/></div></div>}
           <div className="eaPanelFoot"><span>✓ Server-confirmed offers</span><span>✓ Fake money only</span></div>
         </div>
