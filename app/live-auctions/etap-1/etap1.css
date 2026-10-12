@@ -270,3 +270,18 @@ body:has(.eaRoom){background:#060a08;color:#effaf3}
  .eaRoom *, .eaRoom *::before,.eaRoom *::after{animation:none!important;transition:none!important}
  .eaCelebration{display:none!important}
 }
+
+/* Credited, non-authoritative GTI reference image. Vector scene stays as fallback. */
+.eaRoom .eaFeaturedPhoto{
+  position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center 55%;
+  z-index:0;filter:brightness(.82) saturate(.90) contrast(1.03);
+}
+.eaRoom .eaMediaStage>.eaVehicleLabel{z-index:2}
+.eaRoom .eaMediaStage>.eaClock{z-index:2}
+.eaRoom .eaMediaStage>.eaMediaNav{z-index:3}
+.eaRoom .eaPhotoCredit{
+  position:absolute;z-index:2;left:13px;bottom:14px;color:#ccddd2;text-shadow:0 1px 3px #000;
+  font-size:9px;text-decoration:none;background:#06140d91;border-radius:5px;padding:4px 6px;
+}
+.eaRoom .eaPhotoCredit:hover{text-decoration:underline}
+@media(max-width:480px){.eaRoom .eaPhotoCredit{font-size:8px;left:8px;bottom:8px;max-width:51%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}}
