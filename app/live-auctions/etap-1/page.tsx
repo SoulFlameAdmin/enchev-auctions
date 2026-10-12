@@ -12,7 +12,7 @@ type Auction = {
   startedAt:string;endsAt:string;closedAt:string|null;
 };
 type Snapshot = {status:"idle"|"live"|"closed";demo:true;serverNow:string;auction:Auction|null;bids:Bid[]};
-type Lobby = {count:number;readyCount:number;minPlayers:number;participants:{role:string;ready:boolean}[]};
+type Lobby = {count:number;readyCount:number;minPlayers:number;admitted?:boolean;sessionCurrent?:boolean;participants:{role:string;ready:boolean}[]};
 type StateReply = {authenticated?:boolean;available?:boolean;role?:Role;state?:Snapshot;lobby?:Lobby;error?:string};
 
 const labelRole=(role:string|null)=>role==="mitko"?"Mitko":role==="borko"?"Borko":role==="krum"?"Krum":role==="enchev"?"Enchev":role==="admin"?"Admin":"No bidder";
@@ -128,7 +128,7 @@ export default function EnchevStageOnePage(){
       const data=await response.json() as StateReply;
       setAvailable(data.available!==false);
       if(response.status===401){
-        setRole(null);setConnected(false);return;
+        setRole(null);setConnected(false);setLobby(null);setSnapshot(null);return;
       }
       if(!response.ok||!data.authenticated||!data.state)throw new Error(data.error??"Service unavailable");
       setRole(data.role??null);setConnected(true);
@@ -283,14 +283,18 @@ export default function EnchevStageOnePage(){
   const clockStyle={"--ev9-progress":clockProgress+"%"} as CSSProperties;
   const currentRoundKey=(auction?.id??"none")+":"+Math.floor(serverSeconds/5000);
   const roundLocked=roundLockKey===currentRoundKey;
-  const canBid=status==="live"&&bidder&&connected&&!busy&&timeUntil>0&&!roundLocked;
-  const preparingRound=status==="idle"||status==="closed";
+  // A login/refresh never grants access to an already-running round.
+  // Admission is bound to the exact signed browser session that pressed READY.
+  const admitted=lobby?.admitted===true;
+  const showAuction=status==="live"&&(admitted||role==="admin");
+  const canBid=status==="live"&&bidder&&admitted&&connected&&!busy&&timeUntil>0&&!roundLocked;
+  const preparingRound=status!=="live"||!showAuction;
   const phaseStep=status==="live"?2:1;
   const views=["FRONT","REAR","INTERIOR","DETAIL","SIDE"];
   const visibleRound=5-Math.floor(serverSeconds/1000)%5;
   const tabs=["Details","Photos","History","Documents","Transport","Condition"];
 
-  return <main id="main-content" className={"eaEtap1 eaRoom"+(status==="live"&&bidder?" eaHasBidDock":"")}>
+  return <main id="main-content" className={"eaEtap1 eaRoom"+(showAuction&&bidder?" eaHasBidDock":"")}>
     <header className="eaRoomHeader">
       <a className="eaRoomLogo" href="/" aria-label="ENCHEV Home"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
       <div className="eaRoomTitle"><strong><span className="eaLiveDot"/> LIVE AUCTION</strong><small>PRIVATE DEMONSTRATION</small></div>
@@ -320,7 +324,7 @@ export default function EnchevStageOnePage(){
     {!role?<section className="eaLoginCard">
       <div className="eaLoginWelcome"><span className="eaEyebrow">ENCHEV · INVITATION ACCESS</span>
         <h1>Enter the live room.</h1>
-        <p>Two bidders. One shared auction. Real-time server confirmation. Demonstration euros only.</p>
+        <p>Private test room. Every bidder must press READY before EACH new round. Demo euros only.</p>
         <div className="eaLoginDecor"><span>01 · JOIN</span><span>02 · READY</span><span>03 · BID</span><span>04 · WIN</span></div>
       </div>
       <form onSubmit={logIn}>
@@ -339,15 +343,21 @@ export default function EnchevStageOnePage(){
       {preparingRound&&<section className="eaReadyCard" aria-label="Participant readiness">
         <div className="eaReadyText">
           <span className="eaEyebrow"><span className="eaLiveDot"/> NEXT ROUND</span>
-          <h2>{(lobby?.count??0)<2?"Waiting for players":myReady?"You're ready.":"Ready to start?"}</h2>
+          <h2>{status==="live"?"Round in progress — wait for next READY":(lobby?.count??0)<2?"Waiting for players":myReady?"You're ready.":"Ready to start?"}</h2>
           <div className="eaReadyPeople">{(lobby?.participants??[]).map(person=>
             <span className={person.ready?"is-ready":""} key={person.role}>{person.ready?"●":"○"} {labelRole(person.role)}</span>)}
           </div>
-          <p>{(lobby?.count??0)<2?"Invite one more player to begin.":(lobby?.readyCount??0)===(lobby?.count??0)?"The auction is starting…":"Everyone online must press READY."}</p>
+          <p>{status==="live"
+            ?"This round started without your current login. You cannot bid; when it ends, press I'M READY for the next one."
+            :(lobby?.count??0)<2?"Invite one more player to begin."
+            :(lobby?.readyCount??0)===(lobby?.count??0)?"The auction is starting…":"Everyone online must press READY."}</p>
         </div>
         <div className="eaReadyControl">
           <span>{lobby?.readyCount??0}/{lobby?.count??0} READY</span>
-          {participant?<button type="button" onClick={()=>void setReady(!myReady)} disabled={!connected||busy} className={myReady?"is-ready":""}>{busy?"UPDATING…":myReady?"✓ READY":"I'M READY →"}</button>:<small>Admin does not count.</small>}
+          {participant?(status==="live"
+            ?<small>New login? Wait until the current auction closes.</small>
+            :<button type="button" onClick={()=>void setReady(!myReady)} disabled={!connected||busy} className={myReady?"is-ready":""}>{busy?"UPDATING…":myReady?"✓ READY":"I'M READY →"}</button>
+          ):<small>Admin does not count.</small>}
         </div>
       </section>}
       {role==="admin"&&preparingRound&&<details className="eaAdminSettings">
@@ -366,6 +376,7 @@ export default function EnchevStageOnePage(){
           {auction.winnerRole&&<button type="button" onClick={replayWinner}>✨ Replay winner moment</button>}
         </div>
       </details>}
+      {showAuction&&<>
       <section className="eaAuctionIntro">
         <div><span className={"eaAuctionStatus "+(status==="live"?"is-live":"")}>{status==="live"?"● LIVE NOW":"◉ READY FOR NEXT ROUND"}</span><span className="eaAuctionLot">LOT {status==="live"&&auction?auction.id.slice(0,8).toUpperCase():"DEMO–001"}</span></div>
         <h1>{status==="live"&&auction?auction.title:lotTitle}</h1>
@@ -422,6 +433,7 @@ export default function EnchevStageOnePage(){
         <div><span>NEXT BID · {minutes}:{seconds} LEFT</span><strong>{money(nextPrice)}</strong></div>
         <button type="button" onClick={()=>void bid()} disabled={!canBid}>{busy?"…":roundLocked?"WAIT "+visibleRound+"s":"BID NOW →"}</button>
       </div>}
+      </>}
       {!connected&&<div className="eaRoomAlert" role="status">Disconnected. Bidding is paused until the server reconnects.</div>}
     </div>}
     <footer className="eaRoomFooter">ENCHEV AUCTIONS · PRIVATE DEMONSTRATION · NO REAL TRANSACTIONS</footer>
