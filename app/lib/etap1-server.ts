@@ -6,6 +6,9 @@ export type Etap1Role = "admin" | "mitko" | "borko" | "enchev";
 export const ETAP1_ROLES: readonly Etap1Role[] = ["admin", "mitko", "borko", "enchev"];
 const SHARED_SOULFLAME_PROJECT = "frhletkiuupgksmgxoxc";
 const COOKIE = process.env.NODE_ENV === "production" ? "__Host-enchev-etap1" : "enchev-etap1-dev";
+// Admin and bidder must NOT share a browser cookie: opening the monitor
+// in another tab must never replace a bidder\'s admission/session.
+const ADMIN_COOKIE = process.env.NODE_ENV === "production" ? "__Host-enchev-etap1-admin" : "enchev-etap1-admin-dev";
 
 type Config = {
   url: string; key: string; secret: string;
@@ -49,14 +52,14 @@ export function issueEtap1Cookie(response: NextResponse, role: Etap1Role, sid: s
   const payload = Buffer.from(JSON.stringify({
     role, sid, exp: Date.now() + 6 * 60 * 60 * 1000, ver: 2,
   })).toString("base64url");
-  response.cookies.set(COOKIE, payload + "." + sign(payload, config.secret), {
+  response.cookies.set(role==="admin"?ADMIN_COOKIE:COOKIE, payload + "." + sign(payload, config.secret), {
     httpOnly: true, secure: process.env.NODE_ENV === "production",
     sameSite: "strict", path: "/", maxAge: 6 * 60 * 60,
   });
 }
 
-export function clearEtap1Cookie(response: NextResponse) {
-  response.cookies.set(COOKIE, "", {
+export function clearEtap1Cookie(response: NextResponse, scope: "admin" | "bidder" = "bidder") {
+  response.cookies.set(scope==="admin"?ADMIN_COOKIE:COOKIE, "", {
     httpOnly: true, secure: process.env.NODE_ENV === "production",
     sameSite: "strict", path: "/", maxAge: 0,
   });
@@ -64,8 +67,8 @@ export function clearEtap1Cookie(response: NextResponse) {
 
 export type Etap1Session = { role: Etap1Role; sid: string };
 
-export function etap1Session(request: NextRequest, config: Config): Etap1Session | null {
-  const token = request.cookies.get(COOKIE)?.value;
+export function etap1Session(request: NextRequest, config: Config, scope: "admin" | "bidder" = "bidder"): Etap1Session | null {
+  const token = request.cookies.get(scope==="admin"?ADMIN_COOKIE:COOKIE)?.value;
   if (!token || token.length > 1000) return null;
   const parts = token.split(".");
   if (parts.length !== 2) return null;
@@ -80,7 +83,9 @@ export function etap1Session(request: NextRequest, config: Config): Etap1Session
       !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(data.sid) ||
       typeof data.exp !== "number" ||
       data.exp <= Date.now() || data.exp > Date.now() + 6 * 60 * 60 * 1000 + 60000 ||
-      !ETAP1_ROLES.includes(data.role as Etap1Role)) return null;
+      !ETAP1_ROLES.includes(data.role as Etap1Role) ||
+      (scope==="admin" && data.role!=="admin") ||
+      (scope==="bidder" && data.role==="admin")) return null;
     return {role:data.role as Etap1Role,sid:data.sid};
   } catch { return null; }
 }
