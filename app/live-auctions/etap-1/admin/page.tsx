@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import "./monitor.css";
 
 type Role = "mitko" | "borko" | "enchev";
@@ -22,10 +22,13 @@ export default function Etap1AdminMonitor() {
   const [monitor,setMonitor]=useState<Monitor|null>(null);
   const [lastUpdate,setLastUpdate]=useState<number|null>(null);
   const [offline,setOffline]=useState(false);
+  const pollingRef=useRef(false);
 
   const refresh=useCallback(async()=>{
+    if(pollingRef.current)return;
+    pollingRef.current=true;
     try {
-      const response=await fetch("/api/etap1/admin",{cache:"no-store",credentials:"same-origin"});
+      const response=await fetch("/api/etap1/admin",{cache:"no-store",credentials:"same-origin",signal:AbortSignal.timeout(10000)});
       if(response.status===401||response.status===403){
         setAuthorized(false);setMonitor(null);setOffline(false);setLoading(false);
         return;
@@ -36,7 +39,7 @@ export default function Etap1AdminMonitor() {
     }catch(e){
       setOffline(true);
       setError(e instanceof Error?e.message:"Connection lost");
-    }finally{setLoading(false);}
+    }finally{setLoading(false);pollingRef.current=false;}
   },[]);
 
   useEffect(()=>{
@@ -55,6 +58,29 @@ export default function Etap1AdminMonitor() {
       setCode("");setAuthorized(true);await refresh();
     }catch(e){setError(e instanceof Error?e.message:"Sign in failed");}
     finally{setBusy(false);}
+  };
+  const downloadOperatorRecord=()=>{
+    if(!monitor||monitor.status!=="closed"||!monitor.auction)return;
+    const a=monitor.auction;
+    const text=[
+      "ENCHEV AUCTIONS / OPERATOR DEMO RESULT",
+      "DEMO ONLY — not an invoice or a signed sale agreement",
+      "Auction ID: "+a.id,
+      "Lot: "+(a.title??"Demonstration lot"),
+      "Closed: "+(a.closedAt??"Closed — timestamp unavailable"),
+      "Highest bidder: "+(a.winnerRole??"None — no bids"),
+      "Highest demo bid (EUR): "+Number(a.currentAmount).toFixed(2),
+      "Accepted bid count: "+a.sequence,
+      "Source: server-confirmed auction snapshot",
+      "Seller approval: NOT VERIFIED / DEMO",
+      "Invoice and payment: NOT ISSUED / DEMO",
+      "Release / transfer: NOT AUTHORIZED / DEMO"
+    ].join("\n")+"\n";
+    const url=URL.createObjectURL(new Blob([text],{type:"text/plain;charset=utf-8"}));
+    const aLink=document.createElement("a");
+    aLink.href=url;aLink.download="ENCHEV-OPERATOR-DEMO-"+a.id.slice(0,8)+".txt";
+    document.body.appendChild(aLink);aLink.click();aLink.remove();
+    window.setTimeout(()=>URL.revokeObjectURL(url),1000);
   };
   const logout=async()=>{
     setBusy(true);
@@ -120,7 +146,8 @@ export default function Etap1AdminMonitor() {
         <article><span className="eaMonitorEyebrow">CURRENT / LAST ROUND</span><h2>{monitor?.auction?.title||"Waiting for round"}</h2>
           <div className="eaMonitorPrice">{monitor?.auction?euro(Number(monitor.auction.currentAmount)):"—"}</div>
           <p>{monitor?.status==="live"?"● ACTIVE AUCTION":monitor?.status==="closed"?"✓ LAST ROUND CLOSED":"WAITING IN LOBBY"} · {monitor?.auction?.sequence??0} accepted bids</p>
-          {monitor?.status==="closed"&&<p>🏆 Winner: {monitor.auction?.winnerRole?.toUpperCase()||"NO BIDS"}</p>}
+          {monitor?.status==="closed"&&<p>🏆 Highest demo bidder: {monitor.auction?.winnerRole?.toUpperCase()||"NO BIDS"}. Await seller approval for any real sale.</p>}
+          {monitor?.status==="closed"&&monitor.auction&&<button type="button" onClick={downloadOperatorRecord} className="eaMonitorSecondaryLink">↓ Download operator DEMO result (not invoice)</button>}
           <a className="eaMonitorSecondaryLink" href="/live-auctions/etap-1">Open participant view ↗</a>
         </article>
         <article><span className="eaMonitorEyebrow">LATEST BIDS</span><h2>Bid activity</h2>
