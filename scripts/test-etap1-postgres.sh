@@ -104,3 +104,57 @@ if psql -X -v ON_ERROR_STOP=1 -c "set role authenticated; select * from public.e
   echo "FAIL: authenticated can read protected bid ledger directly" >&2; exit 1
 fi
 echo "ETAP1 POSTGRES INTEGRATION PASS: deterministic bids, retry, close/winner, concurrent serialization, RLS privileges."
+
+# Also validate the atomic two/three-participant READY lobby in disposable CI.
+psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261012033000_enchev_etap1_ready_lobby.sql
+psql -X -v ON_ERROR_STOP=1 <<'SQL'
+do $$
+declare
+  v jsonb;
+  v_before uuid;
+  v_after uuid;
+begin
+  update public.enchev_etap1_auctions
+    set ends_at=clock_timestamp()-interval '1 second'
+    where id=(select active_auction_id from public.enchev_etap1_rooms where name='stage-one');
+  v:=public.etap1_snapshot();
+  if v->>'status'<>'closed' then raise exception 'test preparation failed'; end if;
+  v_before:=(v->'auction'->>'id')::uuid;
+
+  -- Three online: two READY should NOT start until the third participant joins.
+  perform public.etap1_ready_lobby('mitko',null);
+  perform public.etap1_ready_lobby('borko',null);
+  perform public.etap1_ready_lobby('enchev',null);
+  v:=public.etap1_ready_lobby('mitko',true);
+  if v->'lobby'->>'readyCount'<>'1' then raise exception 'first READY ignored'; end if;
+  v:=public.etap1_ready_lobby('borko',true);
+  if v->'state'->>'status'='live' or v->'lobby'->>'readyCount'<>'2' then
+    raise exception 'started before observer was READY'; end if;
+  v:=public.etap1_ready_lobby('enchev',true);
+  if v->'state'->>'status'<>'live' or v->'lobby'->>'readyCount'<>'0' then
+    raise exception 'third READY did not start atomic round or reset READY'; end if;
+  v_after:=(v->'state'->'auction'->>'id')::uuid;
+  if v_after=v_before then raise exception 'reused auction id'; end if;
+  if (v->'state'->'auction'->>'currentAmount')::numeric <>16250 then
+    raise exception 'unexpected READY lot opening'; end if;
+  if (select count(*) from public.enchev_etap1_auctions where id=v_after) <> 1 then
+    raise exception 'READY created duplicate auctions'; end if;
+
+  -- Simulate observer leaving and next round: two participants suffice.
+  update public.enchev_etap1_auctions
+    set ends_at=clock_timestamp()-interval '1 second' where id=v_after;
+  perform public.etap1_snapshot();
+  update public.enchev_etap1_presence
+    set last_seen=clock_timestamp()-interval '45 seconds'
+    where role='enchev';
+  v:=public.etap1_ready_lobby('mitko',true);
+  if v->'state'->>'status'='live' then raise exception 'single READY started round'; end if;
+  v:=public.etap1_ready_lobby('borko',true);
+  if v->'state'->>'status'<>'live' or (v->'lobby'->>'count')::int<>2 then
+    raise exception 'two-person READY did not start round'; end if;
+end $$;
+SQL
+if psql -X -v ON_ERROR_STOP=1 -c "set role anon; select public.etap1_ready_lobby('mitko',true);" >/tmp/etap1_ready_anon.out 2>&1; then
+  echo "FAIL: anon can call privileged READY RPC" >&2; exit 1
+fi
+echo "ETAP1 READY LOBBY INTEGRATION PASS: 2/3-person barrier, atomic start, distinct IDs, reset, and RLS."
