@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState, type CSSProperties } from "re
 import Etap1DemoVehicle from "./Etap1DemoVehicle";
 import "./etap1.css";
 
-type Role = "admin"|"mitko"|"borko"|"enchev";
+type Role = "admin"|"mitko"|"borko"|"krum"|"enchev";
 type Bid = {sequence:number;role:string;amount:number;at:string};
 type Auction = {
   id:string;title:string;currency:"EUR";openingAmount:number;currentAmount:number;
@@ -15,7 +15,7 @@ type Snapshot = {status:"idle"|"live"|"closed";demo:true;serverNow:string;auctio
 type Lobby = {count:number;readyCount:number;minPlayers:number;participants:{role:string;ready:boolean}[]};
 type StateReply = {authenticated?:boolean;available?:boolean;role?:Role;state?:Snapshot;lobby?:Lobby;error?:string};
 
-const labelRole=(role:string|null)=>role==="mitko"?"Mitko":role==="borko"?"Borko":role==="enchev"?"Enchev":role==="admin"?"Admin":"No bidder";
+const labelRole=(role:string|null)=>role==="mitko"?"Mitko":role==="borko"?"Borko":role==="krum"?"Krum":role==="enchev"?"Enchev":role==="admin"?"Admin":"No bidder";
 const money=(value:number)=>new Intl.NumberFormat("bg-BG",{style:"currency",currency:"EUR",maximumFractionDigits:2}).format(value);
 
 export default function EnchevStageOnePage(){
@@ -269,7 +269,7 @@ export default function EnchevStageOnePage(){
   const remaining= Math.max(0,Math.ceil(remainingMs/1000));
   const minutes=String(Math.floor(remaining/60)).padStart(2,"0");
   const seconds=String(remaining%60).padStart(2,"0");
-  const bidder=role==="mitko"||role==="borko";
+  const bidder=role==="mitko"||role==="borko"||role==="krum";
   const participant=bidder||role==="enchev";
   const myReady=Boolean(lobby?.participants.some(p=>p.role===role&&p.ready));
   const latest=snapshot?.bids??[];
@@ -327,6 +327,7 @@ export default function EnchevStageOnePage(){
         <label>Your role<select value={loginRole} onChange={e=>setLoginRole(e.target.value as Role)}>
           <option value="mitko">Mitko — bidder</option>
           <option value="borko">Borko — bidder</option>
+          <option value="krum">Krum — bidder</option>
           <option value="enchev">Enchev · observer</option>
           <option value="admin">Admin — operator</option>
         </select></label>
