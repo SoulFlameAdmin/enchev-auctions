@@ -25,7 +25,14 @@ export function etap1Config(): Config | null {
     enchev: process.env.ENCHEV_ETAP1_ENCHEV_CODE?.trim() ?? "",
   };
   if (!ref || ref === SHARED_SOULFLAME_PROJECT || !rawUrl || !key || !secret || secret.length < 32) return null;
-  if (Object.values(codes).some(code => code.length < 16) || new Set(Object.values(codes)).size !== 4) return null;
+  // Short participant-only codes are permitted exclusively for the closed, fake-money Vercel Preview.
+  // Admin always requires a high-entropy 16+ character secret. Production continues to require long codes.
+  const shortDemoCodes = process.env.VERCEL_ENV === "preview" &&
+    codes.mitko === "mitko" && codes.borko === "borko" && codes.enchev === "enchev";
+  const participantsHaveLongCodes = (["mitko", "borko", "enchev"] as const)
+    .every(role => codes[role].length >= 16);
+  if (codes.admin.length < 16 || (!shortDemoCodes && !participantsHaveLongCodes) ||
+    new Set(Object.values(codes)).size !== 4) return null;
   try {
     const url = new URL(rawUrl);
     if (url.protocol !== "https:" || url.host !== ref + ".supabase.co" ||
