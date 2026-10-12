@@ -64,8 +64,8 @@ export async function POST(request: NextRequest, context: Context) {
     // previous signed session before any bid can be admitted.
     if (role !== "admin") {
       try {
-        await etap1Rpc(config,"etap1_ready_lobby_secure",{
-          p_actor:role,p_session_id:sid,p_ready:false,p_rejoin:true,
+        await etap1Rpc(config,"etap1_join_lobby_automatic",{
+          p_actor:role,p_session_id:sid,
         });
       } catch {
         return etap1Json({error:"Demo lobby unavailable. Login was not activated."},503);
@@ -81,7 +81,7 @@ export async function POST(request: NextRequest, context: Context) {
   const {role,sid}=session;
 
   if (action === "ready") {
-    if (role !== "mitko" && role !== "borko" && role !== "krum" && role !== "enchev")
+    if (role !== "mitko" && role !== "borko" && role !== "enchev")
       return etap1Json({error:"Only participants can press READY"},403);
     if (typeof body.ready !== "boolean")
       return etap1Json({error:"Boolean ready flag required"},400);
@@ -101,11 +101,11 @@ export async function POST(request: NextRequest, context: Context) {
     if (role !== "admin") return etap1Json({error:"Admin only"},403);
     // Operator panel is watch-only for this demonstration.
     // A manual start used to bypass the session-bound READY admission ledger.
-    // Every round now starts atomically on the final invited participant READY.
-    return etap1Json({error:"Wait for Mitko, Borko and Enchev (plus Krum when present) to press READY. The server starts automatically."},409);
+    // The first round starts as soon as all three bidders log in, and later rounds after all three press READY.
+    return etap1Json({error:"Only Mitko, Borko and Enchev participate. The first round starts when all three join; later rounds require all three to press READY."},409);
   }
 
-  if (role !== "mitko" && role !== "borko" && role !== "krum") return etap1Json({error:"Bidder only"},403);
+  if (role !== "mitko" && role !== "borko" && role !== "enchev") return etap1Json({error:"Bidder only"},403);
   const nonce=body.nonce;
   if (typeof nonce !== "string" ||
       !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(nonce))
