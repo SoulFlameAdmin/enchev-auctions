@@ -17,8 +17,8 @@ export async function GET(request: NextRequest, context: Context) {
   const role = sessionRole(request,config);
   if (!role) return etap1Json({available:true,authenticated:false},401);
   try {
-    const state = await etap1Rpc(config,"etap1_snapshot");
-    return etap1Json({available:true,authenticated:true,role,state});
+    const result=await etap1Rpc(config,"etap1_ready_lobby",{p_actor:role}) as {state:unknown;lobby:unknown};
+    return etap1Json({available:true,authenticated:true,role,state:result.state,lobby:result.lobby});
   } catch {
     return etap1Json({error:"Demo database temporarily unavailable"},503);
   }
@@ -27,7 +27,7 @@ export async function GET(request: NextRequest, context: Context) {
 export async function POST(request: NextRequest, context: Context) {
   if (!sameOriginPost(request)) return etap1Json({error:"Invalid request origin"},403);
   const {action} = await context.params;
-  if (!["login","logout","start","bid"].includes(action)) return etap1Json({error:"Not found"},404);
+  if (!["login","logout","start","bid","ready"].includes(action)) return etap1Json({error:"Not found"},404);
   const config = etap1Config();
   if (!config) return etap1Json({error:"Pilot not activated"},503);
 
@@ -52,6 +52,21 @@ export async function POST(request: NextRequest, context: Context) {
 
   const role=sessionRole(request,config);
   if (!role) return etap1Json({error:"Session expired. Sign in again."},401);
+
+  if (action === "ready") {
+    if (role !== "mitko" && role !== "borko" && role !== "enchev")
+      return etap1Json({error:"Only participants can press READY"},403);
+    if (typeof body.ready !== "boolean")
+      return etap1Json({error:"Boolean ready flag required"},400);
+    try {
+      const result=await etap1Rpc(config,"etap1_ready_lobby",{
+        p_actor:role,p_ready:body.ready,
+      }) as {state:unknown;lobby:unknown};
+      return etap1Json({ok:true,state:result.state,lobby:result.lobby});
+    } catch {
+      return etap1Json({error:"READY update failed or demo service unavailable"},409);
+    }
+  }
 
   if (action === "start") {
     if (role !== "admin") return etap1Json({error:"Admin only"},403);
