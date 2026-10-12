@@ -108,7 +108,7 @@ export async function etap1Body(request: NextRequest): Promise<Record<string,unk
   } catch { return null; }
 }
 
-export async function etap1Rpc(config: Config, name: "etap1_snapshot"|"etap1_start"|"etap1_bid",
+export async function etap1Rpc(config: Config, name: "etap1_snapshot"|"etap1_start"|"etap1_bid"|"etap1_ready_lobby",
   params: Record<string,unknown> = {}): Promise<unknown> {
   const response = await fetch(config.url + "/rest/v1/rpc/" + name, {
     method: "POST", cache: "no-store",
