@@ -90,23 +90,10 @@ export async function POST(request: NextRequest, context: Context) {
 
   if (action === "start") {
     if (role !== "admin") return etap1Json({error:"Admin only"},403);
-    const title=body.title;
-    const opening=body.openingAmount;
-    const increment=body.increment;
-    const duration=body.durationSeconds;
-    if (typeof title !== "string" || title.trim().length<4 || title.length>120 ||
-        typeof opening !== "number" || !Number.isFinite(opening) || opening<100 || opening>10000000 ||
-        typeof increment !== "number" || !Number.isFinite(increment) || increment<10 || increment>100000 ||
-        !Number.isInteger(duration) || (duration as number)<30 || (duration as number)>600)
-      return etap1Json({error:"Invalid demo lot / price / duration"},400);
-    try {
-      const state=await etap1Rpc(config,"etap1_start",{
-        p_title:title.trim(),p_opening_amount:opening,p_increment:increment,p_duration_seconds:duration,
-      });
-      return etap1Json({ok:true,state});
-    } catch {
-      return etap1Json({error:"Cannot start auction while another round is active, or provider unavailable"},409);
-    }
+    // Operator panel is watch-only for this demonstration.
+    // A manual start used to bypass the session-bound READY admission ledger.
+    // Every round now starts atomically on the final invited participant READY.
+    return etap1Json({error:"Wait for Mitko, Borko and Enchev (plus Krum when present) to press READY. The server starts automatically."},409);
   }
 
   if (role !== "mitko" && role !== "borko" && role !== "krum") return etap1Json({error:"Bidder only"},403);
