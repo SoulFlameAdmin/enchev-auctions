@@ -89,3 +89,178 @@
 .eaEtap1ReadyUsers span{font-size:12px;padding:7px 10px;border:1px solid #48645b;border-radius:20px;background:#152d32}
 .eaEtap1ReadyButton{min-width:185px;min-height:65px;background:#b8f3cd;border:0;border-radius:14px;color:#123026;font-weight:900;letter-spacing:.04em}
 @media(max-width:600px){.eaEtap1Ready{padding:20px;flex-direction:column;align-items:stretch}.eaEtap1ReadyButton{width:100%}}
+
+
+/* ENCHEV v9 workspace: native React, matching Borко's visual handoff.
+   All rules scoped to the closed pilot. Desktop 3 columns → tablet 2 → mobile 1. */
+.ev9App{--ink:#f5f8f7;--muted:#8ba198;--gold:#00deb1;--line:#173d32;max-width:1780px;margin:0 auto;padding:0;background:#020806;color:#f5f8f7;font-family:Inter,"Segoe UI",Arial,sans-serif}
+.ev9App .eaEtap1Kicker{color:#00deb1}
+.ev9App .eaEtap1Footer{margin:20px 26px 0;border-color:#163d32;color:#81988f}
+.ev9Header{min-height:78px;background:linear-gradient(90deg,#03100c,#042018 52%,#03100c);border-bottom:1px solid #164438;display:flex;align-items:center;gap:22px;padding:12px 26px}
+.ev9Brand{flex:none;min-width:180px;color:#fff!important;text-decoration:none!important;display:flex;flex-direction:column;line-height:1}
+.ev9Brand span{font-size:29px;font-weight:1000;letter-spacing:.3px}.ev9Brand small{color:#9bada7;font-size:9px;letter-spacing:5px;margin-top:6px}
+.ev9SearchShell{color:#98bbb0;font-size:11px;display:flex;align-items:center;gap:10px;background:#061914;border:1px solid #205a49;border-radius:8px;padding:12px 16px;width:min(520px,40vw);white-space:nowrap;overflow:hidden}
+.ev9SearchShell>span:first-child{font-size:22px;line-height:12px;color:#00deb1}
+.ev9HeaderRight{display:flex;gap:12px;align-items:center;margin-left:auto;flex-wrap:wrap;justify-content:flex-end}
+.ev9Online{font-size:11px;color:#ffba72;white-space:nowrap}.ev9Online.is-online{color:#7effcb}
+.ev9TestFlag{background:#193026;border:1px solid #24634b;color:#a4edca;border-radius:6px;padding:8px;font-size:10px;font-weight:900;white-space:nowrap}
+.ev9Nav{padding:0 26px;height:48px;border-bottom:1px solid #1a3d33;background:#07110e;display:flex;align-items:center;gap:27px;overflow:auto;scrollbar-width:none}
+.ev9Nav a{color:#c9ded5;font-size:12px;text-decoration:none!important;white-space:nowrap}
+.ev9NavSelected{color:#00deb1;font-size:12px;padding:15px 11px;border-bottom:2px solid #00deb1;background:#0a2b21;white-space:nowrap}
+.ev9NavRight{margin-left:auto;color:#789c8f;font-size:10px;white-space:nowrap}
+.ev9Utility{display:flex;align-items:center;flex-wrap:wrap;gap:12px;min-height:40px;padding:7px 26px;background:#0a1713;border-bottom:1px solid #1b4035;color:#9db0aa;font-size:10px;font-weight:800}
+.ev9UtilityButtons{margin-left:auto;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.ev9UtilityButtons span{color:#6deec4}
+.ev9UtilityButtons button{color:#d6ece4;background:#0b2e23;border:1px solid #1d6751;border-radius:6px;padding:7px 10px;font-size:10px;font-weight:800}
+.ev9App .eaEtap1Alert{margin:12px 26px;border-color:#b4554a;background:#371c1a}
+.ev9App .eaEtap1Auth{margin:20px 26px;max-width:940px;border:1px solid #1d5241;background:#061912}
+.ev9App .eaEtap1Auth h2{color:#f5f8f7}
+.ev9App label{color:#a4bcb3}
+.ev9App input,.ev9App select{background:#04130e;border-color:#28594a;color:#f3fbf7}
+.ev9App input:focus,.ev9App select:focus,.ev9App button:focus-visible,.ev9App a:focus-visible{outline:3px solid #00deb1;outline-offset:2px}
+.ev9App .eaEtap1Auth button,.ev9App .ev9Admin form>button{background:#00deb1;color:#001b14}
+.ev9Ready{margin:16px 26px!important;background:linear-gradient(120deg,#0a2b21,#06150e)!important;border-color:#1f7659!important;border-radius:10px!important;padding:15px 18px!important;gap:16px!important}
+.ev9Ready h2{font-size:19px!important;margin:5px 0!important}
+.ev9Ready p{margin-bottom:9px!important;font-size:11px!important;line-height:1.45!important}
+.ev9Ready strong{color:#8bffd4!important}
+.ev9Ready .eaEtap1ReadyUsers{margin-top:9px}
+.ev9Ready .eaEtap1ReadyUsers span{color:#e4f7f0;background:#09251a}
+.ev9Ready .eaEtap1ReadyButton{background:#00deb1;color:#012316;min-height:55px;border-radius:8px;min-width:170px}
+.ev9Ready .eaEtap1Observer{margin:0}
+.ev9Admin{margin:10px 26px;padding:12px 16px;background:#081a13;border:1px solid #285648;border-radius:9px}
+.ev9Admin summary{cursor:pointer;color:#9ac4b3;font-size:12px}
+.ev9Admin form{margin-top:16px;grid-template-columns:repeat(4,1fr);align-items:end}
+.ev9Admin form>button{height:46px;grid-column:1/-1;background:#00deb1;border:0;border-radius:8px;font-size:12px;font-weight:900}
+.ev9AuctionBar{margin:16px 26px 0;border:1px solid #205a49;border-radius:8px 8px 0 0;overflow:hidden;background:#071712}
+.ev9AuctionTop{min-height:38px;padding:10px 14px;display:flex;justify-content:space-between;gap:9px;align-items:center;background:linear-gradient(90deg,#0e6c56,#0a4b3c);font-size:11px;font-weight:900}
+.ev9AuctionTop span{font-size:10px;color:#d6ece4;text-align:right}
+.ev9PhaseRail{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));min-height:48px}
+.ev9Phase{min-width:0;display:flex;align-items:center;gap:10px;padding:8px 12px;border-right:1px solid #1b4136;color:#71877f}
+.ev9Phase:last-child{border-right:0}
+.ev9PhaseDot{width:10px;height:10px;flex:none;border-radius:50%;background:#52645e}
+.ev9Phase b{font-size:10px;display:block}
+.ev9Phase small{font-size:9px;display:block;margin-top:3px}
+.ev9Phase.done{color:#a5b7af}.ev9Phase.done .ev9PhaseDot{background:#84988e}
+.ev9Phase.active.step0{color:#f6d33e;background:#211d04}.ev9Phase.active.step0 .ev9PhaseDot{background:#f6d33e}
+.ev9Phase.active.step1{color:#ff8b2c;background:#2e1606}.ev9Phase.active.step1 .ev9PhaseDot{background:#ff8b2c}
+.ev9Phase.active.step2{color:#68ffda;background:#07261e}.ev9Phase.active.step2 .ev9PhaseDot{background:#00d691;box-shadow:0 0 13px #00d691}
+.ev9Phase.active.step3{color:#ff7a72;background:#2e0b08}.ev9Phase.active.step3 .ev9PhaseDot{background:#ff4d43}
+.ev9Workspace{margin:0 26px 0;display:grid;grid-template-columns:minmax(0,1.32fr) minmax(0,1.05fr) minmax(270px,.79fr);border:1px solid #1c473b;border-top:0;background:#04100c;min-height:600px}
+.ev9Column{min-width:0;border-right:1px solid #1b4136}.ev9Column:last-child{border-right:0}
+.ev9ColHead{height:41px;display:flex;align-items:center;justify-content:space-between;gap:5px;padding:0 12px;background:#0a1814;border-bottom:1px solid #1c4438;font-size:11px}
+.ev9ColHead span{font-size:9px;color:#7f958d}
+.ev9Media{position:relative;min-height:360px;background:#0b1612;isolation:isolate;overflow:hidden}
+.ev9CarBackdrop{height:100%;min-height:360px;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 50% 54%,#143e33,#05110d 72%)}
+.ev9CarBackdrop svg{display:block;width:100%;height:auto;max-height:490px;object-fit:contain}
+.ev9MediaBadges{position:absolute;left:10px;top:12px;z-index:2;display:flex;gap:7px;flex-wrap:wrap}
+.ev9MediaBadges span{font-size:9px;border:1px solid #31574b;border-radius:99px;background:#020806d9;padding:6px 9px;font-weight:900}
+.ev9MediaBadges span.good{color:#00deb1;border-color:#0a7b61}
+.ev9CarOverlay{position:absolute;right:13px;top:50px;pointer-events:none}
+.ev9ClockRing{width:130px;height:130px;border-radius:50%;border:5px solid #f6d33e;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center;gap:5px;background:#020806ce;box-shadow:0 0 18px #0006}
+.ev9ClockRing.live{border-color:#00deb1;box-shadow:0 0 24px #00deb133}
+.ev9ClockRing.closed{border-color:#ff4d43}
+.ev9ClockRing span,.ev9ClockRing small{color:#b5dfcb;font-size:9px;font-weight:900}
+.ev9ClockRing strong{font-size:27px;line-height:1.15;color:#fff}
+.ev9MediaFoot{position:absolute;bottom:10px;left:10px;right:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;color:#e3f2ec;text-shadow:0 1px 4px #000}
+.ev9MediaFoot span{padding:6px 9px;background:#020806cf;border-radius:5px}
+.ev9MediaFoot button{color:#fff;background:#020806cf;border:1px solid #31574b;padding:7px;border-radius:5px;white-space:nowrap;font-size:10px}
+.ev9Thumbs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px;padding:8px;background:#07130f;border-top:1px solid #173b31}
+.ev9Thumbs button{min-width:0;display:flex;flex-direction:column;gap:6px;align-items:center;justify-content:center;padding:7px 2px;height:75px;background:linear-gradient(160deg,#142f27,#06120f);border:1px solid #284b40;color:#829e91;border-radius:6px}
+.ev9Thumbs button span{font-size:30px;line-height:1}.ev9Thumbs button small{font-size:9px}
+.ev9Thumbs button.active{border:2px solid #00deb1;color:#a2ffe0}
+.ev9Specs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:#183d32;border-top:1px solid #183d32}
+.ev9Specs>div{background:#06130f;padding:11px 8px;min-width:0}.ev9Specs small{font-size:8px;color:#7f958d;display:block}.ev9Specs b{font-size:10px;display:block;margin-top:4px;overflow-wrap:anywhere}
+.ev9BlockBody{padding:15px}
+.ev9BlockTitle{font-size:20px;font-weight:1000;line-height:1.1}.ev9BlockSub{color:#82978f;font-size:10px;line-height:1.5;margin:6px 0 13px}
+.ev9Stats{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#1a4035;border:1px solid #1a4035;border-radius:7px;overflow:hidden}
+.ev9Stats>div{background:#07130f;padding:9px;display:flex;justify-content:space-between;align-items:center;gap:5px;min-width:0}
+.ev9Stats small{font-size:9px;color:#83978f}.ev9Stats b{font-size:10px;text-align:right;overflow-wrap:anywhere}
+.ev9BidZone{display:grid;grid-template-columns:minmax(0,1fr) 142px;align-items:center;gap:10px;margin-top:12px;padding:14px 0;border-top:1px solid #1a4035;border-bottom:1px solid #1a4035}
+.ev9BidValues{display:flex;flex-direction:column;gap:5px;min-width:0}
+.ev9BidValues>small{font-size:9px;color:#8ba89c}.ev9BidValues>strong{font-size:clamp(22px,2vw,34px);line-height:1.14;white-space:nowrap;color:#f6fffb}
+.ev9BidValues>span{font-size:11px;color:#8ba89c}.ev9BidValues>span b{color:#d7eee6}
+.ev9NextBox{display:flex;flex-direction:column;gap:4px;margin-top:9px}
+.ev9NextBox small{font-size:9px;color:#7e9e92}.ev9NextBox b{font-size:18px;color:#76ffdd;white-space:nowrap}
+.ev9Increment{font-size:9px;color:#88ad9e;margin-top:5px}
+.ev9Increment b{color:#b0ffde}
+.ev9BidCircle{width:142px;height:142px;position:relative;border-radius:50%;display:grid;place-items:center;background:conic-gradient(#ff8b2c 0 125deg,#1e4639 125deg)}
+.ev9BidCircle.is-live{background:conic-gradient(#00deb1 0 260deg,#1e4639 260deg);box-shadow:0 0 22px #00deb129}
+.ev9BidCircle.is-closed{background:conic-gradient(#ff4d43,#f4cf4f,#ff4d43)}
+.ev9CircleInner{position:absolute;inset:8px;background:#04100c;border:1px solid #173f34;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px}
+.ev9CircleInner small{font-size:10px;color:#95b9a7}.ev9CircleInner b{font-size:22px;color:#fcfffd}.ev9CircleInner span{font-size:15px;color:#00deb1}
+.ev9Round{margin-top:12px;border:1px solid #1b4338;border-radius:6px;padding:10px}
+.ev9RoundHead{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}.ev9RoundHead strong{font-size:10px;color:#dcebe5}.ev9RoundHead small{font-size:9px;color:#85a294}
+.ev9RoundSteps{display:grid;grid-template-columns:repeat(5,1fr) auto;gap:7px;align-items:center;margin-top:8px}
+.ev9RoundSteps span{border:1px solid #2a584a;border-radius:50%;width:29px;height:29px;display:grid;place-items:center;font-size:10px;font-weight:900;color:#7ea496}
+.ev9RoundSteps span.active{background:#00deb1;border-color:#00deb1;color:#001b14}.ev9RoundSteps>b{font-size:10px;color:#c5efdc}
+.ev9BidActions{margin-top:13px}.ev9BidActions label{font-size:9px;letter-spacing:.03em}
+.ev9BidActions input{min-height:41px;font-size:18px;font-weight:900;color:#f6fffb}
+.ev9QuickButtons{margin-top:7px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.ev9QuickButtons button{font-size:11px;background:#0a281c;border:1px solid #316353;border-radius:5px;color:#7fae9b;padding:7px}
+.ev9QuickButtons span{font-size:9px;color:#819b8f}
+.ev9PrimaryBid{margin-top:12px;width:100%;min-height:57px;background:#00deb1!important;color:#001b14!important;border:0!important;border-radius:8px;font-size:12px;font-weight:1000;line-height:1.3}
+.ev9BidDisabled{font-size:11px;color:#9bc8b2;background:#11291f;border:1px solid #255745;text-align:center;padding:15px 9px;margin-top:12px;border-radius:6px}
+.ev9Winner{position:relative;margin-top:12px;background:linear-gradient(110deg,#2e1606,#103326);border:1px solid #bf9951;border-radius:9px;padding:12px;text-align:center;overflow:hidden}
+.ev9Winner span{display:block;font-size:10px;color:#f8cf67}.ev9Winner strong{display:block;font-size:26px;margin:6px 0}.ev9Winner b{color:#ffc84c;font-size:21px}.ev9Winner small{display:block;color:#d2d3ac;font-size:10px;margin-top:5px}
+.ev9Confetti{position:absolute;inset:20% auto auto 0;width:100%;letter-spacing:40px;font-size:20px;color:#f5ca53;opacity:.55;pointer-events:none}
+.ev9VoicePanel{border-top:1px solid #1a4035;display:flex;align-items:center;flex-wrap:wrap;gap:7px;margin-top:15px;padding-top:12px}
+.ev9VoicePanel>div{flex:1 1 100%}.ev9VoicePanel b{font-size:10px;display:block}.ev9VoicePanel small{font-size:9px;color:#7d9d8d}
+.ev9VoicePanel select{flex:1;min-width:140px;height:36px;min-height:36px;padding:5px;font-size:10px}.ev9VoicePanel button{color:#b6ffe2;background:#0d3a2a;border:1px solid #2e7456;border-radius:6px;padding:10px;font-size:10px;font-weight:900}
+.ev9Upcoming{max-height:415px;overflow-y:auto}
+.ev9UpcomingLot{display:grid;grid-template-columns:66px 1fr;gap:8px;padding:11px;border-bottom:1px solid #1a4035}
+.ev9LotIcon{height:57px;background:#102b22;border:1px solid #1e5341;border-radius:5px;display:grid;place-items:center;color:#5cb79a;font-size:30px}
+.ev9UpcomingLot>div:last-child{min-width:0}
+.ev9UpcomingLot b{font-size:11px;display:block;line-height:1.4}.ev9UpcomingLot small{font-size:9px;color:#879b94;display:block;margin:4px 0}.ev9UpcomingLot strong{font-size:8px;color:#ffbc70}
+.ev9Deposit,.ev9BidGate{margin:12px;background:#071713;border:1px solid #1d4b3d;border-radius:9px;padding:12px}
+.ev9Deposit{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.ev9Deposit small{display:block;font-size:9px;color:#81968e}.ev9Deposit strong{display:block;font-size:11px;color:#a1eecb;margin-top:5px}
+.ev9DepositTrack{grid-column:1/-1;height:5px;background:#132820;border-radius:4px;overflow:hidden;margin-top:8px}.ev9DepositTrack span{display:block;width:0;height:100%;background:#00deb1}
+.ev9Deposit p{grid-column:1/-1;margin:4px 0;font-size:10px;color:#82998b;line-height:1.5}
+.ev9BidGate b{font-size:11px}.ev9BidGate p{font-size:11px;line-height:1.9;color:#a3c7b4;margin:8px 0}
+.ev9Bottom{margin:14px 26px 24px;background:#06130f;border:1px solid #1d493c;border-radius:10px;overflow:hidden}
+.ev9Tabs{display:flex;align-items:stretch;gap:3px;border-bottom:1px solid #1b4337;overflow-x:auto;scrollbar-width:thin}
+.ev9Tabs button{flex:none;border:0;background:transparent;color:#9ab5a6;padding:14px 13px;font-size:11px;font-weight:800;border-bottom:2px solid transparent}
+.ev9Tabs button.active{color:#00deb1;border-bottom-color:#00deb1;background:#0a251a}
+.ev9TabBody{min-height:130px;padding:17px}.ev9TabBody h3{font-size:13px;margin:0 0 9px}.ev9TabBody p{font-size:12px;color:#8ba198;line-height:1.65}
+.ev9TabIntro{display:flex;align-items:center;flex-wrap:wrap;justify-content:space-between;gap:6px;margin-bottom:10px}.ev9TabIntro span{font-size:10px;color:#8ba198}
+.ev9History{display:grid;gap:5px;max-height:300px;overflow:auto}.ev9History>div{display:flex;align-items:center;justify-content:space-between;gap:9px;background:#081913;border:1px solid #1c3f33;border-radius:6px;padding:11px}
+.ev9History b{font-size:12px}.ev9History span{font-size:10px;color:#8ba198}.ev9History strong{font-size:13px;color:#76ffdc;white-space:nowrap}
+@media (max-width:1290px){
+ .ev9Workspace{grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr)}
+ .ev9SideCol{grid-column:1/-1;display:grid;grid-template-columns:repeat(2,1fr);align-content:start;border-top:1px solid #245447;border-right:0}
+ .ev9SideCol .ev9ColHead{grid-column:1/-1}.ev9Upcoming{max-height:230px}
+ .ev9Deposit{margin:10px}.ev9BidGate{grid-column:2;margin-top:-75px;align-self:end}
+}
+@media (max-width:800px){
+ .ev9Header{gap:12px;padding:13px 16px}.ev9Brand{min-width:130px}.ev9Brand span{font-size:23px}.ev9Brand small{font-size:8px;letter-spacing:3.8px}
+ .ev9SearchShell{display:none}.ev9Nav{padding:0 16px;gap:18px}.ev9NavRight{display:none}
+ .ev9Utility{padding:9px 16px}.ev9UtilityButtons{width:100%;margin-left:0}
+ .ev9AuctionBar{margin:12px 14px 0}.ev9Workspace{margin:0 14px;display:flex;flex-direction:column;min-height:0}
+ .ev9Column{border-right:0;border-bottom:1px solid #1b4136}.ev9Column:last-child{border-bottom:0}
+ .ev9Media{min-height:320px}.ev9CarBackdrop{min-height:320px}
+ .ev9SideCol{display:block}.ev9BidGate{margin:10px}
+ .ev9Bottom{margin:12px 14px}
+ .ev9Ready{margin:12px 14px!important}
+ .ev9App .eaEtap1Auth{margin:14px}
+ .ev9Admin{margin:10px 14px}
+ .ev9Admin form{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:510px){
+ .ev9HeaderRight{gap:5px}.ev9TestFlag{font-size:8px;padding:5px}.ev9Online{font-size:9px}
+ .ev9Brand{min-width:105px}.ev9Brand span{font-size:20px}.ev9Brand small{font-size:7px;letter-spacing:3px}
+ .ev9Phase{padding:7px 5px;gap:5px}.ev9PhaseDot{width:7px;height:7px}.ev9Phase b{font-size:8px}.ev9Phase small{font-size:8px}
+ .ev9AuctionTop{flex-direction:column;align-items:flex-start;padding:10px;font-size:10px}.ev9AuctionTop span{text-align:left}
+ .ev9Media,.ev9CarBackdrop{min-height:245px}.ev9CarBackdrop svg{min-height:240px}
+ .ev9ClockRing{width:97px;height:97px;border-width:3px}.ev9ClockRing strong{font-size:19px}.ev9ClockRing span,.ev9ClockRing small{font-size:8px}
+ .ev9CarOverlay{right:6px;top:43px}.ev9MediaBadges span{font-size:8px;padding:5px}
+ .ev9MediaFoot{font-size:8px;bottom:7px;left:6px;right:6px}.ev9MediaFoot button{font-size:9px}
+ .ev9Thumbs{gap:3px;padding:5px}.ev9Thumbs button{height:61px}.ev9Thumbs button span{font-size:21px}.ev9Thumbs button small{font-size:8px}
+ .ev9Specs{grid-template-columns:1fr 1fr}
+ .ev9BlockBody{padding:11px}.ev9BlockTitle{font-size:18px}
+ .ev9BidZone{grid-template-columns:minmax(0,1fr) 113px}.ev9BidCircle{width:113px;height:113px}.ev9CircleInner b{font-size:19px}.ev9CircleInner small{font-size:8px}
+ .ev9BidValues>strong{font-size:clamp(20px,6vw,28px)}.ev9NextBox b{font-size:16px}
+ .ev9RoundSteps{gap:3px}.ev9RoundSteps span{width:27px;height:27px}
+ .ev9History>div{gap:4px;flex-wrap:wrap}
+ .ev9App .eaEtap1Footer{margin:20px 14px 0;padding-bottom:22px}
+}
+@media(prefers-reduced-motion:reduce){.ev9App *{animation:none!important;transition:none!important}}
