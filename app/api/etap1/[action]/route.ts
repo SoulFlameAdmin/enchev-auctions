@@ -54,7 +54,7 @@ export async function POST(request: NextRequest, context: Context) {
   if (!role) return etap1Json({error:"Session expired. Sign in again."},401);
 
   if (action === "ready") {
-    if (role !== "mitko" && role !== "borko" && role !== "enchev")
+    if (role !== "mitko" && role !== "borko" && role !== "krum" && role !== "enchev")
       return etap1Json({error:"Only participants can press READY"},403);
     if (typeof body.ready !== "boolean")
       return etap1Json({error:"Boolean ready flag required"},400);
@@ -89,7 +89,7 @@ export async function POST(request: NextRequest, context: Context) {
     }
   }
 
-  if (role !== "mitko" && role !== "borko") return etap1Json({error:"Bidder only"},403);
+  if (role !== "mitko" && role !== "borko" && role !== "krum") return etap1Json({error:"Bidder only"},403);
   const nonce=body.nonce;
   if (typeof nonce !== "string" ||
       !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(nonce))
