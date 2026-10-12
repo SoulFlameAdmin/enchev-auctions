@@ -360,6 +360,7 @@ export default function EnchevStageOnePage(){
           ):<small>Admin does not count.</small>}
         </div>
       </section>}
+      {role==="admin"&&<div className="eaMonitorEntry"><a href="/live-auctions/etap-1/admin" aria-label="Open live admin dashboard">▣ OPEN ADMIN CONTROL ROOM →</a><small>Full-screen PC monitor · LIVE roster · READY · active bidders</small></div>}
       {role==="admin"&&preparingRound&&<details className="eaAdminSettings">
         <summary>Operator tools · optional manual start</summary>
         <form onSubmit={start}>
