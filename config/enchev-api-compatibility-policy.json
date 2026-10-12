@@ -152,6 +152,18 @@
         "400"
       ],
       "requestBodyRequired": true
+    },
+    {
+      "method": "GET",
+      "path": "/api/etap1/admin",
+      "operationId": "getEtap1AdminMonitor",
+      "responseCodes": [
+        "200",
+        "401",
+        "403",
+        "503"
+      ],
+      "requestBodyRequired": false
     }
   ]
 }
