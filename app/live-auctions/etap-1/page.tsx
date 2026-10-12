@@ -48,6 +48,7 @@ export default function EnchevStageOnePage(){
   const audioRef=useRef<AudioContext|null>(null);
   const soundRef=useRef(false);
   const lastRef=useRef<{id:string;sequence:number;status:string}|null>(null);
+  const lastServerNowRef=useRef(0);
   const pollingRef=useRef(false);
   const offsetRef=useRef(0);
 
@@ -69,6 +70,10 @@ export default function EnchevStageOnePage(){
   },[]);
 
   const applySnapshot=useCallback((next:Snapshot)=>{
+    // Never repaint a newer accepted bid with an older in-flight poll response.
+    const receivedAt=Date.parse(next.serverNow);
+    if(!Number.isFinite(receivedAt)||receivedAt<lastServerNowRef.current)return;
+    lastServerNowRef.current=receivedAt;
     if(next.auction){
       const prior=lastRef.current;
       if(prior?.id===next.auction.id){
@@ -115,8 +120,7 @@ export default function EnchevStageOnePage(){
       }
       lastRef.current={id:next.auction.id,sequence:next.auction.sequence,status:next.status};
     }
-    const remoteNow=Date.parse(next.serverNow);
-    if(Number.isFinite(remoteNow))offsetRef.current=remoteNow-Date.now();
+    offsetRef.current=receivedAt-Date.now();
     setSnapshot(next);setLocalNow(Date.now());
   },[play]);
 
@@ -124,9 +128,9 @@ export default function EnchevStageOnePage(){
     if(pollingRef.current)return;
     pollingRef.current=true;
     try{
-      const response=await fetch("/api/etap1/state",{cache:"no-store",credentials:"same-origin"});
+      const response=await fetch("/api/etap1/state",{cache:"no-store",credentials:"same-origin",signal:AbortSignal.timeout(10000)});
       const data=await response.json() as StateReply;
-      setAvailable(data.available!==false);
+      setAvailable(data.available!==false && !(response.status===503 && data.error==="Pilot not activated"));
       if(response.status===401){
         setRole(null);setConnected(false);setLobby(null);setSnapshot(null);return;
       }
@@ -161,7 +165,7 @@ export default function EnchevStageOnePage(){
     const response=await fetch("/api/etap1/"+action,{
       method:"POST",credentials:"same-origin",
       headers:{"Content-Type":"application/json"},
-      body:JSON.stringify(data),
+      body:JSON.stringify(data),signal:AbortSignal.timeout(12000),
     });
     const result=await response.json() as StateReply&{ok?:boolean};
     if(!response.ok)throw new Error(result.error??"Request rejected");
@@ -183,7 +187,7 @@ export default function EnchevStageOnePage(){
   const logOut=async()=>{
     if(busy)return;
     setBusy(true);
-    try{await post("logout",{});setRole(null);setSnapshot(null);setLobby(null);setBidFlash(null);setCelebratingId(null);setRoundLockKey(null);lastRef.current=null;}
+    try{await post("logout",{});setRole(null);setSnapshot(null);setLobby(null);setBidFlash(null);setCelebratingId(null);setRoundLockKey(null);lastRef.current=null;lastServerNowRef.current=0;}
     catch{setError("Sign out failed");}
     finally{setBusy(false);}
   };
@@ -210,6 +214,37 @@ export default function EnchevStageOnePage(){
     }
     catch(e){setError(e instanceof Error?e.message:"Bid rejected");void poll();}
     finally{setBusy(false);}
+  };
+  const downloadDemoClosingRecord=()=>{
+    const finished=snapshot?.auction;
+    if(snapshot?.status!=="closed"||!finished)return;
+    // A factual DEMO evidence record, not an invoice, receipt, contract or vehicle title.
+    const closed=finished.closedAt??finished.endsAt;
+    const lines=[
+      "ENCHEV AUCTIONS — DEMO AUCTION CLOSING RECORD",
+      "NOT AN INVOICE / CONTRACT / PAYMENT CONFIRMATION / PROOF OF OWNERSHIP",
+      "DEMO ONLY — NO REAL PURCHASE, PAYMENT OR VEHICLE TRANSFER",
+      "",
+      "Auction ID: "+finished.id,
+      "Lot: "+finished.title,
+      "Closed at (server, ISO): "+closed,
+      "Highest bidder: "+(finished.winnerRole??"None — no accepted bids"),
+      "Final demo amount (EUR): "+Number(finished.currentAmount).toFixed(2),
+      "Accepted bid count: "+finished.sequence,
+      "Viewer role: "+(role??"Unknown"),
+      "",
+      "Next real-world steps (not active in this demo):",
+      "Seller approval / reserve verification -> written confirmation",
+      "Order & itemized invoice -> payment verification",
+      "Documents review -> release authorization -> pickup/transport",
+      "Do NOT transfer funds based on this demonstration record."
+    ];
+    const blob=new Blob([lines.join("\n")+"\n"],{type:"text/plain;charset=utf-8"});
+    const objectUrl=URL.createObjectURL(blob);
+    const anchor=document.createElement("a");
+    anchor.href=objectUrl;anchor.download="ENCHEV-DEMO-RESULT-"+finished.id.slice(0,8)+".txt";
+    document.body.appendChild(anchor);anchor.click();anchor.remove();
+    window.setTimeout(()=>URL.revokeObjectURL(objectUrl),1000);
   };
   const replayWinner=()=>{
     if(snapshot?.status!=="closed"||!snapshot.auction?.winnerRole)return;
@@ -356,12 +391,24 @@ export default function EnchevStageOnePage(){
       </section>}
       {role==="admin"&&<div className="eaMonitorEntry"><a href="/live-auctions/etap-1/admin" aria-label="Open live admin dashboard">▣ OPEN ADMIN CONTROL ROOM →</a><small>Full-screen PC monitor · LIVE roster · READY · active bidders</small></div>}
       {role==="admin"&&preparingRound&&<p className="eaOperatorNote">🔒 The first round starts on three bidder logins; later rounds require three READY clicks. The operator never starts or blocks the auction.</p>}
-      {status==="closed"&&auction&&<details className="eaPreviousRound">
-        <summary><span>🏆</span><strong>Previous winner: {auction.winnerRole?labelRole(auction.winnerRole):"No bids"}</strong><b>{money(auction.currentAmount)}</b><small>Details ▾</small></summary>
-        <div>Lot {auction.id.slice(0,8).toUpperCase()} · {auction.sequence} accepted bids · server-confirmed demo result.
-          {auction.winnerRole&&<button type="button" onClick={replayWinner}>✨ Replay winner moment</button>}
+      {status==="closed"&&auction&&<section className="eaFinalResult" aria-labelledby="eaFinalTitle" aria-live="polite">
+        <span className="eaFinalEyebrow">🏁 AUCTION CLOSED · SERVER CONFIRMED · DEMO ONLY</span>
+        <h2 id="eaFinalTitle">{!auction.winnerRole?"No bids — no winning bidder":auction.winnerRole===role?"🏆 YOU ARE THE HIGHEST BIDDER":"🏆 HIGHEST BID: "+labelRole(auction.winnerRole)}</h2>
+        <p>{auction.winnerRole===role?"Your bid finished highest in this TEST round.":"The server has finished the demonstration round."} No purchase, payment or ownership transfer has occurred.</p>
+        <strong className="eaFinalAmount">{money(auction.currentAmount)}</strong>
+        <div className="eaFinalFacts">
+          <span>LOT <b>{auction.id.slice(0,8).toUpperCase()}</b></span>
+          <span>BIDS <b>{auction.sequence}</b></span>
+          <span>WINNER <b>{labelRole(auction.winnerRole)}</b></span>
+          <span>FINISHED <b>{new Date(auction.closedAt??auction.endsAt).toLocaleTimeString("bg-BG",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}</b></span>
         </div>
-      </details>}
+        <p className="eaFinalNext">NEXT: Confirm the result in the admin panel → demonstrate seller approval → demo document pack → simulated payment → release only after checks. All three participants press READY for another round.</p>
+        <div className="eaFinalActions">
+          <button type="button" onClick={downloadDemoClosingRecord}>↓ Download DEMO result record</button>
+          {auction.winnerRole&&<button type="button" onClick={replayWinner}>🏆 Replay winner announcement</button>}
+        </div>
+        <small>This downloaded record is not a fiscal invoice, sale contract, payment request, vehicle title or release authorization.</small>
+      </section>
       {showAuction&&<>
       <section className="eaAuctionIntro">
         <div><span className={"eaAuctionStatus "+(status==="live"?"is-live":"")}>{status==="live"?"● LIVE NOW":"◉ READY FOR NEXT ROUND"}</span><span className="eaAuctionLot">LOT {status==="live"&&auction?auction.id.slice(0,8).toUpperCase():"DEMO–001"}</span></div>
