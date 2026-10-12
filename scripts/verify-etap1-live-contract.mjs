@@ -46,7 +46,7 @@ const gates=[
     admissionSql.includes("if p_ready is true and not v_running") &&
     admissionSql.includes("enchev_etap1_admissions") &&
     admissionSql.includes("Press READY for the NEXT auction") &&
-    admissionSql.includes("p_session_id=p_session_id") &&
+    admissionSql.includes("a.session_id=p_session_id") &&
     api.includes('"etap1_ready_lobby_secure"') &&
     api.includes('"etap1_bid_admitted"') &&
     client.includes('const admitted=lobby?.admitted===true') &&
