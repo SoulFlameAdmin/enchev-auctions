@@ -15,6 +15,7 @@ const api=read("app/api/etap1/[action]/route.ts");
 const sql=read("supabase/migrations/20261010131500_enchev_etap1_live_pilot.sql");
 const client=read("app/live-auctions/etap-1/page.tsx");
 const css=read("app/live-auctions/etap-1/etap1.css");
+const krumSql=read("supabase/migrations/20261012160000_enchev_etap1_krum_preview_bidder.sql");
 
 const gates=[
   ["dedicated DB and explicit activation", gateway.includes('ENCHEV_ETAP1_ENABLED !== "true"')&&gateway.includes("SHARED_SOULFLAME_PROJECT")],
@@ -34,6 +35,11 @@ const gates=[
   ["database RLS on all three tables",["auctions","rooms","bids"].every(x=>sql.includes("alter table public.enchev_etap1_"+x+" enable row level security"))],
   ["explicit service_role-only RPC",sql.includes("grant execute on function public.etap1_bid(text,uuid) to service_role")],
   ["independent live observer and bidders",client.includes('role==="mitko"||role==="borko"') && client.includes("Enchev · observer")],
+  ["Krum preview bidder fully wired",gateway.includes('process.env.VERCEL_ENV === "preview" ? "krum"') &&
+    gateway.includes('"krum"') && api.includes('role !== "krum"') &&
+    client.includes('<option value="krum">') && client.includes('role==="krum"') &&
+    krumSql.includes("check (actor in ('mitko','borko','krum'))") &&
+    krumSql.includes("v_count between 2 and 4")],
   ["opt-in Web Audio",client.includes("new AudioContext()") && client.includes("ENABLE SOUND")],
   ["response snapshots every second",client.includes('window.setInterval(()=>void poll(),1000)')],
   ["mobile width CSS",css.includes("@media(max-width:480px)")],
