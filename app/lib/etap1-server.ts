@@ -48,9 +48,9 @@ function sign(data: string, secret: string) {
   return createHmac("sha256", secret).update(data).digest("base64url");
 }
 
-export function issueEtap1Cookie(response: NextResponse, role: Etap1Role, config: Config) {
+export function issueEtap1Cookie(response: NextResponse, role: Etap1Role, sid: string, config: Config) {
   const payload = Buffer.from(JSON.stringify({
-    role, exp: Date.now() + 6 * 60 * 60 * 1000, ver: 1,
+    role, sid, exp: Date.now() + 6 * 60 * 60 * 1000, ver: 2,
   })).toString("base64url");
   response.cookies.set(COOKIE, payload + "." + sign(payload, config.secret), {
     httpOnly: true, secure: process.env.NODE_ENV === "production",
@@ -65,7 +65,9 @@ export function clearEtap1Cookie(response: NextResponse) {
   });
 }
 
-export function sessionRole(request: NextRequest, config: Config): Etap1Role | null {
+export type Etap1Session = { role: Etap1Role; sid: string };
+
+export function etap1Session(request: NextRequest, config: Config): Etap1Session | null {
   const token = request.cookies.get(COOKIE)?.value;
   if (!token || token.length > 1000) return null;
   const parts = token.split(".");
@@ -77,11 +79,17 @@ export function sessionRole(request: NextRequest, config: Config): Etap1Role | n
     const value: unknown = JSON.parse(Buffer.from(parts[0], "base64url").toString("utf8"));
     if (!value || typeof value !== "object") return null;
     const data = value as Record<string,unknown>;
-    if (data.ver !== 1 || typeof data.exp !== "number" ||
+    if (data.ver !== 2 || typeof data.sid !== "string" ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(data.sid) ||
+      typeof data.exp !== "number" ||
       data.exp <= Date.now() || data.exp > Date.now() + 6 * 60 * 60 * 1000 + 60000 ||
       !ETAP1_ROLES.includes(data.role as Etap1Role)) return null;
-    return data.role as Etap1Role;
+    return {role:data.role as Etap1Role,sid:data.sid};
   } catch { return null; }
+}
+
+export function sessionRole(request: NextRequest, config: Config): Etap1Role | null {
+  return etap1Session(request,config)?.role??null;
 }
 
 export function codeValid(role: Etap1Role, code: string, config: Config): boolean {
@@ -111,7 +119,7 @@ export async function etap1Body(request: NextRequest): Promise<Record<string,unk
   } catch { return null; }
 }
 
-export async function etap1Rpc(config: Config, name: "etap1_snapshot"|"etap1_start"|"etap1_bid"|"etap1_ready_lobby",
+export async function etap1Rpc(config: Config, name: "etap1_snapshot"|"etap1_start"|"etap1_bid"|"etap1_ready_lobby"|"etap1_ready_lobby_secure"|"etap1_bid_admitted",
   params: Record<string,unknown> = {}): Promise<unknown> {
   const response = await fetch(config.url + "/rest/v1/rpc/" + name, {
     method: "POST", cache: "no-store",
