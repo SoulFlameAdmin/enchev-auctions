@@ -217,6 +217,21 @@ export default function EnchevStageOnePage(){
     catch(e){setError(e instanceof Error?e.message:"Bid rejected");void poll();}
     finally{setBusy(false);}
   };
+  const replayWinner=()=>{
+    if(snapshot?.status!=="closed"||!snapshot.auction?.winnerRole)return;
+    const id=snapshot.auction.id;
+    setCelebratingId(null);
+    window.setTimeout(()=>setCelebratingId(id),24);
+    play("close");
+    if(voiceRef.current&&"speechSynthesis" in window){
+      const bg=voiceLangRef.current.startsWith("bg");
+      const speech=new SpeechSynthesisUtterance(bg
+        ?"Победител "+labelRole(snapshot.auction.winnerRole)+". Финална цена "+Math.round(Number(snapshot.auction.currentAmount))+" евро."
+        :"Winner "+labelRole(snapshot.auction.winnerRole)+". Final price "+Math.round(Number(snapshot.auction.currentAmount))+" euros.");
+      speech.lang=voiceLangRef.current;
+      window.speechSynthesis.cancel();window.speechSynthesis.speak(speech);
+    }
+  };
   const enableVoice=()=>{
     if(voiceOn){
       voiceRef.current=false;setVoiceOn(false);
@@ -425,6 +440,7 @@ export default function EnchevStageOnePage(){
               <strong>{auction?.winnerRole?labelRole(auction.winnerRole)+" WINS":"NO BIDS · NO SALE"}</strong>
               <b>{money(currentPrice)}</b><small>Demo result only. No payment or vehicle transfer.</small>
               <div className="ev9WinVerification"><span>LOT {auction?.id.slice(0,8).toUpperCase()} · ACCEPTED BIDS {auction?.sequence??0}</span><b>SERVER CONFIRMED · DEMO ONLY</b></div>
+              {auction?.winnerRole&&<button className="ev9ReplayWinner" type="button" onClick={replayWinner}>🏆 Replay winning moment ✨</button>}
             </div>}
             <div className="ev9VoicePanel">
               <div><b>🔊 AUCTIONEER VOICE</b><small>System speech synthesis · optional</small></div>
@@ -472,6 +488,7 @@ export default function EnchevStageOnePage(){
       </div>}
       {celebratingId===auction?.id&&auction?.winnerRole&&
         <div className="ev9Celebration" aria-hidden="true" key={celebratingId}>
+          <div className="ev9CelebrationCard"><span>🏆</span><small>ENCHEV AUCTION · DEMO</small><strong>{labelRole(auction.winnerRole)} WINS!</strong><b>{money(auction.currentAmount)}</b></div>
           {Array.from({length:34},(_,i)=><i key={i} style={{
             "--ev9-x":((i*37)%100)+"%",
             "--ev9-delay":((i*17)%15)*.08+"s",
