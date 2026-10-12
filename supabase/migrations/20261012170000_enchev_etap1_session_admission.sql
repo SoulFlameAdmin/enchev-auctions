@@ -83,7 +83,11 @@ begin
         last_seen=v_now
       where role=p_actor and session_id=p_session_id;
       if not found then
-        raise exception 'Session replaced: log in again';
+        -- An older browser session cannot take over the same role.
+        -- Tell the API to show LOGIN again without turning a 503 into an auth error.
+        return jsonb_build_object(
+          'lobby',jsonb_build_object('sessionCurrent',false,'admitted',false),
+          'state',public.etap1_snapshot());
       end if;
       if v_running and p_ready is not null then
         raise exception 'Cannot READY during active auction';
@@ -142,7 +146,7 @@ begin
   return jsonb_build_object(
     'lobby',jsonb_build_object('participants',v_people,
       'count',v_count,'readyCount',v_ready_count,'minPlayers',2,
-      'admitted',v_admitted),
+      'sessionCurrent',true,'admitted',v_admitted),
     'state',public.etap1_snapshot()
   );
 end;
