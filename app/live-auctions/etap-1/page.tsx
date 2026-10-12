@@ -408,7 +408,7 @@ export default function EnchevStageOnePage(){
           {auction.winnerRole&&<button type="button" onClick={replayWinner}>🏆 Replay winner announcement</button>}
         </div>
         <small>This downloaded record is not a fiscal invoice, sale contract, payment request, vehicle title or release authorization.</small>
-      </section>
+      </section>}
       {showAuction&&<>
       <section className="eaAuctionIntro">
         <div><span className={"eaAuctionStatus "+(status==="live"?"is-live":"")}>{status==="live"?"● LIVE NOW":"◉ READY FOR NEXT ROUND"}</span><span className="eaAuctionLot">LOT {status==="live"&&auction?auction.id.slice(0,8).toUpperCase():"DEMO–001"}</span></div>
