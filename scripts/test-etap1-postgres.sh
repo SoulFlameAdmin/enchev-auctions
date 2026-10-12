@@ -158,7 +158,7 @@ SQL
 
 # Four demo participants: Krum is a valid bidder, Enchev remains observer.
 psql -X -v ON_ERROR_STOP=1 <<'SQL'
-do $
+do $$
 declare
   v jsonb;
   v_id uuid;
@@ -190,7 +190,7 @@ begin
   v:=public.etap1_bid('krum','00112233-4455-4677-8899-aabbccddee55');
   if (v->'auction'->>'sequence')::int<>1 then
     raise exception 'Krum idempotency failed'; end if;
-end $;
+end $$;
 SQL
 echo "ETAP1 KRUM BIDDER PASS: four-person READY barrier, Krum bid and retry."
 
