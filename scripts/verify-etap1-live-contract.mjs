@@ -25,7 +25,7 @@ const gates=[
   ["separate participant codes",gateway.includes("new Set(Object.values(codes)).size !== ETAP1_ROLES.length")],
   ["signed HTTP-only session",gateway.includes("timingSafeEqual") && gateway.includes("httpOnly: true") && gateway.includes('sameSite: "strict"')],
   ["same-origin enforced on writes",api.includes("sameOriginPost(request)")],
-  ["admin-only auction start",api.includes('role !== "admin"')],
+  ["admin-only operator action rejected",api.includes('role !== "admin"')],
   ["bidder-only bid endpoint",api.includes('role !== "mitko" && role !== "borko"')],
   ["atomic lock ordering",sql.includes("where name='stage-one' for update") && sql.includes("for update;")],
   ["unique idempotency and server sequence",sql.includes("unique (auction_id, actor, request_nonce)")&&sql.includes("unique (auction_id, sequence)")],
@@ -36,11 +36,13 @@ const gates=[
   ["database RLS on all three tables",["auctions","rooms","bids"].every(x=>sql.includes("alter table public.enchev_etap1_"+x+" enable row level security"))],
   ["explicit service_role-only RPC",sql.includes("grant execute on function public.etap1_bid(text,uuid) to service_role")],
   ["independent live observer and bidders",client.includes('role==="mitko"||role==="borko"') && client.includes("Enchev · observer")],
-  ["Krum preview bidder fully wired",gateway.includes('process.env.VERCEL_ENV === "preview" ? "krum"') &&
-    gateway.includes('"krum"') && api.includes('role !== "krum"') &&
-    client.includes('<option value="krum">') && client.includes('role==="krum"') &&
-    krumSql.includes("check (actor in ('mitko','borko','krum'))") &&
-    krumSql.includes("v_count between 2 and 4")],
+  ["exact three current invited bidders and independent admin",
+    !gateway.includes('ENCHEV_ETAP1_KRUM_CODE') &&
+    !client.includes('<option value="krum">') &&
+    client.includes('<option value="enchev">Enchev — bidder</option>') &&
+    api.includes('role !== "borko" && role !== "enchev"') &&
+    api.includes('"etap1_join_lobby_automatic"') &&
+    krumSql.includes("check (actor in ('mitko','borko','krum'))")],
   ["winner -> new login must return to session-bound READY lobby",
     admissionSql.includes("p_rejoin boolean default false") &&
     admissionSql.includes("if p_ready is true and not v_running") &&
