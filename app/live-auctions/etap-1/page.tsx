@@ -327,7 +327,7 @@ export default function EnchevStageOnePage(){
         <label>Your role<select value={loginRole} onChange={e=>setLoginRole(e.target.value as Role)}>
           <option value="mitko">Mitko — bidder</option>
           <option value="borko">Borko — bidder</option>
-          <option value="enchev">Enchev — observer</option>
+          <option value="enchev">Enchev · observer</option>
           <option value="admin">Admin — operator</option>
         </select></label>
         <label>Invitation code<input value={code} type="password" autoComplete="off" minLength={loginRole==="admin"?16:4} maxLength={256} required placeholder="Your private code" onChange={e=>setCode(e.target.value)}/></label>
