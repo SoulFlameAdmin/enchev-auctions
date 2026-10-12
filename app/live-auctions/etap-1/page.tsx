@@ -187,13 +187,7 @@ export default function EnchevStageOnePage(){
     catch{setError("Sign out failed");}
     finally{setBusy(false);}
   };
-  const start=async(event:React.FormEvent<HTMLFormElement>)=>{
-    event.preventDefault();if(busy||!connected)return;
-    setBusy(true);setError("");
-    try{await post("start",{title:lotTitle,openingAmount:opening,increment,durationSeconds:duration});}
-    catch(e){setError(e instanceof Error?e.message:"Cannot start auction");}
-    finally{setBusy(false);}
-  };
+
   const setReady=async(next:boolean)=>{
     if(busy||!connected||snapshot?.status==="live")return;
     setBusy(true);setError("");
@@ -272,6 +266,8 @@ export default function EnchevStageOnePage(){
   const bidder=role==="mitko"||role==="borko"||role==="krum";
   const participant=bidder||role==="enchev";
   const myReady=Boolean(lobby?.participants.some(p=>p.role===role&&p.ready));
+  const corePresent=["mitko","borko","enchev"].every(expected=>lobby?.participants.some(p=>p.role===expected));
+  const minPlayers=lobby?.minPlayers??3;
   const latest=snapshot?.bids??[];
   const currentPrice=auction?.currentAmount??opening;
   const nextPrice=currentPrice+(auction?.increment??increment);
@@ -343,13 +339,13 @@ export default function EnchevStageOnePage(){
       {preparingRound&&<section className="eaReadyCard" aria-label="Participant readiness">
         <div className="eaReadyText">
           <span className="eaEyebrow"><span className="eaLiveDot"/> NEXT ROUND</span>
-          <h2>{status==="live"?"Round in progress — wait for next READY":(lobby?.count??0)<2?"Waiting for players":myReady?"You're ready.":"Ready to start?"}</h2>
+          <h2>{status==="live"?"Round in progress — wait for next READY":((lobby?.count??0)<minPlayers||!corePresent)?"Waiting for invited participants":myReady?"You're ready.":"Ready to start?"}</h2>
           <div className="eaReadyPeople">{(lobby?.participants??[]).map(person=>
             <span className={person.ready?"is-ready":""} key={person.role}>{person.ready?"●":"○"} {labelRole(person.role)}</span>)}
           </div>
           <p>{status==="live"
             ?"This round started without your current login. You cannot bid; when it ends, press I'M READY for the next one."
-            :(lobby?.count??0)<2?"Invite one more player to begin."
+            :((lobby?.count??0)<minPlayers||!corePresent)?"Mitko, Borko and Enchev must join. Krum can join before the last READY."
             :(lobby?.readyCount??0)===(lobby?.count??0)?"The auction is starting…":"Everyone online must press READY."}</p>
         </div>
         <div className="eaReadyControl">
@@ -361,16 +357,7 @@ export default function EnchevStageOnePage(){
         </div>
       </section>}
       {role==="admin"&&<div className="eaMonitorEntry"><a href="/live-auctions/etap-1/admin" aria-label="Open live admin dashboard">▣ OPEN ADMIN CONTROL ROOM →</a><small>Full-screen PC monitor · LIVE roster · READY · active bidders</small></div>}
-      {role==="admin"&&preparingRound&&<details className="eaAdminSettings">
-        <summary>Operator tools · optional manual start</summary>
-        <form onSubmit={start}>
-          <label>Vehicle<input value={lotTitle} minLength={4} maxLength={120} required onChange={e=>setLotTitle(e.target.value)}/></label>
-          <label>Opening €<input type="number" min={100} max={10000000} value={opening} required onChange={e=>setOpening(Number(e.target.value))}/></label>
-          <label>Step €<input type="number" min={10} max={100000} value={increment} required onChange={e=>setIncrement(Number(e.target.value))}/></label>
-          <label>Duration seconds<input type="number" min={30} max={600} value={duration} required onChange={e=>setDuration(Number(e.target.value))}/></label>
-          <button type="submit" disabled={!connected||busy}>START DEMO</button>
-        </form>
-      </details>}
+      {role==="admin"&&preparingRound&&<p className="eaOperatorNote">🔒 Start is automatic only after every required invited participant presses READY. The operator cannot bypass this barrier.</p>}
       {status==="closed"&&auction&&<details className="eaPreviousRound">
         <summary><span>🏆</span><strong>Previous winner: {auction.winnerRole?labelRole(auction.winnerRole):"No bids"}</strong><b>{money(auction.currentAmount)}</b><small>Details ▾</small></summary>
         <div>Lot {auction.id.slice(0,8).toUpperCase()} · {auction.sequence} accepted bids · server-confirmed demo result.
