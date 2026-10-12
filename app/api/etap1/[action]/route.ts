@@ -38,7 +38,7 @@ export async function POST(request: NextRequest, context: Context) {
 
   if (action === "logout") {
     const response=etap1Json({ok:true});
-    clearEtap1Cookie(response);
+    clearEtap1Cookie(response,request.nextUrl.searchParams.get("scope")==="admin"?"admin":"bidder");
     return response;
   }
   const body=await etap1Body(request);
