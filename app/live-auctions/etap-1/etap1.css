@@ -341,3 +341,12 @@
 }
 @media(max-width:350px){.ev9MobileBidDock button{min-width:110px}.ev9MobileBidDock strong{font-size:19px}}
 @media(prefers-reduced-motion:reduce){.ev9App .ev9ClockRing,.ev9App .ev9Winner,.ev9App .ev9PrimaryBid,.ev9AcceptedToast,.ev9Celebration i{animation:none!important;transition:none!important}.ev9Celebration{display:none}}
+
+
+/* Advanced/non-authoritative offers remain discoverable but never crowd the live bid. */
+.ev9QuickDetails{margin-top:8px;border:1px solid #1a4435;border-radius:7px;background:#071811;padding:9px 10px}
+.ev9QuickDetails summary{cursor:pointer;font-size:10px;font-weight:800;color:#9abdae;letter-spacing:.045em}
+.ev9QuickDetails[open] summary{color:#00deb1}
+.ev9QuickDetails .ev9QuickButtons{margin-top:10px}
+.ev9App .ev9Phase.active.step1{background:#172519;color:#8cffd4}
+.ev9App .ev9Phase.active.step1 .ev9PhaseDot{background:#00deb1}
