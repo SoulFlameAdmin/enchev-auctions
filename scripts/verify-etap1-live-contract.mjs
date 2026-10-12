@@ -16,6 +16,7 @@ const sql=read("supabase/migrations/20261010131500_enchev_etap1_live_pilot.sql")
 const client=read("app/live-auctions/etap-1/page.tsx");
 const css=read("app/live-auctions/etap-1/etap1.css");
 const krumSql=read("supabase/migrations/20261012160000_enchev_etap1_krum_preview_bidder.sql");
+const admissionSql=read("supabase/migrations/20261012170000_enchev_etap1_session_admission.sql");
 
 const gates=[
   ["dedicated DB and explicit activation", gateway.includes('ENCHEV_ETAP1_ENABLED !== "true"')&&gateway.includes("SHARED_SOULFLAME_PROJECT")],
@@ -40,6 +41,17 @@ const gates=[
     client.includes('<option value="krum">') && client.includes('role==="krum"') &&
     krumSql.includes("check (actor in ('mitko','borko','krum'))") &&
     krumSql.includes("v_count between 2 and 4")],
+  ["winner -> new login must return to session-bound READY lobby",
+    admissionSql.includes("p_rejoin boolean default false") &&
+    admissionSql.includes("if p_ready is true and not v_running") &&
+    admissionSql.includes("enchev_etap1_admissions") &&
+    admissionSql.includes("Press READY for the NEXT auction") &&
+    admissionSql.includes("p_session_id=p_session_id") &&
+    api.includes('"etap1_ready_lobby_secure"') &&
+    api.includes('"etap1_bid_admitted"') &&
+    client.includes('const admitted=lobby?.admitted===true') &&
+    client.includes('const showAuction=status==="live"&&(admitted||role==="admin")') &&
+    client.includes("This round started without your current login")],
   ["opt-in Web Audio",client.includes("new AudioContext()") && client.includes("ENABLE SOUND")],
   ["response snapshots every second",client.includes('window.setInterval(()=>void poll(),1000)')],
   ["mobile width CSS",css.includes("@media(max-width:480px)")],
