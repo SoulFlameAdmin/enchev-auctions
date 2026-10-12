@@ -41,6 +41,8 @@ export default function EnchevStageOnePage(){
   const [bidFlash,setBidFlash]=useState<{sequence:number;amount:number;role:string}|null>(null);
   const [celebratingId,setCelebratingId]=useState<string|null>(null);
   const [roundLockKey,setRoundLockKey]=useState<string|null>(null);
+  const [moreOpen,setMoreOpen]=useState(false);
+  const [liveViewOpen,setLiveViewOpen]=useState(false);
   const voiceRef=useRef(false);
   const voiceLangRef=useRef("en-IE");
   const audioRef=useRef<AudioContext|null>(null);
@@ -267,29 +269,33 @@ export default function EnchevStageOnePage(){
   const currentRoundKey=(auction?.id??"none")+":"+Math.floor(serverSeconds/5000);
   const roundLocked=roundLockKey===currentRoundKey;
   const canBid=status==="live"&&bidder&&connected&&!busy&&timeUntil>0&&!roundLocked;
-  const phaseStep=status==="live"?2:status==="closed"?3:1;
+  const preparingRound=status==="idle"||status==="closed";
+  const phaseStep=status==="live"?2:1;
   const views=["FRONT","REAR","INTERIOR","DETAIL","SIDE"];
   const visibleRound=5-Math.floor(serverSeconds/1000)%5;
   const tabs=["Details","Photos","History","Documents","Transport","Condition"];
 
   return <main id="main-content" className={"eaEtap1 ev9App "+(status==="live"&&bidder?"ev9HasDock":"")}>
     <div className="ev9ContextHeader">
-      <div><strong>● ENCHEV LIVE AUCTION</strong><span>Copart-style bidding workspace · Design v9 · closed pilot</span></div>
+      <div className="ev9ContextTitle"><strong>● ENCHEV LIVE</strong><span>LIVE VEHICLE BIDDING</span></div>
       <div className="ev9HeaderRight">
         <strong className={connected?"ev9Online is-online":"ev9Online"}>● {connected?"SYNCED":"CONNECTING"}</strong>
-        <span className="ev9TestFlag">FAKE MONEY · NO REAL SALES</span>
+        <span className="ev9TestFlag">DEMO · FAKE €</span>
       </div>
     </div>
-    <div className="ev9Utility">
-      <span>EUROPE DEMO LANE A</span>
-      <span>SERVER AUTHORITATIVE BIDDING</span>
-      {role&&<div className="ev9UtilityButtons">
-        <span>{labelRole(role)} · {connected?"ONLINE":"OFFLINE"}</span>
-        <button type="button" onClick={()=>void enableSound()}>{soundOn?"🔊 SOUND ON":"🔇 ENABLE SOUND"}</button>
-        <button type="button" onClick={()=>void poll()}>↻ Sync</button>
-        <button type="button" onClick={()=>void logOut()}>Sign out</button>
-      </div>}
-    </div>
+    {role&&<div className="ev9Utility">
+      <div className="ev9UtilityIdentity"><span className="ev9RoleDot">●</span><strong>{labelRole(role)}</strong><span>{connected?"ONLINE":"RECONNECTING"}</span></div>
+      <div className="ev9UtilityButtons">
+        <button className="ev9SoundBtn" type="button" onClick={()=>void enableSound()}>{soundOn?"🔊 SOUND ON":"🔇 SOUND OFF"}</button>
+        <div className="ev9MoreWrap">
+          <button type="button" aria-controls="ev9MoreMenu" aria-expanded={moreOpen} onClick={()=>setMoreOpen(v=>!v)}>⚙ More</button>
+          {moreOpen&&<div className="ev9MoreMenu" id="ev9MoreMenu">
+            <button type="button" onClick={()=>{void poll();setMoreOpen(false);}}>↻ Refresh</button>
+            <button type="button" onClick={()=>{void logOut();setMoreOpen(false);}}>⇥ Sign out</button>
+          </div>}
+        </div>
+      </div>
+    </div>}
     {!available&&<section className="eaEtap1Alert" role="alert">The isolated ENCHEV demo database is not activated. Real bidding is unavailable.</section>}
     {error&&<div className="eaEtap1Alert" role="alert">{error}<button type="button" onClick={()=>setError("")}>Dismiss</button></div>}
     {!role?<section className="eaEtap1Auth ev9Auth">
@@ -307,17 +313,22 @@ export default function EnchevStageOnePage(){
       <button type="submit" disabled={busy||!available}>{busy?"Connecting…":"ENTER LIVE WORKSPACE →"}</button>
       </form>
     </section>:<>
-      {status!=="live"&&<section className="eaEtap1Ready ev9Ready">
-        <div><span className="eaEtap1Kicker">AUTOMATIC AUCTION START</span>
-          <h2>READY lobby</h2>
-          <p>At least two online participants; everyone present must press READY. If Enchev is already online, we wait for all three.</p>
-          <strong>{lobby?.readyCount??0} / {lobby?.count??0} READY · Minimum 2 participants</strong>
+      {preparingRound&&<section className="eaEtap1Ready ev9Ready" aria-label="Ready lobby">
+        <div className="ev9ReadyInfo">
+          <div className="ev9ReadyHeading">
+            <span className="ev9ReadySignal">● LOBBY</span>
+            <h2>Ready to bid?</h2>
+            <strong className="ev9ReadyCount">{lobby?.readyCount??0}/{lobby?.count??0} READY</strong>
+          </div>
+          <p className="ev9ReadyMessage">{(lobby?.count??0)<2
+            ?"Waiting for another participant to join…"
+            :(lobby?.readyCount??0)===(lobby?.count??0)?"Starting the next demo auction…":"The round starts automatically when everyone here is ready."}</p>
           <div className="eaEtap1ReadyUsers">{(lobby?.participants??[]).map(p=>
-            <span key={p.role}>{labelRole(p.role)} · {p.ready?"✅ READY":"⏳ WAITING"}</span>)}</div>
+            <span key={p.role} className={p.ready?"is-ready":"is-waiting"}>{p.ready?"●":"○"} {labelRole(p.role)} <b>{p.ready?"READY":"WAITING"}</b></span>)}</div>
         </div>
-        {participant?<button type="button" className="eaEtap1ReadyButton" onClick={()=>void setReady(!myReady)} disabled={!connected||busy}>
-          {busy?"Updating…":myReady?"✓ READY · Cancel":"✓ I AM READY"}
-        </button>:<div className="eaEtap1Observer">Admin excluded from READY count.</div>}
+        {participant?<button type="button" className={"eaEtap1ReadyButton "+(myReady?"is-ready":"")} onClick={()=>void setReady(!myReady)} disabled={!connected||busy}>
+          {busy?"UPDATING…":myReady?"✓ I'M READY":"✓ I AM READY"}<small>{myReady?"Tap to cancel":"Tap when prepared"}</small>
+        </button>:<div className="ev9ReadyObserver">Admin is not counted.</div>}
       </section>}
       {role==="admin"&&status!=="live"&&<details className="ev9Admin">
         <summary>Optional admin manual start (test fallback)</summary>
@@ -330,11 +341,16 @@ export default function EnchevStageOnePage(){
         </form>
       </details>}
       <section className="ev9AuctionBar" aria-label="Auction phases">
-        <div className="ev9AuctionTop"><b>● ENCHEV LIVE · LANE A</b><span>{auction?"LOT "+auction.id.slice(0,8).toUpperCase():"AWAITING READY"} · DEMO GOLF GTI</span></div>
+        {status==="closed"&&auction&&<div className="ev9PreviousResult">
+          <span>🏆 LAST ROUND</span>
+          <b>{auction.winnerRole?labelRole(auction.winnerRole)+" WON · "+money(auction.currentAmount):"NO BIDS"}</b>
+          <span>New round: press READY above</span>
+        </div>}
+        <div className="ev9AuctionTop"><b>{status==="live"?"● AUCTION LIVE":"● UPCOMING LIVE"}</b><span>{auction?"LOT "+auction.id.slice(0,8).toUpperCase():"PRIVATE ROOM"} · DEMO GOLF GTI</span></div>
         <div className="ev9PhaseRail">
-          {["ACCESS","READY CHECK","LIVE AUCTION","WINNER"].map((ph,i)=>
-            <div key={ph} className={"ev9Phase "+(phaseStep===i?"active step"+i:phaseStep>i?"done":"")}>
-              <span className="ev9PhaseDot"/><div><b>{ph}</b><small>{i===0?"PRIVATE ENTRY":i===1?"WAITING FOR ALL":i===2?status==="live"?minutes+":"+seconds:"00:00":"FINAL RESULT"}</small></div>
+          {["ENTER","READY","LIVE","WINNER"].map((ph,i)=>
+            <div key={ph} className={"ev9Phase "+((status==="closed"&&i===3)?"previous":phaseStep===i?"active step"+i:phaseStep>i?"done":"")}>
+              <span className="ev9PhaseDot"/><div><b>{ph}</b><small>{i===0?"ACCESS":i===1?"ALL PLAYERS":i===2?status==="live"?minutes+":"+seconds:"WAITING":status==="closed"?"PREVIOUS":"FINISH"}</small></div>
             </div>)}
         </div>
       </section>
@@ -353,7 +369,7 @@ export default function EnchevStageOnePage(){
                 <small>{status==="live"?"UNTIL CLOSE":status==="closed"?"WINNER":"TO START"}</small>
               </div>
             </div>
-            <div className="ev9MediaFoot"><span>Concept visual · no real lot photos</span><button type="button" onClick={()=>setMediaView(views[(views.indexOf(mediaView)+1)%views.length])}>Next view →</button></div>
+            <div className="ev9MediaFoot"><span>ILLUSTRATIVE · TEST LOT</span><div><button type="button" onClick={()=>setMediaView(views[(views.indexOf(mediaView)+4)%views.length])} aria-label="Previous vehicle angle">‹</button><button type="button" onClick={()=>setMediaView(views[(views.indexOf(mediaView)+1)%views.length])} aria-label="Next vehicle angle">›</button></div></div>
           </div>
           <div className="ev9Thumbs">{views.map((v,i)=><button type="button" key={v} onClick={()=>setMediaView(v)}
             className={mediaView===v?"active":""} aria-pressed={mediaView===v}><span>◩</span><small>{v}</small></button>)}</div>
@@ -365,19 +381,19 @@ export default function EnchevStageOnePage(){
           </div>
         </div>
         <div className="ev9Column ev9BidCol">
-          <div className="ev9ColHead"><b>ON THE BLOCK</b><span>{status==="live"?"● LIVE":"○ STANDBY"}</span></div>
+          <div className="ev9ColHead"><b>ON THE BLOCK</b><span>{status==="live"?"● LIVE":status==="closed"?"● LAST ROUND":"○ GET READY"}</span></div>
           <div className="ev9BlockBody">
             <div className="ev9BlockTitle">{auction?.title??lotTitle}</div>
-            <div className="ev9BlockSub">Verified DEMO lot · shared server state · no actual sale</div>
+            <div className="ev9BlockSub">Private demo · Server-verified bids · No real purchases</div>
             <div className="ev9Stats">
-              <div><small>LOT STATUS</small><b>{status==="live"?"LIVE":status==="closed"?"ENDED":"WAITING"}</b></div>
+              <div><small>STATUS</small><b>{status==="live"?"● LIVE":status==="closed"?"CLOSED":"READY SOON"}</b></div>
               <div><small>TOP BIDDER</small><b>{labelRole(auction?.leadingRole??null)}</b></div>
               <div><small>BID COUNT</small><b>{auction?.sequence??0}</b></div>
-              <div><small>SERVER CLOCK</small><b>{status==="live"?minutes+":"+seconds:"--:--"}</b></div>
+              <div><small>TIME LEFT</small><b className={status==="live"&&remaining<=10?"ev9Critical":""}>{status==="live"?minutes+":"+seconds:"--:--"}</b></div>
             </div>
             <div className="ev9BidZone">
               <div className="ev9BidValues">
-                <small>CURRENT HIGHEST BID</small>
+                <small>{status==="closed"?"FINAL BID":"CURRENT BID"}</small>
                 <strong>{money(currentPrice)}</strong>
                 <span>Leader: <b>{labelRole(auction?.leadingRole??null)}</b></span>
                 <div className="ev9NextBox"><small>NEXT VALID OFFER</small><b>{money(nextPrice)}</b></div>
