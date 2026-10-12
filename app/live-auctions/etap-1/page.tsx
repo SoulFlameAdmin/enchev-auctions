@@ -374,7 +374,13 @@ export default function EnchevStageOnePage(){
         <div className="eaMediaPanel">
           <div className="eaMediaStage">
             <Etap1DemoVehicle view={mediaView}/>
-            <span className="eaVehicleLabel">CONCEPT VEHICLE · DEMO</span>
+            {mediaView==="FRONT"&&<img className="eaFeaturedPhoto"
+              src="https://images.unsplash.com/photo-1746184842826-73fd144a4587?auto=format&fit=crop&w=1280&q=82"
+              alt="Illustrative Golf GTI photograph from a showroom — not the vehicle in this demo auction"
+              loading="eager" decoding="async"
+              onError={e=>{e.currentTarget.style.display="none";}}/>}
+            <span className="eaVehicleLabel">{mediaView==="FRONT"?"GOLF GTI · REFERENCE PHOTO":"ILLUSTRATIVE DEMO VIEW"}</span>
+            {mediaView==="FRONT"&&<a className="eaPhotoCredit" href="https://unsplash.com/photos/a-grey-volkswagen-golf-gti-sits-in-a-showroom-81NrHQ6TBqE" target="_blank" rel="noopener noreferrer" aria-label="Photo credit: Shalev Cohen, Unsplash">Photo: Shalev Cohen / Unsplash</a>}
             <div className={"eaClock "+(status==="live"?"is-live":"")+(status==="live"&&timeUntil<=10?" urgent":"")} style={clockStyle}>
               <div><span>{status==="live"?"TIME LEFT":"NEXT ROUND"}</span><strong>{status==="live"?minutes+":"+seconds:"READY"}</strong></div>
             </div>
