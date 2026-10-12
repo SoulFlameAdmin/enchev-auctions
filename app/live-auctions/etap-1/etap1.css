@@ -285,3 +285,9 @@ body:has(.eaRoom){background:#060a08;color:#effaf3}
 }
 .eaRoom .eaPhotoCredit:hover{text-decoration:underline}
 @media(max-width:480px){.eaRoom .eaPhotoCredit{font-size:8px;left:8px;bottom:8px;max-width:51%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}}
+
+/* Watch-only observer and operator entry; no bypass of READY admissions. */
+.eaMonitorEntry{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:13px 18px;margin:14px 0;border:1px solid #45895f;border-radius:12px;background:#142d1c}
+.eaMonitorEntry a{display:inline-flex;align-items:center;min-height:42px;padding:10px 16px;border:1px solid #80ffb3;border-radius:8px;background:#76eaaa;color:#062017;font-size:12px;font-weight:950;text-decoration:none}
+.eaMonitorEntry small{color:#b5e0c2;font-size:11px}
+.eaOperatorNote{color:#aadfba;background:#122819;border-left:3px solid #5cf29d;padding:12px;font-size:11px;line-height:1.6}
