@@ -107,6 +107,7 @@ echo "ETAP1 POSTGRES INTEGRATION PASS: deterministic bids, retry, close/winner, 
 
 # Also validate the atomic two/three-participant READY lobby in disposable CI.
 psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261012033000_enchev_etap1_ready_lobby.sql
+psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261012160000_enchev_etap1_krum_preview_bidder.sql
 psql -X -v ON_ERROR_STOP=1 <<'SQL'
 do $$
 declare
@@ -154,6 +155,45 @@ begin
     raise exception 'two-person READY did not start round'; end if;
 end $$;
 SQL
+
+# Four demo participants: Krum is a valid bidder, Enchev remains observer.
+psql -X -v ON_ERROR_STOP=1 <<'SQL'
+do $
+declare
+  v jsonb;
+  v_id uuid;
+begin
+  update public.enchev_etap1_auctions
+    set ends_at=clock_timestamp()-interval '1 second'
+    where id=(select active_auction_id from public.enchev_etap1_rooms where name='stage-one');
+  perform public.etap1_snapshot();
+  update public.enchev_etap1_presence set last_seen=clock_timestamp()-interval '1 minute', is_ready=false;
+
+  perform public.etap1_ready_lobby('mitko',null);
+  perform public.etap1_ready_lobby('borko',null);
+  perform public.etap1_ready_lobby('krum',null);
+  perform public.etap1_ready_lobby('enchev',null);
+  perform public.etap1_ready_lobby('mitko',true);
+  perform public.etap1_ready_lobby('borko',true);
+  v:=public.etap1_ready_lobby('krum',true);
+  if v->'state'->>'status'='live' then raise exception 'four-person room started before fourth READY'; end if;
+  v:=public.etap1_ready_lobby('enchev',true);
+  if v->'state'->>'status'<>'live' or (v->'lobby'->>'count')::int<>4
+    or (v->'lobby'->>'readyCount')::int<>0 then
+    raise exception 'four-person READY failed: %',v; end if;
+  v_id:=(v->'state'->'auction'->>'id')::uuid;
+  v:=public.etap1_bid('krum','00112233-4455-4677-8899-aabbccddee55');
+  if v->'auction'->>'leadingRole'<>'krum'
+     or (v->'auction'->>'currentAmount')::numeric<>16350
+     or (select count(*) from public.enchev_etap1_bids where auction_id=v_id and actor='krum')<>1 then
+    raise exception 'Krum accepted bid failed: %',v; end if;
+  v:=public.etap1_bid('krum','00112233-4455-4677-8899-aabbccddee55');
+  if (v->'auction'->>'sequence')::int<>1 then
+    raise exception 'Krum idempotency failed'; end if;
+end $;
+SQL
+echo "ETAP1 KRUM BIDDER PASS: four-person READY barrier, Krum bid and retry."
+
 if psql -X -v ON_ERROR_STOP=1 -c "set role anon; select public.etap1_ready_lobby('mitko',true);" >/tmp/etap1_ready_anon.out 2>&1; then
   echo "FAIL: anon can call privileged READY RPC" >&2; exit 1
 fi
