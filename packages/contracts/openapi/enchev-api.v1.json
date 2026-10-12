@@ -521,16 +521,36 @@
         "description": "Requires valid signed HttpOnly ENCHEV demo admin cookie. Server-side service role only, no anonymous data access. Refresh approximately once per second.",
         "responses": {
           "200": {
-            "description": "Admin-only aggregated counts, participants and current/last round"
+            "description": "Admin-only aggregated counts, participants and current/last round",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           },
           "401": {
-            "description": "Missing/expired admin sign-in cookie"
+            "description": "Missing/expired admin sign-in cookie",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           },
           "403": {
-            "description": "Authenticated role is not admin"
+            "description": "Authenticated role is not admin",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           },
           "503": {
-            "description": "Private pilot or database unavailable"
+            "description": "Private pilot or database unavailable",
+            "headers": {
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            }
           }
         }
       }
