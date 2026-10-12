@@ -59,7 +59,7 @@ begin
     where id=v_auction.id;
   return public.etap1_snapshot();
 end;
-$function$
+$function$;
 
 
 CREATE OR REPLACE FUNCTION public.etap1_ready_lobby_secure(p_actor text, p_session_id uuid, p_ready boolean DEFAULT NULL::boolean, p_rejoin boolean DEFAULT false)
@@ -204,7 +204,7 @@ begin
     'state',public.etap1_snapshot()
   );
 end;
-$function$
+$function$;
 
 
 CREATE OR REPLACE FUNCTION public.etap1_bid_admitted(p_actor text, p_session_id uuid, p_nonce uuid)
@@ -236,7 +236,7 @@ begin
   end if;
   return public.etap1_bid(p_actor,p_nonce);
 end;
-$function$
+$function$;
 
 
 create or replace function public.etap1_join_lobby_automatic(
