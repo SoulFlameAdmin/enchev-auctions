@@ -21,7 +21,7 @@ const gates=[
   ["dedicated DB and explicit activation", gateway.includes('ENCHEV_ETAP1_ENABLED !== "true"')&&gateway.includes("SHARED_SOULFLAME_PROJECT")],
   ["no client access to service key", !client.includes("SERVICE_ROLE_KEY") && !css.includes("SERVICE_ROLE_KEY")],
   ["server-only secret gateway",gateway.includes('import "server-only"') && gateway.includes("ENCHEV_ETAP1_SERVICE_ROLE_KEY")],
-  ["separate participant codes",gateway.includes("new Set(Object.values(codes)).size !== 4")],
+  ["separate participant codes",gateway.includes("new Set(Object.values(codes)).size !== ETAP1_ROLES.length")],
   ["signed HTTP-only session",gateway.includes("timingSafeEqual") && gateway.includes("httpOnly: true") && gateway.includes('sameSite: "strict"')],
   ["same-origin enforced on writes",api.includes("sameOriginPost(request)")],
   ["admin-only auction start",api.includes('role !== "admin"')],
