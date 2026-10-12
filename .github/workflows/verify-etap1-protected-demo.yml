@@ -10,6 +10,7 @@ on:
       - 'app/live-auctions/etap-1/**'
       - 'supabase/migrations/20261010131500_enchev_etap1_live_pilot.sql'
       - 'supabase/migrations/20261012033000_enchev_etap1_ready_lobby.sql'
+      - 'supabase/migrations/20261012160000_enchev_etap1_krum_preview_bidder.sql'
       - 'scripts/verify-etap1-live-contract.mjs'
       - 'scripts/test-etap1-postgres.sh'
       - '.github/workflows/verify-etap1-protected-demo.yml'
