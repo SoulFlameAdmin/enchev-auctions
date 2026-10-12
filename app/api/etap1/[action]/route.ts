@@ -47,9 +47,18 @@ export async function POST(request: NextRequest, context: Context) {
   if (action === "login") {
     const role=body.role;
     const code=body.code;
-    if (typeof role !== "string" || !ETAP1_ROLES.includes(role as Etap1Role)
-      || typeof code !== "string" || !codeValid(role as Etap1Role,code,config))
+    if (typeof role !== "string" || !ETAP1_ROLES.includes(role as Etap1Role) ||
+      typeof code !== "string" || code.length > 256)
       return etap1Json({error:"Invalid demo access code"},401);
+    let valid = codeValid(role as Etap1Role,code,config);
+    if (!valid && role === "admin" && code.length >= 20 && code.length <= 128) {
+      // Optional salted bcrypt operator credential; service-role verification
+      // lives in the isolated Supabase DB. No password or hash in Git/Vercel.
+      try {
+        valid = (await etap1Rpc(config,"etap1_admin_code_matches",{p_code:code})) === true;
+      } catch { valid = false; }
+    }
+    if (!valid) return etap1Json({error:"Invalid demo access code"},401);
     const sid=randomUUID();
     // A new login MUST reset that role's readiness and invalidate the
     // previous signed session before any bid can be admitted.
