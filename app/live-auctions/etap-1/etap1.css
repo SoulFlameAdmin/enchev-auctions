@@ -78,3 +78,14 @@
 @media(max-width:850px){.eaEtap1Hero{padding-top:33px;align-items:start;flex-direction:column}.eaEtap1Indicators{flex-direction:row;align-items:start;white-space:normal;flex-wrap:wrap}.eaEtap1Room{grid-template-columns:1fr}.eaEtap1Admin{grid-template-columns:1fr}.eaEtap1Auth{grid-template-columns:1fr}.eaEtap1Car{padding:35px 15px}}
 @media(max-width:480px){.eaEtap1{padding:0 13px}.eaEtap1Header{min-height:67px}.eaEtap1Brand{font-size:16px}.eaEtap1Brand span{font-size:8px}.eaEtap1Badge{padding:6px;font-size:8px}.eaEtap1TopRight a{display:none}.eaEtap1Hero h1{font-size:37px}.eaEtap1Auth,.eaEtap1Admin{padding:19px;border-radius:15px}.eaEtap1Toolbar{flex-direction:column;align-items:start}.eaEtap1Room{gap:14px}.eaEtap1MainCard,.eaEtap1History{border-radius:16px}.eaEtap1RoomHeader{padding:18px 15px 0}.eaEtap1Car h2{font-size:27px}.eaEtap1PriceBand{padding:18px 13px;gap:10px}.eaEtap1PriceBand strong{font-size:clamp(21px,6.6vw,30px)}.eaEtap1PriceBand span{font-size:8px}.eaEtap1BidInfo{justify-content:start;padding:17px;font-size:11px}.eaEtap1BidButton{width:calc(100% - 30px);margin:15px}.eaEtap1History{padding:23px 18px}.eaEtap1Ledger b{font-size:13px}.eaEtap1Admin form{grid-template-columns:1fr 1fr}}
 @media(prefers-reduced-motion:reduce){.eaEtap1 *{animation:none!important;transition:none!important}}
+
+/* ENCHEV stage-one opt-in readiness. Never infer ready status client-side. */
+.eaEtap1Ready{display:flex;justify-content:space-between;align-items:center;gap:24px;margin:18px 0;padding:26px 30px;border:1px solid #4d705c;background:linear-gradient(135deg,#183b32,#17223a);border-radius:22px}
+.eaEtap1Ready>div:first-child{min-width:0}
+.eaEtap1Ready h2{font-size:29px;margin:10px 0 8px}
+.eaEtap1Ready p{font-size:13px;color:var(--muted);max-width:650px;line-height:1.6;margin-bottom:15px}
+.eaEtap1Ready strong{display:block;font-size:13px;color:#a5f4c6}
+.eaEtap1ReadyUsers{display:flex;flex-wrap:wrap;gap:10px;margin-top:15px}
+.eaEtap1ReadyUsers span{font-size:12px;padding:7px 10px;border:1px solid #48645b;border-radius:20px;background:#152d32}
+.eaEtap1ReadyButton{min-width:185px;min-height:65px;background:#b8f3cd;border:0;border-radius:14px;color:#123026;font-weight:900;letter-spacing:.04em}
+@media(max-width:600px){.eaEtap1Ready{padding:20px;flex-direction:column;align-items:stretch}.eaEtap1ReadyButton{width:100%}}
