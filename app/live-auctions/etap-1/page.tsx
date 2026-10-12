@@ -210,19 +210,13 @@ export default function EnchevStageOnePage(){
   const tabs=["Details","Photos","History","Documents","Transport","Condition"];
 
   return <main id="main-content" className="eaEtap1 ev9App">
-    <header className="ev9Header">
-      <a className="ev9Brand" href="/"><span>ENCHEV</span><small>AUCTIONS</small></a>
-      <div className="ev9SearchShell"><span aria-hidden="true">⌕</span><span>PREMIUM LIVE VEHICLE AUCTIONS</span></div>
+    <div className="ev9ContextHeader">
+      <div><strong>● ENCHEV LIVE AUCTION</strong><span>Copart-style bidding workspace · Design v9 · closed pilot</span></div>
       <div className="ev9HeaderRight">
         <strong className={connected?"ev9Online is-online":"ev9Online"}>● {connected?"SYNCED":"CONNECTING"}</strong>
-        <span className="ev9TestFlag">TEST ONLY · €0 REAL</span>
+        <span className="ev9TestFlag">FAKE MONEY · NO REAL SALES</span>
       </div>
-    </header>
-    <nav className="ev9Nav" aria-label="Auction navigation">
-      <a href="/">Home</a><a href="/live-auctions">Auctions</a>
-      <strong className="ev9NavSelected">● Live Bidding</strong>
-      <span className="ev9NavRight">ENCHEV · PRIVATE PILOT</span>
-    </nav>
+    </div>
     <div className="ev9Utility">
       <span>EUROPE DEMO LANE A</span>
       <span>SERVER AUTHORITATIVE BIDDING</span>
