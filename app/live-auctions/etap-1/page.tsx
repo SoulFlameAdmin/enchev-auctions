@@ -271,7 +271,7 @@ export default function EnchevStageOnePage(){
   const visibleRound=5-Math.floor(serverSeconds/1000)%5;
   const tabs=["Details","Photos","History","Documents","Transport","Condition"];
 
-  return <main id="main-content" className="eaEtap1 ev9App">
+  return <main id="main-content" className={"eaEtap1 ev9App "+(status==="live"&&bidder?"ev9HasDock":"")}>
     <div className="ev9ContextHeader">
       <div><strong>● ENCHEV LIVE AUCTION</strong><span>Copart-style bidding workspace · Design v9 · closed pilot</span></div>
       <div className="ev9HeaderRight">
@@ -343,28 +343,6 @@ export default function EnchevStageOnePage(){
           <div className="ev9Media">
             <div className="ev9CarBackdrop">
               <Etap1DemoVehicle view={mediaView}/>
-              <div hidden>
-              <svg viewBox="0 0 680 430" role="img" aria-label="Legacy concept vehicle graphic">
-                <defs>
-                  <linearGradient id="ev9Paint" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#f4f9f7"/><stop offset=".5" stopColor="#9bb9b3"/><stop offset="1" stopColor="#43665d"/></linearGradient>
-                  <linearGradient id="ev9Glass"><stop stopColor="#12312d"/><stop offset="1" stopColor="#071614"/></linearGradient>
-                  <linearGradient id="ev9Sky" x1="0" y1="0" x2="0" y2="1"><stop stopColor="#143a32"/><stop offset="1" stopColor="#06120f"/></linearGradient>
-                </defs>
-                <rect width="680" height="430" fill="url(#ev9Sky)"/>
-                <path d="M0 340 Q330 305 680 340L680 430H0Z" fill="#07100d"/>
-                <ellipse cx="345" cy="337" rx="255" ry="24" fill="#010705" opacity=".75"/>
-                <path d="M85 264 L116 235 Q146 209 216 202 L269 145 Q285 128 320 127 L461 133 Q481 133 506 166 L545 212 Q581 224 601 247 L610 294 Q607 306 592 310 L99 310 Q86 304 85 289 Z" fill="url(#ev9Paint)" stroke="#b9d2cc" strokeWidth="4"/>
-                <path d="M258 201 L295 151 Q302 142 320 142 L450 148 Q467 149 477 165 L508 207 Z" fill="url(#ev9Glass)" stroke="#8eaaa1" strokeWidth="4"/>
-                <path d="M388 144 L399 206" stroke="#92b3a9" strokeWidth="4"/>
-                <path d="M96 275 L166 278" stroke="#00deb1" strokeWidth="9" strokeLinecap="round"/>
-                <path d="M537 276 L604 272" stroke="#e22f28" strokeWidth="9" strokeLinecap="round"/>
-                <path d="M183 257 Q370 239 527 253" stroke="#d2e4df" strokeWidth="3" opacity=".65" fill="none"/>
-                <circle cx="207" cy="307" r="61" fill="#060c0b"/><circle cx="207" cy="307" r="42" fill="#31483f" stroke="#a6bdb3" strokeWidth="8"/><circle cx="207" cy="307" r="15" fill="#b2c7c0"/>
-                <circle cx="508" cy="307" r="61" fill="#060c0b"/><circle cx="508" cy="307" r="42" fill="#31483f" stroke="#a6bdb3" strokeWidth="8"/><circle cx="508" cy="307" r="15" fill="#b2c7c0"/>
-                <text x="26" y="51" fill="#b0f9e0" fontSize="17" fontWeight="800">ENCHEV · DEMO VEHICLE</text>
-                <text x="26" y="80" fill="#7aa599" fontSize="12">{mediaView+" VIEW · ARTIST ILLUSTRATION"}</text>
-              </svg>
-              </div>
             </div>
             <div className="ev9MediaBadges"><span>LOT · DEMO</span><span className="good">✓ TEST VEHICLE</span></div>
             <div className="ev9CarOverlay">
