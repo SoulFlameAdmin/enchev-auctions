@@ -340,6 +340,13 @@ export default function EnchevStageOnePage(){
           <button disabled={!connected||busy} type="submit">START TEST AUCTION</button>
         </form>
       </details>}
+      <div className="ev9MobileOverview" aria-label="Auction status">
+        <div><small>{status==="live"?"LIVE CURRENT BID":"NEXT ROUND STARTS AT"}</small><strong>{money(status==="live"?currentPrice:opening)}</strong></div>
+        <div className={"ev9MobileOverviewTimer "+(status==="live"&&timeUntil<=10?"urgent":"")}>
+          <small>{status==="live"?"TIME LEFT":"PARTICIPANTS"}</small>
+          <strong>{status==="live"?minutes+":"+seconds:(lobby?.readyCount??0)+"/"+(lobby?.count??0)+" READY"}</strong>
+        </div>
+      </div>
       <section className="ev9AuctionBar" aria-label="Auction phases">
         {status==="closed"&&auction&&<div className="ev9PreviousResult">
           <span>🏆 LAST ROUND</span>
@@ -363,10 +370,10 @@ export default function EnchevStageOnePage(){
             </div>
             <div className="ev9MediaBadges"><span>LOT · DEMO</span><span className="good">✓ TEST VEHICLE</span></div>
             <div className="ev9CarOverlay">
-              <div className={"ev9ClockRing "+(status==="live"?(timeUntil<=10?"live is-urgent":"live"):status==="closed"?"closed":"idle")} style={clockStyle}>
-                <span>{status==="live"?"SERVER TIME":status==="closed"?"COMPLETE":"WAITING"}</span>
-                <strong>{status==="live"?minutes+":"+seconds:status==="closed"?"🏆":"READY"}</strong>
-                <small>{status==="live"?"UNTIL CLOSE":status==="closed"?"WINNER":"TO START"}</small>
+              <div className={"ev9ClockRing "+(status==="live"?(timeUntil<=10?"live is-urgent":"live"):"idle")} style={clockStyle}>
+                <span>{status==="live"?"SERVER TIME":"NEXT ROUND"}</span>
+                <strong>{status==="live"?minutes+":"+seconds:"READY"}</strong>
+                <small>{status==="live"?"UNTIL CLOSE":"TO START"}</small>
               </div>
             </div>
             <div className="ev9MediaFoot"><span>ILLUSTRATIVE · TEST LOT</span><div><button type="button" onClick={()=>setMediaView(views[(views.indexOf(mediaView)+4)%views.length])} aria-label="Previous vehicle angle">‹</button><button type="button" onClick={()=>setMediaView(views[(views.indexOf(mediaView)+1)%views.length])} aria-label="Next vehicle angle">›</button></div></div>
@@ -399,8 +406,8 @@ export default function EnchevStageOnePage(){
                 <div className="ev9NextBox"><small>NEXT VALID OFFER</small><b>{money(nextPrice)}</b></div>
                 <div className="ev9Increment">SERVER BID STEP <b>+ {money(auction?.increment??increment)}</b></div>
               </div>
-              <div className={"ev9BidCircle "+(status==="live"?(timeUntil<=10?"is-live is-urgent":"is-live"):status==="closed"?"is-closed":"is-pending")} style={clockStyle}>
-                <div className="ev9CircleInner"><small>ENCHEV</small><b>{status==="live"?"BID":status==="closed"?"SOLD":"READY"}</b><span>{status==="live"?minutes+":"+seconds:status==="closed"?"🏆":"●"}</span></div>
+              <div className={"ev9BidCircle "+(status==="live"?(timeUntil<=10?"is-live is-urgent":"is-live"):"is-pending")} style={clockStyle}>
+                <div className="ev9CircleInner"><small>ENCHEV</small><b>{status==="live"?"BID":"READY"}</b><span>{status==="live"?minutes+":"+seconds:"●"}</span></div>
               </div>
             </div>
             <div className="ev9Round">
@@ -412,9 +419,9 @@ export default function EnchevStageOnePage(){
               <details className="ev9QuickDetails"><summary>Advanced bids · upcoming</summary><div className="ev9QuickButtons"><button type="button" disabled>+250</button><button type="button" disabled>+500</button><button type="button" disabled>+1000</button><span>Not enabled in this demo; the server accepts the displayed €100 step only.</span></div></details>
               {status==="live"&&bidder?<button className="ev9PrimaryBid" type="button" onClick={()=>void bid()} disabled={!canBid}>
                 {busy?"PROCESSING…":roundLocked?"NEXT ROUND IN "+visibleRound+"s":"PLACE DEMO BID · "+money(nextPrice)}
-              </button>:<div className="ev9BidDisabled">{status==="closed"?"AUCTION ENDED · BIDDING LOCKED":!bidder?"OBSERVE ONLY · NO BID PERMISSION":"WAITING FOR READY / AUCTION START"}</div>}
+              </button>:<div className="ev9BidDisabled">{status==="closed"?"PREVIOUS ROUND ENDED · PRESS READY FOR NEXT":!bidder?"OBSERVE ONLY · NO BID PERMISSION":"WAITING FOR READY / AUCTION START"}</div>}
             </div>
-            {status==="closed"&&<div className="ev9Winner"><span>🏆 SERVER-VERIFIED RESULT</span>
+            {status==="closed"&&<div className="ev9Winner"><span>🏆 PREVIOUS ROUND · SERVER-VERIFIED RESULT</span>
               <strong>{auction?.winnerRole?labelRole(auction.winnerRole)+" WINS":"NO BIDS · NO SALE"}</strong>
               <b>{money(currentPrice)}</b><small>Demo result only. No payment or vehicle transfer.</small>
               <div className="ev9WinVerification"><span>LOT {auction?.id.slice(0,8).toUpperCase()} · ACCEPTED BIDS {auction?.sequence??0}</span><b>SERVER CONFIRMED · DEMO ONLY</b></div>
