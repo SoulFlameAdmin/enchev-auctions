@@ -25,7 +25,7 @@ async function readTable<T>(url: string, key: string): Promise<T> {
 export async function GET(request: NextRequest) {
   const config = etap1Config();
   if (!config) return etap1Json({error:"Demo unavailable"},503);
-  const session = etap1Session(request,config);
+  const session = etap1Session(request,config,"admin");
   if (!session) return etap1Json({error:"Sign in as admin"},401);
   if (session.role !== "admin") return etap1Json({error:"Admin only"},403);
   try {
