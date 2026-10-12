@@ -1,8 +1,9 @@
+import { randomUUID } from "node:crypto";
 import { NextRequest } from "next/server";
 import { sameOriginPost } from "../../../lib/enchev-auth-server";
 import {
   ETAP1_ROLES, codeValid, clearEtap1Cookie, etap1Body, etap1Config,
-  etap1Json, etap1Rpc, issueEtap1Cookie, sessionRole, type Etap1Role,
+  etap1Json, etap1Rpc, issueEtap1Cookie, etap1Session, type Etap1Role,
 } from "../../../lib/etap1-server";
 
 export const dynamic = "force-dynamic";
@@ -14,11 +15,15 @@ export async function GET(request: NextRequest, context: Context) {
   if (action !== "state") return etap1Json({error:"Not found"},404);
   const config = etap1Config();
   if (!config) return etap1Json({available:false, authenticated:false, error:"Pilot not activated"},503);
-  const role = sessionRole(request,config);
-  if (!role) return etap1Json({available:true,authenticated:false},401);
+  const session=etap1Session(request,config);
+  if (!session) return etap1Json({available:true,authenticated:false},401);
   try {
-    const result=await etap1Rpc(config,"etap1_ready_lobby",{p_actor:role}) as {state:unknown;lobby:unknown};
-    return etap1Json({available:true,authenticated:true,role,state:result.state,lobby:result.lobby});
+    const result=await etap1Rpc(config,"etap1_ready_lobby_secure",{
+      p_actor:session.role,p_session_id:session.sid,
+    }) as {state:unknown;lobby:{sessionCurrent?:boolean;admitted?:boolean}};
+    if (result.lobby?.sessionCurrent===false)
+      return etap1Json({available:true,authenticated:false,error:"Session replaced. Sign in again."},401);
+    return etap1Json({available:true,authenticated:true,role:session.role,state:result.state,lobby:result.lobby});
   } catch {
     return etap1Json({error:"Demo database temporarily unavailable"},503);
   }
@@ -45,13 +50,26 @@ export async function POST(request: NextRequest, context: Context) {
     if (typeof role !== "string" || !ETAP1_ROLES.includes(role as Etap1Role)
       || typeof code !== "string" || !codeValid(role as Etap1Role,code,config))
       return etap1Json({error:"Invalid demo access code"},401);
+    const sid=randomUUID();
+    // A new login MUST reset that role's readiness and invalidate the
+    // previous signed session before any bid can be admitted.
+    if (role !== "admin") {
+      try {
+        await etap1Rpc(config,"etap1_ready_lobby_secure",{
+          p_actor:role,p_session_id:sid,p_ready:false,p_rejoin:true,
+        });
+      } catch {
+        return etap1Json({error:"Demo lobby unavailable. Login was not activated."},503);
+      }
+    }
     const response=etap1Json({ok:true,role});
-    issueEtap1Cookie(response,role as Etap1Role,config);
+    issueEtap1Cookie(response,role as Etap1Role,sid,config);
     return response;
   }
 
-  const role=sessionRole(request,config);
-  if (!role) return etap1Json({error:"Session expired. Sign in again."},401);
+  const session=etap1Session(request,config);
+  if (!session) return etap1Json({error:"Session expired. Sign in again."},401);
+  const {role,sid}=session;
 
   if (action === "ready") {
     if (role !== "mitko" && role !== "borko" && role !== "krum" && role !== "enchev")
@@ -59,9 +77,11 @@ export async function POST(request: NextRequest, context: Context) {
     if (typeof body.ready !== "boolean")
       return etap1Json({error:"Boolean ready flag required"},400);
     try {
-      const result=await etap1Rpc(config,"etap1_ready_lobby",{
-        p_actor:role,p_ready:body.ready,
-      }) as {state:unknown;lobby:unknown};
+      const result=await etap1Rpc(config,"etap1_ready_lobby_secure",{
+        p_actor:role,p_session_id:sid,p_ready:body.ready,
+      }) as {state:unknown;lobby:{sessionCurrent?:boolean}};
+      if (result.lobby?.sessionCurrent===false)
+        return etap1Json({error:"Session replaced. Sign in again."},401);
       return etap1Json({ok:true,state:result.state,lobby:result.lobby});
     } catch {
       return etap1Json({error:"READY update failed or demo service unavailable"},409);
@@ -95,7 +115,7 @@ export async function POST(request: NextRequest, context: Context) {
       !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(nonce))
     return etap1Json({error:"Valid idempotency key required"},400);
   try {
-    const state=await etap1Rpc(config,"etap1_bid",{p_actor:role,p_nonce:nonce});
+    const state=await etap1Rpc(config,"etap1_bid_admitted",{p_actor:role,p_session_id:sid,p_nonce:nonce});
     return etap1Json({ok:true,state});
   } catch {
     return etap1Json({error:"Bid rejected: round closed or demo service unavailable"},409);
