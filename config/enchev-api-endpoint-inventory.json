@@ -20,6 +20,12 @@
     },
     {
       "method": "GET",
+      "path": "/api/etap1/admin",
+      "operationId": "getEtap1AdminMonitor",
+      "summary": "Private demo admin-only polling snapshot for roster, lobby readiness, per-session admission and last bids; never returns credentials or session IDs."
+    },
+    {
+      "method": "GET",
       "path": "/api/health/api",
       "operationId": "getApiHealth",
       "summary": "API health"
@@ -76,7 +82,7 @@
       "method": "POST",
       "path": "/api/etap1/[action]",
       "operationId": "postEtap1PilotAction",
-      "summary": "Same-origin signed-session login/logout, admin start, or idempotent two-bidder action"
+      "summary": "Same-origin pilot login/logout, explicit READY, admission-checked bids; operator cannot manually bypass READY start"
     },
     {
       "method": "POST",
