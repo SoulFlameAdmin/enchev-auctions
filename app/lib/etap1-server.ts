@@ -35,7 +35,7 @@ export function etap1Config(): Config | null {
   const participantsHaveLongCodes = (["mitko", "borko", "krum", "enchev"] as const)
     .every(role => codes[role].length >= 16);
   if (codes.admin.length < 16 || (!shortDemoCodes && !participantsHaveLongCodes) ||
-    new Set(Object.values(codes)).size !== 4) return null;
+    new Set(Object.values(codes)).size !== ETAP1_ROLES.length) return null;
   try {
     const url = new URL(rawUrl);
     if (url.protocol !== "https:" || url.host !== ref + ".supabase.co" ||
