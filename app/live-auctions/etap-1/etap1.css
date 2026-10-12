@@ -528,3 +528,16 @@
  .ev9App .ev9MobileOverview strong{font-size:19px}
  .ev9App .ev9MobileOverviewTimer strong{font-size:12px}
 }
+
+
+/* A winner can be replayed only from an actual closed server-snapshot. */
+.ev9App .ev9ReplayWinner{margin-top:12px;width:100%;min-height:44px;padding:8px 12px;border:1px solid #a58c45;border-radius:9px;background:#322a12;color:#fff1c9;font-size:11px;font-weight:950}
+.ev9App .ev9ReplayWinner:hover{background:#4e3616;border-color:#ffd470}
+.ev9CelebrationCard{position:absolute;left:50%;top:27%;width:min(430px,calc(100vw - 36px));transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:9px;text-align:center;padding:25px 18px;border:1px solid #d8ad48;border-radius:20px;background:linear-gradient(140deg,#132d21ef,#08160eed);box-shadow:0 30px 90px #000c,0 0 50px #e3af4235;backdrop-filter:blur(20px);animation:ev9VictorySpot 4.8s ease-out both}
+.ev9CelebrationCard span{font-size:55px;line-height:1}
+.ev9CelebrationCard small{font-size:10px;letter-spacing:.15em;color:#c4e9d8;font-weight:900}
+.ev9CelebrationCard strong{font-size:clamp(23px,5vw,36px);color:#f5fffa;letter-spacing:-.04em}
+.ev9CelebrationCard b{font-size:clamp(25px,5vw,39px);color:#ffd275;font-variant-numeric:tabular-nums}
+@keyframes ev9VictorySpot{0%{transform:translate(-50%,28px) scale(.92);opacity:0}10%{transform:translate(-50%,0) scale(1.03);opacity:1}20%,72%{transform:translate(-50%,0) scale(1);opacity:1}100%{transform:translate(-50%,-15px) scale(1);opacity:0}}
+@media(max-width:500px){.ev9CelebrationCard{top:32%;padding:17px 14px}.ev9CelebrationCard span{font-size:42px}}
+@media(prefers-reduced-motion:reduce){.ev9CelebrationCard{animation:none;opacity:1}.ev9App .ev9ReplayWinner{transition:none}}
