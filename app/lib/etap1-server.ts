@@ -2,8 +2,8 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 
-export type Etap1Role = "admin" | "mitko" | "borko" | "krum" | "enchev";
-export const ETAP1_ROLES: readonly Etap1Role[] = ["admin", "mitko", "borko", "krum", "enchev"];
+export type Etap1Role = "admin" | "mitko" | "borko" | "enchev";
+export const ETAP1_ROLES: readonly Etap1Role[] = ["admin", "mitko", "borko", "enchev"];
 const SHARED_SOULFLAME_PROJECT = "frhletkiuupgksmgxoxc";
 const COOKIE = process.env.NODE_ENV === "production" ? "__Host-enchev-etap1" : "enchev-etap1-dev";
 
@@ -22,17 +22,14 @@ export function etap1Config(): Config | null {
     admin: process.env.ENCHEV_ETAP1_ADMIN_CODE?.trim() ?? "",
     mitko: process.env.ENCHEV_ETAP1_MITKO_CODE?.trim() ?? "",
     borko: process.env.ENCHEV_ETAP1_BORKO_CODE?.trim() ?? "",
-    // Temporary private Vercel Preview only: requested throwaway Krum invitation.
-    // Never accepted for production; replace with a random secret for real users.
-    krum: process.env.ENCHEV_ETAP1_KRUM_CODE?.trim() ?? (process.env.VERCEL_ENV === "preview" ? "krum" : ""),
     enchev: process.env.ENCHEV_ETAP1_ENCHEV_CODE?.trim() ?? "",
   };
   if (!ref || ref === SHARED_SOULFLAME_PROJECT || !rawUrl || !key || !secret || secret.length < 32) return null;
   // Short participant-only codes are permitted exclusively for the closed, fake-money Vercel Preview.
   // Admin always requires a high-entropy 16+ character secret. Production continues to require long codes.
   const shortDemoCodes = process.env.VERCEL_ENV === "preview" &&
-    codes.mitko === "mitko" && codes.borko === "borko" && codes.enchev === "enchev" && codes.krum === "krum";
-  const participantsHaveLongCodes = (["mitko", "borko", "krum", "enchev"] as const)
+    codes.mitko === "mitko" && codes.borko === "borko" && codes.enchev === "enchev";
+  const participantsHaveLongCodes = (["mitko", "borko", "enchev"] as const)
     .every(role => codes[role].length >= 16);
   if (codes.admin.length < 16 || (!shortDemoCodes && !participantsHaveLongCodes) ||
     new Set(Object.values(codes)).size !== ETAP1_ROLES.length) return null;
@@ -119,7 +116,7 @@ export async function etap1Body(request: NextRequest): Promise<Record<string,unk
   } catch { return null; }
 }
 
-export async function etap1Rpc(config: Config, name: "etap1_snapshot"|"etap1_start"|"etap1_bid"|"etap1_ready_lobby"|"etap1_ready_lobby_secure"|"etap1_bid_admitted"|"etap1_admin_code_matches",
+export async function etap1Rpc(config: Config, name: "etap1_snapshot"|"etap1_start"|"etap1_bid"|"etap1_ready_lobby"|"etap1_ready_lobby_secure"|"etap1_join_lobby_automatic"|"etap1_bid_admitted"|"etap1_admin_code_matches",
   params: Record<string,unknown> = {}): Promise<unknown> {
   const response = await fetch(config.url + "/rest/v1/rpc/" + name, {
     method: "POST", cache: "no-store",
