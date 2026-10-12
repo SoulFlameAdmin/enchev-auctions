@@ -58,7 +58,7 @@ export default function Etap1AdminMonitor() {
   };
   const logout=async()=>{
     setBusy(true);
-    try{await fetch("/api/etap1/logout",{method:"POST",headers:{"Content-Type":"application/json"},
+    try{await fetch("/api/etap1/logout?scope=admin",{method:"POST",headers:{"Content-Type":"application/json"},
       credentials:"same-origin",body:"{}"});}finally{
       setAuthorized(false);setMonitor(null);setBusy(false);setCode("");
     }
