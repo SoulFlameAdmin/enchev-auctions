@@ -393,7 +393,7 @@
       },
       "post": {
         "operationId": "postEtap1PilotAction",
-        "summary": "Same-origin signed-session login/logout, admin start, or idempotent two-bidder action",
+        "summary": "Same-origin pilot login/logout, explicit READY, admission-checked bids; operator cannot manually bypass READY start",
         "parameters": [
           {
             "in": "path",
@@ -403,6 +403,7 @@
               "enum": [
                 "login",
                 "logout",
+                "ready",
                 "start",
                 "bid"
               ]
@@ -415,13 +416,14 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "description": "Action-scoped fields: login role/code, admin title/openingAmount/increment/durationSeconds, bid nonce; server ignores client-proposed bid amounts.",
+                "description": "Action-scoped fields: login role/code, ready boolean, bid nonce; server ignores client-proposed bid amounts. Manual start is disabled for this pilot.",
                 "properties": {
                   "role": {
                     "enum": [
                       "admin",
                       "mitko",
                       "borko",
+                      "krum",
                       "enchev"
                     ]
                   },
@@ -443,6 +445,9 @@
                   "nonce": {
                     "type": "string",
                     "format": "uuid"
+                  },
+                  "ready": {
+                    "type": "boolean"
                   }
                 }
               }
@@ -505,6 +510,27 @@
                 "$ref": "#/components/headers/RequestCorrelationId"
               }
             }
+          }
+        }
+      }
+    },
+    "/api/etap1/admin": {
+      "get": {
+        "operationId": "getEtap1AdminMonitor",
+        "summary": "Private demo admin-only polling snapshot for roster, lobby readiness, per-session admission and last bids; never returns credentials or session IDs.",
+        "description": "Requires valid signed HttpOnly ENCHEV demo admin cookie. Server-side service role only, no anonymous data access. Refresh approximately once per second.",
+        "responses": {
+          "200": {
+            "description": "Admin-only aggregated counts, participants and current/last round"
+          },
+          "401": {
+            "description": "Missing/expired admin sign-in cookie"
+          },
+          "403": {
+            "description": "Authenticated role is not admin"
+          },
+          "503": {
+            "description": "Private pilot or database unavailable"
           }
         }
       }
