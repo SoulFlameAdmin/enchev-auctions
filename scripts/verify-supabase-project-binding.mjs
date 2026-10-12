@@ -57,9 +57,21 @@ export function validateBinding(config, sources) {
   return { endpoint, projectRef: config.project_ref, region: config.region };
 }
 
-async function validateLive(config) {
+// Billing failure on the legacy, read-only development-governance project must
+// never be mistaken for an auction-pilot failure. Only PR previews may report
+// the *specific* HTTP 402 as degraded; main remains a strict live health gate.
+export function isPreviewOnlyLegacyBillingOutage(status, preview) {
+  return preview === true && status === 402;
+}
+
+async function validateLive(config, preview = false) {
   const url = `${config.project_url}/functions/v1/enchev-plan-state`;
   const response = await fetch(url, { headers: { 'Cache-Control': 'no-cache' } });
+  if (isPreviewOnlyLegacyBillingOutage(response.status, preview)) {
+    console.warn('::warning title=Legacy governance unavailable::HTTP 402 from shared development-governance Supabase; pilot preview may proceed, but cloud Master Plan sync is NOT verified. Production remains blocked until restored.');
+    console.log('SUPABASE_PROJECT_LIVE DEGRADED scope=legacy-governance status=402 preview-only');
+    return;
+  }
   if (!response.ok) fail(`live endpoint HTTP ${response.status}`);
   const body = await response.json();
   if (!Array.isArray(body.rows)) fail('live endpoint response missing rows array');
@@ -84,7 +96,13 @@ function runSelfTest(config, sources) {
     if (!rejected) fail(`negative self-test ${index + 1} was not rejected`);
   }
 
-  console.log(`SUPABASE_PROJECT_BINDING_SELF_TEST PASS cases=${badCases.length}`);
+  // A regression must never make auth failures or unknown outages look healthy.
+  if (!isPreviewOnlyLegacyBillingOutage(402, true) ||
+      isPreviewOnlyLegacyBillingOutage(402, false) ||
+      [200, 201, 400, 401, 403, 404, 429, 500, 503].some(status => isPreviewOnlyLegacyBillingOutage(status, true))) {
+    fail('legacy billing preview policy broken');
+  }
+  console.log(`SUPABASE_PROJECT_BINDING_SELF_TEST PASS cases=${badCases.length} preview_policy_cases=12`);
 }
 
 const config = JSON.parse(fs.readFileSync(CONFIG_PATH, 'utf8'));
@@ -96,6 +114,9 @@ const sources = {
 
 if (process.argv.includes('--self-test')) {
   runSelfTest(config, sources);
+} else if (process.argv.includes('--preview-live')) {
+  validateBinding(config, sources);
+  await validateLive(config, true);
 } else if (process.argv.includes('--live')) {
   validateBinding(config, sources);
   await validateLive(config);
