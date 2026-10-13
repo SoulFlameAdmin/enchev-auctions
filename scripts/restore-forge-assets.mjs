@@ -413,4 +413,30 @@ await Promise.all(Array.from({ length: 6 }, async () => {
 console.log(`Forge frontend restored; ${downloaded} binary assets downloaded and verified.`);
 if (missingVisuals.length) {
   console.warn(`FORGE VISUAL QA WARNING: ${missingVisuals.length} remote images returned HTTP 404. Missing: ${missingVisuals.join(', ')}. Fix images before production lock.`);
+  // Prevent broken-image icons in the legacy Forge shell. Never invent a
+  // vehicle photograph: use an explicitly marked neutral placeholder instead.
+  const missingPaths=JSON.stringify(missingVisuals.map(name=>"/forge/"+name));
+  const fallbackScript=`(() => {
+    const missing=${missingPaths};
+    const svg='<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600"><rect width="900" height="600" fill="#17251d"/><rect x="44" y="44" width="812" height="512" rx="18" fill="none" stroke="#8db69b" stroke-width="3"/><text x="450" y="290" text-anchor="middle" fill="#e2f7e9" font-family="Arial, sans-serif" font-size="35">IMAGE UNAVAILABLE</text><text x="450" y="345" text-anchor="middle" fill="#abd0b6" font-family="Arial, sans-serif" font-size="20">Original external asset missing - not a vehicle photo</text></svg>';
+    function substitute(image){
+      if(!(image instanceof HTMLImageElement) || image.dataset.enchevMissingMedia==='1')return;
+      try {
+        const path=new URL(image.currentSrc||image.src,window.location.href).pathname;
+        if(!missing.some(name=>path.endsWith(name) || path.endsWith(name.slice(6))))return;
+      } catch{return;}
+      image.dataset.enchevMissingMedia='1';
+      image.alt='Original external image unavailable; no replacement photograph provided';
+      image.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+    }
+    document.addEventListener('error',ev=>substitute(ev.target),true);
+    function scan(){document.querySelectorAll('img').forEach(img=>{if(img.complete&&img.naturalWidth===0)substitute(img);});}
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',scan,{once:true});else scan();
+  })();`;
+  await writeFile(path.join(output,'missing-media-fallback.js'),fallbackScript);
+  let html=await readFile(forgeIndexPath,'utf8');
+  if(!html.includes('/forge/missing-media-fallback.js')){
+    html=html.replace('</body>','<script src="/forge/missing-media-fallback.js" defer></script></body>');
+    await writeFile(forgeIndexPath,html);
+  }
 }
