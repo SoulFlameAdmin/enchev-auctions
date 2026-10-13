@@ -54,7 +54,7 @@ export default function Etap1AdminMonitor() {
 
   useEffect(()=>{
     void refresh();
-    const interval=window.setInterval(()=>{void refresh();},1000);
+    const interval=window.setInterval(()=>{void refresh();},500);
     const tick=window.setInterval(()=>setLocalNow(Date.now()),100);
     return()=>{window.clearInterval(interval);window.clearInterval(tick);};
   },[refresh]);
@@ -113,7 +113,7 @@ export default function Etap1AdminMonitor() {
     <header className="eaMonitorTop">
       <a href="/" className="eaMonitorBrand">ENCHEV <small>AUCTIONS</small></a>
       <div><span className="eaMonitorTag">DEMO ONLY · CONTROL ROOM</span>
-        {authorized&&<span className={"eaMonitorSignal "+(offline?"bad":"good")}>{offline?"● OFFLINE":"● SERVER POLL · 1s"}</span>}</div>
+        {authorized&&<span className={"eaMonitorSignal "+(offline?"bad":"good")}>{offline?"● OFFLINE":"● SERVER POLL · 0.5s"}</span>}</div>
       {authorized&&<button type="button" className="eaMonitorLogout" onClick={()=>void logout()} disabled={busy}>SIGN OUT</button>}
     </header>
     {!authorized?<section className="eaMonitorLogin">
@@ -180,7 +180,7 @@ export default function Etap1AdminMonitor() {
       </section>
       <section className="eaAdminBidAudit" aria-label="Server bid attempt log">
         <div className="eaMonitorSectionTitle"><div><span className="eaMonitorEyebrow">SERVER AUDIT · MILLISECOND TIMESTAMPS</span><h2>All bid attempts</h2></div><b>{monitor?.attempts?.length??0} RECENT</b></div>
-        <p>Accepted, rejected and duplicate attempts for the current/last round. Time is recorded by PostgreSQL; data refreshes every 1 second.</p>
+        <p>Accepted, rejected and duplicate attempts for the current/last round. Time is recorded by PostgreSQL; data is refreshed twice per second.</p>
         <div className="eaAdminAuditRows">{monitor?.attempts?.length?monitor.attempts.map(a=>
           <div key={a.id} className={a.accepted?"accepted":"rejected"}>
             <small>{whenMs(a.at)}</small><strong>{a.role.toUpperCase()}</strong>
