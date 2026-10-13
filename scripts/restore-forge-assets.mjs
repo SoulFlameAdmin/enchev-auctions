@@ -375,6 +375,7 @@ await writeFile(forgeIndexPath, forgeIndex);
 
 const pending = JSON.parse(await readFile(path.join(root, 'config/forge-assets.json'), 'utf8'));
 let downloaded = 0;
+const missingVisuals = [];
 await Promise.all(Array.from({ length: 6 }, async () => {
   while (pending.length) {
     const asset = pending.shift();
@@ -391,12 +392,25 @@ await Promise.all(Array.from({ length: 6 }, async () => {
         if (digest(data) !== asset.sha256) throw new Error('Source content changed');
         break;
       } catch (error) {
-        if (attempt === 2) throw new Error(`Cannot restore ${asset.path}: ${error.message}`);
+        if (attempt === 2) {
+          // External Sanity media can be deleted after the original export.
+          // Keep the auction QA preview buildable, but loudly identify missing visuals.
+          // Never silently substitute unverified media or ignore checksum failures.
+          if (error.message === 'HTTP 404' && asset.path.startsWith('media/')) {
+            missingVisuals.push(asset.path);
+            break;
+          }
+          throw new Error(`Cannot restore ${asset.path}: ${error.message}`);
+        }
       }
     }
+    if (!data) continue;
     await mkdir(path.dirname(target), { recursive: true });
     await writeFile(target, data);
     downloaded++;
   }
 }));
 console.log(`Forge frontend restored; ${downloaded} binary assets downloaded and verified.`);
+if (missingVisuals.length) {
+  console.warn(`FORGE VISUAL QA WARNING: ${missingVisuals.length} remote images returned HTTP 404. Missing: ${missingVisuals.join(', ')}. Fix images before production lock.`);
+}
