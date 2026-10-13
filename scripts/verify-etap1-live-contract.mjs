@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * ETAP 1 static safety gate only. This does not prove a live Supabase pilot.
- * Runtime 2-bidder acceptance is explicitly mandatory in the runbook.
+ * Runtime three-bidder acceptance is explicitly mandatory in the runbook.
  */
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
@@ -17,6 +17,7 @@ const client=read("app/live-auctions/etap-1/page.tsx");
 const css=read("app/live-auctions/etap-1/etap1.css");
 const krumSql=read("supabase/migrations/20261012160000_enchev_etap1_krum_preview_bidder.sql");
 const admissionSql=read("supabase/migrations/20261012170000_enchev_etap1_session_admission.sql");
+const professionalSql=read("supabase/migrations/20261013060000_enchev_professional_demo_v2.sql");
 
 const gates=[
   ["dedicated DB and explicit activation", gateway.includes('ENCHEV_ETAP1_ENABLED !== "true"')&&gateway.includes("SHARED_SOULFLAME_PROJECT")],
@@ -30,7 +31,7 @@ const gates=[
   ["atomic lock ordering",sql.includes("where name='stage-one' for update") && sql.includes("for update;")],
   ["unique idempotency and server sequence",sql.includes("unique (auction_id, actor, request_nonce)")&&sql.includes("unique (auction_id, sequence)")],
   ["immutable bid ledger",sql.includes("create table if not exists public.enchev_etap1_bids")&&!/delete\s+from\s+public\.enchev_etap1_bids/i.test(sql)],
-  ["no client-controlled amount",!api.includes("p_amount") && sql.includes("v_auction.current_amount+v_auction.increment")],
+  ["exact client-confirmed amount checked by server",api.includes("p_amount:amount") && api.includes("p_expected_sequence:expectedSequence") && read("supabase/migrations/20261013060000_enchev_professional_demo_v2.sql").includes("p_amount<v_a.current_amount+50")],
   ["server deadline is authoritative",sql.includes("v_now>=v_auction.ends_at")],
   ["database deterministic close",sql.includes("set status='closed'") && sql.includes("v_auction.leading_role")],
   ["database RLS on all three tables",["auctions","rooms","bids"].every(x=>sql.includes("alter table public.enchev_etap1_"+x+" enable row level security"))],
@@ -50,15 +51,18 @@ const gates=[
     admissionSql.includes("Press READY for the NEXT auction") &&
     admissionSql.includes("a.session_id=p_session_id") &&
     api.includes('"etap1_ready_lobby_secure"') &&
-    api.includes('"etap1_bid_admitted"') &&
+    api.includes('"etap1_bid_offer_secure"') &&
     client.includes('const admitted=lobby?.admitted===true') &&
-    client.includes('const showAuction=status==="live"&&(admitted||role==="admin")') &&
+    client.includes('const showAuction=status==="live"&&admitted') &&
     client.includes("This round started without your current login")],
   ["opt-in Web Audio",client.includes("new AudioContext()") && client.includes("ENABLE SOUND")],
   ["response snapshots every second",client.includes('window.setInterval(()=>void poll(),1000)')],
+  ["server-owned global five-second cooldown",professionalSql.includes("next_bid_allowed_at=v_now+interval '5 seconds'") && client.includes("cooldownRemaining")],
+  ["new 30-second READY countdown",professionalSql.includes("v_now+interval '30 seconds'") && client.includes('status==="countdown"')],
+  ["server wallet cap and auction budget",professionalSql.includes("100000") && professionalSql.includes("v_wallet.lot_budget") && api.includes('action === "wallet"')],
   ["mobile width CSS",css.includes("@media(max-width:480px)")],
 ];
 const failed=gates.filter(([_,pass])=>!pass);
 for(const [name,pass] of gates) console.log(`${pass?"PASS":"FAIL"} ETAP1: ${name}`);
 assert.equal(failed.length,0,`${failed.length} safety contracts failed`);
-console.log("Static gates passed. This is NOT runtime 2-device acceptance.");
+console.log("Static gates passed. This is NOT runtime multi-device acceptance.");
