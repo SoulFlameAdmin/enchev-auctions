@@ -87,7 +87,7 @@ export default function EnchevStageOnePage(){
     });
   },[]);
 
-  const applySnapshot=useCallback((next:Snapshot)=>{
+  const applySnapshot=useCallback((next:Snapshot,requestStartedAt?:number)=>{
     // Never repaint a newer accepted bid with an older in-flight poll response.
     const receivedAt=Date.parse(next.serverNow);
     if(!Number.isFinite(receivedAt)||receivedAt<lastServerNowRef.current)return;
@@ -139,13 +139,17 @@ export default function EnchevStageOnePage(){
       }
       lastRef.current={id:next.auction.id,sequence:next.auction.sequence,status:next.status,endsAt:next.auction.endsAt};
     }
-    offsetRef.current=receivedAt-Date.now();
-    setSnapshot(next);setLocalNow(Date.now());
+    const arrival=Date.now();
+    // Correct for network time with the request midpoint; the database deadline
+    // remains authoritative, while the 0.1-second client clock is only display.
+    offsetRef.current=receivedAt-(requestStartedAt?((requestStartedAt+arrival)/2):arrival);
+    setSnapshot(next);setLocalNow(arrival);
   },[play]);
 
   const poll=useCallback(async()=>{
     if(pollingRef.current)return;
     pollingRef.current=true;
+    const requestStartedAt=Date.now();
     try{
       const response=await fetch("/api/etap1/state",{cache:"no-store",credentials:"same-origin",signal:AbortSignal.timeout(10000)});
       const data=await response.json() as StateReply;
@@ -156,7 +160,7 @@ export default function EnchevStageOnePage(){
       if(!response.ok||!data.authenticated||!data.state)throw new Error(data.error??"Service unavailable");
       setRole(data.role??null);setConnected(true);
       if(data.lobby)setLobby(data.lobby);
-      applySnapshot(data.state);
+      applySnapshot(data.state,requestStartedAt);
     }catch{
       setConnected(false);
     }finally{pollingRef.current=false;}
@@ -164,7 +168,7 @@ export default function EnchevStageOnePage(){
 
   useEffect(()=>{
     void poll();
-    const id=window.setInterval(()=>void poll(),1000);
+    const id=window.setInterval(()=>void poll(),500);
     const tick=window.setInterval(()=>setLocalNow(Date.now()),100);
     return()=>{window.clearInterval(id);window.clearInterval(tick);void audioRef.current?.close();};
   },[poll]);
@@ -181,13 +185,14 @@ export default function EnchevStageOnePage(){
   },[celebratingId]);
 
   const post=async(action:string,data:Record<string,unknown>)=>{
+    const requestStartedAt=Date.now();
     const response=await fetch("/api/etap1/"+action,{
       method:"POST",credentials:"same-origin",
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify(data),signal:AbortSignal.timeout(12000),
     });
     const result=await response.json() as StateReply&{ok?:boolean;code?:string};
-    if(result.state)applySnapshot(result.state);
+    if(result.state)applySnapshot(result.state,requestStartedAt);
     if(result.lobby)setLobby(result.lobby);
     if(!response.ok)throw new Error(action==="bid"?bidError(result.code??result.error??""):result.error??"Request rejected");
     return result;
@@ -522,7 +527,7 @@ export default function EnchevStageOnePage(){
           {status==="live"&&bonusUntil>localNow&&<div className="eaBonusTime" role="status">↗ SERVER EXTENSION CONFIRMED</div>}
           {status==="live"&&<div className="eaServerCooldown" role="status">{roundLocked?"⏳ GLOBAL SERVER COOLDOWN: "+cooldownRemaining+"s":auction?.leadingRole===role?"🟢 YOU ARE LEADING — WAIT FOR ANOTHER BID":"🟢 GLOBAL COOLDOWN CLEAR — BIDDING OPEN"}{!budgetSufficient&&" · BUDGET LIMIT REACHED"}</div>}
           {status==="live"&&bidder?
-            <button className="eaActionPrimary eaPlaceBid" type="button" onClick={()=>void bid()} disabled={!canBid}>{busy?"CONFIRMING…":roundLocked?"⏳ BID AVAILABLE IN "+visibleRound+"s":!budgetSufficient?"LIMIT REACHED":"PLACE BID · "+money(nextPrice)+" →"}</button>
+            <button className="eaActionPrimary eaPlaceBid" type="button" onClick={()=>void bid()} disabled={!canBid}>{busy?"CONFIRMING…":roundLocked?"⏳ BID AVAILABLE IN "+visibleRound+"s":auction?.leadingRole===role?"✓ YOU ARE LEADING":!budgetSufficient?"LIMIT REACHED":"PLACE BID · "+money(nextPrice)+" →"}</button>
             :<div className="eaBidStandby">{status==="live"?"Observer mode · you can follow bids in real time":(lobby?.count??0)<3?"Waiting for all three bidders…":"Press READY above for the next round"}</div>}
           {status==="live"&&<div className="eaBidRhythm"><span>SERVER-ENFORCED GLOBAL COOLDOWN</span><b>{visibleRound}s</b><div><i style={{width:(100-Math.min(5,cooldownMs/1000)*20)+"%"}}/></div></div>}
           <div className="eaPanelFoot"><span>✓ Server-confirmed offers</span><span>✓ Fake money only</span></div>
@@ -548,7 +553,7 @@ export default function EnchevStageOnePage(){
       {bidFlash&&<div className="eaBidToast" role="status" aria-live="polite" key={bidFlash.sequence}><span>✓ BID ACCEPTED · #{bidFlash.sequence}</span><strong>{money(bidFlash.amount)}</strong><small>{labelRole(bidFlash.role)} is leading</small></div>}
       {status==="live"&&bidder&&<div className="eaBidDock">
         <div><span>BID · {minutes}:{seconds} LEFT</span><strong>{money(nextPrice)}</strong></div>
-        <button type="button" onClick={()=>void bid()} disabled={!canBid}>{busy?"…":roundLocked?"WAIT "+visibleRound+"s":!budgetSufficient?"LIMIT":"BID "+money(nextPrice)+" →"}</button>
+        <button type="button" onClick={()=>void bid()} disabled={!canBid}>{busy?"…":roundLocked?"WAIT "+visibleRound+"s":auction?.leadingRole===role?"LEADING":!budgetSufficient?"LIMIT":"BID "+money(nextPrice)+" →"}</button>
       </div>}
       </>}
       {celebratingId===auction?.id&&auction?.winnerRole&&<div className="eaCelebration" aria-hidden="true" key={celebratingId}>
