@@ -374,8 +374,8 @@ export default function EnchevStageOnePage(){
     {!role?<section className="eaLoginCard">
       <div className="eaLoginWelcome"><span className="eaEyebrow">ENCHEV · INVITATION ACCESS</span>
         <h1>Enter the live room.</h1>
-        <p>Private test room. The first round starts when all three bidders have logged in. Later rounds need three fresh READY clicks. Demo euros only.</p>
-        <div className="eaLoginDecor"><span>01 · JOIN</span><span>02 · 3 JOIN</span><span>03 · BID</span><span>04 · WIN</span></div>
+        <p>Private DEMO: select your test budget and press READY. When all three are ready, a shared 30-second countdown starts. No real deposits.</p>
+        <div className="eaLoginDecor"><span>01 · JOIN</span><span>02 · BUDGET</span><span>03 · READY</span><span>03 · BID</span><span>04 · WIN</span></div>
       </div>
       <form onSubmit={logIn}>
         <label>Your role<select value={loginRole} onChange={e=>setLoginRole(e.target.value as Role)}>
@@ -391,25 +391,46 @@ export default function EnchevStageOnePage(){
       {preparingRound&&<section className="eaReadyCard" aria-label="Participant readiness">
         <div className="eaReadyText">
           <span className="eaEyebrow"><span className="eaLiveDot"/> NEXT ROUND</span>
-          <h2>{status==="live"?"Round in progress — wait for next READY":((lobby?.count??0)<minPlayers||!corePresent)?"Waiting for invited participants":myReady?"You're ready.":"Ready to start?"}</h2>
+          <h2>{status==="countdown"?"🔴 STARTING IN "+String(Math.floor(countdownRemaining/60)).padStart(2,"0")+":"+String(countdownRemaining%60).padStart(2,"0"):status==="live"?"Round in progress — wait for next READY":((lobby?.count??0)<minPlayers||!corePresent)?"Waiting for invited participants":myReady?"You're ready.":"Ready to start?"}</h2>
           <div className="eaReadyPeople">{(lobby?.participants??[]).map(person=>
             <span className={person.ready?"is-ready":""} key={person.role}>{person.ready?"●":"○"} {labelRole(person.role)}</span>)}
           </div>
-          <p>{status==="live"
+          <p>{status==="countdown"?"30-second synchronized pre-live countdown. Bidding will unlock at the authoritative server start time.":status==="live"
             ?"This round started without your current login. You cannot bid; when it ends, press I'M READY for the next one."
-            :((lobby?.count??0)<minPlayers||!corePresent)?"Mitko, Borko and Enchev must join. The first round starts automatically on the third login."
-            :(lobby?.readyCount??0)===(lobby?.count??0)?"The auction is starting…":"For another round, all three must press READY."}</p>
+            :((lobby?.count??0)<minPlayers||!corePresent)?"Mitko, Borko and Enchev must join, set their DEMO budgets, then all press READY."
+            :(lobby?.readyCount??0)===(lobby?.count??0)?"Countdown starting…":"All three must press READY to begin the countdown."}</p>
         </div>
         <div className="eaReadyControl">
           <span>{lobby?.readyCount??0}/{lobby?.count??0} READY</span>
-          {participant?(status==="live"
-            ?<small>New login? Wait until the current auction closes.</small>
-            :<button type="button" onClick={()=>void setReady(!myReady)} disabled={!connected||busy} className={myReady?"is-ready":""}>{busy?"UPDATING…":myReady?"✓ READY":"I'M READY →"}</button>
+          {participant?(status==="live"||status==="countdown"
+            ?<small>{status==="countdown"?"Countdown is running.":"New login? Wait until the current auction closes."}</small>
+            :<button type="button" onClick={()=>void setReady(!myReady)} disabled={!connected||busy||(Number(wallet?.lotBudget??0)<16300&&!myReady)} className={myReady?"is-ready":""}>{busy?"UPDATING…":myReady?"✓ READY":"I'M READY →"}</button>
           ):<small>Admin does not count.</small>}
         </div>
       </section>}
       {role==="admin"&&<div className="eaMonitorEntry"><a href="/live-auctions/etap-1/admin" aria-label="Open live admin dashboard">▣ OPEN ADMIN CONTROL ROOM →</a><small>Full-screen PC monitor · LIVE roster · READY · active bidders</small></div>}
       {role==="admin"&&preparingRound&&<p className="eaOperatorNote">🔒 The first round starts on three bidder logins; later rounds require three READY clicks. The operator never starts or blocks the auction.</p>}
+      {participant&&status!=="live"&&status!=="countdown"&&<section className="eaDemoWallet" aria-label="DEMO buying power">
+        <div className="eaDemoWalletHead"><div><span className="eaEyebrow">DEMO CREDIT · NO REAL DEPOSIT</span><h2>💰 BUYING POWER {money(Number(wallet?.buyingPower??10000))}</h2></div><span>LOT LIMIT: {money(Number(wallet?.lotBudget??10000))}</span></div>
+        <p>Every login starts with €10,000 test credit. This lot opens at €16,250; your lot budget must be at least €16,300 before READY.</p>
+        <div className="eaWalletActions">
+          {[5000,10000,20000].map(v=><button type="button" key={v} disabled={busy||myReady||Number(wallet?.buyingPower??0)+v>100000} onClick={()=>void updateWallet(v)}>+ {money(v)} DEMO</button>)}
+        </div>
+        <form onSubmit={e=>{e.preventDefault();void updateWallet(0,Number(budgetDraft));}}>
+          <label>MAXIMUM FOR THIS CAR (€)<input type="number" inputMode="numeric" min="0" max={Number(wallet?.buyingPower??10000)} step="1" value={budgetDraft} onChange={e=>setBudgetDraft(e.target.value)} disabled={busy||myReady}/></label>
+          <button type="submit" disabled={busy||myReady||!budgetDraft||!Number.isSafeInteger(Number(budgetDraft))||Number(budgetDraft)<0||Number(budgetDraft)>Number(wallet?.buyingPower??0)}>SAVE LOT BUDGET</button>
+        </form>
+        <p className="eaBudgetAdvice">🤖 DEMO BUDGET ASSISTANT · RULE-BASED: {Number(wallet?.lotBudget??0)<16300?"Your configured budget is below the minimum €16,300 first offer. Add DEMO credit and raise the lot budget.":"Respect your chosen limit. Taxes, transport and repair costs are not verified or included."}</p>
+      </section>}
+      {participant&&<section className="eaVehicleFacts" aria-label="Auction vehicle information">
+        <div className="eaVehicleFactsHead"><span>LOT · DEMO-001</span><h2>2026 Volkswagen Golf GTI · REFERENCE LOT</h2><small>Illustrative vehicle and photo; not a confirmed inspection, sale, document or VIN.</small></div>
+        <div className="eaLotTabs">{["Details","Condition","Documents","Transport","History"].map(t=><button type="button" key={t} aria-pressed={detailTab===t} className={detailTab===t?"is-active":""} onClick={()=>setDetailTab(t)}>{t}</button>)}</div>
+        {detailTab==="Details"&&<div className="eaLotGrid">{[["LOT ID","DEMO-001"],["YEAR","2026 (illustrative)"],["VIN","NOT VERIFIED"],["MILEAGE","NOT VERIFIED"],["ENGINE","NOT VERIFIED"],["FUEL","NOT VERIFIED"],["TRANSMISSION","NOT VERIFIED"],["LOCATION","NOT VERIFIED"],["START TIME","Server-controlled"],["OPENING BID","€16,250"]].map(([k,v])=><div key={k}><small>{k}</small><strong>{v}</strong></div>)}</div>}
+        {detailTab==="Condition"&&<div className="eaLotGrid">{[["STARTS / RUNS","UNKNOWN"],["DRIVEABLE","UNKNOWN"],["PRIMARY DAMAGE","NOT VERIFIED"],["SECONDARY DAMAGE","NOT VERIFIED"],["KEYS","NOT VERIFIED"],["INSPECTION REPORT","NOT AVAILABLE"]].map(([k,v])=><div key={k}><small>{k}</small><strong>{v}</strong></div>)}</div>}
+        {detailTab==="Documents"&&<p>DEMO closing record becomes available when a round ends. Vehicle title, seller authorization and original papers: NOT VERIFIED.</p>}
+        {detailTab==="Transport"&&<p>Pickup location, taxes, shipping costs and delivery terms: NOT VERIFIED. No real vehicle release.</p>}
+        {detailTab==="History"&&<p>{auction?auction.sequence+" accepted server-verified offers in the current / last round.":"No round started."} During LIVE, bid history is shown below.</p>}
+      </section>}
       {status==="closed"&&auction&&<section className="eaFinalResult" aria-labelledby="eaFinalTitle" aria-live="polite">
         <span className="eaFinalEyebrow">🏁 AUCTION CLOSED · SERVER CONFIRMED · DEMO ONLY</span>
         <h2 id="eaFinalTitle">{!auction.winnerRole?"No bids — no winning bidder":auction.winnerRole===role?"🏆 YOU ARE THE HIGHEST BIDDER":"🏆 HIGHEST BID: "+labelRole(auction.winnerRole)}</h2>
@@ -460,11 +481,20 @@ export default function EnchevStageOnePage(){
           <div className="eaPriceTop"><span>{status==="live"?"CURRENT HIGHEST BID":"NEXT ROUND · OPENING PRICE"}</span><span className={status==="live"?"eaBiddingLive":""}>{status==="live"?"● LIVE":status==="closed"?"● LAST ROUND FINISHED":"● STANDBY"}</span></div>
           <strong className="eaHeroAmount">{money(status==="live"?currentPrice:opening)}</strong>
           <div className="eaBidMeta"><span>LEADER <b>{status==="live"?labelRole(auction?.leadingRole??null):"—"}</b></span><span>BIDS <b>{status==="live"?auction?.sequence??0:"—"}</b></span></div>
-          <div className="eaNextBid"><span>NEXT VALID BID</span><strong>{money(status==="live"?nextPrice:opening+increment)}</strong><small>+ {money(status==="live"?auction?.increment??increment:increment)} minimum step</small></div>
+          <div className="eaNextBid"><span>YOUR EXACT BID AMOUNT</span><strong>{money(nextPrice)}</strong><small>Minimum +{money(minStep)} · Your budget: {money(budgetCap)}</small></div>
+          {status==="live"&&bidder&&<div className="eaOfferControls">
+            <span>RAISE BY</span>
+            <div className="eaOfferSteps">{[50,100,250,500,1000].map(x=><button key={x} type="button" aria-pressed={selectedStep===x} className={selectedStep===x?"is-active":""} onClick={()=>setSelectedStep(x)}>+{money(x)}</button>)}</div>
+            <form onSubmit={e=>{e.preventDefault();const v=Number(customStep);if(Number.isSafeInteger(v)&&v>=50&&v<=100000)setSelectedStep(v);else setError("CUSTOM increase must be an integer between €50 and €100,000.");}}>
+              <label>CUSTOM INCREASE (€)<input type="number" inputMode="numeric" step="1" min="50" max="100000" value={customStep} onChange={e=>setCustomStep(e.target.value)}/></label>
+              <button type="submit">USE CUSTOM</button>
+            </form>
+          </div>}
+          {status==="live"&&<div className="eaServerCooldown" role="status">{roundLocked?"⏳ GLOBAL SERVER COOLDOWN: "+cooldownRemaining+"s":auction?.leadingRole===role?"🟢 YOU ARE LEADING — WAIT FOR ANOTHER BID":"🟢 GLOBAL COOLDOWN CLEAR — BIDDING OPEN"}{!budgetSufficient&&" · BUDGET LIMIT REACHED"}</div>
           {status==="live"&&bidder?
-            <button className="eaActionPrimary eaPlaceBid" type="button" onClick={()=>void bid()} disabled={!canBid}>{busy?"CONFIRMING…":roundLocked?"WAIT "+visibleRound+"s":"PLACE BID · "+money(nextPrice)+" →"}</button>
+            <button className="eaActionPrimary eaPlaceBid" type="button" onClick={()=>void bid()} disabled={!canBid}>{busy?"CONFIRMING…":roundLocked?"GLOBAL WAIT "+visibleRound+"s":!budgetSufficient?"LIMIT REACHED":"PLACE BID · "+money(nextPrice)+" →"}</button>
             :<div className="eaBidStandby">{status==="live"?"Observer mode · you can follow bids in real time":(lobby?.count??0)<3?"Waiting for all three bidders…":"Press READY above for the next round"}</div>}
-          {status==="live"&&<div className="eaBidRhythm"><span>5-SECOND BID RHYTHM</span><b>{visibleRound}s</b><div><i style={{width:(100-visibleRound*20)+"%"}}/></div></div>}
+          {status==="live"&&<div className="eaBidRhythm"><span>SERVER-ENFORCED GLOBAL COOLDOWN</span><b>{visibleRound}s</b><div><i style={{width:(100-Math.min(5,visibleRound)*20)+"%"}}/></div></div>}
           <div className="eaPanelFoot"><span>✓ Server-confirmed offers</span><span>✓ Fake money only</span></div>
         </div>
       </section>
@@ -479,7 +509,7 @@ export default function EnchevStageOnePage(){
       {bidFlash&&<div className="eaBidToast" role="status" aria-live="polite" key={bidFlash.sequence}><span>✓ BID ACCEPTED · #{bidFlash.sequence}</span><strong>{money(bidFlash.amount)}</strong><small>{labelRole(bidFlash.role)} is leading</small></div>}
       {status==="live"&&bidder&&<div className="eaBidDock">
         <div><span>NEXT BID · {minutes}:{seconds} LEFT</span><strong>{money(nextPrice)}</strong></div>
-        <button type="button" onClick={()=>void bid()} disabled={!canBid}>{busy?"…":roundLocked?"WAIT "+visibleRound+"s":"BID NOW →"}</button>
+        <button type="button" onClick={()=>void bid()} disabled={!canBid}>{busy?"…":roundLocked?"WAIT "+visibleRound+"s":!budgetSufficient?"LIMIT":"BID "+money(nextPrice)+" →"}</button>
       </div>}
       </>}
       {celebratingId===auction?.id&&auction?.winnerRole&&<div className="eaCelebration" aria-hidden="true" key={celebratingId}>
