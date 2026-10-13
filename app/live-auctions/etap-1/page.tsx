@@ -9,15 +9,26 @@ type Bid = {sequence:number;role:string;amount:number;at:string};
 type Auction = {
   id:string;title:string;currency:"EUR";openingAmount:number;currentAmount:number;
   increment:number;sequence:number;leadingRole:string|null;winnerRole:string|null;
-  nextBidAllowedAt?:string|null;cooldownSeconds?:number;minimumStep?:number;maximumOffer?:number;
+  nextBidAllowedAt?:string|null;cooldownSeconds?:number;minimumStep?:number;maximumOffer?:number;extensionCount?:number;
   startedAt:string;endsAt:string;closedAt:string|null;
 };
 type Snapshot = {status:"idle"|"countdown"|"live"|"closed"|"canceled";demo:true;serverNow:string;auction:Auction|null;bids:Bid[]};
-type Lobby = {count:number;readyCount:number;minPlayers:number;admitted?:boolean;sessionCurrent?:boolean;wallet?:{buyingPower:number;lotBudget:number}|null;participants:{role:string;ready:boolean}[]};
+type Lobby = {count:number;readyCount:number;minPlayers:number;admitted?:boolean;sessionCurrent?:boolean;activeDevices?:number;wallet?:{buyingPower:number;lotBudget:number}|null;participants:{role:string;ready:boolean}[]};
 type StateReply = {authenticated?:boolean;available?:boolean;role?:Role;state?:Snapshot;lobby?:Lobby;error?:string};
 
 const labelRole=(role:string|null)=>role==="mitko"?"Mitko":role==="borko"?"Borko":role==="enchev"?"Enchev":role==="admin"?"Admin":"No bidder";
 const money=(value:number)=>new Intl.NumberFormat("bg-BG",{style:"currency",currency:"EUR",maximumFractionDigits:2}).format(value);
+const bidError=(code:string)=>({
+  PRICE_CHANGED:"Another bid was accepted first. Price refreshed; review the new amount.",
+  COOLDOWN_ACTIVE:"Global 5-second pause is active. Wait for the countdown on BID.",
+  ALREADY_LEADING:"You already lead this round. Wait for another bidder.",
+  INVALID_AMOUNT:"The confirmed amount is no longer valid. Review the refreshed price.",
+  LIMIT_EXCEEDED:"Offer exceeds your DEMO wallet or selected car limit.",
+  SESSION_EXPIRED:"This device's session expired. Sign in again.",
+  SESSION_NOT_ADMITTED:"This role is not admitted to the current round.",
+  AUCTION_CLOSED:"Round finished. Wait for the next READY.",
+  NONCE_MISMATCH:"This request was already used for a different offer.",
+} as Record<string,string>)[code]??"Bid not accepted. Refresh the price and try again.";
 
 export default function EnchevStageOnePage(){
   const [role,setRole]=useState<Role|null>(null);
@@ -55,6 +66,8 @@ export default function EnchevStageOnePage(){
   const lastRef=useRef<{id:string;sequence:number;status:string;endsAt?:string}|null>(null);
   const lastServerNowRef=useRef(0);
   const pollingRef=useRef(false);
+  // Synchronous guard shared by primary and mobile BID controls.
+  const pendingBidRef=useRef(false);
   const offsetRef=useRef(0);
 
   const play=useCallback((kind:"bid"|"close")=>{
@@ -152,7 +165,7 @@ export default function EnchevStageOnePage(){
   useEffect(()=>{
     void poll();
     const id=window.setInterval(()=>void poll(),1000);
-    const tick=window.setInterval(()=>setLocalNow(Date.now()),200);
+    const tick=window.setInterval(()=>setLocalNow(Date.now()),100);
     return()=>{window.clearInterval(id);window.clearInterval(tick);void audioRef.current?.close();};
   },[poll]);
 
@@ -173,10 +186,10 @@ export default function EnchevStageOnePage(){
       headers:{"Content-Type":"application/json"},
       body:JSON.stringify(data),signal:AbortSignal.timeout(12000),
     });
-    const result=await response.json() as StateReply&{ok?:boolean};
+    const result=await response.json() as StateReply&{ok?:boolean;code?:string};
     if(result.state)applySnapshot(result.state);
     if(result.lobby)setLobby(result.lobby);
-    if(!response.ok)throw new Error(result.error??"Request rejected");
+    if(!response.ok)throw new Error(action==="bid"?bidError(result.code??result.error??""):result.error??"Request rejected");
     return result;
   };
 
@@ -217,19 +230,20 @@ export default function EnchevStageOnePage(){
     if(!activeAuction||snapshot?.status!=="live")return;
     const now=Date.now()+offsetRef.current;
     const amount=Number(activeAuction.currentAmount)+selectedStep;
-    if(busy||!connected||!lobby?.admitted||!Number.isSafeInteger(amount)||
+    if(pendingBidRef.current||busy||!connected||!lobby?.admitted||!Number.isSafeInteger(amount)||
        amount>100000||amount>(Number(lobby.wallet?.lotBudget) || 0)||
        amount>(Number(lobby.wallet?.buyingPower) || 0)||
        activeAuction.leadingRole===role||
        (activeAuction.nextBidAllowedAt&&Date.parse(activeAuction.nextBidAllowedAt)>now)||
        Date.parse(activeAuction.startedAt)>now||
        Date.parse(activeAuction.endsAt)<=now)return;
+    pendingBidRef.current=true; // Block a second click before React rerenders.
     setBusy(true);setError("");
     try{
       await post("bid",{nonce:crypto.randomUUID(),amount,expectedSequence:activeAuction.sequence});
     }
     catch(e){setError(e instanceof Error?e.message:"Bid rejected");void poll();}
-    finally{setBusy(false);}
+    finally{pendingBidRef.current=false;setBusy(false);}
   };
   const downloadDemoClosingRecord=()=>{
     const finished=snapshot?.auction;
@@ -327,9 +341,10 @@ export default function EnchevStageOnePage(){
   const wallet=lobby?.wallet;
   const budgetCap=Math.min(Number(wallet?.buyingPower??0),Number(wallet?.lotBudget??0),100000);
   const countdownRemaining=auction?Math.max(0,Math.ceil((Date.parse(auction.startedAt)-localNow-offsetRef.current)/1000)):0;
-  const cooldownRemaining=auction?.nextBidAllowedAt?Math.max(0,Math.ceil((Date.parse(auction.nextBidAllowedAt)-localNow-offsetRef.current)/1000)):0;
-  const roundLocked=cooldownRemaining>0;
-  const visibleRound=cooldownRemaining;
+  const cooldownMs=auction?.nextBidAllowedAt?Math.max(0,Date.parse(auction.nextBidAllowedAt)-localNow-offsetRef.current):0;
+  const cooldownRemaining=Math.ceil(cooldownMs/1000);
+  const visibleRound=(Math.ceil(cooldownMs/100)/10).toFixed(1);
+  const roundLocked=cooldownMs>0;
   const budgetSufficient=budgetCap>=nextPrice;
   const status=snapshot?.status??"idle";
   const timeUntil=Math.max(0,Math.ceil(remainingMs/1000));
@@ -337,8 +352,8 @@ export default function EnchevStageOnePage(){
   const clockProgress=status==="live"?Math.min(100,Math.max(0,remainingMs/clockTotalMs*100)):status==="closed"?100:100;
   const clockStyle={"--ev9-progress":clockProgress+"%"} as CSSProperties;
   // Server-owned cooldown; no per-browser tick-based bid permission.
-  // A login/refresh never grants access to an already-running round.
-  // Admission is bound to the signed browser session that joined before the first round or explicitly pressed READY for the next.
+  // One invited role may use multiple devices but counts as a single bidder.
+  // Server verifies each signed cookie, registered session, wallet and role admission.
   const admitted=lobby?.admitted===true;
   const showAuction=status==="live"&&admitted;
   const canBid=status==="live"&&bidder&&admitted&&connected&&!busy&&timeUntil>0&&!roundLocked&&budgetSufficient&&stepIsValid&&auction?.leadingRole!==role;
@@ -415,7 +430,7 @@ export default function EnchevStageOnePage(){
       {role==="admin"&&preparingRound&&<p className="eaOperatorNote">🔒 The first round starts on three bidder logins; later rounds require three READY clicks. The operator never starts or blocks the auction.</p>}
       {participant&&status!=="live"&&status!=="countdown"&&<section className="eaDemoWallet" aria-label="DEMO buying power">
         <div className="eaDemoWalletHead"><div><span className="eaEyebrow">DEMO CREDIT · NO REAL DEPOSIT</span><h2>💰 BUYING POWER {money(Number(wallet?.buyingPower??10000))}</h2></div><span>LOT LIMIT: {money(Number(wallet?.lotBudget??10000))}</span></div>
-        <p>Every login starts with €10,000 test credit. This lot opens at €16,250; your lot budget must be at least €16,300 before READY.</p>
+        <p>Every role starts with €10,000 DEMO credit. Added TEST funds: {money(Math.max(0,Number(wallet?.buyingPower??10000)-10000))}. Maximum for this car: {money(Number(wallet?.lotBudget??10000))}. No real payment.</p>
         <div className="eaWalletActions">
           {[5000,10000,20000].map(v=><button type="button" key={v} disabled={busy||myReady||Number(wallet?.buyingPower??0)+v>100000} onClick={()=>void updateWallet(v)}>+ {money(v)} DEMO</button>)}
         </div>
@@ -487,6 +502,12 @@ export default function EnchevStageOnePage(){
         <div className="eaBiddingPanel">
           <div className="eaPriceTop"><span>{status==="live"?"CURRENT HIGHEST BID":"NEXT ROUND · OPENING PRICE"}</span><span className={status==="live"?"eaBiddingLive":""}>{status==="live"?"● LIVE":status==="closed"?"● LAST ROUND FINISHED":"● STANDBY"}</span></div>
           <strong className="eaHeroAmount">{money(status==="live"?currentPrice:opening)}</strong>
+          {bidder&&wallet&&<div className="eaWalletLive" aria-label="DEMO wallet live summary">
+            <span>💰 DEMO WALLET <b>{money(Number(wallet.buyingPower))}</b></span>
+            <span>ADDED <b>{money(Math.max(0,Number(wallet.buyingPower)-10000))}</b></span>
+            <span>MAX BID <b>{money(budgetCap)}</b></span>
+            <span>HEADROOM <b>{money(Math.max(0,budgetCap-currentPrice))}</b></span>
+          </div>}
           <div className="eaBidMeta"><span>LEADER <b>{status==="live"?labelRole(auction?.leadingRole??null):"—"}</b></span><span>BIDS <b>{status==="live"?auction?.sequence??0:"—"}</b></span></div>
           <div className="eaNextBid"><span>YOUR EXACT BID AMOUNT</span><strong>{money(nextPrice)}</strong><small>Minimum +{money(minStep)} · Your budget: {money(budgetCap)}</small></div>
           {status==="live"&&bidder&&<div className="eaOfferControls">
@@ -497,10 +518,11 @@ export default function EnchevStageOnePage(){
               <button type="submit">USE CUSTOM</button>
             </form>
           </div>}
-          {status==="live"&&bonusUntil>localNow&&<div className="eaBonusTime" role="status">🟡 BONUS TIME — 10-SECOND SERVER EXTENSION</div>}
+          {status==="live"&&Number(auction?.extensionCount??0)>0&&<div className="eaBonusTime" role="status">🟡 ANTI-SNIPE EXTENSIONS: {auction?.extensionCount} · Every valid late bid extends the server end time</div>}
+          {status==="live"&&bonusUntil>localNow&&<div className="eaBonusTime" role="status">↗ SERVER EXTENSION CONFIRMED</div>}
           {status==="live"&&<div className="eaServerCooldown" role="status">{roundLocked?"⏳ GLOBAL SERVER COOLDOWN: "+cooldownRemaining+"s":auction?.leadingRole===role?"🟢 YOU ARE LEADING — WAIT FOR ANOTHER BID":"🟢 GLOBAL COOLDOWN CLEAR — BIDDING OPEN"}{!budgetSufficient&&" · BUDGET LIMIT REACHED"}</div>}
           {status==="live"&&bidder?
-            <button className="eaActionPrimary eaPlaceBid" type="button" onClick={()=>void bid()} disabled={!canBid}>{busy?"CONFIRMING…":roundLocked?"GLOBAL WAIT "+visibleRound+"s":!budgetSufficient?"LIMIT REACHED":"PLACE BID · "+money(nextPrice)+" →"}</button>
+            <button className="eaActionPrimary eaPlaceBid" type="button" onClick={()=>void bid()} disabled={!canBid}>{busy?"CONFIRMING…":roundLocked?"⏳ BID AVAILABLE IN "+visibleRound+"s":!budgetSufficient?"LIMIT REACHED":"PLACE BID · "+money(nextPrice)+" →"}</button>
             :<div className="eaBidStandby">{status==="live"?"Observer mode · you can follow bids in real time":(lobby?.count??0)<3?"Waiting for all three bidders…":"Press READY above for the next round"}</div>}
           {status==="live"&&<div className="eaBidRhythm"><span>SERVER-ENFORCED GLOBAL COOLDOWN</span><b>{visibleRound}s</b><div><i style={{width:(100-Math.min(5,visibleRound)*20)+"%"}}/></div></div>}
           <div className="eaPanelFoot"><span>✓ Server-confirmed offers</span><span>✓ Fake money only</span></div>
@@ -525,7 +547,7 @@ export default function EnchevStageOnePage(){
       </section>
       {bidFlash&&<div className="eaBidToast" role="status" aria-live="polite" key={bidFlash.sequence}><span>✓ BID ACCEPTED · #{bidFlash.sequence}</span><strong>{money(bidFlash.amount)}</strong><small>{labelRole(bidFlash.role)} is leading</small></div>}
       {status==="live"&&bidder&&<div className="eaBidDock">
-        <div><span>NEXT BID · {minutes}:{seconds} LEFT</span><strong>{money(nextPrice)}</strong></div>
+        <div><span>BID · {minutes}:{seconds} LEFT</span><strong>{money(nextPrice)}</strong></div>
         <button type="button" onClick={()=>void bid()} disabled={!canBid}>{busy?"…":roundLocked?"WAIT "+visibleRound+"s":!budgetSufficient?"LIMIT":"BID "+money(nextPrice)+" →"}</button>
       </div>}
       </>}
