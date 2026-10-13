@@ -5,9 +5,9 @@ import "./monitor.css";
 
 type Role = "mitko" | "borko" | "enchev";
 type Person = {role:Role;online:boolean;ready:boolean;inGame:boolean;lastSeen:string|null};
-type Auction = {id:string;title?:string;currentAmount:number;sequence:number;leadingRole?:string|null;winnerRole:string|null;endsAt?:string;closedAt?:string|null};
+type Auction = {id:string;title?:string;currentAmount:number;sequence:number;leadingRole?:string|null;winnerRole:string|null;startedAt?:string;endsAt?:string;nextBidAllowedAt?:string|null;closedAt?:string|null};
 type Bid = {sequence:number;role:string;amount:number;at:string};
-type Monitor = {ok:true;serverNow:string;status:"idle"|"live"|"closed";auction:Auction|null;
+type Monitor = {ok:true;serverNow:string;status:"idle"|"countdown"|"live"|"closed"|"canceled";auction:Auction|null;
   bids:Bid[];participants:Person[];connected:number;ready:number;inGame:number;required:number;allReady:boolean};
 const roleName:Record<Role,string>={mitko:"MITKO",borko:"BORKO",enchev:"ENCHEV"};
 const euro=(n:number)=>new Intl.NumberFormat("en-IE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(n);
@@ -139,13 +139,15 @@ export default function Etap1AdminMonitor() {
         </div>
         <div className="eaMonitorHelp">
           <strong>ROUND ADMISSION RULE</strong>
-          <p>Exactly three bidders: Mitko, Borko, and Enchev. The first round starts automatically when all three log in. After the winner, everyone must explicitly READY to begin the next round. Admin can watch at any time and is never counted.</p>
+          <p>Exactly three bidders: Mitko, Borko and Enchev. Each configures a DEMO budget and presses READY. The third READY starts a common 30-second countdown. Every accepted offer starts a 5-second server cooldown for all. Admin remains watch-only and is never counted.</p>
         </div>
       </section>
       <section className="eaMonitorBottom">
         <article><span className="eaMonitorEyebrow">CURRENT / LAST ROUND</span><h2>{monitor?.auction?.title||"Waiting for round"}</h2>
           <div className="eaMonitorPrice">{monitor?.auction?euro(Number(monitor.auction.currentAmount)):"—"}</div>
-          <p>{monitor?.status==="live"?"● ACTIVE AUCTION":monitor?.status==="closed"?"✓ LAST ROUND CLOSED":"WAITING IN LOBBY"} · {monitor?.auction?.sequence??0} accepted bids</p>
+          <p>{monitor?.status==="countdown"?"🔴 30-SECOND SERVER COUNTDOWN":monitor?.status==="live"?"● ACTIVE AUCTION":monitor?.status==="closed"?"✓ LAST ROUND CLOSED":"WAITING IN LOBBY"} · {monitor?.auction?.sequence??0} accepted bids</p>
+          {monitor?.auction&&monitor.status==="countdown"&&<p>STARTS AT: {when(monitor.auction.startedAt??null)} — no bids accepted yet.</p>}
+          {monitor?.auction&&monitor.status==="live"&&<p>GLOBAL BID COOLDOWN: {monitor.auction.nextBidAllowedAt&&Date.parse(monitor.auction.nextBidAllowedAt)>Date.parse(monitor.serverNow)?Math.max(0,Math.ceil((Date.parse(monitor.auction.nextBidAllowedAt)-Date.parse(monitor.serverNow))/1000))+"s":"OPEN"} · Bid sequence {monitor.auction.sequence}</p>}
           {monitor?.status==="closed"&&<p>🏆 Highest demo bidder: {monitor.auction?.winnerRole?.toUpperCase()||"NO BIDS"}. Await seller approval for any real sale.</p>}
           {monitor?.status==="closed"&&monitor.auction&&<button type="button" onClick={downloadOperatorRecord} className="eaMonitorSecondaryLink">↓ Download operator DEMO result (not invoice)</button>}
           <a className="eaMonitorSecondaryLink" href="/live-auctions/etap-1">Open participant view ↗</a>
