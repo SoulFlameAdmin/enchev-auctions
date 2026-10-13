@@ -32,7 +32,7 @@ export async function GET(request: NextRequest, context: Context) {
 export async function POST(request: NextRequest, context: Context) {
   if (!sameOriginPost(request)) return etap1Json({error:"Invalid request origin"},403);
   const {action} = await context.params;
-  if (!["login","logout","start","bid","ready"].includes(action)) return etap1Json({error:"Not found"},404);
+  if (!["login","logout","start","bid","ready","wallet"].includes(action)) return etap1Json({error:"Not found"},404);
   const config = etap1Config();
   if (!config) return etap1Json({error:"Pilot not activated"},503);
 
@@ -80,6 +80,26 @@ export async function POST(request: NextRequest, context: Context) {
   if (!session) return etap1Json({error:"Session expired. Sign in again."},401);
   const {role,sid}=session;
 
+  if (action === "wallet") {
+    if (role !== "mitko" && role !== "borko" && role !== "enchev")
+      return etap1Json({error:"Bidder only"},403);
+    const topup=body.topup ?? 0;
+    const budget=body.lotBudget ?? null;
+    if (typeof topup!=="number" || !Number.isSafeInteger(topup) || topup<0 || topup>90000 ||
+      (budget!==null && (typeof budget!=="number" || !Number.isSafeInteger(budget) || budget<0 || budget>100000)))
+      return etap1Json({error:"Invalid DEMO buying power or lot budget"},400);
+    try {
+      const result=await etap1Rpc(config,"etap1_wallet_update_secure",{
+        p_actor:role,p_session_id:sid,p_topup:topup,p_lot_budget:budget
+      }) as {state:unknown;lobby:{sessionCurrent?:boolean}};
+      if(result.lobby?.sessionCurrent===false)
+        return etap1Json({error:"Session replaced. Sign in again."},401);
+      return etap1Json({ok:true,state:result.state,lobby:result.lobby});
+    }catch{
+      return etap1Json({error:"DEMO balance rejected. Stay in lobby, unready and respect your 100,000 EUR limit."},409);
+    }
+  }
+
   if (action === "ready") {
     if (role !== "mitko" && role !== "borko" && role !== "enchev")
       return etap1Json({error:"Only participants can press READY"},403);
@@ -107,12 +127,22 @@ export async function POST(request: NextRequest, context: Context) {
 
   if (role !== "mitko" && role !== "borko" && role !== "enchev") return etap1Json({error:"Bidder only"},403);
   const nonce=body.nonce;
+  const amount=body.amount;
+  const expectedSequence=body.expectedSequence;
+  if (typeof amount!=="number" || !Number.isSafeInteger(amount) || amount<50 || amount>100000 ||
+      typeof expectedSequence!=="number" || !Number.isSafeInteger(expectedSequence) || expectedSequence<0)
+    return etap1Json({error:"Valid confirmed absolute offer and sequence required"},400);
   if (typeof nonce !== "string" ||
       !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(nonce))
     return etap1Json({error:"Valid idempotency key required"},400);
   try {
-    const state=await etap1Rpc(config,"etap1_bid_admitted",{p_actor:role,p_session_id:sid,p_nonce:nonce});
-    return etap1Json({ok:true,state});
+    const result=await etap1Rpc(config,"etap1_bid_offer_secure",{
+      p_actor:role,p_session_id:sid,p_nonce:nonce,p_amount:amount,p_expected_sequence:expectedSequence
+    }) as {accepted:boolean;duplicate?:boolean;code?:string;state:unknown};
+    if(!result.accepted) return etap1Json({
+      ok:false,error:result.code??"BID_REJECTED",code:result.code??"BID_REJECTED",state:result.state
+    },409);
+    return etap1Json({ok:true,duplicate:result.duplicate??false,state:result.state});
   } catch {
     return etap1Json({error:"Bid rejected: round closed or demo service unavailable"},409);
   }
