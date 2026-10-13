@@ -591,6 +591,7 @@ echo "ENCHEV LIVE QA REPAIR POSTGRES PASS: 2-device MITKO, 3 roles, 5s cooldown,
 
 # LOGOUT REGRESSION: expiring MITKO on one device must not evict his second device.
 psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261013094500_enchev_etap1_session_signout.sql
+psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261013100000_enchev_etap1_login_during_live.sql
 psql -X -v ON_ERROR_STOP=1 <<'SQL'
 do $$
 declare
