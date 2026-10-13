@@ -9,10 +9,11 @@ type Bid = {sequence:number;role:string;amount:number;at:string};
 type Auction = {
   id:string;title:string;currency:"EUR";openingAmount:number;currentAmount:number;
   increment:number;sequence:number;leadingRole:string|null;winnerRole:string|null;
+  nextBidAllowedAt?:string|null;cooldownSeconds?:number;minimumStep?:number;maximumOffer?:number;
   startedAt:string;endsAt:string;closedAt:string|null;
 };
-type Snapshot = {status:"idle"|"live"|"closed";demo:true;serverNow:string;auction:Auction|null;bids:Bid[]};
-type Lobby = {count:number;readyCount:number;minPlayers:number;admitted?:boolean;sessionCurrent?:boolean;participants:{role:string;ready:boolean}[]};
+type Snapshot = {status:"idle"|"countdown"|"live"|"closed"|"canceled";demo:true;serverNow:string;auction:Auction|null;bids:Bid[]};
+type Lobby = {count:number;readyCount:number;minPlayers:number;admitted?:boolean;sessionCurrent?:boolean;wallet?:{buyingPower:number;lotBudget:number}|null;participants:{role:string;ready:boolean}[]};
 type StateReply = {authenticated?:boolean;available?:boolean;role?:Role;state?:Snapshot;lobby?:Lobby;error?:string};
 
 const labelRole=(role:string|null)=>role==="mitko"?"Mitko":role==="borko"?"Borko":role==="enchev"?"Enchev":role==="admin"?"Admin":"No bidder";
@@ -32,7 +33,7 @@ export default function EnchevStageOnePage(){
   const [localNow,setLocalNow]=useState(Date.now());
   const [lotTitle,setLotTitle]=useState("2026 Volkswagen Golf GTI — DEMO");
   const [opening,setOpening]=useState(16250);
-  const [increment,setIncrement]=useState(100);
+  const [increment]=useState(100);
   const [duration,setDuration]=useState(120);
   const [mediaView,setMediaView]=useState("FRONT");
   const [detailTab,setDetailTab]=useState("History");
@@ -40,7 +41,9 @@ export default function EnchevStageOnePage(){
   const [voiceOn,setVoiceOn]=useState(false);
   const [bidFlash,setBidFlash]=useState<{sequence:number;amount:number;role:string}|null>(null);
   const [celebratingId,setCelebratingId]=useState<string|null>(null);
-  const [roundLockKey,setRoundLockKey]=useState<string|null>(null);
+  const [selectedStep,setSelectedStep]=useState(100);
+  const [customStep,setCustomStep]=useState("250");
+  const [budgetDraft,setBudgetDraft]=useState("20000");
   const [moreOpen,setMoreOpen]=useState(false);
   const [historyExpanded,setHistoryExpanded]=useState(false);
   const voiceRef=useRef(false);
@@ -168,9 +171,9 @@ export default function EnchevStageOnePage(){
       body:JSON.stringify(data),signal:AbortSignal.timeout(12000),
     });
     const result=await response.json() as StateReply&{ok?:boolean};
-    if(!response.ok)throw new Error(result.error??"Request rejected");
     if(result.state)applySnapshot(result.state);
     if(result.lobby)setLobby(result.lobby);
+    if(!response.ok)throw new Error(result.error??"Request rejected");
     return result;
   };
 
@@ -187,13 +190,20 @@ export default function EnchevStageOnePage(){
   const logOut=async()=>{
     if(busy)return;
     setBusy(true);
-    try{await post("logout",{});setRole(null);setSnapshot(null);setLobby(null);setBidFlash(null);setCelebratingId(null);setRoundLockKey(null);lastRef.current=null;lastServerNowRef.current=0;}
+    try{await post("logout",{});setRole(null);setSnapshot(null);setLobby(null);setBidFlash(null);setCelebratingId(null);lastRef.current=null;lastServerNowRef.current=0;}
     catch{setError("Sign out failed");}
     finally{setBusy(false);}
   };
 
+  const updateWallet=async(topup:number,lotBudget:number|null=null)=>{
+    if(busy||!connected||snapshot?.status==="countdown"||snapshot?.status==="live")return;
+    setBusy(true);setError("");
+    try{await post("wallet",{topup,lotBudget});}
+    catch(e){setError(e instanceof Error?e.message:"Budget change rejected");}
+    finally{setBusy(false);}
+  };
   const setReady=async(next:boolean)=>{
-    if(busy||!connected||snapshot?.status==="live")return;
+    if(busy||!connected||snapshot?.status==="live"||snapshot?.status==="countdown")return;
     setBusy(true);setError("");
     try{await post("ready",{ready:next});}
     catch(e){setError(e instanceof Error?e.message:"Cannot change READY status");void poll();}
@@ -202,15 +212,18 @@ export default function EnchevStageOnePage(){
   const bid=async()=>{
     const activeAuction=snapshot?.auction;
     if(!activeAuction||snapshot?.status!=="live")return;
-    const timeKey=Math.floor((Date.now()+offsetRef.current)/5000);
-    const lockKey=activeAuction.id+":"+timeKey;
-    if(busy||!connected||
-      Date.parse(activeAuction.endsAt)<=Date.now()+offsetRef.current||roundLockKey===lockKey)return;
+    const now=Date.now()+offsetRef.current;
+    const amount=Number(activeAuction.currentAmount)+selectedStep;
+    if(busy||!connected||!lobby?.admitted||!Number.isSafeInteger(amount)||
+       amount>100000||amount>(Number(lobby.wallet?.lotBudget) || 0)||
+       amount>(Number(lobby.wallet?.buyingPower) || 0)||
+       activeAuction.leadingRole===role||
+       (activeAuction.nextBidAllowedAt&&Date.parse(activeAuction.nextBidAllowedAt)>now)||
+       Date.parse(activeAuction.startedAt)>now||
+       Date.parse(activeAuction.endsAt)<=now)return;
     setBusy(true);setError("");
     try{
-      await post("bid",{nonce:crypto.randomUUID()});
-      // This is a browser UI click guard, not a new server-side bidding rule.
-      setRoundLockKey(lockKey);
+      await post("bid",{nonce:crypto.randomUUID(),amount,expectedSequence:activeAuction.sequence});
     }
     catch(e){setError(e instanceof Error?e.message:"Bid rejected");void poll();}
     finally{setBusy(false);}
@@ -305,24 +318,30 @@ export default function EnchevStageOnePage(){
   const minPlayers=lobby?.minPlayers??3;
   const latest=snapshot?.bids??[];
   const currentPrice=auction?.currentAmount??opening;
-  const nextPrice=currentPrice+(auction?.increment??increment);
+  const minStep=auction?.minimumStep??50;
+  const stepIsValid=Number.isSafeInteger(selectedStep)&&selectedStep>=minStep&&selectedStep<=100000;
+  const nextPrice=currentPrice+(stepIsValid?selectedStep:100);
+  const wallet=lobby?.wallet;
+  const budgetCap=Math.min(Number(wallet?.buyingPower??0),Number(wallet?.lotBudget??0),100000);
+  const countdownRemaining=auction?Math.max(0,Math.ceil((Date.parse(auction.startedAt)-localNow-offsetRef.current)/1000)):0;
+  const cooldownRemaining=auction?.nextBidAllowedAt?Math.max(0,Math.ceil((Date.parse(auction.nextBidAllowedAt)-localNow-offsetRef.current)/1000)):0;
+  const roundLocked=cooldownRemaining>0;
+  const visibleRound=cooldownRemaining;
+  const budgetSufficient=budgetCap>=nextPrice;
   const status=snapshot?.status??"idle";
   const timeUntil=Math.max(0,Math.ceil(remainingMs/1000));
-  const serverSeconds=localNow+offsetRef.current;
   const clockTotalMs=auction?Math.max(10000,Date.parse(auction.endsAt)-Date.parse(auction.startedAt)):10000;
   const clockProgress=status==="live"?Math.min(100,Math.max(0,remainingMs/clockTotalMs*100)):status==="closed"?100:100;
   const clockStyle={"--ev9-progress":clockProgress+"%"} as CSSProperties;
-  const currentRoundKey=(auction?.id??"none")+":"+Math.floor(serverSeconds/5000);
-  const roundLocked=roundLockKey===currentRoundKey;
+  // Server-owned cooldown; no per-browser tick-based bid permission.
   // A login/refresh never grants access to an already-running round.
   // Admission is bound to the signed browser session that joined before the first round or explicitly pressed READY for the next.
   const admitted=lobby?.admitted===true;
-  const showAuction=status==="live"&&(admitted||role==="admin");
-  const canBid=status==="live"&&bidder&&admitted&&connected&&!busy&&timeUntil>0&&!roundLocked;
+  const showAuction=status==="live"&&admitted;
+  const canBid=status==="live"&&bidder&&admitted&&connected&&!busy&&timeUntil>0&&!roundLocked&&budgetSufficient&&stepIsValid&&auction?.leadingRole!==role;
   const preparingRound=status!=="live"||!showAuction;
   const phaseStep=status==="live"?2:1;
   const views=["FRONT","REAR","INTERIOR","DETAIL","SIDE"];
-  const visibleRound=5-Math.floor(serverSeconds/1000)%5;
   const tabs=["Details","Photos","History","Documents","Transport","Condition"];
 
   return <main id="main-content" className={"eaEtap1 eaRoom"+(showAuction&&bidder?" eaHasBidDock":"")}>
