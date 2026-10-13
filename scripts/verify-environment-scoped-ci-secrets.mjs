@@ -88,7 +88,7 @@ function selfTest(workflow, config) {
   const secretExpr = "$" + "{{ secrets.VERCEL_TOKEN }}";
   const mutations = [
     [workflow.replace("    environment: ci-verification\n", ""), config],
-    [workflow.replace("if: github.event_name == 'push' && github.ref == 'refs/heads/main'", "if: github.event_name == 'pull_request'"), config],
+    [workflow.replace(jobSection(workflow, "verify-secret-bindings"), jobSection(workflow, "verify-secret-bindings").replace("if: github.event_name == 'push' && github.ref == 'refs/heads/main'", "if: github.event_name == 'pull_request'")), config],
     [workflow.replace("    timeout-minutes: 15\n", `    timeout-minutes: 15\n    env:\n      BAD_SCOPE: ${secretExpr}\n`), config],
     [workflow, { ...config, secretNames: config.secretNames.slice(0, -1) }],
     [workflow.replace("    permissions:\n      contents: read\n    steps:\n", "    permissions:\n      contents: read\n      id-token: write\n    steps:\n"), config]

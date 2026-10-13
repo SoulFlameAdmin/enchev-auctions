@@ -1,0 +1,76 @@
+name: ENCHEV ETAP1 Protected Demo Preflight
+
+on:
+  push:
+    branches:
+      - feat/etap1-live-auction-pilot-20261010
+    paths:
+      - 'app/api/etap1/**'
+      - 'app/lib/etap1-server.ts'
+      - 'app/live-auctions/etap-1/**'
+      - 'supabase/migrations/20261010131500_enchev_etap1_live_pilot.sql'
+      - 'supabase/migrations/20261012033000_enchev_etap1_ready_lobby.sql'
+      - 'supabase/migrations/20261012160000_enchev_etap1_krum_preview_bidder.sql'
+      - 'supabase/migrations/20261012170000_enchev_etap1_session_admission.sql'
+      - 'scripts/verify-etap1-live-contract.mjs'
+      - 'scripts/test-etap1-postgres.sh'
+      - '.github/workflows/verify-etap1-protected-demo.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: enchev-etap1-preflight-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  closed-demo-preflight:
+    name: Isolated fake-money demo tests (not phone acceptance)
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      ENCHEV_ETAP1_TEST_DATABASE: disposable-local-ci
+      PGHOST: 127.0.0.1
+      PGPORT: '5432'
+      PGUSER: postgres
+      PGPASSWORD: postgres
+      PGDATABASE: postgres
+    steps:
+      - name: Checkout exact preview branch
+        uses: actions/checkout@v4
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify zero-secret static access and auction contracts
+        run: node scripts/verify-etap1-live-contract.mjs
+      - name: Ensure disposable Postgres client exists
+        run: |
+          if ! command -v psql >/dev/null 2>&1; then
+            sudo apt-get update -qq
+            sudo apt-get install -y postgresql-client
+          fi
+          pg_isready -h "$PGHOST" -p "$PGPORT" -U "$PGUSER"
+      - name: Test sequential, concurrent, duplicate, winner, repeat and READY flows
+        run: bash scripts/test-etap1-postgres.sh
+      - name: Report scope truthfully
+        run: |
+          echo 'PASS: static contracts and isolated disposable PostgreSQL test suite.'
+          echo 'NOT TESTED: actual Vercel Preview cookies, Android/iPhone audio, real devices, reconnect and visual UX.'
+          echo 'NOT RESOLVED: shared SoulFlame governance endpoint HTTP 402 in the separate main CI.'
+          echo 'Final acceptance requires two phones and a human checklist.'
