@@ -307,3 +307,32 @@ body:has(.eaRoom){background:#060a08;color:#effaf3}
 .eaFinalResult .eaFinalActions button+button{background:transparent;color:#dcffeb}
 .eaFinalResult small{color:#c2e7cc;font-size:10px;line-height:1.5}
 @media(max-width:480px){.eaFinalResult{padding:15px 13px}.eaFinalResult .eaFinalActions button{width:100%}.eaFinalFacts span{flex-basis:45%;min-width:0}.eaFinalFacts b{font-size:12px}}
+
+/* ENCHEV DEMO V2: lobby budget, vehicle disclosures, exact offer and countdown */
+.eaDemoWallet,.eaVehicleFacts{margin:14px 0;padding:clamp(14px,3vw,22px);border:1px solid #3f6d58;border-radius:15px;background:#10241c;color:#effff4}
+.eaDemoWalletHead{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.eaDemoWalletHead h2{color:#cbffdc;font-size:clamp(18px,3vw,25px)!important;margin:5px 0!important}
+.eaDemoWalletHead>span{font-weight:850;color:#a5f5c3;font-size:12px}
+.eaDemoWallet p,.eaVehicleFacts p{font-size:12px;line-height:1.55;color:#c6d8cc}
+.eaWalletActions,.eaOfferSteps,.eaLotTabs{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.eaWalletActions button,.eaLotTabs button,.eaOfferSteps button,.eaOfferControls button,.eaDemoWallet form button{border:1px solid #65ad83;color:#edfff4;background:#1a3b29;border-radius:8px;padding:10px 12px;min-height:44px;font-weight:800;font-size:12px;cursor:pointer}
+.eaWalletActions button:disabled,.eaDemoWallet form button:disabled{opacity:.45;cursor:not-allowed}
+.eaDemoWallet form,.eaOfferControls form{display:flex;align-items:end;flex-wrap:wrap;gap:10px;margin-top:14px}
+.eaDemoWallet form label,.eaOfferControls form label{display:grid;gap:6px;flex:1 1 170px;color:#bde3ca;font-weight:750;font-size:11px}
+.eaDemoWallet form input,.eaOfferControls form input{width:100%;min-height:45px;background:#071b12;border:1px solid #6d9e80;border-radius:8px;color:white;padding:10px;font-size:16px}
+.eaDemoWallet form button{background:#b6ffd1;color:#062b19}
+.eaBudgetAdvice{border-left:3px solid #82c6f1;padding:10px;background:#0a2223;border-radius:5px}
+.eaVehicleFactsHead>span{font-size:10px;letter-spacing:.12em;color:#a5fbc7;font-weight:850}
+.eaVehicleFactsHead h2{font-size:clamp(18px,3vw,24px)!important;color:#fff;margin:7px 0!important}
+.eaVehicleFactsHead small{font-size:11px;color:#b6d5c2}
+.eaLotTabs button[aria-pressed="true"],.eaOfferSteps button[aria-pressed="true"]{background:#baffd7;color:#08351a}
+.eaLotGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:9px;margin-top:13px}
+.eaLotGrid>div{padding:11px;background:#0c1b16;border-radius:8px;border:1px solid #365345;min-width:0}
+.eaLotGrid small{display:block;font-size:10px;letter-spacing:.06em;color:#a4c7b0}
+.eaLotGrid strong{display:block;margin-top:6px;color:#f1fff4;font-size:12px;overflow-wrap:anywhere}
+.eaOfferControls{border:1px solid #365a46;border-radius:10px;padding:11px;margin-top:12px;background:#0b2016}
+.eaOfferControls>span{color:#a5f9c4;font-size:11px;font-weight:900}
+.eaOfferControls form{margin:7px 0}
+.eaOfferControls form button{background:#a4e9ba;color:#052617}
+.eaServerCooldown{padding:11px;margin-top:10px;border:1px solid #5e9275;border-radius:8px;background:#0c281b;color:#dcffeb;font-weight:750;font-size:11px}
+@media(max-width:480px){.eaWalletActions button{flex:1 1 80px;font-size:10px;padding:8px}.eaOfferSteps button{flex:1 1 29%;font-size:10px;padding:8px}.eaDemoWallet form button{width:100%}.eaLotTabs button{flex:1 1 28%;font-size:10px;padding:7px}.eaLotGrid{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.eaVehicleFacts,.eaDemoWallet{padding:12px}}
