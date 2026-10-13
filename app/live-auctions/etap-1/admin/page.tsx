@@ -145,7 +145,7 @@ export default function Etap1AdminMonitor() {
       <section className="eaMonitorRoster">
         <div className="eaMonitorSectionTitle"><div><span className="eaMonitorEyebrow">REAL-TIME LOBBY</span><h2>Participants</h2></div><b>{monitor?.connected??0} ONLINE</b></div>
         <div className="eaMonitorGrid">
-          {(monitor?.participants??(["mitko","borko","enchev"] as Role[]).map(role=>({role,online:false,ready:false,inGame:false,lastSeen:null}))).map(p=>
+          {(monitor?.participants??(["mitko","borko","enchev"] as Role[]).map(role=>({role,online:false,ready:false,inGame:false,lastSeen:null,activeDevices:0}))).map(p=>
             <article className={"eaMonitorPerson "+(p.online?"online":"offline")} key={p.role}>
               <div className="eaMonitorAvatar">{roleName[p.role].slice(0,1)}</div>
               <div className="eaMonitorPersonBody"><strong>{roleName[p.role]}</strong><small>BIDDER</small>
