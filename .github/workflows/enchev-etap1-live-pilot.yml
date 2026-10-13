@@ -9,6 +9,7 @@ on:
       - 'supabase/migrations/20261012033000_enchev_etap1_ready_lobby.sql'
       - 'supabase/migrations/20261013093000_enchev_etap1_live_qa_repair.sql'
       - 'supabase/migrations/20261013094500_enchev_etap1_session_signout.sql'
+      - 'supabase/migrations/20261013100000_enchev_etap1_login_during_live.sql'
       - 'scripts/verify-etap1-live-contract.mjs'
       - 'scripts/test-etap1-postgres.sh'
       - '.github/workflows/enchev-etap1-live-pilot.yml'
