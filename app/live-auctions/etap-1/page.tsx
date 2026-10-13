@@ -388,7 +388,7 @@ export default function EnchevStageOnePage(){
         <small>Access is limited to invited demo participants.</small>
       </form>
     </section>:<div className="eaRoomContent">
-      {preparingRound&&<section className="eaReadyCard" aria-label="Participant readiness">
+      {preparingRound&&<section className={"eaReadyCard"+(status==="countdown"?" eaCountdownActive":"")} aria-label="Participant readiness">
         <div className="eaReadyText">
           <span className="eaEyebrow"><span className="eaLiveDot"/> NEXT ROUND</span>
           <h2>{status==="countdown"?"🔴 STARTING IN "+String(Math.floor(countdownRemaining/60)).padStart(2,"0")+":"+String(countdownRemaining%60).padStart(2,"0"):status==="live"?"Round in progress — wait for next READY":((lobby?.count??0)<minPlayers||!corePresent)?"Waiting for invited participants":myReady?"You're ready.":"Ready to start?"}</h2>
@@ -401,7 +401,7 @@ export default function EnchevStageOnePage(){
             :(lobby?.readyCount??0)===(lobby?.count??0)?"Countdown starting…":"All three must press READY to begin the countdown."}</p>
         </div>
         <div className="eaReadyControl">
-          <span>{lobby?.readyCount??0}/{lobby?.count??0} READY</span>
+          <span>{status==="countdown"?"3/3 LOCKED":(lobby?.readyCount??0)+"/"+(lobby?.count??0)+" READY"}</span>
           {participant?(status==="live"||status==="countdown"
             ?<small>{status==="countdown"?"Countdown is running.":"New login? Wait until the current auction closes."}</small>
             :<button type="button" onClick={()=>void setReady(!myReady)} disabled={!connected||busy||(Number(wallet?.lotBudget??0)<16300&&!myReady)} className={myReady?"is-ready":""}>{busy?"UPDATING…":myReady?"✓ READY":"I'M READY →"}</button>
@@ -422,7 +422,7 @@ export default function EnchevStageOnePage(){
         </form>
         <p className="eaBudgetAdvice">🤖 DEMO BUDGET ASSISTANT · RULE-BASED: {Number(wallet?.lotBudget??0)<16300?"Your configured budget is below the minimum €16,300 first offer. Add DEMO credit and raise the lot budget.":"Respect your chosen limit. Taxes, transport and repair costs are not verified or included."}</p>
       </section>}
-      {participant&&<section className="eaVehicleFacts" aria-label="Auction vehicle information">
+      {participant&&status!=="live"&&<section className="eaVehicleFacts" aria-label="Auction vehicle information">
         <div className="eaVehicleFactsHead"><span>LOT · DEMO-001</span><h2>2026 Volkswagen Golf GTI · REFERENCE LOT</h2><small>Illustrative vehicle and photo; not a confirmed inspection, sale, document or VIN.</small></div>
         <div className="eaLotTabs">{["Details","Condition","Documents","Transport","History"].map(t=><button type="button" key={t} aria-pressed={detailTab===t} className={detailTab===t?"is-active":""} onClick={()=>setDetailTab(t)}>{t}</button>)}</div>
         {detailTab==="Details"&&<div className="eaLotGrid">{[["LOT ID","DEMO-001"],["YEAR","2026 (illustrative)"],["VIN","NOT VERIFIED"],["MILEAGE","NOT VERIFIED"],["ENGINE","NOT VERIFIED"],["FUEL","NOT VERIFIED"],["TRANSMISSION","NOT VERIFIED"],["LOCATION","NOT VERIFIED"],["START TIME","Server-controlled"],["OPENING BID","€16,250"]].map(([k,v])=><div key={k}><small>{k}</small><strong>{v}</strong></div>)}</div>}
@@ -497,6 +497,15 @@ export default function EnchevStageOnePage(){
           {status==="live"&&<div className="eaBidRhythm"><span>SERVER-ENFORCED GLOBAL COOLDOWN</span><b>{visibleRound}s</b><div><i style={{width:(100-Math.min(5,visibleRound)*20)+"%"}}/></div></div>}
           <div className="eaPanelFoot"><span>✓ Server-confirmed offers</span><span>✓ Fake money only</span></div>
         </div>
+      </section>
+      <section className="eaVehicleFacts eaLiveVehicleFacts" aria-label="Vehicle specifications and known condition">
+        <div className="eaVehicleFactsHead"><span>LOT · DEMO-001</span><h2>2026 Volkswagen Golf GTI — DEMONSTRATION VEHICLE</h2><small>Illustrative photo. VIN, mileage, actual damage, registration and condition have NOT been verified.</small></div>
+        <div className="eaLotTabs">{["Details","Condition","Documents","Transport","History"].map(t=><button type="button" key={t} aria-pressed={detailTab===t} className={detailTab===t?"is-active":""} onClick={()=>setDetailTab(t)}>{t}</button>)}</div>
+        {detailTab==="Details"&&<div className="eaLotGrid">{[["LOT","DEMO-001"],["MILEAGE","NOT VERIFIED"],["VIN","NOT VERIFIED"],["ENGINE / FUEL","NOT VERIFIED"],["GEARBOX","NOT VERIFIED"],["LOCATION","NOT VERIFIED"],["PRICE","Live server value"],["BIDS",""+(auction?.sequence??0)],["STARTED",auction?new Date(auction.startedAt).toLocaleTimeString("bg-BG"):"—"]].map(([k,v])=><div key={k}><small>{k}</small><strong>{v}</strong></div>)}</div>}
+        {detailTab==="Condition"&&<p>Damage, starts, drives, keys, inspection and repairs: UNKNOWN / NOT VERIFIED. Do not rely on the illustration to assess a vehicle.</p>}
+        {detailTab==="Documents"&&<p>Official vehicle documentation: NOT VERIFIED. Only a DEMO closing record can be downloaded once the round finishes.</p>}
+        {detailTab==="Transport"&&<p>Shipping, VAT, pickup location and delivery fees: NOT VERIFIED. This auction uses no real money.</p>}
+        {detailTab==="History"&&<p>{auction?.sequence??0} accepted bids. Scroll below for server-confirmed bid history; the counter is authoritative.</p>}
       </section>
       <section className="eaHistoryPanel">
         <div className="eaHistoryHead"><div><span className="eaEyebrow">ACTIVITY</span><h2>Bid history</h2></div><span>{latest.length} accepted {latest.length===1?"bid":"bids"}</span></div>
