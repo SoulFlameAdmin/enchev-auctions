@@ -342,3 +342,5 @@ body:has(.eaRoom){background:#060a08;color:#effaf3}
 .eaReadyCard.eaCountdownActive h2{color:#ffdddd!important;font-variant-numeric:tabular-nums}
 .eaReadyCard.eaCountdownActive .eaEyebrow{color:#ffb0a0}
 .eaLiveVehicleFacts{margin-top:15px}
+
+.eaBonusTime{margin-top:10px;padding:10px;border:1px solid #e9bc4f;border-radius:8px;background:#3c300d;color:#fff2b3;font-size:12px;font-weight:900}
