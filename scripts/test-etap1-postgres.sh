@@ -588,3 +588,36 @@ if psql -X -v ON_ERROR_STOP=1 -c "set role authenticated; select * from public.e
   echo "FAIL: authenticated users can read private device session records" >&2; exit 1
 fi
 echo "ENCHEV LIVE QA REPAIR POSTGRES PASS: 2-device MITKO, 3 roles, 5s cooldown, idempotent retry, 2 anti-snipe extensions, bid audit, RLS."
+
+# LOGOUT REGRESSION: expiring MITKO on one device must not evict his second device.
+psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261013094500_enchev_etap1_session_signout.sql
+psql -X -v ON_ERROR_STOP=1 <<'SQL'
+do $$
+declare
+  m1 uuid:='a1111111-1111-4111-8111-111111111111';
+  m2 uuid:='a1111111-1111-4111-8111-222222222222';
+  v jsonb; cnt integer;
+begin
+  -- Reopen first device while preserving the role identity.
+  v:=public.etap1_join_lobby_automatic('mitko',m1);
+  if (v->'lobby'->>'activeDevices')::int<>2
+    then raise exception 'Expected two independent MITKO devices before signout'; end if;
+  if not public.etap1_device_signout('mitko',m1)
+    then raise exception 'MITKO device 1 signout failed'; end if;
+  v:=public.etap1_ready_lobby_secure('mitko',m2,null,false);
+  if v->'lobby'->>'sessionCurrent'<>'true' or
+     (v->'lobby'->>'activeDevices')::int<>1
+    then raise exception 'MITKO second device was evicted: %',v; end if;
+  if not public.etap1_device_signout('mitko',m2)
+    then raise exception 'MITKO device 2 signout failed'; end if;
+  select count(*) into cnt from public.enchev_etap1_device_sessions
+    where role='mitko' and last_seen>clock_timestamp()-interval '15 seconds';
+  if cnt<>0 then raise exception 'MITKO still online after all devices sign out'; end if;
+  if (select is_ready from public.enchev_etap1_presence where role='mitko')
+    then raise exception 'MITKO left room while READY flag remained set'; end if;
+end $$;
+SQL
+if psql -X -v ON_ERROR_STOP=1 -c "set role anon; select public.etap1_device_signout('mitko',gen_random_uuid());" >/tmp/etap1_logout_anon.out 2>&1; then
+  echo "FAIL: anonymous role can sign out sessions" >&2; exit 1
+fi
+echo "ETAP1 SIGNOUT PASS: no collateral MITKO device logout, all-device signout clears online/READY, RPC restricted."
