@@ -59,7 +59,7 @@ const gates=[
     client.includes('const showAuction=status==="live"&&admitted') &&
     client.includes("This round started without your current login")],
   ["opt-in Web Audio",client.includes("new AudioContext()") && client.includes("ENABLE SOUND")],
-  ["response snapshots every second",client.includes('window.setInterval(()=>void poll(),1000)')],
+  ["response snapshots twice per second",client.includes('window.setInterval(()=>void poll(),500)')],
   ["server-owned global five-second cooldown",professionalSql.includes("next_bid_allowed_at=v_now+interval '5 seconds'") && client.includes("cooldownRemaining")],
   ["new 30-second READY countdown",professionalSql.includes("v_now+interval '30 seconds'") && client.includes('status==="countdown"')],
   ["server wallet cap and auction budget",professionalSql.includes("100000") && professionalSql.includes("v_wallet.lot_budget") && api.includes('action === "wallet"')],
