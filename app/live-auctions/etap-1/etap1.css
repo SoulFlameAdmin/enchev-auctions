@@ -344,3 +344,11 @@ body:has(.eaRoom){background:#060a08;color:#effaf3}
 .eaLiveVehicleFacts{margin-top:15px}
 
 .eaBonusTime{margin-top:10px;padding:10px;border:1px solid #e9bc4f;border-radius:8px;background:#3c300d;color:#fff2b3;font-size:12px;font-weight:900}
+
+/* QA repair: persistent wallet during LIVE; countdown directly on primary BID button. */
+.eaWalletLive{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:13px 0;padding:11px;border:1px solid #4f8a63;border-radius:11px;background:#0a2218}
+.eaWalletLive span{display:flex;justify-content:space-between;align-items:center;gap:7px;padding:8px;border-radius:7px;background:#143523;color:#c9f6db;font-size:10px;font-weight:850}
+.eaWalletLive b{color:#fff;font-size:12px;font-variant-numeric:tabular-nums}
+.eaPlaceBid:disabled{cursor:not-allowed;opacity:.76}
+.eaPlaceBid{font-variant-numeric:tabular-nums}
+@media(max-width:480px){.eaWalletLive span{flex-wrap:wrap}.eaWalletLive b{width:100%;font-size:12px}}
