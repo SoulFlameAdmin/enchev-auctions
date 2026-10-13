@@ -44,13 +44,15 @@ export default function EnchevStageOnePage(){
   const [selectedStep,setSelectedStep]=useState(100);
   const [customStep,setCustomStep]=useState("250");
   const [budgetDraft,setBudgetDraft]=useState("20000");
+  const [topupDraft,setTopupDraft]=useState("15000");
+  const [bonusUntil,setBonusUntil]=useState(0);
   const [moreOpen,setMoreOpen]=useState(false);
   const [historyExpanded,setHistoryExpanded]=useState(false);
   const voiceRef=useRef(false);
   const voiceLangRef=useRef("en-IE");
   const audioRef=useRef<AudioContext|null>(null);
   const soundRef=useRef(false);
-  const lastRef=useRef<{id:string;sequence:number;status:string}|null>(null);
+  const lastRef=useRef<{id:string;sequence:number;status:string;endsAt?:string}|null>(null);
   const lastServerNowRef=useRef(0);
   const pollingRef=useRef(false);
   const offsetRef=useRef(0);
@@ -80,6 +82,7 @@ export default function EnchevStageOnePage(){
     if(next.auction){
       const prior=lastRef.current;
       if(prior?.id===next.auction.id){
+        if(next.status==="live"&&prior.endsAt&&Date.parse(next.auction.endsAt)>Date.parse(prior.endsAt))setBonusUntil(Date.now()+3300);
         if(next.auction.sequence>prior.sequence){
           const lastAccepted=next.bids[0];
           if(lastAccepted)setBidFlash({sequence:lastAccepted.sequence,amount:Number(lastAccepted.amount),role:lastAccepted.role});
@@ -121,7 +124,7 @@ export default function EnchevStageOnePage(){
           }
         }
       }
-      lastRef.current={id:next.auction.id,sequence:next.auction.sequence,status:next.status};
+      lastRef.current={id:next.auction.id,sequence:next.auction.sequence,status:next.status,endsAt:next.auction.endsAt};
     }
     offsetRef.current=receivedAt-Date.now();
     setSnapshot(next);setLocalNow(Date.now());
@@ -416,6 +419,10 @@ export default function EnchevStageOnePage(){
         <div className="eaWalletActions">
           {[5000,10000,20000].map(v=><button type="button" key={v} disabled={busy||myReady||Number(wallet?.buyingPower??0)+v>100000} onClick={()=>void updateWallet(v)}>+ {money(v)} DEMO</button>)}
         </div>
+        <form onSubmit={e=>{e.preventDefault();void updateWallet(Number(topupDraft));}}>
+          <label>ADD CUSTOM DEMO CREDIT (€)<input type="number" inputMode="numeric" min="1" max={100000-Number(wallet?.buyingPower??10000)} step="1" value={topupDraft} onChange={e=>setTopupDraft(e.target.value)} disabled={busy||myReady}/></label>
+          <button type="submit" disabled={busy||myReady||!topupDraft||!Number.isSafeInteger(Number(topupDraft))||Number(topupDraft)<=0||Number(wallet?.buyingPower??0)+Number(topupDraft)>100000}>ADD CREDIT</button>
+        </form>
         <form onSubmit={e=>{e.preventDefault();void updateWallet(0,Number(budgetDraft));}}>
           <label>MAXIMUM FOR THIS CAR (€)<input type="number" inputMode="numeric" min="0" max={Number(wallet?.buyingPower??10000)} step="1" value={budgetDraft} onChange={e=>setBudgetDraft(e.target.value)} disabled={busy||myReady}/></label>
           <button type="submit" disabled={busy||myReady||!budgetDraft||!Number.isSafeInteger(Number(budgetDraft))||Number(budgetDraft)<0||Number(budgetDraft)>Number(wallet?.buyingPower??0)}>SAVE LOT BUDGET</button>
@@ -490,6 +497,7 @@ export default function EnchevStageOnePage(){
               <button type="submit">USE CUSTOM</button>
             </form>
           </div>}
+          {status==="live"&&bonusUntil>localNow&&<div className="eaBonusTime" role="status">🟡 BONUS TIME — 10-SECOND SERVER EXTENSION</div>}
           {status==="live"&&<div className="eaServerCooldown" role="status">{roundLocked?"⏳ GLOBAL SERVER COOLDOWN: "+cooldownRemaining+"s":auction?.leadingRole===role?"🟢 YOU ARE LEADING — WAIT FOR ANOTHER BID":"🟢 GLOBAL COOLDOWN CLEAR — BIDDING OPEN"}{!budgetSufficient&&" · BUDGET LIMIT REACHED"}</div>}
           {status==="live"&&bidder?
             <button className="eaActionPrimary eaPlaceBid" type="button" onClick={()=>void bid()} disabled={!canBid}>{busy?"CONFIRMING…":roundLocked?"GLOBAL WAIT "+visibleRound+"s":!budgetSufficient?"LIMIT REACHED":"PLACE BID · "+money(nextPrice)+" →"}</button>
