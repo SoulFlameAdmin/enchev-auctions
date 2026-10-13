@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
     if (!data?.state || !data?.lobby) throw new Error("Invalid monitor state");
     const state = data.state;
     const id = state.status === "live" ? state.auction?.id : null;
-    const [admissions, attempts] = id
+    const [admissions, attempts]: [Admission[], Attempt[]] = id
       ? await Promise.all([
         readTable<Admission[]>(base+"enchev_etap1_admissions?select=role&auction_id=eq."+encodeURIComponent(id),config.key),
         readTable<Attempt[]>(base+"enchev_etap1_bid_attempts?select=id,role,requested_amount,result_code,accepted,received_at,expected_sequence&auction_id=eq."+encodeURIComponent(id)+"&order=id.desc&limit=30",config.key),
