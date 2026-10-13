@@ -398,3 +398,110 @@ if psql -X -v ON_ERROR_STOP=1 -c "set role anon; select public.etap1_join_lobby_
   echo "FAIL: anon can call privileged auto-join RPC" >&2; exit 1
 fi
 echo "ETAP1 THREE BIDDER INTEGRATION PASS: 3-person login auto-start, Enchev bid, Krum excluded, admin independent, secure winner/rejoin."
+
+# ENCHEV PROFESSIONAL DEMO V2 — disposable-only tests, never run in real DB.
+psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261013060000_enchev_professional_demo_v2.sql
+psql -X -v ON_ERROR_STOP=1 <<'SQL'
+do $$
+declare
+ m uuid:='a1111111-1111-4111-8111-111111111111';
+ b uuid:='a2222222-2222-4222-8222-222222222222';
+ e uuid:='a3333333-3333-4333-8333-333333333333';
+ v jsonb;
+ old_round uuid;
+ new_round uuid;
+ nonce uuid:='f1111111-1111-4111-8111-111111111111';
+begin
+ -- Close historic fixture; leave no stale session READY.
+ update public.enchev_etap1_auctions set ends_at=clock_timestamp()-interval '1 second'
+ where id=(select active_auction_id from public.enchev_etap1_rooms where name='stage-one');
+ perform public.etap1_snapshot();
+ update public.enchev_etap1_presence set is_ready=false,last_seen=clock_timestamp()-interval '2 minutes';
+
+ perform public.etap1_join_lobby_automatic('mitko',m);
+ perform public.etap1_join_lobby_automatic('borko',b);
+ v:=public.etap1_join_lobby_automatic('enchev',e);
+ if v->'state'->>'status'='live' or v->'lobby'->>'readyCount'<>'0'
+    or (v->'lobby'->'wallet'->>'buyingPower')::numeric<>10000
+ then raise exception 'Login must NOT auto-start or auto-READY; wallet 10k required'; end if;
+ -- All 3 READY but underfunded must NOT start.
+ perform public.etap1_ready_lobby_secure('mitko',m,true,false);
+ perform public.etap1_ready_lobby_secure('borko',b,true,false);
+ v:=public.etap1_ready_lobby_secure('enchev',e,true,false);
+ if v->'state'->>'status'='countdown' or v->'state'->>'status'='live'
+ then raise exception 'Underfunded countdown started'; end if;
+ perform public.etap1_ready_lobby_secure('mitko',m,false,false);
+ perform public.etap1_ready_lobby_secure('borko',b,false,false);
+ perform public.etap1_ready_lobby_secure('enchev',e,false,false);
+ perform public.etap1_wallet_update_secure('mitko',m,15000,20000);
+ perform public.etap1_wallet_update_secure('borko',b,15000,20000);
+ v:=public.etap1_wallet_update_secure('enchev',e,15000,20000);
+ if (v->'lobby'->'wallet'->>'buyingPower')::numeric<>25000
+ or (v->'lobby'->'wallet'->>'lotBudget')::numeric<>20000
+ then raise exception 'Wallet topup/budget mismatch'; end if;
+ perform public.etap1_ready_lobby_secure('admin',null,null,false);
+ perform public.etap1_ready_lobby_secure('mitko',m,true,false);
+ v:=public.etap1_ready_lobby_secure('borko',b,true,false);
+ if v->'state'->>'status'='countdown' then raise exception 'Started at 2/3 READY'; end if;
+ v:=public.etap1_ready_lobby_secure('enchev',e,true,false);
+ if v->'state'->>'status'<>'countdown' or v->'lobby'->>'admitted'<>'true'
+ or (v->'state'->'auction'->>'startedAt')::timestamptz < clock_timestamp()+interval '25 seconds'
+ then raise exception '3/3 READY must create 30-sec countdown: %',v; end if;
+ old_round:=(v->'state'->'auction'->>'id')::uuid;
+ v:=public.etap1_bid_offer_secure('mitko',m,gen_random_uuid(),16300,0);
+ if v->>'code'<>'AUCTION_NOT_STARTED' then raise exception 'Prelive bid not rejected: %',v; end if;
+ update public.enchev_etap1_auctions set started_at=clock_timestamp()-interval '1 second',
+   ends_at=clock_timestamp()+interval '120 seconds' where id=old_round;
+ v:=public.etap1_snapshot();
+ if v->>'status'<>'live' then raise exception 'Countdown did not become LIVE'; end if;
+ v:=public.etap1_bid_offer_secure('mitko',m,nonce,16300,0);
+ if v->>'accepted'<>'true' or (v->'state'->'auction'->>'currentAmount')::numeric<>16300
+ then raise exception 'Custom +50 not accepted: %',v; end if;
+ v:=public.etap1_bid_offer_secure('mitko',m,nonce,16300,0);
+ if v->>'accepted'<>'true' or v->>'duplicate'<>'true'
+ then raise exception 'Idempotency retry failed: %',v; end if;
+ v:=public.etap1_bid_offer_secure('borko',b,gen_random_uuid(),16400,1);
+ if v->>'code'<>'COOLDOWN_ACTIVE' then raise exception 'GLOBAL 5s cooldown failed: %',v; end if;
+ update public.enchev_etap1_auctions set next_bid_allowed_at=clock_timestamp()-interval '1 second'
+ where id=old_round;
+ v:=public.etap1_bid_offer_secure('borko',b,gen_random_uuid(),16400,0);
+ if v->>'code'<>'PRICE_CHANGED' then raise exception 'Stale sequence not rejected'; end if;
+ v:=public.etap1_bid_offer_secure('borko',b,gen_random_uuid(),16400,1);
+ if v->>'accepted'<>'true' then raise exception 'Post cooldown +100 failed: %',v; end if;
+ update public.enchev_etap1_auctions set next_bid_allowed_at=clock_timestamp()-interval '1 second'
+ where id=old_round;
+ v:=public.etap1_bid_offer_secure('enchev',e,gen_random_uuid(),22000,2);
+ if v->>'code'<>'LIMIT_EXCEEDED' then raise exception 'Budget bypass not blocked: %',v; end if;
+ update public.enchev_etap1_auctions set ends_at=clock_timestamp()+interval '2 seconds',
+ next_bid_allowed_at=clock_timestamp()-interval '1 second' where id=old_round;
+ v:=public.etap1_bid_offer_secure('enchev',e,gen_random_uuid(),16500,2);
+ if v->>'accepted'<>'true'
+ or (v->'state'->'auction'->>'endsAt')::timestamptz<clock_timestamp()+interval '8 seconds'
+ then raise exception 'Anti-snipe last seconds extension failed: %',v; end if;
+ update public.enchev_etap1_auctions set ends_at=clock_timestamp()-interval '1 second'
+ where id=old_round;
+ v:=public.etap1_snapshot();
+ if v->>'status'<>'closed' or v->'auction'->>'winnerRole'<>'enchev'
+ then raise exception 'Wrong authoritative winner: %',v; end if;
+ v:=public.etap1_bid_offer_secure('borko',b,gen_random_uuid(),16600,3);
+ if v->>'code'<>'AUCTION_CLOSED' then raise exception 'Late offer accepted'; end if;
+ perform public.etap1_ready_lobby_secure('mitko',m,true,false);
+ perform public.etap1_ready_lobby_secure('borko',b,true,false);
+ v:=public.etap1_ready_lobby_secure('enchev',e,true,false);
+ new_round:=(v->'state'->'auction'->>'id')::uuid;
+ if v->'state'->>'status'<>'countdown' or new_round=old_round
+ then raise exception 'New round countdown with fresh ID failed: %',v; end if;
+ -- Cancel countdown on session disappearance before start.
+ update public.enchev_etap1_presence set last_seen=clock_timestamp()-interval '30 seconds'
+ where role='borko';
+ v:=public.etap1_snapshot();
+ if v->>'status'<>'canceled' then raise exception 'Countdown not canceled after participant disconnect: %',v; end if;
+end $$;
+SQL
+if psql -X -v ON_ERROR_STOP=1 -c "set role anon; select public.etap1_wallet_update_secure('mitko',gen_random_uuid(),10,100);" >/tmp/etap1_wallet_anon.out 2>&1; then
+ echo "FAIL: anonymous user can call privileged wallet RPC" >&2; exit 1
+fi
+if psql -X -v ON_ERROR_STOP=1 -c "set role authenticated; select public.etap1_bid_offer_secure('mitko',gen_random_uuid(),gen_random_uuid(),16300,0);" >/tmp/etap1_offer_auth.out 2>&1; then
+ echo "FAIL: authenticated user can call bid offer RPC" >&2; exit 1
+fi
+echo "ENCHEV PROFESSIONAL DEMO V2 POSTGRES PASS: underfunded block, READY, countdown, global cooldown, stale price, limits, winner, cancellation, RLS."
