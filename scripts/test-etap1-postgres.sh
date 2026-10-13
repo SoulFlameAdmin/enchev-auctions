@@ -401,6 +401,7 @@ echo "ETAP1 THREE BIDDER INTEGRATION PASS: 3-person login auto-start, Enchev bid
 
 # ENCHEV PROFESSIONAL DEMO V2 — disposable-only tests, never run in real DB.
 psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261013060000_enchev_professional_demo_v2.sql
+psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261013061000_enchev_professional_demo_idempotency.sql
 psql -X -v ON_ERROR_STOP=1 <<'SQL'
 do $$
 declare
@@ -460,6 +461,8 @@ begin
  v:=public.etap1_bid_offer_secure('mitko',m,nonce,16300,0);
  if v->>'accepted'<>'true' or v->>'duplicate'<>'true'
  then raise exception 'Idempotency retry failed: %',v; end if;
+ v:=public.etap1_bid_offer_secure('mitko',m,nonce,16400,0);
+ if v->>'code'<>'NONCE_MISMATCH' then raise exception 'Mismatched nonce payload accepted'; end if;
  v:=public.etap1_bid_offer_secure('borko',b,gen_random_uuid(),16400,1);
  if v->>'code'<>'COOLDOWN_ACTIVE' then raise exception 'GLOBAL 5s cooldown failed: %',v; end if;
  update public.enchev_etap1_auctions set next_bid_allowed_at=clock_timestamp()-interval '1 second'
