@@ -975,3 +975,193 @@ body:has(.eaRoom){background:#060a08;color:#effaf3}
   .eaLoginDecor span{font-size:7.5px;padding:6px 8px}
   .eaReadyCard{gap:10px}
 }
+
+
+/* ENCHEV Live Room v14 — G-Class cinematic lobby + countdown + bidding media. */
+.eaLoginWelcome{
+  position:relative;
+  min-height:360px;
+  padding:34px;
+  border-radius:22px;
+  overflow:hidden;
+  isolation:isolate;
+  border:1px solid rgba(255,255,255,.07);
+  background:#020403;
+}
+.eaLoginHeroPhoto{
+  position:absolute;inset:0;z-index:-3;
+  width:100%;height:100%;object-fit:cover;object-position:center 55%;
+  filter:brightness(.48) saturate(.78) contrast(1.08);
+  transform:scale(1.025);
+}
+.eaLoginHeroShade{
+  position:absolute;inset:0;z-index:-2;
+  background:
+    linear-gradient(90deg,rgba(1,4,2,.94) 0%,rgba(1,4,2,.73) 48%,rgba(1,4,2,.25) 100%),
+    linear-gradient(0deg,rgba(0,0,0,.74) 0%,transparent 58%);
+}
+.eaLoginHeroContent{
+  position:relative;z-index:1;
+  min-height:292px;
+  display:flex;flex-direction:column;justify-content:flex-end;
+}
+.eaLoginHeroContent .eaLoginBrand{margin-bottom:auto}
+.eaLoginHeroContent h1{
+  max-width:500px;
+  font-size:clamp(45px,5.7vw,70px);
+  line-height:.92;
+}
+.eaLoginHeroContent p{max-width:560px;color:rgba(238,245,240,.68)}
+.eaLoginHeroContent .eaLoginDecor{margin-top:20px}
+.eaLoginHeroContent .eaLoginDecor span{
+  background:rgba(0,0,0,.31);
+  border-color:rgba(255,255,255,.11);
+}
+
+/* READY / WAITING stage uses the same cinematic language as the login concept. */
+.eaReadyCard{
+  min-height:238px;
+  overflow:hidden;
+  isolation:isolate;
+  align-items:flex-end;
+  padding:26px 28px;
+  background:#030604;
+}
+.eaLobbyVehiclePhoto{
+  position:absolute;inset:0;z-index:-3;
+  width:100%;height:100%;object-fit:cover;object-position:center 54%;
+  filter:brightness(.46) saturate(.77) contrast(1.06);
+}
+.eaLobbyVehicleShade{
+  position:absolute;inset:0;z-index:-2;
+  background:
+    linear-gradient(90deg,rgba(2,5,3,.95) 0%,rgba(2,5,3,.73) 48%,rgba(2,5,3,.22) 100%),
+    linear-gradient(0deg,rgba(0,0,0,.69),transparent 62%);
+}
+.eaReadyText{position:relative;z-index:1;max-width:760px}
+.eaReadyText h2{
+  max-width:680px;
+  font-size:clamp(26px,3.2vw,40px);
+  line-height:1.02;
+  text-shadow:0 7px 28px rgba(0,0,0,.55);
+}
+.eaReadyText p{max-width:660px;color:rgba(229,240,232,.65)}
+.eaReadyPeople span{
+  background:rgba(0,0,0,.32);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+}
+.eaReadyControl{
+  position:relative;z-index:2;
+  min-width:190px;
+  padding:14px;
+  border:1px solid rgba(255,255,255,.085);
+  border-radius:16px;
+  background:rgba(0,0,0,.26);
+  -webkit-backdrop-filter:blur(15px);backdrop-filter:blur(15px);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+}
+.eaCountdownNumber{
+  display:block;
+  text-align:center;
+  font-size:clamp(31px,4.4vw,52px);
+  line-height:1;
+  font-weight:1000;
+  letter-spacing:-.055em;
+  font-variant-numeric:tabular-nums;
+  color:#fff;
+  text-shadow:0 0 28px rgba(255,82,74,.28);
+}
+.eaReadyCard.eaCountdownActive{
+  min-height:330px;
+  border-color:rgba(255,106,94,.30);
+  background:#070303;
+}
+.eaReadyCard.eaCountdownActive .eaLobbyVehiclePhoto{
+  filter:brightness(.33) saturate(.72) contrast(1.1);
+}
+.eaReadyCard.eaCountdownActive .eaLobbyVehicleShade{
+  background:
+    radial-gradient(circle at 72% 44%,rgba(255,80,66,.06),transparent 40%),
+    linear-gradient(90deg,rgba(8,2,2,.95) 0%,rgba(7,3,3,.72) 48%,rgba(6,2,2,.31) 100%),
+    linear-gradient(0deg,rgba(0,0,0,.76),transparent 60%);
+}
+.eaReadyCard.eaCountdownActive .eaReadyControl{
+  border-color:rgba(255,108,96,.19);
+  background:rgba(22,4,4,.34);
+}
+.eaReadyCard.eaCountdownActive .eaReadyControl>span{color:#ffb4aa}
+.eaReadyCard.eaCountdownActive .eaReadyPeople span.is-ready{
+  border-color:rgba(93,255,176,.37);
+  background:rgba(44,255,151,.075);
+}
+
+/* G-Class live image treatment. */
+.eaRoom .eaFeaturedPhoto{
+  object-position:center center;
+  filter:brightness(.72) saturate(.82) contrast(1.07);
+  transition:opacity .2s ease,filter .2s ease;
+}
+.eaRoom .eaMediaStage{
+  background:
+    radial-gradient(circle at 50% 45%,rgba(56,244,148,.08),transparent 45%),
+    #030604;
+}
+.eaRoom .eaVehicleLabel{
+  border-color:rgba(255,255,255,.12);
+  background:rgba(0,0,0,.45);
+  color:#dff8e8;
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+}
+.eaRoom .eaPhotoCredit{
+  background:rgba(0,0,0,.43);
+  border:1px solid rgba(255,255,255,.08);
+  -webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);
+}
+.eaMediaViews button{position:relative;overflow:hidden}
+.eaAuctionIntro h1{max-width:900px}
+.eaVehicleFactsHead h2{letter-spacing:-.025em}
+
+@media(max-width:760px){
+  .eaLoginWelcome{min-height:335px;padding:24px}
+  .eaLoginHeroContent{min-height:287px}
+  .eaLoginHeroPhoto{object-position:62% center}
+  .eaReadyCard{
+    min-height:285px;
+    align-items:flex-end;
+    padding:18px;
+  }
+  .eaLobbyVehiclePhoto{object-position:63% center}
+  .eaReadyControl{
+    min-width:145px;
+    max-width:160px;
+    padding:11px;
+  }
+  .eaReadyText h2{font-size:clamp(23px,6.4vw,34px)}
+}
+@media(max-width:520px){
+  .eaLoginWelcome{min-height:360px;padding:19px}
+  .eaLoginHeroPhoto{object-position:66% center}
+  .eaLoginHeroShade{
+    background:
+      linear-gradient(0deg,rgba(1,4,2,.97) 0%,rgba(1,4,2,.58) 68%,rgba(1,4,2,.2) 100%),
+      linear-gradient(90deg,rgba(1,4,2,.64),rgba(1,4,2,.18));
+  }
+  .eaLoginHeroContent{min-height:320px}
+  .eaLoginHeroContent h1{font-size:38px}
+  .eaReadyCard{
+    min-height:385px;
+    flex-direction:column;
+    align-items:stretch;
+    justify-content:flex-end;
+  }
+  .eaLobbyVehiclePhoto{object-position:center 30%}
+  .eaLobbyVehicleShade{
+    background:
+      linear-gradient(0deg,rgba(1,4,2,.98) 0%,rgba(1,4,2,.74) 52%,rgba(1,4,2,.14) 100%);
+  }
+  .eaReadyText{padding-top:135px}
+  .eaReadyControl{min-width:100%;max-width:none}
+  .eaCountdownNumber{font-size:44px}
+  .eaReadyCard.eaCountdownActive{min-height:430px}
+  .eaReadyCard.eaCountdownActive .eaReadyText{padding-top:155px}
+}
