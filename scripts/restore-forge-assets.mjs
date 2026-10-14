@@ -179,6 +179,17 @@ const imageRecoveryJs = String.raw`(() => {
       || testCanvas.getContext('webgl', {failIfMajorPerformanceCaveat:true});
   } catch {}
   if (!webgl) document.documentElement.dataset.enchevNoWebgl = '1';
+  // Some Android in-app browsers expose WebGL yet fail to initialize the
+  // ActiveFrame canvas. An un-resized backing store after startup is a
+  // reliable sign the original scene never began rendering.
+  if (window.matchMedia('(max-width: 767px)').matches) {
+    window.setTimeout(() => {
+      const scene = document.querySelector('.dKbqDu canvas.gDERNK');
+      if (scene && scene.width === 300 && scene.height === 150) {
+        document.documentElement.dataset.enchevNoWebgl = '1';
+      }
+    }, 4000);
+  }
 
   function revealDecodedImages() {
     for (const img of document.querySelectorAll('img.ckbPhL')) {
