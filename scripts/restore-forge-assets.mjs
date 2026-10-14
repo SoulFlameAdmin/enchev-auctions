@@ -138,6 +138,74 @@ a[data-enchev-cta-label]{
   [data-sanity*="path=heroHeading"]{font-size:clamp(5.2rem,10vw,8rem)!important}
 }
 `;
+
+// Mobile browsers (including in-app WebViews) sometimes leave Next/Image's
+// low-quality placeholder in data-loaded=false even though the real original
+// image is already decoded. The placeholder should never remain blurred.
+const imageRecoveryCss = String.raw\`
+img.ckbPhL[data-loaded='false'] {
+  filter: none !important;
+}
+img.ckbPhL[data-loaded='true'] {
+  filter: none !important;
+  background-image: none !important;
+}
+/* A sharp, original photographic fallback behind ActiveFrame's hero canvas.
+   ActiveFrame keeps rendering normally on browsers that support its animation. */
+@media (max-width: 767px) {
+  .dKbqDu {
+    background: #050608 url('/forge/media/a7d5d4e97875d7604f97.jpg') center 42% / cover no-repeat;
+  }
+}
+/* Only on devices with no usable WebGL, display a crisp original poster above
+   an unusable ActiveFrame canvas. Text and original navigation stay visible. */
+html[data-enchev-no-webgl='1'] .dKbqDu::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.04) 45%, rgba(0,0,0,.55)),
+              url('/forge/media/a7d5d4e97875d7604f97.jpg') center / cover no-repeat;
+}
+\`;
+await writeFile(path.join(output,'enchev-visual-recovery.css'),imageRecoveryCss);
+
+const imageRecoveryJs = String.raw\`(() => {
+  const testCanvas = document.createElement('canvas');
+  let webgl = null;
+  try {
+    webgl = testCanvas.getContext('webgl2', {failIfMajorPerformanceCaveat:true})
+      || testCanvas.getContext('webgl', {failIfMajorPerformanceCaveat:true});
+  } catch {}
+  if (!webgl) document.documentElement.dataset.enchevNoWebgl = '1';
+
+  function revealDecodedImages() {
+    for (const img of document.querySelectorAll('img.ckbPhL')) {
+      if (img.dataset.enchevSharpHook !== '1') {
+        img.dataset.enchevSharpHook = '1';
+        img.addEventListener('load', () => {
+          if (img.naturalWidth > 0) img.setAttribute('data-loaded','true');
+        }, {passive:true});
+      }
+      if (img.complete && img.naturalWidth > 0 && img.getAttribute('data-loaded') !== 'true') {
+        img.setAttribute('data-loaded','true');
+      }
+    }
+  }
+  let queued = false;
+  function scheduleReveal() {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => {queued = false; revealDecodedImages();});
+  }
+  const observer = new MutationObserver(scheduleReveal);
+  observer.observe(document.documentElement,{subtree:true,childList:true});
+  document.addEventListener('DOMContentLoaded',scheduleReveal,{once:true});
+  window.addEventListener('load',scheduleReveal,{once:true});
+  scheduleReveal();
+})();\`;
+await writeFile(path.join(output,'enchev-visual-recovery.js'),imageRecoveryJs);
 await writeFile(path.join(output,'enchev-responsive.css'),responsiveCss);
 
 const ctaMapScript = String.raw`(() => {
@@ -368,6 +436,12 @@ await writeFile(ctaScriptPath, ctaMapScript);
 const forgeIndexPath = path.join(output, 'index.html');
 let forgeIndex = await readFile(forgeIndexPath, 'utf8');
 if (!forgeIndex.includes('/forge/enchev-responsive.css')) forgeIndex = forgeIndex.replace('</head>', '<link rel="stylesheet" href="/forge/enchev-responsive.css"></head>');
+if (!forgeIndex.includes('/forge/enchev-visual-recovery.css')) {
+  forgeIndex = forgeIndex.replace('</head>', '<link rel="stylesheet" href="/forge/enchev-visual-recovery.css"></head>');
+}
+if (!forgeIndex.includes('/forge/enchev-visual-recovery.js')) {
+  forgeIndex = forgeIndex.replace('</body>', '<script src="/forge/enchev-visual-recovery.js" defer></script></body>');
+}
 if (!forgeIndex.includes('/forge/enchev-cta-map.js')) {
   forgeIndex = forgeIndex.replace('</body>', '<script src="/forge/enchev-cta-map.js" defer></script></body>');
 }
