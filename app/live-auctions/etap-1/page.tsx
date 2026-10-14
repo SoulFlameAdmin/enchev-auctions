@@ -16,7 +16,7 @@ type Snapshot = {status:"idle"|"countdown"|"live"|"closed"|"canceled";demo:true;
 type Lobby = {count:number;readyCount:number;minPlayers:number;admitted?:boolean;sessionCurrent?:boolean;activeDevices?:number;wallet?:{buyingPower:number;lotBudget:number}|null;participants:{role:string;ready:boolean}[]};
 type StateReply = {authenticated?:boolean;available?:boolean;role?:Role;state?:Snapshot;lobby?:Lobby;error?:string};
 
-const labelRole=(role:string|null)=>role==="mitko"?"Mitko":role==="borko"?"Borko":role==="enchev"?"Enchev":role==="admin"?"Admin":"No bidder";
+const labelRole=(role:string|null)=>role==="mitko"?"Митко":role==="borko"?"Борко":role==="enchev"?"Енчев":role==="admin"?"Админ":"Няма водач";
 const money=(value:number)=>new Intl.NumberFormat("bg-BG",{style:"currency",currency:"EUR",maximumFractionDigits:2}).format(value);
 const bidError=(code:string)=>({
   PRICE_CHANGED:"Another bid was accepted first. Price refreshed; review the new amount.",
@@ -48,7 +48,7 @@ export default function EnchevStageOnePage(){
   const [duration,setDuration]=useState(120);
   const [mediaView,setMediaView]=useState("FRONT");
   const [detailTab,setDetailTab]=useState("History");
-  const [voiceLang,setVoiceLang]=useState("en-IE");
+  const [voiceLang,setVoiceLang]=useState("bg-BG");
   const [voiceOn,setVoiceOn]=useState(false);
   const [bidFlash,setBidFlash]=useState<{sequence:number;amount:number;role:string}|null>(null);
   const [celebratingId,setCelebratingId]=useState<string|null>(null);
@@ -59,8 +59,9 @@ export default function EnchevStageOnePage(){
   const [bonusUntil,setBonusUntil]=useState(0);
   const [moreOpen,setMoreOpen]=useState(false);
   const [historyExpanded,setHistoryExpanded]=useState(false);
+  const [walletNotice,setWalletNotice]=useState("");
   const voiceRef=useRef(false);
-  const voiceLangRef=useRef("en-IE");
+  const voiceLangRef=useRef("bg-BG");
   const audioRef=useRef<AudioContext|null>(null);
   const soundRef=useRef(false);
   const lastRef=useRef<{id:string;sequence:number;status:string;endsAt?:string}|null>(null);
@@ -198,6 +199,18 @@ export default function EnchevStageOnePage(){
     return result;
   };
 
+  const speakBg=(text:string)=>{
+    if(typeof window==="undefined"||!("speechSynthesis" in window)||!("SpeechSynthesisUtterance" in window))return;
+    const speech=new SpeechSynthesisUtterance(text);
+    speech.lang="bg-BG";
+    speech.rate=1.02;
+    const voices=window.speechSynthesis.getVoices();
+    const preferred=voices.find(v=>v.lang==="bg-BG")||voices.find(v=>v.lang.startsWith("bg"));
+    if(preferred)speech.voice=preferred;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(speech);
+  };
+
   const logIn=async(event:React.FormEvent<HTMLFormElement>)=>{
     event.preventDefault();if(busy)return;
     // A real user gesture is the only reliable moment to unlock mobile audio.
@@ -222,9 +235,21 @@ export default function EnchevStageOnePage(){
 
   const updateWallet=async(topup:number,lotBudget:number|null=null)=>{
     if(busy||!connected||snapshot?.status==="countdown"||snapshot?.status==="live")return;
-    setBusy(true);setError("");
-    try{await post("wallet",{topup,lotBudget});}
-    catch(e){setError(e instanceof Error?e.message:"Budget change rejected");}
+    setBusy(true);setError("");setWalletNotice("");
+    try{
+      const result=await post("wallet",{topup,lotBudget});
+      const updatedWallet=result.lobby?.wallet;
+      if(topup>0){
+        const total=Number(updatedWallet?.buyingPower??(Number(wallet?.buyingPower??10000)+topup));
+        const notice="Вие добавихте "+money(topup)+" във вашата ДЕМО сметка. Нова наличност: "+money(total)+".";
+        setWalletNotice(notice);
+        speakBg("Вие добавихте "+Math.round(topup)+" евро във вашата демо сметка. Новата ви наличност е "+Math.round(total)+" евро.");
+      }else if(lotBudget!==null){
+        const notice="Лимитът за този автомобил е зададен на "+money(lotBudget)+".";
+        setWalletNotice(notice);
+        speakBg("Вашият максимален лимит за този автомобил е "+Math.round(lotBudget)+" евро.");
+      }
+    }catch(e){setError(e instanceof Error?e.message:"Промяната на ДЕМО бюджета беше отказана.");}
     finally{setBusy(false);}
   };
   const setReady=async(next:boolean)=>{
