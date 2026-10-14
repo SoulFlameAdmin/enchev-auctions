@@ -42,7 +42,7 @@ export default function EnchevStageOnePage(){
   const [busy,setBusy]=useState(false);
   const [soundOn,setSoundOn]=useState(false);
   const [localNow,setLocalNow]=useState(Date.now());
-  const [lotTitle,setLotTitle]=useState("2026 Volkswagen Golf GTI — DEMO");
+  const [lotTitle,setLotTitle]=useState("2026 Mercedes-AMG G 63 — DEMO");
   const [opening,setOpening]=useState(16250);
   const [increment]=useState(100);
   const [duration,setDuration]=useState(120);
@@ -265,7 +265,7 @@ export default function EnchevStageOnePage(){
       "DEMO ONLY — NO REAL PURCHASE, PAYMENT OR VEHICLE TRANSFER",
       "",
       "Auction ID: "+finished.id,
-      "Lot: "+finished.title,
+      "Lot: "+displayLotTitle,
       "Closed at (server, ISO): "+closed,
       "Highest bidder: "+(finished.winnerRole??"None — no accepted bids"),
       "Final demo amount (EUR): "+Number(finished.currentAmount).toFixed(2),
@@ -414,6 +414,14 @@ export default function EnchevStageOnePage(){
   const phaseStep=status==="live"?2:1;
   const views=["FRONT","REAR","INTERIOR","DETAIL","SIDE"];
   const tabs=["Details","Photos","History","Documents","Transport","Condition"];
+  const displayLotTitle="2026 Mercedes-AMG G 63 — DEMO";
+  const gClassPhotos:Record<string,string>={
+    FRONT:"https://images.pexels.com/photos/14445439/pexels-photo-14445439.jpeg?auto=compress&cs=tinysrgb&w=1800",
+    REAR:"https://images.pexels.com/photos/17001168/pexels-photo-17001168.jpeg?auto=compress&cs=tinysrgb&w=1800",
+    INTERIOR:"https://images.pexels.com/photos/14583867/pexels-photo-14583867.jpeg?auto=compress&cs=tinysrgb&w=1800",
+    DETAIL:"https://images.pexels.com/photos/18045871/pexels-photo-18045871.jpeg?auto=compress&cs=tinysrgb&w=1800",
+    SIDE:"https://images.pexels.com/photos/14445435/pexels-photo-14445435.jpeg?auto=compress&cs=tinysrgb&w=1800",
+  };
 
   return <main id="main-content" className={"eaEtap1 eaRoom"+(showAuction&&bidder?" eaHasBidDock":"")}>
     <header className="eaRoomHeader">
@@ -457,11 +465,15 @@ export default function EnchevStageOnePage(){
     {error&&<div className="eaRoomAlert" role="alert">{error}<button type="button" onClick={()=>setError("")}>×</button></div>}
     {!role?<section className="eaLoginCard">
       <div className="eaLoginWelcome">
-        <div className="eaLoginBrand"><span className="eaLiveDot"/><b>ENCHEV LIVE</b><small>PRIVATE DEMONSTRATION</small></div>
-        <span className="eaEyebrow">INVITATION ACCESS</span>
-        <h1>Enter the live auction.</h1>
-        <p>Join the private ENCHEV demo room. Choose your bidder role, enter the invitation code and continue to budget, READY and synchronized live bidding.</p>
-        <div className="eaLoginDecor"><span>01 · JOIN</span><span>02 · BUDGET</span><span>03 · READY</span><span>04 · BID</span><span>05 · RESULT</span></div>
+        <img className="eaLoginHeroPhoto" src={gClassPhotos.SIDE} alt="Black Mercedes-Benz G-Class reference vehicle for the ENCHEV demo" loading="eager" decoding="async"/>
+        <div className="eaLoginHeroShade"/>
+        <div className="eaLoginHeroContent">
+          <div className="eaLoginBrand"><span className="eaLiveDot"/><b>ENCHEV LIVE</b><small>PRIVATE DEMONSTRATION</small></div>
+          <span className="eaEyebrow">INVITATION ACCESS</span>
+          <h1>Enter the live auction.</h1>
+          <p>Join the private ENCHEV demo room. Choose your bidder role, enter the invitation code and continue to budget, READY and synchronized live bidding.</p>
+          <div className="eaLoginDecor"><span>01 · JOIN</span><span>02 · BUDGET</span><span>03 · READY</span><span>04 · BID</span><span>05 · RESULT</span></div>
+        </div>
       </div>
       <form onSubmit={logIn}>
         <div className="eaLoginFormHead"><span>SECURE ACCESS</span><strong>Bidder sign in</strong><small>Demo only · no real payments</small></div>
@@ -476,21 +488,24 @@ export default function EnchevStageOnePage(){
       </form>
     </section>:<div className="eaRoomContent">
       {preparingRound&&<section className={"eaReadyCard"+(status==="countdown"?" eaCountdownActive":"")} aria-label="Participant readiness">
+        <img className="eaLobbyVehiclePhoto" src={gClassPhotos.FRONT} alt="Black Mercedes-Benz G-Class reference vehicle" loading="eager" decoding="async"/>
+        <div className="eaLobbyVehicleShade"/>
         <div className="eaReadyText">
-          <span className="eaEyebrow"><span className="eaLiveDot"/> NEXT ROUND</span>
-          <h2>{status==="countdown"?"🔴 STARTING IN "+String(Math.floor(countdownRemaining/60)).padStart(2,"0")+":"+String(countdownRemaining%60).padStart(2,"0"):status==="live"?"Round in progress — wait for next READY":((lobby?.count??0)<minPlayers||!corePresent)?"Waiting for invited participants":myReady?"You're ready.":"Ready to start?"}</h2>
+          <span className="eaEyebrow"><span className="eaLiveDot"/> {status==="countdown"?"ROOM LOCKED":"NEXT ROUND"}</span>
+          <h2>{status==="countdown"?"AUCTION STARTS IN "+String(Math.floor(countdownRemaining/60)).padStart(2,"0")+":"+String(countdownRemaining%60).padStart(2,"0"):status==="live"?"Round in progress — wait for next READY":((lobby?.count??0)<minPlayers||!corePresent)?"Waiting for invited participants":myReady?"You're ready.":"Ready to start?"}</h2>
           <div className="eaReadyPeople">{(lobby?.participants??[]).map(person=>
-            <span className={person.ready?"is-ready":""} key={person.role}>{person.ready?"●":"○"} {labelRole(person.role)}</span>)}
+            <span className={person.ready?"is-ready":""} key={person.role}>{person.ready?"●":"○"} {labelRole(person.role)} {person.ready&&"· READY"}</span>)}
           </div>
-          <p>{status==="countdown"?"30-second synchronized pre-live countdown. Bidding will unlock at the authoritative server start time.":status==="live"
+          <p>{status==="countdown"?"3/3 ready. The room is locked and bidding opens automatically when the synchronized timer reaches zero.":status==="live"
             ?"This round started without your current login. You cannot bid; when it ends, press I'M READY for the next one."
             :((lobby?.count??0)<minPlayers||!corePresent)?"Mitko, Borko and Enchev must join, set their DEMO budgets, then all press READY."
             :(lobby?.readyCount??0)===(lobby?.count??0)?"Countdown starting…":"All three must press READY to begin the countdown."}</p>
         </div>
         <div className="eaReadyControl">
-          <span>{status==="countdown"?"3/3 LOCKED":(lobby?.readyCount??0)+"/"+(lobby?.count??0)+" READY"}</span>
+          <span>{status==="countdown"?"3/3 READY · LOCKED":(lobby?.readyCount??0)+"/"+(lobby?.count??0)+" READY"}</span>
+          {status==="countdown"&&<strong className="eaCountdownNumber">{String(Math.floor(countdownRemaining/60)).padStart(2,"0")}:{String(countdownRemaining%60).padStart(2,"0")}</strong>}
           {participant?(status==="live"||status==="countdown"
-            ?<small>{status==="countdown"?"Countdown is running.":"New login? Wait until the current auction closes."}</small>
+            ?<small>{status==="countdown"?"Bidding unlocks automatically.":"New login? Wait until the current auction closes."}</small>
             :<button type="button" onClick={()=>void setReady(!myReady)} disabled={!connected||busy||(Number(wallet?.lotBudget??0)<16300&&!myReady)} className={myReady?"is-ready":""}>{busy?"UPDATING…":myReady?"✓ READY":"I'M READY →"}</button>
           ):<small>Admin does not count.</small>}
         </div>
@@ -514,7 +529,7 @@ export default function EnchevStageOnePage(){
         <p className="eaBudgetAdvice">🤖 DEMO BUDGET ASSISTANT · RULE-BASED: {Number(wallet?.lotBudget??0)<16300?"Your configured budget is below the minimum €16,300 first offer. Add DEMO credit and raise the lot budget.":"Respect your chosen limit. Taxes, transport and repair costs are not verified or included."}</p>
       </section>}
       {participant&&status!=="live"&&<section className="eaVehicleFacts" aria-label="Auction vehicle information">
-        <div className="eaVehicleFactsHead"><span>LOT · DEMO-001</span><h2>2026 Volkswagen Golf GTI · REFERENCE LOT</h2><small>Illustrative vehicle and photo; not a confirmed inspection, sale, document or VIN.</small></div>
+        <div className="eaVehicleFactsHead"><span>LOT · DEMO-001</span><h2>2026 Mercedes-AMG G 63 · REFERENCE LOT</h2><small>Illustrative vehicle and photo; not a confirmed inspection, sale, document or VIN.</small></div>
         <div className="eaLotTabs">{["Details","Condition","Documents","Transport","History"].map(t=><button type="button" key={t} aria-pressed={detailTab===t} className={detailTab===t?"is-active":""} onClick={()=>setDetailTab(t)}>{t}</button>)}</div>
         {detailTab==="Details"&&<div className="eaLotGrid">{[["LOT ID","DEMO-001"],["YEAR","2026 (illustrative)"],["VIN","NOT VERIFIED"],["MILEAGE","NOT VERIFIED"],["ENGINE","NOT VERIFIED"],["FUEL","NOT VERIFIED"],["TRANSMISSION","NOT VERIFIED"],["LOCATION","NOT VERIFIED"],["START TIME","Server-controlled"],["OPENING BID","€16,250"]].map(([k,v])=><div key={k}><small>{k}</small><strong>{v}</strong></div>)}</div>}
         {detailTab==="Condition"&&<div className="eaLotGrid">{[["STARTS / RUNS","UNKNOWN"],["DRIVEABLE","UNKNOWN"],["PRIMARY DAMAGE","NOT VERIFIED"],["SECONDARY DAMAGE","NOT VERIFIED"],["KEYS","NOT VERIFIED"],["INSPECTION REPORT","NOT AVAILABLE"]].map(([k,v])=><div key={k}><small>{k}</small><strong>{v}</strong></div>)}</div>}
@@ -543,20 +558,20 @@ export default function EnchevStageOnePage(){
       {showAuction&&<>
       <section className="eaAuctionIntro">
         <div><span className={"eaAuctionStatus "+(status==="live"?"is-live":"")}>{status==="live"?"● LIVE NOW":"◉ READY FOR NEXT ROUND"}</span><span className="eaAuctionLot">LOT {status==="live"&&auction?auction.id.slice(0,8).toUpperCase():"DEMO–001"}</span></div>
-        <h1>{status==="live"&&auction?auction.title:lotTitle}</h1>
+        <h1>{displayLotTitle}</h1>
         <p>Private demo auction · Illustrative vehicle · EUR</p>
       </section>
       <section className="eaAuctionGrid" aria-label="Demo auction">
         <div className="eaMediaPanel">
           <div className="eaMediaStage">
             <Etap1DemoVehicle view={mediaView}/>
-            {mediaView==="FRONT"&&<img className="eaFeaturedPhoto"
-              src="https://images.unsplash.com/photo-1746184842826-73fd144a4587?auto=format&fit=crop&w=1280&q=82"
-              alt="Illustrative Golf GTI photograph from a showroom — not the vehicle in this demo auction"
+            <img className="eaFeaturedPhoto"
+              src={gClassPhotos[mediaView]}
+              alt={"Real Mercedes-Benz G-Class reference photo — "+mediaView.toLowerCase()+" view; not the actual demo lot"}
               loading="eager" decoding="async"
-              onError={e=>{e.currentTarget.style.display="none";}}/>}
-            <span className="eaVehicleLabel">{mediaView==="FRONT"?"GOLF GTI · REFERENCE PHOTO":"ILLUSTRATIVE DEMO VIEW"}</span>
-            {mediaView==="FRONT"&&<a className="eaPhotoCredit" href="https://unsplash.com/photos/a-grey-volkswagen-golf-gti-sits-in-a-showroom-81NrHQ6TBqE" target="_blank" rel="noopener noreferrer" aria-label="Photo credit: Shalev Cohen, Unsplash">Photo: Shalev Cohen / Unsplash</a>}
+              onError={e=>{e.currentTarget.style.display="none";}}/>
+            <span className="eaVehicleLabel">MERCEDES G-CLASS · REAL REFERENCE PHOTO</span>
+            <a className="eaPhotoCredit" href="https://www.pexels.com/search/mercedes%20g-class/" target="_blank" rel="noopener noreferrer" aria-label="Mercedes G-Class reference photos on Pexels">Reference photos: Pexels</a>
             <div className={"eaClock "+(status==="live"?"is-live":"")+(status==="live"&&timeUntil<=10?" urgent":"")} style={clockStyle}>
               <div><span>{status==="live"?"TIME LEFT":"NEXT ROUND"}</span><strong>{status==="live"?minutes+":"+seconds:"READY"}</strong></div>
             </div>
@@ -598,7 +613,7 @@ export default function EnchevStageOnePage(){
         </div>
       </section>
       <section className="eaVehicleFacts eaLiveVehicleFacts" aria-label="Vehicle specifications and known condition">
-        <div className="eaVehicleFactsHead"><span>LOT · DEMO-001</span><h2>2026 Volkswagen Golf GTI — DEMONSTRATION VEHICLE</h2><small>Illustrative photo. VIN, mileage, actual damage, registration and condition have NOT been verified.</small></div>
+        <div className="eaVehicleFactsHead"><span>LOT · DEMO-001</span><h2>2026 Mercedes-AMG G 63 — DEMONSTRATION VEHICLE</h2><small>Illustrative photo. VIN, mileage, actual damage, registration and condition have NOT been verified.</small></div>
         <div className="eaLotTabs">{["Details","Condition","Documents","Transport","History"].map(t=><button type="button" key={t} aria-pressed={detailTab===t} className={detailTab===t?"is-active":""} onClick={()=>setDetailTab(t)}>{t}</button>)}</div>
         {detailTab==="Details"&&<div className="eaLotGrid">{[["LOT","DEMO-001"],["MILEAGE","NOT VERIFIED"],["VIN","NOT VERIFIED"],["ENGINE / FUEL","NOT VERIFIED"],["GEARBOX","NOT VERIFIED"],["LOCATION","NOT VERIFIED"],["PRICE","Live server value"],["BIDS",""+(auction?.sequence??0)],["STARTED",auction?new Date(auction.startedAt).toLocaleTimeString("bg-BG"):"—"]].map(([k,v])=><div key={k}><small>{k}</small><strong>{v}</strong></div>)}</div>}
         {detailTab==="Condition"&&<p>Damage, starts, drives, keys, inspection and repairs: UNKNOWN / NOT VERIFIED. Do not rely on the illustration to assess a vehicle.</p>}
