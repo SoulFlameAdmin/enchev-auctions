@@ -1,5 +1,3 @@
-import MasterSystemPlanV1 from "./components/MasterSystemPlanV1";
-
 export default function Home(){
   return (
     <main
@@ -21,7 +19,6 @@ export default function Home(){
           zIndex:0,
         }}
       />
-      <MasterSystemPlanV1 />
     </main>
   );
 }
