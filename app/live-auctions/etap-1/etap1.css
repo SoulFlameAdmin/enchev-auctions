@@ -352,3 +352,279 @@ body:has(.eaRoom){background:#060a08;color:#effaf3}
 .eaPlaceBid:disabled{cursor:not-allowed;opacity:.76}
 .eaPlaceBid{font-variant-numeric:tabular-nums}
 @media(max-width:480px){.eaWalletLive span{flex-wrap:wrap}.eaWalletLive b{width:100%;font-size:12px}}
+
+
+/* ENCHEV Live Room v12 — black glassmorphism lobby, matched to cinematic home. */
+.eaRoom{
+  --ea-glass:rgba(5,8,7,.62);
+  --ea-glass-strong:rgba(7,11,9,.78);
+  --ea-glass-soft:rgba(255,255,255,.035);
+  --ea-glass-edge:rgba(255,255,255,.115);
+  --ea-glass-edge-green:rgba(73,255,174,.28);
+  --ea-glass-shadow:0 22px 70px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.045);
+  --ea-glass-blur:blur(22px) saturate(1.18);
+  position:relative;
+  isolation:isolate;
+  overflow-x:hidden;
+  background:
+    radial-gradient(900px 520px at 9% -4%,rgba(41,255,157,.085),transparent 58%),
+    radial-gradient(720px 520px at 96% 10%,rgba(34,151,98,.08),transparent 60%),
+    linear-gradient(180deg,#020504 0%,#030604 44%,#010302 100%);
+}
+.eaRoom::before{
+  content:"";
+  position:fixed;inset:0;z-index:-2;pointer-events:none;
+  background:
+    linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);
+  background-size:44px 44px;
+  mask-image:linear-gradient(to bottom,rgba(0,0,0,.46),transparent 72%);
+}
+.eaRoom::after{
+  content:"";
+  position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(circle at 50% 20%,transparent 0 30%,rgba(0,0,0,.2) 64%,rgba(0,0,0,.58) 100%);
+}
+.eaRoomHeader{
+  position:sticky;top:0;z-index:65;
+  background:rgba(2,5,4,.68);
+  border-bottom:1px solid rgba(255,255,255,.09);
+  box-shadow:0 12px 38px rgba(0,0,0,.22);
+  -webkit-backdrop-filter:blur(24px) saturate(1.25);
+  backdrop-filter:blur(24px) saturate(1.25);
+}
+.eaRoomLogo strong{letter-spacing:-1.35px;text-shadow:0 0 22px rgba(255,255,255,.08)}
+.eaRoomLogo span{color:rgba(229,244,235,.56)}
+.eaRoomTitle strong{letter-spacing:.09em}
+.eaRoomTitle small{color:rgba(210,230,218,.48)}
+.eaRoomStatus{
+  position:relative;z-index:20;
+  background:rgba(3,8,5,.46);
+  border-bottom:1px solid rgba(255,255,255,.075);
+  color:rgba(201,244,218,.76);
+  -webkit-backdrop-filter:blur(18px) saturate(1.2);
+  backdrop-filter:blur(18px) saturate(1.2);
+}
+.eaRoomStatus>span:last-child{color:rgba(190,207,197,.46)}
+.eaRoom .eaSoundToggle,
+.eaRoom .eaSettingsToggle{
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.045);
+  color:#effff5;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.035),0 10px 30px rgba(0,0,0,.2);
+  -webkit-backdrop-filter:blur(15px);
+  backdrop-filter:blur(15px);
+}
+.eaRoom .eaSoundToggle:hover,
+.eaRoom .eaSettingsToggle:hover{border-color:rgba(82,255,175,.34);background:rgba(72,255,168,.07)}
+.eaSettingsMenu{
+  border:1px solid var(--ea-glass-edge);
+  background:rgba(4,8,6,.82);
+  box-shadow:0 24px 80px rgba(0,0,0,.62),inset 0 1px 0 rgba(255,255,255,.05);
+  -webkit-backdrop-filter:blur(28px) saturate(1.25);
+  backdrop-filter:blur(28px) saturate(1.25);
+}
+.eaSettingsMenu select,.eaSettingsMenu button{
+  background:rgba(255,255,255,.045);
+  border-color:rgba(255,255,255,.11);
+}
+.eaRoomContent{padding-top:20px}
+.eaLoginCard,
+.eaReadyCard,
+.eaDemoWallet,
+.eaVehicleFacts,
+.eaAdminSettings,
+.eaPreviousRound,
+.eaMonitorEntry,
+.eaHistoryPanel,
+.eaBiddingPanel,
+.eaMediaPanel,
+.eaFinalResult{
+  position:relative;
+  overflow:hidden;
+  border:1px solid var(--ea-glass-edge);
+  background:
+    linear-gradient(135deg,rgba(255,255,255,.048),rgba(255,255,255,.012) 42%,rgba(0,0,0,.12)),
+    var(--ea-glass);
+  box-shadow:var(--ea-glass-shadow);
+  -webkit-backdrop-filter:var(--ea-glass-blur);
+  backdrop-filter:var(--ea-glass-blur);
+}
+.eaLoginCard::before,
+.eaReadyCard::before,
+.eaDemoWallet::before,
+.eaVehicleFacts::before,
+.eaBiddingPanel::before,
+.eaMediaPanel::before{
+  content:"";
+  position:absolute;left:0;right:0;top:0;height:1px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.17),rgba(83,255,177,.22),transparent);
+}
+.eaLoginCard{
+  width:min(980px,calc(100% - 44px));
+  min-height:360px;
+  margin:clamp(22px,5vh,62px) auto 40px;
+  padding:clamp(24px,4vw,46px);
+  border-radius:26px;
+  background:
+    radial-gradient(560px 250px at 15% 0%,rgba(69,255,170,.065),transparent 65%),
+    linear-gradient(135deg,rgba(255,255,255,.048),rgba(255,255,255,.008) 55%),
+    rgba(3,7,5,.7);
+}
+.eaLoginWelcome{align-self:center}
+.eaLoginWelcome h1{
+  color:#fff;font-size:clamp(34px,5vw,58px);
+  letter-spacing:-.055em;line-height:.98;
+  text-shadow:0 12px 42px rgba(0,0,0,.5);
+}
+.eaLoginWelcome p{max-width:520px;color:rgba(222,237,228,.64)}
+.eaLoginDecor span{
+  color:rgba(209,235,219,.66);
+  border-color:rgba(255,255,255,.10);
+  background:rgba(255,255,255,.026);
+  -webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+}
+.eaLoginCard form{
+  padding:22px;border-radius:20px;
+  border:1px solid rgba(255,255,255,.075);
+  background:rgba(0,0,0,.2);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.03);
+}
+.eaLoginCard form label{color:rgba(214,235,222,.72)}
+.eaLoginCard :is(input,select){
+  min-height:50px;border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(2,7,4,.66);color:#fff;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
+}
+.eaLoginCard :is(input,select):focus{border-color:rgba(75,255,174,.48);background:rgba(4,12,8,.84)}
+.eaActionPrimary{
+  border:1px solid rgba(108,255,190,.58);
+  background:linear-gradient(135deg,rgba(85,255,176,.96),rgba(48,224,144,.9));
+  box-shadow:0 10px 34px rgba(53,240,151,.12),inset 0 1px 0 rgba(255,255,255,.34);
+}
+.eaReadyCard{
+  padding:18px 20px;border-radius:20px;
+  background:
+    radial-gradient(440px 150px at 0% 0%,rgba(69,255,170,.055),transparent 70%),
+    linear-gradient(135deg,rgba(255,255,255,.043),rgba(255,255,255,.01)),
+    rgba(3,8,5,.62);
+}
+.eaReadyText h2{color:#f7fff9}
+.eaReadyText p{color:rgba(203,224,211,.58)}
+.eaReadyPeople span{
+  border-color:rgba(255,255,255,.09);
+  background:rgba(255,255,255,.026);
+  color:rgba(213,229,218,.58);
+}
+.eaReadyPeople span.is-ready{
+  border-color:rgba(80,255,174,.32);
+  background:rgba(55,255,158,.075);
+  color:#8fffc0;
+  box-shadow:inset 0 0 18px rgba(70,255,166,.035);
+}
+.eaReadyControl>span{color:rgba(181,247,207,.76)}
+.eaRoom .eaReadyControl button{
+  border:1px solid rgba(89,255,180,.55);
+  background:linear-gradient(135deg,#52f5a5,#31d88a);
+  box-shadow:0 10px 28px rgba(49,220,140,.12),inset 0 1px 0 rgba(255,255,255,.3);
+}
+.eaRoom .eaReadyControl button.is-ready{
+  background:rgba(51,255,157,.09);
+  border-color:rgba(75,255,169,.34);
+  color:#aaffcb;
+}
+.eaDemoWallet,.eaVehicleFacts{
+  border-radius:20px;
+  background:
+    radial-gradient(420px 190px at 8% 0%,rgba(71,255,169,.045),transparent 70%),
+    linear-gradient(145deg,rgba(255,255,255,.038),rgba(255,255,255,.008)),
+    rgba(3,8,5,.62);
+}
+.eaDemoWalletHead h2,.eaVehicleFactsHead h2{color:#f7fff9!important}
+.eaDemoWalletHead>span,.eaVehicleFactsHead>span{color:#8cf9b7}
+.eaDemoWallet p,.eaVehicleFacts p,.eaVehicleFactsHead small{color:rgba(213,229,218,.62)}
+.eaWalletActions button,.eaLotTabs button,.eaOfferSteps button,.eaOfferControls button,.eaDemoWallet form button{
+  border:1px solid rgba(255,255,255,.105);
+  background:rgba(255,255,255,.038);
+  color:#ecfff3;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.025);
+}
+.eaWalletActions button:hover,.eaLotTabs button:hover,.eaOfferSteps button:hover{
+  border-color:rgba(75,255,169,.32);background:rgba(70,255,160,.065)
+}
+.eaLotTabs button[aria-pressed="true"],.eaOfferSteps button[aria-pressed="true"]{
+  border-color:rgba(92,255,181,.48);
+  background:rgba(72,255,164,.12);
+  color:#a5ffca;
+  box-shadow:inset 0 0 22px rgba(70,255,162,.045);
+}
+.eaDemoWallet form input,.eaOfferControls form input{
+  background:rgba(0,0,0,.34);
+  border-color:rgba(255,255,255,.12);
+}
+.eaLotGrid>div,.eaWalletLive span,.eaOfferControls,.eaServerCooldown,.eaNextBid{
+  background:rgba(255,255,255,.026);
+  border-color:rgba(255,255,255,.085);
+}
+.eaLotGrid>div{box-shadow:inset 0 1px 0 rgba(255,255,255,.018)}
+.eaBudgetAdvice{
+  background:rgba(68,162,255,.045);
+  border-left-color:rgba(105,194,255,.55);
+}
+.eaMediaPanel{background:rgba(3,8,5,.55)}
+.eaMediaStage{background:radial-gradient(ellipse at 50% 45%,rgba(28,112,73,.34),rgba(3,9,5,.86) 66%,#010302 100%)}
+.eaMediaViews{background:rgba(0,0,0,.28);border-top-color:rgba(255,255,255,.07)}
+.eaRoom .eaMediaViews button{
+  background:rgba(255,255,255,.032);
+  border-color:rgba(255,255,255,.085);
+}
+.eaRoom .eaMediaViews button.is-selected{background:rgba(65,255,160,.09);border-color:rgba(75,255,169,.45)}
+.eaBiddingPanel{background:linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.01)),rgba(3,8,5,.68)}
+.eaBidMeta{border-bottom-color:rgba(255,255,255,.08)}
+.eaHistoryRows>div{border-top-color:rgba(255,255,255,.07)}
+.eaHistoryPanel{background:rgba(3,8,5,.62)}
+.eaRoomAlert{
+  border:1px solid rgba(255,107,98,.32);
+  background:rgba(50,13,12,.64);
+  box-shadow:0 18px 50px rgba(0,0,0,.34),inset 0 1px 0 rgba(255,255,255,.03);
+  -webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);
+}
+.eaReadyCard.eaCountdownActive{
+  border-color:rgba(255,101,94,.38);
+  background:
+    linear-gradient(135deg,rgba(255,80,75,.10),rgba(255,255,255,.012)),
+    rgba(15,3,4,.72);
+  box-shadow:0 20px 60px rgba(0,0,0,.42),inset 0 1px 0 rgba(255,255,255,.04);
+}
+.eaMonitorEntry{background:rgba(4,10,6,.64);border-color:rgba(79,255,174,.19)}
+.eaFinalResult{background:linear-gradient(145deg,rgba(64,255,157,.08),rgba(255,255,255,.012)),rgba(3,8,5,.7)}
+.eaBidDock{
+  background:rgba(2,8,5,.72)!important;
+  border-top-color:rgba(91,255,180,.24)!important;
+  box-shadow:0 -20px 55px rgba(0,0,0,.55)!important;
+  -webkit-backdrop-filter:blur(24px) saturate(1.25)!important;
+  backdrop-filter:blur(24px) saturate(1.25)!important;
+}
+.eaBidToast{
+  background:rgba(4,29,18,.82);
+  border-color:rgba(75,255,169,.5);
+  box-shadow:0 20px 70px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06);
+  -webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px);
+}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .eaLoginCard,.eaReadyCard,.eaDemoWallet,.eaVehicleFacts,.eaAdminSettings,.eaPreviousRound,
+  .eaMonitorEntry,.eaHistoryPanel,.eaBiddingPanel,.eaMediaPanel,.eaFinalResult,.eaSettingsMenu{
+    background:#07100b;
+  }
+}
+@media(max-width:480px){
+  .eaRoom{background:radial-gradient(560px 320px at 50% -8%,rgba(46,255,156,.075),transparent 62%),#020403}
+  .eaRoomHeader{background:rgba(2,5,4,.78);box-shadow:0 8px 28px rgba(0,0,0,.28)}
+  .eaRoomContent{padding-top:12px}
+  .eaLoginCard{margin:14px auto 28px;padding:16px;border-radius:20px;gap:12px}
+  .eaLoginWelcome h1{font-size:32px}
+  .eaLoginCard form{padding:14px;border-radius:15px}
+  .eaReadyCard{padding:12px;border-radius:16px}
+  .eaDemoWallet,.eaVehicleFacts,.eaHistoryPanel,.eaBiddingPanel,.eaMediaPanel{border-radius:16px}
+}
