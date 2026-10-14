@@ -142,7 +142,7 @@ a[data-enchev-cta-label]{
 // Mobile browsers (including in-app WebViews) sometimes leave Next/Image's
 // low-quality placeholder in data-loaded=false even though the real original
 // image is already decoded. The placeholder should never remain blurred.
-const imageRecoveryCss = String.raw\`
+const imageRecoveryCss = String.raw`
 img.ckbPhL[data-loaded='false'] {
   filter: none !important;
 }
@@ -168,10 +168,10 @@ html[data-enchev-no-webgl='1'] .dKbqDu::after {
   background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.04) 45%, rgba(0,0,0,.55)),
               url('/forge/media/a7d5d4e97875d7604f97.jpg') center / cover no-repeat;
 }
-\`;
+`;
 await writeFile(path.join(output,'enchev-visual-recovery.css'),imageRecoveryCss);
 
-const imageRecoveryJs = String.raw\`(() => {
+const imageRecoveryJs = String.raw`(() => {
   const testCanvas = document.createElement('canvas');
   let webgl = null;
   try {
@@ -204,7 +204,7 @@ const imageRecoveryJs = String.raw\`(() => {
   document.addEventListener('DOMContentLoaded',scheduleReveal,{once:true});
   window.addEventListener('load',scheduleReveal,{once:true});
   scheduleReveal();
-})();\`;
+})();`;
 await writeFile(path.join(output,'enchev-visual-recovery.js'),imageRecoveryJs);
 await writeFile(path.join(output,'enchev-responsive.css'),responsiveCss);
 
