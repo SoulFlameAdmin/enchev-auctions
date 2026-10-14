@@ -21,12 +21,12 @@ const money=(value:number)=>new Intl.NumberFormat("bg-BG",{style:"currency",curr
 const bidError=(code:string)=>({
   PRICE_CHANGED:"Another bid was accepted first. Price refreshed; review the new amount.",
   COOLDOWN_ACTIVE:"Global 5-second pause is active. Wait for the countdown on BID.",
-  ALREADY_LEADING:"You already lead this round. Wait for another bidder.",
+  ALГОТОВ_LEADING:"You already lead this round. Wait for another bidder.",
   INVALID_AMOUNT:"The confirmed amount is no longer valid. Review the refreshed price.",
   LIMIT_EXCEEDED:"Offer exceeds your DEMO wallet or selected car limit.",
   SESSION_EXPIRED:"This device's session expired. Sign in again.",
   SESSION_NOT_ADMITTED:"This role is not admitted to the current round.",
-  AUCTION_CLOSED:"Round finished. Wait for the next READY.",
+  AUCTION_CLOSED:"Round finished. Wait for the next ГОТОВ.",
   NONCE_MISMATCH:"This request was already used for a different offer.",
 } as Record<string,string>)[code]??"Bid not accepted. Refresh the price and try again.";
 
@@ -256,7 +256,7 @@ export default function EnchevStageOnePage(){
     if(busy||!connected||snapshot?.status==="live"||snapshot?.status==="countdown")return;
     setBusy(true);setError("");
     try{await post("ready",{ready:next});}
-    catch(e){setError(e instanceof Error?e.message:"Cannot change READY status");void poll();}
+    catch(e){setError(e instanceof Error?e.message:"Cannot change ГОТОВ status");void poll();}
     finally{setBusy(false);}
   };
   const bid=async()=>{
@@ -467,26 +467,26 @@ export default function EnchevStageOnePage(){
           {moreOpen&&<div className="eaSettingsMenu">
             <div className="eaMenuHead"><span>ENCHEV</span><strong>{role?"LIVE ROOM":"AUCTION ACCESS"}</strong></div>
             <a className="eaMenuLink" href="/">⌂ <span>Home</span><b>↗</b></a>
-            <a className="eaMenuLink" href="/live-auctions">◫ <span>Live auctions</span><b>→</b></a>
+            <a className="eaMenuLink" href="/live-auctions">◫ <span>Търгове на живо</span><b>→</b></a>
             {role&&<>
               <div className="eaMenuDivider"/>
               <label>Език на гласа<select value={voiceLang} onChange={e=>{setVoiceLang(e.target.value);voiceLangRef.current=e.target.value;}}>
                 <option value="bg-BG">Български</option><option value="en-IE">Английски</option>
               </select></label>
-              <button type="button" aria-pressed={voiceOn} onClick={enableVoice}>{role==="enchev"&&voiceOn?"🔊 ENCHEV VOICE · ALWAYS ON":voiceOn?"🔊 Voice ON":"🎙 Enable auctioneer voice"}</button>
+              <button type="button" aria-pressed={voiceOn} onClick={enableVoice}>{role==="enchev"&&voiceOn?"🔊 ГЛАСЪТ НА ЕНЧЕВ · ВИНАГИ ВКЛЮЧЕН":voiceOn?"🔊 Гласът е включен":"🎙 Включи гласа на търга"}</button>
               <button type="button" onClick={()=>{void poll();setMoreOpen(false);}}>↻ Обнови връзката</button>
               <button className="eaMenuDanger" type="button" onClick={()=>{void logOut();setMoreOpen(false);}}>Изход</button>
             </>}
-            {!role&&<small className="eaMenuNote">Private invitation login is available below.</small>}
+            {!role&&<small className="eaMenuNote">Входът с покана е достъпен по-долу.</small>}
           </div>}
         </div>
       </div>
     </header>
     <div className="eaRoomStatus">
-      <span>{role?<><i className="eaLiveDot"/> {labelRole(role)} <b>{bidder?"· BIDDER":"· OPERATOR"}</b></>:"ДОБРЕ ДОШЛИ В LIVE ЗАЛАТА"}</span>
+      <span>{role?<><i className="eaLiveDot"/> {labelRole(role)} <b>{bidder?"· УЧАСТНИК":"· ОПЕРАТОР"}</b></>:"ДОБРЕ ДОШЛИ В LIVE ЗАЛАТА"}</span>
       <span>САМО ДЕМО <span className="eaStatusSep">·</span> БЕЗ РЕАЛНИ ПЛАЩАНИЯ</span>
     </div>
-    {!available&&<div className="eaRoomAlert" role="alert">This private pilot is not active. Bidding is disabled.</div>}
+    {!available&&<div className="eaRoomAlert" role="alert">Това частно демо не е активно. Наддаването е изключено.</div>}
     {error&&<div className="eaRoomAlert" role="alert">{error}<button type="button" onClick={()=>setError("")}>×</button></div>}
     {!role?<section className="eaLoginCard">
       <div className="eaLoginWelcome">
@@ -527,53 +527,60 @@ export default function EnchevStageOnePage(){
             :(lobby?.readyCount??0)===(lobby?.count??0)?"Стартира отброяването…":"И тримата трябва да натиснат „ГОТОВ СЪМ“, за да започне отброяването."}</p>
         </div>
         <div className="eaReadyControl">
-          <span>{status==="countdown"?"3/3 ГОТОВИ · ЗАКЛЮЧЕНО":(lobby?.readyCount??0)+"/"+(lobby?.count??0)+" READY"}</span>
+          <span>{status==="countdown"?"3/3 ГОТОВИ · ЗАКЛЮЧЕНО":(lobby?.readyCount??0)+"/"+(lobby?.count??0)+" ГОТОВИ"}</span>
           {status==="countdown"&&<strong className="eaCountdownNumber">{String(Math.floor(countdownRemaining/60)).padStart(2,"0")}:{String(countdownRemaining%60).padStart(2,"0")}</strong>}
           {participant?(status==="live"||status==="countdown"
             ?<small>{status==="countdown"?"Наддаването ще се отключи автоматично.":"Нов вход? Изчакайте текущият търг да приключи."}</small>
             :<button type="button" onClick={()=>void setReady(!myReady)} disabled={!connected||busy||(Number(wallet?.lotBudget??0)<16300&&!myReady)} className={myReady?"is-ready":""}>{busy?"ОБНОВЯВАНЕ…":myReady?"✓ ГОТОВ":"ГОТОВ СЪМ →"}</button>
-          ):<small>Admin does not count.</small>}
+          ):<small>Админът не се брои като участник.</small>}
         </div>
       </section>}
-      {role==="admin"&&<div className="eaMonitorEntry"><a href="/live-auctions/etap-1/admin" aria-label="Open live admin dashboard">▣ OPEN ADMIN CONTROL ROOM →</a><small>Full-screen PC monitor · LIVE roster · READY · active bidders</small></div>}
-      {role==="admin"&&preparingRound&&<p className="eaOperatorNote">🔒 The first round starts on three bidder logins; later rounds require three READY clicks. The operator never starts or blocks the auction.</p>}
-      {participant&&status!=="live"&&status!=="countdown"&&<section className="eaDemoWallet" aria-label="DEMO buying power">
-        <div className="eaDemoWalletHead"><div><span className="eaEyebrow">DEMO CREDIT · NO REAL DEPOSIT</span><h2>💰 BUYING POWER {money(Number(wallet?.buyingPower??10000))}</h2></div><span>LOT LIMIT: {money(Number(wallet?.lotBudget??10000))}</span></div>
-        <p>Every role starts with €10,000 DEMO credit. Added TEST funds: {money(Math.max(0,Number(wallet?.buyingPower??10000)-10000))}. Maximum for this car: {money(Number(wallet?.lotBudget??10000))}. No real payment.</p>
-        <div className="eaWalletActions">
-          {[5000,10000,20000].map(v=><button type="button" key={v} disabled={busy||myReady||Number(wallet?.buyingPower??0)+v>100000} onClick={()=>void updateWallet(v)}>+ {money(v)} DEMO</button>)}
+      {role==="admin"&&<div className="eaMonitorEntry"><a href="/live-auctions/etap-1/admin" aria-label="Open live admin dashboard">▣ OPEN ADMIN CONTROL ROOM →</a><small>Full-screen PC monitor · LIVE roster · ГОТОВ · active bidders</small></div>}
+      {role==="admin"&&preparingRound&&<p className="eaOperatorNote">🔒 The first round starts on three bidder logins; later rounds require three ГОТОВ clicks. The operator never starts or blocks the auction.</p>}
+      {participant&&status!=="live"&&status!=="countdown"&&<section className="eaDemoWallet" aria-label="ДЕМО сметка и лимит">
+        <div className="eaDemoWalletHead">
+          <div>
+            <span className="eaEyebrow">ДЕМО СМЕТКА · БЕЗ РЕАЛЕН ДЕПОЗИТ</span>
+            <h2>👛 ВАШАТА ДЕМО СМЕТКА {money(Number(wallet?.buyingPower??10000))}</h2>
+          </div>
+          <span>🚘 ЛИМИТ ЗА АВТОМОБИЛА: {money(Number(wallet?.lotBudget??10000))}</span>
         </div>
-        <form onSubmit={e=>{e.preventDefault();void updateWallet(Number(topupDraft));}}>
-          <label>ADD CUSTOM DEMO CREDIT (€)<input type="number" inputMode="numeric" min="1" max={100000-Number(wallet?.buyingPower??10000)} step="1" value={topupDraft} onChange={e=>setTopupDraft(e.target.value)} disabled={busy||myReady}/></label>
-          <button type="submit" disabled={busy||myReady||!topupDraft||!Number.isSafeInteger(Number(topupDraft))||Number(topupDraft)<=0||Number(wallet?.buyingPower??0)+Number(topupDraft)>100000}>ADD CREDIT</button>
+        <p className="eaWalletExplanation">Всеки участник започва с 10 000 € ДЕМО кредит. Вие сте добавили още <b>{money(Math.max(0,Number(wallet?.buyingPower??10000)-10000))}</b>. Максимумът, който сте избрали за този автомобил, е <b>{money(Number(wallet?.lotBudget??10000))}</b>.</p>
+        {walletNotice&&<div className="eaWalletNotice" role="status" aria-live="polite"><span>✓</span><strong>{walletNotice}</strong></div>}
+        <div className="eaWalletActions">
+          {[5000,10000,20000].map(v=><button type="button" key={v} disabled={busy||myReady||Number(wallet?.buyingPower??0)+v>100000} onClick={()=>void updateWallet(v)}>👛 + {money(v)}</button>)}
+        </div>
+        <form className="eaWalletForm" onSubmit={e=>{e.preventDefault();void updateWallet(Number(topupDraft));}}>
+          <label>ДОБАВЕТЕ СУМА В ДЕМО СМЕТКАТА (€)<input type="number" inputMode="numeric" min="1" max={100000-Number(wallet?.buyingPower??10000)} step="1" value={topupDraft} onChange={e=>setTopupDraft(e.target.value)} disabled={busy||myReady}/></label>
+          <button type="submit" disabled={busy||myReady||!topupDraft||!Number.isSafeInteger(Number(topupDraft))||Number(topupDraft)<=0||Number(wallet?.buyingPower??0)+Number(topupDraft)>100000}>👛 ДОБАВИ В СМЕТКАТА</button>
         </form>
-        <form onSubmit={e=>{e.preventDefault();void updateWallet(0,Number(budgetDraft));}}>
-          <label>MAXIMUM FOR THIS CAR (€)<input type="number" inputMode="numeric" min="0" max={Number(wallet?.buyingPower??10000)} step="1" value={budgetDraft} onChange={e=>setBudgetDraft(e.target.value)} disabled={busy||myReady}/></label>
-          <button type="submit" disabled={busy||myReady||!budgetDraft||!Number.isSafeInteger(Number(budgetDraft))||Number(budgetDraft)<0||Number(budgetDraft)>Number(wallet?.buyingPower??0)}>SAVE LOT BUDGET</button>
+        <form className="eaWalletForm" onSubmit={e=>{e.preventDefault();void updateWallet(0,Number(budgetDraft));}}>
+          <label>МАКСИМАЛНА СУМА ЗА ТОЗИ АВТОМОБИЛ (€)<input type="number" inputMode="numeric" min="0" max={Number(wallet?.buyingPower??10000)} step="1" value={budgetDraft} onChange={e=>setBudgetDraft(e.target.value)} disabled={busy||myReady}/></label>
+          <button type="submit" disabled={busy||myReady||!budgetDraft||!Number.isSafeInteger(Number(budgetDraft))||Number(budgetDraft)<0||Number(budgetDraft)>Number(wallet?.buyingPower??0)}>🚘 ЗАПАЗИ ЛИМИТА</button>
         </form>
-        <p className="eaBudgetAdvice">🤖 DEMO BUDGET ASSISTANT · RULE-BASED: {Number(wallet?.lotBudget??0)<16300?"Your configured budget is below the minimum €16,300 first offer. Add DEMO credit and raise the lot budget.":"Respect your chosen limit. Taxes, transport and repair costs are not verified or included."}</p>
+        <p className="eaBudgetAdvice">💡 {Number(wallet?.lotBudget??0)<16300?"Зададеният лимит е под минималната първа оферта от 16 300 €. Добавете ДЕМО средства и увеличете лимита за автомобила.":"Вашият лимит е зададен. Данъци, транспорт и ремонт не са потвърдени и не са включени в ДЕМО сумите."}</p>
       </section>}
       {participant&&status!=="live"&&<section className="eaVehicleFacts" aria-label="Auction vehicle information">
-        <div className="eaVehicleFactsHead"><span>LOT · DEMO-001</span><h2>2026 Mercedes-AMG G 63 · REFERENCE LOT</h2><small>Illustrative vehicle and photo; not a confirmed inspection, sale, document or VIN.</small></div>
-        <div className="eaLotTabs">{["Details","Condition","Documents","Transport","History"].map(t=><button type="button" key={t} aria-pressed={detailTab===t} className={detailTab===t?"is-active":""} onClick={()=>setDetailTab(t)}>{t}</button>)}</div>
-        {detailTab==="Details"&&<div className="eaLotGrid">{[["LOT ID","DEMO-001"],["YEAR","2026 (illustrative)"],["VIN","NOT VERIFIED"],["MILEAGE","NOT VERIFIED"],["ENGINE","NOT VERIFIED"],["FUEL","NOT VERIFIED"],["TRANSMISSION","NOT VERIFIED"],["LOCATION","NOT VERIFIED"],["START TIME","Server-controlled"],["OPENING BID","€16,250"]].map(([k,v])=><div key={k}><small>{k}</small><strong>{v}</strong></div>)}</div>}
+        <div className="eaVehicleFactsHead"><span>ЛОТ · DEMO-001</span><h2>2026 Mercedes-AMG G 63 · РЕФЕРЕНТЕН ЛОТ</h2><small>Референтен автомобил и снимки. Няма потвърдени оглед, продажба, документи или VIN.</small></div>
+        <div className="eaLotTabs">{["Details","Condition","Documents","Transport","History"].map(t=><button type="button" key={t} aria-pressed={detailTab===t} className={detailTab===t?"is-active":""} onClick={()=>setDetailTab(t)}>{{Details:"Детайли",Condition:"Състояние",Documents:"Документи",Transport:"Транспорт",History:"История"}[t]??t}</button>)}</div>
+        {detailTab==="Details"&&<div className="eaLotGrid">{[["ЛОТ ID","DEMO-001"],["YEAR","2026 (illustrative)"],["VIN","NOT VERIFIED"],["MILEAGE","NOT VERIFIED"],["ENGINE","NOT VERIFIED"],["FUEL","NOT VERIFIED"],["TRANSMISSION","NOT VERIFIED"],["LOCATION","NOT VERIFIED"],["START TIME","Server-controlled"],["OPENING BID","€16,250"]].map(([k,v])=><div key={k}><small>{k}</small><strong>{v}</strong></div>)}</div>}
         {detailTab==="Condition"&&<div className="eaLotGrid">{[["STARTS / RUNS","UNKNOWN"],["DRIVEABLE","UNKNOWN"],["PRIMARY DAMAGE","NOT VERIFIED"],["SECONDARY DAMAGE","NOT VERIFIED"],["KEYS","NOT VERIFIED"],["INSPECTION REPORT","NOT AVAILABLE"]].map(([k,v])=><div key={k}><small>{k}</small><strong>{v}</strong></div>)}</div>}
         {detailTab==="Documents"&&<p>DEMO closing record becomes available when a round ends. Vehicle title, seller authorization and original papers: NOT VERIFIED.</p>}
         {detailTab==="Transport"&&<p>Pickup location, taxes, shipping costs and delivery terms: NOT VERIFIED. No real vehicle release.</p>}
         {detailTab==="History"&&<p>{auction?auction.sequence+" accepted server-verified offers in the current / last round.":"No round started."} During LIVE, bid history is shown below.</p>}
       </section>}
       {status==="closed"&&auction&&<section className="eaFinalResult" aria-labelledby="eaFinalTitle" aria-live="polite">
-        <span className="eaFinalEyebrow">🏁 AUCTION CLOSED · SERVER CONFIRMED · САМО ДЕМО</span>
-        <h2 id="eaFinalTitle">{!auction.winnerRole?"No bids — no winning bidder":auction.winnerRole===role?"🏆 YOU ARE THE HIGHEST BIDDER":"🏆 HIGHEST BID: "+labelRole(auction.winnerRole)}</h2>
-        <p>{auction.winnerRole===role?"Your bid finished highest in this TEST round.":"The server has finished the demonstration round."} No purchase, payment or ownership transfer has occurred.</p>
+        <span className="eaFinalEyebrow">🏁 ТЪРГЪТ ПРИКЛЮЧИ · ПОТВЪРДЕНО ОТ СЪРВЪРА · САМО ДЕМО</span>
+        <h2 id="eaFinalTitle">{!auction.winnerRole?"Няма оферти — няма победител":auction.winnerRole===role?"🏆 ВИЕ СТЕ ПОБЕДИТЕЛЯТ":"🏆 НАЙ-ВИСОКА ОФЕРТА: "+labelRole(auction.winnerRole)}</h2>
+        <p>{auction.winnerRole===role?"Вашата оферта остана най-висока в този ДЕМО търг.":"Сървърът приключи демонстрационния търг."} Няма реална покупка, плащане или прехвърляне на собственост.</p>
         <strong className="eaFinalAmount">{money(auction.currentAmount)}</strong>
         <div className="eaFinalFacts">
-          <span>LOT <b>{auction.id.slice(0,8).toUpperCase()}</b></span>
-          <span>BIDS <b>{auction.sequence}</b></span>
-          <span>WINNER <b>{labelRole(auction.winnerRole)}</b></span>
-          <span>FINISHED <b>{new Date(auction.closedAt??auction.endsAt).toLocaleTimeString("bg-BG",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}</b></span>
+          <span>ЛОТ <b>{auction.id.slice(0,8).toUpperCase()}</b></span>
+          <span>ОФЕРТИ <b>{auction.sequence}</b></span>
+          <span>ПОБЕДИТЕЛ <b>{labelRole(auction.winnerRole)}</b></span>
+          <span>ПРИКЛЮЧИ <b>{new Date(auction.closedAt??auction.endsAt).toLocaleTimeString("bg-BG",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}</b></span>
         </div>
-        <p className="eaFinalNext">NEXT: Confirm the result in the admin panel → demonstrate seller approval → demo document pack → simulated payment → release only after checks. All three participants press READY for another round.</p>
+        <p className="eaFinalNext">NEXT: Confirm the result in the admin panel → demonstrate seller approval → demo document pack → simulated payment → release only after checks. All three participants press ГОТОВ for another round.</p>
         <div className="eaFinalActions">
           <button type="button" onClick={downloadDemoClosingRecord}>↓ Download DEMO result record</button>
           {auction.winnerRole&&<button type="button" onClick={replayWinner}>🏆 Replay winner announcement</button>}
@@ -582,9 +589,9 @@ export default function EnchevStageOnePage(){
       </section>}
       {showAuction&&<>
       <section className="eaAuctionIntro">
-        <div><span className={"eaAuctionStatus "+(status==="live"?"is-live":"")}>{status==="live"?"● LIVE NOW":"◉ READY FOR СЛЕДВАЩ ТЪРГ"}</span><span className="eaAuctionLot">LOT {status==="live"&&auction?auction.id.slice(0,8).toUpperCase():"DEMO–001"}</span></div>
+        <div><span className={"eaAuctionStatus "+(status==="live"?"is-live":"")}>{status==="live"?"● НА ЖИВО":"◉ ГОТОВИ ЗА СЛЕДВАЩ ТЪРГ"}</span><span className="eaAuctionLot">ЛОТ {status==="live"&&auction?auction.id.slice(0,8).toUpperCase():"DEMO–001"}</span></div>
         <h1>{displayLotTitle}</h1>
-        <p>Private demo auction · Illustrative vehicle · EUR</p>
+        <p>Частен демонстрационен търг · Референтен автомобил · EUR</p>
       </section>
       <section className="eaAuctionGrid" aria-label="Demo auction">
         <div className="eaMediaPanel">
@@ -595,10 +602,10 @@ export default function EnchevStageOnePage(){
               alt={"Real Mercedes-Benz G-Class reference photo — "+mediaView.toLowerCase()+" view; not the actual demo lot"}
               loading="eager" decoding="async"
               onError={e=>{e.currentTarget.style.display="none";}}/>
-            <span className="eaVehicleLabel">MERCEDES G-CLASS · REAL REFERENCE PHOTO</span>
-            <a className="eaPhotoCredit" href="https://www.pexels.com/search/mercedes%20g-class/" target="_blank" rel="noopener noreferrer" aria-label="Mercedes G-Class reference photos on Pexels">Reference photos: Pexels</a>
+            <span className="eaVehicleLabel">MERCEDES G-CLASS · РЕАЛНА РЕФЕРЕНТНА СНИМКА</span>
+            <a className="eaPhotoCredit" href="https://www.pexels.com/search/mercedes%20g-class/" target="_blank" rel="noopener noreferrer" aria-label="Mercedes G-Class reference photos on Pexels">Референтни снимки: Pexels</a>
             <div className={"eaClock "+(status==="live"?"is-live":"")+(status==="live"&&timeUntil<=10?" urgent":"")} style={clockStyle}>
-              <div><span>{status==="live"?"TIME LEFT":"СЛЕДВАЩ ТЪРГ"}</span><strong>{status==="live"?minutes+":"+seconds:"READY"}</strong></div>
+              <div><span>{status==="live"?"ОСТАВАЩО ВРЕМЕ":"СЛЕДВАЩ ТЪРГ"}</span><strong>{status==="live"?minutes+":"+seconds:"ГОТОВ"}</strong></div>
             </div>
             <div className="eaMediaNav">
               <button type="button" aria-label="Previous vehicle view" onClick={()=>setMediaView(views[(views.indexOf(mediaView)+views.length-1)%views.length])}>‹</button>
@@ -606,66 +613,66 @@ export default function EnchevStageOnePage(){
               <button type="button" aria-label="Next vehicle view" onClick={()=>setMediaView(views[(views.indexOf(mediaView)+1)%views.length])}>›</button>
             </div>
           </div>
-          <div className="eaMediaViews" aria-label="Illustrative vehicle angles">{views.map(v=><button type="button" key={v} className={mediaView===v?"is-selected":""} aria-pressed={mediaView===v} onClick={()=>setMediaView(v)}>{v==="INTERIOR"?"INSIDE":v}</button>)}</div>
+          <div className="eaMediaViews" aria-label="Изгледи на автомобила">{views.map(v=><button type="button" key={v} className={mediaView===v?"is-selected":""} aria-pressed={mediaView===v} onClick={()=>setMediaView(v)}>{{FRONT:"ОТПРЕД",REAR:"ОТЗАД",INTERIOR:"ИНТЕРИОР",DETAIL:"ДЕТАЙЛ",SIDE:"ОТСТРАНИ"}[v]??v}</button>)}</div>
         </div>
         <div className="eaBiddingPanel">
-          <div className="eaPriceTop"><span>{status==="live"?"CURRENT HIGHEST BID":"СЛЕДВАЩ ТЪРГ · OPENING PRICE"}</span><span className={status==="live"?"eaBiddingLive":""}>{status==="live"?"● LIVE":status==="closed"?"● LAST ROUND FINISHED":"● STANDBY"}</span></div>
+          <div className="eaPriceTop"><span>{status==="live"?"ТЕКУЩА НАЙ-ВИСОКА ОФЕРТА":"СЛЕДВАЩ ТЪРГ · НАЧАЛНА ЦЕНА"}</span><span className={status==="live"?"eaBiddingLive":""}>{status==="live"?"● НА ЖИВО":status==="closed"?"● ПОСЛЕДНИЯТ ТЪРГ ПРИКЛЮЧИ":"● ИЗЧАКВАНЕ"}</span></div>
           <strong className="eaHeroAmount">{money(status==="live"?currentPrice:opening)}</strong>
           {bidder&&wallet&&<div className="eaWalletLive" aria-label="DEMO wallet live summary">
-            <span>💰 DEMO WALLET <b>{money(Number(wallet.buyingPower))}</b></span>
-            <span>ADDED <b>{money(Math.max(0,Number(wallet.buyingPower)-10000))}</b></span>
-            <span>MAX BID <b>{money(budgetCap)}</b></span>
-            <span>HEADROOM <b>{money(Math.max(0,budgetCap-currentPrice))}</b></span>
+            <span>👛 ДЕМО СМЕТКА <b>{money(Number(wallet.buyingPower))}</b></span>
+            <span>ДОБАВЕНИ <b>{money(Math.max(0,Number(wallet.buyingPower)-10000))}</b></span>
+            <span>МАКС. ОФЕРТА <b>{money(budgetCap)}</b></span>
+            <span>ОСТАВАЩ ЛИМИТ <b>{money(Math.max(0,budgetCap-currentPrice))}</b></span>
           </div>}
-          <div className="eaBidMeta"><span>LEADER <b>{status==="live"?labelRole(auction?.leadingRole??null):"—"}</b></span><span>BIDS <b>{status==="live"?auction?.sequence??0:"—"}</b></span></div>
-          <div className="eaNextBid"><span>YOUR EXACT BID AMOUNT</span><strong>{money(nextPrice)}</strong><small>Minimum +{money(minStep)} · Your budget: {money(budgetCap)}</small></div>
+          <div className="eaBidMeta"><span>ВОДИ <b>{status==="live"?labelRole(auction?.leadingRole??null):"—"}</b></span><span>ОФЕРТИ <b>{status==="live"?auction?.sequence??0:"—"}</b></span></div>
+          <div className="eaNextBid"><span>ВАШАТА ТОЧНА ОФЕРТА</span><strong>{money(nextPrice)}</strong><small>Минимум +{money(minStep)} · Вашият лимит: {money(budgetCap)}</small></div>
           {status==="live"&&bidder&&<div className="eaOfferControls">
-            <span>RAISE BY</span>
+            <span>УВЕЛИЧИ С</span>
             <div className="eaOfferSteps">{[50,100,250,500,1000].map(x=><button key={x} type="button" aria-pressed={selectedStep===x} className={selectedStep===x?"is-active":""} onClick={()=>setSelectedStep(x)}>+{money(x)}</button>)}</div>
-            <form onSubmit={e=>{e.preventDefault();const v=Number(customStep);if(Number.isSafeInteger(v)&&v>=50&&v<=100000)setSelectedStep(v);else setError("CUSTOM increase must be an integer between €50 and €100,000.");}}>
-              <label>CUSTOM INCREASE (€)<input type="number" inputMode="numeric" step="1" min="50" max="100000" value={customStep} onChange={e=>setCustomStep(e.target.value)}/></label>
-              <button type="submit">USE CUSTOM</button>
+            <form onSubmit={e=>{e.preventDefault();const v=Number(customStep);if(Number.isSafeInteger(v)&&v>=50&&v<=100000)setSelectedStep(v);else setError("Сумата трябва да е цяло число между 50 € и 100 000 €.");}}>
+              <label>ДРУГА СУМА (€)<input type="number" inputMode="numeric" step="1" min="50" max="100000" value={customStep} onChange={e=>setCustomStep(e.target.value)}/></label>
+              <button type="submit">ИЗПОЛЗВАЙ</button>
             </form>
           </div>}
-          {status==="live"&&Number(auction?.extensionCount??0)>0&&<div className="eaBonusTime" role="status">🟡 ANTI-SNIPE EXTENSIONS: {auction?.extensionCount} · Every valid late bid extends the server end time</div>}
-          {status==="live"&&bonusUntil>localNow&&<div className="eaBonusTime" role="status">↗ SERVER EXTENSION CONFIRMED</div>}
-          {status==="live"&&<div className="eaServerCooldown" role="status">{roundLocked?"⏳ GLOBAL SERVER COOLDOWN: "+cooldownRemaining+"s":auction?.leadingRole===role?"🟢 YOU ARE LEADING — WAIT FOR ANOTHER BID":"🟢 GLOBAL COOLDOWN CLEAR — BIDDING OPEN"}{!budgetSufficient&&" · BUDGET LIMIT REACHED"}</div>}
+          {status==="live"&&Number(auction?.extensionCount??0)>0&&<div className="eaBonusTime" role="status">🟡 УДЪЛЖАВАНИЯ В КРАЯ: {auction?.extensionCount} · Всяка валидна късна оферта удължава края на търга</div>}
+          {status==="live"&&bonusUntil>localNow&&<div className="eaBonusTime" role="status">↗ УДЪЛЖАВАНЕТО Е ПОТВЪРДЕНО</div>}
+          {status==="live"&&<div className="eaServerCooldown" role="status">{roundLocked?"⏳ ОБЩА ПАУЗА: "+cooldownRemaining+"s":auction?.leadingRole===role?"🟢 ВИЕ ВОДИТЕ — ИЗЧАКАЙТЕ ДРУГА ОФЕРТА":"🟢 НАДДАВАНЕТО Е ОТВОРЕНО"}{!budgetSufficient&&" · ДОСТИГНАТ Е ЛИМИТЪТ"}</div>}
           {status==="live"&&bidder?
-            <button className="eaActionPrimary eaPlaceBid" type="button" onClick={()=>void bid()} disabled={!canBid}>{busy?"CONFIRMING…":roundLocked?"⏳ BID AVAILABLE IN "+visibleRound+"s":auction?.leadingRole===role?"✓ YOU ARE LEADING":!budgetSufficient?"LIMIT REACHED":"PLACE BID · "+money(nextPrice)+" →"}</button>
-            :<div className="eaBidStandby">{status==="live"?"Observer mode · you can follow bids in real time":(lobby?.count??0)<3?"Waiting for all three bidders…":"Press READY above for the next round"}</div>}
-          {status==="live"&&<div className="eaBidRhythm"><span>SERVER-ENFORCED GLOBAL COOLDOWN</span><b>{visibleRound}s</b><div><i style={{width:(100-Math.min(5,cooldownMs/1000)*20)+"%"}}/></div></div>}
-          <div className="eaPanelFoot"><span>✓ Server-confirmed offers</span><span>✓ Fake money only</span></div>
+            <button className="eaActionPrimary eaPlaceBid" type="button" onClick={()=>void bid()} disabled={!canBid}>{busy?"ПОТВЪРЖДАВАНЕ…":roundLocked?"⏳ МОЖЕ ДА НАДДАВАТЕ СЛЕД "+visibleRound+"s":auction?.leadingRole===role?"✓ ВИЕ ВОДИТЕ":!budgetSufficient?"ДОСТИГНАТ ЛИМИТ":"НАДДАЙ · "+money(nextPrice)+" →"}</button>
+            :<div className="eaBidStandby">{status==="live"?"Режим наблюдател · следите офертите в реално време":(lobby?.count??0)<3?"Изчакваме и тримата участници…":"Press ГОТОВ above for the next round"}</div>}
+          {status==="live"&&<div className="eaBidRhythm"><span>ОБЩА СЪРВЪРНА ПАУЗА</span><b>{visibleRound}s</b><div><i style={{width:(100-Math.min(5,cooldownMs/1000)*20)+"%"}}/></div></div>}
+          <div className="eaPanelFoot"><span>✓ Оферти, потвърдени от сървъра</span><span>✓ Само ДЕМО средства</span></div>
         </div>
       </section>
       <section className="eaVehicleFacts eaLiveVehicleFacts" aria-label="Vehicle specifications and known condition">
-        <div className="eaVehicleFactsHead"><span>LOT · DEMO-001</span><h2>2026 Mercedes-AMG G 63 — DEMONSTRATION VEHICLE</h2><small>Illustrative photo. VIN, mileage, actual damage, registration and condition have NOT been verified.</small></div>
-        <div className="eaLotTabs">{["Details","Condition","Documents","Transport","History"].map(t=><button type="button" key={t} aria-pressed={detailTab===t} className={detailTab===t?"is-active":""} onClick={()=>setDetailTab(t)}>{t}</button>)}</div>
-        {detailTab==="Details"&&<div className="eaLotGrid">{[["LOT","DEMO-001"],["MILEAGE","NOT VERIFIED"],["VIN","NOT VERIFIED"],["ENGINE / FUEL","NOT VERIFIED"],["GEARBOX","NOT VERIFIED"],["LOCATION","NOT VERIFIED"],["PRICE","Live server value"],["BIDS",""+(auction?.sequence??0)],["STARTED",auction?new Date(auction.startedAt).toLocaleTimeString("bg-BG"):"—"]].map(([k,v])=><div key={k}><small>{k}</small><strong>{v}</strong></div>)}</div>}
+        <div className="eaVehicleFactsHead"><span>ЛОТ · DEMO-001</span><h2>2026 Mercedes-AMG G 63 — DEMONSTRATION VEHICLE</h2><small>Illustrative photo. VIN, mileage, actual damage, registration and condition have NOT been verified.</small></div>
+        <div className="eaLotTabs">{["Details","Condition","Documents","Transport","History"].map(t=><button type="button" key={t} aria-pressed={detailTab===t} className={detailTab===t?"is-active":""} onClick={()=>setDetailTab(t)}>{{Details:"Детайли",Condition:"Състояние",Documents:"Документи",Transport:"Транспорт",History:"История"}[t]??t}</button>)}</div>
+        {detailTab==="Details"&&<div className="eaLotGrid">{[["LOT","DEMO-001"],["MILEAGE","NOT VERIFIED"],["VIN","NOT VERIFIED"],["ENGINE / FUEL","NOT VERIFIED"],["GEARBOX","NOT VERIFIED"],["LOCATION","NOT VERIFIED"],["PRICE","Live server value"],["ОФЕРТИ",""+(auction?.sequence??0)],["STARTED",auction?new Date(auction.startedAt).toLocaleTimeString("bg-BG"):"—"]].map(([k,v])=><div key={k}><small>{k}</small><strong>{v}</strong></div>)}</div>}
         {detailTab==="Condition"&&<p>Damage, starts, drives, keys, inspection and repairs: UNKNOWN / NOT VERIFIED. Do not rely on the illustration to assess a vehicle.</p>}
         {detailTab==="Documents"&&<p>Official vehicle documentation: NOT VERIFIED. Only a DEMO closing record can be downloaded once the round finishes.</p>}
         {detailTab==="Transport"&&<p>Shipping, VAT, pickup location and delivery fees: NOT VERIFIED. This auction uses no real money.</p>}
         {detailTab==="History"&&<p>{auction?.sequence??0} accepted bids. Scroll below for server-confirmed bid history; the counter is authoritative.</p>}
       </section>
       <section className="eaHistoryPanel">
-        <div className="eaHistoryHead"><div><span className="eaEyebrow">ACTIVITY</span><h2>Bid history</h2></div><span>{latest.length} accepted {latest.length===1?"bid":"bids"}</span></div>
+        <div className="eaHistoryHead"><div><span className="eaEyebrow">АКТИВНОСТ</span><h2>История на офертите</h2></div><span>{latest.length} {latest.length===1?"приета оферта":"приети оферти"}</span></div>
         {latest.length?<>
           <div className="eaHistoryRows">{latest.slice(0,historyExpanded?latest.length:3).map(e=>
             <div key={e.sequence}><span className="eaHistoryRank">#{e.sequence}</span><strong>{labelRole(e.role)}</strong><small>{new Date(e.at).toLocaleTimeString("bg-BG",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}</small><b>{money(Number(e.amount))}</b></div>)}</div>
-          {latest.length>3&&<button className="eaHistoryToggle" type="button" onClick={()=>setHistoryExpanded(v=>!v)}>{historyExpanded?"Show fewer ↑":"View all "+latest.length+" bids ↓"}</button>}
-        </>:<p className="eaEmptyHistory">Accepted bids will appear here as soon as the auction begins.</p>}
+          {latest.length>3&&<button className="eaHistoryToggle" type="button" onClick={()=>setHistoryExpanded(v=>!v)}>{historyExpanded?"Покажи по-малко ↑":"Покажи всички "+latest.length+" оферти ↓"}</button>}
+        </>:<p className="eaEmptyHistory">Приетите оферти ще се появят тук веднага след старта на търга.</p>}
       </section>
-      {bidFlash&&<div className="eaBidToast" role="status" aria-live="polite" key={bidFlash.sequence}><span>✓ BID ACCEPTED · #{bidFlash.sequence}</span><strong>{money(bidFlash.amount)}</strong><small>{labelRole(bidFlash.role)} is leading</small></div>}
+      {bidFlash&&<div className="eaBidToast" role="status" aria-live="polite" key={bidFlash.sequence}><span>✓ ОФЕРТАТА Е ПРИЕТА · #{bidFlash.sequence}</span><strong>{money(bidFlash.amount)}</strong><small>{labelRole(bidFlash.role)} води</small></div>}
       {status==="live"&&bidder&&<div className="eaBidDock">
-        <div><span>BID · {minutes}:{seconds} LEFT</span><strong>{money(nextPrice)}</strong></div>
-        <button type="button" onClick={()=>void bid()} disabled={!canBid}>{busy?"…":roundLocked?"WAIT "+visibleRound+"s":auction?.leadingRole===role?"LEADING":!budgetSufficient?"LIMIT":"BID "+money(nextPrice)+" →"}</button>
+        <div><span>ОФЕРТА · {minutes}:{seconds} ОСТАВАТ</span><strong>{money(nextPrice)}</strong></div>
+        <button type="button" onClick={()=>void bid()} disabled={!canBid}>{busy?"…":roundLocked?"ИЗЧАКАЙ "+visibleRound+"s":auction?.leadingRole===role?"ВОДИТЕ":!budgetSufficient?"ЛИМИТ":"НАДДАЙ "+money(nextPrice)+" →"}</button>
       </div>}
       </>}
       {celebratingId===auction?.id&&auction?.winnerRole&&<div className="eaCelebration" aria-hidden="true" key={celebratingId}>
-        <div className="eaCelebrationCard"><span>🏆</span><small>ENCHEV AUCTIONS · DEMO</small><strong>{labelRole(auction.winnerRole)} WINS!</strong><b>{money(auction.currentAmount)}</b></div>
+        <div className="eaCelebrationCard"><span>🏆</span><small>ENCHEV AUCTIONS · DEMO</small><strong>{labelRole(auction.winnerRole)} ПЕЧЕЛИ!</strong><b>{money(auction.currentAmount)}</b></div>
         {Array.from({length:38},(_,i)=><i key={i} style={{"--ea-x":((i*47)%100)+"%","--ea-delay":((i*17)%17)*.07+"s","--ea-drift":((i%2?1:-1)*(13+i%8*8))+"px","--ea-turn":((i%2?1:-1)*540)+"deg"} as CSSProperties}/>)}
       </div>}
-      {!connected&&<div className="eaRoomAlert" role="status">Disconnected. Bidding is paused until the server reconnects.</div>}
+      {!connected&&<div className="eaRoomAlert" role="status">Няма връзка. Наддаването е спряно, докато връзката се възстанови.</div>}
     </div>}
-    <footer className="eaRoomFooter">ENCHEV AUCTIONS · PRIVATE DEMONSTRATION · NO REAL TRANSACTIONS</footer>
+    <footer className="eaRoomFooter">ENCHEV AUCTIONS · ЧАСТНА ДЕМОНСТРАЦИЯ · БЕЗ РЕАЛНИ ТРАНЗАКЦИИ</footer>
   </main>;
 }
