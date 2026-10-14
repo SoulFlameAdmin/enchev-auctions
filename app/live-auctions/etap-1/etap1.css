@@ -1165,3 +1165,166 @@ body:has(.eaRoom){background:#060a08;color:#effaf3}
   .eaReadyCard.eaCountdownActive{min-height:430px}
   .eaReadyCard.eaCountdownActive .eaReadyText{padding-top:155px}
 }
+
+
+/* ENCHEV Live Room v15 — Bulgarian wallet and clearer auction controls. */
+.eaDemoWallet{
+  padding:clamp(18px,3.4vw,28px);
+  border-radius:24px;
+  background:
+    radial-gradient(520px 220px at 8% -4%,rgba(60,255,162,.075),transparent 68%),
+    linear-gradient(145deg,rgba(255,255,255,.045),rgba(255,255,255,.008)),
+    rgba(3,8,5,.72);
+}
+.eaDemoWalletHead{
+  align-items:flex-end;
+  padding-bottom:16px;
+  border-bottom:1px solid rgba(255,255,255,.075);
+}
+.eaDemoWalletHead h2{
+  display:flex;
+  align-items:center;
+  gap:9px;
+  margin-top:7px!important;
+  font-size:clamp(22px,3.7vw,34px)!important;
+  letter-spacing:-.035em;
+}
+.eaDemoWalletHead>span{
+  padding:8px 11px;
+  border:1px solid rgba(75,255,169,.18);
+  border-radius:999px;
+  background:rgba(64,255,158,.055);
+  color:#8fffc0;
+  white-space:nowrap;
+}
+.eaWalletExplanation{
+  margin:16px 0 0!important;
+  padding:13px 14px;
+  border-radius:13px;
+  border:1px solid rgba(255,255,255,.065);
+  background:rgba(255,255,255,.024);
+  color:rgba(221,235,226,.68)!important;
+}
+.eaWalletExplanation b{color:#fff}
+.eaWalletNotice{
+  display:flex;
+  align-items:flex-start;
+  gap:10px;
+  margin-top:14px;
+  padding:13px 14px;
+  border:1px solid rgba(72,255,164,.35);
+  border-radius:13px;
+  background:linear-gradient(135deg,rgba(60,255,158,.12),rgba(60,255,158,.035));
+  color:#b9ffd5;
+  box-shadow:0 10px 30px rgba(26,183,107,.08),inset 0 1px 0 rgba(255,255,255,.045);
+  animation:eaWalletNoticeIn .28s ease both;
+}
+.eaWalletNotice>span{
+  display:grid;
+  place-items:center;
+  width:25px;height:25px;
+  flex:0 0 25px;
+  border-radius:50%;
+  background:#49ef9a;
+  color:#052414;
+  font-weight:1000;
+}
+.eaWalletNotice strong{
+  font-size:12px;
+  line-height:1.55;
+  font-weight:850;
+}
+.eaWalletActions{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:9px;
+  margin:16px 0;
+}
+.eaWalletActions button{
+  min-height:50px;
+  padding:10px 9px;
+  border-radius:12px;
+  background:rgba(255,255,255,.035);
+  font-size:11px;
+}
+.eaWalletActions button:not(:disabled):hover{
+  transform:translateY(-1px);
+  background:rgba(68,255,162,.085);
+  border-color:rgba(68,255,162,.3);
+}
+.eaWalletForm{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(180px,.42fr);
+  align-items:end!important;
+  gap:10px!important;
+  margin-top:13px!important;
+  padding:13px;
+  border:1px solid rgba(255,255,255,.065);
+  border-radius:14px;
+  background:rgba(0,0,0,.18);
+}
+.eaWalletForm label{
+  color:rgba(222,238,227,.78)!important;
+  font-size:10px!important;
+  letter-spacing:.035em;
+}
+.eaWalletForm input{
+  min-height:48px!important;
+  margin-top:2px;
+  border-radius:11px!important;
+  background:rgba(0,0,0,.38)!important;
+  border-color:rgba(255,255,255,.12)!important;
+  font-size:18px!important;
+  font-weight:850;
+}
+.eaWalletForm button{
+  min-height:48px!important;
+  border-radius:11px!important;
+  background:linear-gradient(135deg,rgba(72,247,159,.95),rgba(43,211,131,.9))!important;
+  color:#052414!important;
+  border-color:rgba(120,255,196,.4)!important;
+  font-size:11px!important;
+  font-weight:950!important;
+}
+.eaBudgetAdvice{
+  margin-top:14px!important;
+  border:1px solid rgba(95,188,255,.12)!important;
+  border-left:3px solid rgba(95,188,255,.55)!important;
+  border-radius:11px!important;
+  background:rgba(56,139,203,.055)!important;
+  color:rgba(216,232,222,.68)!important;
+  line-height:1.55!important;
+}
+.eaWalletLive{
+  background:rgba(255,255,255,.022);
+  border-color:rgba(255,255,255,.08);
+}
+.eaWalletLive span{
+  background:rgba(255,255,255,.032);
+  border:1px solid rgba(255,255,255,.055);
+}
+.eaNextBid{
+  background:linear-gradient(135deg,rgba(62,255,160,.085),rgba(255,255,255,.018));
+  border-color:rgba(72,255,164,.18);
+}
+.eaServerCooldown{
+  background:rgba(255,255,255,.025);
+  border-color:rgba(255,255,255,.085);
+}
+.eaOfferControls{
+  background:rgba(0,0,0,.17);
+  border-color:rgba(255,255,255,.07);
+}
+@keyframes eaWalletNoticeIn{
+  from{opacity:0;transform:translateY(7px)}
+  to{opacity:1;transform:translateY(0)}
+}
+@media(max-width:620px){
+  .eaDemoWallet{padding:15px}
+  .eaDemoWalletHead{align-items:flex-start}
+  .eaDemoWalletHead>span{white-space:normal;width:100%;text-align:center}
+  .eaWalletActions{grid-template-columns:1fr 1fr 1fr;gap:6px}
+  .eaWalletActions button{font-size:9px;padding:8px 5px}
+  .eaWalletForm{grid-template-columns:1fr}
+  .eaWalletForm button{width:100%}
+}
