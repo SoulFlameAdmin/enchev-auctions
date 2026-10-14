@@ -200,6 +200,10 @@ export default function EnchevStageOnePage(){
 
   const logIn=async(event:React.FormEvent<HTMLFormElement>)=>{
     event.preventDefault();if(busy)return;
+    // A real user gesture is the only reliable moment to unlock mobile audio.
+    // Prime tones + auctioneer voice BEFORE the network await so Chrome/Safari
+    // and Android browsers keep the media permission for the live round.
+    void forceAuctionAudio(loginRole);
     setBusy(true);setError("");
     try{
       await post("login",{role:loginRole,code});
@@ -296,37 +300,81 @@ export default function EnchevStageOnePage(){
       window.speechSynthesis.cancel();window.speechSynthesis.speak(speech);
     }
   };
-  const enableVoice=()=>{
-    if(voiceOn){
-      voiceRef.current=false;setVoiceOn(false);
-      if("speechSynthesis" in window)window.speechSynthesis.cancel();
-      return;
-    }
-    if(!("speechSynthesis" in window)||!("SpeechSynthesisUtterance" in window)){
-      setError("This device does not support auctioneer voice. Bid tones can still work.");
-      return;
-    }
+  const speakWelcome=(targetRole:Role)=>{
+    if(!("speechSynthesis" in window)||!("SpeechSynthesisUtterance" in window))return false;
     voiceRef.current=true;setVoiceOn(true);
     const speech=new SpeechSynthesisUtterance(voiceLangRef.current.startsWith("bg")
-      ?"Гласът на търга е включен. Готови за наддаване."
-      :"Auctioneer ready. Welcome to ENCHEV.");
-    speech.lang=voiceLangRef.current;
+      ?(targetRole==="enchev"?"Енчев е свързан. Гласът на търга е включен. Готови за наддаване.":"Гласът на търга е включен. Готови за наддаване.")
+      :(targetRole==="enchev"?"Enchev connected. Auctioneer voice is on. Ready for bidding.":"Auctioneer ready. Welcome to ENCHEV."));
+    speech.lang=voiceLangRef.current;speech.rate=1.03;
     const voices=window.speechSynthesis.getVoices();
     const preferred=voices.find(v=>v.lang===speech.lang&&v.name.includes("Emily"))||
       voices.find(v=>v.lang===speech.lang)||
       voices.find(v=>v.lang.split("-")[0]===speech.lang.split("-")[0]);
     if(preferred)speech.voice=preferred;
     window.speechSynthesis.cancel();window.speechSynthesis.speak(speech);
+    return true;
+  };
+  const enableVoice=()=>{
+    // Enchev is the presentation seat: once supported, auctioneer voice stays ON.
+    if(role==="enchev"&&voiceOn){
+      setError("ENCHEV presentation voice stays ON during the live demo.");
+      return;
+    }
+    if(voiceOn){
+      voiceRef.current=false;setVoiceOn(false);
+      if("speechSynthesis" in window)window.speechSynthesis.cancel();
+      return;
+    }
+    if(!speakWelcome(role??loginRole)){
+      setError("Auctioneer voice is blocked by this in-app browser. Open the same link in Chrome or Safari; bid tones still work here.");
+    }
   };
   const enableSound=async()=>{
     try{
-      if(!audioRef.current)audioRef.current=new AudioContext();
+      const AudioCtor=window.AudioContext||
+        (window as typeof window&{webkitAudioContext?:typeof AudioContext}).webkitAudioContext;
+      if(!AudioCtor){setError("Audio is not available in this browser. Open the auction in Chrome or Safari.");return false;}
+      if(!audioRef.current)audioRef.current=new AudioCtor();
       await audioRef.current.resume();
       const active=audioRef.current.state==="running";
       soundRef.current=active;setSoundOn(active);
-      if(!active)setError("Device blocked audio. Tap again.");
-    }catch{setError("Audio cannot start on this device.");}
+      if(!active)setError("Device blocked audio. Tap anywhere in the auction once, then continue.");
+      return active;
+    }catch{
+      setError("Audio is blocked by this browser. Open the auction in Chrome or Safari.");
+      return false;
+    }
   };
+  const forceAuctionAudio=(targetRole:Role)=>{
+    // Speech is started synchronously inside the user gesture; tones are unlocked
+    // in the same gesture. This avoids the common Android/Instagram autoplay trap.
+    const voiceSupported=speakWelcome(targetRole);
+    void enableSound();
+    if(targetRole==="enchev"&&!voiceSupported){
+      setError("ENCHEV needs auctioneer voice: open this page in Chrome or Safari. Instagram/Facebook in-app browsers can block system speech.");
+    }
+  };
+
+  useEffect(()=>{
+    if(!role||role==="admin")return;
+    const supported="speechSynthesis" in window&&"SpeechSynthesisUtterance" in window;
+    if(supported){
+      // All bidders get voice by default; ENCHEV is mandatory presentation audio.
+      voiceRef.current=true;setVoiceOn(true);
+    }else if(role==="enchev"){
+      setError("ENCHEV needs auctioneer voice: open this page in Chrome or Safari. Instagram/Facebook in-app browsers can block system speech.");
+    }
+    // Existing remembered sessions may skip the login button. Prime audio on the
+    // very first tap anywhere so subsequent remote bids always have tones.
+    const unlock=()=>{void enableSound();if(supported&&role==="enchev")speakWelcome(role);};
+    window.addEventListener("pointerdown",unlock,{once:true,capture:true});
+    window.addEventListener("touchstart",unlock,{once:true,capture:true});
+    return()=>{
+      window.removeEventListener("pointerdown",unlock,true);
+      window.removeEventListener("touchstart",unlock,true);
+    };
+  },[role]);
 
   const auction=snapshot?.auction;
   const remainingMs=auction?Math.max(0,Date.parse(auction.endsAt)-localNow-offsetRef.current):0;
@@ -381,7 +429,7 @@ export default function EnchevStageOnePage(){
             <label>Voice language<select value={voiceLang} onChange={e=>{setVoiceLang(e.target.value);voiceLangRef.current=e.target.value;}}>
               <option value="en-IE">English (Ireland)</option><option value="bg-BG">Български</option>
             </select></label>
-            <button type="button" aria-pressed={voiceOn} onClick={enableVoice}>{voiceOn?"🔊 Voice ON":"🎙 Enable auctioneer voice"}</button>
+            <button type="button" aria-pressed={voiceOn} onClick={enableVoice}>{role==="enchev"&&voiceOn?"🔊 ENCHEV VOICE · ALWAYS ON":voiceOn?"🔊 Voice ON":"🎙 Enable auctioneer voice"}</button>
             <button type="button" onClick={()=>{void poll();setMoreOpen(false);}}>↻ Refresh connection</button>
             <button type="button" onClick={()=>{void logOut();setMoreOpen(false);}}>Sign out</button>
           </div>}
