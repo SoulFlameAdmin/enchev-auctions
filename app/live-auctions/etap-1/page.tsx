@@ -417,23 +417,36 @@ export default function EnchevStageOnePage(){
 
   return <main id="main-content" className={"eaEtap1 eaRoom"+(showAuction&&bidder?" eaHasBidDock":"")}>
     <header className="eaRoomHeader">
-      <a className="eaRoomLogo" href="/" aria-label="ENCHEV Home"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
-      <div className="eaRoomTitle"><strong><span className="eaLiveDot"/> LIVE AUCTION</strong><small>PRIVATE DEMONSTRATION</small></div>
+      <a className="eaRoomLogo" href="/" aria-label="ENCHEV Home">
+        <strong>ENCHEV</strong><span>AUCTIONS</span>
+      </a>
+      <div className="eaRoomTitle">
+        <strong><span className="eaLiveDot"/> LIVE AUCTION</strong>
+        <small>{role?"PRIVATE LIVE ROOM":"PRIVATE ACCESS"}</small>
+      </div>
       <div className="eaHeaderActions">
-        <span className={"eaConnection "+(connected?"is-online":"")} title={connected?"Live connection":"Waiting for connection"}>{connected?"● ONLINE":"○ OFFLINE"}</span>
+        {role&&<span className={"eaConnection "+(connected?"is-online":"")} title={connected?"Live connection":"Waiting for connection"}>{connected?"● ONLINE":"○ OFFLINE"}</span>}
         {role&&<button className="eaSoundToggle" type="button" aria-label={soundOn?"Sound enabled":"ENABLE SOUND"} onClick={()=>void enableSound()}>{soundOn?"🔊":"🔇"}<span>{soundOn?"ON":"SOUND"}</span></button>}
-        {role&&<div className="eaSettings">
-          <button className="eaSettingsToggle" type="button" aria-label="Open room settings" aria-expanded={moreOpen} onClick={()=>setMoreOpen(v=>!v)}>⋯</button>
+        <div className="eaSettings">
+          <button className={"eaSettingsToggle eaBurger"+(moreOpen?" is-open":"")} type="button" aria-label="Open ENCHEV menu" aria-expanded={moreOpen} onClick={()=>setMoreOpen(v=>!v)}>
+            <span/><span/><span/>
+          </button>
           {moreOpen&&<div className="eaSettingsMenu">
-            <strong>ROOM SETTINGS</strong>
-            <label>Voice language<select value={voiceLang} onChange={e=>{setVoiceLang(e.target.value);voiceLangRef.current=e.target.value;}}>
-              <option value="en-IE">English (Ireland)</option><option value="bg-BG">Български</option>
-            </select></label>
-            <button type="button" aria-pressed={voiceOn} onClick={enableVoice}>{role==="enchev"&&voiceOn?"🔊 ENCHEV VOICE · ALWAYS ON":voiceOn?"🔊 Voice ON":"🎙 Enable auctioneer voice"}</button>
-            <button type="button" onClick={()=>{void poll();setMoreOpen(false);}}>↻ Refresh connection</button>
-            <button type="button" onClick={()=>{void logOut();setMoreOpen(false);}}>Sign out</button>
+            <div className="eaMenuHead"><span>ENCHEV</span><strong>{role?"LIVE ROOM":"AUCTION ACCESS"}</strong></div>
+            <a className="eaMenuLink" href="/">⌂ <span>Home</span><b>↗</b></a>
+            <a className="eaMenuLink" href="/live-auctions">◫ <span>Live auctions</span><b>→</b></a>
+            {role&&<>
+              <div className="eaMenuDivider"/>
+              <label>Voice language<select value={voiceLang} onChange={e=>{setVoiceLang(e.target.value);voiceLangRef.current=e.target.value;}}>
+                <option value="en-IE">English (Ireland)</option><option value="bg-BG">Български</option>
+              </select></label>
+              <button type="button" aria-pressed={voiceOn} onClick={enableVoice}>{role==="enchev"&&voiceOn?"🔊 ENCHEV VOICE · ALWAYS ON":voiceOn?"🔊 Voice ON":"🎙 Enable auctioneer voice"}</button>
+              <button type="button" onClick={()=>{void poll();setMoreOpen(false);}}>↻ Refresh connection</button>
+              <button className="eaMenuDanger" type="button" onClick={()=>{void logOut();setMoreOpen(false);}}>Sign out</button>
+            </>}
+            {!role&&<small className="eaMenuNote">Private invitation login is available below.</small>}
           </div>}
-        </div>}
+        </div>
       </div>
     </header>
     <div className="eaRoomStatus">
@@ -443,12 +456,15 @@ export default function EnchevStageOnePage(){
     {!available&&<div className="eaRoomAlert" role="alert">This private pilot is not active. Bidding is disabled.</div>}
     {error&&<div className="eaRoomAlert" role="alert">{error}<button type="button" onClick={()=>setError("")}>×</button></div>}
     {!role?<section className="eaLoginCard">
-      <div className="eaLoginWelcome"><span className="eaEyebrow">ENCHEV · INVITATION ACCESS</span>
-        <h1>Enter the live room.</h1>
-        <p>Private DEMO: select your test budget and press READY. When all three are ready, a shared 30-second countdown starts. No real deposits.</p>
-        <div className="eaLoginDecor"><span>01 · JOIN</span><span>02 · BUDGET</span><span>03 · READY</span><span>03 · BID</span><span>04 · WIN</span></div>
+      <div className="eaLoginWelcome">
+        <div className="eaLoginBrand"><span className="eaLiveDot"/><b>ENCHEV LIVE</b><small>PRIVATE DEMONSTRATION</small></div>
+        <span className="eaEyebrow">INVITATION ACCESS</span>
+        <h1>Enter the live auction.</h1>
+        <p>Join the private ENCHEV demo room. Choose your bidder role, enter the invitation code and continue to budget, READY and synchronized live bidding.</p>
+        <div className="eaLoginDecor"><span>01 · JOIN</span><span>02 · BUDGET</span><span>03 · READY</span><span>04 · BID</span><span>05 · RESULT</span></div>
       </div>
       <form onSubmit={logIn}>
+        <div className="eaLoginFormHead"><span>SECURE ACCESS</span><strong>Bidder sign in</strong><small>Demo only · no real payments</small></div>
         <label>Your role<select value={loginRole} onChange={e=>setLoginRole(e.target.value as Role)}>
           <option value="mitko">Mitko — bidder</option>
           <option value="borko">Borko — bidder</option>
