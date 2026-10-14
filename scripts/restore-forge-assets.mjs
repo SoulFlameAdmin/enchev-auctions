@@ -2,11 +2,12 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { gunzipSync } from 'node:zlib';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
+import { recoverForgeLoader } from './forge-loader-recovery.mjs';
 
 const root = process.cwd();
 const output = path.join(root, 'public/forge');
 const digest = value => createHash('sha256').update(value).digest('hex');
-const frontend = JSON.parse(gunzipSync(await readFile(path.join(root, 'config/forge-frontend.json.gz'))));
+const frontend = recoverForgeLoader(JSON.parse(gunzipSync(await readFile(path.join(root, 'config/forge-frontend.json.gz')))));
 for (const [relative, content] of Object.entries(frontend)) {
   const target = path.join(output, relative);
   await mkdir(path.dirname(target), { recursive: true });
@@ -414,6 +415,9 @@ const ctaMapScript = String.raw`(() => {
     scheduled = true;
     requestAnimationFrame(() => {
       scheduled = false;
+      // Do not rewrite server-rendered text while the imported React root is
+      // hydrating. The loader provider has an 8-second recovery deadline.
+      if (!document.querySelector('main') || document.querySelector('[aria-label="Welcome to ENCHEV Auctions"]')) return;
       applyCtas();
       applyNavigation();
       applyLiveDemoLinks();
@@ -423,16 +427,10 @@ const ctaMapScript = String.raw`(() => {
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
-      applyCtas();
-      applyNavigation();
-      applyLiveDemoLinks();
-      ensurePlatformNavigation();
+      scheduleApply();
     }, { once: true });
   } else {
-    applyCtas();
-    applyNavigation();
-    applyLiveDemoLinks();
-    ensurePlatformNavigation();
+    scheduleApply();
   }
 
   new MutationObserver(scheduleApply).observe(document.documentElement, {
