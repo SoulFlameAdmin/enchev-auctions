@@ -4,14 +4,17 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 import "./monitor.css";
 
 type Role = "mitko" | "borko" | "enchev";
-type Person = {role:Role;online:boolean;ready:boolean;inGame:boolean;lastSeen:string|null};
-type Auction = {id:string;title?:string;currentAmount:number;sequence:number;leadingRole?:string|null;winnerRole:string|null;startedAt?:string;endsAt?:string;nextBidAllowedAt?:string|null;closedAt?:string|null};
+type Person = {role:Role;online:boolean;ready:boolean;inGame:boolean;lastSeen:string|null;activeDevices:number};
+type Auction = {id:string;title?:string;currentAmount:number;sequence:number;leadingRole?:string|null;winnerRole:string|null;startedAt?:string;endsAt?:string;nextBidAllowedAt?:string|null;closedAt?:string|null;extensionCount?:number};
 type Bid = {sequence:number;role:string;amount:number;at:string};
+type Attempt = {id:number;role:string;amount:number|null;code:string;accepted:boolean;at:string;expectedSequence:number|null};
 type Monitor = {ok:true;serverNow:string;status:"idle"|"countdown"|"live"|"closed"|"canceled";auction:Auction|null;
-  bids:Bid[];participants:Person[];connected:number;ready:number;inGame:number;required:number;allReady:boolean};
+  bids:Bid[];attempts:Attempt[];participants:Person[];connected:number;ready:number;inGame:number;required:number;allReady:boolean};
 const roleName:Record<Role,string>={mitko:"MITKO",borko:"BORKO",enchev:"ENCHEV"};
 const euro=(n:number)=>new Intl.NumberFormat("en-IE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(n);
 const when=(date:string|null)=>date?new Date(date).toLocaleTimeString("bg-BG",{hour:"2-digit",minute:"2-digit",second:"2-digit"}):"—";
+const whenMs=(date:string|null)=>date?new Date(date).toLocaleTimeString("bg-BG",{hour:"2-digit",minute:"2-digit",second:"2-digit",fractionalSecondDigits:3}):"—";
+const duration=(ms:number)=>{const safe=Math.max(0,ms);return String(Math.floor(safe/60000)).padStart(2,"0")+":"+String(Math.floor(safe%60000/1000)).padStart(2,"0")+"."+Math.floor(safe%1000/100);};
 
 export default function Etap1AdminMonitor() {
   const [authorized,setAuthorized]=useState(false);
@@ -22,11 +25,14 @@ export default function Etap1AdminMonitor() {
   const [monitor,setMonitor]=useState<Monitor|null>(null);
   const [lastUpdate,setLastUpdate]=useState<number|null>(null);
   const [offline,setOffline]=useState(false);
+  const [localNow,setLocalNow]=useState(Date.now());
+  const serverOffsetRef=useRef(0);
   const pollingRef=useRef(false);
 
   const refresh=useCallback(async()=>{
     if(pollingRef.current)return;
     pollingRef.current=true;
+    const requestStarted=Date.now();
     try {
       const response=await fetch("/api/etap1/admin",{cache:"no-store",credentials:"same-origin",signal:AbortSignal.timeout(10000)});
       if(response.status===401||response.status===403){
@@ -35,7 +41,11 @@ export default function Etap1AdminMonitor() {
       }
       const body=await response.json() as Monitor&{error?:string};
       if(!response.ok||!body.ok)throw new Error(body.error||"Monitor unavailable");
-      setAuthorized(true);setMonitor(body);setLastUpdate(Date.now());setOffline(false);setError("");
+      const now=Date.now();
+      // Midpoint correction keeps visual countdown smooth without claiming millisecond network accuracy.
+      const serverAt=Date.parse(body.serverNow);
+      if(Number.isFinite(serverAt))serverOffsetRef.current=serverAt-(requestStarted+now)/2;
+      setAuthorized(true);setMonitor(body);setLocalNow(now);setLastUpdate(now);setOffline(false);setError("");
     }catch(e){
       setOffline(true);
       setError(e instanceof Error?e.message:"Connection lost");
@@ -44,8 +54,9 @@ export default function Etap1AdminMonitor() {
 
   useEffect(()=>{
     void refresh();
-    const interval=window.setInterval(()=>{void refresh();},1000);
-    return()=>window.clearInterval(interval);
+    const interval=window.setInterval(()=>{void refresh();},500);
+    const tick=window.setInterval(()=>setLocalNow(Date.now()),100);
+    return()=>{window.clearInterval(interval);window.clearInterval(tick);};
   },[refresh]);
 
   const login=async(e:FormEvent<HTMLFormElement>)=>{
@@ -90,11 +101,19 @@ export default function Etap1AdminMonitor() {
     }
   };
 
+  const serverNowMs=localNow+serverOffsetRef.current;
+  const remainingMs=monitor?.auction&&monitor.status==="live"
+    ?Date.parse(monitor.auction.endsAt??"")-serverNowMs:0;
+  const countdownMs=monitor?.auction&&monitor.status==="countdown"
+    ?Date.parse(monitor.auction.startedAt??"")-serverNowMs:0;
+  const cooldownMs=monitor?.auction&&monitor.status==="live"&&monitor.auction.nextBidAllowedAt
+    ?Date.parse(monitor.auction.nextBidAllowedAt)-serverNowMs:0;
+  const lastSyncAgeMs=lastUpdate===null?Infinity:Math.max(0,localNow-lastUpdate);
   return <main className="eaAdminMonitor">
     <header className="eaMonitorTop">
       <a href="/" className="eaMonitorBrand">ENCHEV <small>AUCTIONS</small></a>
       <div><span className="eaMonitorTag">DEMO ONLY · CONTROL ROOM</span>
-        {authorized&&<span className={"eaMonitorSignal "+(offline?"bad":"good")}>{offline?"● OFFLINE":"● LIVE SYNC · 1s"}</span>}</div>
+        {authorized&&<span className={"eaMonitorSignal "+(offline?"bad":"good")}>{offline?"● OFFLINE":"● SERVER POLL · 0.5s"}</span>}</div>
       {authorized&&<button type="button" className="eaMonitorLogout" onClick={()=>void logout()} disabled={busy}>SIGN OUT</button>}
     </header>
     {!authorized?<section className="eaMonitorLogin">
@@ -114,7 +133,7 @@ export default function Etap1AdminMonitor() {
         <div><span className="eaMonitorEyebrow">ENCHEV · LIVE OPERATIONS</span>
           <h1>Control Room <span>01</span></h1><p>Who is online, ready, and actively admitted to the current auction.</p>
         </div>
-        <div className="eaMonitorTime">SERVER TIME <strong>{monitor?when(monitor.serverNow):"—"}</strong><small>{lastUpdate?"Last sync: "+new Date(lastUpdate).toLocaleTimeString("bg-BG"):"Connecting"}</small></div>
+        <div className="eaMonitorTime">SERVER CLOCK <strong>{monitor?whenMs(new Date(serverNowMs).toISOString()):"—"}</strong><small>{lastUpdate?"Last confirmed snapshot "+(lastSyncAgeMs/1000).toFixed(1)+"s ago":"Connecting"} · countdown UI 0.1s</small></div>
       </div>
       {offline&&<p className="eaMonitorError" role="alert">⚠ Connection interrupted. Showing last known status only. {error}</p>}
       <section className="eaMonitorMetrics" aria-label="Live lobby counts">
@@ -126,7 +145,7 @@ export default function Etap1AdminMonitor() {
       <section className="eaMonitorRoster">
         <div className="eaMonitorSectionTitle"><div><span className="eaMonitorEyebrow">REAL-TIME LOBBY</span><h2>Participants</h2></div><b>{monitor?.connected??0} ONLINE</b></div>
         <div className="eaMonitorGrid">
-          {(monitor?.participants??(["mitko","borko","enchev"] as Role[]).map(role=>({role,online:false,ready:false,inGame:false,lastSeen:null}))).map(p=>
+          {(monitor?.participants??(["mitko","borko","enchev"] as Role[]).map(role=>({role,online:false,ready:false,inGame:false,lastSeen:null,activeDevices:0}))).map(p=>
             <article className={"eaMonitorPerson "+(p.online?"online":"offline")} key={p.role}>
               <div className="eaMonitorAvatar">{roleName[p.role].slice(0,1)}</div>
               <div className="eaMonitorPersonBody"><strong>{roleName[p.role]}</strong><small>BIDDER</small>
@@ -134,7 +153,7 @@ export default function Etap1AdminMonitor() {
                   {p.inGame?"● IN AUCTION":p.ready?"✓ READY":p.online?"○ WAITING":"— OFFLINE"}
                 </span>
               </div>
-              <div className="eaMonitorLast">LAST SEEN <strong>{when(p.lastSeen)}</strong></div>
+              <div className="eaMonitorLast">DEVICES <strong>{p.activeDevices}</strong><small>LAST SEEN {when(p.lastSeen)}</small></div>
             </article>)}
         </div>
         <div className="eaMonitorHelp">
@@ -146,17 +165,29 @@ export default function Etap1AdminMonitor() {
         <article><span className="eaMonitorEyebrow">CURRENT / LAST ROUND</span><h2>{monitor?.auction?.title||"Waiting for round"}</h2>
           <div className="eaMonitorPrice">{monitor?.auction?euro(Number(monitor.auction.currentAmount)):"—"}</div>
           <p>{monitor?.status==="countdown"?"🔴 30-SECOND SERVER COUNTDOWN":monitor?.status==="live"?"● ACTIVE AUCTION":monitor?.status==="closed"?"✓ LAST ROUND CLOSED":"WAITING IN LOBBY"} · {monitor?.auction?.sequence??0} accepted bids</p>
-          {monitor?.auction&&monitor.status==="countdown"&&<p>STARTS AT: {when(monitor.auction.startedAt??null)} — no bids accepted yet.</p>}
-          {monitor?.auction&&monitor.status==="live"&&<p>GLOBAL BID COOLDOWN: {monitor.auction.nextBidAllowedAt&&Date.parse(monitor.auction.nextBidAllowedAt)>Date.parse(monitor.serverNow)?Math.max(0,Math.ceil((Date.parse(monitor.auction.nextBidAllowedAt)-Date.parse(monitor.serverNow))/1000))+"s":"OPEN"} · Bid sequence {monitor.auction.sequence}</p>}
+          {monitor?.auction&&monitor.status==="countdown"&&<div className="eaAdminLiveClock">STARTS IN <strong>{duration(countdownMs)}</strong><small>Scheduled server start: {whenMs(monitor.auction.startedAt??null)}</small></div>}
+          {monitor?.auction&&monitor.status==="live"&&<div className="eaAdminLiveClock" aria-live="off">AUCTION TIME LEFT <strong>{duration(remainingMs)}</strong><small>Server end: {whenMs(monitor.auction.endsAt??null)} · Extensions: {monitor.auction.extensionCount??0}</small></div>}
+          {monitor?.auction&&monitor.status==="live"&&<div className="eaAdminLiveClock">GLOBAL BID COOLDOWN <strong>{cooldownMs>0?(Math.ceil(cooldownMs/100)/10).toFixed(1)+"s":"OPEN"}</strong><small>Bid sequence {monitor.auction.sequence} · Server-wide 5s lock</small></div>}
           {monitor?.status==="closed"&&<p>🏆 Highest demo bidder: {monitor.auction?.winnerRole?.toUpperCase()||"NO BIDS"}. Await seller approval for any real sale.</p>}
           {monitor?.status==="closed"&&monitor.auction&&<button type="button" onClick={downloadOperatorRecord} className="eaMonitorSecondaryLink">↓ Download operator DEMO result (not invoice)</button>}
           <a className="eaMonitorSecondaryLink" href="/live-auctions/etap-1">Open participant view ↗</a>
         </article>
         <article><span className="eaMonitorEyebrow">LATEST BIDS</span><h2>Bid activity</h2>
           <div className="eaMonitorBids">{monitor?.bids?.length?monitor.bids.slice(0,8).map(b=>
-            <div key={b.sequence}><strong>#{b.sequence} · {b.role.toUpperCase()}</strong><span>{euro(Number(b.amount))}</span><small>{when(b.at)}</small></div>
+            <div key={b.sequence}><strong>#{b.sequence} · {b.role.toUpperCase()}</strong><span>{euro(Number(b.amount))}</span><small>{whenMs(b.at)}</small></div>
           ):<p>No bids recorded for this round yet.</p>}</div>
         </article>
+      </section>
+      <section className="eaAdminBidAudit" aria-label="Server bid attempt log">
+        <div className="eaMonitorSectionTitle"><div><span className="eaMonitorEyebrow">SERVER AUDIT · MILLISECOND TIMESTAMPS</span><h2>All bid attempts</h2></div><b>{monitor?.attempts?.length??0} RECENT</b></div>
+        <p>Accepted, rejected and duplicate attempts for the current/last round. Time is recorded by PostgreSQL; data is refreshed twice per second.</p>
+        <div className="eaAdminAuditRows">{monitor?.attempts?.length?monitor.attempts.map(a=>
+          <div key={a.id} className={a.accepted?"accepted":"rejected"}>
+            <small>{whenMs(a.at)}</small><strong>{a.role.toUpperCase()}</strong>
+            <b>{a.amount===null?"—":euro(Number(a.amount))}</b>
+            <span>{a.code}</span>
+            <small>SEQ {a.expectedSequence??"—"}</small>
+          </div>):<p>No server bid attempts for this round yet.</p>}</div>
       </section>
     </div>}
     <footer className="eaMonitorFooter">PRIVATE DEMONSTRATION · NO REAL MONEY OR PAYMENTS · ENCHEV AUCTIONS</footer>

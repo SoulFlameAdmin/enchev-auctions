@@ -508,3 +508,117 @@ if psql -X -v ON_ERROR_STOP=1 -c "set role authenticated; select public.etap1_bi
  echo "FAIL: authenticated user can call bid offer RPC" >&2; exit 1
 fi
 echo "ENCHEV PROFESSIONAL DEMO V2 POSTGRES PASS: underfunded block, READY, countdown, global cooldown, stale price, limits, winner, cancellation, RLS."
+
+# LIVE QA REPAIR — verify two devices of one role, exact nonce retry, repeat extension,
+# server logs and global cooldown in isolated disposable PostgreSQL.
+psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261013093000_enchev_etap1_live_qa_repair.sql
+psql -X -v ON_ERROR_STOP=1 <<'SQL'
+do $$
+declare
+  m1 uuid:='a1111111-1111-4111-8111-111111111111';
+  m2 uuid:='a1111111-1111-4111-8111-222222222222';
+  b1 uuid:='a2222222-2222-4222-8222-222222222222';
+  e1 uuid:='a3333333-3333-4333-8333-333333333333';
+  nonce uuid:='a4444444-4444-4444-8444-444444444444';
+  v jsonb; round_id uuid; cnt integer;
+begin
+  update public.enchev_etap1_device_sessions set last_seen=clock_timestamp()-interval '2 minutes';
+  update public.enchev_etap1_presence set last_seen=clock_timestamp()-interval '2 minutes',is_ready=false;
+  perform public.etap1_join_lobby_automatic('mitko',m1);
+  perform public.etap1_join_lobby_automatic('borko',b1);
+  perform public.etap1_join_lobby_automatic('enchev',e1);
+  v:=public.etap1_join_lobby_automatic('mitko',m2);
+  if (v->'lobby'->>'activeDevices')::int<>2 or (v->'lobby'->>'count')::int<>3
+    then raise exception 'Two MITKO devices must count as one role: %',v; end if;
+  v:=public.etap1_ready_lobby_secure('mitko',m1,null,false);
+  if v->'lobby'->>'sessionCurrent'<>'true'
+    then raise exception 'MITKO original device was invalidated'; end if;
+  v:=public.etap1_ready_lobby_secure('mitko',m2,null,false);
+  if v->'lobby'->'wallet'->>'buyingPower' is null
+    then raise exception 'Second device cannot see shared wallet'; end if;
+  perform public.etap1_ready_lobby_secure('mitko',m1,true,false);
+  perform public.etap1_ready_lobby_secure('borko',b1,true,false);
+  v:=public.etap1_ready_lobby_secure('enchev',e1,true,false);
+  if v->'state'->>'status'<>'countdown'
+    then raise exception '3 distinct READY roles did not schedule countdown: %',v; end if;
+  round_id:=(v->'state'->'auction'->>'id')::uuid;
+  v:=public.etap1_ready_lobby_secure('mitko',m2,null,false);
+  if v->'lobby'->>'admitted'<>'true'
+    then raise exception 'Second MITKO device must share the admitted ROLE'; end if;
+  update public.enchev_etap1_auctions set started_at=clock_timestamp()-interval '1 second',
+    ends_at=clock_timestamp()+interval '60 seconds' where id=round_id;
+  perform public.etap1_snapshot();
+  v:=public.etap1_bid_offer_secure('mitko',m1,nonce,16300,0);
+  if v->>'accepted'<>'true' then raise exception 'Initial offer rejected: %',v; end if;
+  v:=public.etap1_bid_offer_secure('mitko',m2,nonce,16300,0);
+  if v->>'duplicate'<>'true' then raise exception 'Same nonce different device not idempotent: %',v; end if;
+  v:=public.etap1_bid_offer_secure('mitko',m2,gen_random_uuid(),16300,0);
+  if v->>'code'<>'PRICE_CHANGED'
+    then raise exception 'Stale second click must report PRICE_CHANGED instead of INVALID_AMOUNT: %',v; end if;
+  select count(*) into cnt from public.enchev_etap1_bids
+    where auction_id=round_id;
+  if cnt<>1 then raise exception 'Double click created more than one bid'; end if;
+  v:=public.etap1_bid_offer_secure('borko',b1,gen_random_uuid(),16400,1);
+  if v->>'code'<>'COOLDOWN_ACTIVE'
+    then raise exception '5s server-wide cooldown did not block other role: %',v; end if;
+  update public.enchev_etap1_auctions set next_bid_allowed_at=clock_timestamp()-interval '1 second',
+    ends_at=clock_timestamp()+interval '2 seconds' where id=round_id;
+  v:=public.etap1_bid_offer_secure('borko',b1,gen_random_uuid(),16400,1);
+  if v->>'accepted'<>'true' or (v->'state'->'auction'->>'extensionCount')::int<>1
+    then raise exception 'First anti-snipe extension failed: %',v; end if;
+  update public.enchev_etap1_auctions set next_bid_allowed_at=clock_timestamp()-interval '1 second',
+    ends_at=clock_timestamp()+interval '2 seconds' where id=round_id;
+  v:=public.etap1_bid_offer_secure('enchev',e1,gen_random_uuid(),16500,2);
+  if v->>'accepted'<>'true' or (v->'state'->'auction'->>'extensionCount')::int<>2
+    or (v->'state'->'auction'->>'endsAt')::timestamptz<clock_timestamp()+interval '8 seconds'
+    then raise exception 'SECOND anti-snipe extension failed: %',v; end if;
+  select count(*) into cnt from public.enchev_etap1_bid_attempts where auction_id=round_id;
+  if cnt<6 then raise exception 'Missing accepted/rejected/double-click server audit events'; end if;
+  update public.enchev_etap1_device_sessions set last_seen=clock_timestamp()-interval '2 minutes'
+    where session_id=m1;
+  v:=public.etap1_ready_lobby_secure('mitko',m2,null,false);
+  if v->'lobby'->>'sessionCurrent'<>'true' or v->'lobby'->>'admitted'<>'true'
+    then raise exception 'Second device stopped working after first disconnected'; end if;
+end $$;
+SQL
+if psql -X -v ON_ERROR_STOP=1 -c "set role anon; select * from public.enchev_etap1_bid_attempts;" >/tmp/etap1_audit_anon.out 2>&1; then
+  echo "FAIL: anonymous users can read bid attempt audit" >&2; exit 1
+fi
+if psql -X -v ON_ERROR_STOP=1 -c "set role authenticated; select * from public.enchev_etap1_device_sessions;" >/tmp/etap1_sessions_auth.out 2>&1; then
+  echo "FAIL: authenticated users can read private device session records" >&2; exit 1
+fi
+echo "ENCHEV LIVE QA REPAIR POSTGRES PASS: 2-device MITKO, 3 roles, 5s cooldown, idempotent retry, 2 anti-snipe extensions, bid audit, RLS."
+
+# LOGOUT REGRESSION: expiring MITKO on one device must not evict his second device.
+psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261013094500_enchev_etap1_session_signout.sql
+psql -X -v ON_ERROR_STOP=1 -f supabase/migrations/20261013100000_enchev_etap1_login_during_live.sql
+psql -X -v ON_ERROR_STOP=1 <<'SQL'
+do $$
+declare
+  m1 uuid:='a1111111-1111-4111-8111-111111111111';
+  m2 uuid:='a1111111-1111-4111-8111-222222222222';
+  v jsonb; cnt integer;
+begin
+  -- Reopen first device while preserving the role identity.
+  v:=public.etap1_join_lobby_automatic('mitko',m1);
+  if (v->'lobby'->>'activeDevices')::int<>2
+    then raise exception 'Expected two independent MITKO devices before signout'; end if;
+  if not public.etap1_device_signout('mitko',m1)
+    then raise exception 'MITKO device 1 signout failed'; end if;
+  v:=public.etap1_ready_lobby_secure('mitko',m2,null,false);
+  if v->'lobby'->>'sessionCurrent'<>'true' or
+     (v->'lobby'->>'activeDevices')::int<>1
+    then raise exception 'MITKO second device was evicted: %',v; end if;
+  if not public.etap1_device_signout('mitko',m2)
+    then raise exception 'MITKO device 2 signout failed'; end if;
+  select count(*) into cnt from public.enchev_etap1_device_sessions
+    where role='mitko' and last_seen>clock_timestamp()-interval '15 seconds';
+  if cnt<>0 then raise exception 'MITKO still online after all devices sign out'; end if;
+  if (select is_ready from public.enchev_etap1_presence where role='mitko')
+    then raise exception 'MITKO left room while READY flag remained set'; end if;
+end $$;
+SQL
+if psql -X -v ON_ERROR_STOP=1 -c "set role anon; select public.etap1_device_signout('mitko',gen_random_uuid());" >/tmp/etap1_logout_anon.out 2>&1; then
+  echo "FAIL: anonymous role can sign out sessions" >&2; exit 1
+fi
+echo "ETAP1 SIGNOUT PASS: no collateral MITKO device logout, all-device signout clears online/READY, RPC restricted."
