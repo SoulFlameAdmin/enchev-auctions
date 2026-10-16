@@ -130,11 +130,20 @@ export async function POST(request: NextRequest, context: Context) {
   }
 
   if (action === "start") {
-    if (role !== "admin") return etap1Json({error:"Admin only"},403);
-    // Operator panel is watch-only for this demonstration.
-    // A manual start used to bypass the session-bound READY admission ledger.
-    // Each round requires all three invited roles to explicitly press READY.
-    return etap1Json({error:"Investor demo starts after at least two guests or Enchev and a guest set budgets and press READY. The operator remains watch-only."},409);
+    // Only an authenticated guest can trigger a shared demo round.
+    // Never allow admin or legacy bidder profiles to bypass this rule.
+    if (!/^guest[1-5]$/.test(role)) return etap1Json({error:"Only demo guests can start bidding"},403);
+    try {
+      const result=await etap1Rpc(config,"etap1_guest_start",{
+        p_actor:role,p_session_id:sid,
+      }) as {state:unknown;lobby:{sessionCurrent?:boolean;admitted?:boolean};started?:boolean;admittedCount?:number};
+      if (result.lobby?.sessionCurrent===false)
+        return etap1Json({error:"Your guest session expired. Sign in again."},401);
+      return etap1Json({ok:true,started:result.started===true,admittedCount:result.admittedCount,
+        state:result.state,lobby:result.lobby});
+    } catch {
+      return etap1Json({error:"Търгът вече е стартиран или връзката е прекъсната. Обновете страницата."},409);
+    }
   }
 
   if (role === "admin") return etap1Json({error:"Bidder only"},403);
