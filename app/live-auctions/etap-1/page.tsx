@@ -222,6 +222,9 @@ export default function EnchevStageOnePage(){
       await post("login",{role:loginRole,code});
       setCode("");
       await poll();
+      // Successful login replaces the form with the same auction lobby;
+      // ensure the top START call-to-action is in view on mobile.
+      window.scrollTo(0,0);
     }catch(e){setError(e instanceof Error?e.message:"Cannot sign in");}
     finally{setBusy(false);}
   };
@@ -499,6 +502,23 @@ export default function EnchevStageOnePage(){
       <span>{role?<><i className="eaLiveDot"/> {labelRole(role)} <b>{bidder?"· УЧАСТНИК":"· ОПЕРАТОР"}</b></>:"ДОБРЕ ДОШЛИ В LIVE ЗАЛАТА"}</span>
       <span>САМО ДЕМО <span className="eaStatusSep">·</span> БЕЗ РЕАЛНИ ПЛАЩАНИЯ</span>
     </div>
+    {bidder&&<section className="eaTopAuctionAction" aria-label="Основно действие за търга">
+      <div className="eaTopAuctionInfo">
+        <strong>{status==="countdown"?"⏳ СТАРТ НА НАДДАВАНЕТО":status==="live"?"🔴 НАДДАВАНЕ НА ЖИВО":"▶ ГОТОВИ ЗА СТАРТ"}</strong>
+        <span>{status==="countdown"
+          ?"Начало след "+String(Math.floor(countdownRemaining/60)).padStart(2,"0")+":"+String(countdownRemaining%60).padStart(2,"0")
+          :status==="live"?"Остава "+minutes+":"+seconds+" · вижте офертите"
+          :"В залата: "+(lobby?.count??0)+" · 1–5 гости · 30 секунди до старта"}</span>
+      </div>
+      {status==="countdown"
+        ?<div className="eaTopAuctionCountdown" aria-live="off">{String(Math.floor(countdownRemaining/60)).padStart(2,"0")}:{String(countdownRemaining%60).padStart(2,"0")}</div>
+        :status==="live"
+          ?<button type="button" className="eaTopAuctionButton is-live" onClick={()=>document.getElementById("ea-bid-panel")?.scrollIntoView({behavior:"smooth",block:"start"})}>
+            ↘ НАДДАВАЙ
+          </button>
+          :<button type="button" className="eaTopAuctionButton" onClick={()=>void startGuestAuction()}
+            disabled={!guestMode||!connected||busy}>{busy?"⏳ СТАРТИРАМЕ…":"▶ СТАРТИРАЙ НАДДАВАНЕТО"}</button>}
+    </section>}
     {!available&&<div className="eaRoomAlert" role="alert">Това частно демо не е активно. Наддаването е изключено.</div>}
     {error&&<div className="eaRoomAlert" role="alert">{error}<button type="button" onClick={()=>setError("")}>×</button></div>}
     {!role?<section className="eaLoginCard">
@@ -629,7 +649,7 @@ export default function EnchevStageOnePage(){
           </div>
           <div className="eaMediaViews" aria-label="Изгледи на автомобила">{views.map(v=><button type="button" key={v} className={mediaView===v?"is-selected":""} aria-pressed={mediaView===v} onClick={()=>setMediaView(v)}>{{FRONT:"ОТПРЕД",REAR:"ОТЗАД",INTERIOR:"ИНТЕРИОР",DETAIL:"ДЕТАЙЛ",SIDE:"ОТСТРАНИ"}[v]??v}</button>)}</div>
         </div>
-        <div className="eaBiddingPanel">
+        <div className="eaBiddingPanel" id="ea-bid-panel">
           <div className="eaPriceTop"><span>{status==="live"?"ТЕКУЩА НАЙ-ВИСОКА ОФЕРТА":"СЛЕДВАЩ ТЪРГ · НАЧАЛНА ЦЕНА"}</span><span className={status==="live"?"eaBiddingLive":""}>{status==="live"?"● НА ЖИВО":status==="closed"?"● ПОСЛЕДНИЯТ ТЪРГ ПРИКЛЮЧИ":"● ИЗЧАКВАНЕ"}</span></div>
           <strong className="eaHeroAmount">{money(status==="live"?currentPrice:opening)}</strong>
           {bidder&&wallet&&<div className="eaWalletLive" aria-label="DEMO wallet live summary">
