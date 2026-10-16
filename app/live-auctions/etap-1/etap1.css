@@ -1366,3 +1366,89 @@ body:has(.eaRoom){background:#060a08;color:#effaf3}
   }
   .eaRoom .eaReadyControl{align-items:stretch;flex-wrap:wrap}
 }
+
+
+/* Guest DEMO: immediately visible START / НАДДАВАЙ action on the same page
+   after the role + PIN login. It is above the vehicle, wallet and lobby. */
+.eaRoom .eaTopAuctionAction{
+  position:relative;
+  z-index:5;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:18px;
+  margin:12px clamp(12px,2.4vw,32px) 15px;
+  padding:15px 19px;
+  background:linear-gradient(105deg,rgba(8,32,23,.98),rgba(4,17,13,.98));
+  border:1px solid rgba(96,255,166,.52);
+  border-radius:19px;
+  box-shadow:0 10px 36px rgba(3,16,11,.7),inset 0 1px rgba(212,255,234,.17);
+}
+.eaTopAuctionInfo{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+  min-width:0;
+}
+.eaTopAuctionInfo strong{
+  font-weight:950;
+  color:#b2f7d0;
+  font-size:clamp(15px,1.5vw,20px);
+  letter-spacing:.035em;
+}
+.eaTopAuctionInfo span{
+  font-size:12px;
+  color:rgba(221,248,229,.75);
+  line-height:1.45;
+}
+.eaRoom .eaTopAuctionButton{
+  cursor:pointer;
+  min-height:63px;
+  min-width:280px;
+  flex-shrink:0;
+  border:1px solid rgba(217,255,233,.83);
+  border-radius:13px;
+  background:linear-gradient(120deg,#a1ffd5,#2bef98);
+  box-shadow:0 6px 30px rgba(45,247,152,.28),inset 0 1px rgba(255,255,255,.56);
+  color:#06251a;
+  font-size:clamp(15px,1.7vw,20px);
+  font-weight:950;
+  letter-spacing:.012em;
+  white-space:normal;
+}
+.eaRoom .eaTopAuctionButton.is-live{
+  background:linear-gradient(110deg,#eefff5,#7ef4bc);
+}
+.eaRoom .eaTopAuctionButton:disabled{opacity:.6;cursor:wait}
+.eaRoom .eaTopAuctionButton:not(:disabled):active{transform:scale(.985)}
+.eaTopAuctionCountdown{
+  min-width:170px;
+  text-align:center;
+  color:#fff9ed;
+  font-size:clamp(26px,3vw,36px);
+  font-weight:950;
+  font-variant-numeric:tabular-nums;
+  letter-spacing:.06em;
+  text-shadow:0 0 25px rgba(255,215,140,.4);
+}
+#ea-bid-panel{scroll-margin-top:108px}
+@media(max-width:720px){
+  .eaRoom .eaTopAuctionAction{
+    flex-direction:column;
+    align-items:stretch;
+    margin:9px 12px 14px;
+    padding:12px;
+    gap:10px;
+    border-radius:16px;
+  }
+  .eaTopAuctionInfo strong{font-size:15px;line-height:1.4}
+  .eaTopAuctionInfo span{font-size:11px;line-height:1.4}
+  .eaRoom .eaTopAuctionButton{
+    min-width:0;
+    width:100%;
+    min-height:58px;
+    font-size:16px;
+  }
+  .eaTopAuctionCountdown{min-width:0}
+  #ea-bid-panel{scroll-margin-top:86px}
+}
