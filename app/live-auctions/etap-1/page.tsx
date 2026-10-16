@@ -240,7 +240,7 @@ export default function EnchevStageOnePage(){
       const result=await post("wallet",{topup,lotBudget});
       const updatedWallet=result.lobby?.wallet;
       if(topup>0){
-        const total=Number(updatedWallet?.buyingPower??(Number(wallet?.buyingPower??10000)+topup));
+        const total=Number(updatedWallet?.buyingPower??(Number(wallet?.buyingPower??30000)+topup));
         const notice="Вие добавихте "+money(topup)+" във вашата ДЕМО сметка. Нова наличност: "+money(total)+".";
         setWalletNotice(notice);
         speakBg("Вие добавихте "+Math.round(topup)+" евро във вашата демо сметка. Новата ви наличност е "+Math.round(total)+" евро.");
@@ -252,6 +252,20 @@ export default function EnchevStageOnePage(){
     }catch(e){setError(e instanceof Error?e.message:"Промяната на ДЕМО бюджета беше отказана.");}
     finally{setBusy(false);}
   };
+  const startGuestAuction=async()=>{
+    if(busy||!connected||!role||!/^guest[1-5]$/.test(role)||!snapshot||
+       snapshot.status==="live"||snapshot.status==="countdown")return;
+    // Start audio on the click itself: mobile browsers reject autoplay after fetch.
+    void enableSound();
+    speakBg("Търгът стартира след тридесет секунди. Успех на всички участници!");
+    setBusy(true);setError("");
+    try{
+      await post("start",{});
+      await poll();
+    }catch(e){setError(e instanceof Error?e.message:"Не успяхме да стартираме търга.");void poll();}
+    finally{setBusy(false);}
+  };
+
   const setReady=async(next:boolean)=>{
     if(busy||!connected||snapshot?.status==="live"||snapshot?.status==="countdown")return;
     setBusy(true);setError("");
@@ -409,9 +423,7 @@ export default function EnchevStageOnePage(){
   const bidder=Boolean(role&&role!=="admin");
   const participant=bidder;
   const myReady=Boolean(lobby?.participants.some(p=>p.role===role&&p.ready));
-  const guestDemo=Boolean(lobby?.participants.some(p=>/^guest[1-5]$/.test(p.role)));
-  const corePresent=guestDemo||["mitko","borko","enchev"].every(expected=>lobby?.participants.some(p=>p.role===expected));
-  const minPlayers=lobby?.minPlayers??3;
+  const guestMode=Boolean(role&&/^guest[1-5]$/.test(role));
   const latest=snapshot?.bids??[];
   const currentPrice=auction?.currentAmount??opening;
   const minStep=auction?.minimumStep??50;
@@ -498,7 +510,7 @@ export default function EnchevStageOnePage(){
           <span className="eaEyebrow">ДОСТЪП ЗА ДЕМО ГОСТИ</span>
           <h1>Влезте в търга на живо.</h1>
           <p>Влезте свободно в инвеститорското ДЕМО. Изберете Гост 1–5, въведете 0000 и участвайте в наддаването на живо. Звуковите ефекти и гласът се активират при натискане на „ВЛЕЗ“.</p>
-          <div className="eaLoginDecor"><span>01 · ВХОД</span><span>02 · БЮДЖЕТ</span><span>03 · ГОТОВ</span><span>04 · НАДДАВАНЕ</span><span>05 · РЕЗУЛТАТ</span></div>
+          <div className="eaLoginDecor"><span>01 · ВХОД</span><span>02 · БЮДЖЕТ</span><span>03 · СТАРТ</span><span>04 · НАДДАВАНЕ</span><span>05 · РЕЗУЛТАТ</span></div>
         </div>
       </div>
       <form onSubmit={logIn}>
@@ -516,35 +528,38 @@ export default function EnchevStageOnePage(){
         <div className="eaLobbyVehicleShade"/>
         <div className="eaReadyText">
           <span className="eaEyebrow"><span className="eaLiveDot"/> {status==="countdown"?"ЗАЛАТА Е ЗАКЛЮЧЕНА":"СЛЕДВАЩ ТЪРГ"}</span>
-          <h2>{status==="countdown"?"ТЪРГЪТ ЗАПОЧВА СЛЕД "+String(Math.floor(countdownRemaining/60)).padStart(2,"0")+":"+String(countdownRemaining%60).padStart(2,"0"):status==="live"?"Търгът е в ход — изчакайте следващия етап":((lobby?.count??0)<minPlayers||!corePresent)?"Изчакваме поканените участници":myReady?"Вие сте готови.":"Готови ли сте за старт?"}</h2>
+          <h2>{status==="countdown"
+            ?"НАЧАЛО СЛЕД "+String(Math.floor(countdownRemaining/60)).padStart(2,"0")+":"+String(countdownRemaining%60).padStart(2,"0")
+            :status==="live"?"Наддаването вече е в ход":"Готови ли сте за търга?"}</h2>
           <div className="eaReadyPeople">{(lobby?.participants??[]).map(person=>
-            <span className={person.ready?"is-ready":""} key={person.role}>{person.ready?"●":"○"} {labelRole(person.role)} {person.ready&&"· ГОТОВ"}</span>)}
+            <span className="is-ready" key={person.role}>● {labelRole(person.role)} · В ЗАЛАТА</span>)}
           </div>
-          <p>{status==="countdown"?"Участниците са допуснати. Залата е заключена и наддаването ще се отвори автоматично, когато таймерът стигне нула.":status==="live"
-            ?"Този търг е започнал без текущия ви вход. След края натиснете „ГОТОВ СЪМ“ за следващия."
-            :((lobby?.count??0)<minPlayers||!corePresent)?(guestDemo?"Необходими са поне двама: гости 1–5 или Енчев с гост. Всеки влиза, задава бюджет и натиска „ГОТОВ СЪМ“.":"Митко, Борко и Енчев трябва да влязат, да зададат ДЕМО бюджетите си и всички да натиснат „ГОТОВ СЪМ“.")
-            :(lobby?.readyCount??0)===(lobby?.count??0)?"Стартира отброяването…":(guestDemo?"Всички присъстващи гости и Енчев трябва да натиснат „ГОТОВ СЪМ“.":"И тримата трябва да натиснат „ГОТОВ СЪМ“, за да започне отброяването.")}</p>
+          <p>{status==="countdown"?"⏳ Отброяването е започнало. След 30 секунди всички допуснати гости влизат автоматично в наддаването."
+             :status==="live"?"Търгът е започнал. Изчакайте края, за да стартирате следващия."
+             :"Натиснете СТАРТИРАЙ НАДДАВАНЕТО, когато сте готови. Работи с 1, 2, 3, 4 или 5 гости. Следва 30-секундно отброяване и автоматичен старт."}</p>
         </div>
         <div className="eaReadyControl">
-          <span>{status==="countdown"?"ДОПУСНАТИ · ЗАКЛЮЧЕНО":(lobby?.readyCount??0)+"/"+(lobby?.count??0)+" ГОТОВИ"}</span>
+          <span>{status==="countdown"?"⏳ ОБЩО ОТБРОЯВАНЕ": "👥 "+(lobby?.count??0)+" В ЗАЛАТА"}</span>
           {status==="countdown"&&<strong className="eaCountdownNumber">{String(Math.floor(countdownRemaining/60)).padStart(2,"0")}:{String(countdownRemaining%60).padStart(2,"0")}</strong>}
           {participant?(status==="live"||status==="countdown"
-            ?<small>{status==="countdown"?"Наддаването ще се отключи автоматично.":"Нов вход? Изчакайте текущият търг да приключи."}</small>
-            :<button type="button" onClick={()=>void setReady(!myReady)} disabled={!connected||busy||(Number(wallet?.lotBudget??0)<16300&&!myReady)} className={myReady?"is-ready":""}>{busy?"ОБНОВЯВАНЕ…":myReady?"✓ ГОТОВ":"ГОТОВ СЪМ →"}</button>
-          ):<small>Админът не се брои като участник.</small>}
+            ?<small>{status==="countdown"?"Влизането в играта е автоматично.":"След края можете да започнете нов търг."}</small>
+            :<button type="button" className="eaGuestStartButton" onClick={()=>void startGuestAuction()} disabled={!guestMode||!connected||busy}>
+              {busy?"⏳ СТАРТИРАМЕ…":"▶ СТАРТИРАЙ НАДДАВАНЕТО"}
+            </button>
+          ):<small>Администраторът само наблюдава.</small>}
         </div>
       </section>}
       {role==="admin"&&<div className="eaMonitorEntry"><a href="/live-auctions/etap-1/admin" aria-label="Open live admin dashboard">▣ OPEN ADMIN CONTROL ROOM →</a><small>Full-screen PC monitor · LIVE roster · ГОТОВ · active bidders</small></div>}
-      {role==="admin"&&preparingRound&&<p className="eaOperatorNote">🔒 In investor mode at least two invited guests / Enchev and a guest can start after all connected participants press ГОТОВ. The operator never starts or blocks the auction.</p>}
+      {role==="admin"&&preparingRound&&<p className="eaOperatorNote">🔒 Всеки гост може да започне общото 30-секундно отброяване. Работи с 1–5 гости. Администраторът само наблюдава.</p>}
       {participant&&status!=="live"&&status!=="countdown"&&<section className="eaDemoWallet" aria-label="ДЕМО сметка и лимит">
         <div className="eaDemoWalletHead">
           <div>
             <span className="eaEyebrow">ДЕМО СМЕТКА · БЕЗ РЕАЛЕН ДЕПОЗИТ</span>
             <h2>👛 ВАШАТА ДЕМО СМЕТКА {money(Number(wallet?.buyingPower??10000))}</h2>
           </div>
-          <span>🚘 ЛИМИТ ЗА АВТОМОБИЛА: {money(Number(wallet?.lotBudget??10000))}</span>
+          <span>🚘 ЛИМИТ ЗА АВТОМОБИЛА: {money(Number(wallet?.lotBudget??30000))}</span>
         </div>
-        <p className="eaWalletExplanation">Всеки участник започва с 10 000 € ДЕМО кредит. Вие сте добавили още <b>{money(Math.max(0,Number(wallet?.buyingPower??10000)-10000))}</b>. Максимумът, който сте избрали за този автомобил, е <b>{money(Number(wallet?.lotBudget??10000))}</b>.</p>
+        <p className="eaWalletExplanation">Всеки гост започва с 30 000 € ДЕМО кредит. Вие сте добавили още <b>{money(Math.max(0,Number(wallet?.buyingPower??30000)-30000))}</b>. Максимумът, който сте избрали за този автомобил, е <b>{money(Number(wallet?.lotBudget??10000))}</b>.</p>
         {walletNotice&&<div className="eaWalletNotice" role="status" aria-live="polite"><span>✓</span><strong>{walletNotice}</strong></div>}
         <div className="eaWalletActions">
           {[5000,10000,20000].map(v=><button type="button" key={v} disabled={busy||myReady||Number(wallet?.buyingPower??0)+v>100000} onClick={()=>void updateWallet(v)}>👛 + {money(v)}</button>)}
@@ -579,7 +594,7 @@ export default function EnchevStageOnePage(){
           <span>ПОБЕДИТЕЛ <b>{labelRole(auction.winnerRole)}</b></span>
           <span>ПРИКЛЮЧИ <b>{new Date(auction.closedAt??auction.endsAt).toLocaleTimeString("bg-BG",{hour:"2-digit",minute:"2-digit",second:"2-digit"})}</b></span>
         </div>
-        <p className="eaFinalNext">NEXT: Confirm the result in the admin panel → demonstrate seller approval → demo document pack → simulated payment → release only after checks. All invited participants press ГОТОВ for another round.</p>
+        <p className="eaFinalNext">NEXT: Confirm the result in the admin panel → demonstrate seller approval → demo document pack → simulated payment → release only after checks. Use СТАРТИРАЙ НАДДАВАНЕТО for another round.</p>
         <div className="eaFinalActions">
           <button type="button" onClick={downloadDemoClosingRecord}>↓ Download DEMO result record</button>
           {auction.winnerRole&&<button type="button" onClick={replayWinner}>🏆 Replay winner announcement</button>}
@@ -638,7 +653,7 @@ export default function EnchevStageOnePage(){
           {status==="live"&&<div className="eaServerCooldown" role="status">{roundLocked?"⏳ ОБЩА ПАУЗА: "+cooldownRemaining+"s":auction?.leadingRole===role?"🟢 ВИЕ ВОДИТЕ — ИЗЧАКАЙТЕ ДРУГА ОФЕРТА":"🟢 НАДДАВАНЕТО Е ОТВОРЕНО"}{!budgetSufficient&&" · ДОСТИГНАТ Е ЛИМИТЪТ"}</div>}
           {status==="live"&&bidder?
             <button className="eaActionPrimary eaPlaceBid" type="button" onClick={()=>void bid()} disabled={!canBid}>{busy?"ПОТВЪРЖДАВАНЕ…":roundLocked?"⏳ МОЖЕ ДА НАДДАВАТЕ СЛЕД "+visibleRound+"s":auction?.leadingRole===role?"✓ ВИЕ ВОДИТЕ":!budgetSufficient?"ДОСТИГНАТ ЛИМИТ":"НАДДАЙ · "+money(nextPrice)+" →"}</button>
-            :<div className="eaBidStandby">{status==="live"?"Режим наблюдател · следите офертите в реално време":(lobby?.count??0)<minPlayers?"Изчакваме още участници…":"Press ГОТОВ above for the next round"}</div>}
+            :<div className="eaBidStandby">{status==="live"?"Режим наблюдател · следите офертите в реално време" :"Натиснете СТАРТИРАЙ НАДДАВАНЕТО за нов търг"}</div>}
           {status==="live"&&<div className="eaBidRhythm"><span>ОБЩА СЪРВЪРНА ПАУЗА</span><b>{visibleRound}s</b><div><i style={{width:(100-Math.min(5,cooldownMs/1000)*20)+"%"}}/></div></div>}
           <div className="eaPanelFoot"><span>✓ Оферти, потвърдени от сървъра</span><span>✓ Само ДЕМО средства</span></div>
         </div>
