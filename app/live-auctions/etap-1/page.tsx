@@ -32,7 +32,7 @@ const bidError=(code:string)=>({
 
 export default function EnchevStageOnePage(){
   const [role,setRole]=useState<Role|null>(null);
-  const [loginRole,setLoginRole]=useState<Role>("mitko");
+  const [loginRole,setLoginRole]=useState<Role>("guest1");
   const [code,setCode]=useState("");
   const [snapshot,setSnapshot]=useState<Snapshot|null>(null);
   const [lobby,setLobby]=useState<Lobby|null>(null);
@@ -392,7 +392,7 @@ export default function EnchevStageOnePage(){
     }
     // Existing remembered sessions may skip the login button. Prime audio on the
     // very first tap anywhere so subsequent remote bids always have tones.
-    const unlock=()=>{void enableSound();if(supported&&role==="enchev")speakWelcome(role);};
+    const unlock=()=>{void enableSound();if(supported)speakWelcome(role);};
     window.addEventListener("pointerdown",unlock,{once:true,capture:true});
     window.addEventListener("touchstart",unlock,{once:true,capture:true});
     return()=>{
@@ -478,7 +478,7 @@ export default function EnchevStageOnePage(){
               <button type="button" onClick={()=>{void poll();setMoreOpen(false);}}>↻ Обнови връзката</button>
               <button className="eaMenuDanger" type="button" onClick={()=>{void logOut();setMoreOpen(false);}}>Изход</button>
             </>}
-            {!role&&<small className="eaMenuNote">Входът с покана е достъпен по-долу.</small>}
+            {!role&&<small className="eaMenuNote">Влезте като гост с код 0000. Всичко е само ДЕМО.</small>}
           </div>}
         </div>
       </div>
@@ -495,21 +495,16 @@ export default function EnchevStageOnePage(){
         <div className="eaLoginHeroShade"/>
         <div className="eaLoginHeroContent">
           <div className="eaLoginBrand"><span className="eaLiveDot"/><b>ENCHEV LIVE</b><small>PRIVATE DEMONSTRATION</small></div>
-          <span className="eaEyebrow">ДОСТЪП С ПОКАНА</span>
+          <span className="eaEyebrow">ДОСТЪП ЗА ДЕМО ГОСТИ</span>
           <h1>Влезте в търга на живо.</h1>
-          <p>Влезте в частната ДЕМО зала на ENCHEV. Изберете участник, въведете кода за покана, задайте бюджет и се пригответе за синхронизирано наддаване на живо.</p>
+          <p>Влезте свободно в инвеститорското ДЕМО. Изберете Гост 1–5, въведете 0000 и участвайте в наддаването на живо. Звуковите ефекти и гласът се активират при натискане на „ВЛЕЗ“.</p>
           <div className="eaLoginDecor"><span>01 · ВХОД</span><span>02 · БЮДЖЕТ</span><span>03 · ГОТОВ</span><span>04 · НАДДАВАНЕ</span><span>05 · РЕЗУЛТАТ</span></div>
         </div>
       </div>
       <form onSubmit={logIn}>
         <div className="eaLoginFormHead"><span>СИГУРЕН ДОСТЪП</span><strong>Вход за участник</strong><small>Само демо · без реални плащания</small></div>
         <label>Вашият профил<select value={loginRole} onChange={e=>setLoginRole(e.target.value as Role)}>
-          <option value="mitko">Митко — участник</option>
-          <option value="borko">Борко — участник</option>
-          <option value="enchev">Енчев — участник</option>
-          <optgroup label="Гости — инвеститорско ДЕМО">
-            {[1,2,3,4,5].map(n=><option key={n} value={"guest"+n}>Гост {n} — участник</option>)}
-          </optgroup>
+          {[1,2,3,4,5].map(n=><option key={n} value={"guest"+n}>Гост {n} — участник</option>)}
         </select></label>
         <label>Код за покана<input value={code} type="password" autoComplete="off" minLength={loginRole==="admin"?16:4} maxLength={256} required placeholder="Вашият личен код" onChange={e=>setCode(e.target.value)}/></label>
         <button className="eaActionPrimary" type="submit" disabled={!available||busy}>{busy?"СВЪРЗВАНЕ…":"ВЛЕЗ В ЗАЛАТА →"}</button>
