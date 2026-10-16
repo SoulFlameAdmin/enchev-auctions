@@ -93,7 +93,7 @@ export async function POST(request: NextRequest, context: Context) {
   const {role,sid}=session;
 
   if (action === "wallet") {
-    if (role !== "mitko" && role !== "borko" && role !== "enchev")
+    if (role === "admin")
       return etap1Json({error:"Bidder only"},403);
     const topup=body.topup ?? 0;
     const budget=body.lotBudget ?? null;
@@ -113,7 +113,7 @@ export async function POST(request: NextRequest, context: Context) {
   }
 
   if (action === "ready") {
-    if (role !== "mitko" && role !== "borko" && role !== "enchev")
+    if (role === "admin")
       return etap1Json({error:"Only participants can press READY"},403);
     if (typeof body.ready !== "boolean")
       return etap1Json({error:"Boolean ready flag required"},400);
@@ -134,10 +134,10 @@ export async function POST(request: NextRequest, context: Context) {
     // Operator panel is watch-only for this demonstration.
     // A manual start used to bypass the session-bound READY admission ledger.
     // Each round requires all three invited roles to explicitly press READY.
-    return etap1Json({error:"Only Mitko, Borko and Enchev participate. Every round starts after all three participants set their demo budgets and press READY."},409);
+    return etap1Json({error:"Investor demo starts after at least two guests or Enchev and a guest set budgets and press READY. The operator remains watch-only."},409);
   }
 
-  if (role !== "mitko" && role !== "borko" && role !== "enchev") return etap1Json({error:"Bidder only"},403);
+  if (role === "admin") return etap1Json({error:"Bidder only"},403);
   const nonce=body.nonce;
   const amount=body.amount;
   const expectedSequence=body.expectedSequence;
