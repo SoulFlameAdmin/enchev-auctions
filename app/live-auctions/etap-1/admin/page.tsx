@@ -3,14 +3,14 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import "./monitor.css";
 
-type Role = "mitko" | "borko" | "enchev";
+type Role = "guest1" | "guest2" | "guest3" | "guest4" | "guest5";
 type Person = {role:Role;online:boolean;ready:boolean;inGame:boolean;lastSeen:string|null;activeDevices:number};
 type Auction = {id:string;title?:string;currentAmount:number;sequence:number;leadingRole?:string|null;winnerRole:string|null;startedAt?:string;endsAt?:string;nextBidAllowedAt?:string|null;closedAt?:string|null;extensionCount?:number};
 type Bid = {sequence:number;role:string;amount:number;at:string};
 type Attempt = {id:number;role:string;amount:number|null;code:string;accepted:boolean;at:string;expectedSequence:number|null};
 type Monitor = {ok:true;serverNow:string;status:"idle"|"countdown"|"live"|"closed"|"canceled";auction:Auction|null;
   bids:Bid[];attempts:Attempt[];participants:Person[];connected:number;ready:number;inGame:number;required:number;allReady:boolean};
-const roleName:Record<Role,string>={mitko:"MITKO",borko:"BORKO",enchev:"ENCHEV"};
+const roleName:Record<Role,string>={guest1:"ГОСТ 1",guest2:"ГОСТ 2",guest3:"ГОСТ 3",guest4:"ГОСТ 4",guest5:"ГОСТ 5"};
 const euro=(n:number)=>new Intl.NumberFormat("en-IE",{style:"currency",currency:"EUR",maximumFractionDigits:0}).format(n);
 const when=(date:string|null)=>date?new Date(date).toLocaleTimeString("bg-BG",{hour:"2-digit",minute:"2-digit",second:"2-digit"}):"—";
 const whenMs=(date:string|null)=>date?new Date(date).toLocaleTimeString("bg-BG",{hour:"2-digit",minute:"2-digit",second:"2-digit",fractionalSecondDigits:3}):"—";
@@ -137,15 +137,15 @@ export default function Etap1AdminMonitor() {
       </div>
       {offline&&<p className="eaMonitorError" role="alert">⚠ Connection interrupted. Showing last known status only. {error}</p>}
       <section className="eaMonitorMetrics" aria-label="Live lobby counts">
-        <article><span>IN LOBBY / ONLINE</span><strong>{monitor?.connected??"—"}<small> / 3</small></strong><p>Connected within 15 seconds</p></article>
+        <article><span>IN LOBBY / ONLINE</span><strong>{monitor?.connected??"—"}<small> / 5</small></strong><p>Connected within 15 seconds</p></article>
         <article><span>READY</span><strong>{monitor?.ready??"—"}<small> / {monitor?.required??3} minimum</small></strong><p>Participants waiting for start</p></article>
         <article><span>IN LIVE ROUND</span><strong>{monitor?.inGame??"—"}<small> admitted</small></strong><p>Server-verified participants</p></article>
-        <article><span>AUCTION STATE</span><strong className="eaMonitorState">{monitor?.status?.toUpperCase()??"—"}</strong><p>{monitor?.status==="live"?"Three admitted bidders can bid":monitor?.allReady?"Ready to start": "Waiting for Mitko, Borko and Enchev"}</p></article>
+        <article><span>AUCTION STATE</span><strong className="eaMonitorState">{monitor?.status?.toUpperCase()??"—"}</strong><p>{monitor?.status==="live"?"Гостите наддават на живо":monitor?.allReady?"Ready to start": "Изчакваме двама или повече гости"}</p></article>
       </section>
       <section className="eaMonitorRoster">
         <div className="eaMonitorSectionTitle"><div><span className="eaMonitorEyebrow">REAL-TIME LOBBY</span><h2>Participants</h2></div><b>{monitor?.connected??0} ONLINE</b></div>
         <div className="eaMonitorGrid">
-          {(monitor?.participants??(["mitko","borko","enchev"] as Role[]).map(role=>({role,online:false,ready:false,inGame:false,lastSeen:null,activeDevices:0}))).map(p=>
+          {(monitor?.participants??(["guest1","guest2","guest3","guest4","guest5"] as Role[]).map(role=>({role,online:false,ready:false,inGame:false,lastSeen:null,activeDevices:0}))).map(p=>
             <article className={"eaMonitorPerson "+(p.online?"online":"offline")} key={p.role}>
               <div className="eaMonitorAvatar">{roleName[p.role].slice(0,1)}</div>
               <div className="eaMonitorPersonBody"><strong>{roleName[p.role]}</strong><small>BIDDER</small>
@@ -158,7 +158,7 @@ export default function Etap1AdminMonitor() {
         </div>
         <div className="eaMonitorHelp">
           <strong>ROUND ADMISSION RULE</strong>
-          <p>Exactly three bidders: Mitko, Borko and Enchev. Each configures a DEMO budget and presses READY. The third READY starts a common 30-second countdown. Every accepted offer starts a 5-second server cooldown for all. Admin remains watch-only and is never counted.</p>
+          <p>Гости 1–5 влизат с код 0000 и получават по 30 000 € виртуални средства. При най-малко двама онлайн всички свързани гости натискат ГОТОВ. Тогава започва общо отброяване от 30 секунди. Всяка приета оферта задейства 5 секунди обща пауза. Администраторът само наблюдава.</p>
         </div>
       </section>
       <section className="eaMonitorBottom">
