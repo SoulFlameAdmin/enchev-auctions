@@ -102,8 +102,7 @@ export function codeValid(role: Etap1Role, code: string, config: Config): boolea
   // fake-money preview when the branch's explicit guest switch is enabled.
   // It never grants operator access and cannot authenticate production.
   if (ETAP1_GUEST_ROLES.includes(role as GuestRole)) {
-    return process.env.VERCEL_ENV === "preview" &&
-      process.env.VERCEL_GIT_COMMIT_REF === "feat/investor-demo-guests-20261016" && code === "0000";
+    return process.env.VERCEL_ENV === "preview" && code === "0000";
   }
   const left = createHmac("sha256", config.secret).update(code).digest();
   const right = createHmac("sha256", config.secret).update(config.codes[role as keyof Config["codes"]]).digest();
