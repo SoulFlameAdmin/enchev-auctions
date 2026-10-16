@@ -1328,3 +1328,41 @@ body:has(.eaRoom){background:#060a08;color:#effaf3}
   .eaWalletForm{grid-template-columns:1fr}
   .eaWalletForm button{width:100%}
 }
+
+
+/* Investor demo: one unmistakable START button for 1–5 logged-in guests. */
+.eaRoom .eaReadyControl .eaGuestStartButton{
+  display:block;
+  width:100%;
+  min-height:64px;
+  padding:13px 20px;
+  border:1px solid #a3ffd1;
+  border-radius:14px;
+  background:linear-gradient(120deg,#8dffd0 0%,#30efa0 62%,#1fdb8f 100%);
+  color:#032116;
+  font-weight:1000;
+  font-size:clamp(14px,1.7vw,20px);
+  letter-spacing:.02em;
+  white-space:normal;
+  text-align:center;
+  box-shadow:0 8px 30px #36efa450, inset 0 2px 0 #e5fff5a1;
+  cursor:pointer;
+}
+.eaRoom .eaReadyControl .eaGuestStartButton:disabled{
+  cursor:wait;
+  opacity:.65;
+}
+.eaRoom .eaReadyControl .eaGuestStartButton:not(:disabled):active{
+  transform:scale(.985);
+}
+@media(max-width:760px){
+  .eaRoom .eaReadyControl .eaGuestStartButton{
+    width:100%;
+    flex:1;
+    min-width:0;
+    min-height:60px;
+    font-size:16px;
+    letter-spacing:.01em;
+  }
+  .eaRoom .eaReadyControl{align-items:stretch;flex-wrap:wrap}
+}
