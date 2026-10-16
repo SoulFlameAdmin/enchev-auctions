@@ -103,7 +103,7 @@ export function codeValid(role: Etap1Role, code: string, config: Config): boolea
   // It never grants operator access and cannot authenticate production.
   if (ETAP1_GUEST_ROLES.includes(role as GuestRole)) {
     return process.env.VERCEL_ENV === "preview" &&
-      process.env.ENCHEV_ETAP1_GUESTS_ENABLED === "true" && code === "0000";
+      process.env.VERCEL_GIT_COMMIT_REF === "feat/investor-demo-guests-20261016" && code === "0000";
   }
   const left = createHmac("sha256", config.secret).update(code).digest();
   const right = createHmac("sha256", config.secret).update(config.codes[role as keyof Config["codes"]]).digest();
