@@ -2,8 +2,10 @@ import "server-only";
 import { createHmac, timingSafeEqual } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 
-export type Etap1Role = "admin" | "mitko" | "borko" | "enchev";
-export const ETAP1_ROLES: readonly Etap1Role[] = ["admin", "mitko", "borko", "enchev"];
+export type GuestRole = "guest1" | "guest2" | "guest3" | "guest4" | "guest5";
+export type Etap1Role = "admin" | "mitko" | "borko" | "enchev" | GuestRole;
+export const ETAP1_GUEST_ROLES: readonly GuestRole[] = ["guest1", "guest2", "guest3", "guest4", "guest5"];
+export const ETAP1_ROLES: readonly Etap1Role[] = ["admin", "mitko", "borko", "enchev", ...ETAP1_GUEST_ROLES];
 const SHARED_SOULFLAME_PROJECT = "frhletkiuupgksmgxoxc";
 const COOKIE = process.env.NODE_ENV === "production" ? "__Host-enchev-etap1" : "enchev-etap1-dev";
 // Admin and bidder must NOT share a browser cookie: opening the monitor
@@ -12,7 +14,7 @@ const ADMIN_COOKIE = process.env.NODE_ENV === "production" ? "__Host-enchev-etap
 
 type Config = {
   url: string; key: string; secret: string;
-  codes: Record<Etap1Role, string>;
+  codes: Record<"admin" | "mitko" | "borko" | "enchev", string>;
 };
 
 export function etap1Config(): Config | null {
@@ -21,7 +23,7 @@ export function etap1Config(): Config | null {
   const rawUrl = process.env.ENCHEV_ETAP1_SUPABASE_URL?.trim();
   const key = process.env.ENCHEV_ETAP1_SERVICE_ROLE_KEY?.trim();
   const secret = process.env.ENCHEV_ETAP1_SESSION_SECRET?.trim();
-  const codes: Record<Etap1Role,string> = {
+  const codes: Config["codes"] = {
     admin: process.env.ENCHEV_ETAP1_ADMIN_CODE?.trim() ?? "",
     mitko: process.env.ENCHEV_ETAP1_MITKO_CODE?.trim() ?? "",
     borko: process.env.ENCHEV_ETAP1_BORKO_CODE?.trim() ?? "",
@@ -35,7 +37,7 @@ export function etap1Config(): Config | null {
   const participantsHaveLongCodes = (["mitko", "borko", "enchev"] as const)
     .every(role => codes[role].length >= 16);
   if (codes.admin.length < 16 || (!shortDemoCodes && !participantsHaveLongCodes) ||
-    new Set(Object.values(codes)).size !== ETAP1_ROLES.length) return null;
+    new Set(Object.values(codes)).size !== 4) return null;
   try {
     const url = new URL(rawUrl);
     if (url.protocol !== "https:" || url.host !== ref + ".supabase.co" ||
@@ -96,8 +98,15 @@ export function sessionRole(request: NextRequest, config: Config): Etap1Role | n
 
 export function codeValid(role: Etap1Role, code: string, config: Config): boolean {
   if (code.length > 256) return false;
+  // Investor demo PIN is intentionally short and ONLY works in the isolated,
+  // fake-money preview when the branch's explicit guest switch is enabled.
+  // It never grants operator access and cannot authenticate production.
+  if (ETAP1_GUEST_ROLES.includes(role as GuestRole)) {
+    return process.env.VERCEL_ENV === "preview" &&
+      process.env.ENCHEV_ETAP1_GUESTS_ENABLED === "true" && code === "0000";
+  }
   const left = createHmac("sha256", config.secret).update(code).digest();
-  const right = createHmac("sha256", config.secret).update(config.codes[role]).digest();
+  const right = createHmac("sha256", config.secret).update(config.codes[role as keyof Config["codes"]]).digest();
   return timingSafeEqual(left, right);
 }
 
