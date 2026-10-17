@@ -69,8 +69,13 @@ const MASTER_PROMPT = `@GitHub @Vercel @Supabase
 - Прави реални промени чрез наличните конектори, тествай, поправяй и обновявай evidence.
 - Не нарушавай dependency и не заобикаляй login/MFA/CAPTCHA/permissions.
 - Външен blocker НЕ спира целия проект. Ако задача е BLOCKED само от quota/rate-limit/plan/billing/vendor credentials/legal sign-off/customer data/permission, запиши я BLOCKED с evidence и премини към най-ранната независима задача с изпълнени зависимости.
-- Конкретно: F08 Vercel build-rate-limit може да остане BLOCKED. Не го върти отново във всеки цикъл. Докато F08 е блокиран, работи реално по D01-D14 в dependency order, после по други независими задачи.
-- Ако D01 е RED, започни от D01 сега. Не се връщай към F08 освен ако има ново evidence, че лимитът е отпаднал.
+- OWNER DELIVERY OVERRIDE: DPP вече е INSTALLER-FIRST. Преди всеки блок прочети docs/INSTALLER_FIRST_DELIVERY_PLAN.md и data/installer-release.json, ако съществуват, и следвай реалната им текуща версия/следваща задача.
+- Крайната DPP линия е: versioned local Windows desktop shell -> вграден DPP UI -> BG/EN -> локални данни/config -> DPP-Setup.exe -> DEV/STABLE signed self-update -> backup/health-check/rollback -> clean-Windows/client acceptance.
+- Разработвай версия по версия. Не прескачай версия и не обявявай installer/update за готов без build/test/evidence. След рестарт или fresh ChatGPT session възстанови точната версия и незавършена installer задача от GitHub/source-of-truth и ПРОДЪЛЖИ, без да започваш отначало.
+- Когато реалният Windows installer/runtime стане наличен на локалния DPP DEV PC, разработи и използвай безопасен DPP-only runtime-test lane: стартиране на test installer/app, проверка на launch/UI/BG-EN/update/rollback и запис на evidence. Никога не управлявай ENCHEV app/runtime от DPP worker.
+- Vercel е secondary distribution/update host за DPP и може да остане BLOCKED. Vercel quota/token/deploy blocker НЕ спира dependency-safe installer/local work.
+- Старият D01-D14 demo ред не е глобален приоритет, ако installer-first source-of-truth вече определя по-ранна dependency-safe installer задача. Не връщай проекта към стария Vercel-first loop.
+- ENCHEV SYSTEM е отделен worker и трябва да продължава собствения си MASTER SYSTEM PLAN до неговия доказан 100%; APP2/DPP не трябва да го спира, рестартира или променя.
 
 Протокол:
 - Никога не пиши DAVID_STOP.
