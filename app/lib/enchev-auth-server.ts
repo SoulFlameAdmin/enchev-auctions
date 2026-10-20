@@ -8,6 +8,8 @@ import { NextRequest, NextResponse } from "next/server";
 const SHARED_GOVERNANCE_REF = "frhletkiuupgksmgxoxc";
 const ACCESS_NAME = process.env.NODE_ENV === "production" ? "__Host-enchev-at" : "enchev-dev-at";
 const REFRESH_NAME = process.env.NODE_ENV === "production" ? "__Host-enchev-rt" : "enchev-dev-rt";
+// Kept separate from buyer login cookies: a recovery link is NOT a buyer login.
+const RESET_NAME = process.env.NODE_ENV === "production" ? "__Host-enchev-reset" : "enchev-dev-reset";
 
 export type BuyerAuthConfig = { url: string; anonKey: string };
 
@@ -98,7 +100,7 @@ export function clearAuthCookies(response: NextResponse) {
 }
 
 export async function providerRequest(
-  config:BuyerAuthConfig,path:string,method:"GET"|"POST",bearer:string|undefined,body?:Record<string,unknown>
+  config:BuyerAuthConfig,path:string,method:"GET"|"POST"|"PUT",bearer:string|undefined,body?:Record<string,unknown>
 ): Promise<{status:number;data:unknown}|null> {
   try {
     const response = await fetch(config.url+path,{
@@ -120,4 +122,68 @@ export function safeUser(data: unknown): {id:string;email:string}|null {
   const user=data as Record<string,unknown>;
   return typeof user.id==="string" && typeof user.email==="string"
     ? {id:user.id,email:user.email} : null;
+}
+
+
+/** Strict bounded JSON parser for recovery actions. Never log credential material. */
+async function recoveryBody(request: NextRequest): Promise<Record<string, unknown> | null> {
+  if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) return null;
+  const length = Number(request.headers.get("content-length") || 0);
+  if (!Number.isFinite(length) || length > 4096 || length < 0) return null;
+  try {
+    const raw = await request.text();
+    if (raw.length > 4096) return null;
+    const value: unknown = JSON.parse(raw);
+    return value && typeof value === "object" && !Array.isArray(value)
+      ? value as Record<string, unknown> : null;
+  } catch { return null; }
+}
+
+export async function recoveryEmail(request: NextRequest): Promise<string | null> {
+  const value = await recoveryBody(request);
+  if (!value || typeof value.email !== "string") return null;
+  const email = value.email.trim().toLowerCase();
+  return email.length <= 254 && /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email) ? email : null;
+}
+
+export async function recoveryAccessToken(request: NextRequest): Promise<string | null> {
+  const value = await recoveryBody(request);
+  if (!value || value.type !== "recovery" || typeof value.access_token !== "string") return null;
+  const token = value.access_token;
+  return token.length >= 32 && token.length <= 4096 && /^[A-Za-z0-9._~-]+$/.test(token) ? token : null;
+}
+
+export async function recoveryNewPassword(request: NextRequest): Promise<string | null> {
+  const value = await recoveryBody(request);
+  return value && typeof value.password === "string" && value.password.length >= 12 && value.password.length <= 128
+    ? value.password : null;
+}
+
+export function recoveryRedirect(): string | null {
+  const configured = process.env.ENCHEV_AUTH_SITE_ORIGIN?.trim();
+  if (!configured) return null;
+  try {
+    const origin = new URL(configured);
+    if (origin.protocol !== "https:" || origin.origin !== configured ||
+      origin.username || origin.password || origin.pathname !== "/" || origin.search || origin.hash) return null;
+    return origin.origin + "/reset-password";
+  } catch { return null; }
+}
+
+export function readResetCookie(request: NextRequest): string {
+  return request.cookies.get(RESET_NAME)?.value ?? "";
+}
+
+export function setResetCookie(response: NextResponse, accessToken: string) {
+  // Maximum ten minutes; no refresh token and no signed-in buyer session.
+  response.cookies.set(RESET_NAME, accessToken, {
+    httpOnly: true, secure: process.env.NODE_ENV === "production",
+    sameSite: "strict", path: "/", maxAge: 600,
+  });
+}
+export function clearResetCookie(response: NextResponse) {
+  response.cookies.set(RESET_NAME, "", {
+    httpOnly: true, secure: process.env.NODE_ENV === "production",
+    sameSite: "strict", path: "/", maxAge: 0,
+  });
 }
