@@ -69,6 +69,7 @@ export default function BuyerAuthForm({mode}:{mode:Mode}){
           <button className="buyerAuthSubmit" type="submit" disabled={pending||available!==true}>
             {pending?"Please wait…":available===null?"Checking availability…":isRegister?"Create account":"Sign in"} →
           </button>
+          {!isRegister&&<p className="buyerAuthSwap"><a href="/reset-password">Forgot your password?</a></p>}
           <p className="buyerAuthSwap">{isRegister?"Already registered?":"New to ENCHEV?"} <a href={isRegister?"/login":"/register"}>{isRegister?"Sign in":"Create an account"}</a></p>
           <a className="buyerAuthPreview" href="/profile">Preview account workspace →</a>
         </form>}

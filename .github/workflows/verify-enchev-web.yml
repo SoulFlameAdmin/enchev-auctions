@@ -53,6 +53,8 @@ jobs:
         run: node scripts/verify-environment-scoped-ci-secrets.mjs
       - name: Generate frozen test task registry
         run: node scripts/generate-master-test-task-ids.mjs
+      - name: P0 password recovery source gate
+        run: node scripts/verify-enchev-recovery-contract.mjs
       - name: Repository lint
         run: npm run lint
       - name: DAVID session syntax and ownership invariants

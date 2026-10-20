@@ -2,7 +2,8 @@ import { NextRequest } from "next/server";
 import {
   authConfig,authUnavailable,json,bodyFields,sameOriginPost,
   authCookie,providerRequest,parseProviderSession,setAuthCookies,
-  clearAuthCookies,safeUser,
+  clearAuthCookies,safeUser,recoveryEmail,recoveryAccessToken,
+  recoveryNewPassword,recoveryRedirect,readResetCookie,setResetCookie,clearResetCookie,
 } from "../../../lib/enchev-auth-server";
 
 export const dynamic = "force-dynamic";
@@ -50,7 +51,7 @@ export async function GET(request:NextRequest,context:Params){
 export async function POST(request:NextRequest,context:Params){
   if (!sameOriginPost(request)) return json({ok:false,error:"Invalid request origin."},403);
   const {action}=await context.params;
-  if (!["sign-up","sign-in","sign-out"].includes(action)) return deny();
+  if (!["sign-up","sign-in","sign-out","request-reset","verify-recovery","set-new-password"].includes(action)) return deny();
   const config=authConfig();
   if (!config) return authUnavailable();
 
@@ -59,6 +60,53 @@ export async function POST(request:NextRequest,context:Params){
     // Revoke the current provider session if possible; always clear browser cookies.
     if (access) await providerRequest(config,"/auth/v1/logout","POST",access);
     const response=json({ok:true});
+    clearAuthCookies(response);
+    clearResetCookie(response);
+    return response;
+  }
+
+  if (action==="request-reset"){
+    const email=await recoveryEmail(request);
+    if (!email) return json({ok:false,error:"Enter a valid email address."},400);
+    const redirect=recoveryRedirect();
+    if (!redirect) return authUnavailable();
+    const provider=await providerRequest(config,
+      "/auth/v1/recover?redirect_to="+encodeURIComponent(redirect),
+      "POST",undefined,{email});
+    if (!provider || provider.status>=500) return json({ok:false,error:"Identity service temporarily unavailable."},503);
+    if (provider.status===429) return json({ok:false,error:"Too many attempts. Try again later."},429);
+    // Do not disclose whether an email address exists.
+    return json({ok:true,message:"If an account exists for this email, a password-reset link will arrive shortly."});
+  }
+
+  if (action==="verify-recovery"){
+    const token=await recoveryAccessToken(request);
+    if (!token) return json({ok:false,error:"Invalid or expired recovery link."},400);
+    const verified=await providerRequest(config,"/auth/v1/user","GET",token);
+    if (!verified || verified.status!==200 || !safeUser(verified.data))
+      return json({ok:false,error:"Invalid or expired recovery link."},401);
+    const response=json({ok:true,recoveryReady:true});
+    // Recovery credential can only be used by the password-change endpoint.
+    clearAuthCookies(response);
+    setResetCookie(response,token);
+    return response;
+  }
+
+  if (action==="set-new-password"){
+    const password=await recoveryNewPassword(request);
+    if (!password) return json({ok:false,error:"Use a new password of 12–128 characters."},400);
+    const token=readResetCookie(request);
+    if (!token) return json({ok:false,error:"Recovery session expired. Request a new link."},401);
+    const verified=await providerRequest(config,"/auth/v1/user","GET",token);
+    if (!verified || verified.status!==200 || !safeUser(verified.data))
+      return json({ok:false,error:"Recovery session expired. Request a new link."},401);
+    const updated=await providerRequest(config,"/auth/v1/user","PUT",token,{password});
+    if (!updated || updated.status!==200 || !safeUser(updated.data))
+      return json({ok:false,error:"Password was not updated. Try again or request a new link."},400);
+    // Invalidate the recovery session, require an explicit sign-in afterward.
+    await providerRequest(config,"/auth/v1/logout","POST",token);
+    const response=json({ok:true,message:"Password updated. Sign in with your new password."});
+    clearResetCookie(response);
     clearAuthCookies(response);
     return response;
   }
