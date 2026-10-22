@@ -2,7 +2,7 @@ import {
   normalizePlatformLegalRole,
   type PlatformLegalRole,
   type PlatformLegalRoleStatus,
-} from "./platform-legal-role";
+} from "./platform-legal-role.js";
 
 /**
  * SYSTEM 63.02 — pure lifecycle decisions for the platform legal-role record.
@@ -78,7 +78,7 @@ export function transitionPlatformLegalRole(
   command: PlatformLegalRoleCommand,
 ): PlatformLegalRoleTransition {
   const current = normalizePlatformLegalRole(currentInput);
-  if (!command || typeof command !== "object" || !(command.action in allowed))
+  if (!command || typeof command !== "object" || !Object.prototype.hasOwnProperty.call(allowed, command.action))
     throw new Error("PLATFORM_ROLE_TRANSITION_ACTION_INVALID");
   const rule = allowed[command.action];
   const actorId = checkedString(command.actorId, "PLATFORM_ROLE_TRANSITION_ACTOR_REQUIRED", 160);
