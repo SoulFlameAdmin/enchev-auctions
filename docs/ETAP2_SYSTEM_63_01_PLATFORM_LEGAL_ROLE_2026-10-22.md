@@ -52,3 +52,16 @@ Test: `node scripts/verify-etap2-platform-legal-role-63-01.mjs`.
 - ENCHEV AI assistant is a separate, non-authoritative capability and must not determine bids, pricing obligations or legal compliance
 
 Full evidence and dependency-gated system execution are controlled by `docs/MASTER_SYSTEM_PLAN_V1_FROZEN.md` and `docs/MASTER_SYSTEM_EXPANSION_V2.md`.
+
+
+## SYSTEM 63.02 — lifecycle transitions (added in follow-up)
+
+Status: **YELLOW until CI exact-head and evidence gates pass**.
+
+- Domain implementation: `packages/domain/src/platform-legal-role-lifecycle.ts`
+- Test: `node scripts/verify-etap2-platform-legal-role-lifecycle-63-02.mjs`
+- Authorized transitions: draft → under-review → approved → suspended → under-review; under-review → draft for changes.
+- Every transition checks the expected revision and records immutable audit metadata (actor ID, action, reason, time, old/new states).
+- Approval requires contract and legal-review references, with no cross-market implicit permissions.
+- The record's status is never a substitute for verifying actor authorization and legal documents via the server.
+- No production database or LIVE bidding changes.
