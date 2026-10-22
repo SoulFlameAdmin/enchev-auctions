@@ -1,0 +1,31 @@
+name: Temporary P0 lockfile proposal evidence
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - package.json
+      - .github/workflows/p0-lockfile-proposal.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  propose-lock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout proposed patch
+        uses: actions/checkout@v4
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Generate lockfile without lifecycle scripts
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Verify patched dependencies
+        run: npm audit --package-lock-only --audit-level=high
+      - name: Print publicly reviewable lockfile for proposal
+        run: |
+          echo LOCKFILE_PROPOSAL_BEGIN
+          base64 -w 0 package-lock.json
+          echo
+          echo LOCKFILE_PROPOSAL_END
