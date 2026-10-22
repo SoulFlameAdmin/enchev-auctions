@@ -23,6 +23,7 @@ export * from "./notification-suppression";
 export * from "./multi-auction-realtime-consistency";
 export * from "./inspection-intelligence";
 export * from "./seller-listing-foundation";
+export * from "./platform-legal-role";
 export * from "./seller-workflow";
 export * from "./live-auction-ux";
 export * from "./auction-trust-record";
