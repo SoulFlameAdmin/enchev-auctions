@@ -352,8 +352,12 @@ await Promise.all(Array.from({ length: 6 }, async () => {
     let data;
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
-        const response = await fetch(asset.url, { signal: AbortSignal.timeout(90000) });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        // Original media links can disappear upstream. Try the last verified
+        // ENCHEV production snapshot before declaring the immutable asset lost.
+        const historicalUrl = 'https://enchev-auctions-qw3dawzn0-dimitar-lambovs-projects.vercel.app/forge/' + asset.path;
+        const url = attempt === 0 ? asset.url : historicalUrl;
+        const response = await fetch(url, { signal: AbortSignal.timeout(90000) });
+        if (!response.ok) throw new Error(`HTTP ${response.status} at ${url}`);
         data = Buffer.from(await response.arrayBuffer());
         if (digest(data) !== asset.sha256) throw new Error('Source content changed');
         break;
