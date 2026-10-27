@@ -1,0 +1,318 @@
+{
+  "schema": "enchev.closed-demo-gap-baseline.v1",
+  "observedAt": "2026-10-27",
+  "mainCommit": "d23f2a7eca1f8073c91bbd9baf95e385b8c14dd3",
+  "missionSource": "docs/URGENT_DAVID_AGI_ENCHEV_CLOSED_DEMO_V1.md",
+  "scope": "CLOSED DEMO evidence checkpoint only — not a SYSTEM task status store or GREEN declaration",
+  "statusMeanings": {
+    "partial": "Some grounded code/data exists; missing exact-head runtime or end-to-end acceptance evidence.",
+    "unverified": "No sufficient reviewed implementation/runtime evidence; not proof of absolute absence.",
+    "external": "Depends on external witnessed acceptance or authority; never automatically GREEN."
+  },
+  "nonProduction": true,
+  "releaseGates": [
+    "MISSION-024",
+    "MISSION-026",
+    "MISSION-028",
+    "MISSION-033",
+    "MISSION-034",
+    "MISSION-035"
+  ],
+  "nextAction": "MISSION-002: prove isolated DEMO configuration, document/payment fail-closed behavior, and no production side effects; then verify MISSION-003 identity before a persisted vehicle intake.",
+  "steps": [
+    {
+      "id": "MISSION-001",
+      "status": "partial",
+      "blocker": "Audit evidence has been collected; review and targeted CI have not yet certified the baseline.",
+      "evidence": [
+        "https://github.com/SoulFlameAdmin/enchev-auctions/blob/main/docs/URGENT_DAVID_AGI_ENCHEV_CLOSED_DEMO_V1.md",
+        "https://github.com/SoulFlameAdmin/enchev-auctions/tree/main"
+      ],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-002",
+      "status": "partial",
+      "blocker": "A dedicated review branch exists. A proven, isolated transaction DEMO environment and money/document safety gate do not.",
+      "evidence": [
+        "https://github.com/SoulFlameAdmin/enchev-auctions/tree/main"
+      ],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-003",
+      "status": "partial",
+      "blocker": "Buyer auth exists on main; distinct live pilot identities are in an unmerged draft branch and need real two-user/device authorization tests.",
+      "evidence": [
+        "https://github.com/SoulFlameAdmin/enchev-auctions/pull/377",
+        "https://github.com/SoulFlameAdmin/enchev-auctions/tree/main"
+      ],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-004",
+      "status": "partial",
+      "blocker": "Seller listing draft/domain functions exist; no proven persisted end-to-end DEMO vehicle intake was observed.",
+      "evidence": [
+        "https://github.com/SoulFlameAdmin/enchev-auctions/blob/main/packages/domain/src/seller-listing-foundation.ts"
+      ],
+      "mappedSystemTaskIds": [
+        "35.01",
+        "35.02",
+        "35.03",
+        "35.04"
+      ]
+    },
+    {
+      "id": "MISSION-005",
+      "status": "unverified",
+      "blocker": "No verified persisted DEMO intake document and watermark evidence.",
+      "evidence": [],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-006",
+      "status": "unverified",
+      "blocker": "No verified versioned non-legal seller declaration tied to one vehicle.",
+      "evidence": [],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-007",
+      "status": "partial",
+      "blocker": "Seller listing review domain exists, but a persisted role-authorized DEMO approval transition was not verified.",
+      "evidence": [
+        "https://github.com/SoulFlameAdmin/enchev-auctions/blob/main/packages/domain/src/seller-workflow.ts"
+      ],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-008",
+      "status": "partial",
+      "blocker": "Auction/room infrastructure is in an unmerged LIVE pilot; stable lot-to-vehicle transaction binding remains unproven.",
+      "evidence": [
+        "https://github.com/SoulFlameAdmin/enchev-auctions/pull/377"
+      ],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-009",
+      "status": "partial",
+      "blocker": "Auction/vehicle snapshot domain material exists; immutable persisted opening snapshot in the CLOSED DEMO is unproven.",
+      "evidence": [
+        "https://github.com/SoulFlameAdmin/enchev-auctions/blob/main/packages/domain/src/auction-trust-record.ts"
+      ],
+      "mappedSystemTaskIds": [
+        "37.02",
+        "37.03"
+      ]
+    },
+    {
+      "id": "MISSION-010",
+      "status": "unverified",
+      "blocker": "No demonstrated per-bidder persisted terms-version acceptance and bid gate.",
+      "evidence": [],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-011",
+      "status": "partial",
+      "blocker": "Server-authoritative timer is described by the LIVE pilot, still pending physical acceptance on exact head.",
+      "evidence": [
+        "https://github.com/SoulFlameAdmin/enchev-auctions/pull/377"
+      ],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-012",
+      "status": "partial",
+      "blocker": "Atomic server bid path exists in draft pilot; not an integrated, accepted CLOSED DEMO API.",
+      "evidence": [
+        "https://github.com/SoulFlameAdmin/enchev-auctions/pull/377"
+      ],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-013",
+      "status": "partial",
+      "blocker": "Draft PR claims simultaneous-bid tests; exact-head integration and physical role tests are pending.",
+      "evidence": [
+        "https://github.com/SoulFlameAdmin/enchev-auctions/pull/377"
+      ],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-014",
+      "status": "partial",
+      "blocker": "Dedicated demo bid tables exist, but CLOSED DEMO joined audit chronology and rejection reasons are not fully certified.",
+      "evidence": [
+        "https://github.com/SoulFlameAdmin/enchev-auctions/pull/377",
+        "https://supabase.com/dashboard/project/ejfrnjhlggebzmpmxajl"
+      ],
+      "mappedSystemTaskIds": [
+        "37.04"
+      ]
+    },
+    {
+      "id": "MISSION-015",
+      "status": "partial",
+      "blocker": "Live pilot has synchronized states and reconnect work; mobile multi-device acceptance remains pending.",
+      "evidence": [
+        "https://github.com/SoulFlameAdmin/enchev-auctions/pull/377"
+      ],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-016",
+      "status": "partial",
+      "blocker": "Draft live pilot has backend finalization; full transaction-specific winner binding unverified.",
+      "evidence": [
+        "https://github.com/SoulFlameAdmin/enchev-auctions/pull/377"
+      ],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-017",
+      "status": "unverified",
+      "blocker": "No verified generation of authoritative, DEMO-marked close certificate.",
+      "evidence": [],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-018",
+      "status": "partial",
+      "blocker": "Live winner UI is described in pilot but transaction next-step persistence after relogin is not accepted.",
+      "evidence": [
+        "https://github.com/SoulFlameAdmin/enchev-auctions/pull/377"
+      ],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-019",
+      "status": "unverified",
+      "blocker": "No verified deterministic versioned DEMO fee and quote calculation on the transaction path.",
+      "evidence": [],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-020",
+      "status": "unverified",
+      "blocker": "No verified DEMO pro forma that cannot become a legal invoice.",
+      "evidence": [],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-021",
+      "status": "unverified",
+      "blocker": "No safe non-payable DEMO payment instruction accepted.",
+      "evidence": [],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-022",
+      "status": "unverified",
+      "blocker": "No verified isolated sandbox payment state machine/idempotent callbacks for CLOSED DEMO.",
+      "evidence": [],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-023",
+      "status": "unverified",
+      "blocker": "No verified DEMO confirmation derived from sandbox truth.",
+      "evidence": [],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-024",
+      "status": "unverified",
+      "blocker": "Critical backend no-payment/no-release denial has not been proven in a real transaction API.",
+      "evidence": [],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-025",
+      "status": "unverified",
+      "blocker": "No verified single-use vehicle+winner+transaction-bound DEMO release authorization.",
+      "evidence": [],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-026",
+      "status": "unverified",
+      "blocker": "No verified wrong/expired/reused credential rejection at API boundary.",
+      "evidence": [],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-027",
+      "status": "unverified",
+      "blocker": "No verified DEMO handover protocol persisted for this transaction.",
+      "evidence": [],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-028",
+      "status": "unverified",
+      "blocker": "No verified exactly-once token consumption/completion or replay-abuse proof.",
+      "evidence": [],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-029",
+      "status": "unverified",
+      "blocker": "No verified DEMO completion certificate with all identifiers reconciled.",
+      "evidence": [],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-030",
+      "status": "unverified",
+      "blocker": "No verified document package allowing reconstruction of a full transaction.",
+      "evidence": [],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-031",
+      "status": "unverified",
+      "blocker": "No verified tamper-detectable document hash/revision chain on demo documents.",
+      "evidence": [],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-032",
+      "status": "partial",
+      "blocker": "Seller/auction event-audit models exist, but a full intake-to-handover immutable audit is not demonstrated.",
+      "evidence": [
+        "https://github.com/SoulFlameAdmin/enchev-auctions/blob/main/packages/domain/src/seller-workflow.ts",
+        "https://github.com/SoulFlameAdmin/enchev-auctions/pull/377"
+      ],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-033",
+      "status": "partial",
+      "blocker": "Repo has failure-injection harness and auction tests; full payment/release/restart scenario suite is absent from reviewed proof.",
+      "evidence": [
+        "https://github.com/SoulFlameAdmin/enchev-auctions/blob/main/scripts/verify-failure-injection-harness.mjs",
+        "https://github.com/SoulFlameAdmin/enchev-auctions/pull/377"
+      ],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-034",
+      "status": "unverified",
+      "blocker": "Full in-person internal rehearsal with zero interventions has not been evidenced.",
+      "evidence": [],
+      "mappedSystemTaskIds": []
+    },
+    {
+      "id": "MISSION-035",
+      "status": "external",
+      "blocker": "Formal Enchev end-to-end acceptance must follow all transaction safety checks and a witnessed rehearsal.",
+      "evidence": [
+        "https://github.com/SoulFlameAdmin/enchev-auctions/blob/main/docs/URGENT_DAVID_AGI_ENCHEV_CLOSED_DEMO_V1.md"
+      ],
+      "mappedSystemTaskIds": []
+    }
+  ]
+}
