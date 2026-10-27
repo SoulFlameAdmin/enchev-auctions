@@ -35,8 +35,8 @@ export default function EnchevCinematicLoginGate() {
         let current = event.target as Element | null;
         for (let level = 0; current && level < 7; level++, current = current.parentElement) {
           const label = (current.textContent || current.getAttribute("aria-label") || "")
-            .replace(/\\s+/g, " ").trim();
-          if (/^ENTER(?:\\s*[→↗›])?$/i.test(label)) {
+            .replace(/\s+/g, " ").trim();
+          if (/^ENTER(?:\s*[→↗›])?$/i.test(label)) {
             // Leave the original Forge ENTER handler intact.
             window.requestAnimationFrame(() => {
               setRevealed(false);
