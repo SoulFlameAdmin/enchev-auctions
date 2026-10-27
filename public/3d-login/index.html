@@ -197,7 +197,7 @@ catch(e){loading.textContent='WebGL не е наличен';throw e;}
 renderer.setPixelRatio(Math.min(window.devicePixelRatio,innerWidth<760?1.3:1.75));
 renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;
 const scene=new THREE.Scene();scene.fog=new THREE.FogExp2(0x070b16,.025);
-const camera=new THREE.PerspectiveCamera(35,1,.1,100);camera.position.set(0,2.6,9.8);camera.lookAt(0,1,0);
+const camera=new THREE.PerspectiveCamera(37,1,.1,100);camera.position.set(3.0,2.65,8.8);camera.lookAt(0,0.9,0);
 scene.add(new THREE.HemisphereLight(0xacc0eb,0x131016,2.6));
 const key=new THREE.DirectionalLight(0xd5e7ff,4.4);key.position.set(-5,9,10);scene.add(key);
 const rim=new THREE.DirectionalLight(0x809ff0,4);rim.position.set(5,5,-4);scene.add(rim);
@@ -211,7 +211,7 @@ cx.fillStyle=grad;cx.fillRect(0,0,128,128);
 const tex=new THREE.CanvasTexture(smokeTexCanvas);
 const particles=Array.from({length:innerWidth<760?28:56},()=>{const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,color:0xc5c9d1,opacity:0,transparent:true,depthWrite:false}));sprite.visible=false;scene.add(sprite);return {sprite,age:4,life:1,velocity:new THREE.Vector3()};});
 const clock=new THREE.Clock();let model=null,mixer=null,wheels=[],active=false,boost=0,drifting=0,elapsed=0,spawn=0,pointer=0;
-function resize(){let w=Math.max(1,canvas.clientWidth),h=Math.max(1,canvas.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.fov=w<600?39:35;camera.updateProjectionMatrix();}
+function resize(){let w=Math.max(1,canvas.clientWidth),h=Math.max(1,canvas.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.fov=w<600?41:37;camera.position.set(w<600?2.4:3.0,w<600?2.35:2.65,w<600?9.3:8.8);camera.lookAt(0,.9,0);camera.updateProjectionMatrix();}
 resize();addEventListener('resize',resize);
 right.addEventListener('pointermove',e=>{const b=right.getBoundingClientRect();pointer=((e.clientX-b.left)/b.width-.5)*2;});
 function tween(t,o){if(window.gsap){window.gsap.to(t,o);return}const dur=(o.duration||1)*1000,st=performance.now(),keys=Object.keys(o).filter(k=>typeof o[k]==='number'&&typeof t[k]==='number'&&k!=='duration'),start=Object.fromEntries(keys.map(k=>[k,t[k]]));function run(now){let k=Math.min(1,(now-st)/dur),s=1-(1-k)**3;keys.forEach(key=>t[key]=start[key]+(o[key]-start[key])*s);if(k<1)requestAnimationFrame(run);else o.onComplete?.()}requestAnimationFrame(run);}
@@ -227,23 +227,44 @@ root.updateMatrixWorld(true);p.sprite.position.copy(root.localToWorld(new THREE.
 function smokeUpdate(dt){spawn+=dt*(1.5+boost*24+drifting*30);while(spawn>=1){burstSmoke();spawn--}
 for(const p of particles){if(!p.sprite.visible)continue;p.age+=dt;const t=p.age/p.life;if(t>=1){p.sprite.visible=false;continue}p.sprite.position.addScaledVector(p.velocity,dt);const s=.3+2.4*t;p.sprite.scale.set(s,s,1);p.sprite.material.opacity=Math.sin(Math.PI*t)*(.14+.27*Math.max(boost,drifting));}}
 function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05);elapsed+=dt;if(model){if(mixer)mixer.update(dt);if(!active){root.rotation.y=THREE.MathUtils.damp(root.rotation.y,Math.sin(elapsed*.7)*.023+pointer*.028,2,dt);root.position.x=THREE.MathUtils.damp(root.position.x,Math.sin(elapsed*.6)*.06,1.7,dt)}wheels.forEach(w=>{w.rotation.y+=(boost?12:drifting?7:.18)*dt});smokeUpdate(dt)}renderer.render(scene,camera);}animate();
-// Prefer ENCHEV's high-poly car once uploaded into the site; until then,
-// the previous GLB remains only as an explicitly labelled visual fallback.
-const highPolyGlb='/3d-login/assets/high-poly_3d_model_of_modern_game__render_ready.glb';
-const fallbackGlb='https://raw.githubusercontent.com/JaronKBragg7337/spectral-gt-rs/main/spectral_gt_rs_game_ready.glb';
-const loader=new GLTFLoader();
-let usedFallback=false;
-function load3D(url){loader.load(url,gltf=>{model=gltf.scene;model.rotation.y=-Math.PI/2;model.updateMatrixWorld(true);const b=new THREE.Box3().setFromObject(model),c=b.getCenter(new THREE.Vector3());model.position.set(-c.x,-b.min.y,-c.z);
-model.traverse(o=>{if(o.isMesh){o.frustumCulled=false;if(/^(Rear|Front)_(Left|Right)_Tire$/.test(o.name))wheels.push(o)}});root.add(model);
-if(gltf.animations?.length){mixer=new THREE.AnimationMixer(model);const clip=gltf.animations.find(a=>a.name.toLowerCase().includes('steering'));if(clip){mixer.clipAction(clip).play()}}
-loading.classList.add('done');gas.disabled=driftBtn.disabled=resetBtn.disabled=false;status.textContent=usedFallback?'PREVIEW MODEL · HIGH-POLY FILE PENDING':'ENCHEV REAL GLB · 3D READY';
-tween(root.position,{z:0,duration:2.4});
-if(!reduced){setTimeout(gasAction,2800);setTimeout(driftAction,5900);}
-},undefined,e=>{
-if(!usedFallback){usedFallback=true;load3D(fallbackGlb);return;}
-console.error('GLB',e);
-loading.textContent='3D моделът временно не може да се зареди';
-status.textContent='MODEL UNAVAILABLE';
-});}
-load3D(highPolyGlb);
+// Spectral GT RS original game-ready GLB from the explicitly selected GitHub repository.
+// Pinned to a verified upstream commit so all visitors get the same 4,688,844-byte asset.
+const carGlb='https://raw.githubusercontent.com/JaronKBragg7337/spectral-gt-rs/34499c501908818a2b08e589a7aecf963343cee7/spectral_gt_rs_game_ready.glb';
+new GLTFLoader().load(carGlb,gltf=>{
+  model=gltf.scene;
+  // The source car points to +X; turn it to face our +Z camera.
+  model.rotation.y=-Math.PI/2;
+  model.updateMatrixWorld(true);
+  const bounds=new THREE.Box3().setFromObject(model);
+  const center=bounds.getCenter(new THREE.Vector3());
+  model.position.set(-center.x,-bounds.min.y,-center.z);
+  model.traverse(object=>{
+    if(object.isMesh){
+      object.frustumCulled=false;
+      if(/^(Rear|Front)_(Left|Right)_Tire$/.test(object.name)) wheels.push(object);
+    }
+  });
+  root.add(model);
+  if(gltf.animations?.length){
+    mixer=new THREE.AnimationMixer(model);
+    const clip=gltf.animations.find(animation=>animation.name==='Steering_Input_PingPong');
+    if(clip) mixer.clipAction(clip).play();
+  }
+  loading.classList.add('done');
+  gas.disabled=driftBtn.disabled=resetBtn.disabled=false;
+  status.textContent='SPECTRAL GT RS · ORIGINAL GLB';
+  tween(root.position,{z:0,duration:2.4});
+  if(!reduced){
+    setTimeout(gasAction,2800);
+    setTimeout(driftAction,5900);
+  }
+},event=>{
+  if(event.total>0){
+    status.textContent='ЗАРЕЖДАНЕ НА 3D · '+Math.min(100,Math.round(100*event.loaded/event.total))+'%';
+  }
+},error=>{
+  console.error('Original Spectral GT RS GLB failed to load',error);
+  loading.textContent='Неуспешно зареждане на оригиналния .GLB. Опитайте отново.';
+  status.textContent='ORIGINAL GLB · LOAD ERROR';
+});
 </script></body></html>
