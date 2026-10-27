@@ -40,6 +40,78 @@ input:focus{border-color:#ddd;box-shadow:0 0 0 3px #ffffff0d}
 .loading.done{opacity:0}.login-decoration{position:absolute;inset:0;pointer-events:none;background:linear-gradient(165deg,transparent 25%,#ffffff03 40%,transparent 58%)}
 @media(max-width:760px){.stage{display:flex;flex-direction:column-reverse}.right{min-height:49dvh;height:49dvh}.left{min-height:570px;padding:30px 7vw}.entry{padding:40px 0}.topline{font-size:8px;top:25px;left:7vw;right:7vw}.topline .number{display:none}.headline{bottom:83px;left:7vw}.headline h2{font-size:38px;margin:7px 0}.headline p{font-size:11px}.headline small{font-size:8px}.controls{bottom:23px;right:5vw}.controls button{padding:9px;font-size:9px}.status{display:none}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+
+/* Modal-fit layout: no internal scroll, fluid height and compact alternative sign-ins */
+html,body{width:100%;height:100%;min-height:0;overflow:hidden}
+.stage{height:100dvh;min-height:0;overflow:hidden;grid-template-columns:44% 56%}
+.left,.right{height:100%;min-height:0;overflow:hidden}
+.left{padding:clamp(16px,3vh,32px) clamp(19px,3vw,44px);justify-content:space-between}
+.brand{font-size:clamp(21px,2vw,30px);line-height:1}
+.brandSub{font-size:9px;letter-spacing:.19em}
+.entry{margin:auto 0;max-width:100%;padding:0;min-height:0;display:flex;flex-direction:column;justify-content:center}
+.eyebrow{font-size:9px}
+h1{font-size:clamp(26px,3.5vw,44px);margin:13px 0 7px}
+.subtitle{font-size:12px;line-height:1.35;margin:0 0 clamp(11px,2vh,17px)}
+.loginForm{display:flex;flex-direction:column;min-height:0}
+.loginForm label{font-size:11px;margin:0 0 5px}
+.loginForm input{height:clamp(32px,5.5vh,44px);font-size:12px;margin-bottom:10px;padding:0 13px}
+.loginForm .primary{min-height:clamp(35px,6vh,45px);font-size:11px;flex-shrink:0}
+.provider-divider{display:flex;align-items:center;gap:9px;margin:clamp(10px,1.9vh,16px) 0 10px;color:#999ca4;font-size:9px;letter-spacing:.16em;white-space:nowrap}
+.provider-divider:before,.provider-divider:after{content:"";height:1px;flex:1;background:#ffffff28}
+.providers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.provider{display:flex;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:38px;padding:5px 4px;border:1px solid #62636b;background:#17191d;color:#f5f5f7;font-size:11px;cursor:pointer;transition:background .2s,border-color .2s}
+.provider:hover,.provider:focus-visible{background:#2a2c35;border-color:#e4cc9b}
+.providerGlyph{font-size:16px;font-weight:800;color:#dadada;line-height:1}
+.googleG{color:#4285f4}.metaG{font-family:Arial,sans-serif;font-size:20px;color:#2d82ed}
+.authMessage{font-size:10px;line-height:1.3;color:#b7b9c3;margin-top:9px;min-height:13px}
+.authMessage.error{color:#ffc2be}.authMessage.good{color:#abddbd}
+.helper{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font-size:10px;margin-top:10px}
+.leftFoot{font-size:8px}
+.right .headline{bottom:clamp(67px,11vh,95px);left:25px}
+.headline h2{font-size:clamp(26px,3.6vw,51px)}.headline p{font-size:11px}
+.right .controls{bottom:26px;right:20px}.right .controls button{padding:8px 10px;font-size:10px}
+.right .status{bottom:24px;left:25px;font-size:9px}
+@media(max-height:590px) and (min-width:761px){
+  .left{padding-block:12px}.brand{font-size:21px}
+  h1{font-size:29px;margin:7px 0 5px}
+  .subtitle{margin-bottom:7px;font-size:11px}
+  .loginForm input{height:31px;margin-bottom:6px}
+  .loginForm .primary{min-height:34px}
+  .provider-divider{margin:8px 0 7px}.provider{min-height:31px}.authMessage{margin-top:5px}.helper{margin-top:5px}
+}
+@media(max-width:760px){
+  .stage{display:grid;grid-template-columns:1fr;grid-template-rows:minmax(170px,39%) minmax(0,61%);height:100dvh}
+  .right{grid-row:1;grid-column:1;min-height:0;height:100%;width:100%}
+  .left{grid-row:2;grid-column:1;min-height:0;height:100%;padding:11px 20px 12px;overflow:hidden}
+  .left header{display:flex;align-items:end;gap:12px}.brand{font-size:19px}.brandSub{font-size:8px;margin-top:0}
+  .entry{display:block;align-self:stretch;padding:0;margin:auto 0;max-width:100%}
+  .eyebrow{font-size:8px}h1{font-size:clamp(23px,5.6vw,30px);margin:5px 0 3px}
+  .subtitle{font-size:10px;margin-bottom:6px;line-height:1.2}
+  .loginForm label{font-size:10px;margin-bottom:2px}
+  .loginForm input{height:31px;margin-bottom:5px;font-size:12px}
+  .loginForm .primary{min-height:32px}
+  .provider-divider{margin:7px 0 6px}
+  .provider{min-height:30px;font-size:10px}
+  .authMessage{font-size:9px;margin-top:5px;min-height:11px;line-height:1.15}
+  .helper{margin-top:4px;font-size:9px}
+  .leftFoot{display:none}
+  .right .headline{bottom:50px;left:20px}.headline h2{font-size:30px;margin:5px 0}
+  .headline small{font-size:8px}.headline p{display:none}
+  .right .topline{top:14px;left:20px;right:20px;font-size:8px}
+  .right .controls{bottom:12px;right:14px}.right .controls button{padding:5px 8px;font-size:9px}
+  .right .status{display:none}
+}
+@media(max-width:760px) and (max-height:600px){
+  .stage{grid-template-rows:minmax(120px,31%) minmax(0,69%)}
+  .left{padding-block:5px}.left header{display:none}
+  h1{font-size:23px}.subtitle{display:none}
+  .loginForm input{height:26px;margin-bottom:3px}
+  .loginForm .primary{min-height:27px}
+  .provider-divider{margin:4px 0}
+  .provider{min-height:27px}
+  .helper{margin-top:3px}
+  .right .headline{bottom:41px}
+}
 </style>
 <script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
@@ -50,14 +122,24 @@ input:focus{border-color:#ddd;box-shadow:0 0 0 3px #ffffff0d}
 <div class="login-decoration"></div>
 <header><div class="brand">ENCHEV<b>.</b></div><div class="brandSub">AUCTIONS — <em>SOULFLAME</em></div></header>
 <div class="entry">
-<div class="eyebrow">MEMBER ACCESS · 01 / 02</div>
+<div class="eyebrow">MEMBER ACCESS · ENCHEV</div>
 <h1>Добре дошли<span>.</span></h1>
-<p>Влезте в света на автомобилните търгове.</p>
-<label for="email">Имейл адрес</label><input type="email" id="email" placeholder="you@example.com" autocomplete="off" readonly aria-describedby="secure">
-<label for="password">Парола</label><input id="password" type="text" placeholder="Защитен вход в ENCHEV" readonly aria-describedby="secure">
-<button class="primary" id="login" type="button">ВХОД &nbsp; ↗</button>
-<span id="secure" class="secure">Защитеният вход се отваря на следващата страница.</span>
-<div class="helper">Нямате профил? <a href="/register" target="_top">Регистрация →</a><br><a href="/platform" target="_top">Разгледай демото →</a></div>
+<p class="subtitle">Твоят достъп до автомобилните търгове.</p>
+<form class="loginForm" id="authForm" novalidate>
+<label for="email">Имейл адрес</label>
+<input type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email" required maxlength="254">
+<label for="password">Парола</label>
+<input id="password" type="password" name="password" placeholder="Вашата парола" autocomplete="current-password" required minlength="12" maxlength="128">
+<button class="primary" id="login" type="submit">ВХОД &nbsp; ↗</button>
+</form>
+<div class="provider-divider"><span>ИЛИ ПРОДЪЛЖИ С</span></div>
+<div class="providers" role="group" aria-label="Други начини за вход">
+<button type="button" class="provider" data-provider="google" title="Google / Gmail"><span class="providerGlyph googleG">G</span><span>Google</span></button>
+<button type="button" class="provider" data-provider="meta" title="Meta / Facebook"><span class="providerGlyph metaG">f</span><span>Meta</span></button>
+<button type="button" class="provider" data-provider="phone" title="Вход с телефонен номер"><span class="providerGlyph">☎</span><span>Телефон</span></button>
+</div>
+<div id="authMessage" class="authMessage" role="status" aria-live="polite">Проверка на възможностите за сигурен вход...</div>
+<div class="helper">Нямате профил? <a href="/register" target="_top">Регистрация →</a> <a href="/platform" target="_top">Разгледай демото →</a></div>
 </div>
 <footer class="leftFoot"><span>ENCHEV AUCTIONS</span><span>BUILT WITH SOULFLAME</span></footer>
 </section>
@@ -73,7 +155,38 @@ input:focus{border-color:#ddd;box-shadow:0 0 0 3px #ffffff0d}
 <script type="module">
 import * as THREE from 'three';
 import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-document.querySelector('#login').onclick=()=>{window.top.location.href='/login'};
+
+const form=document.querySelector('#authForm'),msg=document.querySelector('#authMessage');
+const email=document.querySelector('#email'),password=document.querySelector('#password'),submit=document.querySelector('#login');
+let available=false;
+const setMsg=(text,type='')=>{msg.textContent=text;msg.className='authMessage '+type;};
+fetch('/api/enchev-auth/session',{credentials:'same-origin',cache:'no-store'})
+  .then(r=>r.json()).then(j=>{
+    available=j?.available===true;
+    if(j?.authenticated===true){setMsg('Вече сте влезли. Може да отворите профила си.','good');submit.textContent='МОЯТ ПРОФИЛ ↗';return;}
+    setMsg(available?'Входът с имейл е активен.':'Регистрацията и входът очакват активиране на защитената система.');
+  }).catch(()=>setMsg('Не е възможно да проверим входа. Опитайте отново.','error'));
+form.addEventListener('submit',async(e)=>{
+  e.preventDefault();
+  if(submit.textContent.includes('МОЯТ ПРОФИЛ')){window.top.location.assign('/profile');return;}
+  if(!available){window.top.location.assign('/login');return;}
+  if(!email.validity.valid||!password.validity.valid){setMsg('Въведете валиден имейл и парола от поне 12 символа.','error');return;}
+  submit.disabled=true;setMsg('Проверяваме данните...');
+  try{
+    const r=await fetch('/api/enchev-auth/sign-in',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({email:email.value,password:password.value})});
+    const j=await r.json();
+    if(r.ok&&j.ok===true&&j.authenticated===true){password.value='';window.top.location.assign('/profile');return;}
+    setMsg(j.error||'Неуспешен вход. Опитайте отново.','error');
+  }catch{setMsg('Проблем с връзката. Опитайте отново.','error');}
+  finally{password.value='';submit.disabled=false;}
+});
+const providerDescriptions={
+ google:'Входът с Google/Gmail изисква активиране на OAuth доставчика.',
+ meta:'Входът с Meta/Facebook изисква активиране на OAuth доставчика.',
+ phone:'Входът с телефон изисква SMS потвърждение и активиране на доставчик.'
+};
+document.querySelectorAll('[data-provider]').forEach(b=>b.addEventListener('click',()=>setMsg(providerDescriptions[b.dataset.provider],'error')));
+
 const canvas=document.querySelector('#carCanvas'),right=document.querySelector('#carPanel');
 const status=document.querySelector('#status'), loading=document.querySelector('#loading');
 const gas=document.querySelector('#gas'),driftBtn=document.querySelector('#drift'),resetBtn=document.querySelector('#reset');
