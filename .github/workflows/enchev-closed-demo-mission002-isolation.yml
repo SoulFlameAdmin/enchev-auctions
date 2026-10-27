@@ -1,0 +1,31 @@
+name: ENCHEV CLOSED DEMO MISSION-002 safety (read-only)
+on:
+  pull_request:
+    paths:
+      - "packages/domain/src/closed-demo-isolation.ts"
+      - "packages/domain/src/index.ts"
+      - "app/lib/enchev-closed-demo-server.ts"
+      - "scripts/verify-enchev-closed-demo-isolation.mjs"
+      - "docs/ENCHEV_CLOSED_DEMO_MISSION002_ISOLATION_2026-10-27.md"
+      - ".github/workflows/enchev-closed-demo-mission002-isolation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  isolation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a59144b
+        with:
+          node-version: "24"
+          cache: "npm"
+      - run: npm ci --ignore-scripts
+      - run: node --check scripts/verify-enchev-closed-demo-isolation.mjs
+      - run: node scripts/verify-enchev-closed-demo-isolation.mjs
+      - run: npx tsc --noEmit --pretty false
