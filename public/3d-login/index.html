@@ -37,7 +37,7 @@ input:focus{border-color:#ddd;box-shadow:0 0 0 3px #ffffff0d}
 .controls button:disabled{opacity:.38;cursor:wait}
 .status{position:absolute;bottom:24px;left:clamp(25px,4vw,66px);font-size:10px;letter-spacing:.14em;color:#818a99;z-index:3}
 .loading{position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);z-index:5;white-space:nowrap;color:#eee;font-size:12px;background:#090b13dd;padding:18px 24px;transition:opacity .6s;pointer-events:none}
-.loading.done{opacity:0}.login-decoration{position:absolute;inset:0;pointer-events:none;background:linear-gradient(165deg,transparent 25%,#ffffff03 40%,transparent 58%)}
+.loading,.loading.done{display:none!important}.login-decoration{position:absolute;inset:0;pointer-events:none;background:linear-gradient(165deg,transparent 25%,#ffffff03 40%,transparent 58%)}
 @media(max-width:760px){.stage{display:flex;flex-direction:column-reverse}.right{min-height:49dvh;height:49dvh}.left{min-height:570px;padding:30px 7vw}.entry{padding:40px 0}.topline{font-size:8px;top:25px;left:7vw;right:7vw}.topline .number{display:none}.headline{bottom:83px;left:7vw}.headline h2{font-size:38px;margin:7px 0}.headline p{font-size:11px}.headline small{font-size:8px}.controls{bottom:23px;right:5vw}.controls button{padding:9px;font-size:9px}.status{display:none}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 
@@ -147,9 +147,9 @@ h1{font-size:clamp(26px,3.5vw,44px);margin:13px 0 7px}
 <canvas id="carCanvas" aria-label="Интерактивен 3D автомобил"></canvas>
 <div class="topline"><span><i class="dot"></i> INTERACTIVE 3D EXPERIENCE</span><span class="number">01 / DRIVE</span></div>
 <div class="headline"><small>THE NEXT GENERATION OF AUCTIONS</small><h2>BEGIN YOUR<br><strong>JOURNEY.</strong></h2><p>Не е просто автомобил. Това е началото.</p></div>
-<div class="loading" id="loading">Зареждане на истинския 3D автомобил...</div>
+<div class="loading" id="loading" hidden aria-hidden="true"></div>
 <div class="controls"><button id="gas" disabled>↗ ГАЗ</button><button id="drift" disabled>⌁ ДРИФТ</button><button id="reset" disabled>↺</button></div>
-<div class="status" id="status">GLB · 3D LOADING</div>
+<div class="status" id="status">SPECTRAL GT RS · INTERACTIVE 3D</div>
 </section>
 </main>
 <script type="module">
@@ -210,7 +210,7 @@ grad.addColorStop(0,'rgba(235,235,241,.74)');grad.addColorStop(.3,'rgba(207,212,
 cx.fillStyle=grad;cx.fillRect(0,0,128,128);
 const tex=new THREE.CanvasTexture(smokeTexCanvas);
 const particles=Array.from({length:innerWidth<760?28:56},()=>{const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,color:0xc5c9d1,opacity:0,transparent:true,depthWrite:false}));sprite.visible=false;scene.add(sprite);return {sprite,age:4,life:1,velocity:new THREE.Vector3()};});
-const clock=new THREE.Clock();let model=null,mixer=null,wheels=[],active=false,boost=0,drifting=0,elapsed=0,spawn=0,pointer=0;
+const clock=new THREE.Clock();let model=null,mixer=null,wheels=[],active=false,boost=0,drifting=0,elapsed=0,spawn=0,pointer=0,readySent=false;
 function resize(){let w=Math.max(1,canvas.clientWidth),h=Math.max(1,canvas.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.fov=w<600?41:37;camera.position.set(w<600?2.4:3.0,w<600?2.35:2.65,w<600?9.3:8.8);camera.lookAt(0,.9,0);camera.updateProjectionMatrix();}
 resize();addEventListener('resize',resize);
 right.addEventListener('pointermove',e=>{const b=right.getBoundingClientRect();pointer=((e.clientX-b.left)/b.width-.5)*2;});
@@ -226,7 +226,18 @@ function burstSmoke(){const p=particles.find(a=>a.age>=a.life);if(!p)return;p.ag
 root.updateMatrixWorld(true);p.sprite.position.copy(root.localToWorld(new THREE.Vector3(side*.95,.18,-1.65)));p.velocity.set(side*(.22+Math.random()*.44),.25+Math.random()*.5,-.25-Math.random()*.4).applyQuaternion(root.quaternion);p.sprite.material.opacity=0;p.sprite.visible=true;}
 function smokeUpdate(dt){spawn+=dt*(1.5+boost*24+drifting*30);while(spawn>=1){burstSmoke();spawn--}
 for(const p of particles){if(!p.sprite.visible)continue;p.age+=dt;const t=p.age/p.life;if(t>=1){p.sprite.visible=false;continue}p.sprite.position.addScaledVector(p.velocity,dt);const s=.3+2.4*t;p.sprite.scale.set(s,s,1);p.sprite.material.opacity=Math.sin(Math.PI*t)*(.14+.27*Math.max(boost,drifting));}}
-function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05);elapsed+=dt;if(model){if(mixer)mixer.update(dt);if(!active){root.rotation.y=THREE.MathUtils.damp(root.rotation.y,Math.sin(elapsed*.7)*.023+pointer*.028,2,dt);root.position.x=THREE.MathUtils.damp(root.position.x,Math.sin(elapsed*.6)*.06,1.7,dt)}wheels.forEach(w=>{w.rotation.y+=(boost?12:drifting?7:.18)*dt});smokeUpdate(dt)}renderer.render(scene,camera);}animate();
+function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05);elapsed+=dt;if(model){if(mixer)mixer.update(dt);if(!active){root.rotation.y=THREE.MathUtils.damp(root.rotation.y,Math.sin(elapsed*.7)*.023+pointer*.028,2,dt);root.position.x=THREE.MathUtils.damp(root.position.x,Math.sin(elapsed*.6)*.06,1.7,dt)}wheels.forEach(w=>{w.rotation.y+=(boost?12:drifting?7:.18)*dt});smokeUpdate(dt)}renderer.render(scene,camera);if(model&&!readySent){readySent=true;window.parent.postMessage({type:'ENCHEV_3D_MODEL_READY'},window.location.origin);}}animate();
+
+window.addEventListener('message', event=>{
+  if(event.origin!==window.location.origin || event.source!==window.parent)return;
+  if(event.data?.type==='ENCHEV_3D_SHOW' && model){
+    root.position.set(0,0,0);
+    root.rotation.set(0,0,0);
+    boost=0;drifting=0;active=false;
+    if(!reduced){window.setTimeout(gasAction,440);}
+  }
+});
+
 // Spectral GT RS original game-ready GLB from the explicitly selected GitHub repository.
 // Pinned to a verified upstream commit so all visitors get the same 4,688,844-byte asset.
 const carGlb='https://raw.githubusercontent.com/JaronKBragg7337/spectral-gt-rs/34499c501908818a2b08e589a7aecf963343cee7/spectral_gt_rs_game_ready.glb';
@@ -254,17 +265,13 @@ new GLTFLoader().load(carGlb,gltf=>{
   gas.disabled=driftBtn.disabled=resetBtn.disabled=false;
   status.textContent='SPECTRAL GT RS · ORIGINAL GLB';
   tween(root.position,{z:0,duration:2.4});
-  if(!reduced){
-    setTimeout(gasAction,2800);
-    setTimeout(driftAction,5900);
-  }
+
 },event=>{
-  if(event.total>0){
-    status.textContent='ЗАРЕЖДАНЕ НА 3D · '+Math.min(100,Math.round(100*event.loaded/event.total))+'%';
-  }
+  // Model prewarms behind the ENTER screen. Never show a loading indicator.
 },error=>{
   console.error('Original Spectral GT RS GLB failed to load',error);
-  loading.textContent='Неуспешно зареждане на оригиналния .GLB. Опитайте отново.';
+  loading.textContent='';
+  window.parent.postMessage({type:'ENCHEV_3D_MODEL_FAILED'},window.location.origin);
   status.textContent='ORIGINAL GLB · LOAD ERROR';
 });
 </script></body></html>
