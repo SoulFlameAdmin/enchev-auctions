@@ -93,7 +93,7 @@ export function createClosedDemoBoundary(env: ClosedDemoEnvironment): ClosedDemo
   if (env.paymentMode !== "simulated-only"
       || env.documentMode !== "watermarked-nonlegal"
       || env.storageMode !== "memory-only") reject("UNSAFE_EFFECT_MODE");
-  if (env.paymentProvider || env.realPaymentsEnabled === "true"
+  if (env.paymentProvider || (env.realPaymentsEnabled !== undefined && env.realPaymentsEnabled !== "" && env.realPaymentsEnabled !== "false")
       || env.providerSecretPresent !== false
       || env.databaseWriteCredentialPresent !== false) reject("REAL_EFFECT_CAPABILITY_PRESENT");
 
