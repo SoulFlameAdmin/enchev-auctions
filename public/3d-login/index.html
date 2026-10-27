@@ -1,277 +1,174 @@
 <!doctype html>
 <html lang="bg">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#05070a"><title>ENCHEV AUCTIONS × SOULFLAME — 3D Access</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#07080b">
+<title>ENCHEV AUCTIONS × SOULFLAME | CINEMATIC ACCESS</title>
 <style>
-:root{font-family:Inter,"Segoe UI",Arial,sans-serif;color-scheme:dark}
-*{box-sizing:border-box}html,body{padding:0;margin:0;width:100%;min-height:100%;background:#050608;color:white}
-body{overflow-x:hidden}.stage{display:grid;grid-template-columns:45% 55%;min-height:100dvh}
-.left{position:relative;display:flex;flex-direction:column;background:linear-gradient(115deg,#101112,#1b1b1d 65%,#101112);padding:clamp(26px,4.2vw,66px) clamp(24px,5vw,90px);box-shadow:18px 0 60px #0008;z-index:2}
-.brand{font-weight:850;letter-spacing:.22em;font-size:clamp(25px,3vw,40px)}.brand b{color:#d00413}
-.brandSub{font-size:10px;letter-spacing:.3em;color:#bdbfc3;margin-top:7px}.brandSub em{font-style:normal;color:#d5b78b}
-.entry{margin:auto 0;max-width:410px;padding:48px 0}
-.eyebrow{font-size:10px;color:#b5b5bc;letter-spacing:.25em}.eyebrow:after{content:"";display:inline-block;width:30px;height:1px;background:#c80011;vertical-align:middle;margin-left:12px}
-h1{font-size:clamp(36px,4vw,60px);letter-spacing:-.055em;font-weight:650;line-height:1.08;margin:22px 0 12px}
-h1 span{color:#dc0011}p{line-height:1.65;color:#aeb0b5;font-size:14px;margin:0 0 32px}
-label{display:block;color:#dfdfe0;font-size:12px;margin:0 0 10px}
-input{display:block;background:#ffffff0a;border:1px solid #5d5d62;border-radius:2px;padding:0 16px;width:100%;height:54px;color:#fff;font-size:14px;outline:none;margin-bottom:20px}
-input:focus{border-color:#ddd;box-shadow:0 0 0 3px #ffffff0d}
-.primary{width:100%;min-height:55px;border:1px solid #e11825;background:#ca0610;color:white;font-size:12px;letter-spacing:.19em;font-weight:700;cursor:pointer;transition:background .2s,transform .2s}
-.primary:hover{background:#e50a19;transform:translateY(-2px)}.helper{font-size:11px;color:#98999d;margin-top:18px;line-height:1.6}
-.helper a{color:#ddd;text-decoration:none}.helper a:hover{text-decoration:underline}
-.secure{display:block;margin:14px 0 0;color:#caac83;font-size:11px}
-.leftFoot{display:flex;justify-content:space-between;font-size:9px;letter-spacing:.16em;color:#777;gap:12px}
-.right{position:relative;min-width:0;min-height:100dvh;overflow:hidden;isolation:isolate;background:radial-gradient(ellipse at 55% 38%,#1d253c,#080e1c 56%,#020305 88%)}
-#carCanvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:pan-y}
-.right:after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(0deg,#020306 5%,#02030625 40%,transparent 72%),linear-gradient(90deg,#0009,transparent 28%)}
-.topline{position:absolute;z-index:3;top:clamp(28px,4.1vw,64px);left:clamp(25px,4vw,66px);right:clamp(25px,4vw,66px);display:flex;justify-content:space-between;align-items:center;gap:15px;letter-spacing:.18em;font-size:10px;color:#c5c7cb}
-.dot{display:inline-block;background:#c7a477;border-radius:100%;width:6px;height:6px;box-shadow:0 0 15px #e4bf83;vertical-align:middle;margin-right:8px}
-.headline{position:absolute;left:clamp(25px,4vw,66px);bottom:clamp(120px,15vh,180px);z-index:3;pointer-events:none}
-.headline small{font-size:10px;letter-spacing:.19em;color:#d6b17a}
-.headline h2{font-size:clamp(42px,4.7vw,80px);font-weight:300;letter-spacing:-.045em;line-height:.96;margin:15px 0}
-.headline h2 strong{font-weight:650}.headline p{font-size:13px;margin:0;color:#b4b7bd}
-.controls{position:absolute;right:clamp(18px,3vw,52px);bottom:62px;z-index:4;display:flex;gap:8px}
-.controls button{border:1px solid #a2a3a366;color:#efefef;background:#252934ad;backdrop-filter:blur(12px);padding:12px 18px;cursor:pointer;font-size:11px;letter-spacing:.1em;transition:background .2s}
-.controls button:hover:not(:disabled){background:#bd0714;border-color:#d6202b}
-.controls button:disabled{opacity:.38;cursor:wait}
-.status{position:absolute;bottom:24px;left:clamp(25px,4vw,66px);font-size:10px;letter-spacing:.14em;color:#818a99;z-index:3}
-.loading{position:absolute;top:42%;left:50%;transform:translate(-50%,-50%);z-index:5;white-space:nowrap;color:#eee;font-size:12px;background:#090b13dd;padding:18px 24px;transition:opacity .6s;pointer-events:none}
-.loading,.loading.done{display:none!important}.login-decoration{position:absolute;inset:0;pointer-events:none;background:linear-gradient(165deg,transparent 25%,#ffffff03 40%,transparent 58%)}
-@media(max-width:760px){.stage{display:flex;flex-direction:column-reverse}.right{min-height:49dvh;height:49dvh}.left{min-height:570px;padding:30px 7vw}.entry{padding:40px 0}.topline{font-size:8px;top:25px;left:7vw;right:7vw}.topline .number{display:none}.headline{bottom:83px;left:7vw}.headline h2{font-size:38px;margin:7px 0}.headline p{font-size:11px}.headline small{font-size:8px}.controls{bottom:23px;right:5vw}.controls button{padding:9px;font-size:9px}.status{display:none}}
-@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
-
-/* Modal-fit layout: no internal scroll, fluid height and compact alternative sign-ins */
-html,body{width:100%;height:100%;min-height:0;overflow:hidden}
-.stage{height:100dvh;min-height:0;overflow:hidden;grid-template-columns:44% 56%}
-.left,.right{height:100%;min-height:0;overflow:hidden}
-.left{padding:clamp(16px,3vh,32px) clamp(19px,3vw,44px);justify-content:space-between}
-.brand{font-size:clamp(21px,2vw,30px);line-height:1}
-.brandSub{font-size:9px;letter-spacing:.19em}
-.entry{margin:auto 0;max-width:100%;padding:0;min-height:0;display:flex;flex-direction:column;justify-content:center}
-.eyebrow{font-size:9px}
-h1{font-size:clamp(26px,3.5vw,44px);margin:13px 0 7px}
-.subtitle{font-size:12px;line-height:1.35;margin:0 0 clamp(11px,2vh,17px)}
-.loginForm{display:flex;flex-direction:column;min-height:0}
-.loginForm label{font-size:11px;margin:0 0 5px}
-.loginForm input{height:clamp(32px,5.5vh,44px);font-size:12px;margin-bottom:10px;padding:0 13px}
-.loginForm .primary{min-height:clamp(35px,6vh,45px);font-size:11px;flex-shrink:0}
-.provider-divider{display:flex;align-items:center;gap:9px;margin:clamp(10px,1.9vh,16px) 0 10px;color:#999ca4;font-size:9px;letter-spacing:.16em;white-space:nowrap}
-.provider-divider:before,.provider-divider:after{content:"";height:1px;flex:1;background:#ffffff28}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050608;color:#f7f7f7;font-family:Inter,"Segoe UI",Arial,sans-serif}
+a{color:inherit}
+.screen{height:100dvh;display:grid;grid-template-columns:minmax(0,55%) minmax(0,45%);overflow:hidden;background:#080a0e}
+.visual{position:relative;min-width:0;overflow:hidden;background:#050608;isolation:isolate}
+.visual::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(90deg,transparent 75%,rgba(7,8,12,.53)),linear-gradient(0deg,rgba(2,3,5,.6),transparent 45%,rgba(2,3,5,.35))}
+.poster{position:absolute;inset:0;z-index:0;background-image:url("https://www.webgpu.com/content/images/size/w1284/format/webp/2026/03/Screenshot-2026-03-02-at-9.47.14---PM.png");background-size:cover;background-position:50% 50%;animation:sceneDrift 3s cubic-bezier(.13,.72,.2,1) both;filter:brightness(.87)}
+@keyframes sceneDrift{from{transform:scale(1.17) translateX(3%);filter:brightness(.55) blur(1px)}to{transform:scale(1.04) translateX(-1%);filter:brightness(.95) blur(0)}}
+#lusionFrame{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1;opacity:0;pointer-events:none;transition:opacity .3s}
+#lusionFrame.is-visible{opacity:1}
+#freezeFrame{position:absolute;inset:0;z-index:2;opacity:0;pointer-events:none;transition:opacity .38s;display:block}
+#freezeFrame::before{content:"";position:absolute;inset:0;background-image:url("https://www.webgpu.com/content/images/size/w1284/format/webp/2026/03/Screenshot-2026-03-02-at-9.47.14---PM.png");background-position:50% 50%;background-size:cover;transform:scale(1.04) translateX(-1%);filter:brightness(.95)}
+.visual.is-frozen #freezeFrame{opacity:1}
+.visualKicker{position:absolute;top:25px;left:27px;z-index:4;letter-spacing:.26em;font-size:10px;color:#e8d0a3}
+.visualKicker i{display:inline-block;width:6px;height:6px;background:#d3aa73;border-radius:50%;margin-right:10px;box-shadow:0 0 12px #ddb276}
+.visualCopy{position:absolute;bottom:31px;left:28px;right:22px;z-index:4;max-width:420px}
+.visualCopy .small{color:#d5bd92;font-size:10px;letter-spacing:.22em}
+.visualCopy h2{font-size:clamp(26px,3.6vw,53px);font-weight:350;letter-spacing:-.055em;line-height:1.02;margin:12px 0 7px}
+.visualCopy h2 strong{font-weight:720}
+.visualCopy p{font-size:11px;color:#d0d0d3;line-height:1.5;margin:0}
+.credit{position:absolute;bottom:14px;right:17px;z-index:4;font-size:9px;letter-spacing:.05em;color:#ceced1;text-shadow:0 1px 6px #000}
+.authPanel{min-width:0;min-height:0;background:linear-gradient(132deg,#171719 0%,#0e0e11 68%,#08090b);padding:clamp(16px,3.3vh,32px) clamp(20px,3.2vw,43px);display:flex;flex-direction:column;overflow:hidden}
+.brand{font-weight:850;font-size:clamp(20px,2.25vw,31px);letter-spacing:.16em;line-height:1.03}
+.brand span{color:#df1522}
+.brandSub{font-size:9px;letter-spacing:.22em;color:#afafb4;margin-top:7px}.brandSub b{color:#dfbf8f;font-weight:550}
+.entry{margin:auto 0;min-height:0;max-width:430px;display:flex;flex-direction:column;justify-content:center}
+.eyebrow{font-size:9px;letter-spacing:.25em;color:#b7b7bc;font-weight:650}
+h1{font-size:clamp(27px,3vw,44px);font-weight:700;letter-spacing:-.06em;line-height:1.05;margin:13px 0 8px}
+h1 em{font-style:normal;color:#dc0819}
+.subtitle{font-size:12px;color:#aab0b7;margin:0 0 clamp(10px,2vh,19px)}
+form{display:flex;flex-direction:column}
+label{font-size:11px;color:#dedee1;font-weight:600;margin:0 0 6px}
+input{height:clamp(35px,6vh,44px);flex:none;background:#1d1f23;border:1px solid #595c65;padding:0 13px;color:#fff;font-size:13px;outline:none;border-radius:2px;margin:0 0 10px;width:100%}
+input:focus{border-color:#ddd;box-shadow:0 0 0 2px #ffffff22}
+.primary{height:clamp(37px,6vh,46px);border:1px solid #d20a1b;color:#fff;background:#cb0716;font-size:11px;font-weight:750;letter-spacing:.18em;cursor:pointer}
+.primary:hover{background:#f00c21}.primary:disabled{opacity:.5}
+.separator{margin:14px 0 11px;font-size:9px;letter-spacing:.15em;color:#a4a5aa;display:flex;align-items:center;gap:10px;white-space:nowrap}
+.separator:before,.separator:after{content:"";height:1px;background:#ffffff2a;flex:1}
 .providers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
-.provider{display:flex;align-items:center;justify-content:center;gap:5px;min-width:0;min-height:38px;padding:5px 4px;border:1px solid #62636b;background:#17191d;color:#f5f5f7;font-size:11px;cursor:pointer;transition:background .2s,border-color .2s}
-.provider:hover,.provider:focus-visible{background:#2a2c35;border-color:#e4cc9b}
-.providerGlyph{font-size:16px;font-weight:800;color:#dadada;line-height:1}
-.googleG{color:#4285f4}.metaG{font-family:Arial,sans-serif;font-size:20px;color:#2d82ed}
-.authMessage{font-size:10px;line-height:1.3;color:#b7b9c3;margin-top:9px;min-height:13px}
-.authMessage.error{color:#ffc2be}.authMessage.good{color:#abddbd}
-.helper{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;font-size:10px;margin-top:10px}
-.leftFoot{font-size:8px}
-.right .headline{bottom:clamp(67px,11vh,95px);left:25px}
-.headline h2{font-size:clamp(26px,3.6vw,51px)}.headline p{font-size:11px}
-.right .controls{bottom:26px;right:20px}.right .controls button{padding:8px 10px;font-size:10px}
-.right .status{bottom:24px;left:25px;font-size:9px}
-@media(max-height:590px) and (min-width:761px){
-  .left{padding-block:12px}.brand{font-size:21px}
-  h1{font-size:29px;margin:7px 0 5px}
-  .subtitle{margin-bottom:7px;font-size:11px}
-  .loginForm input{height:31px;margin-bottom:6px}
-  .loginForm .primary{min-height:34px}
-  .provider-divider{margin:8px 0 7px}.provider{min-height:31px}.authMessage{margin-top:5px}.helper{margin-top:5px}
+.provider{height:39px;min-width:0;border:1px solid #595b63;background:#1a1b1f;color:#f3f3f5;font-size:11px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer}
+.provider:hover{border-color:#c8ad82;background:#24262b}
+.provider .icon{font-size:17px;font-weight:800;color:#aabffb}
+.provider .facebook{font-size:22px;color:#5499fa}
+#authMessage{font-size:10px;line-height:1.35;color:#abb3bc;min-height:14px;margin-top:11px}
+#authMessage.error{color:#ffa9ac}#authMessage.good{color:#a8e8b7}
+.footerLinks{display:flex;justify-content:space-between;gap:12px;font-size:10px;margin-top:11px;color:#d2d2d4}
+.footerLinks a{text-decoration:none}.footerLinks a:hover{text-decoration:underline}
+.brandFoot{font-size:9px;color:#74777c;letter-spacing:.14em}
+@media(max-height:560px) and (min-width:721px){
+.authPanel{padding-block:11px}h1{font-size:28px;margin:8px 0 4px}
+.subtitle{margin-bottom:7px}.separator{margin:8px 0}.provider{height:32px}
+input{height:30px;margin-bottom:6px}.primary{height:32px}
 }
-@media(max-width:760px){
-  .stage{display:grid;grid-template-columns:1fr;grid-template-rows:minmax(170px,39%) minmax(0,61%);height:100dvh}
-  .right{grid-row:1;grid-column:1;min-height:0;height:100%;width:100%}
-  .left{grid-row:2;grid-column:1;min-height:0;height:100%;padding:11px 20px 12px;overflow:hidden}
-  .left header{display:flex;align-items:end;gap:12px}.brand{font-size:19px}.brandSub{font-size:8px;margin-top:0}
-  .entry{display:block;align-self:stretch;padding:0;margin:auto 0;max-width:100%}
-  .eyebrow{font-size:8px}h1{font-size:clamp(23px,5.6vw,30px);margin:5px 0 3px}
-  .subtitle{font-size:10px;margin-bottom:6px;line-height:1.2}
-  .loginForm label{font-size:10px;margin-bottom:2px}
-  .loginForm input{height:31px;margin-bottom:5px;font-size:12px}
-  .loginForm .primary{min-height:32px}
-  .provider-divider{margin:7px 0 6px}
-  .provider{min-height:30px;font-size:10px}
-  .authMessage{font-size:9px;margin-top:5px;min-height:11px;line-height:1.15}
-  .helper{margin-top:4px;font-size:9px}
-  .leftFoot{display:none}
-  .right .headline{bottom:50px;left:20px}.headline h2{font-size:30px;margin:5px 0}
-  .headline small{font-size:8px}.headline p{display:none}
-  .right .topline{top:14px;left:20px;right:20px;font-size:8px}
-  .right .controls{bottom:12px;right:14px}.right .controls button{padding:5px 8px;font-size:9px}
-  .right .status{display:none}
+@media(max-width:720px){
+.screen{display:grid;grid-template-columns:1fr;grid-template-rows:39% 61%}
+.visual{grid-row:1;grid-column:1}.authPanel{grid-row:2;grid-column:1;padding:9px 17px 9px}
+.visualKicker{top:13px;left:18px;font-size:8px}.visualCopy{left:18px;bottom:21px}
+.visualCopy h2{font-size:clamp(25px,5.5vw,38px);margin:5px 0}
+.visualCopy p{display:none}.credit{font-size:7px;bottom:7px;right:10px}
+.brand{font-size:19px}.brandSub{font-size:8px;margin-top:1px}
+.entry{max-width:none}.eyebrow{font-size:8px}h1{font-size:clamp(24px,5.2vw,30px);margin:5px 0 4px}
+.subtitle{font-size:10px;margin-bottom:6px}
+label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-size:12px}
+.primary{height:30px}.separator{margin:7px 0;font-size:8px}
+.provider{height:31px;font-size:10px}#authMessage{font-size:9px;margin-top:5px;min-height:12px}
+.footerLinks{margin-top:4px;font-size:9px}.brandFoot{display:none}
 }
-@media(max-width:760px) and (max-height:600px){
-  .stage{grid-template-rows:minmax(120px,31%) minmax(0,69%)}
-  .left{padding-block:5px}.left header{display:none}
-  h1{font-size:23px}.subtitle{display:none}
-  .loginForm input{height:26px;margin-bottom:3px}
-  .loginForm .primary{min-height:27px}
-  .provider-divider{margin:4px 0}
-  .provider{min-height:27px}
-  .helper{margin-top:3px}
-  .right .headline{bottom:41px}
+@media(max-height:620px) and (max-width:720px){
+.screen{grid-template-rows:30% 70%}.authPanel{padding-block:4px}
+.brand,.brandSub{display:none}.subtitle{display:none}
 }
+@media(prefers-reduced-motion:reduce){.poster{animation:none;transform:scale(1.04)}*,*:before,*:after{transition:none!important}}
 </style>
-<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/"}}</script>
-<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
 </head>
 <body>
-<main class="stage">
-<section class="left" aria-label="ENCHEV login">
-<div class="login-decoration"></div>
-<header><div class="brand">ENCHEV<b>.</b></div><div class="brandSub">AUCTIONS — <em>SOULFLAME</em></div></header>
-<div class="entry">
-<div class="eyebrow">MEMBER ACCESS · ENCHEV</div>
-<h1>Добре дошли<span>.</span></h1>
-<p class="subtitle">Твоят достъп до автомобилните търгове.</p>
-<form class="loginForm" id="authForm" novalidate>
-<label for="email">Имейл адрес</label>
-<input type="email" id="email" name="email" placeholder="you@example.com" autocomplete="email" required maxlength="254">
-<label for="password">Парола</label>
-<input id="password" type="password" name="password" placeholder="Вашата парола" autocomplete="current-password" required minlength="12" maxlength="128">
-<button class="primary" id="login" type="submit">ВХОД &nbsp; ↗</button>
-</form>
-<div class="provider-divider"><span>ИЛИ ПРОДЪЛЖИ С</span></div>
-<div class="providers" role="group" aria-label="Други начини за вход">
-<button type="button" class="provider" data-provider="google" title="Google / Gmail"><span class="providerGlyph googleG">G</span><span>Google</span></button>
-<button type="button" class="provider" data-provider="meta" title="Meta / Facebook"><span class="providerGlyph metaG">f</span><span>Meta</span></button>
-<button type="button" class="provider" data-provider="phone" title="Вход с телефонен номер"><span class="providerGlyph">☎</span><span>Телефон</span></button>
-</div>
-<div id="authMessage" class="authMessage" role="status" aria-live="polite">Проверка на възможностите за сигурен вход...</div>
-<div class="helper">Нямате профил? <a href="/register" target="_top">Регистрация →</a> <a href="/platform" target="_top">Разгледай демото →</a></div>
-</div>
-<footer class="leftFoot"><span>ENCHEV AUCTIONS</span><span>BUILT WITH SOULFLAME</span></footer>
+<main class="screen">
+<section class="visual" id="visual" aria-label="Рекламна сцена Gemini от Lusion">
+<div class="poster" aria-hidden="true"></div>
+<iframe id="lusionFrame" title="Lusion Gemini — cinematic car motion" referrerpolicy="strict-origin-when-cross-origin" tabindex="-1" allow="autoplay; fullscreen" sandbox="allow-scripts allow-same-origin" loading="eager"></iframe>
+<div id="freezeFrame" aria-hidden="true"></div>
+<div class="visualKicker"><i></i>ENCHEV AUCTIONS · VISUAL EXPERIENCE</div>
+<div class="visualCopy"><span class="small">EXCLUSIVE AUTOMOTIVE AUCTIONS</span><h2>BEGIN YOUR<br><strong>JOURNEY.</strong></h2><p>Премиум автомобилни търгове. Ново преживяване.</p></div>
+<a class="credit" href="https://exp-gemini.lusion.co/motion" target="_blank" rel="noopener noreferrer">Gemini visual reference © Lusion</a>
 </section>
-<section class="right" id="carPanel" aria-label="3D автомобил Spectral GT RS">
-<canvas id="carCanvas" aria-label="Интерактивен 3D автомобил"></canvas>
-<div class="topline"><span><i class="dot"></i> INTERACTIVE 3D EXPERIENCE</span><span class="number">01 / DRIVE</span></div>
-<div class="headline"><small>THE NEXT GENERATION OF AUCTIONS</small><h2>BEGIN YOUR<br><strong>JOURNEY.</strong></h2><p>Не е просто автомобил. Това е началото.</p></div>
-<div class="loading" id="loading" hidden aria-hidden="true"></div>
-<div class="controls"><button id="gas" disabled>↗ ГАЗ</button><button id="drift" disabled>⌁ ДРИФТ</button><button id="reset" disabled>↺</button></div>
-<div class="status" id="status">SPECTRAL GT RS · INTERACTIVE 3D</div>
+<section class="authPanel" aria-label="Вход в ENCHEV">
+<header><div class="brand">ENCHEV<span>.</span></div><div class="brandSub">AUCTIONS — <b>SOULFLAME</b></div></header>
+<div class="entry">
+<div class="eyebrow">PRIVATE MEMBER ACCESS</div>
+<h1>Добре дошли<em>.</em></h1>
+<p class="subtitle">Влезте в света на автомобилните търгове.</p>
+<form id="authForm" novalidate>
+<label for="email">Имейл адрес</label><input id="email" name="email" type="email" autocomplete="email" maxlength="254" required placeholder="you@example.com">
+<label for="password">Парола</label><input id="password" name="password" type="password" autocomplete="current-password" minlength="12" maxlength="128" required placeholder="Вашата парола">
+<button class="primary" id="submit" type="submit">ВХОД &nbsp; ↗</button>
+</form>
+<div class="separator"><span>ИЛИ ПРОДЪЛЖИ С</span></div>
+<div class="providers">
+<button class="provider" type="button" data-provider="google"><span class="icon">G</span> Google</button>
+<button class="provider" type="button" data-provider="meta"><span class="icon facebook">f</span> Meta</button>
+<button class="provider" type="button" data-provider="phone"><span class="icon">☎</span> Телефон</button>
+</div>
+<div id="authMessage" role="status" aria-live="polite">Проверка на възможностите за вход...</div>
+<nav class="footerLinks"><a href="/register" target="_top">Регистрация</a><a href="/platform" target="_top">Разгледай демото ↗</a></nav>
+</div>
+<footer class="brandFoot">ENCHEV AUCTIONS &nbsp; · &nbsp; POWERED BY SOULFLAME</footer>
 </section>
 </main>
-<script type="module">
-import * as THREE from 'three';
-import {GLTFLoader} from 'three/addons/loaders/GLTFLoader.js';
-
-const form=document.querySelector('#authForm'),msg=document.querySelector('#authMessage');
-const email=document.querySelector('#email'),password=document.querySelector('#password'),submit=document.querySelector('#login');
-let available=false;
-const setMsg=(text,type='')=>{msg.textContent=text;msg.className='authMessage '+type;};
+<script>
+(() => {
+const visual=document.querySelector('#visual');
+const iframe=document.querySelector('#lusionFrame');
+const post=document.querySelector('.poster');
+let frozen=false;
+let timer;
+function beginExperience(){
+  if (frozen || timer) return;
+  // A third-party WebGL page cannot be paused across origins. After exactly
+  // 3 seconds, replace it with a held, fixed reference frame for this page view.
+  iframe.src='https://exp-gemini.lusion.co/motion';
+  iframe.addEventListener('load',()=>{if(!frozen)iframe.classList.add('is-visible');},{once:true});
+  timer=setTimeout(()=>{
+    frozen=true;
+    visual.classList.add('is-frozen');
+    iframe.classList.remove('is-visible');
+    // Stop third-party GPU work without resetting our frozen screenshot.
+    iframe.removeAttribute('src');
+  },3000);
+}
+beginExperience();
+const msg=document.querySelector('#authMessage');
+const form=document.querySelector('#authForm');
+const email=document.querySelector('#email');
+const password=document.querySelector('#password');
+const submit=document.querySelector('#submit');
+let enabled=false;
+const setMsg=(s,cls='')=>{msg.className=cls;msg.textContent=s;};
 fetch('/api/enchev-auth/session',{credentials:'same-origin',cache:'no-store'})
-  .then(r=>r.json()).then(j=>{
-    available=j?.available===true;
-    if(j?.authenticated===true){setMsg('Вече сте влезли. Може да отворите профила си.','good');submit.textContent='МОЯТ ПРОФИЛ ↗';return;}
-    setMsg(available?'Входът с имейл е активен.':'Регистрацията и входът очакват активиране на защитената система.');
-  }).catch(()=>setMsg('Не е възможно да проверим входа. Опитайте отново.','error'));
-form.addEventListener('submit',async(e)=>{
-  e.preventDefault();
-  if(submit.textContent.includes('МОЯТ ПРОФИЛ')){window.top.location.assign('/profile');return;}
-  if(!available){window.top.location.assign('/login');return;}
-  if(!email.validity.valid||!password.validity.valid){setMsg('Въведете валиден имейл и парола от поне 12 символа.','error');return;}
-  submit.disabled=true;setMsg('Проверяваме данните...');
-  try{
-    const r=await fetch('/api/enchev-auth/sign-in',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({email:email.value,password:password.value})});
-    const j=await r.json();
-    if(r.ok&&j.ok===true&&j.authenticated===true){password.value='';window.top.location.assign('/profile');return;}
-    setMsg(j.error||'Неуспешен вход. Опитайте отново.','error');
-  }catch{setMsg('Проблем с връзката. Опитайте отново.','error');}
-  finally{password.value='';submit.disabled=false;}
+.then(r=>r.json()).then(data=>{
+enabled=data?.available===true;
+if(data?.authenticated){submit.textContent='МОЯТ ПРОФИЛ ↗';setMsg('Успешно сте влезли.','good');return;}
+setMsg(enabled?'Входът с имейл е наличен.':'Защитеният вход все още не е активиран.');
+}).catch(()=>setMsg('Временно няма връзка с услугата за вход.','error'));
+form.addEventListener('submit',async event=>{
+ event.preventDefault();
+ if(submit.textContent.includes('МОЯТ ПРОФИЛ')){top.location.assign('/profile');return;}
+ if(!enabled){top.location.assign('/login');return;}
+ if(!email.validity.valid||!password.validity.valid){setMsg('Въведете валиден имейл и парола с минимум 12 символа.','error');return;}
+ submit.disabled=true;setMsg('Проверка на данните...');
+ try{
+ const r=await fetch('/api/enchev-auth/sign-in',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({email:email.value,password:password.value})});
+ const data=await r.json();
+ if(r.ok&&data.ok===true&&data.authenticated===true){password.value='';top.location.assign('/profile');return;}
+ setMsg(data.error||'Неуспешен вход.','error');
+ }catch{setMsg('Проблем с връзката. Опитайте отново.','error');}
+ finally{password.value='';submit.disabled=false;}
 });
-const providerDescriptions={
- google:'Входът с Google/Gmail изисква активиране на OAuth доставчика.',
- meta:'Входът с Meta/Facebook изисква активиране на OAuth доставчика.',
- phone:'Входът с телефон изисква SMS потвърждение и активиране на доставчик.'
+const info={
+ google:'Входът с Google/Gmail ще работи след активиране на OAuth.',
+ meta:'Входът с Meta/Facebook ще работи след активиране на OAuth.',
+ phone:'Входът с телефонен номер ще работи след настройване на SMS потвърждение.'
 };
-document.querySelectorAll('[data-provider]').forEach(b=>b.addEventListener('click',()=>setMsg(providerDescriptions[b.dataset.provider],'error')));
-
-const canvas=document.querySelector('#carCanvas'),right=document.querySelector('#carPanel');
-const status=document.querySelector('#status'), loading=document.querySelector('#loading');
-const gas=document.querySelector('#gas'),driftBtn=document.querySelector('#drift'),resetBtn=document.querySelector('#reset');
-const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-let renderer;
-try{renderer=new THREE.WebGLRenderer({canvas,alpha:true,antialias:true,powerPreference:'high-performance'});}
-catch(e){loading.textContent='WebGL не е наличен';throw e;}
-renderer.setPixelRatio(Math.min(window.devicePixelRatio,innerWidth<760?1.3:1.75));
-renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.2;
-const scene=new THREE.Scene();scene.fog=new THREE.FogExp2(0x070b16,.025);
-const camera=new THREE.PerspectiveCamera(37,1,.1,100);camera.position.set(3.0,2.65,8.8);camera.lookAt(0,0.9,0);
-scene.add(new THREE.HemisphereLight(0xacc0eb,0x131016,2.6));
-const key=new THREE.DirectionalLight(0xd5e7ff,4.4);key.position.set(-5,9,10);scene.add(key);
-const rim=new THREE.DirectionalLight(0x809ff0,4);rim.position.set(5,5,-4);scene.add(rim);
-const gold=new THREE.PointLight(0xf1bb87,65,24,2);gold.position.set(5,2,-1);scene.add(gold);
-const floor=new THREE.Mesh(new THREE.PlaneGeometry(90,90),new THREE.MeshStandardMaterial({color:0x0b0f18,metalness:.14,roughness:.65}));floor.rotation.x=-Math.PI/2;floor.position.y=-.04;scene.add(floor);
-const root=new THREE.Group();root.position.z=-3;scene.add(root);
-const smokeTexCanvas=document.createElement('canvas');smokeTexCanvas.width=128;smokeTexCanvas.height=128;
-const cx=smokeTexCanvas.getContext('2d');const grad=cx.createRadialGradient(64,64,2,64,64,64);
-grad.addColorStop(0,'rgba(235,235,241,.74)');grad.addColorStop(.3,'rgba(207,212,222,.4)');grad.addColorStop(1,'rgba(192,199,211,0)');
-cx.fillStyle=grad;cx.fillRect(0,0,128,128);
-const tex=new THREE.CanvasTexture(smokeTexCanvas);
-const particles=Array.from({length:innerWidth<760?28:56},()=>{const sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,color:0xc5c9d1,opacity:0,transparent:true,depthWrite:false}));sprite.visible=false;scene.add(sprite);return {sprite,age:4,life:1,velocity:new THREE.Vector3()};});
-const clock=new THREE.Clock();let model=null,mixer=null,wheels=[],active=false,boost=0,drifting=0,elapsed=0,spawn=0,pointer=0,readySent=false;
-function resize(){let w=Math.max(1,canvas.clientWidth),h=Math.max(1,canvas.clientHeight);renderer.setSize(w,h,false);camera.aspect=w/h;camera.fov=w<600?41:37;camera.position.set(w<600?2.4:3.0,w<600?2.35:2.65,w<600?9.3:8.8);camera.lookAt(0,.9,0);camera.updateProjectionMatrix();}
-resize();addEventListener('resize',resize);
-right.addEventListener('pointermove',e=>{const b=right.getBoundingClientRect();pointer=((e.clientX-b.left)/b.width-.5)*2;});
-function tween(t,o){if(window.gsap){window.gsap.to(t,o);return}const dur=(o.duration||1)*1000,st=performance.now(),keys=Object.keys(o).filter(k=>typeof o[k]==='number'&&typeof t[k]==='number'&&k!=='duration'),start=Object.fromEntries(keys.map(k=>[k,t[k]]));function run(now){let k=Math.min(1,(now-st)/dur),s=1-(1-k)**3;keys.forEach(key=>t[key]=start[key]+(o[key]-start[key])*s);if(k<1)requestAnimationFrame(run);else o.onComplete?.()}requestAnimationFrame(run);}
-function gasAction(){if(!model||active)return;active=true;boost=1;
-tween(root.position,{z:1.2,duration:.9,onComplete:()=>tween(root.position,{z:0,duration:1.5,onComplete:()=>{boost=0;active=false}})});}
-function driftAction(){if(!model||active)return;active=true;drifting=1;
-tween(root.rotation,{y:.30,z:-.04,duration:.7,onComplete:()=>tween(root.rotation,{y:-.27,z:.05,duration:.8,onComplete:()=>tween(root.rotation,{y:0,z:0,duration:1,onComplete:()=>{active=false;drifting=0}})})});
-tween(root.position,{x:.42,duration:.7,onComplete:()=>tween(root.position,{x:-.35,duration:.8,onComplete:()=>tween(root.position,{x:0,duration:1})})});}
-function reset(){if(!model)return;if(window.gsap)window.gsap.killTweensOf([root.position,root.rotation]);active=false;boost=0;drifting=0;root.position.set(0,0,-3);root.rotation.set(0,0,0);tween(root.position,{z:0,duration:2});}
-gas.onclick=gasAction;driftBtn.onclick=driftAction;resetBtn.onclick=reset;
-function burstSmoke(){const p=particles.find(a=>a.age>=a.life);if(!p)return;p.age=0;p.life=1.4+Math.random()*1.4;const side=Math.random()<.5?-1:1;
-root.updateMatrixWorld(true);p.sprite.position.copy(root.localToWorld(new THREE.Vector3(side*.95,.18,-1.65)));p.velocity.set(side*(.22+Math.random()*.44),.25+Math.random()*.5,-.25-Math.random()*.4).applyQuaternion(root.quaternion);p.sprite.material.opacity=0;p.sprite.visible=true;}
-function smokeUpdate(dt){spawn+=dt*(1.5+boost*24+drifting*30);while(spawn>=1){burstSmoke();spawn--}
-for(const p of particles){if(!p.sprite.visible)continue;p.age+=dt;const t=p.age/p.life;if(t>=1){p.sprite.visible=false;continue}p.sprite.position.addScaledVector(p.velocity,dt);const s=.3+2.4*t;p.sprite.scale.set(s,s,1);p.sprite.material.opacity=Math.sin(Math.PI*t)*(.14+.27*Math.max(boost,drifting));}}
-function animate(){requestAnimationFrame(animate);const dt=Math.min(clock.getDelta(),.05);elapsed+=dt;if(model){if(mixer)mixer.update(dt);if(!active){root.rotation.y=THREE.MathUtils.damp(root.rotation.y,Math.sin(elapsed*.7)*.023+pointer*.028,2,dt);root.position.x=THREE.MathUtils.damp(root.position.x,Math.sin(elapsed*.6)*.06,1.7,dt)}wheels.forEach(w=>{w.rotation.y+=(boost?12:drifting?7:.18)*dt});smokeUpdate(dt)}renderer.render(scene,camera);if(model&&!readySent){readySent=true;window.parent.postMessage({type:'ENCHEV_3D_MODEL_READY'},window.location.origin);}}animate();
-
-window.addEventListener('message', event=>{
-  if(event.origin!==window.location.origin || event.source!==window.parent)return;
-  if(event.data?.type==='ENCHEV_3D_SHOW' && model){
-    root.position.set(0,0,0);
-    root.rotation.set(0,0,0);
-    boost=0;drifting=0;active=false;
-    if(!reduced){window.setTimeout(gasAction,440);}
-  }
-});
-
-// Spectral GT RS original game-ready GLB from the explicitly selected GitHub repository.
-// Pinned to a verified upstream commit so all visitors get the same 4,688,844-byte asset.
-const carGlb='https://raw.githubusercontent.com/JaronKBragg7337/spectral-gt-rs/34499c501908818a2b08e589a7aecf963343cee7/spectral_gt_rs_game_ready.glb';
-new GLTFLoader().load(carGlb,gltf=>{
-  model=gltf.scene;
-  // The source car points to +X; turn it to face our +Z camera.
-  model.rotation.y=-Math.PI/2;
-  model.updateMatrixWorld(true);
-  const bounds=new THREE.Box3().setFromObject(model);
-  const center=bounds.getCenter(new THREE.Vector3());
-  model.position.set(-center.x,-bounds.min.y,-center.z);
-  model.traverse(object=>{
-    if(object.isMesh){
-      object.frustumCulled=false;
-      if(/^(Rear|Front)_(Left|Right)_Tire$/.test(object.name)) wheels.push(object);
-    }
-  });
-  root.add(model);
-  if(gltf.animations?.length){
-    mixer=new THREE.AnimationMixer(model);
-    const clip=gltf.animations.find(animation=>animation.name==='Steering_Input_PingPong');
-    if(clip) mixer.clipAction(clip).play();
-  }
-  loading.classList.add('done');
-  gas.disabled=driftBtn.disabled=resetBtn.disabled=false;
-  status.textContent='SPECTRAL GT RS · ORIGINAL GLB';
-  tween(root.position,{z:0,duration:2.4});
-
-},event=>{
-  // Model prewarms behind the ENTER screen. Never show a loading indicator.
-},error=>{
-  console.error('Original Spectral GT RS GLB failed to load',error);
-  loading.textContent='';
-  window.parent.postMessage({type:'ENCHEV_3D_MODEL_FAILED'},window.location.origin);
-  status.textContent='ORIGINAL GLB · LOAD ERROR';
-});
-</script></body></html>
+document.querySelectorAll('[data-provider]').forEach(button=>button.addEventListener('click',()=>setMsg(info[button.dataset.provider],'error')));
+})();
+</script>
+</body>
+</html>
