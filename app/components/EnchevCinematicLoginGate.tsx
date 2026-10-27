@@ -3,8 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Isolated visual gate: does not change auctions, sessions or API logic.
- * The interactive car lives inside its own document to avoid clashing with Forge CSS.
+ * A centered, dismissible 3D login preview over the unchanged ENCHEV homepage.
+ * No authentication, auction, session or payment logic is changed here.
  */
 export default function EnchevCinematicLoginGate() {
   const [open, setOpen] = useState(true);
@@ -15,17 +15,17 @@ export default function EnchevCinematicLoginGate() {
   useEffect(() => {
     if (!open) return;
     const raf = window.requestAnimationFrame(() => setRevealed(true));
-    const escape = (event: KeyboardEvent) => {
+    const onEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setRevealed(false);
         setOpen(false);
         window.requestAnimationFrame(() => launcher.current?.focus());
       }
     };
-    window.addEventListener("keydown", escape);
+    window.addEventListener("keydown", onEscape);
     return () => {
       window.cancelAnimationFrame(raf);
-      window.removeEventListener("keydown", escape);
+      window.removeEventListener("keydown", onEscape);
     };
   }, [open]);
 
@@ -55,38 +55,73 @@ export default function EnchevCinematicLoginGate() {
     <>
       {open && (
         <div
-          role="dialog"
-          aria-modal="true"
-          aria-label="ENCHEV AUCTIONS — interactive 3D access"
+          data-enchev-modal-backdrop
+          onClick={(event) => { if (event.target === event.currentTarget) dismiss(); }}
           style={{
-            position: "fixed", inset: 0, zIndex: 2147483000,
-            background: "#030405",
-            opacity: revealed ? 1 : 0,
-            transform: revealed ? "scale(1)" : "scale(1.035)",
-            transition: "opacity 3s cubic-bezier(.2,.7,.2,1), transform 3s cubic-bezier(.2,.7,.2,1)",
-            pointerEvents: "auto",
+            position: "fixed",
+            inset: 0,
+            zIndex: 2147483000,
+            background: revealed ? "rgba(0, 0, 0, .64)" : "rgba(0, 0, 0, 0)",
+            backdropFilter: revealed ? "blur(5px)" : "blur(0)",
+            WebkitBackdropFilter: revealed ? "blur(5px)" : "blur(0)",
+            transition: "background 700ms ease, backdrop-filter 700ms ease",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            padding: 12,
           }}
         >
-          <iframe
-            src="/3d-login/index.html"
-            title="ENCHEV AUCTIONS — 3D car with gas, drift and smoke; secure login"
-            style={{ display: "block", width: "100%", height: "100dvh", border: 0, background: "#050608" }}
-            allow="fullscreen"
-          />
-          <button
-            type="button"
-            ref={closeButton}
-            onClick={dismiss}
-            aria-label="Затвори 3D екрана и виж началната страница"
-            title="Close / Затвори"
+          <section
+            role="dialog"
+            aria-modal="true"
+            aria-label="ENCHEV AUCTIONS — интерактивен 3D вход"
             style={{
-              position: "absolute", top: "max(14px, env(safe-area-inset-top))", right: "max(14px, env(safe-area-inset-right))",
-              zIndex: 2147483001, width: 48, height: 48, borderRadius: "50%",
-              border: "1px solid rgba(255,255,255,.4)", color: "#fff",
-              background: "rgba(8,9,13,.85)", backdropFilter: "blur(12px)",
-              cursor: "pointer", fontSize: 25, fontWeight: 300, lineHeight: 1,
+              position: "relative",
+              width: "min(1080px, calc(100vw - 32px))",
+              height: "min(640px, calc(100dvh - 48px))",
+              maxHeight: "calc(100dvh - 24px)",
+              flexShrink: 0,
+              overflow: "hidden",
+              borderRadius: 16,
+              border: "1px solid rgba(214, 190, 147, .4)",
+              boxShadow: "0 30px 110px rgba(0, 0, 0, .85), 0 0 50px rgba(195, 28, 35, .12)",
+              background: "#050608",
+              opacity: revealed ? 1 : 0,
+              transform: revealed ? "translateY(0) scale(1)" : "translateY(28px) scale(.94)",
+              transition: "opacity 3s cubic-bezier(.2,.7,.2,1), transform 3s cubic-bezier(.2,.7,.2,1)",
             }}
-          >×</button>
+          >
+            <iframe
+              src="/3d-login/index.html"
+              title="ENCHEV AUCTIONS — 3D автомобил с газ, дрифт, дим и защитен вход"
+              style={{ display: "block", width: "100%", height: "100%", border: 0, background: "#050608" }}
+              allow="fullscreen"
+            />
+            <button
+              type="button"
+              ref={closeButton}
+              onClick={dismiss}
+              aria-label="Затвори прозореца"
+              title="Затвори"
+              style={{
+                position: "absolute",
+                top: 12,
+                right: 12,
+                zIndex: 1,
+                width: 44,
+                height: 44,
+                borderRadius: "50%",
+                border: "1px solid rgba(255, 255, 255, .45)",
+                color: "#fff",
+                background: "rgba(8, 9, 13, .82)",
+                backdropFilter: "blur(12px)",
+                cursor: "pointer",
+                fontSize: 25,
+                fontWeight: 300,
+                lineHeight: 1,
+              }}
+            >×</button>
+          </section>
         </div>
       )}
       {!open && (
@@ -96,12 +131,20 @@ export default function EnchevCinematicLoginGate() {
           onClick={launch}
           aria-label="Отвори 3D автомобил и вход"
           style={{
-            position: "fixed", bottom: "max(18px, env(safe-area-inset-bottom))",
-            right: "max(18px, env(safe-area-inset-right))", zIndex: 2147482000,
-            border: "1px solid #ad8b5a", background: "rgba(8,10,13,.95)",
-            color: "#ebd4a8", cursor: "pointer", padding: "13px 17px",
-            fontSize: 11, fontWeight: 700, letterSpacing: ".1em",
-            boxShadow: "0 8px 30px #0008", borderRadius: 4,
+            position: "fixed",
+            bottom: "max(18px, env(safe-area-inset-bottom))",
+            right: "max(18px, env(safe-area-inset-right))",
+            zIndex: 2147482000,
+            border: "1px solid #ad8b5a",
+            background: "rgba(8,10,13,.95)",
+            color: "#ebd4a8",
+            cursor: "pointer",
+            padding: "13px 17px",
+            fontSize: 11,
+            fontWeight: 700,
+            letterSpacing: ".1em",
+            boxShadow: "0 8px 30px #0008",
+            borderRadius: 4,
           }}
         >3D ВХОД ↗</button>
       )}
