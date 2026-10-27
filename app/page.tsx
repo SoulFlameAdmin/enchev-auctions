@@ -1,4 +1,5 @@
 import MasterSystemPlanV1 from "./components/MasterSystemPlanV1";
+import EnchevCinematicLoginGate from "./components/EnchevCinematicLoginGate";
 
 export default function Home(){
   return (
@@ -22,6 +23,7 @@ export default function Home(){
         }}
       />
       <MasterSystemPlanV1 />
+      <EnchevCinematicLoginGate />
     </main>
   );
 }
