@@ -7,10 +7,56 @@ import { useEffect, useRef, useState } from "react";
  * No authentication, auction, session or payment logic is changed here.
  */
 export default function EnchevCinematicLoginGate() {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const launcher = useRef<HTMLButtonElement>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
+
+  // The welcome "ENTER" control is rendered inside the same-origin Forge iframe.
+  // Only open this overlay after the visitor actually activates that control.
+  useEffect(() => {
+    const forge = document.querySelector<HTMLIFrameElement>(
+      'iframe[title="ENCHEV Auctions cinematic homepage"]'
+    );
+    if (!forge) return;
+
+    let detachDocument: (() => void) | undefined;
+    const attach = () => {
+      detachDocument?.();
+      let doc: Document | null = null;
+      try {
+        doc = forge.contentDocument;
+      } catch {
+        // Fail closed rather than showing the popup on initial load.
+      }
+      if (!doc) return;
+
+      const onForgeClick = (event: MouseEvent) => {
+        let current = event.target as Element | null;
+        for (let level = 0; current && level < 7; level++, current = current.parentElement) {
+          const label = (current.textContent || current.getAttribute("aria-label") || "")
+            .replace(/\\s+/g, " ").trim();
+          if (/^ENTER(?:\\s*[→↗›])?$/i.test(label)) {
+            // Leave the original Forge ENTER handler intact.
+            window.requestAnimationFrame(() => {
+              setRevealed(false);
+              setOpen(true);
+            });
+            return;
+          }
+        }
+      };
+      doc.addEventListener("click", onForgeClick, true);
+      detachDocument = () => doc?.removeEventListener("click", onForgeClick, true);
+    };
+
+    forge.addEventListener("load", attach);
+    attach();
+    return () => {
+      forge.removeEventListener("load", attach);
+      detachDocument?.();
+    };
+  }, []);
 
   useEffect(() => {
     if (!open) return;
