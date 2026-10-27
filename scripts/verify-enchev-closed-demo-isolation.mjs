@@ -77,6 +77,8 @@ try{
   reject("preview lacks production Node build",()=>d.createClosedDemoBoundary({...preview,nodeEnv:"test"}));
   reject("preview local namespace",()=>d.createClosedDemoBoundary({...preview,namespace:valid.namespace}));
   reject("real payment configured",()=>d.createClosedDemoBoundary({...valid,realPaymentsEnabled:"true"}));
+  reject("real payment 1 configured",()=>d.createClosedDemoBoundary({...valid,realPaymentsEnabled:"1"}));
+  reject("real payment uppercase configured",()=>d.createClosedDemoBoundary({...valid,realPaymentsEnabled:"TRUE"}));
   reject("payment provider configured",()=>d.createClosedDemoBoundary({...valid,paymentProvider:"stripe"}));
   reject("provider secret present",()=>d.createClosedDemoBoundary({...valid,providerSecretPresent:true}));
   reject("database write credential present",()=>d.createClosedDemoBoundary({...valid,databaseWriteCredentialPresent:true}));
