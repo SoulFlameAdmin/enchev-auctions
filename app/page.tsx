@@ -25,7 +25,7 @@ export default function Home(){
       
       
       <div className="eaHeroBrand" aria-label="E&A East West Auctioneers Group — SOULFLAME">
-        <img src="/brand/ea-primary-vertical.svg" alt="E&A East West Auctioneers Group — SOULFLAME" />
+        <img src="/brand/ea-2026-main.svg" alt="E&A East West Auctioneers Group — SOULFLAME" />
       </div>
       <style>{`
         .eaHeroBrand{
