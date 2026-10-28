@@ -252,6 +252,98 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
   .visualFallback,.visualFallback .introContent{transition-duration:.15s!important}
 }
 
+
+
+/* SOULFLAME CarAR: cinematic reveal, layered above (not replacing) Lusion 3D. */
+.cararPromo{
+  position:fixed;inset:0;z-index:950;
+  display:flex;align-items:center;justify-content:center;gap:clamp(14px,3vw,50px);
+  padding:clamp(18px,3vw,48px);
+  background:radial-gradient(ellipse at 24% 30%,#242444 0%,#111626 42%,#050608 80%);
+  opacity:0;visibility:hidden;pointer-events:none;
+  transition:opacity .7s ease,visibility 0s .7s;
+  overflow-x:hidden;overflow-y:auto;
+  color:#f6f6fa;
+}
+.cararPromo.is-visible{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .7s ease}
+.cararPromo .cararPosterWrap{
+  position:relative;flex:0 1 480px;min-width:0;max-height:min(78dvh,680px);
+  transform:perspective(950px) rotateY(-75deg) rotateZ(-9deg) scale(.78);
+  transform-origin:center;
+  opacity:0;filter:blur(10px);
+}
+.cararPromo.is-visible .cararPosterWrap{
+  animation:cararFlip 1.55s cubic-bezier(.18,.83,.18,1) both;
+}
+@keyframes cararFlip{
+  0%{opacity:0;transform:perspective(950px) rotateY(-75deg) rotateZ(-9deg) scale(.78);filter:blur(10px)}
+  68%{opacity:1;filter:blur(0)}
+  100%{opacity:1;transform:perspective(950px) rotateY(0) rotateZ(0) scale(1);filter:blur(0)}
+}
+.cararPromo .cararPoster{
+  display:block;width:100%;max-height:min(78dvh,680px);object-fit:contain;
+  border-radius:15px;border:1px solid #a6a4c144;
+  box-shadow:0 22px 70px #000a,0 0 65px #7772ef2e;
+}
+.cararPromo .cararContent{width:min(420px,100%);flex:0 1 420px}
+.cararPromo .cararEyebrow{font-size:10px;letter-spacing:.25em;color:#c7b58e;margin:0 0 11px;font-weight:700}
+.cararPromo h2{
+  font-size:clamp(42px,5.8vw,81px);letter-spacing:-.065em;line-height:.97;margin:0 0 14px;
+  font-weight:650;color:#fff;
+}
+.cararPromo h2 span{color:#d5ac70}
+.cararPromo .cararInfo{font-size:clamp(12px,1.5vw,16px);line-height:1.65;color:#bfc2d2;margin:0 0 23px}
+.cararNotifyForm{display:flex;gap:8px;align-items:stretch;max-width:440px}
+.cararNotifyForm input{
+  width:100%;min-width:0;flex:1;min-height:49px;margin:0;
+  border:1px solid #c9c2d466;border-radius:7px;
+  background:#ffffff0e;font-size:14px;padding:0 13px;color:#fff;
+}
+.cararNotifyForm button{
+  flex:0 0 auto;min-height:49px;padding:0 17px;
+  border:1px solid #f5cd93;border-radius:7px;
+  background:linear-gradient(120deg,#f1ce91,#ae7e3d);
+  color:#101014;font-weight:800;cursor:pointer;font-size:12px;
+}
+.cararNotifyForm button:disabled{opacity:.6;cursor:progress}
+#cararNotifyStatus{font-size:12px;min-height:34px;margin:11px 0 0;line-height:1.45;color:#cad3df}
+#cararNotifyStatus[data-state="success"]{color:#a4e4b8}
+#cararNotifyStatus[data-state="error"]{color:#ffc3bd}
+.cararPromo .cararActions{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-top:16px}
+.cararPromo .cararActions a,.cararPromo .cararActions button{
+  color:#eee8de;background:transparent;border:0;border-bottom:1px solid #f3ce8f77;
+  padding:10px 0;font-size:12px;text-decoration:none;cursor:pointer;
+}
+.cararPromo .cararClose{
+  position:fixed;right:clamp(16px,3vw,35px);top:clamp(13px,2.5vw,28px);
+  width:43px;height:43px;border-radius:50%;border:1px solid #ffffff75;
+  background:#0c0e18dd;color:white;font-size:27px;line-height:1;cursor:pointer;z-index:2;
+}
+.cararPromo :focus-visible{outline:2px solid #f8d4a0;outline-offset:3px}
+@media(max-width:720px){
+  .cararPromo{flex-direction:column;justify-content:flex-start;gap:12px;padding:18px 18px 28px;min-height:100dvh}
+  .cararPromo .cararPosterWrap{width:min(72vw,340px);flex:0 0 auto;max-height:none}
+  .cararPromo .cararPoster{height:min(47dvh,410px);max-height:none;width:100%;object-fit:contain}
+  .cararPromo .cararContent{flex:0 0 auto;width:min(100%,390px);text-align:center}
+  .cararPromo .cararEyebrow{font-size:9px;margin:0 0 8px}
+  .cararPromo h2{font-size:clamp(31px,9vw,48px);margin-bottom:7px}
+  .cararPromo .cararInfo{font-size:12px;line-height:1.4;margin-bottom:13px}
+  .cararNotifyForm{flex-direction:row;gap:6px}
+  .cararNotifyForm input{font-size:12px;min-height:43px}
+  .cararNotifyForm button{min-height:43px;font-size:10px;padding:0 10px}
+  #cararNotifyStatus{min-height:24px;margin-top:7px;font-size:11px}
+  .cararPromo .cararActions{justify-content:center;margin-top:5px}
+  .cararPromo .cararClose{top:14px;right:13px}
+}
+@media(max-width:720px) and (max-height:650px){
+  .cararPromo .cararPoster{height:36dvh}
+  .cararPromo{gap:7px}
+  .cararPromo .cararInfo{margin-bottom:8px}
+}
+@media(prefers-reduced-motion:reduce){
+  .cararPromo.is-visible .cararPosterWrap{animation:none;opacity:1;filter:none;transform:none}
+}
+
 </style>
 </head>
 <body>
@@ -297,6 +389,27 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
 <div class="visualFallback" id="geminiCurtain" aria-label="SOULFLAME PRESENTS CarAr"><div class="introContent"><svg class="brandEmblem" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 830" role="img" aria-label="SoulFlame">
   <path fill-rule="evenodd" d="M299 6 L5 512 L9 515 L5 520 L196 822 L295 731 L395 822 L595 515 L590 505 L393 203 L304 379 L301 383 L300 382 Z M36 544 L37 543 L284 723 L199 802 Z M562 542 L393 802 L305 723 L561 541 Z M404 244 L579 513 L318 698 L317 696 L430 500 L403 250 Z M389 240 L392 255 L417 497 L302 697 L300 413 Z M286 54 L288 709 L19 514 Z"/>
 </svg><span class="brandPresents">SOULFLAME PRESENTS</span><span class="brandTitle"><strong>Car</strong>Ar</span><span class="brandAccent" aria-hidden="true"></span></div></div>
+
+<section class="cararPromo" id="cararPromo" role="dialog" aria-label="SOULFLAME CarAR — Coming Soon" aria-modal="true" aria-hidden="true">
+  <button class="cararClose" id="cararPromoClose" type="button" aria-label="Затвори рекламата">×</button>
+  <div class="cararPosterWrap"><img class="cararPoster" src="/brand/carar-coming-soon-poster.svg" alt="SOULFLAME CarAR — спортен автомобил в добавена реалност на телефон" loading="eager"></div>
+  <div class="cararContent">
+    <p class="cararEyebrow">SOULFLAME PRESENTS · CarAR</p>
+    <h2>COMING <span>SOON</span></h2>
+    <p class="cararInfo">Виж автомобила в твоя свят. Остави имейл и ще ти пишем, когато CarAR бъде достъпен.</p>
+    <form class="cararNotifyForm" id="cararNotifyForm" autocomplete="on">
+      <input type="email" id="cararNotifyEmail" name="email" placeholder="Твоят имейл" maxlength="254" autocomplete="email" aria-label="Имейл за известие за CarAR" required>
+      <input type="text" name="website" tabindex="-1" autocomplete="off" aria-hidden="true" style="position:absolute;left:-99999px;opacity:0;width:1px;height:1px" />
+      <button type="submit" id="cararNotifyButton">УВЕДОМИ МЕ ↗</button>
+    </form>
+    <p id="cararNotifyStatus" role="status" aria-live="polite">Само информация за CarAR. Без спам.</p>
+    <div class="cararActions">
+      <a href="/car-ar" target="_top">Виж AR демото ↗</a>
+      <button type="button" id="cararPromoContinue">Продължи към E&amp;A ↗</button>
+    </div>
+  </div>
+</section>
+
 </main>
 <script>
 (() => {
@@ -350,6 +463,63 @@ function scheduleLogoReveal(){
 geminiFrame.addEventListener('load',scheduleLogoReveal,{once:true});
 // External iframe can fail to load; don't leave users stuck on a black screen.
 window.setTimeout(scheduleLogoReveal,8000);
+
+const promo=document.getElementById('cararPromo');
+const promoForm=document.getElementById('cararNotifyForm');
+const promoStatus=document.getElementById('cararNotifyStatus');
+const promoButton=document.getElementById('cararNotifyButton');
+let promoHasOpened=false;
+function openCararPromo(){
+  if(promoHasOpened)return;
+  promoHasOpened=true;
+  promo.classList.add('is-visible');
+  promo.setAttribute('aria-hidden','false');
+  document.getElementById('cararNotifyEmail').focus({preventScroll:true});
+}
+function closeCararPromo(){
+  promo.classList.remove('is-visible');
+  promo.setAttribute('aria-hidden','true');
+}
+document.getElementById('cararPromoClose').addEventListener('click',closeCararPromo);
+document.getElementById('cararPromoContinue').addEventListener('click',closeCararPromo);
+document.addEventListener('keydown',event=>{
+  if(event.key==='Escape'&&promo.classList.contains('is-visible'))closeCararPromo();
+});
+// Let Lusion's original 3D animation become visible after the intro.
+// The promotion is an optional overlay; it never pauses, removes, or reloads the GLB.
+const originalRevealArAction=revealArAction;
+revealArAction=function(){
+  const wasReady=arAnnounced;
+  originalRevealArAction();
+  if(!wasReady)window.setTimeout(openCararPromo,3000);
+};
+promoForm.addEventListener('submit',async event=>{
+  event.preventDefault();
+  if(promoButton.disabled)return;
+  const email=document.getElementById('cararNotifyEmail').value.trim();
+  const honeypot=promoForm.querySelector('[name="website"]').value;
+  if(!email||email.length>254)return;
+  promoButton.disabled=true;
+  promoStatus.textContent='Изпращане...';
+  promoStatus.dataset.state='';
+  try{
+    const response=await fetch('/api/carar-waitlist',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      credentials:'same-origin',
+      body:JSON.stringify({email,website:honeypot})
+    });
+    const body=await response.json();
+    if(!response.ok||body.ok!==true)throw Error(body.message||'Записването временно не е достъпно.');
+    promoStatus.textContent='Готово! Ще ти пишем, когато CarAR стартира.';
+    promoStatus.dataset.state='success';
+    promoForm.reset();
+  }catch(error){
+    promoStatus.textContent=error?.message||'Проблем с връзката. Опитай отново.';
+    promoStatus.dataset.state='error';
+  }finally{promoButton.disabled=false}
+});
+
 const msg=document.getElementById('authMessage');
 const setMsg=(content,variant='')=>{
   msg.textContent=content;
