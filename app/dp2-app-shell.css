@@ -243,31 +243,31 @@
 .eaAppBrand.eaBrandExact,.eaAppBrand:has(.eaBrandExactLockup){
   display:inline-flex;flex-direction:row;align-items:center;max-width:100%;min-width:0
 }
-.eaBrandExactLockup{display:flex;align-items:center;gap:8px;min-width:0;height:58px}
-.eaBrandExactMark{display:block;position:relative;width:132px;height:57px;flex:0 0 132px;overflow:hidden}
-.eaBrandExactMark img{display:block;position:absolute;top:-10px;left:-11px;width:151px;height:auto;max-width:none;mix-blend-mode:screen}
+.eaBrandExactLockup{display:flex;align-items:center;gap:7px;min-width:0;height:51px}
+.eaBrandExactMark{display:block;position:relative;width:114px;height:49px;flex:0 0 114px;overflow:hidden}
+.eaBrandExactMark img{display:block;position:absolute;top:-9px;left:-10px;width:130px;height:auto;max-width:none;mix-blend-mode:screen}
 .eaBrandExactCopy{display:flex;flex-direction:column;justify-content:center;min-width:0;gap:3px;text-align:left;line-height:1.08;white-space:nowrap}
-.eaAppBrand .eaBrandExactCopy strong{font-family:Arial,Helvetica,sans-serif;font-size:16px!important;font-weight:750;letter-spacing:.19em;color:#f4f5f8}
-.eaAppBrand .eaBrandExactCopy small{font-family:Arial,Helvetica,sans-serif;font-size:8.5px;font-weight:600;letter-spacing:.13em;color:#d7a04d}
-.eaAppBrand .eaBrandExactCopy span{margin:0;font-family:Arial,Helvetica,sans-serif;font-size:9px;font-weight:500;letter-spacing:.24em;color:#d9dcdf}
+.eaAppBrand .eaBrandExactCopy strong{font-family:Arial,Helvetica,sans-serif;font-size:14px!important;font-weight:750;letter-spacing:.19em;color:#f4f5f8}
+.eaAppBrand .eaBrandExactCopy small{font-family:Arial,Helvetica,sans-serif;font-size:7.5px;font-weight:600;letter-spacing:.13em;color:#d7a04d}
+.eaAppBrand .eaBrandExactCopy span{margin:0;font-family:Arial,Helvetica,sans-serif;font-size:8px;font-weight:500;letter-spacing:.24em;color:#d9dcdf}
 @media(max-width:1180px){
-  .eaBrandExactMark{width:110px;height:50px;flex-basis:110px}
-  .eaBrandExactMark img{width:128px;top:-9px;left:-9px}
-  .eaBrandExactLockup{gap:6px;height:51px}
-  .eaAppBrand .eaBrandExactCopy strong{font-size:13px!important;letter-spacing:.13em}
-  .eaAppBrand .eaBrandExactCopy small{font-size:7.5px}
+  .eaBrandExactMark{width:95px;height:43px;flex-basis:95px}
+  .eaBrandExactMark img{width:110px;top:-8px;left:-8px}
+  .eaBrandExactLockup{gap:5px;height:45px}
+  .eaAppBrand .eaBrandExactCopy strong{font-size:11px!important;letter-spacing:.13em}
+  .eaAppBrand .eaBrandExactCopy small{font-size:7px}
 }
 @media(max-width:720px){
-  .eaBrandExactLockup{height:49px;gap:5px}
-  .eaBrandExactMark{width:112px;height:48px;flex-basis:112px}
-  .eaBrandExactMark img{width:132px;top:-9px;left:-10px}
+  .eaBrandExactLockup{height:43px;gap:5px}
+  .eaBrandExactMark{width:96px;height:42px;flex-basis:96px}
+  .eaBrandExactMark img{width:114px;top:-8px;left:-9px}
   .eaAppBrand .eaBrandExactCopy strong{font-size:12px!important;letter-spacing:.13em}
-  .eaAppBrand .eaBrandExactCopy small{font-size:6.5px}
-  .eaAppBrand .eaBrandExactCopy span{font-size:7px;letter-spacing:.12em}
+  .eaAppBrand .eaBrandExactCopy small{font-size:5.6px}
+  .eaAppBrand .eaBrandExactCopy span{font-size:6.5px;letter-spacing:.12em}
 }
 @media(max-width:390px){
-  .eaBrandExactMark{width:98px;height:43px;flex-basis:98px}
-  .eaBrandExactMark img{width:118px;top:-8px;left:-9px}
-  .eaAppBrand .eaBrandExactCopy strong{font-size:11px!important}
+  .eaBrandExactMark{width:85px;height:37px;flex-basis:85px}
+  .eaBrandExactMark img{width:102px;top:-7px;left:-8px}
+  .eaAppBrand .eaBrandExactCopy strong{font-size:10px!important}
   .eaAppBrand .eaBrandExactCopy small{font-size:6px}
 }
