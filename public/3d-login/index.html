@@ -381,7 +381,7 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
   </div>
   <div id="authMessage" class="authMessage" role="status" aria-live="polite"></div>
   <div class="authLinks"><span>Нямате профил? <a href="/register" target="_top">Регистрация ↗</a></span><a href="/platform" target="_top">Разгледай демото</a></div>
-<a class="mobileCarArLink" href="/car-ar" target="_top">MAKE YOUR CAR → AR ↗</a>
+<a class="mobileCarArLink" href="/car-ar-demo" target="_top">MAKE YOUR CAR → AR ↗</a>
 </div>
 <a class="earlyAccessCta" href="/register" target="_top" aria-label="Запиши се за ранен достъп до E&A East West Auctioneers Group"><span>ЗАПИШИ СЕ ЗА РАНЕН ДОСТЪП</span><span aria-hidden="true">↗</span></a>
 <footer class="authFooter"><span class="footerAccent"></span><span>E&A EAST WEST AUCTIONEERS GROUP</span><span>🔥SOULFLAME🔥</span></footer>
@@ -404,7 +404,7 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
     </form>
     <p id="cararNotifyStatus" role="status" aria-live="polite">Само информация за CarAR. Без спам.</p>
     <div class="cararActions">
-      <a href="/car-ar" target="_top">Виж AR демото ↗</a>
+      <a href="/car-ar-demo" target="_top">Виж AR демото ↗</a>
       <button type="button" id="cararPromoContinue">Продължи към E&amp;A ↗</button>
     </div>
   </div>
@@ -491,7 +491,7 @@ const originalRevealArAction=revealArAction;
 revealArAction=function(){
   const wasReady=arAnnounced;
   originalRevealArAction();
-  if(!wasReady)window.setTimeout(openCararPromo,3000);
+  if(!wasReady)window.setTimeout(openCararPromo,550);
 };
 promoForm.addEventListener('submit',async event=>{
   event.preventDefault();
