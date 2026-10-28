@@ -1,0 +1,4 @@
+/* E&A brand skin: retains the original cinematic animation and interactions. */
+a[aria-label="Enchev home"],a[aria-label="E&A East West Auctioneers Group home"]{position:relative!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;width:clamp(135px,17vw,225px)!important;min-height:64px!important;background:url('/brand/ea-east-west.svg') center/contain no-repeat!important}
+a[aria-label="Enchev home"]>svg,a[aria-label="E&A East West Auctioneers Group home"]>svg{opacity:0!important}
+@media(max-width:767px){a[aria-label="Enchev home"],a[aria-label="E&A East West Auctioneers Group home"]{width:150px!important;min-height:53px!important}}

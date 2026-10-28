@@ -264,10 +264,10 @@ export default function InventoryPage(){
   const liveCar=auctionCars.find(car=>car.status==="live");
 
   return <main id="main-content" className="inventoryPage" data-design-task="D11" data-design-filter-task="D12" data-design-url-task="D13" data-design-pagination-task="D14" data-result-count={filtered.length} data-current-page={currentPage}>
-    <div className="inv2TopUtility"><div className="inv2UtilityLive"><i/> ENCHEV LIVE NETWORK <span>·</span> Real-time updates</div><div className="inv2UtilityRight"><span>BG · EUR</span><a href="/support">Help</a><a href="/transport">Transport</a></div></div>
+    <div className="inv2TopUtility"><div className="inv2UtilityLive"><i/> E&A EAST WEST LIVE NETWORK <span>·</span> Real-time updates</div><div className="inv2UtilityRight"><span>BG · EUR</span><a href="/support">Help</a><a href="/transport">Transport</a></div></div>
 
     <header className="inventoryHeader">
-      <a href="/" className="inventoryLogo"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
+      <a href="/" className="inventoryLogo"><img src="/brand/ea-east-west.svg" alt="E&A East West Auctioneers Group 🔥SOULFLAME🔥" style={{width:194,height:66,objectFit:"contain"}}/></a>
       <div className="inventorySearch"><span>⌕</span><input value={query} onChange={e=>{setQuery(e.target.value);setCurrentPage(1);}} placeholder="Search марка, модел, VIN, LOT, повреда или локация..." aria-label="Търсене по марка, модел, VIN или LOT"/><button>Search</button></div>
       <div className="inventoryAccount"><a href={accountNavigation.profile}>Login / Profile</a><a className="registerBtn" href={accountNavigation.register}>Register</a></div>
     </header>
@@ -275,7 +275,7 @@ export default function InventoryPage(){
     <nav className="inventoryNav" aria-label="Основна навигация"><a href="/">Home</a>{primaryNavigation.map(item=><a key={item.key} className={`${item.key==="inventory"?"active":""} ${item.key==="live"?"navLive":""}`.trim()} href={item.href}>{item.label}</a>)}</nav>
 
     <section className="inv2Hero">
-      <div className="inventoryIntro"><div><span>ENCHEV MARKETPLACE</span><h1>Vehicles from international auctions</h1><p>Filter, watch and bid. LIVE лотът има 10-секунден брояч; всяка нова оферта връща времето на 10 секунди.</p></div></div>
+      <div className="inventoryIntro"><div><span>E&A EAST WEST MARKETPLACE</span><h1>Vehicles from international auctions</h1><p>Filter, watch and bid. LIVE лотът има 10-секунден брояч; всяка нова оферта връща времето на 10 секунди.</p></div></div>
       <div className="inv2HeroStats"><div className="inv2HeroStat"><b>{cars.length}</b><span>active lots</span></div><div className="inv2HeroStat"><b>{cars.filter(c=>c.buyNow>0).length}</b><span>buy now</span></div><div className="inv2HeroStat"><b>{formatTime(remaining)}</b><span>live timer</span></div></div>
     </section>
 

@@ -231,3 +231,6 @@
   }
   .eaAppDesktopNav a[aria-current="page"]:after{background:Highlight}
 }
+
+.eaBrandLogo{display:block;width:198px;height:64px;object-fit:contain;object-position:left center}
+@media(max-width:720px){.eaBrandLogo{width:154px;height:54px}}

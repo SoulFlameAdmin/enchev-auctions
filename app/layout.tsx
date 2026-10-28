@@ -29,8 +29,9 @@ import EnglishUiEnforcer from "./components/EnglishUiEnforcer";
 export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 export const metadata: Metadata = {
-  title: "ENCHEV Auctions",
-  description: "ENCHEV — international vehicle auctions, live bidding, vehicle history and transport.",
+  title: "E&A East West Auctioneers Group",
+  description: "E&A East West Auctioneers Group — international vehicle auctions, live bidding, vehicle history and transport. 🔥SOULFLAME🔥",
+  icons: { icon: "/brand/ea-app.svg", shortcut: "/brand/ea-app.svg", apple: "/brand/ea-app.svg" },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

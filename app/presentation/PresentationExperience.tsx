@@ -6,7 +6,7 @@ import s from "./presentation.module.css";
 
 const CAR = "https://images.unsplash.com/photo-1655283733642-f1d813b40616?auto=format&fit=crop&w=1600&q=90";
 const scenes = [
-  ["EAUCTIONS BY ENCHEV", "One car.", "Endless possibilities.", "From the first photo to the keys in your hand.", "Home"],
+  ["E&A EAST WEST AUCTIONEERS GROUP", "One car.", "Endless possibilities.", "From the first photo to the keys in your hand.", "Home"],
   ["01 / ПРИЕМАНЕ", "Всичко започва", "с един автомобил.", "Добавяме автомобила. Създаваме неговото досие.", "Acceptance"],
   ["02 / ПРОВЕРКА", "Познаваш колата.", "Преди да наддаваш.", "Снимки, състояние и документи. На едно място.", "Inspection"],
   ["03 / ИЗБОР", "Твоята следваща кола.", "Вече е тук.", "Разглеждаш информацията. Choose. Следиш търга.", "Listing"],
@@ -17,7 +17,7 @@ const scenes = [
   ["08 / ПЪЛНА ИСТОРИЯ", "Ключовете са твои.", "Historyта остава.", "Автомобилът, сделката и документите. Винаги свързани.", "History"],
   ["СЛЕДВАЩО НИВО / AI", "По-малко повторения.", "Повече възможности.", "AI помага с задачи, липсващи документи и важни действия.", "AI"],
   ["СЛЕДВАЩО НИВО / ПАЗАРИ", "Започваме тук.", "Мислим отвъд границите.", "Повече държави, езици и партньори. Една система.", "Markets"],
-  ["ENCHEV / CONTROL CENTER", "Целият път.", "В една система.", "Автомобили. Auctionове. Сделки. Доставки. EAuctions by SOULFLAME.", "ENCHEV"],
+  ["E&A / CONTROL CENTER", "Целият път.", "В една система.", "Автомобили. Auctionове. Сделки. Доставки. 🔥SOULFLAME🔥", "ENCHEV"],
 ] as const;
 
 const voiceTracks = [
@@ -140,7 +140,7 @@ export default function PresentationExperience() {
   return <main id="main-content" ref={root} className={s.presentation} data-playing={playing && visible} data-reduced={reduced}
     onKeyDown={event => { if ((event.target as HTMLElement).closest("button,a,input")) return; if (event.key === "ArrowRight") { event.preventDefault(); go(active + 1); } if (event.key === "ArrowLeft") { event.preventDefault(); go(active - 1); } }} tabIndex={-1}>
     <audio ref={audioRef} preload="auto" aria-hidden="true" />
-    <header className={s.topbar}><a href="/" className={s.brand}><b>E<span>Auctions</span></b><small>BY ENCHEV</small></a><span className={s.edition}>ONE VEHICLE. THE WHOLE JOURNEY.</span><a className={s.exit} href="/">Go to site ↗</a></header>
+    <header className={s.topbar}><a href="/" className={s.brand}><img src="/brand/ea-east-west.svg" alt="E&A East West Auctioneers Group 🔥SOULFLAME🔥" style={{width:174,height:65,objectFit:"contain"}}/></a><span className={s.edition}>ONE VEHICLE. THE WHOLE JOURNEY.</span><a className={s.exit} href="/">Go to site ↗</a></header>
     <section className={s.stage} aria-label="Анимирана продуктова презентация">
       <div className={s.ambient}/><div className={s.grain}/>
       <div key={`copy-${active}`} className={s.copy}>
@@ -155,7 +155,7 @@ export default function PresentationExperience() {
           <Image unoptimized src={CAR} alt="Автомобилът в демонстрационната история на EAuctions" fill sizes="(max-width: 760px) 100vw, 65vw" priority className={s.car}/>
           <div className={s.carShade}/><span className={s.lot}>EA–10539 <i/> DEMO</span>
           {active === 0 && <div className={s.orbit}><span>01 / Choose</span><span>02 / Bid</span><span>03 / Receive</span></div>}
-          {active === 1 && <div className={s.glass}><small>ДИГИТАЛНО ДОСИЕ</small><h2>EA–10539 <em>✓</em></h2><Row label="Автомобил" value="Регистриран"/><Row label="Местоположение" value="Площадка ENCHEV"/><Row label="Следва" value="Inspection →"/></div>}
+          {active === 1 && <div className={s.glass}><small>ДИГИТАЛНО ДОСИЕ</small><h2>EA–10539 <em>✓</em></h2><Row label="Автомобил" value="Регистриран"/><Row label="Местоположение" value="Площадка E&A"/><Row label="Следва" value="Inspection →"/></div>}
           {active === 2 && <><div className={s.scan}/><div className={s.glass}><small>ПРЕДИ ТЪРГА</small>{["Идентификация / VIN", "Condition и пробег", "Снимки и документи"].map((v,i)=><div className={s.check} key={v} style={{animationDelay:`${i*.5}s`}}><i>✓</i>{v}</div>)}</div></>}
           {active === 3 && <div className={s.glass}><small>ОТКРИЙ СЛЕДВАЩАТА СИ КОЛА</small><h2>Един поглед.<br/>Пълната картина.</h2><div className={s.tags}><span>Снимки</span><span>History</span><span>Условия</span></div><Row label="Начална цена" value="€18 400"/><span className={s.demoAction}>Следиш търга ♡</span></div>}
           {active === 4 && <div className={`${s.glass} ${s.auction}`}><div className={s.live}><i/>{bid === 3 ? "ПРОДАДЕН" : "НАДДАВАНЕ НА ЖИВО"}<span>DEMO</span></div><small>{bid === 3 ? "КРАЙНА ЦЕНА" : "ТЕКУЩА ОФЕРТА"}</small><strong key={bid} className={s.price}>€{prices[bid]}</strong><div className={s.bids}>{prices.slice(0,bid+1).map((p,i)=><div key={p}><span>Купувач #{2840+i}</span><b>€{p}</b></div>)}</div><span className={s.demoAction}>{bid === 3 ? "✓ Победителят е потвърден" : "↑ Нова оферта"}</span></div>}
@@ -165,8 +165,8 @@ export default function PresentationExperience() {
           {active === 8 && <div className={s.glass}><small>ДОСТАВЕН / EA–10539</small><h2>One car.<br/><em>Цялата история.</em></h2><div className={s.history}>{["Приет", "Проверен", "Продаден", "Платен", "Доставен"].map(v=><div key={v}><i>✓</i><span>{v}</span></div>)}</div></div>}
         </div>}
         {active === 9 && <div className={s.ai}><div className={s.aiCore}>E<span>AI ASSIST</span></div><div className={s.aiCards}>{[["01","Липсва документ","Напомняне до екипа"],["02","Предстои доставка","Nextа задача"],["03","Дневен отчет","Информация за управителя"]].map(([n,t,d])=><div key={n}><small>{n} / АВТОМАТИЗАЦИЯ</small><h3>{t}</h3><p>{d}</p></div>)}</div><span className={s.protected}>✓ Резултатът от търга се определя от основната система</span></div>}
-        {active === 10 && <div className={s.world}><div className={s.worldRing}/><div className={s.worldRing}/><div className={s.worldRing}/><strong>ENCHEV<small>ЕДНО ЯДРО. НОВИ ПАЗАРИ.</small></strong>{["Bulgaria", "Германия", "Гърция", "Румъния", "Италия"].map((v,i)=><span key={v} className={s.market} style={{animationDelay:`${i*.3}s`}}>{v}<i/></span>)}</div>}
-        {active === 11 && <div className={s.dashboard}><div className={s.dashboardHead}><b>ENCHEV <span>/ CONTROL CENTER</span></b><small>ПРИМЕРНИ ДАННИ</small></div><div className={s.metrics}>{[["247","Автомобили"],["12","Auctionове"],["22","Доставки"]].map(([n,l])=><div key={l}><small>{l}</small><strong>{n}</strong><span>Всичко пред теб ↗</span></div>)}</div><div className={s.chart}>{[30,45,38,55,48,70,62,78,73,89,85,100].map((h,i)=><i key={i} style={{height:`${h}%`,animationDelay:`${i*.06}s`}}/>)}</div><Row label="EA–10539" value="✓ Доставен"/><Row label="EA–10614" value="↗ В транспорт"/><Row label="EA–10633" value="▤ Documents"/><div className={s.dashboardFoot}>EAuctions by SOULFLAME.</div></div>}
+        {active === 10 && <div className={s.world}><div className={s.worldRing}/><div className={s.worldRing}/><div className={s.worldRing}/><strong>E&A<small>ЕДНО ЯДРО. НОВИ ПАЗАРИ.</small></strong>{["Bulgaria", "Германия", "Гърция", "Румъния", "Италия"].map((v,i)=><span key={v} className={s.market} style={{animationDelay:`${i*.3}s`}}>{v}<i/></span>)}</div>}
+        {active === 11 && <div className={s.dashboard}><div className={s.dashboardHead}><b>E&A <span>/ CONTROL CENTER</span></b><small>ПРИМЕРНИ ДАННИ</small></div><div className={s.metrics}>{[["247","Автомобили"],["12","Auctionове"],["22","Доставки"]].map(([n,l])=><div key={l}><small>{l}</small><strong>{n}</strong><span>Всичко пред теб ↗</span></div>)}</div><div className={s.chart}>{[30,45,38,55,48,70,62,78,73,89,85,100].map((h,i)=><i key={i} style={{height:`${h}%`,animationDelay:`${i*.06}s`}}/>)}</div><Row label="EA–10539" value="✓ Доставен"/><Row label="EA–10614" value="↗ В транспорт"/><Row label="EA–10633" value="▤ Documents"/><div className={s.dashboardFoot}>🔥SOULFLAME🔥</div></div>}
       </div>
       <span className={s.watermark}>EA</span>
     </section>

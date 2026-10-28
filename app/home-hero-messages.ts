@@ -90,7 +90,7 @@ const catalog = {
     spotlightDetail:"Отвори LIVE залата за текущия статус и контекст на наддаването.",
     spotlightCta:"Влез в LIVE залата",
     footPrimary:"От лота до следващата стъпка",
-    footSecondary:"ENCHEV · international vehicle auction experience",
+    footSecondary:"E&A EAST WEST AUCTIONEERS GROUP · 🔥SOULFLAME🔥",
   },
   "en-US":{
     eyebrow:"INTERNATIONAL VEHICLE AUCTION PLATFORM",
@@ -131,7 +131,7 @@ const catalog = {
     spotlightDetail:"Open the LIVE room for current status and bidding context.",
     spotlightCta:"Enter LIVE room",
     footPrimary:"From the lot to the next step",
-    footSecondary:"ENCHEV · international vehicle auction experience",
+    footSecondary:"E&A EAST WEST AUCTIONEERS GROUP · 🔥SOULFLAME🔥",
   }
 } as const;
 

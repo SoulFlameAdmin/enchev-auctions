@@ -338,6 +338,10 @@ if (!forgeIndex.includes('/forge/enchev-responsive.css')) forgeIndex = forgeInde
 if (!forgeIndex.includes('/forge/enchev-cta-map.js')) {
   forgeIndex = forgeIndex.replace('</body>', '<script src="/forge/enchev-cta-map.js" defer></script></body>');
 }
+if (!forgeIndex.includes('/brand/ea-forge-branding.css')) forgeIndex = forgeIndex.replace('</head>', '<link rel="stylesheet" href="/brand/ea-forge-branding.css"></head>');
+if (!forgeIndex.includes('/brand/ea-forge-branding.js')) forgeIndex = forgeIndex.replace('</body>', '<script src="/brand/ea-forge-branding.js" defer></script></body>');
+forgeIndex = forgeIndex.replace(/<title>[^<]*<\/title>/, '<title>E&amp;A East West Auctioneers Group | Vehicle Auctions</title>');
+forgeIndex = forgeIndex.replace(/<meta property="og:site_name" content="[^"]*"/, '<meta property="og:site_name" content="E&amp;A East West Auctioneers Group"');
 await writeFile(forgeIndexPath, forgeIndex);
 
 const pending = JSON.parse(await readFile(path.join(root, 'config/forge-assets.json'), 'utf8'));
