@@ -80,6 +80,91 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
 .brand,.brandSub{display:none}.subtitle{display:none}
 }
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important}}
+/* ENCHEV ACCESS V2 — focused password-free entry panel */
+.authPanel{
+  position:relative;display:flex;flex-direction:column;justify-content:space-between;
+  min-width:0;min-height:0;overflow:hidden;
+  padding:clamp(23px,3.4vw,42px) clamp(23px,3.6vw,48px) clamp(19px,2.8vw,32px);
+  background:radial-gradient(circle at 95% 0%,#27202655 0%,transparent 45%),
+             linear-gradient(145deg,#161719 0%,#101113 62%,#0c0d0f 100%);
+  border-left:1px solid rgba(255,255,255,.07)
+}
+.authPanel:before{position:absolute;content:"";width:1px;top:0;bottom:0;left:0;background:linear-gradient(180deg,transparent,#c3a57855,transparent)}
+.authHeader{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-shrink:0}
+.wordmarkName{font-size:clamp(23px,2.6vw,34px);font-weight:850;letter-spacing:.19em;line-height:1;color:#f4f4f6}
+.wordmarkDot{color:#d7192b}.wordmarkSub{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:9px;letter-spacing:.25em;color:#9fa0a6}
+.wordmarkSub strong{color:#ddc196;font-weight:600;letter-spacing:.17em}
+.wordmarkDash{width:16px;height:1px;background:#777}
+.headerTag{margin-top:4px;white-space:nowrap;color:#a9a2a3;font-size:8px;letter-spacing:.13em;border:1px solid #ffffff26;border-radius:99px;padding:8px 9px}
+.authPanel .entry{width:100%;max-width:430px;margin:auto 0;display:flex;flex-direction:column;justify-content:center;min-height:0;padding:16px 0 7px}
+.entryTopline{display:flex;align-items:center;gap:10px;color:#d1b893;font-size:10px;font-weight:600;letter-spacing:.2em}
+.entryLine{width:28px;height:2px;background:#d41b2a}
+.authPanel h1{font-size:clamp(35px,3.5vw,48px);letter-spacing:-.058em;font-weight:650;line-height:1.08;margin:18px 0 9px;color:#f4f4f4}
+.authPanel h1 span{color:#f4f4f4}
+.authPanel h1 span:after{content:"";display:inline-block;width:7px;height:7px;margin-left:3px;background:#d4192a;border-radius:50%}
+.authPanel .subtitle{font-size:13px;line-height:1.5;color:#a7a9b0;margin:0 0 29px}
+#authForm{display:block;margin:0}
+#authForm label{display:block;margin-bottom:10px;color:#cbcbd0;font-size:10px;font-weight:650;letter-spacing:.14em}
+.emailShell{position:relative;display:flex;align-items:center;height:50px;border:1px solid #53555e;border-radius:5px;background:#1d1f23;transition:border-color .25s,box-shadow .25s}
+.emailShell:focus-within{border-color:#d1ad79;box-shadow:0 0 0 3px #d1ad7916}
+.emailShell svg{margin-left:16px;flex:0 0 auto;color:#8d909b}
+.emailShell input{outline:none;border:0!important;box-shadow:none!important;border-radius:0;background:transparent!important;min-width:0;height:100%;width:100%;margin:0;padding:0 15px;color:#f9f9fa;font-size:13px}
+.emailShell input::placeholder{color:#777a85}
+#authForm .primary{margin-top:13px;display:flex;align-items:center;justify-content:space-between;width:100%;height:49px;min-height:49px;padding:0 19px;background:#cf1123;border:1px solid #df3443;border-radius:4px;color:#fff;font-size:11px;font-weight:760;letter-spacing:.145em;cursor:pointer;transition:background .2s,transform .2s,box-shadow .2s}
+#authForm .primary:hover{background:#ee1830;transform:translateY(-1px);box-shadow:0 8px 30px #c40c282e}
+#authForm .primary span:last-child{font-size:19px;font-weight:400;letter-spacing:0}
+.emailHelp{font-size:10px;color:#888c95;margin:10px 0 0;line-height:1.4}
+.authPanel .separator{display:flex;gap:13px;align-items:center;margin:28px 0 14px;color:#999ba1;font-size:9px;letter-spacing:.15em}
+.authPanel .separator:before,.authPanel .separator:after{content:"";flex:1;height:1px;background:linear-gradient(90deg,#41424877,#6a6c7580)}
+.authPanel .providers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+.authPanel .provider{display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;height:47px;border:1px solid #44474e;background:#1b1d20;color:#ecedf0;border-radius:4px;font-size:12px;font-weight:550;cursor:pointer;transition:background .2s,border-color .2s,transform .2s}
+.authPanel .provider:hover{background:#292b30;border-color:#a6aab3;transform:translateY(-1px)}
+.providerIcon{font-size:17px;font-weight:750}
+.providerGoogle{background:linear-gradient(125deg,#4285f4 0 33%,#ea4335 33% 66%,#34a853 66%);background-clip:text;-webkit-background-clip:text;color:transparent}
+.providerMeta{font-family:Arial,sans-serif;font-size:21px;color:#5c9bff}
+.providerPhone{font-size:19px;color:#e0c39e}
+.authMessage{min-height:16px;max-width:100%;margin-top:13px;color:#9ca6b2;font-size:10px;line-height:1.4}
+.authMessage.error{color:#ff9d9d}.authMessage.good{color:#a4e4b8}.authMessage.notice{color:#c2a783}
+.authLinks{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:18px;color:#a6a8ae;font-size:11px}
+.authLinks a{color:#e2e3e5;text-decoration:none}.authLinks a:hover{text-decoration:underline;text-underline-offset:3px}
+.authFooter{display:flex;align-items:center;gap:9px;color:#777b84;font-size:8px;letter-spacing:.14em;white-space:nowrap}
+.authFooter span:last-child{margin-left:auto}.footerAccent{width:5px;height:5px;border-radius:50%;background:#cba16a}
+@media(max-height:610px) and (min-width:721px){
+  .authPanel{padding-block:17px}.authPanel .entry{padding:8px 0 5px}
+  .authPanel h1{font-size:35px;margin:10px 0 7px}
+  .authPanel .subtitle{margin-bottom:14px}
+  .authPanel .separator{margin:14px 0 10px}
+  .authPanel .provider{height:38px}
+  .authLinks{margin-top:10px}
+  .authMessage{margin-top:8px}
+}
+@media(max-width:720px){
+  .screen{grid-template-rows:30% 70%}
+  .authPanel{padding:13px 18px 11px}
+  .wordmarkName{font-size:19px}.wordmarkSub{font-size:8px;margin-top:4px}
+  .headerTag{font-size:7px;padding:6px 7px}
+  .authPanel .entry{padding:7px 0 2px}
+  .entryTopline{font-size:8px}.entryLine{width:18px}
+  .authPanel h1{font-size:clamp(25px,6vw,32px);margin:7px 0 4px}
+  .authPanel .subtitle{font-size:11px;margin-bottom:10px;line-height:1.25}
+  #authForm label{font-size:9px;margin-bottom:5px}
+  .emailShell{height:37px}.emailShell svg{margin-left:11px}
+  #authForm .primary{min-height:37px;height:37px;margin-top:8px;font-size:9px}
+  .emailHelp{margin-top:5px;font-size:9px}
+  .authPanel .separator{margin:10px 0 8px;font-size:8px}
+  .authPanel .provider{height:34px;font-size:10px}
+  .authMessage{margin-top:7px;min-height:12px;font-size:9px}
+  .authLinks{margin-top:7px;font-size:10px}
+  .authFooter{display:none}
+}
+@media(max-height:570px) and (max-width:720px){
+  .screen{grid-template-rows:24% 76%}
+  .authPanel .entry{padding:0}.authPanel .subtitle{display:none}
+  .authPanel h1{margin:4px 0 8px;font-size:24px}
+  .authPanel .separator{margin:7px 0}
+  .authPanel .provider{height:29px}
+  .authLinks{margin-top:5px}.emailHelp{display:none}
+}
 </style>
 </head>
 <body>
@@ -99,27 +184,37 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
 ></iframe>
 
 </section>
-<section class="authPanel" aria-label="Вход в ENCHEV">
-<header><div class="brand">ENCHEV<span>.</span></div><div class="brandSub">AUCTIONS — <b>SOULFLAME</b></div></header>
+<section class="authPanel" aria-labelledby="loginTitle">
+<header class="authHeader">
+  <div class="wordmark" aria-label="Enchev Auctions powered by SoulFlame">
+    <div class="wordmarkName">ENCHEV<span class="wordmarkDot">.</span></div>
+    <div class="wordmarkSub">AUCTIONS <span class="wordmarkDash"></span> <strong>SOULFLAME</strong></div>
+  </div>
+  <span class="headerTag">PRIVATE ACCESS</span>
+</header>
 <div class="entry">
-<div class="eyebrow">PRIVATE MEMBER ACCESS</div>
-<h1>Добре дошли<em>.</em></h1>
-<p class="subtitle">Влезте в света на автомобилните търгове.</p>
-<form id="authForm" novalidate>
-<label for="email">Имейл адрес</label><input id="email" name="email" type="email" autocomplete="email" maxlength="254" required placeholder="you@example.com">
-<label for="password">Парола</label><input id="password" name="password" type="password" autocomplete="current-password" minlength="12" maxlength="128" required placeholder="Вашата парола">
-<button class="primary" id="submit" type="submit">ВХОД &nbsp; ↗</button>
-</form>
-<div class="separator"><span>ИЛИ ПРОДЪЛЖИ С</span></div>
-<div class="providers">
-<button class="provider" type="button" data-provider="google"><span class="icon">G</span> Google</button>
-<button class="provider" type="button" data-provider="meta"><span class="icon facebook">f</span> Meta</button>
-<button class="provider" type="button" data-provider="phone"><span class="icon">☎</span> Телефон</button>
+  <div class="entryTopline"><span class="entryLine"></span><span>WELCOME TO ENCHEV</span></div>
+  <h1 id="loginTitle">Добре <span>дошли.</span></h1>
+  <p class="subtitle">Вашият достъп до света на автомобилните търгове.</p>
+  <form id="authForm" novalidate>
+    <label for="email">ИМЕЙЛ АДРЕС</label>
+    <div class="emailShell">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+      <input id="email" name="email" type="email" autocomplete="email" maxlength="254" required placeholder="name@example.com" aria-describedby="emailHelp">
+    </div>
+    <button class="primary" id="submit" type="submit"><span>ПРОДЪЛЖИ С ИМЕЙЛ</span><span aria-hidden="true">↗</span></button>
+    <p id="emailHelp" class="emailHelp">Ще преминете към защитения вход на ENCHEV.</p>
+  </form>
+  <div class="separator"><span>ИЛИ ПРОДЪЛЖЕТЕ С</span></div>
+  <div class="providers" role="group" aria-label="Алтернативни методи за вход">
+    <button class="provider" type="button" data-provider="google" aria-label="Google вход, очаква активиране"><span class="providerIcon providerGoogle">G</span><span>Google</span></button>
+    <button class="provider" type="button" data-provider="meta" aria-label="Meta вход, очаква активиране"><span class="providerIcon providerMeta">f</span><span>Meta</span></button>
+    <button class="provider" type="button" data-provider="phone" aria-label="Телефонен вход, очаква активиране"><span class="providerIcon providerPhone">⌁</span><span>Телефон</span></button>
+  </div>
+  <div id="authMessage" class="authMessage" role="status" aria-live="polite"></div>
+  <div class="authLinks"><span>Нямате профил? <a href="/register" target="_top">Регистрация ↗</a></span><a href="/platform" target="_top">Разгледай демото</a></div>
 </div>
-<div id="authMessage" role="status" aria-live="polite">Проверка на възможностите за вход...</div>
-<nav class="footerLinks"><a href="/register" target="_top">Регистрация</a><a href="/platform" target="_top">Разгледай демото ↗</a></nav>
-</div>
-<footer class="brandFoot">ENCHEV AUCTIONS &nbsp; · &nbsp; POWERED BY SOULFLAME</footer>
+<footer class="authFooter"><span class="footerAccent"></span><span>ENCHEV AUCTIONS</span><span>POWERED BY SOULFLAME</span></footer>
 </section>
 </main>
 <script>
@@ -142,39 +237,47 @@ function scheduleLogoReveal(){
   window.setTimeout(()=>curtain.classList.add('is-fading'),Math.max(waitUntilIntroEnd,reduced?100:4000));
 }
 geminiFrame.addEventListener('load',scheduleLogoReveal,{once:true});
-const msg=document.querySelector('#authMessage');
-const form=document.querySelector('#authForm');
-const email=document.querySelector('#email');
-const password=document.querySelector('#password');
-const submit=document.querySelector('#submit');
-let enabled=false;
-const setMsg=(s,cls='')=>{msg.className=cls;msg.textContent=s;};
-fetch('/api/enchev-auth/session',{credentials:'same-origin',cache:'no-store'})
-.then(r=>r.json()).then(data=>{
-enabled=data?.available===true;
-if(data?.authenticated){submit.textContent='МОЯТ ПРОФИЛ ↗';setMsg('Успешно сте влезли.','good');return;}
-setMsg(enabled?'Входът с имейл е наличен.':'Защитеният вход все още не е активиран.');
-}).catch(()=>setMsg('Временно няма връзка с услугата за вход.','error'));
-form.addEventListener('submit',async event=>{
- event.preventDefault();
- if(submit.textContent.includes('МОЯТ ПРОФИЛ')){top.location.assign('/profile');return;}
- if(!enabled){top.location.assign('/login');return;}
- if(!email.validity.valid||!password.validity.valid){setMsg('Въведете валиден имейл и парола с минимум 12 символа.','error');return;}
- submit.disabled=true;setMsg('Проверка на данните...');
- try{
- const r=await fetch('/api/enchev-auth/sign-in',{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({email:email.value,password:password.value})});
- const data=await r.json();
- if(r.ok&&data.ok===true&&data.authenticated===true){password.value='';top.location.assign('/profile');return;}
- setMsg(data.error||'Неуспешен вход.','error');
- }catch{setMsg('Проблем с връзката. Опитайте отново.','error');}
- finally{password.value='';submit.disabled=false;}
-});
-const info={
- google:'Входът с Google/Gmail ще работи след активиране на OAuth.',
- meta:'Входът с Meta/Facebook ще работи след активиране на OAuth.',
- phone:'Входът с телефонен номер ще работи след настройване на SMS потвърждение.'
+const msg=document.getElementById('authMessage');
+const form=document.getElementById('authForm');
+const email=document.getElementById('email');
+const submit=document.getElementById('submit');
+const setMsg=(content,variant='')=>{
+  msg.textContent=content;
+  msg.className='authMessage '+variant;
 };
-document.querySelectorAll('[data-provider]').forEach(button=>button.addEventListener('click',()=>setMsg(info[button.dataset.provider],'error')));
+let authenticated=false;
+fetch('/api/enchev-auth/session',{credentials:'same-origin',cache:'no-store'})
+  .then(response=>response.json())
+  .then(data=>{
+    authenticated=data?.authenticated===true;
+    if(authenticated){
+      submit.querySelector('span').textContent='МОЯТ ПРОФИЛ';
+      setMsg('Вече имате активна сесия.','good');
+    }else if(data?.available===false){
+      setMsg('Профилите се активират. Можете да разгледате демото.','notice');
+    }
+  })
+  .catch(()=>setMsg('Услугата за вход е временно недостъпна.','notice'));
+form.addEventListener('submit',(event)=>{
+  event.preventDefault();
+  if(authenticated){window.top.location.assign('/profile');return;}
+  if(!email.validity.valid){
+    setMsg('Моля, въведете валиден имейл адрес.','error');
+    email.focus();
+    return;
+  }
+  // Keep the address out of URL parameters and never collect a password here.
+  try{window.top.sessionStorage.setItem('enchev.login.email.prefill',email.value.trim());}catch{}
+  window.top.location.assign('/login');
+});
+const unavailable={
+  google:'Входът чрез Google ще бъде достъпен след активиране.',
+  meta:'Входът чрез Meta ще бъде достъпен след активиране.',
+  phone:'Входът с телефон ще бъде достъпен след настройване на SMS потвърждение.'
+};
+document.querySelectorAll('[data-provider]').forEach(button=>{
+  button.addEventListener('click',()=>setMsg(unavailable[button.dataset.provider],'notice'));
+});
 })();
 </script>
 </body>
