@@ -244,7 +244,7 @@
   display:inline-flex;flex-direction:row;align-items:center;max-width:100%;min-width:0
 }
 .eaBrandExactLockup{display:flex;align-items:center;gap:8px;min-width:0;height:58px}
-.eaBrandExactMark{display:block;position:relative;width:132px;height:57px;flex:0 0 132px;overflow:hidden;isolation:isolate}
+.eaBrandExactMark{display:block;position:relative;width:132px;height:57px;flex:0 0 132px;overflow:hidden}
 .eaBrandExactMark img{display:block;position:absolute;top:-10px;left:-11px;width:151px;height:auto;max-width:none;mix-blend-mode:screen}
 .eaBrandExactCopy{display:flex;flex-direction:column;justify-content:center;min-width:0;gap:3px;text-align:left;line-height:1.08;white-space:nowrap}
 .eaAppBrand .eaBrandExactCopy strong{font-family:Arial,Helvetica,sans-serif;font-size:16px!important;font-weight:750;letter-spacing:.19em;color:#f4f5f8}
