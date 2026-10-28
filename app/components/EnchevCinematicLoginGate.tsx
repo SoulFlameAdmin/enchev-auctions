@@ -60,9 +60,7 @@ export default function EnchevCinematicLoginGate() {
     // Pause all audio when the viewer exits; remove the iframe after the fade
     // so nothing continues playing over the entered site.
     try{
-      cinematicFrame.current?.contentDocument?.querySelectorAll("video,audio").forEach(media=>{
-        if(media instanceof HTMLMediaElement)media.pause();
-      });
+      cinematicFrame.current?.contentDocument?.querySelectorAll<HTMLMediaElement>("video,audio").forEach(media=>media.pause());
     }catch{/* same-origin media only */}
     setRevealed(false);
     setOpen(false);
