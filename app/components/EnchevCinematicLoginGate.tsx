@@ -96,6 +96,30 @@ export default function EnchevCinematicLoginGate() {
   return (
     <>
       <style>{"\n.enchevQrDock{\n  position:relative;flex:0 0 278px;width:278px;align-self:center;\n  display:flex;flex-direction:column;align-items:center;gap:12px;\n  opacity:0;visibility:hidden;transform:translateX(35px);\n  transition:opacity .75s ease,transform .85s cubic-bezier(.2,.85,.2,1),visibility 0s .85s;\n  pointer-events:none;\n}\n.enchevQrDock.visible{\n  opacity:1;visibility:visible;transform:translateX(0);pointer-events:auto;\n  transition:opacity .75s ease,transform .85s cubic-bezier(.2,.85,.2,1);\n}\n.enchevQrCode{\n  position:relative;width:154px;display:flex;flex-direction:column;align-items:center;gap:7px;\n  padding:14px 13px;border:1px solid rgba(221,185,126,.55);\n  border-radius:9px;background:linear-gradient(150deg,#24252bee,#0d1015fa);\n  box-shadow:0 18px 48px rgba(0,0,0,.68);\n  color:white;text-decoration:none;\n}\n.enchevQrCode:before{\n  content:\"\";position:absolute;top:48%;left:-14px;width:13px;height:23px;\n  background:#24252b;clip-path:polygon(100% 0,0 50%,100% 100%);\n}\n.enchevQrCode:hover{border-color:#edcd99;background:#292b31}\n.enchevQrCode .qrEyebrow{font-size:8px;font-weight:750;color:#dbc39f;letter-spacing:.18em}\n.enchevQrCode img{display:block;width:119px;height:119px;image-rendering:pixelated;border-radius:4px;background:#fff;padding:1px}\n.enchevQrCode .qrLabel{font-size:10px;font-weight:750;letter-spacing:.12em;text-align:center}\n.enchevQrCode .qrHelper{font-size:9px;color:#abb0b8;text-align:center;line-height:1.35}\n.enchevQrCta{\n  width:100%;display:flex;align-items:center;gap:12px;min-height:66px;\n  padding:11px 13px;border:1px solid rgba(221,185,126,.62);border-radius:7px;\n  background:linear-gradient(112deg,#252329f5,#121419f5);\n  box-shadow:0 12px 37px rgba(0,0,0,.65);\n  text-decoration:none;color:white;\n  transition:border-color .2s,background .2s,transform .2s;\n}\n.enchevQrCta:hover{border-color:#e9c99b;background:linear-gradient(105deg,#39302e,#191a1d);transform:translateY(-2px)}\n.qrArBadge{height:37px;width:39px;flex:0 0 auto;display:grid;place-items:center;\n  border:1px solid #b298746e;border-radius:4px;color:#e9ceaa;\n  font-size:13px;font-weight:800;letter-spacing:.02em}\n.qrArText{min-width:0;display:flex;flex:1;flex-direction:column;gap:5px}\n.qrArText strong{font-size:12px;letter-spacing:.06em;white-space:nowrap;font-weight:800}\n.qrArText small{font-size:10px;color:#acb1ba;white-space:nowrap}\n.qrArArrow{font-size:20px;color:#e9c49a;flex:0 0 auto}\n@media(max-width:1050px){.enchevQrDock{display:none}}\n"}</style>
+      <style>{`
+@media(max-width:720px){
+  .enchevLoginDialog{
+    width:calc(100vw - 20px)!important;
+    height:calc(100dvh - 28px)!important;
+    max-height:calc(100dvh - 28px)!important;
+    border-radius:13px!important;
+  }
+  .enchevLoginClose{
+    top:calc(43% + 9px)!important;
+    right:12px!important;
+    width:34px!important;
+    height:34px!important;
+    border-radius:9px!important;
+    font-size:25px!important;
+    background:rgba(21,22,27,.94)!important;
+    border:1px solid rgba(223,193,150,.48)!important;
+    box-shadow:0 4px 18px #0007!important;
+  }
+}
+@media(max-width:720px) and (max-height:600px){
+  .enchevLoginClose{top:calc(43% + 4px)!important}
+}
+`}</style>
       {hasOpened && (
         <div
           data-enchev-login-overlay
@@ -113,6 +137,7 @@ export default function EnchevCinematicLoginGate() {
           }}
         >
           <section
+            className="enchevLoginDialog"
             role="dialog"
             aria-modal={open}
             aria-label="ENCHEV AUCTIONS — cinematic login"
@@ -140,6 +165,7 @@ export default function EnchevCinematicLoginGate() {
               style={{display:"block",width:"100%",height:"100%",border:0,background:"#06070a"}}
             />
             {open && <button
+              className="enchevLoginClose"
               ref={close}
               type="button"
               onClick={dismiss}
