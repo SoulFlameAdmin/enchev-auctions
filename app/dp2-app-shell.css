@@ -232,5 +232,7 @@
   .eaAppDesktopNav a[aria-current="page"]:after{background:Highlight}
 }
 
-.eaBrandLogo{display:block;width:198px;height:64px;object-fit:contain;object-position:left center}
-@media(max-width:720px){.eaBrandLogo{width:154px;height:54px}}
+.eaBrandLogo{display:block;width:clamp(215px,22vw,320px);height:56px;max-width:100%;object-fit:contain;object-position:left center}
+@media(max-width:1180px){.eaBrandLogo{width:210px;height:53px}}
+@media(max-width:720px){.eaBrandLogo{width:178px;height:43px}}
+@media(max-width:360px){.eaBrandLogo{width:150px;height:40px}}
