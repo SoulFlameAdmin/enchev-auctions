@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1180 140" role="img" aria-labelledby="title desc">
+<title id="title">E&amp;A East West Auctioneers Group — SOULFLAME</title>
+<desc id="desc">Horizontal brand lockup with the E and A monogram, East West Auctioneers Group and SOULFLAME separated by vertical gold lines.</desc>
+<defs>
+<linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#b77421"/><stop offset=".48" stop-color="#f9d976"/><stop offset="1" stop-color="#af742b"/></linearGradient>
+<linearGradient id="silver" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#f3f4f6"/><stop offset=".65" stop-color="#c6c9cf"/><stop offset="1" stop-color="#e1e3e7"/></linearGradient>
+</defs>
+<g text-anchor="middle">
+<text x="159" y="103" font-family="Georgia,'Times New Roman',serif" font-size="102" font-weight="400" fill="url(#gold)" letter-spacing="-6">E<tspan font-size="54" fill="url(#silver)" letter-spacing="-5">&amp;</tspan>A</text>
+<path d="M322 17 V120 M850 17 V120" fill="none" stroke="url(#gold)" stroke-width="2.6"/>
+<text x="584" y="77" font-family="Arial,Helvetica,sans-serif" font-size="48" font-weight="600" letter-spacing="13" fill="url(#silver)">EAST WEST</text>
+<text x="584" y="112" font-family="Arial,Helvetica,sans-serif" font-size="25" font-weight="500" letter-spacing="9" fill="url(#gold)">AUCTIONEERS GROUP</text>
+<text x="1004" y="84" font-family="Arial,Helvetica,sans-serif" font-size="30" font-weight="400" letter-spacing="5" fill="url(#silver)">SOULFLAME</text>
+</g></svg>
