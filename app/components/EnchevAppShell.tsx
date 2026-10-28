@@ -38,7 +38,7 @@ export default function EnchevAppShell(){
     };
   },[open]);
 
-  if(pathname==="/")return null;
+  if(pathname==="/" || pathname==="/car-ar" || pathname==="/car-ar-demo")return null;
 
   return <div className="eaAppShell" data-design-task="DP2-04" data-shell-open={open?"true":"false"}>
     <div className="eaAppUtility">
