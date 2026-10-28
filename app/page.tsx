@@ -24,19 +24,30 @@ export default function Home(){
       />
       
       
-      <section className="eaIntroWords" aria-label="E&A East West Auctioneers Group — SOULFLAME">
-        <h1>E&amp;A EAST WEST</h1>
-        <p>AUCTIONEERS GROUP</p>
-        <p>SOULFLAME</p>
-      </section>
+      <div className="eaHeroBrand" aria-label="E&A East West Auctioneers Group — SOULFLAME">
+        <img src="/brand/ea-east-west.svg" alt="E&A East West Auctioneers Group — SOULFLAME" />
+      </div>
       <style>{`
-      .eaIntroWords{position:fixed;left:50%;top:max(14px,env(safe-area-inset-top));transform:translateX(-50%);width:min(92vw,780px);z-index:5;display:flex;flex-direction:column;align-items:center;text-align:center;gap:5px;pointer-events:none;text-shadow:0 2px 14px #000b}
-      .eaIntroWords h1,.eaIntroWords p{margin:0;color:#fff;font-family:Arial,Helvetica,sans-serif;font-style:normal;line-height:1.14;white-space:nowrap}
-      .eaIntroWords h1{font-size:clamp(24px,3.1vw,40px);font-weight:800;letter-spacing:.08em}
-      .eaIntroWords p{font-size:clamp(13px,1.4vw,18px);font-weight:600;letter-spacing:.19em}
-      .eaIntroWords p:last-child{font-size:clamp(11px,1.15vw,15px);font-weight:600;letter-spacing:.22em;margin-top:1px}
-      @media(max-width:760px){.eaIntroWords{top:max(12px,env(safe-area-inset-top));left:calc(50% + 42px);width:calc(100vw - 124px);gap:3px}.eaIntroWords h1{font-size:clamp(16px,4.5vw,21px);letter-spacing:.045em}.eaIntroWords p{font-size:clamp(10px,2.75vw,13px);letter-spacing:.13em}.eaIntroWords p:last-child{font-size:clamp(10px,2.6vw,12px);letter-spacing:.16em}}
-      @media(max-height:550px){.eaIntroWords{top:9px;gap:2px}.eaIntroWords h1{font-size:clamp(15px,3vw,26px)}.eaIntroWords p{font-size:11px}.eaIntroWords p:last-child{font-size:10px}}
+        .eaHeroBrand{
+          position:fixed;
+          top:max(16px,env(safe-area-inset-top));
+          left:50%;
+          transform:translateX(-50%);
+          z-index:7;
+          width:min(55vw,490px);
+          pointer-events:none;
+          display:flex;
+          justify-content:center;
+          align-items:flex-start;
+          filter:drop-shadow(0 6px 18px #000a);
+        }
+        .eaHeroBrand img{display:block;width:100%;height:auto;object-fit:contain}
+        @media(max-width:760px){
+          .eaHeroBrand{top:max(10px,env(safe-area-inset-top));width:min(66vw,330px)}
+        }
+        @media(max-height:550px){
+          .eaHeroBrand{top:6px;width:min(48vw,280px)}
+        }
       `}</style>
       <MasterSystemPlanV1 />
       <EnchevCinematicLoginGate />
