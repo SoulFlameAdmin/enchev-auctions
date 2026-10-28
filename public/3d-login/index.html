@@ -453,6 +453,48 @@ html.sf-sequence .cararPromo{background:radial-gradient(ellipse at 55% 35%,#2320
  .eaEarlyAccessTopCount strong{font-size:18px}
 }
 
+/* Replace the CarAr title with the approved stacked silver/gold E&A wording. */
+.visualFallback .introContent .eaIntroLockup{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:min(94vw,760px);max-width:100%;gap:clamp(4px,1.1vh,9px);
+  margin:clamp(16px,2.8vh,28px) auto 0;
+  line-height:1.04;white-space:nowrap;
+}
+.visualFallback .eaIntroEastWest{
+  display:block;font-family:Arial,Helvetica,sans-serif;
+  font-size:clamp(31px,6.6vw,75px);font-weight:800;
+  letter-spacing:.13em;padding-left:.13em;
+  background:linear-gradient(175deg,#ffffff 0%,#e0e2e6 35%,#8b909a 53%,#f5f6fa 73%,#aaaeb7 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  text-shadow:0 5px 18px rgba(201,183,154,.14);
+}
+.visualFallback .eaIntroGroup{
+  display:block;font-family:Arial,Helvetica,sans-serif;
+  font-size:clamp(12px,2.25vw,26px);font-weight:700;
+  letter-spacing:.31em;padding-left:.31em;color:#dcb675;
+  text-shadow:0 0 14px rgba(219,172,98,.24);
+}
+.visualFallback .eaIntroSoul{
+  display:flex;align-items:center;justify-content:center;gap:clamp(12px,2.1vw,26px);
+  font:600 clamp(11px,1.8vw,19px)/1.2 Arial,Helvetica,sans-serif;
+  letter-spacing:.48em;padding-left:.48em;color:#d9dce2;
+}
+.visualFallback .eaIntroSoul:before,.visualFallback .eaIntroSoul:after{
+  content:"";display:block;width:clamp(22px,6vw,90px);height:1px;
+  background:linear-gradient(90deg,transparent,#c99a58 55%,#f0d6a2);
+}
+.visualFallback .eaIntroSoul:after{transform:rotate(180deg)}
+@media(max-width:720px){
+  .visualFallback .introContent .eaIntroLockup{width:calc(100vw - 26px);gap:6px;margin-top:16px}
+  .visualFallback .eaIntroEastWest{font-size:clamp(27px,8.2vw,49px);letter-spacing:.1em;padding-left:.1em}
+  .visualFallback .eaIntroGroup{font-size:clamp(10px,3vw,16px);letter-spacing:.19em;padding-left:.19em}
+  .visualFallback .eaIntroSoul{font-size:clamp(9px,2.8vw,13px);letter-spacing:.27em;padding-left:.27em;gap:9px}
+  .visualFallback .eaIntroSoul:before,.visualFallback .eaIntroSoul:after{width:18px}
+}
+@media(max-width:360px){
+  .visualFallback .eaIntroEastWest{font-size:26px}
+  .visualFallback .eaIntroGroup{font-size:9px}
+}
 </style>
 </head>
 <body>
@@ -474,7 +516,7 @@ html.sf-sequence .cararPromo{background:radial-gradient(ellipse at 55% 35%,#2320
 <div class="visualFallback" id="geminiCurtain" aria-label="SOULFLAME PRESENTS — рисуване на логото"><div class="introContent"><span class="brandPresents">SOULFLAME PRESENTS</span><svg class="brandEmblem" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 830" role="img" aria-label="SoulFlame — анимирано лого">
   <path class="sfFlameSolid" fill-rule="evenodd" d="M299 6 L5 512 L9 515 L5 520 L196 822 L295 731 L395 822 L595 515 L590 505 L393 203 L304 379 L301 383 L300 382 Z M36 544 L37 543 L284 723 L199 802 Z M562 542 L393 802 L305 723 L561 541 Z M404 244 L579 513 L318 698 L317 696 L430 500 L403 250 Z M389 240 L392 255 L417 497 L302 697 L300 413 Z M286 54 L288 709 L19 514 Z"/>
   <path class="sfFlameDraw" pathLength="100" d="M299 6 L5 512 L9 515 L5 520 L196 822 L295 731 L395 822 L595 515 L590 505 L393 203 L304 379 L301 383 L300 382 Z M36 544 L37 543 L284 723 L199 802 Z M562 542 L393 802 L305 723 L561 541 Z M404 244 L579 513 L318 698 L317 696 L430 500 L403 250 Z M389 240 L392 255 L417 497 L302 697 L300 413 Z M286 54 L288 709 L19 514 Z"/>
-</svg><span class="brandTitle"><strong>Car</strong>Ar</span><span class="brandAccent" aria-hidden="true"></span></div></div>
+</svg><div class="brandTitle eaIntroLockup" aria-label="EAST WEST AUCTIONEERS GROUP SOULFLAME"><strong class="eaIntroEastWest">EAST WEST</strong><span class="eaIntroGroup">AUCTIONEERS GROUP</span><span class="eaIntroSoul">SOULFLAME</span></div><span class="brandAccent" aria-hidden="true"></span></div></div>
 
 <section class="cararPromo" id="cararPromo" role="dialog" aria-label="SOULFLAME CarAR — Coming Soon" aria-modal="true" aria-hidden="true">
   <button class="cararClose" id="cararPromoClose" type="button" aria-label="Затвори рекламата">×</button>
