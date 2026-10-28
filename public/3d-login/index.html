@@ -475,17 +475,41 @@ const promoForm=document.getElementById('cararNotifyForm');
 const promoStatus=document.getElementById('cararNotifyStatus');
 const promoButton=document.getElementById('cararNotifyButton');
 let promoHasOpened=false;
+// Two nested overlays are controlled as a stack. The child advertises its
+// visibility to the parent, which hides its own X until this ad is dismissed.
+function reportCararPromoState(visible){
+  if(window.parent===window)return;
+  window.parent.postMessage({
+    type:'ENCHEV_CARAR_PROMO_STATE',
+    visible:Boolean(visible)
+  },window.location.origin);
+}
 function openCararPromo(){
   if(promoHasOpened)return;
   promoHasOpened=true;
   promo.classList.add('is-visible');
   promo.setAttribute('aria-hidden','false');
-  document.getElementById('cararNotifyEmail').focus({preventScroll:true});
+  reportCararPromoState(true);
+  document.getElementById('cararPromoClose').focus({preventScroll:true});
 }
 function closeCararPromo(){
+  if(!promo.classList.contains('is-visible'))return;
   promo.classList.remove('is-visible');
   promo.setAttribute('aria-hidden','true');
+  reportCararPromoState(false);
+  document.getElementById('presentationSoundButton')?.focus({preventScroll:true});
 }
+window.addEventListener('message',event=>{
+  if(event.origin!==window.location.origin || event.source!==window.parent)return;
+  if(event.data?.type==='ENCHEV_CARAR_PROMO_QUERY'){
+    reportCararPromoState(promo.classList.contains('is-visible'));
+  }else if(event.data?.type==='ENCHEV_CARAR_PROMO_CLOSE'){
+    closeCararPromo();
+  }
+});
+// Report initial state when the frame loads, including after re-opening
+// the outer dialogue without remounting this iframe.
+reportCararPromoState(false);
 document.getElementById('cararPromoClose').addEventListener('click',closeCararPromo);
 document.getElementById('cararPromoContinue').addEventListener('click',closeCararPromo);
 document.addEventListener('keydown',event=>{
