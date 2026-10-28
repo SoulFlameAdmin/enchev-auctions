@@ -52,7 +52,7 @@ export async function GET(_request:Request,{params}:RouteProps){
 
     // One approved E&A brand mark replaces BOTH original masthead labels.
     // Do not alter the original Lit360 motion film, slides, sound or signup form.
-    const brandPattern=/<div class="soulflame-masthead">[\\s\\S]*?<\\/div>\\s*<div class="cinema-brand">[\\s\\S]*?<\\/div>/;
+    const brandPattern=/<div class="soulflame-masthead">[\s\S]*?<\/div>\s*<div class="cinema-brand">[\s\S]*?<\/div>/;
     if(!brandPattern.test(html))throw Error("ORIGINAL_BRANDING_NOT_FOUND");
     html=html.replace(brandPattern,
       '<div class="ea-approved-cinema-brand" role="img" aria-label="E&A East West Auctioneers Group — SOULFLAME">'+
