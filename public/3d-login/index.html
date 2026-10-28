@@ -344,11 +344,27 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
   .cararPromo.is-visible .cararPosterWrap{animation:none;opacity:1;filter:none;transform:none}
 }
 
+ 
+/* CARAR CINEMATIC FULLSCREEN — single visual, no login card. */
+html,body{width:100%;height:100%;overflow:hidden;background:#000}
+.screen{position:relative!important;display:block!important;grid-template-columns:none!important;grid-template-rows:none!important;width:100vw!important;height:100dvh!important;min-height:100dvh!important;max-height:100dvh!important;overflow:hidden;background:#000}
+.visual{position:absolute!important;inset:0!important;grid-row:auto!important;grid-column:auto!important;width:100%!important;height:100%!important;min-height:100%!important;max-height:none!important;isolation:auto!important;overflow:hidden;background:#000}
+#presentationFilm{position:absolute!important;inset:0!important;top:0!important;left:0!important;width:100%!important;height:100%!important;transform:none!important;object-fit:cover!important;object-position:center center!important}
+.presentationSoundButton{position:fixed!important;z-index:21!important;right:clamp(12px,4vw,70px)!important;bottom:max(22px,env(safe-area-inset-bottom))!important;top:auto!important}
+.visualFallback{position:fixed;inset:0;z-index:1000}
+.visualFallback .introContent{width:100%;height:100%}
+.cararPromo{position:fixed;inset:0;z-index:950}
+.cararPromo .cararClose{top:max(18px,env(safe-area-inset-top))!important;right:max(18px,env(safe-area-inset-right))!important}
+@media(max-width:720px){
+ .presentationSoundButton{right:14px!important;bottom:max(18px,env(safe-area-inset-bottom))!important}
+ .visualFallback .brandEmblem{width:min(46vw,240px);max-height:45vh}
+}
+
 </style>
 </head>
 <body>
 <main class="screen">
-<section class="visual" id="visual" aria-label="Оригинален Lusion GEMINI вграден уебсайт">
+<section class="visual" id="visual" aria-label="E&A презентация 2 — видео на цял екран">
 
 
 <video
@@ -359,31 +375,6 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
 ></video>
 <button type="button" id="presentationSoundButton" class="presentationSoundButton" aria-label="Включи звука на Презентация 2">🔊 ВКЛЮЧИ ЗВУКА</button>
 
-</section>
-<section class="authPanel" aria-labelledby="loginTitle">
-<header class="authHeader">
-  <div class="wordmark" aria-label="E&A East West Auctioneers Group 🔥SOULFLAME🔥">
-    <div class="wordmarkName" style="font-size:0"><img src="/brand/ea-east-west.svg" width="240" height="90" style="display:block;max-width:78vw;object-fit:contain" alt="E&A East West Auctioneers Group 🔥SOULFLAME🔥"></div>
-    <div class="wordmarkSub">🔥SOULFLAME🔥</div>
-  </div>
-  <span class="headerTag">PRIVATE ACCESS</span>
-</header>
-<div class="entry">
-  <div class="entryTopline"><span class="entryLine"></span><span>WELCOME TO E&A EAST WEST</span></div>
-  <h1 id="loginTitle">Добре <span>дошли.</span></h1>
-  <p class="subtitle">Вашият достъп до света на автомобилните търгове.</p>
-  <div class="separator"><span>ВХОД ЧРЕЗ</span></div>
-  <div class="providers" role="group" aria-label="Алтернативни методи за вход">
-    <button class="provider" type="button" data-provider="google" aria-label="Google вход, предстои активиране"><span class="providerIcon providerGoogle">G</span><span>Google</span></button>
-    <button class="provider" type="button" data-provider="meta" aria-label="Meta вход, предстои активиране"><span class="providerIcon providerMeta">f</span><span>Meta</span></button>
-    <button class="provider" type="button" data-provider="phone" aria-label="Телефонен вход, предстои активиране"><span class="providerIcon providerPhone">⌁</span><span>Телефон</span></button>
-  </div>
-  <div id="authMessage" class="authMessage" role="status" aria-live="polite"></div>
-  <div class="authLinks"><span>Нямате профил? <a href="/register" target="_top">Регистрация ↗</a></span><a href="/platform" target="_top">Разгледай демото</a></div>
-<a class="mobileCarArLink" href="/car-ar-demo" target="_top">MAKE YOUR CAR → AR ↗</a>
-</div>
-<a class="earlyAccessCta" href="/register" target="_top" aria-label="Запиши се за ранен достъп до E&A East West Auctioneers Group"><span>ЗАПИШИ СЕ ЗА РАНЕН ДОСТЪП</span><span aria-hidden="true">↗</span></a>
-<footer class="authFooter"><span class="footerAccent"></span><span>E&A EAST WEST AUCTIONEERS GROUP</span><span>🔥SOULFLAME🔥</span></footer>
 </section>
 <div class="visualFallback" id="geminiCurtain" aria-label="SOULFLAME PRESENTS CarAr"><div class="introContent"><svg class="brandEmblem" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 830" role="img" aria-label="SoulFlame">
   <path fill-rule="evenodd" d="M299 6 L5 512 L9 515 L5 520 L196 822 L295 731 L395 822 L595 515 L590 505 L393 203 L304 379 L301 383 L300 382 Z M36 544 L37 543 L284 723 L199 802 Z M562 542 L393 802 L305 723 L561 541 Z M404 244 L579 513 L318 698 L317 696 L430 500 L403 250 Z M389 240 L392 255 L417 497 L302 697 L300 413 Z M286 54 L288 709 L19 514 Z"/>
@@ -467,7 +458,7 @@ function scheduleLogoReveal(){
 }
 presentationFilm.addEventListener('loadeddata',scheduleLogoReveal,{once:true});
 if(presentationFilm.readyState>=2)scheduleLogoReveal();
-// External iframe can fail to load; don't leave users stuck on a black screen.
+// Start the intro even if the video loads slowly.
 window.setTimeout(scheduleLogoReveal,8000);
 
 const promo=document.getElementById('cararPromo');
@@ -515,8 +506,8 @@ document.getElementById('cararPromoContinue').addEventListener('click',closeCara
 document.addEventListener('keydown',event=>{
   if(event.key==='Escape'&&promo.classList.contains('is-visible'))closeCararPromo();
 });
-// Let Lusion's original 3D animation become visible after the intro.
-// The promotion is an optional overlay; it never pauses, removes, or reloads the GLB.
+// Keep the presentation-2 film playing under the CarAR advertisement.
+// The Coming Soon overlay never replaces or reloads the presentation film.
 const originalRevealArAction=revealArAction;
 revealArAction=function(){
   const wasReady=arAnnounced;
@@ -561,27 +552,7 @@ promoForm.addEventListener('submit',async event=>{
   }finally{promoButton.disabled=false}
 });
 
-const msg=document.getElementById('authMessage');
-const setMsg=(content,variant='')=>{
-  msg.textContent=content;
-  msg.className='authMessage '+variant;
-};
-fetch('/api/enchev-auth/session',{credentials:'same-origin',cache:'no-store'})
-  .then(response=>response.json())
-  .then(data=>{
-    if(data?.authenticated===true){
-      setMsg('Вече имате активна сесия.','good');
-    }
-  })
-  .catch(()=>{});
-const unavailable={
-  google:'Входът чрез Google ще бъде достъпен след активиране.',
-  meta:'Входът чрез Meta ще бъде достъпен след активиране.',
-  phone:'Входът с телефон ще бъде достъпен след настройване на SMS потвърждение.'
-};
-document.querySelectorAll('[data-provider]').forEach(button=>{
-  button.addEventListener('click',()=>setMsg(unavailable[button.dataset.provider],'notice'));
-});
+
 })();
 </script>
 </body>
