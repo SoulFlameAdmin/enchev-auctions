@@ -236,3 +236,38 @@
 @media(max-width:1180px){.eaBrandLogo{width:210px;height:53px}}
 @media(max-width:720px){.eaBrandLogo{width:178px;height:43px}}
 @media(max-width:360px){.eaBrandLogo{width:150px;height:40px}}
+
+
+/* Approved E&A branding — crop the ORIGINAL JPEG's emblem in the header.
+   Do not redraw, mirror or alter the approved gold E / silver A / road artwork. */
+.eaAppBrand.eaBrandExact,.eaAppBrand:has(.eaBrandExactLockup){
+  display:inline-flex;flex-direction:row;align-items:center;max-width:100%;min-width:0
+}
+.eaBrandExactLockup{display:flex;align-items:center;gap:8px;min-width:0;height:58px}
+.eaBrandExactMark{display:block;position:relative;width:132px;height:57px;flex:0 0 132px;overflow:hidden;isolation:isolate}
+.eaBrandExactMark img{display:block;position:absolute;top:-10px;left:-11px;width:151px;height:auto;max-width:none;mix-blend-mode:screen}
+.eaBrandExactCopy{display:flex;flex-direction:column;justify-content:center;min-width:0;gap:3px;text-align:left;line-height:1.08;white-space:nowrap}
+.eaAppBrand .eaBrandExactCopy strong{font-family:Arial,Helvetica,sans-serif;font-size:16px!important;font-weight:750;letter-spacing:.19em;color:#f4f5f8}
+.eaAppBrand .eaBrandExactCopy small{font-family:Arial,Helvetica,sans-serif;font-size:8.5px;font-weight:600;letter-spacing:.13em;color:#d7a04d}
+.eaAppBrand .eaBrandExactCopy span{margin:0;font-family:Arial,Helvetica,sans-serif;font-size:9px;font-weight:500;letter-spacing:.24em;color:#d9dcdf}
+@media(max-width:1180px){
+  .eaBrandExactMark{width:110px;height:50px;flex-basis:110px}
+  .eaBrandExactMark img{width:128px;top:-9px;left:-9px}
+  .eaBrandExactLockup{gap:6px;height:51px}
+  .eaAppBrand .eaBrandExactCopy strong{font-size:13px!important;letter-spacing:.13em}
+  .eaAppBrand .eaBrandExactCopy small{font-size:7.5px}
+}
+@media(max-width:720px){
+  .eaBrandExactLockup{height:49px;gap:5px}
+  .eaBrandExactMark{width:112px;height:48px;flex-basis:112px}
+  .eaBrandExactMark img{width:132px;top:-9px;left:-10px}
+  .eaAppBrand .eaBrandExactCopy strong{font-size:12px!important;letter-spacing:.13em}
+  .eaAppBrand .eaBrandExactCopy small{font-size:6.5px}
+  .eaAppBrand .eaBrandExactCopy span{font-size:7px;letter-spacing:.12em}
+}
+@media(max-width:390px){
+  .eaBrandExactMark{width:98px;height:43px;flex-basis:98px}
+  .eaBrandExactMark img{width:118px;top:-8px;left:-9px}
+  .eaAppBrand .eaBrandExactCopy strong{font-size:11px!important}
+  .eaAppBrand .eaBrandExactCopy small{font-size:6px}
+}
