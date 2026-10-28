@@ -20,6 +20,14 @@ a{color:inherit}
 .brandTitle{font-size:clamp(31px,4.3vw,67px);line-height:1.1;color:white;font-weight:300;letter-spacing:.16em;text-align:center;margin-top:12px;opacity:0;filter:blur(12px);transform:translateY(20px);animation:titleIntro 2.8s cubic-bezier(.13,.78,.18,1) 2.05s forwards}
 .brandTitle strong{font-weight:650}
 .brandAccent{height:1px;width:0;background:linear-gradient(90deg,transparent,#dfbd8c,transparent);margin-top:23px;animation:accentIntro 2s ease 3.25s forwards}
+/* Draw the original SOULFLAME geometry stroke-by-stroke before filling it. */
+.visualFallback .brandPresents{margin:0 0 clamp(15px,2.5vh,26px);animation-delay:0s}
+.brandEmblem .sfFlameSolid{fill:#fff;opacity:0;animation:sfFlameSolidify .75s ease 3s forwards}
+.brandEmblem .sfFlameDraw{fill:none;stroke:#f5f7ff;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:100;stroke-dashoffset:100;filter:drop-shadow(0 0 5px #c1d5ff7a);animation:sfFlameSketch 2.9s cubic-bezier(.32,.05,.3,1) .25s forwards,sfFlameTraceFade .65s ease 3.3s forwards}
+@keyframes sfFlameSketch{from{stroke-dashoffset:100}to{stroke-dashoffset:0}}
+@keyframes sfFlameSolidify{from{opacity:0}to{opacity:1}}
+@keyframes sfFlameTraceFade{from{opacity:1}to{opacity:0}}
+@media(prefers-reduced-motion:reduce){.brandEmblem .sfFlameSolid{opacity:1!important;animation:none!important}.brandEmblem .sfFlameDraw{display:none!important}}
 @keyframes markIntro{to{opacity:1;transform:translateY(0) scale(1)}}
 @keyframes presentIntro{to{opacity:.95;transform:translateY(0)}}
 @keyframes titleIntro{to{opacity:1;filter:blur(0);transform:translateY(0);letter-spacing:.016em}}
@@ -463,9 +471,10 @@ html.sf-sequence .cararPromo{background:radial-gradient(ellipse at 55% 35%,#2320
 <div class="eaEarlyAccessTopCount" aria-live="polite" aria-label="Реално записани за ранен достъп">ЗАПИСАНИ <strong id="eaEarlyAccessTopCount">—</strong></div>
 
 </section>
-<div class="visualFallback" id="geminiCurtain" aria-label="SOULFLAME PRESENTS CarAr"><div class="introContent"><svg class="brandEmblem" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 830" role="img" aria-label="SoulFlame">
-  <path fill-rule="evenodd" d="M299 6 L5 512 L9 515 L5 520 L196 822 L295 731 L395 822 L595 515 L590 505 L393 203 L304 379 L301 383 L300 382 Z M36 544 L37 543 L284 723 L199 802 Z M562 542 L393 802 L305 723 L561 541 Z M404 244 L579 513 L318 698 L317 696 L430 500 L403 250 Z M389 240 L392 255 L417 497 L302 697 L300 413 Z M286 54 L288 709 L19 514 Z"/>
-</svg><span class="brandPresents">SOULFLAME PRESENTS</span><span class="brandTitle"><strong>Car</strong>Ar</span><span class="brandAccent" aria-hidden="true"></span></div></div>
+<div class="visualFallback" id="geminiCurtain" aria-label="SOULFLAME PRESENTS — рисуване на логото"><div class="introContent"><span class="brandPresents">SOULFLAME PRESENTS</span><svg class="brandEmblem" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 830" role="img" aria-label="SoulFlame — анимирано лого">
+  <path class="sfFlameSolid" fill-rule="evenodd" d="M299 6 L5 512 L9 515 L5 520 L196 822 L295 731 L395 822 L595 515 L590 505 L393 203 L304 379 L301 383 L300 382 Z M36 544 L37 543 L284 723 L199 802 Z M562 542 L393 802 L305 723 L561 541 Z M404 244 L579 513 L318 698 L317 696 L430 500 L403 250 Z M389 240 L392 255 L417 497 L302 697 L300 413 Z M286 54 L288 709 L19 514 Z"/>
+  <path class="sfFlameDraw" pathLength="100" d="M299 6 L5 512 L9 515 L5 520 L196 822 L295 731 L395 822 L595 515 L590 505 L393 203 L304 379 L301 383 L300 382 Z M36 544 L37 543 L284 723 L199 802 Z M562 542 L393 802 L305 723 L561 541 Z M404 244 L579 513 L318 698 L317 696 L430 500 L403 250 Z M389 240 L392 255 L417 497 L302 697 L300 413 Z M286 54 L288 709 L19 514 Z"/>
+</svg><span class="brandTitle"><strong>Car</strong>Ar</span><span class="brandAccent" aria-hidden="true"></span></div></div>
 
 <section class="cararPromo" id="cararPromo" role="dialog" aria-label="SOULFLAME CarAR — Coming Soon" aria-modal="true" aria-hidden="true">
   <button class="cararClose" id="cararPromoClose" type="button" aria-label="Затвори рекламата">×</button>
