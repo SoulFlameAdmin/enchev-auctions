@@ -14,9 +14,9 @@ a{color:inherit}
 .visualFallback{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;color:#dedfe5}
 .visualFallback strong{font-size:clamp(24px,3vw,43px);font-weight:400;letter-spacing:.24em}
 .visualFallback span{font-size:10px;letter-spacing:.15em;color:#969daa}
-#lusionFrame{position:absolute;inset:0;display:block;width:100%;height:100%;border:0;background:transparent;z-index:1}
-.sourceLink{position:absolute;z-index:2;left:16px;bottom:16px;padding:8px 10px;border-radius:3px;border:1px solid #ffffff52;background:#07080bdd;backdrop-filter:blur(7px);color:#fff;font-size:9px;font-weight:600;letter-spacing:.1em;text-decoration:none}
-.sourceLink:hover{background:#26282fcf}
+/* Crop the embedded site's top brand/navigation strip outside the visible panel. */
+#lusionFrame{position:absolute;top:-86px;left:0;display:block;width:100%;height:calc(100% + 86px);border:0;background:transparent;z-index:1}
+
 .authPanel{min-width:0;min-height:0;background:linear-gradient(132deg,#171719 0%,#0e0e11 68%,#08090b);padding:clamp(16px,3.3vh,32px) clamp(20px,3.2vw,43px);display:flex;flex-direction:column;overflow:hidden}
 .brand{font-weight:850;font-size:clamp(20px,2.25vw,31px);letter-spacing:.16em;line-height:1.03}
 .brand span{color:#df1522}
@@ -82,7 +82,7 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
   allow="autoplay; fullscreen; accelerometer; gyroscope"
   loading="eager"
 ></iframe>
-<a class="sourceLink" href="https://exp-gemini.lusion.co/" target="_blank" rel="noopener noreferrer" title="Оригинален Lusion GEMINI">OPEN ORIGINAL GEMINI ↗</a>
+
 </section>
 <section class="authPanel" aria-label="Вход в ENCHEV">
 <header><div class="brand">ENCHEV<span>.</span></div><div class="brandSub">AUCTIONS — <b>SOULFLAME</b></div></header>
