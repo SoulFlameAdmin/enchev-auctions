@@ -14,7 +14,7 @@ a{color:inherit}
 .visual::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(90deg,transparent 75%,rgba(7,8,12,.53)),linear-gradient(0deg,rgba(2,3,5,.6),transparent 45%,rgba(2,3,5,.35))}
 .poster{position:absolute;inset:0;z-index:0;background-image:url("https://raw.githubusercontent.com/JaronKBragg7337/spectral-gt-rs/34499c501908818a2b08e589a7aecf963343cee7/spectral_gt_night.png");background-size:cover;background-position:50% 50%;animation:sceneDrift 3s cubic-bezier(.13,.72,.2,1) both;filter:brightness(.87)}
 @keyframes sceneDrift{from{transform:scale(1.17) translateX(3%);filter:brightness(.55) blur(1px)}to{transform:scale(1.04) translateX(-1%);filter:brightness(.95) blur(0)}}
-#lusionFrame{position:absolute;inset:0;width:100%;height:100%;border:0;z-index:1;opacity:0;pointer-events:none;transition:opacity .55s;background:transparent}
+#lusionFrame{position:absolute;top:0;left:50%;width:max(100%, 112vh);height:100%;transform:translateX(-50%);border:0;z-index:1;opacity:0;pointer-events:none;transition:opacity .55s;background:transparent}
 #lusionFrame.is-visible{opacity:1}
 #freezeFrame{position:absolute;inset:0;z-index:2;opacity:0;pointer-events:none;transition:opacity .38s;display:block}
 #freezeFrame::before{content:"";position:absolute;inset:0;background-image:url("https://raw.githubusercontent.com/JaronKBragg7337/spectral-gt-rs/34499c501908818a2b08e589a7aecf963343cee7/spectral_gt_night.png");background-position:50% 50%;background-size:cover;transform:scale(1.04) translateX(-1%);filter:brightness(.95)}
@@ -84,11 +84,11 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
 <main class="screen">
 <section class="visual" id="visual" aria-label="Рекламна сцена Gemini от Lusion">
 <div class="poster" aria-hidden="true"></div>
-<iframe id="lusionFrame" title="Lusion Gemini — cinematic car motion" referrerpolicy="strict-origin-when-cross-origin" tabindex="-1" allow="autoplay; fullscreen" sandbox="allow-scripts allow-same-origin" loading="eager"></iframe>
+<iframe id="lusionFrame" title="Lusion Gemini — cinematic car motion" referrerpolicy="strict-origin-when-cross-origin" tabindex="-1" allow="autoplay; fullscreen" loading="eager"></iframe>
 <div id="freezeFrame" aria-hidden="true"></div>
 <div class="visualKicker"><i></i>ENCHEV AUCTIONS · VISUAL EXPERIENCE</div>
 <div class="visualCopy"><span class="small">EXCLUSIVE AUTOMOTIVE AUCTIONS</span><h2>BEGIN YOUR<br><strong>JOURNEY.</strong></h2><p>Премиум автомобилни търгове. Ново преживяване.</p></div>
-<a class="credit" href="https://exp-gemini.lusion.co/motion" target="_blank" rel="noopener noreferrer">Gemini video © Lusion · Vimeo</a>
+<a class="credit" href="https://vimeo.com/706160609" target="_blank" rel="noopener noreferrer">Gemini video © Lusion · Vimeo</a>
 </section>
 <section class="authPanel" aria-label="Вход в ENCHEV">
 <header><div class="brand">ENCHEV<span>.</span></div><div class="brandSub">AUCTIONS — <b>SOULFLAME</b></div></header>
