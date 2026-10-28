@@ -8,7 +8,7 @@ function apply(){
   if(el.children.length!==0)continue;
   const t=el.textContent?.trim();if(!t||t.length>75)continue;
   if(t==="ENCHEV Auctions"||t==="ENCHEV AUCTIONS"||t==="Enchev Auctions"||t==="ENCHEV")el.textContent=t==="ENCHEV"?upper:brand;
-  else if(t==="EAuctions by SOULFLAME"||t==="ENCHEV AUCTIONS × SOULFLAME")el.textContent=brand+"  🔥SOULFLAME🔥";
+  else if(t==="EAuctions by SOULFLAME"||t==="ENCHEV AUCTIONS × SOULFLAME")el.textContent=brand+"  SOULFLAME";
  }
 }
 let scheduled=false;
