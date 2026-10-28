@@ -152,6 +152,31 @@ export default function EnchevCinematicLoginGate() {
 @media(max-width:720px) and (max-height:600px){
   .enchevLoginClose{top:calc(43% + 4px)!important}
 }
+
+/* Full-screen cinematic, without the old framed login/modal layout. */
+.enchevLoginDialog{
+ width:100vw!important;height:100dvh!important;max-height:100dvh!important;
+ min-height:100dvh!important;border:0!important;border-radius:0!important;
+ overflow:hidden!important;
+}
+.enchevLoginClose{
+ position:absolute!important;
+ top:max(18px,env(safe-area-inset-top))!important;
+ right:max(18px,env(safe-area-inset-right))!important;
+ width:48px!important;height:48px!important;
+ border-radius:50%!important;
+ display:grid!important;place-items:center!important;
+ background:rgba(5,7,12,.82)!important;
+ border:1px solid rgba(230,202,162,.7)!important;
+ box-shadow:0 8px 28px rgba(0,0,0,.7)!important;
+ font-size:28px!important;
+}
+.enchevQrDock,.enchevQrDock.visible{display:none!important}
+@media(max-width:720px){
+ .enchevLoginClose{top:max(12px,env(safe-area-inset-top))!important;
+ right:max(12px,env(safe-area-inset-right))!important;
+ width:43px!important;height:43px!important}
+}
 `}</style>
       {hasOpened && (
         <div
@@ -164,39 +189,39 @@ export default function EnchevCinematicLoginGate() {
             opacity:open?1:0,
             pointerEvents:open?"auto":"none",
             background:open&&revealed?"rgba(0,0,0,.65)":"transparent",
-            backdropFilter:open&&revealed?"blur(5px)":"blur(0px)",
+            backdropFilter:"none",
             transition:"background .45s, opacity .45s, backdrop-filter .45s",
-            display:"flex",gap:15,justifyContent:"center",alignItems:"center",padding:12
+            display:"flex",gap:0,justifyContent:"center",alignItems:"center",padding:0
           }}
         >
           <section
             className="enchevLoginDialog"
             role="dialog"
             aria-modal={open}
-            aria-label="ENCHEV AUCTIONS — cinematic login"
+            aria-label="E&A — презентация 2 и CarAR"
             style={{
               position:"relative",
-              width:"min(1080px, calc(100vw - 32px))",
-              height:"min(640px, calc(100dvh - 48px))",
-              maxHeight:"calc(100dvh - 24px)",
+              width:"100vw",
+              height:"100dvh",
+              maxHeight:"100dvh",
               flexShrink:1,minWidth:0,
               overflow:"hidden",
-              borderRadius:15,
-              background:"#06070a",
-              border:"1px solid rgba(221,194,152,.42)",
-              boxShadow:"0 26px 110px rgba(0,0,0,.88)",
+              borderRadius:0,
+              background:"#000",
+              border:"none",
+              boxShadow:"none",
               opacity:open&&revealed?1:0,
-              transform:open&&revealed?"translateY(0) scale(1)":"translateY(19px) scale(.97)",
-              transition:"opacity .5s ease, transform .5s cubic-bezier(.18,.8,.21,1)"
+              transform:"none",
+              transition:"opacity .45s ease"
             }}
           >
             <iframe
               ref={cinematicFrame}
               src="/3d-login/index.html"
-              title="SoulFlame Presents CarAR and ENCHEV sign in"
+              title="E&A Presentation 2 full-screen video and CarAR"
               loading="eager"
               onLoad={syncChildPromo}
-              style={{display:"block",width:"100%",height:"100%",border:0,background:"#06070a"}}
+              style={{display:"block",width:"100%",height:"100%",border:0,background:"#000"}}
             />
             {open && !promoOpen && <button
               className="enchevLoginClose"
@@ -206,8 +231,8 @@ export default function EnchevCinematicLoginGate() {
               aria-label="Затвори прозореца за вход"
               title="Затвори"
               style={{
-                position:"absolute",top:12,right:12,zIndex:10,
-                width:44,height:44,borderRadius:"50%",
+                position:"absolute",top:18,right:18,zIndex:10,
+                width:48,height:48,borderRadius:"50%",
                 color:"#fff",background:"rgba(9,10,15,.85)",
                 border:"1px solid rgba(255,255,255,.48)",
                 backdropFilter:"blur(12px)",cursor:"pointer",
