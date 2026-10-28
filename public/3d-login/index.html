@@ -12,11 +12,20 @@ a{color:inherit}
 .screen{height:100dvh;display:grid;grid-template-columns:minmax(0,55%) minmax(0,45%);overflow:hidden;background:#080a0e}
 .visual{position:relative;min-width:0;overflow:hidden;background:radial-gradient(ellipse at 60% 42%,#171d23 0%,#07080d 55%,#000 95%)}
 
-.visualFallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:3;background:#000;opacity:1;visibility:visible;pointer-events:auto;transition:opacity 5s cubic-bezier(.2,.65,.25,1),visibility 0s linear 5s}
+
+.visualFallback{position:absolute;inset:0;z-index:3;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:1;visibility:visible;pointer-events:auto;transition:opacity 5s cubic-bezier(.2,.65,.25,1),visibility 0s linear 5s;overflow:hidden}
 .visualFallback.is-fading{opacity:0;visibility:hidden;pointer-events:none}
-.brandEmblem{display:block;width:min(46%,260px);max-height:75%;height:auto;aspect-ratio:600/830;fill:#fff;transform:translateY(-1%)}
-@media(max-width:720px){.brandEmblem{width:min(31%,150px);max-height:66%}}
-@media(prefers-reduced-motion:reduce){.visualFallback{transition:opacity .01s,visibility 0s .01s}}
+.brandEmblem{display:block;width:min(36%,190px);max-height:48%;height:auto;flex-shrink:1;fill:#fff;opacity:0;transform:translateY(14px) scale(.93);animation:markIntro 1.5s cubic-bezier(.16,.9,.2,1) forwards}
+.brandPresents{font-size:clamp(10px,1.1vw,14px);font-weight:500;color:#e8e8e8;letter-spacing:.34em;text-align:center;margin-top:clamp(12px,3vh,28px);opacity:0;transform:translateY(12px);animation:presentIntro 1.8s ease-out .95s forwards}
+.brandTitle{font-size:clamp(31px,4.3vw,67px);line-height:1.1;color:white;font-weight:300;letter-spacing:.16em;text-align:center;margin-top:12px;opacity:0;filter:blur(12px);transform:translateY(20px);animation:titleIntro 2.8s cubic-bezier(.13,.78,.18,1) 2.05s forwards}
+.brandTitle strong{font-weight:650}
+.brandAccent{height:1px;width:0;background:linear-gradient(90deg,transparent,#dfbd8c,transparent);margin-top:23px;animation:accentIntro 2s ease 3.25s forwards}
+@keyframes markIntro{to{opacity:1;transform:translateY(0) scale(1)}}
+@keyframes presentIntro{to{opacity:.95;transform:translateY(0)}}
+@keyframes titleIntro{to{opacity:1;filter:blur(0);transform:translateY(0);letter-spacing:.016em}}
+@keyframes accentIntro{to{width:min(46%,230px)}}
+@media(max-width:720px){.brandEmblem{width:min(23%,100px);max-height:40%}.brandPresents{font-size:9px;letter-spacing:.25em;margin-top:9px}.brandTitle{font-size:clamp(26px,7vw,42px);margin-top:6px}.brandAccent{margin-top:10px}}
+@media(prefers-reduced-motion:reduce){.visualFallback{transition:opacity .3s,visibility 0s .3s}.brandEmblem,.brandPresents,.brandTitle,.brandAccent{animation:none;opacity:1;transform:none;filter:none}.brandAccent{width:46%}}
 /* Crop the embedded site's top brand/navigation strip outside the visible panel. */
 #lusionFrame{position:absolute;top:-86px;left:0;display:block;width:100%;height:calc(100% + 86px);border:0;background:transparent;z-index:1}
 
@@ -77,15 +86,13 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
 <main class="screen">
 <section class="visual" id="visual" aria-label="Оригинален Lusion GEMINI вграден уебсайт">
 
-<div class="visualFallback" id="geminiCurtain" aria-label="SoulFlame cinematic opening">
-<svg class="brandEmblem" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 830" role="img" aria-label="SoulFlame">
+<div class="visualFallback" id="geminiCurtain" aria-label="SOULFLAME PRESENTS CarAr"><svg class="brandEmblem" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 830" role="img" aria-label="SoulFlame">
   <path fill-rule="evenodd" d="M299 6 L5 512 L9 515 L5 520 L196 822 L295 731 L395 822 L595 515 L590 505 L393 203 L304 379 L301 383 L300 382 Z M36 544 L37 543 L284 723 L199 802 Z M562 542 L393 802 L305 723 L561 541 Z M404 244 L579 513 L318 698 L317 696 L430 500 L403 250 Z M389 240 L392 255 L417 497 L302 697 L300 413 Z M286 54 L288 709 L19 514 Z"/>
-</svg>
-</div>
+</svg><span class="brandPresents">SOULFLAME PRESENTS</span><span class="brandTitle"><strong>Car</strong>Ar</span><span class="brandAccent" aria-hidden="true"></span></div>
 <iframe
   id="lusionFrame"
   title="Lusion GEMINI — original interactive 3D experience"
-  src="https://exp-gemini.lusion.co/style"
+  src="https://exp-gemini.lusion.co/motion"
   referrerpolicy="strict-origin-when-cross-origin"
   allow="autoplay; fullscreen; accelerometer; gyroscope"
   loading="eager"
@@ -120,15 +127,19 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
 // Exact official Gemini site is embedded directly; no video, GLB,
 // Vimeo substitute or cross-origin pause attempts are used here.
 
+
 const geminiFrame=document.getElementById('lusionFrame');
 const curtain=document.getElementById('geminiCurtain');
+const introStartedAt=performance.now();
 let revealScheduled=false;
 function scheduleLogoReveal(){
   if(revealScheduled)return;
   revealScheduled=true;
-  // Cross-origin WebGL state is inaccessible. Warm up the style/car scene
-  // after iframe load before starting the requested five-second dissolve.
-  window.setTimeout(()=>curtain.classList.add('is-fading'),6000);
+  // Cross-origin Lusion does not expose the car-ready event. Wait for document
+  // load, a WebGL warmup and the CarAr introduction before dissolving.
+  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const waitUntilIntroEnd=Math.max(0,(reduced?1200:5700)-(performance.now()-introStartedAt));
+  window.setTimeout(()=>curtain.classList.add('is-fading'),Math.max(waitUntilIntroEnd,reduced?100:4000));
 }
 geminiFrame.addEventListener('load',scheduleLogoReveal,{once:true});
 const msg=document.querySelector('#authMessage');
