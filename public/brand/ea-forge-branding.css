@@ -4,3 +4,13 @@ a[aria-label="Enchev home"],
 a[aria-label="E&A East West Auctioneers Group home"]{
   display:none!important;
 }
+
+/* The parent page displays the one centered E&A logo.
+   Suppress duplicated logos only inside the Forge embedded experience. */
+header a[href="/"]:has(img),
+header a[href="/"]:has(svg),
+header img[alt*="E&A"],
+header img[alt*="East West"],
+img[src*="/brand/ea-east-west"],
+a[href="/"]:has(img[alt*="logo"]),
+a[href="/"]:has(img[alt*="E&A"]){display:none!important}
