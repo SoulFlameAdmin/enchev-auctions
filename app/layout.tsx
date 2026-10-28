@@ -30,8 +30,8 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, view
 
 export const metadata: Metadata = {
   title: "E&A East West Auctioneers Group",
-  description: "E&A East West Auctioneers Group — international vehicle auctions, live bidding, vehicle history and transport. 🔥SOULFLAME🔥",
-  icons: { icon: "/brand/ea-app.svg", shortcut: "/brand/ea-app.svg", apple: "/brand/ea-app.svg" },
+  description: "E&A East West Auctioneers Group — international vehicle auctions, live bidding, vehicle history and transport. SOULFLAME",
+  icons: { icon: "/brand/ea-2026-app.svg", shortcut: "/brand/ea-2026-app.svg", apple: "/brand/ea-2026-app.svg" },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
