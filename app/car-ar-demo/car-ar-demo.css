@@ -1,10 +1,10 @@
 .sfCarArDemo{min-height:100dvh;color:#f8f6f3;background:radial-gradient(ellipse at 72% 12%,#262238 0%,transparent 40%),linear-gradient(160deg,#080a0d,#0c1019 55%,#06080b);font-family:Inter,"Segoe UI",Arial,sans-serif;padding:0 clamp(16px,3.5vw,54px) 35px;overflow-x:hidden}
-.sfCarArDemoTop{min-height:95px;max-width:1600px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:22px;border-bottom:1px solid #ffffff24}
+.sfCarArDemoTop{min-height:86px;max-width:1600px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:22px;border-bottom:1px solid #ffffff24}
 .sfCarArDemoBrand{display:flex;align-items:center;gap:15px;text-decoration:none;color:inherit}
-.sfCarArDemoBrand img{width:98px;height:62px;object-fit:contain;mix-blend-mode:screen}
+.sfCarArDemoBrand img{width:83px;height:53px;object-fit:contain;mix-blend-mode:screen}
 .sfCarArDemoIdentity{display:flex;flex-direction:column;gap:4px}
 .sfCarArDemoIdentity>span{font-size:9px;color:#baa991;letter-spacing:.22em}
-.sfCarArDemoIdentity strong{font-size:29px;font-weight:550;letter-spacing:-.045em}
+.sfCarArDemoIdentity strong{font-size:26px;font-weight:550;letter-spacing:-.045em}
 .sfCarArDemoIdentity strong span{color:#d0a66c}
 .sfCarArDemoLinks{display:flex;align-items:center;gap:24px}
 .sfCarArDemoLinks a,.sfCarArDemoFooter a{font-size:11px;color:#e3d6c7;text-decoration:none;letter-spacing:.1em}
@@ -35,7 +35,7 @@
 .sfCarArDemoRedirect p{line-height:1.6;color:#a9b1bd}
 .sfCarArDemoRedirect a{display:inline-block;margin-top:20px;color:#eac796;border:1px solid #cfa56e;padding:13px 24px;border-radius:7px;text-decoration:none}
 @media(max-width:950px){.sfCarArDemoGrid{grid-template-columns:1fr}.sfCarArDemoQR{display:none}.sfCarArDemoStage{height:65dvh}.sfCarArDemoLive{display:none}}
-@media(max-width:620px){.sfCarArDemoTop{min-height:76px}.sfCarArDemoBrand img{width:70px;height:48px}.sfCarArDemoIdentity strong{font-size:24px}.sfCarArDemoIdentity>span{font-size:7px}.sfCarArDemoLinks{gap:12px}.sfCarArDemoLinks a{font-size:9px}.sfCarArDemoLinks a:first-child{display:none}.sfCarArDemoHeading{margin-top:19px}.sfCarArDemoStage{height:65dvh;min-height:370px}.sfCarArDemoHeading p{font-size:12px}}
+@media(max-width:620px){.sfCarArDemoTop{min-height:70px}.sfCarArDemoBrand img{width:60px;height:41px}.sfCarArDemoIdentity strong{font-size:22px}.sfCarArDemoIdentity>span{font-size:7px}.sfCarArDemoLinks{gap:12px}.sfCarArDemoLinks a{font-size:9px}.sfCarArDemoLinks a:first-child{display:none}.sfCarArDemoHeading{margin-top:19px}.sfCarArDemoStage{height:65dvh;min-height:370px}.sfCarArDemoHeading p{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.sfCarArDemo *{animation:none!important;transition:none!important}}
 
 .sfCarArDemoCredit{font-size:10px;color:#a59b90;text-decoration:underline;text-underline-offset:3px}
