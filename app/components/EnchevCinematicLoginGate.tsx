@@ -8,22 +8,29 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * is not replayed until a full page refresh.
  */
 export default function EnchevCinematicLoginGate() {
-  // The approved full-screen E&A cinematic is now the real homepage entrance.
-  // Close it with X to reveal the existing auction / Forge experience beneath.
-  const [open,setOpen]=useState(true);
-  const [hasOpened,setHasOpened]=useState(true);
-  const [revealed,setRevealed]=useState(true);
+  // Keep the actual Forge ENTER splash visible first. Only a deliberate ENTER
+  // opens SOULFLAME → E&A; X then reveals the already-entered auction site.
+  const [open,setOpen]=useState(false);
+  const [hasOpened,setHasOpened]=useState(false);
+  const [revealed,setRevealed]=useState(false);
   const [arReady,setArReady]=useState(false);
   const [promoOpen,setPromoOpen]=useState(false);
   const [adStage,setAdStage]=useState<"soulflame"|"enchev">("soulflame");
   const [adVisible,setAdVisible]=useState(true);
   const transitionTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
-  const launcher=useRef<HTMLButtonElement>(null);
+  const exitTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
   const close=useRef<HTMLButtonElement>(null);
   const cinematicFrame=useRef<HTMLIFrameElement>(null);
 
   const show=useCallback(()=>{
-    if(transitionTimer.current!==null)clearTimeout(transitionTimer.current);
+    if(exitTimer.current!==null){
+      clearTimeout(exitTimer.current);
+      exitTimer.current=null;
+    }
+    if(transitionTimer.current!==null){
+      clearTimeout(transitionTimer.current);
+      transitionTimer.current=null;
+    }
     setAdStage("soulflame");
     setAdVisible(true);
     setPromoOpen(false);
@@ -44,12 +51,29 @@ export default function EnchevCinematicLoginGate() {
     },360);
   },[adStage]);
 
-  useEffect(()=>()=>{if(transitionTimer.current!==null)clearTimeout(transitionTimer.current);},[]);
+  useEffect(()=>()=>{ 
+    if(transitionTimer.current!==null)clearTimeout(transitionTimer.current);
+    if(exitTimer.current!==null)clearTimeout(exitTimer.current);
+  },[]);
 
   const dismiss=useCallback(()=>{
+    // Pause all audio when the viewer exits; remove the iframe after the fade
+    // so nothing continues playing over the entered site.
+    try{
+      cinematicFrame.current?.contentDocument?.querySelectorAll("video,audio").forEach(media=>{
+        if(media instanceof HTMLMediaElement)media.pause();
+      });
+    }catch{/* same-origin media only */}
     setRevealed(false);
     setOpen(false);
-    window.requestAnimationFrame(()=>launcher.current?.focus());
+    if(exitTimer.current!==null)clearTimeout(exitTimer.current);
+    exitTimer.current=setTimeout(()=>{
+      exitTimer.current=null;
+      setHasOpened(false);
+    },460);
+    window.requestAnimationFrame(()=>{
+      document.querySelector<HTMLIFrameElement>('iframe[title="ENCHEV Auctions cinematic homepage"]')?.focus();
+    });
   },[]);
 
   // Close the most recently opened overlay first (nested iframe promo
@@ -99,7 +123,8 @@ export default function EnchevCinematicLoginGate() {
     );
   },[]);
 
-  // Original welcome ENTER stays functional; only add the login advertising modal.
+  // The real Forge ENTER triggers the two ads. Its native handler is not
+  // cancelled: by the time X is pressed, the underlying site is already open.
   useEffect(()=>{
     const forge=document.querySelector<HTMLIFrameElement>(
       'iframe[title="ENCHEV Auctions cinematic homepage"]'
@@ -304,22 +329,7 @@ export default function EnchevCinematicLoginGate() {
           </aside>
         </div>
       )}
-      {!open && hasOpened && <button
-        ref={launcher}
-        type="button"
-        onClick={show}
-        aria-label="Отвори отново входа"
-        style={{
-          position:"fixed",right:"max(18px, env(safe-area-inset-right))",
-          bottom:"max(18px, env(safe-area-inset-bottom))",
-          zIndex:2147482000,
-          padding:"13px 17px",
-          border:"1px solid #b99c72",
-          background:"rgba(9,10,15,.96)",color:"#ead4af",
-          borderRadius:4,fontSize:11,letterSpacing:".1em",fontWeight:700,
-          cursor:"pointer",boxShadow:"0 8px 30px #0008"
-        }}
-      >ВХОД ↗</button>}
+
     </>
   );
 }
