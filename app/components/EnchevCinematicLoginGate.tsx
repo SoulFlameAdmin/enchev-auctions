@@ -12,6 +12,7 @@ export default function EnchevCinematicLoginGate() {
   const [hasOpened,setHasOpened]=useState(false);
   const [revealed,setRevealed]=useState(false);
   const [arReady,setArReady]=useState(false);
+  const [promoOpen,setPromoOpen]=useState(false);
   const launcher=useRef<HTMLButtonElement>(null);
   const close=useRef<HTMLButtonElement>(null);
   const cinematicFrame=useRef<HTMLIFrameElement>(null);
@@ -28,16 +29,44 @@ export default function EnchevCinematicLoginGate() {
     window.requestAnimationFrame(()=>launcher.current?.focus());
   },[]);
 
+  // Close the most recently opened overlay first (nested iframe promo
+  // before the outer login dialog). DOM check also handles fast clicks
+  // before the iframe's state message has reached React.
+  const closeTopmost=useCallback(()=>{
+    let childVisible=promoOpen;
+    try{
+      const child=cinematicFrame.current?.contentDocument?.getElementById("cararPromo");
+      if(child)childVisible=child.classList.contains("is-visible");
+    }catch{/* same-origin iframe not available: use reported state */}
+    if(childVisible){
+      cinematicFrame.current?.contentWindow?.postMessage(
+        {type:"ENCHEV_CARAR_PROMO_CLOSE"},window.location.origin
+      );
+      return;
+    }
+    dismiss();
+  },[promoOpen,dismiss]);
 
-  // The same-origin cinematic iframe reports when the CarAR reveal is finished.
+
+  // Only this same-origin cinematic iframe controls the nested ad state.
   useEffect(()=>{
     const receive=(event:MessageEvent)=>{
       if(event.origin!==window.location.origin)return;
       if(event.source!==cinematicFrame.current?.contentWindow)return;
       if(event.data?.type==="ENCHEV_CAR_AR_READY")setArReady(true);
+      if(event.data?.type==="ENCHEV_CARAR_PROMO_STATE"){
+        setPromoOpen(event.data.visible===true);
+      }
     };
     window.addEventListener("message",receive);
     return()=>window.removeEventListener("message",receive);
+  },[]);
+
+  const syncChildPromo=useCallback(()=>{
+    setPromoOpen(false);
+    cinematicFrame.current?.contentWindow?.postMessage(
+      {type:"ENCHEV_CARAR_PROMO_QUERY"},window.location.origin
+    );
   },[]);
 
   // Original welcome ENTER stays functional; only add the login advertising modal.
@@ -77,10 +106,14 @@ export default function EnchevCinematicLoginGate() {
       setRevealed(true);
       close.current?.focus();
     });
-    const keydown=(event:KeyboardEvent)=>{if(event.key==="Escape")dismiss();};
+    const keydown=(event:KeyboardEvent)=>{
+      if(event.key!=="Escape")return;
+      event.preventDefault();
+      closeTopmost();
+    };
     window.addEventListener("keydown",keydown);
     return()=>{cancelAnimationFrame(raf);window.removeEventListener("keydown",keydown);};
-  },[open,dismiss]);
+  },[open,closeTopmost]);
 
   useEffect(()=>{
     const keydown=(event:KeyboardEvent)=>{
@@ -95,7 +128,7 @@ export default function EnchevCinematicLoginGate() {
 
   return (
     <>
-      <style>{"\n.enchevQrDock{\n  position:relative;flex:0 0 278px;width:278px;align-self:center;\n  display:flex;flex-direction:column;align-items:center;gap:12px;\n  opacity:0;visibility:hidden;transform:translateX(35px);\n  transition:opacity .75s ease,transform .85s cubic-bezier(.2,.85,.2,1),visibility 0s .85s;\n  pointer-events:none;\n}\n.enchevQrDock.visible{\n  opacity:1;visibility:visible;transform:translateX(0);pointer-events:auto;\n  transition:opacity .75s ease,transform .85s cubic-bezier(.2,.85,.2,1);\n}\n.enchevQrCode{\n  position:relative;width:154px;display:flex;flex-direction:column;align-items:center;gap:7px;\n  padding:14px 13px;border:1px solid rgba(221,185,126,.55);\n  border-radius:9px;background:linear-gradient(150deg,#24252bee,#0d1015fa);\n  box-shadow:0 18px 48px rgba(0,0,0,.68);\n  color:white;text-decoration:none;\n}\n.enchevQrCode:before{\n  content:\"\";position:absolute;top:48%;left:-14px;width:13px;height:23px;\n  background:#24252b;clip-path:polygon(100% 0,0 50%,100% 100%);\n}\n.enchevQrCode:hover{border-color:#edcd99;background:#292b31}\n.enchevQrCode .qrEyebrow{font-size:8px;font-weight:750;color:#dbc39f;letter-spacing:.18em}\n.enchevQrCode img{display:block;width:119px;height:119px;image-rendering:pixelated;border-radius:4px;background:#fff;padding:1px}\n.enchevQrCode .qrLabel{font-size:10px;font-weight:750;letter-spacing:.12em;text-align:center}\n.enchevQrCode .qrHelper{font-size:9px;color:#abb0b8;text-align:center;line-height:1.35}\n.enchevQrCta{\n  width:100%;display:flex;align-items:center;gap:12px;min-height:66px;\n  padding:11px 13px;border:1px solid rgba(221,185,126,.62);border-radius:7px;\n  background:linear-gradient(112deg,#252329f5,#121419f5);\n  box-shadow:0 12px 37px rgba(0,0,0,.65);\n  text-decoration:none;color:white;\n  transition:border-color .2s,background .2s,transform .2s;\n}\n.enchevQrCta:hover{border-color:#e9c99b;background:linear-gradient(105deg,#39302e,#191a1d);transform:translateY(-2px)}\n.qrArBadge{height:37px;width:39px;flex:0 0 auto;display:grid;place-items:center;\n  border:1px solid #b298746e;border-radius:4px;color:#e9ceaa;\n  font-size:13px;font-weight:800;letter-spacing:.02em}\n.qrArText{min-width:0;display:flex;flex:1;flex-direction:column;gap:5px}\n.qrArText strong{font-size:12px;letter-spacing:.06em;white-space:nowrap;font-weight:800}\n.qrArText small{font-size:10px;color:#acb1ba;white-space:nowrap}\n.qrArArrow{font-size:20px;color:#e9c49a;flex:0 0 auto}\n@media(max-width:1050px){.enchevQrDock{display:none}}\n"}</style>
+      <style>{"\n.enchevQrDock{\n  position:relative;flex:0 0 278px;width:278px;align-self:center;\n  display:none;flex-direction:column;align-items:center;gap:12px;\n  opacity:0;visibility:hidden;transform:translateX(35px);\n  transition:opacity .75s ease,transform .85s cubic-bezier(.2,.85,.2,1),visibility 0s .85s;\n  pointer-events:none;\n}\n.enchevQrDock.visible{\n  display:flex;opacity:1;visibility:visible;transform:translateX(0);pointer-events:auto;\n  transition:opacity .75s ease,transform .85s cubic-bezier(.2,.85,.2,1);\n}\n.enchevQrCode{\n  position:relative;width:154px;display:flex;flex-direction:column;align-items:center;gap:7px;\n  padding:14px 13px;border:1px solid rgba(221,185,126,.55);\n  border-radius:9px;background:linear-gradient(150deg,#24252bee,#0d1015fa);\n  box-shadow:0 18px 48px rgba(0,0,0,.68);\n  color:white;text-decoration:none;\n}\n.enchevQrCode:before{\n  content:\"\";position:absolute;top:48%;left:-14px;width:13px;height:23px;\n  background:#24252b;clip-path:polygon(100% 0,0 50%,100% 100%);\n}\n.enchevQrCode:hover{border-color:#edcd99;background:#292b31}\n.enchevQrCode .qrEyebrow{font-size:8px;font-weight:750;color:#dbc39f;letter-spacing:.18em}\n.enchevQrCode img{display:block;width:119px;height:119px;image-rendering:pixelated;border-radius:4px;background:#fff;padding:1px}\n.enchevQrCode .qrLabel{font-size:10px;font-weight:750;letter-spacing:.12em;text-align:center}\n.enchevQrCode .qrHelper{font-size:9px;color:#abb0b8;text-align:center;line-height:1.35}\n.enchevQrCta{\n  width:100%;display:flex;align-items:center;gap:12px;min-height:66px;\n  padding:11px 13px;border:1px solid rgba(221,185,126,.62);border-radius:7px;\n  background:linear-gradient(112deg,#252329f5,#121419f5);\n  box-shadow:0 12px 37px rgba(0,0,0,.65);\n  text-decoration:none;color:white;\n  transition:border-color .2s,background .2s,transform .2s;\n}\n.enchevQrCta:hover{border-color:#e9c99b;background:linear-gradient(105deg,#39302e,#191a1d);transform:translateY(-2px)}\n.qrArBadge{height:37px;width:39px;flex:0 0 auto;display:grid;place-items:center;\n  border:1px solid #b298746e;border-radius:4px;color:#e9ceaa;\n  font-size:13px;font-weight:800;letter-spacing:.02em}\n.qrArText{min-width:0;display:flex;flex:1;flex-direction:column;gap:5px}\n.qrArText strong{font-size:12px;letter-spacing:.06em;white-space:nowrap;font-weight:800}\n.qrArText small{font-size:10px;color:#acb1ba;white-space:nowrap}\n.qrArArrow{font-size:20px;color:#e9c49a;flex:0 0 auto}\n@media(max-width:1050px){.enchevQrDock,.enchevQrDock.visible{display:none}}\n"}</style>
       <style>{`
 @media(max-width:720px){
   .enchevLoginDialog{
@@ -125,7 +158,7 @@ export default function EnchevCinematicLoginGate() {
           data-enchev-login-overlay
           inert={!open}
           aria-hidden={!open}
-          onClick={event=>{if(open && event.currentTarget===event.target)dismiss();}}
+          onClick={event=>{if(open && event.currentTarget===event.target)closeTopmost();}}
           style={{
             position:"fixed",inset:0,zIndex:2147483000,
             opacity:open?1:0,
@@ -162,14 +195,15 @@ export default function EnchevCinematicLoginGate() {
               src="/3d-login/index.html"
               title="SoulFlame Presents CarAR and ENCHEV sign in"
               loading="eager"
+              onLoad={syncChildPromo}
               style={{display:"block",width:"100%",height:"100%",border:0,background:"#06070a"}}
             />
-            {open && <button
+            {open && !promoOpen && <button
               className="enchevLoginClose"
               ref={close}
               type="button"
-              onClick={dismiss}
-              aria-label="Затвори прозореца"
+              onClick={closeTopmost}
+              aria-label="Затвори прозореца за вход"
               title="Затвори"
               style={{
                 position:"absolute",top:12,right:12,zIndex:10,
@@ -182,7 +216,7 @@ export default function EnchevCinematicLoginGate() {
             >×</button>}
           </section>
 
-          <aside className={"enchevQrDock"+(arReady&&open&&revealed?" visible":"")} aria-label="CarAR QR код и WebXR достъп">
+          <aside className={"enchevQrDock"+(arReady&&open&&revealed&&!promoOpen?" visible":"")} aria-label="CarAR QR код и WebXR достъп">
             <a
               className="enchevQrCode"
               href="/car-ar"
