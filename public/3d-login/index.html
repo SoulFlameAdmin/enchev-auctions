@@ -361,6 +361,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000}
 }
 
 
+/* First act of the homepage: original SOULFLAME CarAR cinematic followed by E&A.
+   Don't reveal the unrelated presentation-2 video behind the SoulFlame intro. */
+html.sf-sequence #presentationFilm,
+html.sf-sequence #presentationSoundButton,
+html.sf-sequence #eaEarlyAccessOpen,
+html.sf-sequence .eaEarlyAccessTopCount{display:none!important}
+html.sf-sequence .visual{background:radial-gradient(ellipse at 50% 40%,#1b2036,#05060a 78%)!important}
+html.sf-sequence .cararPromo{background:radial-gradient(ellipse at 55% 35%,#232038 0%,#090c17 63%,#050608 100%)!important}
+
 /* Professional E&A early-access overlay and action; above the presentation film,
    but under the initial cinematic logo. CarAR promo is never shown simultaneously. */
 .eaEarlyAccessOpen{
@@ -505,6 +514,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000}
 (() => {
 // The original Lusion Gemini color-changing iframe now lives in /car-ar-demo.
 // The presentation-2 video replaces it here without affecting the logo intro or GLB demo.
+const sequenceMode=new URLSearchParams(location.search).get('sequence')==='soulflame';
+if(sequenceMode)document.documentElement.classList.add('sf-sequence');
 const presentationFilm=document.getElementById('presentationFilm');
 const presentationSound=document.getElementById('presentationSoundButton');
 presentationSound.addEventListener('click',()=>{
@@ -513,7 +524,12 @@ presentationSound.addEventListener('click',()=>{
   presentationSound.setAttribute('aria-label',presentationFilm.muted?'Включи звука на Презентация 2':'Изключи звука на Презентация 2');
   if(presentationFilm.paused)presentationFilm.play().catch(()=>{});
 });
-presentationFilm.play().catch(()=>{});
+if(sequenceMode){
+  presentationFilm.pause();
+  presentationFilm.removeAttribute('autoplay');
+}else{
+  presentationFilm.play().catch(()=>{});
+}
 const curtain=document.getElementById('geminiCurtain');
 const visual=document.getElementById('visual');
 let arAnnounced=false;
@@ -566,6 +582,29 @@ const promoForm=document.getElementById('cararNotifyForm');
 const promoStatus=document.getElementById('cararNotifyStatus');
 const promoButton=document.getElementById('cararNotifyButton');
 let promoHasOpened=false;
+let sequenceFinished=false;
+let nextAdTimer=null;
+function nextEnchevAd(){
+  if(!sequenceMode||sequenceFinished)return;
+  sequenceFinished=true;
+  if(nextAdTimer!==null)window.clearTimeout(nextAdTimer);
+  if(window.parent!==window){
+    window.parent.postMessage({type:'SOULFLAME_AD_DONE'},window.location.origin);
+  }else{
+    window.location.assign('/original-cinema');
+  }
+}
+function scheduleNextAd(){
+  if(!sequenceMode||sequenceFinished)return;
+  if(nextAdTimer!==null)window.clearTimeout(nextAdTimer);
+  nextAdTimer=window.setTimeout(()=>{
+    // Stay on this advert while a visitor is typing or a signup is pending.
+    const email=document.getElementById('cararNotifyEmail');
+    const editing=promoForm.matches(':focus-within')||email.value.trim()!==''||promoButton.disabled;
+    if(editing){scheduleNextAd();return}
+    nextEnchevAd();
+  },8500);
+}
 // Two nested overlays are controlled as a stack. The child advertises its
 // visibility to the parent, which hides its own X until this ad is dismissed.
 function reportCararPromoState(visible){
@@ -582,8 +621,10 @@ function openCararPromo(){
   promo.setAttribute('aria-hidden','false');
   reportCararPromoState(true);
   document.getElementById('cararPromoClose').focus({preventScroll:true});
+  scheduleNextAd();
 }
 function closeCararPromo(){
+  if(sequenceMode){nextEnchevAd();return;}
   if(!promo.classList.contains('is-visible'))return;
   promo.classList.remove('is-visible');
   promo.setAttribute('aria-hidden','true');
@@ -604,7 +645,10 @@ window.addEventListener('message',event=>{
 // the outer dialogue without remounting this iframe.
 reportCararPromoState(false);
 document.getElementById('cararPromoClose').addEventListener('click',closeCararPromo);
-document.getElementById('cararPromoContinue').addEventListener('click',closeCararPromo);
+document.getElementById('cararPromoContinue').addEventListener('click',()=>{
+  if(sequenceMode)nextEnchevAd();
+  else closeCararPromo();
+});
 document.addEventListener('keydown',event=>{
   if(event.key==='Escape'){
     if(eaPanel.classList.contains('is-visible'))hideEaEarlyAccess();
@@ -613,6 +657,7 @@ document.addEventListener('keydown',event=>{
 });
 // Keep the presentation-2 film playing under the CarAR advertisement.
 // The Coming Soon overlay never replaces or reloads the presentation film.
+// Preserve the same SOULFLAME intro and 3D flipping CarAR poster.
 const originalRevealArAction=revealArAction;
 revealArAction=function(){
   const wasReady=arAnnounced;
