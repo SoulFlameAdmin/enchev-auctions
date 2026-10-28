@@ -45,7 +45,7 @@ export default function Home(){
           left:50%;
           transform:translateX(-50%);
           z-index:7;
-          width:min(560px,calc(100vw - 40px));
+          width:min(475px,calc(100vw - 40px));
           pointer-events:none;
           display:flex;
           justify-content:center;
@@ -57,13 +57,13 @@ export default function Home(){
           display:flex;
           align-items:center;
           justify-content:center;
-          gap:clamp(12px,1.7vw,24px);
+          gap:clamp(10px,1.45vw,20px);
           max-width:100%;
         }
         /* Show just the E&A emblem from the approved asset; never distort it. */
         .eaBrandSymbol{
           display:block;
-          width:clamp(125px,15vw,190px);
+          width:clamp(106px,12.8vw,162px);
           aspect-ratio:500/233;
           overflow:hidden;
           flex:none;
@@ -85,17 +85,17 @@ export default function Home(){
           text-shadow:0 1px 10px rgba(0,0,0,.85);
         }
         .eaBrandName{
-          font:700 clamp(20px,2.35vw,31px)/1.05 Georgia,"Times New Roman",serif;
+          font:700 clamp(18px,2vw,27px)/1.05 Georgia,"Times New Roman",serif;
           letter-spacing:.13em;
           color:#f5e8d4;
         }
         .eaBrandGroup{
-          font:700 clamp(9px,.9vw,12px)/1.2 Arial,sans-serif;
+          font:700 clamp(8px,.78vw,11px)/1.2 Arial,sans-serif;
           letter-spacing:.22em;
           color:#d8ac59;
         }
         .eaBrandSoul{
-          font:500 clamp(9px,.8vw,11px)/1.2 Arial,sans-serif;
+          font:500 clamp(8px,.7vw,10px)/1.2 Arial,sans-serif;
           letter-spacing:.4em;
           color:#e0e8f2;
         }
@@ -103,7 +103,7 @@ export default function Home(){
         @media(max-width:760px){
           .eaHeroBrand{
             top:max(8px,env(safe-area-inset-top));
-            width:min(44vw,195px);
+            width:min(38vw,167px);
           }
           .eaBrandDesktop{display:none}
           .eaBrandMobileImg{
@@ -116,7 +116,7 @@ export default function Home(){
           }
         }
         @media(max-height:550px) and (max-width:760px){
-          .eaHeroBrand{top:6px;width:min(36vw,185px)}
+          .eaHeroBrand{top:6px;width:min(31vw,155px)}
         }
       `}</style>
       <EaHeroPhotoOcclusion />
