@@ -26,7 +26,17 @@ export default function Home(){
       
       
       <div className="eaHeroBrand" aria-label="E&A East West Auctioneers Group — SOULFLAME">
-        <img src="/brand/ea-approved-1to1.jpg" alt="E&A East West Auctioneers Group — SOULFLAME" />
+        <div className="eaBrandDesktop" aria-hidden="true">
+          <div className="eaBrandSymbol">
+            <img src="/brand/ea-approved-1to1.jpg" alt="" />
+          </div>
+          <div className="eaBrandCopy">
+            <span className="eaBrandName">EAST WEST</span>
+            <span className="eaBrandGroup">AUCTIONEERS GROUP</span>
+            <span className="eaBrandSoul">SOULFLAME</span>
+          </div>
+        </div>
+        <img className="eaBrandMobileImg" src="/brand/ea-approved-1to1.jpg" alt="" />
       </div>
       <style>{`
         .eaHeroBrand{
@@ -35,32 +45,77 @@ export default function Home(){
           left:50%;
           transform:translateX(-50%);
           z-index:7;
-          width:clamp(180px,24vw,315px);
+          width:min(560px,calc(100vw - 40px));
           pointer-events:none;
           display:flex;
           justify-content:center;
           align-items:flex-start;
-          /* Blend the full logo layer with the Forge iframe backdrop.
-             Blending only the img inside a filtered parent left a black box. */
           mix-blend-mode:screen;
           will-change:clip-path;
         }
-        .eaHeroBrand img{
+        .eaBrandDesktop{
+          display:flex;
+          align-items:center;
+          justify-content:center;
+          gap:clamp(12px,1.7vw,24px);
+          max-width:100%;
+        }
+        /* Show just the E&A emblem from the approved asset; never distort it. */
+        .eaBrandSymbol{
+          display:block;
+          width:clamp(125px,15vw,190px);
+          aspect-ratio:500/233;
+          overflow:hidden;
+          flex:none;
+        }
+        .eaBrandSymbol img{
           display:block;
           width:100%;
           height:auto;
-          object-fit:contain;
-          mix-blend-mode:normal;
-          border:0;
-          background:transparent;
+          max-width:none;
         }
+        .eaBrandCopy{
+          display:flex;
+          flex-direction:column;
+          align-items:flex-start;
+          justify-content:center;
+          gap:7px;
+          white-space:nowrap;
+          line-height:1.1;
+          text-shadow:0 1px 10px rgba(0,0,0,.85);
+        }
+        .eaBrandName{
+          font:700 clamp(20px,2.35vw,31px)/1.05 Georgia,"Times New Roman",serif;
+          letter-spacing:.13em;
+          color:#f5e8d4;
+        }
+        .eaBrandGroup{
+          font:700 clamp(9px,.9vw,12px)/1.2 Arial,sans-serif;
+          letter-spacing:.22em;
+          color:#d8ac59;
+        }
+        .eaBrandSoul{
+          font:500 clamp(9px,.8vw,11px)/1.2 Arial,sans-serif;
+          letter-spacing:.4em;
+          color:#e0e8f2;
+        }
+        .eaBrandMobileImg{display:none}
         @media(max-width:760px){
           .eaHeroBrand{
             top:max(8px,env(safe-area-inset-top));
             width:min(44vw,195px);
           }
+          .eaBrandDesktop{display:none}
+          .eaBrandMobileImg{
+            display:block;
+            width:100%;
+            height:auto;
+            object-fit:contain;
+            border:0;
+            background:transparent;
+          }
         }
-        @media(max-height:550px){
+        @media(max-height:550px) and (max-width:760px){
           .eaHeroBrand{top:6px;width:min(36vw,185px)}
         }
       `}</style>
