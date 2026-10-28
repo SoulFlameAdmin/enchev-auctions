@@ -24,19 +24,16 @@ export default function Home(){
       />
       
       
-      <section className="eaIntroWords" aria-label="E&A East West Auctioneers Group — 🔥SOULFLAME🔥">
-        <h1>E&amp;A <span>EAST WEST</span></h1>
+      <section className="eaIntroWords" aria-label="E&A East West Auctioneers Group — SOULFLAME">
+        <h1>E&amp;A EAST WEST</h1>
         <p>AUCTIONEERS GROUP</p>
-        <small>🔥SOULFLAME🔥</small>
+        <p>SOULFLAME</p>
       </section>
       <style>{`
-      .eaIntroWords{position:fixed;left:50%;top:23.2%;transform:translateX(-50%);width:min(92vw,780px);z-index:5;display:flex;flex-direction:column;align-items:center;text-align:center;gap:7px;pointer-events:none;text-shadow:0 3px 22px rgba(0,0,0,.85);font-family:Arial,Helvetica,sans-serif}
-      .eaIntroWords h1{color:#e6c28a;margin:0;font-size:clamp(27px,5vw,58px);font-weight:850;letter-spacing:.04em;line-height:1.03;white-space:nowrap}
-      .eaIntroWords h1 span{color:#f3f0ea;font-size:.67em;letter-spacing:.09em}
-      .eaIntroWords p{color:#dfd5c5;margin:0;font-size:clamp(11px,1.6vw,19px);font-weight:700;letter-spacing:.29em}
-      .eaIntroWords small{color:#e4b86e;font-weight:800;font-size:clamp(12px,2vw,19px);letter-spacing:.13em;margin-top:5px}
-      @media(max-width:760px){.eaIntroWords{top:23%;gap:5px}.eaIntroWords h1{font-size:clamp(25px,7.2vw,39px)}.eaIntroWords h1 span{font-size:.63em}.eaIntroWords p{font-size:clamp(10px,2.7vw,15px);letter-spacing:.19em}.eaIntroWords small{font-size:12px}}
-      @media(max-height:650px){.eaIntroWords{top:17%;gap:3px}.eaIntroWords h1{font-size:clamp(23px,4vw,38px)}}
+      .eaIntroWords{position:fixed;left:50%;top:23.2%;transform:translateX(-50%);width:min(94vw,780px);z-index:5;display:flex;flex-direction:column;align-items:center;text-align:center;gap:18px;pointer-events:none;text-shadow:0 3px 22px rgba(0,0,0,.85)}
+      .eaIntroWords h1,.eaIntroWords p{margin:0;color:#ead4b1;font-family:Arial,Helvetica,sans-serif;font-size:clamp(20px,3.1vw,35px);font-weight:700;letter-spacing:.12em;line-height:1.2;white-space:nowrap}
+      @media(max-width:760px){.eaIntroWords{top:23%;gap:13px}.eaIntroWords h1,.eaIntroWords p{font-size:clamp(17px,5.1vw,24px);letter-spacing:.1em}}
+      @media(max-height:650px){.eaIntroWords{top:17%;gap:8px}.eaIntroWords h1,.eaIntroWords p{font-size:clamp(17px,3vw,27px)}}
       `}</style>
       <MasterSystemPlanV1 />
       <EnchevCinematicLoginGate />
