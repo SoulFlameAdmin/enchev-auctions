@@ -1,0 +1,39 @@
+.sfCarArDemo{min-height:100dvh;color:#f8f6f3;background:radial-gradient(ellipse at 72% 12%,#262238 0%,transparent 40%),linear-gradient(160deg,#080a0d,#0c1019 55%,#06080b);font-family:Inter,"Segoe UI",Arial,sans-serif;padding:0 clamp(16px,3.5vw,54px) 35px;overflow-x:hidden}
+.sfCarArDemoTop{min-height:95px;max-width:1600px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:22px;border-bottom:1px solid #ffffff24}
+.sfCarArDemoBrand{display:flex;align-items:center;gap:15px;text-decoration:none;color:inherit}
+.sfCarArDemoBrand img{width:98px;height:62px;object-fit:contain;mix-blend-mode:screen}
+.sfCarArDemoIdentity{display:flex;flex-direction:column;gap:4px}
+.sfCarArDemoIdentity>span{font-size:9px;color:#baa991;letter-spacing:.22em}
+.sfCarArDemoIdentity strong{font-size:29px;font-weight:550;letter-spacing:-.045em}
+.sfCarArDemoIdentity strong span{color:#d0a66c}
+.sfCarArDemoLinks{display:flex;align-items:center;gap:24px}
+.sfCarArDemoLinks a,.sfCarArDemoFooter a{font-size:11px;color:#e3d6c7;text-decoration:none;letter-spacing:.1em}
+.sfCarArDemoLinks a:hover,.sfCarArDemoFooter a:hover{color:#fff}
+.sfCarArDemoHeading{max-width:1600px;margin:28px auto 22px;display:flex;justify-content:space-between;align-items:flex-end;gap:22px}
+.sfCarArDemoEyebrow{font-size:10px;color:#c7a679;letter-spacing:.25em;font-weight:750}
+.sfCarArDemoHeading h1{font-weight:450;font-size:clamp(32px,4vw,66px);letter-spacing:-.065em;margin:9px 0}
+.sfCarArDemoHeading h1 em{font-weight:450;font-style:normal;color:#cfad7c}
+.sfCarArDemoHeading p{font-size:13px;color:#a8aebb;max-width:600px;line-height:1.6;margin:0}
+.sfCarArDemoLive{font-size:10px;letter-spacing:.16em;color:#d2c6b5;white-space:nowrap;padding:10px 0}
+.sfCarArDemoLive i{display:inline-block;background:#a5d6ad;border-radius:99px;width:7px;height:7px;box-shadow:0 0 12px #80f4a870;margin-right:8px}
+.sfCarArDemoGrid{max-width:1600px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1fr) 292px;gap:22px}
+.sfCarArDemoStage{position:relative;height:clamp(465px,68dvh,850px);overflow:hidden;border:1px solid #947c5e59;border-radius:18px;background:radial-gradient(circle at 50% 30%,#282031,#06070a);box-shadow:0 30px 80px #0009}
+.sfCarArDemoStage iframe{position:absolute;left:0;top:-74px;width:100%;height:calc(100% + 74px);border:0;display:block;background:#08080a}
+.sfCarArDemoStageLabel{position:absolute;left:17px;bottom:16px;z-index:2;pointer-events:none;color:#eee6d9;background:#0a1014bf;border:1px solid #ffffff2d;padding:9px 12px;border-radius:6px;letter-spacing:.17em;font-size:10px;backdrop-filter:blur(8px)}
+.sfCarArDemoQR{padding:23px 22px;background:linear-gradient(155deg,#151a23,#0e121a 75%);border:1px solid #927c615d;border-radius:18px;display:flex;align-items:center;flex-direction:column;gap:15px;text-align:center;box-shadow:0 20px 65px #0007}
+.sfCarArDemoQRCode{background:#fefefe;border-radius:12px;padding:12px;display:flex;flex-direction:column;align-items:center;gap:5px}
+.sfCarArDemoQRCode span{font-size:10px;font-weight:800;letter-spacing:.18em;color:#20262f}
+.sfCarArDemoQRCode img{display:block;width:176px;height:176px;image-rendering:pixelated}
+.sfCarArDemoQR h2{font-size:23px;line-height:1.16;font-weight:540;letter-spacing:-.035em;margin:4px 0 0}
+.sfCarArDemoQR p{font-size:12px;line-height:1.65;color:#aeb6c6;margin:0}
+.sfCarArDemoAction{display:block;border-radius:8px;background:linear-gradient(105deg,#f4d69f,#ad8353);color:#1b1410;text-decoration:none;font-size:11px;letter-spacing:.09em;font-weight:780;padding:16px 9px;width:100%}
+.sfCarArDemoAction:hover{filter:brightness(1.08)}
+.sfCarArDemoNote{font-size:10px;color:#818a9c;line-height:1.5}
+.sfCarArDemoFooter{max-width:1600px;margin:22px auto 0;display:flex;align-items:center;justify-content:space-between;gap:16px;color:#7c8493;font-size:10px;letter-spacing:.16em}
+.sfCarArDemoRedirect{max-width:480px;margin:20dvh auto 0;text-align:center}
+.sfCarArDemoRedirect h1{font-size:34px}
+.sfCarArDemoRedirect p{line-height:1.6;color:#a9b1bd}
+.sfCarArDemoRedirect a{display:inline-block;margin-top:20px;color:#eac796;border:1px solid #cfa56e;padding:13px 24px;border-radius:7px;text-decoration:none}
+@media(max-width:950px){.sfCarArDemoGrid{grid-template-columns:1fr}.sfCarArDemoQR{display:none}.sfCarArDemoStage{height:65dvh}.sfCarArDemoLive{display:none}}
+@media(max-width:620px){.sfCarArDemoTop{min-height:76px}.sfCarArDemoBrand img{width:70px;height:48px}.sfCarArDemoIdentity strong{font-size:24px}.sfCarArDemoIdentity>span{font-size:7px}.sfCarArDemoLinks{gap:12px}.sfCarArDemoLinks a{font-size:9px}.sfCarArDemoLinks a:first-child{display:none}.sfCarArDemoHeading{margin-top:19px}.sfCarArDemoStage{height:65dvh;min-height:370px}.sfCarArDemoHeading p{font-size:12px}}
+@media(prefers-reduced-motion:reduce){.sfCarArDemo *{animation:none!important;transition:none!important}}
