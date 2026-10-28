@@ -27,7 +27,9 @@ a{color:inherit}
 @media(max-width:720px){.brandEmblem{width:min(23%,100px);max-height:40%}.brandPresents{font-size:9px;letter-spacing:.25em;margin-top:9px}.brandTitle{font-size:clamp(26px,7vw,42px);margin-top:6px}.brandAccent{margin-top:10px}}
 @media(prefers-reduced-motion:reduce){.visualFallback{transition:opacity .3s,visibility 0s .3s}.brandEmblem,.brandPresents,.brandTitle,.brandAccent{animation:none;opacity:1;transform:none;filter:none}.brandAccent{width:46%}}
 /* Crop the embedded site's top brand/navigation strip outside the visible panel. */
-#lusionFrame{position:absolute;top:-86px;left:0;display:block;width:100%;height:calc(100% + 86px);border:0;background:transparent;z-index:1}
+#presentationFilm{position:absolute;inset:0;display:block;width:100%;height:100%;border:0;background:#000;z-index:1;object-fit:cover;object-position:center}
+.presentationSoundButton{position:absolute;z-index:5;right:15px;bottom:15px;border:1px solid #bd9d6d99;border-radius:7px;background:#08090cbd;color:#f8dfb8;min-height:40px;padding:10px 13px;font-size:10px;letter-spacing:.08em;cursor:pointer;backdrop-filter:blur(8px)}
+.presentationSoundButton:focus-visible{outline:2px solid #f6d49a;outline-offset:3px}
 
 .authPanel{min-width:0;min-height:0;background:linear-gradient(132deg,#171719 0%,#0e0e11 68%,#08090b);padding:clamp(16px,3.3vh,32px) clamp(20px,3.2vw,43px);display:flex;flex-direction:column;overflow:hidden}
 .brand{font-weight:850;font-size:clamp(20px,2.25vw,31px);letter-spacing:.16em;line-height:1.03}
@@ -194,10 +196,8 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
 @media(max-width:720px){
   .screen{grid-template-rows:43% 57%}
   .visual{isolation:isolate}
-  #lusionFrame{
-    top:-74px;left:0;width:100%;height:calc(100% + 74px);
-    transform:scale(1.24);transform-origin:50% 46%;
-  }
+  #presentationFilm{inset:0;width:100%;height:100%;transform:none;object-fit:cover;object-position:center center}
+  .presentationSoundButton{right:12px;bottom:12px;padding:8px 10px;font-size:9px;min-height:36px}
   .authPanel{
     padding:15px 17px 14px;gap:0;
     border-left:0;border-top:1px solid #b89c6744;
@@ -351,14 +351,13 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
 <section class="visual" id="visual" aria-label="Оригинален Lusion GEMINI вграден уебсайт">
 
 
-<iframe
-  id="lusionFrame"
-  title="Lusion GEMINI — original interactive 3D experience"
-  src="https://exp-gemini.lusion.co/motion"
-  referrerpolicy="strict-origin-when-cross-origin"
-  allow="autoplay; fullscreen; accelerometer; gyroscope"
-  loading="eager"
-></iframe>
+<video
+  id="presentationFilm"
+  src="/media/presentation-2.mp4"
+  autoplay muted loop playsinline preload="auto"
+  aria-label="E&A East West Auctioneers Group — Презентация 2"
+></video>
+<button type="button" id="presentationSoundButton" class="presentationSoundButton" aria-label="Включи звука на Презентация 2">🔊 ВКЛЮЧИ ЗВУКА</button>
 
 </section>
 <section class="authPanel" aria-labelledby="loginTitle">
@@ -413,11 +412,17 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
 </main>
 <script>
 (() => {
-// Exact official Gemini site is embedded directly; no video, GLB,
-// Vimeo substitute or cross-origin pause attempts are used here.
-
-
-const geminiFrame=document.getElementById('lusionFrame');
+// The original Lusion Gemini color-changing iframe now lives in /car-ar-demo.
+// The presentation-2 video replaces it here without affecting the logo intro or GLB demo.
+const presentationFilm=document.getElementById('presentationFilm');
+const presentationSound=document.getElementById('presentationSoundButton');
+presentationSound.addEventListener('click',()=>{
+  presentationFilm.muted=!presentationFilm.muted;
+  presentationSound.textContent=presentationFilm.muted?'🔊 ВКЛЮЧИ ЗВУКА':'🔇 СПРИ ЗВУКА';
+  presentationSound.setAttribute('aria-label',presentationFilm.muted?'Включи звука на Презентация 2':'Изключи звука на Презентация 2');
+  if(presentationFilm.paused)presentationFilm.play().catch(()=>{});
+});
+presentationFilm.play().catch(()=>{});
 const curtain=document.getElementById('geminiCurtain');
 const visual=document.getElementById('visual');
 let arAnnounced=false;
@@ -460,7 +465,8 @@ function scheduleLogoReveal(){
     },reduced?180:1450);
   },Math.max(wait,reduced?100:1200));
 }
-geminiFrame.addEventListener('load',scheduleLogoReveal,{once:true});
+presentationFilm.addEventListener('loadeddata',scheduleLogoReveal,{once:true});
+if(presentationFilm.readyState>=2)scheduleLogoReveal();
 // External iframe can fail to load; don't leave users stuck on a black screen.
 window.setTimeout(scheduleLogoReveal,8000);
 
