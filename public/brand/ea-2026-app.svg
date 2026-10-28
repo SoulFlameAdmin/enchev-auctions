@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="E&amp;A logo">
+<defs>
+<linearGradient id="eGold" x1="0" y1="0" x2="0.9" y2="1"><stop offset="0" stop-color="#fff9cf"/><stop offset=".13" stop-color="#ffda63"/><stop offset=".3" stop-color="#b76a10"/><stop offset=".47" stop-color="#ffe9a6"/><stop offset=".64" stop-color="#d38918"/><stop offset=".82" stop-color="#fff0a6"/><stop offset="1" stop-color="#91500d"/></linearGradient>
+<linearGradient id="eGoldEdge" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#fff4ac"/><stop offset=".4" stop-color="#c07813"/><stop offset=".7" stop-color="#ffdc74"/><stop offset="1" stop-color="#8c470c"/></linearGradient>
+<linearGradient id="silver" x1=".05" y1="0" x2=".9" y2="1"><stop offset="0" stop-color="#fff"/><stop offset=".19" stop-color="#c8ced6"/><stop offset=".35" stop-color="#fbfcfd"/><stop offset=".6" stop-color="#939aa3"/><stop offset=".8" stop-color="#e9edf1"/><stop offset="1" stop-color="#6c7580"/></linearGradient>
+<linearGradient id="asphalt" x1=".2" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="#414044"/><stop offset=".34" stop-color="#191b22"/><stop offset=".8" stop-color="#04070c"/><stop offset="1" stop-color="#272931"/></linearGradient>
+<filter id="depth" x="-20%" y="-30%" width="150%" height="170%"><feDropShadow dx="1" dy="7" stdDeviation="3.5" flood-color="#000" flood-opacity=".9"/></filter>
+</defs>
+<rect x="8" y="8" width="496" height="496" rx="104" fill="#08090b" stroke="url(#eGoldEdge)" stroke-width="9"/>
+<g transform="translate(-28,90) scale(.57)"><g id="ea-symbol" filter="url(#depth)" stroke-linejoin="round">
+<!-- Automotive sculpted E, now clearly recognizable as the letter E -->
+<path d="M167 128 H541 L494 185 H247 L244 250 H455 L412 307 H243 V418 H524 L477 476 H162 Z" fill="url(#eGold)" stroke="#ce8521" stroke-width="6"/>
+<path d="M174 137 H523 L490 177 H232 L231 262 H436 L409 297 H231 V432 H508 L471 466 H173 Z" fill="none" stroke="#fff1ad" stroke-width="3" opacity=".77"/>
+<path d="M169 128 H541 L494 185 H247 L244 250 H455 L412 307 H243 V418 H524 L477 476 H162" fill="none" stroke="#ffdf78" stroke-width="3" opacity=".9"/>
+<!-- Silver A, with negative-space triangular counter -->
+<path d="M656 128 H711 L868 477 H766 L684 252 L593 477 H497 Z M682 223 L644 325 H722 Z" fill="url(#silver)" fill-rule="evenodd" stroke="#d0d5db" stroke-width="5"/>
+<path d="M656 130 H711 L868 477 H766 M647 329 L681 238 L719 329" fill="none" stroke="#fff" stroke-width="2.3" opacity=".87"/>
+<!-- Metallic ampersand -->
+<text x="516" y="359" text-anchor="middle" font-family="Georgia,Times New Roman,serif" font-size="147" font-weight="700" fill="url(#silver)" stroke="#9aa1aa" stroke-width="1.6">&amp;</text>
+<!-- Curving international motorway over the A crossbar -->
+<path d="M327 470 C463 394 594 345 712 329 C788 315 856 321 936 332 C850 328 766 359 677 402 C615 431 558 464 530 488 L312 488 Z" fill="url(#asphalt)" stroke="#ab6c16" stroke-width="5"/>
+<path d="M322 466 C483 376 682 318 817 321 C866 321 902 326 936 332" fill="none" stroke="url(#eGoldEdge)" stroke-width="13" stroke-linecap="round"/>
+<path d="M331 461 C517 369 699 324 857 327" fill="none" stroke="#fff3ad" stroke-width="2.7" stroke-linecap="round" opacity=".93"/>
+<path d="M316 490 H528 C617 424 782 337 933 333" fill="none" stroke="url(#eGoldEdge)" stroke-width="7" stroke-linecap="round"/>
+<path d="M423 471 C568 393 734 346 863 333" fill="none" stroke="#fff" stroke-width="10" stroke-dasharray="37 27" stroke-linecap="butt"/>
+</g></g>
+<text x="256" y="451" text-anchor="middle" fill="url(#silver)" font-family="Arial,Helvetica,sans-serif" letter-spacing="12" font-weight="700" font-size="41">EAST WEST</text>
+</svg>
