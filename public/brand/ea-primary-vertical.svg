@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 710" role="img" aria-labelledby="title desc">
+<title id="title">E&amp;A — East West Auctioneers Group — SOULFLAME</title>
+<desc id="desc">Angular gold and silver EA monogram; an asphalt road forms the crossbar of the A.</desc>
+<defs>
+<linearGradient id="gold" x1="0" x2="1" y1="0" y2="1"><stop stop-color="#ac6716"/><stop offset=".35" stop-color="#ffe18b"/><stop offset=".62" stop-color="#d49a3d"/><stop offset="1" stop-color="#f3cf6d"/></linearGradient>
+<linearGradient id="silver" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f7f8fa"/><stop offset=".45" stop-color="#b6b9bc"/><stop offset="1" stop-color="#f0f0f1"/></linearGradient>
+<linearGradient id="asphalt" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#15171b"/><stop offset="1" stop-color="#050607"/></linearGradient>
+</defs>
+<g shape-rendering="geometricPrecision">
+<path fill="url(#gold)" d="M193 112 H509 L477 156 H193 Z"/>
+<path fill="url(#silver)" d="M193 204 H440 L403 250 H238 V359 L193 387 Z"/>
+<path fill="url(#silver)" d="M482 248 L559 117 L664 276 L607 279 L559 206 L527 260 Z"/>
+<path fill="url(#silver)" d="M628 297 L715 438 H660 L578 311 Z"/>
+<path fill="url(#gold)" d="M136 429 C256 333 470 272 641 272 C725 272 779 289 821 304 C720 279 591 306 501 343 C388 384 275 432 228 460 H136 Z"/>
+<path fill="url(#asphalt)" d="M229 457 C379 349 616 293 818 305 C680 305 559 349 451 397 C392 425 335 445 294 457 Z"/>
+<path fill="#c18a35" d="M437 458 C514 377 618 318 782 306 C676 340 586 392 541 458 H437 Z" opacity=".9"/>
+<path d="M330 437 C420 382 546 341 659 321" fill="none" stroke="#fff" stroke-width="9" stroke-linecap="square" stroke-dasharray="34 24"/>
+<path d="M139 427 C280 326 497 271 658 273 C727 275 780 286 819 306" fill="none" stroke="#ffe08a" stroke-width="4"/>
+<text x="450" y="553" fill="url(#silver)" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="65" font-weight="700" letter-spacing="17">EAST WEST</text>
+<text x="450" y="614" fill="url(#gold)" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="33" font-weight="400" letter-spacing="6">AUCTIONEERS GROUP</text>
+<path d="M62 660 H208 M692 660 H838" stroke="#c89337" stroke-width="3"/>
+<text x="450" y="676" fill="url(#silver)" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="45" font-weight="500" letter-spacing="14">SOULFLAME</text>
+</g></svg>
