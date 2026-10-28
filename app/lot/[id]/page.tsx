@@ -129,7 +129,7 @@ export default function LotPage(){
 
   return <main id="main-content" className="lotPage">
     <header className="lotHeader">
-      <a className="lotLogo" href="/"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
+      <a className="lotLogo" href="/"><img src="/brand/ea-east-west.svg" alt="E&A East West Auctioneers Group 🔥SOULFLAME🔥" style={{width:190,height:64,objectFit:"contain"}}/></a>
       <nav className="lotNav"><a href="/inventory">Inventory</a><a href="/live-auctions">Live auctions</a><a href="/platform#how">How it works</a><a href="/transport">Transport</a></nav>
       <div className="lotHeaderActions"><a href="/inventory">← Back</a><button className="lotGreen">Вход</button></div>
     </header>
@@ -181,7 +181,7 @@ export default function LotPage(){
                 <a className="lotHistoryLink" href="/vehicle-history" aria-label={`Провери историята на ${title}`}>Check vehicle history →</a>
               </article>
             </div>
-            <p className="lotConditionDisclosure" role="note">This is an ENCHEV demo presentation of lot data. Missing external inspection or provenance reports are marked as unverified instead of being shown as fact.</p>
+            <p className="lotConditionDisclosure" role="note">This is an E&A demo presentation of lot data. Missing external inspection or provenance reports are marked as unverified instead of being shown as fact.</p>
           </section>
 
           <section className="lotSection"><div className="lotSectionHead"><div><h2>Bid history</h2><span>Illustrative demo events — not an authoritative bid ledger</span></div></div><div className="lotHistory">{lot==="EA-10539"?history.map(row=><div className="lotHistoryRow" key={row.join("-")}><b>{row[0]}</b><b>{row[1]}</b><span>{row[2]}</span></div>):<p>No preview bid history for this lot.</p>}</div></section>
@@ -204,7 +204,7 @@ export default function LotPage(){
           </div>
           {vehicle?.buyNow ? <><button type="button" className="lotBuyNow" onClick={()=>setBuyNowNotice("Demo listing only. No checkout or payment was initiated.")}>Preview Buy Now · €{vehicle.buyNow.toLocaleString("bg-BG")}</button>{buyNowNotice&&<p role="status" aria-live="polite">{buyNowNotice}</p>}</> : <p role="status">Buy Now is unavailable for this preview lot.</p>}
           <div className="lotFees"><div><span>Current bid</span><b>€{bid.toLocaleString("bg-BG")}</b></div><div><span>Estimated fees</span><b>€980</b></div><div><span>Transport</span><b>от €1 480</b></div></div>
-          <div className="lotNotice">This is the visual ENCHEV Lot Details flow. Real payments, identity verification and server-side bid locking will be connected in the backend stage.</div>
+          <div className="lotNotice">This is the visual E&A Lot Details flow. Real payments, identity verification and server-side bid locking will be connected in the backend stage.</div>
         </aside>
       </div>
     </div>
@@ -217,7 +217,7 @@ export default function LotPage(){
     {viewerOpen&&<div className="lotViewer" role="dialog" aria-modal="true" aria-labelledby="lot-viewer-title" onMouseDown={event=>{if(event.target===event.currentTarget)setViewerOpen(false)}}>
       <div className="lotViewerShell">
         <div className="lotViewerTop">
-          <div><span>ENCHEV MEDIA VIEWER</span><strong id="lot-viewer-title">{title}</strong></div>
+          <div><span>E&A MEDIA VIEWER</span><strong id="lot-viewer-title">{title}</strong></div>
           <button ref={viewerCloseRef} type="button" className="lotViewerClose" onClick={()=>setViewerOpen(false)} aria-label="Close галерията">✕</button>
         </div>
         <div className="lotViewerStage">

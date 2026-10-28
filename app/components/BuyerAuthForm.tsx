@@ -63,15 +63,15 @@ export default function BuyerAuthForm({mode}:{mode:Mode}){
   return <main id="main-content" className="buyerAuthPage">
     <section className="buyerAuthShell" aria-labelledby="buyer-auth-title">
       <div className="buyerAuthIntro">
-        <span className="buyerAuthEyebrow">ENCHEV · BUYER ACCESS</span>
+        <span className="buyerAuthEyebrow">E&A · BUYER ACCESS</span>
         <h1 id="buyer-auth-title">{isRegister?"Create your account":"Welcome back"}</h1>
-        <p>Secure account access for the ENCHEV vehicle marketplace. Auction bidding and purchases remain in demo mode until separately certified.</p>
+        <p>Secure account access for the E&A vehicle marketplace. Auction bidding and purchases remain in demo mode until separately certified.</p>
         <div className="buyerAuthProof"><span>◉ Private sessions</span><span>◉ Verified identity provider</span><span>◉ No live payments</span></div>
       </div>
       <div className="buyerAuthCard">
         {available===false?<div role="status" className="buyerAuthNotice">
           <strong>Account activation pending</strong>
-          <p>Registration and login will be enabled after a dedicated ENCHEV identity database is connected and verified. No registration is being accepted yet.</p>
+          <p>Registration and login will be enabled after a dedicated E&A identity database is connected and verified. No registration is being accepted yet.</p>
           <a href="/platform">Explore the demo marketplace →</a>
         </div>:<form onSubmit={submit}>
           <span className="buyerAuthCardTitle">{isRegister?"Create a buyer profile":"Sign in to your profile"}</span>
@@ -83,7 +83,7 @@ export default function BuyerAuthForm({mode}:{mode:Mode}){
           <button className="buyerAuthSubmit" type="submit" disabled={pending||available!==true}>
             {pending?"Please wait…":available===null?"Checking availability…":isRegister?"Create account":"Sign in"} →
           </button>
-          <p className="buyerAuthSwap">{isRegister?"Already registered?":"New to ENCHEV?"} <a href={isRegister?"/login":"/register"}>{isRegister?"Sign in":"Create an account"}</a></p>
+          <p className="buyerAuthSwap">{isRegister?"Already registered?":"New to E&A?"} <a href={isRegister?"/login":"/register"}>{isRegister?"Sign in":"Create an account"}</a></p>
           <a className="buyerAuthPreview" href="/profile">Preview account workspace →</a>
         </form>}
       </div>

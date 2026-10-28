@@ -7,7 +7,7 @@ import "./profile-shell.css";
 export default function ProfilePage(){
   return <main id="main-content" className="navigationPage">
     <header className="navigationRouteHeader">
-      <a href="/" className="navigationRouteBrand"><strong>ENCHEV</strong><span>AUCTIONS</span></a>
+      <a href="/" className="navigationRouteBrand"><img src="/brand/ea-east-west.svg" alt="E&A East West Auctioneers Group 🔥SOULFLAME🔥" style={{width:190,height:64,objectFit:"contain"}}/></a>
       <nav className="navigationRouteNav" aria-label="Основна навигация">
         {primaryNavigation.map(item=><a key={item.key} href={item.href}>{item.label}</a>)}
         <a href="/profile" aria-current="page">ПРОФИЛ</a>
@@ -21,7 +21,7 @@ export default function ProfilePage(){
             <span className="profileAccountAvatar" aria-hidden="true">EA</span>
             <div>
               <small>BUYER WORKSPACE</small>
-              <strong>ENCHEV Account</strong>
+              <strong>E&A Account</strong>
             </div>
           </div>
 
@@ -42,7 +42,7 @@ export default function ProfilePage(){
           <BuyerSessionPanel />
           <section className="profileOverview" id="overview" aria-labelledby="profile-overview-heading">
             <span className="navigationRouteKicker">BUYER WORKSPACE</span>
-            <h1 id="profile-overview-heading">Your ENCHEV account</h1>
+            <h1 id="profile-overview-heading">Your E&A account</h1>
             <p>Track saved vehicles and use the buyer workspace as your starting point for inventory and live auctions.</p>
 
             <div className="profileOverviewActions" aria-label="Бързи действия">

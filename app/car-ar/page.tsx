@@ -56,9 +56,8 @@ export default function CarArPage() {
   return (
     <main className="carArPage">
       <header className="carArHeader">
-        <Link className="carArBrand" href="/" aria-label="ENCHEV AUCTIONS начална страница">
-          <span className="carArBrandTitle">ENCHEV<span className="brandPeriod">.</span></span>
-          <span className="carArBrandTag">AUCTIONS <span>×</span> SOULFLAME</span>
+        <Link className="carArBrand" href="/" aria-label="E&A East West Auctioneers Group начална страница">
+          <img src="/brand/ea-east-west.svg" alt="E&A East West Auctioneers Group 🔥SOULFLAME🔥" style={{width:190,height:64,objectFit:"contain"}}/>
         </Link>
         <div className="carArTopRight"><span className="carArIndicator"></span> INTERACTIVE VEHICLE EXPERIENCE</div>
       </header>
@@ -112,11 +111,11 @@ export default function CarArPage() {
           <h2>{arSupported ? "Постави автомобила пред себе си" : "Разгледай автомобила на 360°"}</h2>
           <p>{arSupported ? "Докосни бутона AR в 3D изгледа. Камерата ще ти помогне да поставиш колата." : "AR не е наличен в този браузър или устройство. 3D автомобилът остава интерактивен и може да се върти на 360°."}</p>
         </div>
-        <Link className="carArReturn" href="/">КЪМ ENCHEV <span>↗</span></Link>
+        <Link className="carArReturn" href="/">КЪМ E&A <span>↗</span></Link>
       </div>
 
       <footer className="carArFooter">
-        <span>ENCHEV AUCTIONS · POWERED BY SOULFLAME</span>
+        <span>E&A EAST WEST AUCTIONEERS GROUP · 🔥SOULFLAME🔥</span>
         <span>{viewerReady ? "ORIGINAL GLB LOADED" : "360° VIEWER / WEBXR"}</span>
       </footer>
     </main>
