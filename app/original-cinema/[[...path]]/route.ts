@@ -49,6 +49,48 @@ export async function GET(_request:Request,{params}:RouteProps){
     }
     html=html.replaceAll('src="/cinema.js"','src="/original-cinema/cinema.js"');
     html=html.replaceAll('src="/signup.js"','src="/original-cinema/signup.js"');
+
+    // One approved E&A brand mark replaces BOTH original masthead labels.
+    // Do not alter the original Lit360 motion film, slides, sound or signup form.
+    const brandPattern=/<div class="soulflame-masthead">[\\s\\S]*?<\\/div>\\s*<div class="cinema-brand">[\\s\\S]*?<\\/div>/;
+    if(!brandPattern.test(html))throw Error("ORIGINAL_BRANDING_NOT_FOUND");
+    html=html.replace(brandPattern,
+      '<div class="ea-approved-cinema-brand" role="img" aria-label="E&A East West Auctioneers Group — SOULFLAME">'+
+      '<img src="/brand/ea-approved-1to1.jpg" alt="E&A East West Auctioneers Group — SOULFLAME" width="1536" height="1087" />'+
+      '</div>');
+    // Load after the original styles so the logo owns the header on all devices.
+    const brandCSS=`<style id="ea-cinema-approved-brand">
+      .ea-approved-cinema-brand{
+        position:absolute;z-index:9;top:8px;left:50%;
+        transform:translateX(-50%);
+        width:clamp(190px,23vw,300px);
+        max-width:calc(100vw - 190px);
+        display:flex;justify-content:center;align-items:flex-start;
+        pointer-events:none;
+      }
+      .ea-approved-cinema-brand img{
+        display:block;width:100%;height:auto;object-fit:contain;
+        mix-blend-mode:screen;
+      }
+      .signup-count{top:clamp(142px,15vw,225px)!important;}
+      @media(max-width:760px){
+        .ea-approved-cinema-brand{
+          top:max(7px,env(safe-area-inset-top));
+          width:min(160px,46vw);
+          max-width:none;
+        }
+        .signup-count{top:max(123px,calc(env(safe-area-inset-top) + 116px))!important;}
+      }
+      @media(max-width:410px){
+        .ea-approved-cinema-brand{width:min(150px,44vw);}
+        .signup-count{top:max(116px,calc(env(safe-area-inset-top) + 109px))!important;}
+      }
+      @media(max-height:580px) and (orientation:landscape){
+        .ea-approved-cinema-brand{top:3px;width:120px;}
+        .signup-count{top:88px!important;}
+      }
+    </style>`;
+    html=html.replace("</head>",brandCSS+"</head>");
     // Original structure, original video, original slides and CSS.
     // Only registration endpoints are mapped to Enchev's real database.
     return new NextResponse(html,{headers:{
