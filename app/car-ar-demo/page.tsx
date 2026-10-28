@@ -1,28 +1,14 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import Link from "next/link";
 import "./car-ar-demo.css";
 
 /**
- * Desktop: preserve the existing, fully interactive Lusion Gemini
- * color-changing car iframe. Mobile: open our original first-party
- * model-viewer route directly so native WebXR/Scene Viewer can receive
- * a genuine user gesture, with 360° GLB fallback.
+ * Show the original Lusion Gemini color-changing car iframe on desktop
+ * and mobile. The native AR action launches the first-party model-viewer
+ * in a top-level page (WebXR/Scene Viewer where supported; 360 otherwise).
  */
 export default function CarArDemoPage() {
-  const [mobileHandOff, setMobileHandOff] = useState(false);
-
-  useEffect(() => {
-    const mobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) ||
-      (navigator.maxTouchPoints > 1 && window.matchMedia("(max-width: 1024px)").matches);
-    if (mobile) {
-      setMobileHandOff(true);
-      // Native AR cannot reliably be launched from an embedded cross-origin iframe.
-      // Top-level model-viewer offers its own AR button and 360° when unavailable.
-      window.location.replace("/car-ar?source=car-ar-demo");
-    }
-  }, []);
 
   return (
     <main className="sfCarArDemo">
@@ -40,14 +26,7 @@ export default function CarArDemoPage() {
         </div>
       </header>
 
-      {mobileHandOff ? (
-        <section className="sfCarArDemoRedirect" aria-live="polite">
-          <h1>Отваряме CarAR</h1>
-          <p>Телефонът ще използва WebXR, когато се поддържа, или 360° изглед.</p>
-          <Link href="/car-ar">ОТВОРИ АВТОМОБИЛА ↗</Link>
-        </section>
-      ) : (
-        <>
+      <>
           <div className="sfCarArDemoHeading">
             <div>
               <span className="sfCarArDemoEyebrow">THE INTERACTIVE EXPERIENCE</span>
@@ -69,6 +48,9 @@ export default function CarArDemoPage() {
               />
               <div className="sfCarArDemoStageLabel">INTERACTIVE COLORS · 3D</div>
             </section>
+            <Link className="sfCarArDemoMobileAR" href="/car-ar" aria-label="Отвори AR автомобил или 360 градуса">
+              ПОСТАВИ КОЛАТА В AR / 360° ↗
+            </Link>
 
             <aside className="sfCarArDemoQR">
               <div className="sfCarArDemoQRCode">
@@ -86,8 +68,7 @@ export default function CarArDemoPage() {
             <span>SOULFLAME · CarAR EXPERIENCE</span>
             <Link href="/3d-login/index.html">COMING SOON ↗</Link>
           </footer>
-        </>
-      )}
+      </>
     </main>
   );
 }
