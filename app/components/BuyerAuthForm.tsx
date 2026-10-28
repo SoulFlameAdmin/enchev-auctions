@@ -26,7 +26,7 @@ export default function BuyerAuthForm({mode}:{mode:Mode}){
       const saved=window.sessionStorage.getItem("enchev.login.email.prefill");
       if(saved){
         window.sessionStorage.removeItem("enchev.login.email.prefill");
-        if(saved.length<=254 && /^[^\s@]+@[^\s@]+\\.[^\s@]+$/.test(saved)){
+        if(saved.length<=254 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(saved)){
           setEmail(saved);
         }
       }
