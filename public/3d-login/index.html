@@ -165,6 +165,18 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
   .authPanel .provider{height:29px}
   .authLinks{margin-top:5px}.emailHelp{display:none}
 }
+
+/* CarAR action appears only after the SoulFlame logo has faded and the scene is revealed. */
+.carArInvitation{position:absolute;bottom:23px;left:23px;z-index:4;display:flex;align-items:center;gap:12px;max-width:calc(100% - 46px);padding:14px 17px;border:1px solid #d8bc8f99;border-radius:5px;background:linear-gradient(111deg,#171a1df5,#11151bdc);box-shadow:0 14px 45px #0009;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);text-decoration:none;color:#fff;opacity:0;transform:translateY(23px);visibility:hidden;pointer-events:none;transition:opacity .8s ease,transform .8s cubic-bezier(.22,.8,.2,1),visibility 0s linear .8s}
+.visual.ar-ready .carArInvitation{opacity:1;transform:translateY(0);visibility:visible;pointer-events:auto;transition:opacity .8s ease,transform .8s cubic-bezier(.22,.8,.2,1)}
+.carArInvitation .arBadge{display:grid;place-items:center;flex:0 0 auto;width:31px;height:31px;border:1px solid #dfbe8b55;border-radius:4px;color:#e6cda4;font-size:11px;font-weight:750;letter-spacing:.03em}
+.carArInvitation .arText{display:flex;flex-direction:column;gap:4px}
+.carArInvitation strong{font-size:12px;letter-spacing:.1em;font-weight:750;white-space:nowrap}
+.carArInvitation small{font-size:9px;color:#aeb5bf;letter-spacing:.02em}
+.carArInvitation .arArrow{font-size:19px;color:#e3c69d;margin-left:8px}
+.carArInvitation:hover{background:linear-gradient(110deg,#302820,#17191e);border-color:#ebcca0}
+@media(max-width:720px){.carArInvitation{bottom:11px;left:10px;padding:8px 11px;gap:7px;max-width:calc(100% - 20px)}.carArInvitation .arBadge{height:25px;width:25px;font-size:9px}.carArInvitation strong{font-size:9px}.carArInvitation small{font-size:8px}.carArInvitation .arArrow{font-size:16px}}
+
 </style>
 </head>
 <body>
@@ -182,7 +194,11 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
   allow="autoplay; fullscreen; accelerometer; gyroscope"
   loading="eager"
 ></iframe>
-
+<a class="carArInvitation" id="carArInvitation" href="/car-ar" target="_top" aria-label="Make your car AR — отвори WebXR или 360 градусов модел">
+<span class="arBadge">AR</span>
+<span class="arText"><strong>MAKE YOUR CAR → AR</strong><small>Отвори в телефона · 360° fallback</small></span>
+<span class="arArrow" aria-hidden="true">↗</span>
+</a>
 </section>
 <section class="authPanel" aria-labelledby="loginTitle">
 <header class="authHeader">
@@ -225,6 +241,22 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
 
 const geminiFrame=document.getElementById('lusionFrame');
 const curtain=document.getElementById('geminiCurtain');
+
+const visual=document.getElementById('visual');
+let arAnnounced=false;
+function revealArAction(){
+  if(arAnnounced)return;
+  arAnnounced=true;
+  visual.classList.add('ar-ready');
+  // Same-origin parent, used to reveal the QR fold-out outside the login modal.
+  if(window.parent!==window){
+    window.parent.postMessage({type:'ENCHEV_CAR_AR_READY'},window.location.origin);
+  }
+}
+curtain.addEventListener('transitionend',event=>{
+  if(event.propertyName==='opacity'&&curtain.classList.contains('is-fading'))revealArAction();
+});
+
 const introStartedAt=performance.now();
 let revealScheduled=false;
 function scheduleLogoReveal(){
@@ -234,7 +266,11 @@ function scheduleLogoReveal(){
   // load, a WebGL warmup and the CarAr introduction before dissolving.
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const waitUntilIntroEnd=Math.max(0,(reduced?1200:5700)-(performance.now()-introStartedAt));
-  window.setTimeout(()=>curtain.classList.add('is-fading'),Math.max(waitUntilIntroEnd,reduced?100:4000));
+  window.setTimeout(()=>{
+    curtain.classList.add('is-fading');
+    // Transitionend does not always fire (background tab / reduced motion).
+    window.setTimeout(revealArAction,reduced?450:5300);
+  },Math.max(waitUntilIntroEnd,reduced?100:4000));
 }
 geminiFrame.addEventListener('load',scheduleLogoReveal,{once:true});
 const msg=document.getElementById('authMessage');
