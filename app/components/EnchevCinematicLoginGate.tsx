@@ -95,7 +95,7 @@ export default function EnchevCinematicLoginGate() {
 
   return (
     <>
-      <style>{"\n.enchevQrDock{position:relative;flex:0 0 142px;width:142px;align-self:center;\ndisplay:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 11px 13px;\nborder:1px solid rgba(221,185,126,.55);border-radius:10px;\nbackground:linear-gradient(150deg,rgba(34,36,42,.98),rgba(11,13,17,.98));\nbackdrop-filter:blur(12px);box-shadow:0 20px 55px rgba(0,0,0,.78);\ntext-decoration:none;color:white;\ntransition:opacity .7s,transform .8s cubic-bezier(.2,.85,.2,1);\nopacity:0;transform:translateX(35px);pointer-events:none}\n.enchevQrDock.visible{opacity:1;transform:translateX(0);pointer-events:auto}\n.enchevQrDock:before{content:\"\";position:absolute;top:49%;left:-14px;width:13px;height:23px;\nbackground:#24252b;clip-path:polygon(100% 0,0 50%,100% 100%)}\n.enchevQrDock:hover{border-color:#eacb99;background:#282a30}\n.enchevQrDock .qrEyebrow{font-size:8px;font-weight:750;color:#dbc39f;letter-spacing:.19em}\n.enchevQrDock img{display:block;width:119px;height:119px;image-rendering:pixelated;border-radius:4px;background:#fff;padding:1px}\n.enchevQrDock .qrLabel{font-size:10px;font-weight:750;letter-spacing:.12em;text-align:center}\n.enchevQrDock .qrHelper{font-size:9px;color:#abb0b8;text-align:center;line-height:1.35}\n@media(max-width:900px){.enchevQrDock{display:none}}\n"}</style>
+      <style>{"\n.enchevQrDock{\n  position:relative;flex:0 0 278px;width:278px;align-self:center;\n  display:flex;flex-direction:column;align-items:center;gap:12px;\n  opacity:0;visibility:hidden;transform:translateX(35px);\n  transition:opacity .75s ease,transform .85s cubic-bezier(.2,.85,.2,1),visibility 0s .85s;\n  pointer-events:none;\n}\n.enchevQrDock.visible{\n  opacity:1;visibility:visible;transform:translateX(0);pointer-events:auto;\n  transition:opacity .75s ease,transform .85s cubic-bezier(.2,.85,.2,1);\n}\n.enchevQrCode{\n  position:relative;width:154px;display:flex;flex-direction:column;align-items:center;gap:7px;\n  padding:14px 13px;border:1px solid rgba(221,185,126,.55);\n  border-radius:9px;background:linear-gradient(150deg,#24252bee,#0d1015fa);\n  box-shadow:0 18px 48px rgba(0,0,0,.68);\n  color:white;text-decoration:none;\n}\n.enchevQrCode:before{\n  content:\"\";position:absolute;top:48%;left:-14px;width:13px;height:23px;\n  background:#24252b;clip-path:polygon(100% 0,0 50%,100% 100%);\n}\n.enchevQrCode:hover{border-color:#edcd99;background:#292b31}\n.enchevQrCode .qrEyebrow{font-size:8px;font-weight:750;color:#dbc39f;letter-spacing:.18em}\n.enchevQrCode img{display:block;width:119px;height:119px;image-rendering:pixelated;border-radius:4px;background:#fff;padding:1px}\n.enchevQrCode .qrLabel{font-size:10px;font-weight:750;letter-spacing:.12em;text-align:center}\n.enchevQrCode .qrHelper{font-size:9px;color:#abb0b8;text-align:center;line-height:1.35}\n.enchevQrCta{\n  width:100%;display:flex;align-items:center;gap:12px;min-height:66px;\n  padding:11px 13px;border:1px solid rgba(221,185,126,.62);border-radius:7px;\n  background:linear-gradient(112deg,#252329f5,#121419f5);\n  box-shadow:0 12px 37px rgba(0,0,0,.65);\n  text-decoration:none;color:white;\n  transition:border-color .2s,background .2s,transform .2s;\n}\n.enchevQrCta:hover{border-color:#e9c99b;background:linear-gradient(105deg,#39302e,#191a1d);transform:translateY(-2px)}\n.qrArBadge{height:37px;width:39px;flex:0 0 auto;display:grid;place-items:center;\n  border:1px solid #b298746e;border-radius:4px;color:#e9ceaa;\n  font-size:13px;font-weight:800;letter-spacing:.02em}\n.qrArText{min-width:0;display:flex;flex:1;flex-direction:column;gap:5px}\n.qrArText strong{font-size:12px;letter-spacing:.06em;white-space:nowrap;font-weight:800}\n.qrArText small{font-size:10px;color:#acb1ba;white-space:nowrap}\n.qrArArrow{font-size:20px;color:#e9c49a;flex:0 0 auto}\n@media(max-width:1050px){.enchevQrDock{display:none}}\n"}</style>
       {hasOpened && (
         <div
           data-enchev-login-overlay
@@ -156,18 +156,34 @@ export default function EnchevCinematicLoginGate() {
             >×</button>}
           </section>
 
-          <a
-            className={"enchevQrDock"+(arReady&&open&&revealed?" visible":"")}
-            href="/car-ar"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Сканирай за CarAR WebXR или 360 градусов 3D модел"
-          >
-            <span className="qrEyebrow">SCAN FOR AR</span>
-            <img src={"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIwAAACMAQAAAACGu3yTAAABAElEQVR42uWWsU0FQAxDnxG9swH7j/U3cCYwxYcGOkKDSBVdYTl2FJ/Kl9oXvtVff1pJO0iwkm7wbbxLJNrcsFbAW+Cj/THW69O7WHR+S0Kj3LFc8D7iwT3OKMgCDxD051i0bdO0/ugv+8XuMDtEmuXCK6HFcRvgxMsgEnYXn3aVhtZ2cIMvvGgdqBvHrW9YxdSQctOLxolDnzbkxivUJBC7V71MS2P3qldc25hefVRBgTfIWsF70st2KHbSq48FP9cCH31smxJC09zuhCTEYBZxz6HWFaacc2gHxmjmnh2G5RE390xjVY1Bl3v/mUNZs4uPM0qzGXAsfMDSP/h/vQOJcM0xnmZGVQAAAABJRU5ErkJggg=="} width="119" height="119" alt="QR код: enchev-auctions.vercel.app/car-ar" />
-            <span className="qrLabel">CARAR ↗</span>
-            <span className="qrHelper">WebXR · 360° GLB</span>
-          </a>
+          <aside className={"enchevQrDock"+(arReady&&open&&revealed?" visible":"")} aria-label="CarAR QR код и WebXR достъп">
+            <a
+              className="enchevQrCode"
+              href="/car-ar"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Сканирай QR кода за CarAR WebXR и 360° GLB модел"
+            >
+              <span className="qrEyebrow">SCAN FOR AR</span>
+              <img src={"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIwAAACMAQAAAACGu3yTAAABAElEQVR42uWWsU0FQAxDnxG9swH7j/U3cCYwxYcGOkKDSBVdYTl2FJ/Kl9oXvtVff1pJO0iwkm7wbbxLJNrcsFbAW+Cj/THW69O7WHR+S0Kj3LFc8D7iwT3OKMgCDxD051i0bdO0/ugv+8XuMDtEmuXCK6HFcRvgxMsgEnYXn3aVhtZ2cIMvvGgdqBvHrW9YxdSQctOLxolDnzbkxivUJBC7V71MS2P3qldc25hefVRBgTfIWsF70st2KHbSq48FP9cCH31smxJC09zuhCTEYBZxz6HWFaacc2gHxmjmnh2G5RE390xjVY1Bl3v/mUNZs4uPM0qzGXAsfMDSP/h/vQOJcM0xnmZGVQAAAABJRU5ErkJggg=="} width="119" height="119" alt="QR код: enchev-auctions.vercel.app/car-ar" />
+              <span className="qrLabel">CARAR ↗</span>
+              <span className="qrHelper">WebXR · 360° GLB</span>
+            </a>
+            <a
+              className="enchevQrCta"
+              href="/car-ar"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="MAKE YOUR CAR AR — отвори WebXR или 360° GLB модел"
+            >
+              <span className="qrArBadge">AR</span>
+              <span className="qrArText">
+                <strong>MAKE YOUR CAR → AR</strong>
+                <small>Отвори в телефона · 360° fallback</small>
+              </span>
+              <span className="qrArArrow" aria-hidden="true">↗</span>
+            </a>
+          </aside>
         </div>
       )}
       {!open && hasOpened && <button
