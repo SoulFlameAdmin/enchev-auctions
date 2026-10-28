@@ -48,7 +48,14 @@ export default function EnchevAppShell(){
 
     <header className="eaAppHeader">
       <a href="/" className="eaAppBrand" aria-label="E&A East West Auctioneers Group home">
-        <img src="/brand/ea-2026-horizontal.svg" alt="E&A East West Auctioneers Group — SOULFLAME" className="eaBrandLogo"/>
+        <span className="eaBrandExactLockup" aria-hidden="true">
+          <span className="eaBrandExactMark"><img src="/brand/ea-approved-1to1.jpg" alt="" /></span>
+          <span className="eaBrandExactCopy">
+            <strong>EAST WEST</strong>
+            <small>AUCTIONEERS GROUP</small>
+            <span>SOULFLAME</span>
+          </span>
+        </span>
       </a>
 
       <form className="eaAppSearch" action="/inventory" role="search">
@@ -87,7 +94,14 @@ export default function EnchevAppShell(){
       <button className="eaAppMobileBackdrop" type="button" tabIndex={open?0:-1} aria-label="Close menu" onClick={()=>setOpen(false)}/>
       <aside id="ea-mobile-navigation" className="eaAppMobileDrawer" role="dialog" aria-modal="true" aria-label="Mobile navigation">
         <div className="eaAppMobileTop">
-          <a href="/" className="eaAppBrand" aria-label="E&A East West Auctioneers Group home"><img src="/brand/ea-2026-horizontal.svg" alt="E&A East West Auctioneers Group — SOULFLAME" className="eaBrandLogo"/></a>
+          <a href="/" className="eaAppBrand" aria-label="E&A East West Auctioneers Group home"><span className="eaBrandExactLockup" aria-hidden="true">
+          <span className="eaBrandExactMark"><img src="/brand/ea-approved-1to1.jpg" alt="" /></span>
+          <span className="eaBrandExactCopy">
+            <strong>EAST WEST</strong>
+            <small>AUCTIONEERS GROUP</small>
+            <span>SOULFLAME</span>
+          </span>
+        </span></a>
           <button ref={closeRef} className="eaAppMobileClose" type="button" onClick={()=>setOpen(false)} aria-label="Close menu">×</button>
         </div>
 
