@@ -360,6 +360,66 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000}
  .visualFallback .brandEmblem{width:min(46vw,240px);max-height:45vh}
 }
 
+
+/* Professional E&A early-access overlay and action; above the presentation film,
+   but under the initial cinematic logo. CarAR promo is never shown simultaneously. */
+.eaEarlyAccessOpen{
+ position:fixed;bottom:max(22px,env(safe-area-inset-bottom));left:clamp(14px,4vw,70px);
+ z-index:21;min-height:48px;padding:12px 19px;display:flex;align-items:center;gap:18px;
+ border:1px solid rgba(249,208,147,.84);border-radius:8px;background:rgba(8,11,17,.86);
+ color:#f6d7a6;font:750 11px Arial,sans-serif;letter-spacing:.13em;
+ backdrop-filter:blur(12px);box-shadow:0 8px 38px #000b;cursor:pointer;
+}
+.eaEarlyAccessOpen:hover{background:#24222a;color:#fff}
+.eaEarlyAccessOpen:focus-visible{outline:2px solid #f5d5a4;outline-offset:3px}
+.eaEarlyAccessOpen span{font-size:17px;line-height:1}
+.eaEarlyAccessPanel{
+ position:fixed;inset:0;z-index:975;display:flex;align-items:center;justify-content:center;
+ padding:clamp(16px,3vw,32px);overflow-x:hidden;overflow-y:auto;
+ background:radial-gradient(ellipse at 20% 12%,#1c2336 0%,#0d111a 45%,#050607 85%);
+ opacity:0;visibility:hidden;pointer-events:none;transition:opacity .45s ease,visibility 0s .45s;
+}
+.eaEarlyAccessPanel.is-visible{opacity:1;visibility:visible;pointer-events:auto;transition:opacity .45s ease}
+.eaEarlyAccessCard{width:min(510px,100%);display:flex;flex-direction:column;gap:15px;
+ padding:clamp(24px,3vw,42px);background:linear-gradient(155deg,#1b1f2b,#0c1018);
+ border:1px solid #c3a27669;border-radius:17px;box-shadow:0 30px 100px #000b}
+.eaEarlyAccessOverline{font-size:10px;letter-spacing:.22em;color:#d7b987;font-weight:750}
+.eaEarlyAccessCard h2{font-size:clamp(34px,5.5vw,54px);font-weight:650;line-height:1.05;letter-spacing:-.055em;margin:0}
+.eaEarlyAccessCard h2 em{font-style:normal;color:#d9b77f}
+.eaEarlyAccessCard>p{font-size:13px;color:#adb4c1;line-height:1.65;margin:0}
+.eaEarlyAccessCounter{display:flex;align-items:center;justify-content:space-between;gap:14px;
+ padding:13px 15px;background:#111822;border:1px solid #b6a18366;border-radius:9px}
+.eaEarlyAccessCounter span{font-size:10px;letter-spacing:.12em;color:#c5b9a6}
+.eaEarlyAccessCounter strong{font-size:25px;color:#f8d6a0;font-variant-numeric:tabular-nums}
+#eaEarlyAccessForm{display:flex;flex-direction:column;gap:11px}
+#eaEarlyAccessForm>label:first-child{font-size:11px;color:#e4d9c9}
+#eaEarlyAccessEmail{width:100%;min-height:50px;border-radius:8px;border:1px solid #aaa1a060;
+ background:#fff1;color:#fff;padding:12px 15px;font-size:15px}
+#eaEarlyAccessEmail:focus{outline:2px solid #e6c088;outline-offset:1px}
+.eaEarlyAccessConsent{display:flex;align-items:flex-start;gap:9px;font-size:11px;line-height:1.5;color:#b8c0ce}
+.eaEarlyAccessConsent input{width:17px;height:17px;flex:0 0 auto;accent-color:#d4aa74;margin:0}
+#eaEarlyAccessSubmit{min-height:51px;border:1px solid #edcc8d;border-radius:8px;
+ background:linear-gradient(110deg,#f1d59b,#ba8b51);color:#191009;font-size:12px;font-weight:850;
+ letter-spacing:.12em;cursor:pointer}
+#eaEarlyAccessSubmit:disabled{opacity:.6;cursor:wait}
+.eaEarlyAccessMessage{font-size:12px!important;line-height:1.4!important;min-height:18px}
+.eaEarlyAccessMessage[data-state=success]{color:#a6ebc0!important}
+.eaEarlyAccessMessage[data-state=error]{color:#ffc1ad!important}
+.eaEarlyAccessFallback{color:#f3c995;font-size:12px;text-decoration:underline;text-underline-offset:3px}
+.eaEarlyAccessReturn{border:0;background:none;color:#aeb4c0;padding:7px 0;font-size:11px;cursor:pointer;text-decoration:underline;text-underline-offset:4px}
+.eaEarlyAccessClose{position:fixed;z-index:5;right:max(17px,env(safe-area-inset-right));top:max(17px,env(safe-area-inset-top));
+ width:46px;height:46px;display:grid;place-items:center;border-radius:50%;border:1px solid #ddc49b7c;
+ background:#0b0e15eb;color:#fff;font-size:28px;cursor:pointer}
+.eaEarlyAccessHoneypot{position:absolute;left:-99999px;width:1px;opacity:0;pointer-events:none}
+@media(max-width:720px){
+ .eaEarlyAccessOpen{left:14px;bottom:max(16px,env(safe-area-inset-bottom));padding:11px 13px;font-size:10px;gap:8px}
+ .eaEarlyAccessCard{padding:24px 18px;gap:12px}
+ .eaEarlyAccessPanel{align-items:flex-start;padding:calc(76px + env(safe-area-inset-top)) 15px 26px}
+ .eaEarlyAccessClose{right:14px;top:max(14px,env(safe-area-inset-top))}
+ .eaEarlyAccessCard h2{font-size:34px}
+}
+@media(prefers-reduced-motion:reduce){.eaEarlyAccessPanel{transition:none}}
+
 </style>
 </head>
 <body>
@@ -370,10 +430,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000}
 <video
   id="presentationFilm"
   src="/media/presentation-2.mp4"
-  autoplay muted loop playsinline preload="auto"
+  autoplay muted playsinline preload="auto"
   aria-label="E&A East West Auctioneers Group — Презентация 2"
 ></video>
 <button type="button" id="presentationSoundButton" class="presentationSoundButton" aria-label="Включи звука на Презентация 2">🔊 ВКЛЮЧИ ЗВУКА</button>
+<button type="button" id="eaEarlyAccessOpen" class="eaEarlyAccessOpen" aria-haspopup="dialog" aria-controls="eaEarlyAccessPanel">РАННО ЗАПИСВАНЕ <span aria-hidden="true">↗</span></button>
 
 </section>
 <div class="visualFallback" id="geminiCurtain" aria-label="SOULFLAME PRESENTS CarAr"><div class="introContent"><svg class="brandEmblem" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 830" role="img" aria-label="SoulFlame">
@@ -397,6 +458,28 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000}
       <a href="/car-ar-demo" target="_top">Виж AR демото ↗</a>
       <button type="button" id="cararPromoContinue">Продължи към E&amp;A ↗</button>
     </div>
+  </div>
+</section>
+
+<section id="eaEarlyAccessPanel" class="eaEarlyAccessPanel" role="dialog" aria-modal="true" aria-label="E&A — ранно записване" aria-hidden="true">
+  <button type="button" id="eaEarlyAccessClose" class="eaEarlyAccessClose" aria-label="Затвори ранното записване">×</button>
+  <div class="eaEarlyAccessCard">
+    <div class="eaEarlyAccessOverline">E&amp;A EAST WEST AUCTIONEERS GROUP</div>
+    <h2>БЪДИ СРЕД <em>ПЪРВИТЕ.</em></h2>
+    <p>Запиши своя имейл, за да научиш кога стартират автомобилните търгове и ранният достъп.</p>
+    <div class="eaEarlyAccessCounter" id="eaEarlyAccessCounter" aria-live="polite">
+      <span>ЗАПИСАНИ ЗА РАНЕН ДОСТЪП</span><strong id="eaEarlyAccessCount">—</strong>
+    </div>
+    <form id="eaEarlyAccessForm" autocomplete="on">
+      <label for="eaEarlyAccessEmail">Твоят имейл</label>
+      <input type="email" name="email" id="eaEarlyAccessEmail" autocomplete="email" placeholder="name@gmail.com" maxlength="254" required />
+      <input type="text" name="website" autocomplete="off" tabindex="-1" aria-hidden="true" class="eaEarlyAccessHoneypot" />
+      <label class="eaEarlyAccessConsent"><input id="eaEarlyAccessConsent" type="checkbox" required /> Съгласен/на съм да получа имейл за старта и ранния достъп на E&amp;A.</label>
+      <button type="submit" id="eaEarlyAccessSubmit">ЗАПИШИ МЕ ↗</button>
+    </form>
+    <p class="eaEarlyAccessMessage" id="eaEarlyAccessMessage" role="status" aria-live="polite">Един имейл = едно записване. Без измислени регистрации.</p>
+    <a class="eaEarlyAccessFallback" id="eaEarlyAccessFallback" hidden href="mailto:soulflame.mitko@gmail.com?subject=E%26A%20Early%20Access">Изпрати заявка от Gmail ↗</a>
+    <button type="button" class="eaEarlyAccessReturn" id="eaEarlyAccessReplay">ПУСНИ ВИДЕОТО ОТНАЧАЛО ↻</button>
   </div>
 </section>
 
@@ -489,13 +572,15 @@ function closeCararPromo(){
   promo.setAttribute('aria-hidden','true');
   reportCararPromoState(false);
   document.getElementById('presentationSoundButton')?.focus({preventScroll:true});
+  if(pendingVideoSignup)window.setTimeout(showEaEarlyAccess,250);
 }
 window.addEventListener('message',event=>{
   if(event.origin!==window.location.origin || event.source!==window.parent)return;
   if(event.data?.type==='ENCHEV_CARAR_PROMO_QUERY'){
-    reportCararPromoState(promo.classList.contains('is-visible'));
+    reportCararPromoState(promo.classList.contains('is-visible')||eaPanel.classList.contains('is-visible'));
   }else if(event.data?.type==='ENCHEV_CARAR_PROMO_CLOSE'){
-    closeCararPromo();
+    if(eaPanel.classList.contains('is-visible'))hideEaEarlyAccess();
+    else closeCararPromo();
   }
 });
 // Report initial state when the frame loads, including after re-opening
@@ -504,7 +589,10 @@ reportCararPromoState(false);
 document.getElementById('cararPromoClose').addEventListener('click',closeCararPromo);
 document.getElementById('cararPromoContinue').addEventListener('click',closeCararPromo);
 document.addEventListener('keydown',event=>{
-  if(event.key==='Escape'&&promo.classList.contains('is-visible'))closeCararPromo();
+  if(event.key==='Escape'){
+    if(eaPanel.classList.contains('is-visible'))hideEaEarlyAccess();
+    else if(promo.classList.contains('is-visible'))closeCararPromo();
+  }
 });
 // Keep the presentation-2 film playing under the CarAR advertisement.
 // The Coming Soon overlay never replaces or reloads the presentation film.
@@ -552,6 +640,84 @@ promoForm.addEventListener('submit',async event=>{
   }finally{promoButton.disabled=false}
 });
 
+
+const eaPanel=document.getElementById('eaEarlyAccessPanel');
+const eaForm=document.getElementById('eaEarlyAccessForm');
+const eaCount=document.getElementById('eaEarlyAccessCount');
+const eaMessage=document.getElementById('eaEarlyAccessMessage');
+const eaSubmit=document.getElementById('eaEarlyAccessSubmit');
+const eaFallback=document.getElementById('eaEarlyAccessFallback');
+let pendingVideoSignup=false;
+async function refreshEaEarlyAccessCount(){
+  try{
+    const response=await fetch('/api/ea-early-access',{cache:'no-store'});
+    const body=await response.json();
+    eaCount.textContent=response.ok&&Number.isSafeInteger(body.count)
+      ?new Intl.NumberFormat('bg-BG').format(body.count):'—';
+  }catch{eaCount.textContent='—'}
+}
+function showEaEarlyAccess(){
+  pendingVideoSignup=false;
+  if(eaPanel.classList.contains('is-visible'))return;
+  if(promo.classList.contains('is-visible')){
+    closeCararPromo();
+  }
+  eaPanel.classList.add('is-visible');
+  eaPanel.setAttribute('aria-hidden','false');
+  reportCararPromoState(true);
+  refreshEaEarlyAccessCount();
+  document.getElementById('eaEarlyAccessEmail').focus({preventScroll:true});
+}
+function hideEaEarlyAccess(){
+  if(!eaPanel.classList.contains('is-visible'))return;
+  eaPanel.classList.remove('is-visible');
+  eaPanel.setAttribute('aria-hidden','true');
+  reportCararPromoState(promo.classList.contains('is-visible'));
+  document.getElementById('eaEarlyAccessOpen').focus({preventScroll:true});
+}
+document.getElementById('eaEarlyAccessOpen').addEventListener('click',showEaEarlyAccess);
+document.getElementById('eaEarlyAccessClose').addEventListener('click',hideEaEarlyAccess);
+document.getElementById('eaEarlyAccessReplay').addEventListener('click',()=>{
+  hideEaEarlyAccess();
+  presentationFilm.currentTime=0;
+  presentationFilm.play().catch(()=>{});
+});
+presentationFilm.addEventListener('ended',()=>{
+  if(promo.classList.contains('is-visible'))pendingVideoSignup=true;
+  else showEaEarlyAccess();
+});
+eaForm.addEventListener('submit',async event=>{
+  event.preventDefault();
+  if(eaSubmit.disabled)return;
+  const email=document.getElementById('eaEarlyAccessEmail').value.trim();
+  const consent=document.getElementById('eaEarlyAccessConsent').checked;
+  if(!email||!consent)return;
+  eaSubmit.disabled=true;
+  eaFallback.hidden=true;
+  eaMessage.dataset.state='';
+  eaMessage.textContent='Записване...';
+  try{
+    const response=await fetch('/api/ea-early-access',{
+      method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',
+      body:JSON.stringify({email,consent,website:eaForm.querySelector('[name=website]').value}),
+    });
+    const data=await response.json();
+    if(!response.ok||data.ok!==true||data.accepted!==true)throw Error(data.message||'Неуспешно записване.');
+    eaMessage.dataset.state='success';
+    eaMessage.textContent=data.message||'Успешно ранно записване!';
+    if(Number.isSafeInteger(data.count))eaCount.textContent=new Intl.NumberFormat('bg-BG').format(data.count);
+    else refreshEaEarlyAccessCount();
+    eaForm.reset();
+  }catch(error){
+    eaMessage.dataset.state='error';
+    eaMessage.textContent=error?.message||'Грешка при записването.';
+    // Explicit, manual fallback only: mailto is not added to the public counter.
+    eaFallback.href='mailto:soulflame.mitko@gmail.com?subject='+encodeURIComponent('E&A ранно записване')
+      +'&body='+encodeURIComponent('Моля, запишете ме за ранен достъп до E&A.\nИмейл: '+email);
+    eaFallback.hidden=false;
+  }finally{eaSubmit.disabled=false;}
+});
+refreshEaEarlyAccessCount();
 
 })();
 </script>
