@@ -42,7 +42,7 @@ export default function EnchevAppShell(){
 
   return <div className="eaAppShell" data-design-task="DP2-04" data-shell-open={open?"true":"false"}>
     <div className="eaAppUtility">
-      <div className="eaAppUtilityLive"><i aria-hidden="true"/><strong>LIVE MARKET</strong><span>Europe · USA · Canada</span><a className="eaAppPresentationButton" href="/presentation">PRESENTATION</a></div>
+      <div className="eaAppUtilityLive"><i aria-hidden="true"/><strong>LIVE MARKET</strong><span>Europe · USA · Canada</span><a className="eaAppPresentationButton" href="/presentation">PRESENTATION</a><a className="eaAppPresentationButton" href="/presentation-2">презентация 2</a></div>
       <div className="eaAppUtilityMeta"><span>BG · EUR</span><a href="/support">Help</a></div>
     </div>
 
@@ -100,6 +100,7 @@ export default function EnchevAppShell(){
         <div className="eaAppMobileLive"><i aria-hidden="true"/><div><strong>LIVE MARKET</strong><span>Follow the current auction in real time</span></div></div>
 
         <nav className="eaAppMobileNav" aria-label="Mobile main navigation">
+          <a href="/presentation-2"><span>▶</span><b>презентация 2</b><i aria-hidden="true">→</i></a>
           {primaryNavigation.map((item,index)=><a
             key={item.key}
             href={item.href}

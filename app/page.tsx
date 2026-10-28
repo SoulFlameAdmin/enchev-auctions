@@ -22,6 +22,7 @@ export default function Home(){
           zIndex:0,
         }}
       />
+      <a href="/presentation-2" style={{position:"fixed",bottom:24,left:24,zIndex:1000,padding:"14px 18px",borderRadius:6,background:"#dfb476",color:"#111",fontSize:12,fontWeight:700,textDecoration:"none"}}>презентация 2 ↗</a>
       <MasterSystemPlanV1 />
       <EnchevCinematicLoginGate />
     </main>
