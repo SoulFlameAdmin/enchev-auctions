@@ -5,23 +5,17 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#07080b">
 <title>ENCHEV AUCTIONS × SOULFLAME | CINEMATIC ACCESS</title>
-<link rel="preconnect" href="https://www.webgpu.com" crossorigin>
-<link rel="preload" as="image" href="https://www.webgpu.com/content/images/size/w1284/format/webp/2026/03/Screenshot-2026-03-02-at-9.47.14---PM.png">
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050608;color:#f7f7f7;font-family:Inter,"Segoe UI",Arial,sans-serif}
 a{color:inherit}
 .screen{height:100dvh;display:grid;grid-template-columns:minmax(0,55%) minmax(0,45%);overflow:hidden;background:#080a0e}
 .visual{position:relative;min-width:0;overflow:hidden;background:radial-gradient(ellipse at 60% 42%,#171d23 0%,#07080d 55%,#000 95%)}
-/* A car-only hero is visible instantly. The external WebGL loader is
-   intentionally concealed: cross-origin iframe contents cannot be edited. */
-.visualFallback{position:absolute;inset:0;z-index:2;overflow:hidden;background:radial-gradient(ellipse at center,#222227,#040506 75%)}
-.visualFallback img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:55% 50%;filter:brightness(.94) contrast(1.06);transform:scale(1.055);animation:carArrival 3s cubic-bezier(.18,.75,.17,1) both}
-.visualFallback:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(to bottom,rgba(0,0,0,.14),transparent 25%,transparent 70%,rgba(0,0,0,.22))}
-@keyframes carArrival{from{transform:scale(1.16);filter:brightness(.72) contrast(1.09)}to{transform:scale(1.055);filter:brightness(.94) contrast(1.06)}}
-/* Load the real scene behind the seamless still, without exposing GEMINI/NOW LOADING. */
-#lusionFrame{position:absolute;top:-86px;left:0;display:block;width:100%;height:calc(100% + 86px);border:0;background:#090a0c;z-index:1}
-@media(prefers-reduced-motion:reduce){.visualFallback img{animation:none;transform:scale(1.055)}}
+.visualFallback{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;color:#dedfe5}
+.visualFallback strong{font-size:clamp(24px,3vw,43px);font-weight:400;letter-spacing:.24em}
+.visualFallback span{font-size:10px;letter-spacing:.15em;color:#969daa}
+/* Crop the embedded site's top brand/navigation strip outside the visible panel. */
+#lusionFrame{position:absolute;top:-86px;left:0;display:block;width:100%;height:calc(100% + 86px);border:0;background:transparent;z-index:1}
 
 .authPanel{min-width:0;min-height:0;background:linear-gradient(132deg,#171719 0%,#0e0e11 68%,#08090b);padding:clamp(16px,3.3vh,32px) clamp(20px,3.2vw,43px);display:flex;flex-direction:column;overflow:hidden}
 .brand{font-weight:850;font-size:clamp(20px,2.25vw,31px);letter-spacing:.16em;line-height:1.03}
@@ -79,15 +73,7 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
 <body>
 <main class="screen">
 <section class="visual" id="visual" aria-label="Оригинален Lusion GEMINI вграден уебсайт">
-<div class="visualFallback" aria-hidden="true">
-<img
-  src="https://www.webgpu.com/content/images/size/w1284/format/webp/2026/03/Screenshot-2026-03-02-at-9.47.14---PM.png"
-  alt=""
-  fetchpriority="high"
-  decoding="async"
-  onerror="this.onerror=null;this.src='https://assets.awwwards.com/awards/sites_of_the_day/2021/12/exp-gemini-lusion-1.jpg'"
->
-</div>
+<div class="visualFallback" aria-hidden="true"><strong>GEMINI</strong><span>Original experience by Lusion</span></div>
 <iframe
   id="lusionFrame"
   title="Lusion GEMINI — original interactive 3D experience"
