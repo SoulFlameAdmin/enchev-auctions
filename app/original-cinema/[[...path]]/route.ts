@@ -55,39 +55,71 @@ export async function GET(_request:Request,{params}:RouteProps){
     const brandPattern=/<div class="soulflame-masthead">[\s\S]*?<\/div>\s*<div class="cinema-brand">[\s\S]*?<\/div>/;
     if(!brandPattern.test(html))throw Error("ORIGINAL_BRANDING_NOT_FOUND");
     html=html.replace(brandPattern,
-      '<div class="ea-approved-cinema-brand" role="img" aria-label="E&A East West Auctioneers Group — SOULFLAME">'+
-      '<img src="/brand/ea-approved-1to1.jpg" alt="E&A East West Auctioneers Group — SOULFLAME" width="1536" height="1087" />'+
-      '</div>');
-    // Load after the original styles so the logo owns the header on all devices.
+      '<header class="ea-approved-cinema-brand" aria-label="E&A East West Auctioneers Group — SOULFLAME">'+
+      '<img src="/brand/ea-2026-horizontal.svg" alt="E&A · EAST WEST AUCTIONEERS GROUP · SOULFLAME" width="1280" height="175" />'+
+      '</header>');
+    // Horizontal mark lives in its own rail, instead of floating over film.
     const brandCSS=`<style id="ea-cinema-approved-brand">
+      #cinema{--ea-bar-height:102px;}
       .ea-approved-cinema-brand{
-        position:absolute;z-index:9;top:8px;left:50%;
-        transform:translateX(-50%);
-        width:clamp(190px,23vw,300px);
-        max-width:calc(100vw - 190px);
-        display:flex;justify-content:center;align-items:flex-start;
-        pointer-events:none;
+        position:absolute;inset:0 0 auto 0;z-index:9;
+        width:100%;height:var(--ea-bar-height);
+        background:#030406;
+        border-bottom:1px solid rgba(197,164,113,.22);
+        display:flex;align-items:center;justify-content:center;
+        box-shadow:0 6px 20px rgba(0,0,0,.36);
+        overflow:hidden;pointer-events:none;
       }
       .ea-approved-cinema-brand img{
-        display:block;width:100%;height:auto;object-fit:contain;
-        mix-blend-mode:screen;
+        display:block;
+        width:min(600px,calc(100vw - 420px));
+        max-height:calc(var(--ea-bar-height) - 10px);
+        height:auto;
+        aspect-ratio:1280/175;
+        object-fit:contain;
       }
-      .signup-count{top:clamp(142px,15vw,225px)!important;}
+      #advert-video{
+        top:var(--ea-bar-height)!important;
+        height:calc(100% - var(--ea-bar-height))!important;
+      }
+      #cinema-frames .cinema-frame{
+        top:var(--ea-bar-height)!important;
+      }
+      .signup-count{top:calc(var(--ea-bar-height) + 10px)!important;}
+      /* Parent X occupies top-right: use left-bottom sound button instead. */
+      #cinema-sound{
+        top:auto!important;bottom:max(22px,env(safe-area-inset-bottom))!important;
+        left:6%!important;right:auto!important;
+      }
       @media(max-width:760px){
-        .ea-approved-cinema-brand{
-          top:max(7px,env(safe-area-inset-top));
-          width:min(160px,46vw);
-          max-width:none;
+        #cinema{--ea-bar-height:76px;}
+        .ea-approved-cinema-brand img{
+          width:min(490px,calc(100vw - 26px));
+          max-height:calc(var(--ea-bar-height) - 8px);
         }
-        .signup-count{top:max(123px,calc(env(safe-area-inset-top) + 116px))!important;}
+        .signup-count{top:calc(var(--ea-bar-height) + 9px)!important;}
+        #cinema-sound{
+          left:5%!important;right:auto!important;
+          bottom:max(18px,env(safe-area-inset-bottom))!important;
+          padding:10px 9px!important;font-size:9px!important;
+        }
+        #open-signup{right:5%!important;bottom:max(18px,env(safe-area-inset-bottom))!important;}
       }
-      @media(max-width:410px){
-        .ea-approved-cinema-brand{width:min(150px,44vw);}
-        .signup-count{top:max(116px,calc(env(safe-area-inset-top) + 109px))!important;}
+      @media(max-width:380px){
+        #cinema{--ea-bar-height:69px;}
+        .ea-approved-cinema-brand img{
+          width:calc(100vw - 20px);
+          max-height:calc(var(--ea-bar-height) - 6px);
+        }
+        #cinema-sound{font-size:8px!important;padding:8px!important;}
+        #open-signup{font-size:11px!important;padding:10px!important;}
       }
-      @media(max-height:580px) and (orientation:landscape){
-        .ea-approved-cinema-brand{top:3px;width:120px;}
-        .signup-count{top:88px!important;}
+      @media(max-height:540px) and (orientation:landscape){
+        #cinema{--ea-bar-height:62px;}
+        .ea-approved-cinema-brand img{
+          width:min(400px,calc(100vw - 300px));
+          max-height:calc(var(--ea-bar-height) - 4px);
+        }
       }
     </style>`;
     html=html.replace("</head>",brandCSS+"</head>");
