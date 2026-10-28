@@ -48,7 +48,7 @@ export default function EnchevAppShell(){
 
     <header className="eaAppHeader">
       <a href="/" className="eaAppBrand" aria-label="E&A East West Auctioneers Group home">
-        <img src="/brand/ea-east-west.svg" alt="E&A East West Auctioneers Group 🔥SOULFLAME🔥" className="eaBrandLogo"/>
+        <img src="/brand/ea-horizontal-wordmark.svg" alt="E&A East West Auctioneers Group — SOULFLAME" className="eaBrandLogo"/>
       </a>
 
       <form className="eaAppSearch" action="/inventory" role="search">
@@ -87,7 +87,7 @@ export default function EnchevAppShell(){
       <button className="eaAppMobileBackdrop" type="button" tabIndex={open?0:-1} aria-label="Close menu" onClick={()=>setOpen(false)}/>
       <aside id="ea-mobile-navigation" className="eaAppMobileDrawer" role="dialog" aria-modal="true" aria-label="Mobile navigation">
         <div className="eaAppMobileTop">
-          <a href="/" className="eaAppBrand" aria-label="E&A East West Auctioneers Group home"><img src="/brand/ea-east-west.svg" alt="E&A East West Auctioneers Group 🔥SOULFLAME🔥" className="eaBrandLogo"/></a>
+          <a href="/" className="eaAppBrand" aria-label="E&A East West Auctioneers Group home"><img src="/brand/ea-horizontal-wordmark.svg" alt="E&A East West Auctioneers Group — SOULFLAME" className="eaBrandLogo"/></a>
           <button ref={closeRef} className="eaAppMobileClose" type="button" onClick={()=>setOpen(false)} aria-label="Close menu">×</button>
         </div>
 
