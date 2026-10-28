@@ -542,9 +542,9 @@ html.sf-sequence .cararPromo{background:radial-gradient(ellipse at 55% 35%,#2320
   color:#e9edf3;letter-spacing:.35em;
 }
 .visualFallback .brandTitle.eaIntroLockup{
-  animation:sfIgnitionWords .75s cubic-bezier(.14,.8,.2,1) 1.52s both;
+  animation:sfIgnitionWords .75s cubic-bezier(.14,.8,.2,1) 2.7s both;
 }
-.visualFallback .brandAccent{animation:accentIntro .9s ease 1.68s both}
+.visualFallback .brandAccent{animation:accentIntro .9s ease 3.05s both}
 @keyframes sfIgnitionDraw{to{stroke-dashoffset:0}}
 @keyframes sfIgnitionSpark{
   0%{opacity:0;stroke-dashoffset:100}
@@ -718,7 +718,7 @@ function scheduleLogoReveal(){
   if(revealScheduled)return;
   revealScheduled=true;
   const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const wait=Math.max(0,(reduced?900:(sequenceMode?2700:5500))-(performance.now()-introStartedAt));
+  const wait=Math.max(0,(reduced?900:(sequenceMode?4100:5500))-(performance.now()-introStartedAt));
   window.setTimeout(()=>{
     updateIntroTarget();
     curtain.classList.add('is-shrinking');
