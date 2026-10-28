@@ -19,6 +19,20 @@ export default function BuyerAuthForm({mode}:{mode:Mode}){
   const [message,setMessage]=useState("");
   const isRegister=mode==="sign-up";
 
+  // Carry only the email from the cinematic welcome screen, never credentials.
+  useEffect(()=>{
+    if(mode!=="sign-in")return;
+    try{
+      const saved=window.sessionStorage.getItem("enchev.login.email.prefill");
+      if(saved){
+        window.sessionStorage.removeItem("enchev.login.email.prefill");
+        if(saved.length<=254 && /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(saved)){
+          setEmail(saved);
+        }
+      }
+    }catch{}
+  },[mode]);
+
   useEffect(()=>{
     let canceled=false;
     fetch("/api/enchev-auth/session",{credentials:"same-origin",cache:"no-store"})
