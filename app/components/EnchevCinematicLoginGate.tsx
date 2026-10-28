@@ -15,15 +15,36 @@ export default function EnchevCinematicLoginGate() {
   const [revealed,setRevealed]=useState(true);
   const [arReady,setArReady]=useState(false);
   const [promoOpen,setPromoOpen]=useState(false);
+  const [adStage,setAdStage]=useState<"soulflame"|"enchev">("soulflame");
+  const [adVisible,setAdVisible]=useState(true);
+  const transitionTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
   const launcher=useRef<HTMLButtonElement>(null);
   const close=useRef<HTMLButtonElement>(null);
   const cinematicFrame=useRef<HTMLIFrameElement>(null);
 
   const show=useCallback(()=>{
+    if(transitionTimer.current!==null)clearTimeout(transitionTimer.current);
+    setAdStage("soulflame");
+    setAdVisible(true);
+    setPromoOpen(false);
     setHasOpened(true);
     setRevealed(false);
     setOpen(true);
   },[]);
+
+  // SOULFLAME CarAR first, original Lit360 Enchev cinema second.
+  // Fade through black while swapping iframe URLs to prevent video/audio overlap.
+  const advanceToEnchev=useCallback(()=>{
+    if(adStage!=="soulflame"||transitionTimer.current!==null)return;
+    setAdVisible(false);
+    transitionTimer.current=setTimeout(()=>{
+      transitionTimer.current=null;
+      setPromoOpen(false);
+      setAdStage("enchev");
+    },360);
+  },[adStage]);
+
+  useEffect(()=>()=>{if(transitionTimer.current!==null)clearTimeout(transitionTimer.current);},[]);
 
   const dismiss=useCallback(()=>{
     setRevealed(false);
@@ -35,6 +56,8 @@ export default function EnchevCinematicLoginGate() {
   // before the outer login dialog). DOM check also handles fast clicks
   // before the iframe's state message has reached React.
   const closeTopmost=useCallback(()=>{
+    // On the first advert X means skip to E&A; on E&A X closes the gate.
+    if(adStage==="soulflame"){advanceToEnchev();return;}
     let childVisible=promoOpen;
     try{
       const child=cinematicFrame.current?.contentDocument?.getElementById("cararPromo");
@@ -47,7 +70,7 @@ export default function EnchevCinematicLoginGate() {
       return;
     }
     dismiss();
-  },[promoOpen,dismiss]);
+  },[promoOpen,dismiss,adStage,advanceToEnchev]);
 
 
   // Only this same-origin cinematic iframe controls the nested ad state.
@@ -55,6 +78,10 @@ export default function EnchevCinematicLoginGate() {
     const receive=(event:MessageEvent)=>{
       if(event.origin!==window.location.origin)return;
       if(event.source!==cinematicFrame.current?.contentWindow)return;
+      if(event.data?.type==="SOULFLAME_AD_DONE"){
+        advanceToEnchev();
+        return;
+      }
       if(event.data?.type==="ENCHEV_CAR_AR_READY")setArReady(true);
       if(event.data?.type==="ENCHEV_CARAR_PROMO_STATE"){
         setPromoOpen(event.data.visible===true);
@@ -62,9 +89,10 @@ export default function EnchevCinematicLoginGate() {
     };
     window.addEventListener("message",receive);
     return()=>window.removeEventListener("message",receive);
-  },[]);
+  },[advanceToEnchev]);
 
   const syncChildPromo=useCallback(()=>{
+    setAdVisible(true);
     setPromoOpen(false);
     cinematicFrame.current?.contentWindow?.postMessage(
       {type:"ENCHEV_CARAR_PROMO_QUERY"},window.location.origin
@@ -219,19 +247,22 @@ export default function EnchevCinematicLoginGate() {
           >
             <iframe
               ref={cinematicFrame}
-              src="/original-cinema"
-              title="Оригинална SOULFLAME · Enchev Auctions реклама — Lit360 cinematic"
+              src={adStage==="soulflame"?"/3d-login/index.html?sequence=soulflame":"/original-cinema"}
+              title={adStage==="soulflame"?"SOULFLAME CarAR — реклама преди E&A":"E&A East West — оригинална Lit360 автомобилна реклама"}
               loading="eager"
               onLoad={syncChildPromo}
-              style={{display:"block",width:"100%",height:"100%",border:0,background:"#000"}}
+              style={{
+                display:"block",width:"100%",height:"100%",border:0,background:"#000",
+                opacity:adVisible?1:0,transition:"opacity .36s ease"
+              }}
             />
             {open && !promoOpen && <button
               className="enchevLoginClose"
               ref={close}
               type="button"
               onClick={closeTopmost}
-              aria-label="Затвори прозореца за вход"
-              title="Затвори"
+              aria-label={adStage==="soulflame"?"Премини към рекламата на E&A":"Затвори рекламата"}
+              title={adStage==="soulflame"?"Пропусни към E&A":"Затвори"}
               style={{
                 position:"absolute",top:18,right:18,zIndex:10,
                 width:48,height:48,borderRadius:"50%",
