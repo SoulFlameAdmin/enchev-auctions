@@ -10,23 +10,13 @@
 html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050608;color:#f7f7f7;font-family:Inter,"Segoe UI",Arial,sans-serif}
 a{color:inherit}
 .screen{height:100dvh;display:grid;grid-template-columns:minmax(0,55%) minmax(0,45%);overflow:hidden;background:#080a0e}
-.visual{position:relative;min-width:0;overflow:hidden;background:#050608;isolation:isolate}
-.visual::after{content:"";position:absolute;inset:0;z-index:3;pointer-events:none;background:linear-gradient(90deg,transparent 75%,rgba(7,8,12,.53)),linear-gradient(0deg,rgba(2,3,5,.6),transparent 45%,rgba(2,3,5,.35))}
-.poster{position:absolute;inset:0;z-index:0;background-image:url("https://raw.githubusercontent.com/JaronKBragg7337/spectral-gt-rs/34499c501908818a2b08e589a7aecf963343cee7/spectral_gt_night.png");background-size:cover;background-position:50% 50%;animation:sceneDrift 3s cubic-bezier(.13,.72,.2,1) both;filter:brightness(.87)}
-@keyframes sceneDrift{from{transform:scale(1.17) translateX(3%);filter:brightness(.55) blur(1px)}to{transform:scale(1.04) translateX(-1%);filter:brightness(.95) blur(0)}}
-#lusionFrame{position:absolute;top:0;left:50%;width:max(100%, 112vh);height:100%;transform:translateX(-50%);border:0;z-index:1;opacity:0;pointer-events:none;transition:opacity .55s;background:transparent}
-#lusionFrame.is-visible{opacity:1}
-#freezeFrame{position:absolute;inset:0;z-index:2;opacity:0;pointer-events:none;transition:opacity .38s;display:block}
-#freezeFrame::before{content:"";position:absolute;inset:0;background-image:url("https://raw.githubusercontent.com/JaronKBragg7337/spectral-gt-rs/34499c501908818a2b08e589a7aecf963343cee7/spectral_gt_night.png");background-position:50% 50%;background-size:cover;transform:scale(1.04) translateX(-1%);filter:brightness(.95)}
-.visual.is-frozen:not(.has-video) #freezeFrame{opacity:1}
-.visualKicker{position:absolute;top:25px;left:27px;z-index:4;letter-spacing:.26em;font-size:10px;color:#e8d0a3}
-.visualKicker i{display:inline-block;width:6px;height:6px;background:#d3aa73;border-radius:50%;margin-right:10px;box-shadow:0 0 12px #ddb276}
-.visualCopy{position:absolute;bottom:31px;left:28px;right:22px;z-index:4;max-width:420px}
-.visualCopy .small{color:#d5bd92;font-size:10px;letter-spacing:.22em}
-.visualCopy h2{font-size:clamp(26px,3.6vw,53px);font-weight:350;letter-spacing:-.055em;line-height:1.02;margin:12px 0 7px}
-.visualCopy h2 strong{font-weight:720}
-.visualCopy p{font-size:11px;color:#d0d0d3;line-height:1.5;margin:0}
-.credit{position:absolute;bottom:14px;right:17px;z-index:4;font-size:9px;letter-spacing:.05em;color:#ceced1;text-shadow:0 1px 6px #000}
+.visual{position:relative;min-width:0;overflow:hidden;background:radial-gradient(ellipse at 60% 42%,#171d23 0%,#07080d 55%,#000 95%)}
+.visualFallback{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;color:#dedfe5}
+.visualFallback strong{font-size:clamp(24px,3vw,43px);font-weight:400;letter-spacing:.24em}
+.visualFallback span{font-size:10px;letter-spacing:.15em;color:#969daa}
+#lusionFrame{position:absolute;inset:0;display:block;width:100%;height:100%;border:0;background:transparent;z-index:1}
+.sourceLink{position:absolute;z-index:2;left:16px;bottom:16px;padding:8px 10px;border-radius:3px;border:1px solid #ffffff52;background:#07080bdd;backdrop-filter:blur(7px);color:#fff;font-size:9px;font-weight:600;letter-spacing:.1em;text-decoration:none}
+.sourceLink:hover{background:#26282fcf}
 .authPanel{min-width:0;min-height:0;background:linear-gradient(132deg,#171719 0%,#0e0e11 68%,#08090b);padding:clamp(16px,3.3vh,32px) clamp(20px,3.2vw,43px);display:flex;flex-direction:column;overflow:hidden}
 .brand{font-weight:850;font-size:clamp(20px,2.25vw,31px);letter-spacing:.16em;line-height:1.03}
 .brand span{color:#df1522}
@@ -62,9 +52,9 @@ input{height:30px;margin-bottom:6px}.primary{height:32px}
 @media(max-width:720px){
 .screen{display:grid;grid-template-columns:1fr;grid-template-rows:39% 61%}
 .visual{grid-row:1;grid-column:1}.authPanel{grid-row:2;grid-column:1;padding:9px 17px 9px}
-.visualKicker{top:13px;left:18px;font-size:8px}.visualCopy{left:18px;bottom:21px}
-.visualCopy h2{font-size:clamp(25px,5.5vw,38px);margin:5px 0}
-.visualCopy p{display:none}.credit{font-size:7px;bottom:7px;right:10px}
+
+
+
 .brand{font-size:19px}.brandSub{font-size:8px;margin-top:1px}
 .entry{max-width:none}.eyebrow{font-size:8px}h1{font-size:clamp(24px,5.2vw,30px);margin:5px 0 4px}
 .subtitle{font-size:10px;margin-bottom:6px}
@@ -77,18 +67,22 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
 .screen{grid-template-rows:30% 70%}.authPanel{padding-block:4px}
 .brand,.brandSub{display:none}.subtitle{display:none}
 }
-@media(prefers-reduced-motion:reduce){.poster{animation:none;transform:scale(1.04)}*,*:before,*:after{transition:none!important}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{transition:none!important}}
 </style>
 </head>
 <body>
 <main class="screen">
-<section class="visual" id="visual" aria-label="Рекламна сцена Gemini от Lusion">
-<div class="poster" aria-hidden="true"></div>
-<iframe id="lusionFrame" title="Lusion Gemini — cinematic car motion" referrerpolicy="strict-origin-when-cross-origin" tabindex="-1" allow="autoplay; fullscreen" loading="eager"></iframe>
-<div id="freezeFrame" aria-hidden="true"></div>
-<div class="visualKicker"><i></i>ENCHEV AUCTIONS · VISUAL EXPERIENCE</div>
-<div class="visualCopy"><span class="small">EXCLUSIVE AUTOMOTIVE AUCTIONS</span><h2>BEGIN YOUR<br><strong>JOURNEY.</strong></h2><p>Премиум автомобилни търгове. Ново преживяване.</p></div>
-<a class="credit" href="https://vimeo.com/647004555" target="_blank" rel="noopener noreferrer">Gemini video © Lusion · Vimeo</a>
+<section class="visual" id="visual" aria-label="Оригинален Lusion GEMINI вграден уебсайт">
+<div class="visualFallback" aria-hidden="true"><strong>GEMINI</strong><span>Original experience by Lusion</span></div>
+<iframe
+  id="lusionFrame"
+  title="Lusion GEMINI — original interactive 3D experience"
+  src="https://exp-gemini.lusion.co/"
+  referrerpolicy="strict-origin-when-cross-origin"
+  allow="autoplay; fullscreen; accelerometer; gyroscope"
+  loading="eager"
+></iframe>
+<a class="sourceLink" href="https://exp-gemini.lusion.co/" target="_blank" rel="noopener noreferrer" title="Оригинален Lusion GEMINI">OPEN ORIGINAL GEMINI ↗</a>
 </section>
 <section class="authPanel" aria-label="Вход в ENCHEV">
 <header><div class="brand">ENCHEV<span>.</span></div><div class="brandSub">AUCTIONS — <b>SOULFLAME</b></div></header>
@@ -115,57 +109,8 @@ label{font-size:10px;margin-bottom:2px}input{height:30px;margin-bottom:5px;font-
 </main>
 <script>
 (() => {
-const visual=document.querySelector('#visual');
-const iframe=document.querySelector('#lusionFrame');
-const poster=document.querySelector('.poster');
-const freeze=document.querySelector('#freezeFrame');
-let frozen=false;
-let timer=null;
-let started=false;
-let blockedFallback=null;
-const source='https://player.vimeo.com/video/647004555?autoplay=1&muted=1&background=1&autopause=0&playsinline=1&dnt=1&title=0&byline=0&portrait=0';
-function pauseVideo(){
- if(frozen)return;
- frozen=true;
- visual.classList.add('is-frozen');
- clearTimeout(blockedFallback);
- if(started){
-   // Vimeo supports pausing an embedded video, keeping its exact visible frame.
-   iframe.contentWindow?.postMessage(JSON.stringify({method:'pause'}),'https://player.vimeo.com');
- }else{
-   // If Vimeo blocks or never starts, a CC0 sports-car photograph remains visible.
-   iframe.classList.remove('is-visible');
- }
-}
-function watchStarted(){
- if(started||frozen)return;
- started=true;
- visual.classList.add('has-video');
- iframe.classList.add('is-visible');
- // Three visible seconds, then freeze until a complete page refresh.
- timer=setTimeout(pauseVideo,3000);
-}
-window.addEventListener('message',event=>{
- if(event.origin!=='https://player.vimeo.com'||event.source!==iframe.contentWindow)return;
- let payload=event.data;
- if(typeof payload==='string'){try{payload=JSON.parse(payload)}catch{return}}
- if(payload?.event==='play'||payload?.event==='playing')watchStarted();
-});
-function initVideo(){
- iframe.addEventListener('load',()=>{
-   // Vimeo player messages give a reliable started-playing signal.
-   const win=iframe.contentWindow;
-   if(!win)return;
-   win.postMessage(JSON.stringify({method:'addEventListener',value:'play'}),'https://player.vimeo.com');
-   win.postMessage(JSON.stringify({method:'addEventListener',value:'playing'}),'https://player.vimeo.com');
- },{once:true});
- iframe.src=source;
- // The poster is permanently available if embedding/autoplay is restricted.
- blockedFallback=setTimeout(()=>{
-   if(!started) {visual.classList.add('is-frozen');frozen=true;}
- },9000);
-}
-initVideo();
+// Exact official Gemini site is embedded directly; no video, GLB,
+// Vimeo substitute or cross-origin pause attempts are used here.
 const msg=document.querySelector('#authMessage');
 const form=document.querySelector('#authForm');
 const email=document.querySelector('#email');
