@@ -420,6 +420,22 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000}
 }
 @media(prefers-reduced-motion:reduce){.eaEarlyAccessPanel{transition:none}}
 
+
+/* Public header badge: truthful count from database only, never a placeholder number. */
+.eaEarlyAccessTopCount{
+ position:fixed;z-index:21;top:max(20px,env(safe-area-inset-top));
+ left:clamp(14px,4vw,70px);display:flex;align-items:center;gap:11px;
+ min-height:43px;padding:10px 14px;border-radius:9px;
+ background:rgba(6,9,14,.73);border:1px solid #e5c18c66;
+ backdrop-filter:blur(9px);color:#e4d3ba;
+ font:750 10px Arial,sans-serif;letter-spacing:.14em;pointer-events:none;
+}
+.eaEarlyAccessTopCount strong{font-size:20px;color:#f9d49d;font-variant-numeric:tabular-nums;letter-spacing:0}
+@media(max-width:720px){
+ .eaEarlyAccessTopCount{left:14px;top:max(14px,env(safe-area-inset-top));padding:8px 10px;font-size:9px}
+ .eaEarlyAccessTopCount strong{font-size:18px}
+}
+
 </style>
 </head>
 <body>
@@ -435,6 +451,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000}
 ></video>
 <button type="button" id="presentationSoundButton" class="presentationSoundButton" aria-label="Включи звука на Презентация 2">🔊 ВКЛЮЧИ ЗВУКА</button>
 <button type="button" id="eaEarlyAccessOpen" class="eaEarlyAccessOpen" aria-haspopup="dialog" aria-controls="eaEarlyAccessPanel">РАННО ЗАПИСВАНЕ <span aria-hidden="true">↗</span></button>
+<div class="eaEarlyAccessTopCount" aria-live="polite" aria-label="Реално записани за ранен достъп">ЗАПИСАНИ <strong id="eaEarlyAccessTopCount">—</strong></div>
 
 </section>
 <div class="visualFallback" id="geminiCurtain" aria-label="SOULFLAME PRESENTS CarAr"><div class="introContent"><svg class="brandEmblem" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 830" role="img" aria-label="SoulFlame">
@@ -652,9 +669,14 @@ async function refreshEaEarlyAccessCount(){
   try{
     const response=await fetch('/api/ea-early-access',{cache:'no-store'});
     const body=await response.json();
-    eaCount.textContent=response.ok&&Number.isSafeInteger(body.count)
+    const verified=response.ok&&Number.isSafeInteger(body.count)
       ?new Intl.NumberFormat('bg-BG').format(body.count):'—';
-  }catch{eaCount.textContent='—'}
+    eaCount.textContent=verified;
+    document.getElementById('eaEarlyAccessTopCount').textContent=verified;
+  }catch{
+    eaCount.textContent='—';
+    document.getElementById('eaEarlyAccessTopCount').textContent='—';
+  }
 }
 function showEaEarlyAccess(){
   pendingVideoSignup=false;
@@ -705,8 +727,11 @@ eaForm.addEventListener('submit',async event=>{
     if(!response.ok||data.ok!==true||data.accepted!==true)throw Error(data.message||'Неуспешно записване.');
     eaMessage.dataset.state='success';
     eaMessage.textContent=data.message||'Успешно ранно записване!';
-    if(Number.isSafeInteger(data.count))eaCount.textContent=new Intl.NumberFormat('bg-BG').format(data.count);
-    else refreshEaEarlyAccessCount();
+    if(Number.isSafeInteger(data.count)){
+      const liveCount=new Intl.NumberFormat('bg-BG').format(data.count);
+      eaCount.textContent=liveCount;
+      document.getElementById('eaEarlyAccessTopCount').textContent=liveCount;
+    }else refreshEaEarlyAccessCount();
     eaForm.reset();
   }catch(error){
     eaMessage.dataset.state='error';
