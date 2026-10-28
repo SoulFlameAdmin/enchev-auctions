@@ -8,9 +8,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
  * is not replayed until a full page refresh.
  */
 export default function EnchevCinematicLoginGate() {
-  const [open,setOpen]=useState(false);
-  const [hasOpened,setHasOpened]=useState(false);
-  const [revealed,setRevealed]=useState(false);
+  // The approved full-screen E&A cinematic is now the real homepage entrance.
+  // Close it with X to reveal the existing auction / Forge experience beneath.
+  const [open,setOpen]=useState(true);
+  const [hasOpened,setHasOpened]=useState(true);
+  const [revealed,setRevealed]=useState(true);
   const [arReady,setArReady]=useState(false);
   const [promoOpen,setPromoOpen]=useState(false);
   const launcher=useRef<HTMLButtonElement>(null);
