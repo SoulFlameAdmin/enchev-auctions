@@ -57,7 +57,7 @@ export default function CarArPage() {
     <main className="carArPage">
       <header className="carArHeader">
         <Link className="carArBrand" href="/" aria-label="E&A East West Auctioneers Group начална страница">
-          <img src="/brand/ea-east-west.svg" alt="E&A East West Auctioneers Group 🔥SOULFLAME🔥" style={{width:190,height:64,objectFit:"contain"}}/>
+          <img src="/brand/ea-east-west.svg" alt="E&A East West Auctioneers Group 🔥SOULFLAME🔥" style={{width:165,height:56,objectFit:"contain",maxWidth:"100%"}}/>
         </Link>
         <div className="carArTopRight"><span className="carArIndicator"></span> INTERACTIVE VEHICLE EXPERIENCE</div>
       </header>
