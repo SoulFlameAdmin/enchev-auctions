@@ -219,8 +219,8 @@ export default function EnchevCinematicLoginGate() {
           >
             <iframe
               ref={cinematicFrame}
-              src="/3d-login/index.html"
-              title="E&A Presentation 2 full-screen video and CarAR"
+              src="/original-cinema"
+              title="Оригинална SOULFLAME · Enchev Auctions реклама — Lit360 cinematic"
               loading="eager"
               onLoad={syncChildPromo}
               style={{display:"block",width:"100%",height:"100%",border:0,background:"#000"}}
