@@ -40,3 +40,29 @@
 
 .sfCarArDemoCredit{font-size:10px;color:#a59b90;text-decoration:underline;text-underline-offset:3px}
 .sfCarArDemoCredit:hover{color:#f7d49c}
+
+/* The optional native AR handoff appears on touch screens only.
+   On desktop the right-hand sidebar remains the QR panel. */
+.sfCarArDemoMobileAR{display:none}
+@media(max-width:950px){
+  .sfCarArDemoMobileAR{
+    display:block;
+    width:100%;
+    padding:17px 16px;
+    border-radius:10px;
+    border:1px solid #d9b37e;
+    text-align:center;
+    background:linear-gradient(105deg,#f5d9a8,#ac7c46);
+    color:#18120c;
+    font-size:12px;
+    letter-spacing:.1em;
+    font-weight:780;
+    text-decoration:none;
+  }
+  .sfCarArDemoGrid{gap:14px}
+  .sfCarArDemoStage iframe{top:-66px;height:calc(100% + 66px)}
+}
+@media(max-width:420px){
+  .sfCarArDemoStage{height:59dvh;min-height:390px}
+  .sfCarArDemoMobileAR{font-size:11px}
+}
