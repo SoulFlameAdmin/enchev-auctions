@@ -37,3 +37,6 @@
 @media(max-width:950px){.sfCarArDemoGrid{grid-template-columns:1fr}.sfCarArDemoQR{display:none}.sfCarArDemoStage{height:65dvh}.sfCarArDemoLive{display:none}}
 @media(max-width:620px){.sfCarArDemoTop{min-height:76px}.sfCarArDemoBrand img{width:70px;height:48px}.sfCarArDemoIdentity strong{font-size:24px}.sfCarArDemoIdentity>span{font-size:7px}.sfCarArDemoLinks{gap:12px}.sfCarArDemoLinks a{font-size:9px}.sfCarArDemoLinks a:first-child{display:none}.sfCarArDemoHeading{margin-top:19px}.sfCarArDemoStage{height:65dvh;min-height:370px}.sfCarArDemoHeading p{font-size:12px}}
 @media(prefers-reduced-motion:reduce){.sfCarArDemo *{animation:none!important;transition:none!important}}
+
+.sfCarArDemoCredit{font-size:10px;color:#a59b90;text-decoration:underline;text-underline-offset:3px}
+.sfCarArDemoCredit:hover{color:#f7d49c}
