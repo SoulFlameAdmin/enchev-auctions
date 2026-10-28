@@ -1,0 +1,44 @@
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#080a0d;color:#f6f3ee}
+.carArPage{min-height:100dvh;font-family:Inter,"Segoe UI",Arial,sans-serif;display:flex;flex-direction:column;background:radial-gradient(ellipse at 68% 35%,#1a202a 0%,#0d1015 44%,#07090c 80%);overflow-x:hidden}
+.carArHeader{width:100%;max-width:1320px;margin:auto auto 0;padding:28px clamp(22px,5vw,72px) 14px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.carArBrand{text-decoration:none;color:#f2f3f4;display:flex;flex-direction:column;gap:6px}
+.carArBrandTitle{font-size:clamp(22px,2.4vw,30px);font-weight:850;letter-spacing:.15em}
+.brandPeriod{color:#d7192b}
+.carArBrandTag{font-size:9px;letter-spacing:.22em;color:#adafb9}
+.carArBrandTag span{color:#d4b181}
+.carArTopRight{font-size:9px;letter-spacing:.16em;color:#a7adb7;white-space:nowrap}
+.carArIndicator,.carArViewDot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#dabb88;box-shadow:0 0 12px #d9b987;margin-right:9px;vertical-align:middle}
+.carArIntro{width:100%;max-width:1320px;margin:0 auto;padding:22px clamp(22px,5vw,72px) 0}
+.carArOverline{font-size:10px;letter-spacing:.22em;font-weight:650;color:#cfb48e}
+.carArIntro h1{font-size:clamp(44px,6.7vw,94px);font-weight:250;letter-spacing:-.065em;line-height:.96;margin:13px 0 9px;color:#f6f6f6}
+.carArIntro h1 strong{font-weight:750}
+.carArIntro p{max-width:600px;color:#a9adb5;font-size:13px;line-height:1.55;margin:15px 0 0}
+.carArStage{position:relative;width:min(100% - 44px,1216px);height:clamp(325px,51vh,660px);min-height:325px;margin:18px auto 0;border:1px solid #ffffff1e;border-radius:16px;overflow:hidden;background:radial-gradient(ellipse at 50% 45%,#272d39 0%,#141820 54%,#0b0d11 86%);box-shadow:0 20px 110px #000a,inset 0 0 130px #0004}
+.carArStage model-viewer{--poster-color:transparent;--progress-bar-color:#ceb58e;--progress-bar-height:2px;--interaction-prompt-threshold:1500}
+.carArViewportLabel{position:absolute;left:23px;top:23px;font-size:10px;letter-spacing:.15em;color:#dadfe7;border:1px solid #ffffff32;background:#0c1119a0;backdrop-filter:blur(10px);padding:11px 13px;border-radius:6px;pointer-events:none}
+.carArViewportHint{position:absolute;right:24px;top:27px;font-size:10px;color:#b5bec9;letter-spacing:.08em;pointer-events:none}
+.carArNativeButton{position:absolute;bottom:25px;left:50%;transform:translateX(-50%);min-width:210px;white-space:nowrap;border:1px solid #cf9d73;background:linear-gradient(110deg,#ddc19c,#b78b5d);color:#17110b;border-radius:5px;padding:16px 22px;font-weight:750;font-size:11px;letter-spacing:.12em;cursor:pointer;box-shadow:0 8px 32px #0009}
+.carArNativeButton:hover{background:#f3d6a7}
+.carArError{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:13px;background:#0c1015eb;text-align:center;padding:18px;z-index:10}
+.carArError p{font-size:13px;color:#ffb5ad}
+.carArError a{color:#e4c69a;font-size:12px}
+.carArActions{max-width:1320px;width:100%;padding:22px clamp(22px,5vw,72px);margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:24px}
+.carArActions h2{font-size:17px;font-weight:550;letter-spacing:-.01em;margin:0 0 7px}
+.carArActions p{font-size:12px;line-height:1.5;color:#a6aab3;max-width:740px;margin:0}
+.carArReturn{border:1px solid #746557;background:#ffffff09;white-space:nowrap;padding:14px 18px;font-size:10px;color:#f5e6d0;letter-spacing:.12em;text-decoration:none;border-radius:5px}
+.carArReturn span{font-size:14px;margin-left:8px}
+.carArReturn:hover{background:#ffffff16}
+.carArFooter{max-width:1320px;width:100%;margin:auto auto 0;padding:15px clamp(22px,5vw,72px) 22px;display:flex;justify-content:space-between;gap:12px;color:#747c87;font-size:9px;letter-spacing:.12em}
+@media(max-width:650px){
+.carArHeader{padding-top:18px}.carArTopRight{font-size:8px;max-width:98px;white-space:normal;text-align:right;line-height:1.4}
+.carArIntro{padding-top:22px}.carArIntro p{font-size:12px}
+.carArStage{width:calc(100% - 24px);margin-top:20px;height:52dvh;min-height:315px}
+.carArViewportLabel{left:12px;top:12px;font-size:8px;padding:8px}
+.carArViewportHint{top:17px;right:10px;font-size:8px}
+.carArNativeButton{bottom:20px;font-size:10px;padding:13px 15px}
+.carArActions{flex-direction:column;align-items:flex-start;padding-top:19px}
+.carArReturn{width:100%;text-align:center}
+.carArFooter{font-size:8px;line-height:1.4;gap:20px}
+}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;animation:none!important;transition:none!important}}
