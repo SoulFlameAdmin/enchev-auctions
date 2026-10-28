@@ -79,6 +79,7 @@ export default function CarArDemoPage() {
               <p>Сканирай QR кода с телефона. Ако устройството поддържа AR, натисни „Постави колата в AR“. Ако не — върти колата свободно на 360°.</p>
               <Link className="sfCarArDemoAction" href="/car-ar">ОТВОРИ WEBXR / 360° ↗</Link>
               <span className="sfCarArDemoNote">AR е функция на устройството и браузъра. 360° е резервният режим.</span>
+              <a className="sfCarArDemoCredit" href="https://exp-gemini.lusion.co/motion" target="_blank" rel="noopener noreferrer">Цветното 3D демо е Lusion Gemini ↗</a>
             </aside>
           </div>
           <footer className="sfCarArDemoFooter">
