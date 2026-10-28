@@ -11,8 +11,10 @@ export default function EnchevCinematicLoginGate() {
   const [open,setOpen]=useState(false);
   const [hasOpened,setHasOpened]=useState(false);
   const [revealed,setRevealed]=useState(false);
+  const [arReady,setArReady]=useState(false);
   const launcher=useRef<HTMLButtonElement>(null);
   const close=useRef<HTMLButtonElement>(null);
+  const cinematicFrame=useRef<HTMLIFrameElement>(null);
 
   const show=useCallback(()=>{
     setHasOpened(true);
@@ -24,6 +26,18 @@ export default function EnchevCinematicLoginGate() {
     setRevealed(false);
     setOpen(false);
     window.requestAnimationFrame(()=>launcher.current?.focus());
+  },[]);
+
+
+  // The same-origin cinematic iframe reports when the CarAR reveal is finished.
+  useEffect(()=>{
+    const receive=(event:MessageEvent)=>{
+      if(event.origin!==window.location.origin)return;
+      if(event.source!==cinematicFrame.current?.contentWindow)return;
+      if(event.data?.type==="ENCHEV_CAR_AR_READY")setArReady(true);
+    };
+    window.addEventListener("message",receive);
+    return()=>window.removeEventListener("message",receive);
   },[]);
 
   // Original welcome ENTER stays functional; only add the login advertising modal.
@@ -81,6 +95,7 @@ export default function EnchevCinematicLoginGate() {
 
   return (
     <>
+      <style>{"\n.enchevQrDock{position:relative;flex:0 0 142px;width:142px;align-self:center;\ndisplay:flex;flex-direction:column;align-items:center;gap:7px;padding:14px 11px 13px;\nborder:1px solid rgba(221,185,126,.55);border-radius:10px;\nbackground:linear-gradient(150deg,rgba(34,36,42,.98),rgba(11,13,17,.98));\nbackdrop-filter:blur(12px);box-shadow:0 20px 55px rgba(0,0,0,.78);\ntext-decoration:none;color:white;\ntransition:opacity .7s,transform .8s cubic-bezier(.2,.85,.2,1);\nopacity:0;transform:translateX(35px);pointer-events:none}\n.enchevQrDock.visible{opacity:1;transform:translateX(0);pointer-events:auto}\n.enchevQrDock:before{content:\"\";position:absolute;top:49%;left:-14px;width:13px;height:23px;\nbackground:#24252b;clip-path:polygon(100% 0,0 50%,100% 100%)}\n.enchevQrDock:hover{border-color:#eacb99;background:#282a30}\n.enchevQrDock .qrEyebrow{font-size:8px;font-weight:750;color:#dbc39f;letter-spacing:.19em}\n.enchevQrDock img{display:block;width:119px;height:119px;image-rendering:pixelated;border-radius:4px;background:#fff;padding:1px}\n.enchevQrDock .qrLabel{font-size:10px;font-weight:750;letter-spacing:.12em;text-align:center}\n.enchevQrDock .qrHelper{font-size:9px;color:#abb0b8;text-align:center;line-height:1.35}\n@media(max-width:900px){.enchevQrDock{display:none}}\n"}</style>
       {hasOpened && (
         <div
           data-enchev-login-overlay
@@ -94,7 +109,7 @@ export default function EnchevCinematicLoginGate() {
             background:open&&revealed?"rgba(0,0,0,.65)":"transparent",
             backdropFilter:open&&revealed?"blur(5px)":"blur(0px)",
             transition:"background .45s, opacity .45s, backdrop-filter .45s",
-            display:"flex",justifyContent:"center",alignItems:"center",padding:12
+            display:"flex",gap:15,justifyContent:"center",alignItems:"center",padding:12
           }}
         >
           <section
@@ -106,7 +121,7 @@ export default function EnchevCinematicLoginGate() {
               width:"min(1080px, calc(100vw - 32px))",
               height:"min(640px, calc(100dvh - 48px))",
               maxHeight:"calc(100dvh - 24px)",
-              flexShrink:0,
+              flexShrink:1,minWidth:0,
               overflow:"hidden",
               borderRadius:15,
               background:"#06070a",
@@ -118,8 +133,9 @@ export default function EnchevCinematicLoginGate() {
             }}
           >
             <iframe
+              ref={cinematicFrame}
               src="/3d-login/index.html"
-              title="Lusion Gemini motion reference and ENCHEV sign in"
+              title="SoulFlame Presents CarAR and ENCHEV sign in"
               loading="eager"
               style={{display:"block",width:"100%",height:"100%",border:0,background:"#06070a"}}
             />
@@ -139,6 +155,19 @@ export default function EnchevCinematicLoginGate() {
               }}
             >×</button>}
           </section>
+
+          <a
+            className={"enchevQrDock"+(arReady&&open&&revealed?" visible":"")}
+            href="/car-ar"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Сканирай за CarAR WebXR или 360 градусов 3D модел"
+          >
+            <span className="qrEyebrow">SCAN FOR AR</span>
+            <img src={"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIwAAACMAQAAAACGu3yTAAABAElEQVR42uWWsU0FQAxDnxG9swH7j/U3cCYwxYcGOkKDSBVdYTl2FJ/Kl9oXvtVff1pJO0iwkm7wbbxLJNrcsFbAW+Cj/THW69O7WHR+S0Kj3LFc8D7iwT3OKMgCDxD051i0bdO0/ugv+8XuMDtEmuXCK6HFcRvgxMsgEnYXn3aVhtZ2cIMvvGgdqBvHrW9YxdSQctOLxolDnzbkxivUJBC7V71MS2P3qldc25hefVRBgTfIWsF70st2KHbSq48FP9cCH31smxJC09zuhCTEYBZxz6HWFaacc2gHxmjmnh2G5RE390xjVY1Bl3v/mUNZs4uPM0qzGXAsfMDSP/h/vQOJcM0xnmZGVQAAAABJRU5ErkJggg=="} width="119" height="119" alt="QR код: enchev-auctions.vercel.app/car-ar" />
+            <span className="qrLabel">CARAR ↗</span>
+            <span className="qrHelper">WebXR · 360° GLB</span>
+          </a>
         </div>
       )}
       {!open && hasOpened && <button
