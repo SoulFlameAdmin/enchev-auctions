@@ -1,5 +1,6 @@
 import MasterSystemPlanV1 from "./components/MasterSystemPlanV1";
 import EnchevCinematicLoginGate from "./components/EnchevCinematicLoginGate";
+import EaHeroPhotoOcclusion from "./components/EaHeroPhotoOcclusion";
 
 export default function Home(){
   return (
@@ -49,6 +50,7 @@ export default function Home(){
           .eaHeroBrand{top:6px;width:min(43vw,235px)}
         }
       `}</style>
+      <EaHeroPhotoOcclusion />
       <MasterSystemPlanV1 />
       <EnchevCinematicLoginGate />
     </main>
