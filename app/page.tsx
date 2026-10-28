@@ -25,7 +25,7 @@ export default function Home(){
       
       
       <div className="eaHeroBrand" aria-label="E&A East West Auctioneers Group — SOULFLAME">
-        <img src="/brand/ea-east-west-premium.svg" alt="E&A East West Auctioneers Group — SOULFLAME" />
+        <img src="/brand/ea-primary-vertical.svg" alt="E&A East West Auctioneers Group — SOULFLAME" />
       </div>
       <style>{`
         .eaHeroBrand{
@@ -34,7 +34,7 @@ export default function Home(){
           left:50%;
           transform:translateX(-50%);
           z-index:7;
-          width:clamp(230px,32vw,390px);
+          width:clamp(245px,32vw,415px);
           pointer-events:none;
           display:flex;
           justify-content:center;
@@ -43,7 +43,7 @@ export default function Home(){
         }
         .eaHeroBrand img{display:block;width:100%;height:auto;object-fit:contain}
         @media(max-width:760px){
-          .eaHeroBrand{top:max(10px,env(safe-area-inset-top));width:min(64vw,260px)}
+          .eaHeroBrand{top:max(10px,env(safe-area-inset-top));width:min(65vw,260px)}
         }
         @media(max-height:550px){
           .eaHeroBrand{top:6px;width:min(43vw,235px)}
