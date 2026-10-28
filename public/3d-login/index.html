@@ -495,6 +495,97 @@ html.sf-sequence .cararPromo{background:radial-gradient(ellipse at 55% 35%,#2320
   .visualFallback .eaIntroEastWest{font-size:26px}
   .visualFallback .eaIntroGroup{font-size:9px}
 }
+
+/* SOULFLAME IGNITION V2 — begin tracing at the first rendered frame.
+   Uses the approved symbol's actual paths, not a replacement logo/image. */
+.visualFallback .introContent:before{
+  content:"";position:absolute;top:50%;left:50%;z-index:-1;
+  width:min(78vw,640px);height:min(65vh,620px);pointer-events:none;
+  transform:translate(-50%,-52%) scale(.72);
+  border-radius:50%;opacity:0;
+  background:radial-gradient(ellipse at center,rgba(225,179,112,.16) 0%,rgba(129,156,225,.075) 36%,transparent 72%);
+  animation:sfIgnitionHalo 4.2s ease-out both;
+}
+.visualFallback .brandEmblem{
+  position:relative;z-index:1;
+  opacity:1;transform:none;animation:sfIgnitionArrival 1.1s ease-out both;
+  overflow:visible;filter:drop-shadow(0 0 0 rgba(255,221,165,0));
+}
+.brandEmblem .sfFlameEcho,
+.brandEmblem .sfFlameDraw,
+.brandEmblem .sfFlameShine{
+  fill:none;stroke-linecap:round;stroke-linejoin:round;
+  stroke-dasharray:100;stroke-dashoffset:100;vector-effect:non-scaling-stroke;
+}
+.brandEmblem .sfFlameEcho{
+  stroke:#e6ad6d;stroke-width:13;opacity:.62;
+  filter:drop-shadow(0 0 13px rgba(240,165,92,.76));
+  animation:sfIgnitionDraw 2.7s cubic-bezier(.3,.05,.22,1) 0s forwards,sfIgnitionDim .9s ease 3.15s forwards;
+}
+.brandEmblem .sfFlameDraw{
+  stroke:url(#sfStrokeLight);stroke-width:4.8;opacity:1;
+  filter:drop-shadow(0 0 7px rgba(221,233,255,.83));
+  animation:sfIgnitionDraw 2.7s cubic-bezier(.3,.05,.22,1) .06s forwards,sfIgnitionTraceSettle .9s ease 3.3s forwards;
+}
+.brandEmblem .sfFlameShine{
+  stroke:#fff9eb;stroke-width:8;opacity:0;
+  stroke-dasharray:6 94;
+  filter:drop-shadow(0 0 9px #fff7d6);
+  animation:sfIgnitionSpark 2.9s linear .15s forwards;
+}
+.brandEmblem .sfFlameSolid{
+  fill:url(#sfLogoMetal);opacity:0;
+  animation:sfIgnitionFill 1s cubic-bezier(.15,.7,.2,1) 2.55s forwards,sfMetalPulse 1.6s ease-in-out 3.5s 1;
+}
+.visualFallback .brandPresents{
+  animation:sfIgnitionTag 1s ease-out .15s both;
+  color:#e9edf3;letter-spacing:.35em;
+}
+.visualFallback .brandTitle.eaIntroLockup{
+  animation:sfIgnitionWords 1.1s cubic-bezier(.14,.8,.2,1) 2.6s both;
+}
+.visualFallback .brandAccent{animation:accentIntro 1.4s ease 3.05s both}
+@keyframes sfIgnitionDraw{to{stroke-dashoffset:0}}
+@keyframes sfIgnitionSpark{
+  0%{opacity:0;stroke-dashoffset:100}
+  8%{opacity:1}
+  80%{opacity:1}
+  100%{opacity:0;stroke-dashoffset:-10}
+}
+@keyframes sfIgnitionFill{
+  0%{opacity:0;filter:brightness(3)}
+  65%{opacity:.88;filter:brightness(1.8)}
+  100%{opacity:1;filter:brightness(1)}
+}
+@keyframes sfIgnitionDim{to{opacity:.1}}
+@keyframes sfIgnitionTraceSettle{to{opacity:.5;stroke-width:2}}
+@keyframes sfIgnitionArrival{
+  0%{transform:scale(.955);filter:drop-shadow(0 0 0 rgba(255,221,165,0))}
+  100%{transform:scale(1);filter:drop-shadow(0 0 15px rgba(245,210,156,.22))}
+}
+@keyframes sfIgnitionHalo{
+  0%{opacity:0;transform:translate(-50%,-52%) scale(.72)}
+  25%{opacity:.6}
+  70%{opacity:.95;transform:translate(-50%,-52%) scale(1.08)}
+  100%{opacity:.32;transform:translate(-50%,-52%) scale(1)}
+}
+@keyframes sfIgnitionTag{
+  from{opacity:0;transform:translateY(11px);letter-spacing:.55em}
+  to{opacity:1;transform:translateY(0);letter-spacing:.35em}
+}
+@keyframes sfIgnitionWords{
+  from{opacity:0;filter:blur(12px);transform:translateY(17px) scale(.97)}
+  to{opacity:1;filter:blur(0);transform:translateY(0) scale(1)}
+}
+@keyframes sfMetalPulse{0%,100%{filter:brightness(1)}45%{filter:brightness(1.25)}}
+@media(prefers-reduced-motion:reduce){
+  .visualFallback .introContent:before{animation:none!important;opacity:.22}
+  .visualFallback .brandEmblem,.visualFallback .brandPresents,
+  .visualFallback .brandTitle.eaIntroLockup{animation:none!important;opacity:1!important;transform:none!important;filter:none!important}
+  .brandEmblem .sfFlameSolid{animation:none!important;opacity:1!important}
+  .brandEmblem .sfFlameEcho,.brandEmblem .sfFlameDraw,.brandEmblem .sfFlameShine{display:none!important}
+}
+
 </style>
 </head>
 <body>
@@ -513,9 +604,21 @@ html.sf-sequence .cararPromo{background:radial-gradient(ellipse at 55% 35%,#2320
 <div class="eaEarlyAccessTopCount" aria-live="polite" aria-label="Реално записани за ранен достъп">ЗАПИСАНИ <strong id="eaEarlyAccessTopCount">—</strong></div>
 
 </section>
-<div class="visualFallback" id="geminiCurtain" aria-label="SOULFLAME PRESENTS — рисуване на логото"><div class="introContent"><span class="brandPresents">SOULFLAME PRESENTS</span><svg class="brandEmblem" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 830" role="img" aria-label="SoulFlame — анимирано лого">
+<div class="visualFallback" id="geminiCurtain" aria-label="SOULFLAME PRESENTS — рисуване на логото"><div class="introContent"><span class="brandPresents">SOULFLAME PRESENTS</span><svg class="brandEmblem" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 830" role="img" aria-label="SoulFlame — светлинно изрисуване на логото">
+  <defs>
+    <linearGradient id="sfStrokeLight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f8fcff"/><stop offset="35%" stop-color="#e4eeff"/>
+      <stop offset="65%" stop-color="#eec58b"/><stop offset="100%" stop-color="#ffffff"/>
+    </linearGradient>
+    <linearGradient id="sfLogoMetal" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc"/><stop offset="34%" stop-color="#d5d9e4"/>
+      <stop offset="65%" stop-color="#fff6e8"/><stop offset="88%" stop-color="#cba775"/><stop offset="100%" stop-color="#fff"/>
+    </linearGradient>
+  </defs>
   <path class="sfFlameSolid" fill-rule="evenodd" d="M299 6 L5 512 L9 515 L5 520 L196 822 L295 731 L395 822 L595 515 L590 505 L393 203 L304 379 L301 383 L300 382 Z M36 544 L37 543 L284 723 L199 802 Z M562 542 L393 802 L305 723 L561 541 Z M404 244 L579 513 L318 698 L317 696 L430 500 L403 250 Z M389 240 L392 255 L417 497 L302 697 L300 413 Z M286 54 L288 709 L19 514 Z"/>
+  <path class="sfFlameEcho" pathLength="100" d="M299 6 L5 512 L9 515 L5 520 L196 822 L295 731 L395 822 L595 515 L590 505 L393 203 L304 379 L301 383 L300 382 Z M36 544 L37 543 L284 723 L199 802 Z M562 542 L393 802 L305 723 L561 541 Z M404 244 L579 513 L318 698 L317 696 L430 500 L403 250 Z M389 240 L392 255 L417 497 L302 697 L300 413 Z M286 54 L288 709 L19 514 Z"/>
   <path class="sfFlameDraw" pathLength="100" d="M299 6 L5 512 L9 515 L5 520 L196 822 L295 731 L395 822 L595 515 L590 505 L393 203 L304 379 L301 383 L300 382 Z M36 544 L37 543 L284 723 L199 802 Z M562 542 L393 802 L305 723 L561 541 Z M404 244 L579 513 L318 698 L317 696 L430 500 L403 250 Z M389 240 L392 255 L417 497 L302 697 L300 413 Z M286 54 L288 709 L19 514 Z"/>
+  <path class="sfFlameShine" pathLength="100" d="M299 6 L5 512 L9 515 L5 520 L196 822 L295 731 L395 822 L595 515 L590 505 L393 203 L304 379 L301 383 L300 382 Z M36 544 L37 543 L284 723 L199 802 Z M562 542 L393 802 L305 723 L561 541 Z M404 244 L579 513 L318 698 L317 696 L430 500 L403 250 Z M389 240 L392 255 L417 497 L302 697 L300 413 Z M286 54 L288 709 L19 514 Z"/>
 </svg><div class="brandTitle eaIntroLockup" aria-label="EAST WEST AUCTIONEERS GROUP SOULFLAME"><strong class="eaIntroEastWest">EAST WEST</strong><span class="eaIntroGroup">AUCTIONEERS GROUP</span><span class="eaIntroSoul">SOULFLAME</span></div><span class="brandAccent" aria-hidden="true"></span></div></div>
 
 <section class="cararPromo" id="cararPromo" role="dialog" aria-label="SOULFLAME CarAR — Coming Soon" aria-modal="true" aria-hidden="true">
