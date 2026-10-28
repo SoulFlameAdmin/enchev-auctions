@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 500" role="img" aria-labelledby="title desc">
+  <title id="title">E&amp;A — East West Auctioneers Group — SOULFLAME</title>
+  <desc id="desc">Gold automobile silhouette above a metallic E and A monogram with a road forming the crossbar of the letter A.</desc>
+  <defs>
+    <linearGradient id="gold" x1=".06" y1=".06" x2=".94" y2=".94"><stop offset="0" stop-color="#a75a0c"/><stop offset=".12" stop-color="#fff4be"/><stop offset=".25" stop-color="#eec05e"/><stop offset=".42" stop-color="#a66916"/><stop offset=".62" stop-color="#ffe29d"/><stop offset=".78" stop-color="#be7620"/><stop offset=".94" stop-color="#f9cf76"/><stop offset="1" stop-color="#82450e"/></linearGradient>
+    <linearGradient id="gloss" x1=".06" y1="0" x2=".75" y2="1"><stop stop-color="#fffbe2"/><stop offset=".14" stop-color="#f7d57d"/><stop offset=".33" stop-color="#b77422"/><stop offset=".49" stop-color="#ffecaf"/><stop offset=".7" stop-color="#e7ad3e"/><stop offset="1" stop-color="#895011"/></linearGradient>
+    <linearGradient id="chrome" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#fff"/><stop offset=".22" stop-color="#cbd3de"/><stop offset=".42" stop-color="#fafafa"/><stop offset=".63" stop-color="#828995"/><stop offset=".78" stop-color="#f4f7fa"/><stop offset="1" stop-color="#757c86"/></linearGradient>
+    <linearGradient id="road" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#2a2c31"/><stop offset=".65" stop-color="#080c13"/><stop offset="1" stop-color="#36383d"/></linearGradient>
+    <filter id="lift" x="-30%" y="-30%" width="160%" height="180%"><feDropShadow dx="1" dy="5" stdDeviation="3" flood-color="#2a1400" flood-opacity=".85"/></filter>
+  </defs>
+  <g fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M103 129 C179 70 283 37 397 54 C484 34 505 39 580 79 C632 103 687 109 776 117 C813 122 836 134 849 151" stroke="#51330e" stroke-width="12" opacity=".65"/>
+    <path d="M103 122 C179 63 283 30 397 47 C484 27 505 32 580 72 C632 96 687 102 776 110 C813 115 836 127 849 144" stroke="url(#gloss)" stroke-width="8"/>
+    <path d="M102 118 C176 64 287 30 396 45 C477 29 505 33 581 73" stroke="#fff5c3" stroke-width="1.7" opacity=".87"/>
+    <path d="M181 117 C232 86 305 70 361 75 M427 72 C486 61 530 72 567 103" stroke="url(#gold)" stroke-width="4" opacity=".85"/>
+    <path d="M71 163 C88 153 100 153 121 155 L840 155" stroke="#bb8433" stroke-width="4" opacity=".82"/>
+  </g>
+  <g filter="url(#lift)" stroke-linejoin="round">
+    <path d="M230 151 H364 V193 H276 V216 H350 V255 H276 V279 H364 V322 H230 Z" fill="url(#gold)" stroke="#ffdf90" stroke-width="3"/>
+    <path d="M235 157 H355 M234 160 V314 M276 199 H343" fill="none" stroke="#fff6ca" stroke-width="2.3" opacity=".68"/>
+    <text x="366" y="318" font-size="144" font-family="Arial, Helvetica, sans-serif" font-weight="800" letter-spacing="-8" fill="url(#chrome)" stroke="#e6e8eb" stroke-width="1.6">&amp;</text>
+    <path d="M477 322 L559 151 L611 151 L693 322 L638 322 L586 202 L581 202 L531 322 Z" fill="url(#gold)" stroke="#ffdf90" stroke-width="3"/>
+    <path d="M481 316 L563 157 L604 157" stroke="#fff4bf" stroke-width="2.5" fill="none" opacity=".75"/>
+  </g>
+  <path d="M528 263 C578 244 628 235 685 226 C729 219 754 213 786 208 C735 227 688 250 648 278 L527 278 Z" fill="url(#road)" stroke="#a7772a" stroke-width="3.5" stroke-linejoin="round"/>
+  <path d="M530 262 C600 238 692 220 784 208" fill="none" stroke="#ffe4a0" stroke-width="4" stroke-linecap="round"/>
+  <path d="M528 279 H647 C690 249 736 225 784 209" fill="none" stroke="#dca94d" stroke-width="3" stroke-linecap="round"/>
+  <path d="M553 267 C621 244 698 226 765 213" fill="none" stroke="#f7f7f4" stroke-width="5" stroke-dasharray="18 13" stroke-linecap="round"/>
+  <g text-anchor="middle" font-family="Arial, Helvetica, sans-serif">
+    <text x="450" y="389" font-size="52" font-weight="700" letter-spacing="15" fill="url(#chrome)" stroke="#f0f1f3" stroke-width=".3">EAST WEST</text>
+    <path d="M67 421 H221 M685 421 H833" stroke="url(#gloss)" stroke-width="2.7"/>
+    <text x="450" y="431" font-size="29" font-weight="600" letter-spacing="7" fill="url(#gold)">AUCTIONEERS GROUP</text>
+    <text x="450" y="480" font-size="32" font-weight="700" letter-spacing="9" fill="#f5f5f7">SOULFLAME</text>
+  </g>
+</svg>
