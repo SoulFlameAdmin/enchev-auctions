@@ -517,6 +517,17 @@ promoForm.addEventListener('submit',async event=>{
   }catch(error){
     promoStatus.textContent=error?.message||'Проблем с връзката. Опитай отново.';
     promoStatus.dataset.state='error';
+    // Graceful manual option until the private email service is configured.
+    // Mail is NOT submitted silently; the visitor must explicitly send it.
+    if(String(error?.message||'').includes('се подготвя')){
+      const link=document.createElement('a');
+      link.href='mailto:soulflame.mitko@gmail.com?subject='+
+        encodeURIComponent('SOULFLAME CarAR Coming Soon')+'&body='+
+        encodeURIComponent('Моля уведомете ме, когато CarAR стартира.\nИмейл: '+email);
+      link.textContent='Изпрати заявка от Gmail ↗';
+      link.style.cssText='display:block;margin-top:8px;color:#f5d19a;text-decoration:underline';
+      promoStatus.appendChild(link);
+    }
   }finally{promoButton.disabled=false}
 });
 
