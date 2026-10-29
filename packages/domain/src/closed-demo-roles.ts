@@ -54,11 +54,11 @@ const idPattern = /^demo-[a-z0-9][a-z0-9_-]{2,63}$/;
 const sessionPattern = /^[a-zA-Z0-9_-]{16,128}$/;
 
 const allowed: Readonly<Record<ClosedDemoRole, readonly ClosedDemoAction[]>> = Object.freeze({
-  seller: Object.freeze(["vehicle:intake", "vehicle:submit", "document:preview"]),
-  admin: Object.freeze(["vehicle:approve", "lot:create", "auction:start", "document:preview", "audit:read"]),
-  mitko: Object.freeze(["auction:read", "terms:accept", "bid:place", "document:preview"]),
-  borko: Object.freeze(["auction:read", "terms:accept", "bid:place", "document:preview"]),
-  automation: Object.freeze(["audit:read"])
+  seller: Object.freeze(["vehicle:intake", "vehicle:submit", "document:preview"] as const),
+  admin: Object.freeze(["vehicle:approve", "lot:create", "auction:start", "document:preview", "audit:read"] as const),
+  mitko: Object.freeze(["auction:read", "terms:accept", "bid:place", "document:preview"] as const),
+  borko: Object.freeze(["auction:read", "terms:accept", "bid:place", "document:preview"] as const),
+  automation: Object.freeze(["audit:read"] as const)
 });
 
 const expectedTarget: Readonly<Record<ClosedDemoAction, ClosedDemoTarget["kind"]>> = Object.freeze({
