@@ -36,7 +36,7 @@ try {
     "packages/domain/src/closed-demo-roles.ts",
     "packages/domain/src/closed-demo-session-guard.ts",
     "--ignoreConfig","--target","ES2022","--module","NodeNext",
-    "--moduleResolution","NodeNext","--strict","--skipLibCheck",
+    "--moduleResolution","NodeNext","--types","node","--strict","--skipLibCheck",
     "--outDir",tmp,"--pretty","false"];
   const compile=spawnSync(process.execPath,args,{encoding:"utf8"});
   requireTest(compile.status===0,"TS compilation: "+(compile.stdout||compile.stderr||"").slice(0,3000));
