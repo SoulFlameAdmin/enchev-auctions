@@ -1,0 +1,39 @@
+name: Prepare Next 16.4.3 secure lockfile (read-only)
+on:
+  pull_request:
+    paths:
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/enchev-next-security-lock-proposal.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  prepare-secure-lock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact PR source (no write token)
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node 24
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Enforce pinned safe framework target
+        run: |
+          node -e 'const p=require("./package.json"); if(p.dependencies.next!=="16.4.3")process.exit(1)'
+      - name: Resolve reproducible lockfile without package lifecycle scripts
+        run: npm install --package-lock-only --ignore-scripts --no-fund --no-audit
+      - name: Reject high and critical dependency vulnerabilities
+        run: npm audit --package-lock-only --audit-level=high
+      - name: Check lockfile manifest consistency
+        run: |
+          node -e 'const p=require("./package.json"),l=require("./package-lock.json"); if(l.packages[""].dependencies.next!==p.dependencies.next||l.packages["node_modules/next"].version!=="16.4.3")process.exit(1)'
+      - name: Emit PUBLIC package-lock for reviewed GitHub commit
+        run: |
+          node -e 'const fs=require("node:fs"); const p="package-lock.json"; const obj=JSON.parse(fs.readFileSync(p,"utf8")); const b=Buffer.from(JSON.stringify(obj,null,2)+"\n","utf8").toString("base64"); console.log("PUBLIC_LOCK_B64_BEGIN"); for(let i=0;i<b.length;i+=1600) console.log("PUBLIC_LOCK_B64_CHUNK="+b.slice(i,i+1600)); console.log("PUBLIC_LOCK_B64_END");'
