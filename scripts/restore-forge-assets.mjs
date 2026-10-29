@@ -403,17 +403,43 @@ await Promise.all(Array.from({ length: 6 }, async () => {
     try {
       if (digest(await readFile(target)) === asset.sha256) continue;
     } catch {}
+    // The supplied original Forge CDN now returns 404 for some captured
+    // images. The already published Enchev frontend contains exact immutable
+    // copies. Prefer that approved, same-project mirror; ALWAYS re-hash bytes.
+    // Do not accept redirects, stale/different contents, or unverified files.
+    if (typeof asset.path !== 'string' || asset.path.startsWith('/') ||
+        asset.path.split('/').some(part => part === '..' || part === '.' || !part) ||
+        !/^[a-zA-Z0-9_./-]+$/.test(asset.path) ||
+        typeof asset.sha256 !== 'string' || !/^[0-9a-f]{64}$/.test(asset.sha256)) {
+      throw new Error('Invalid Forge SHA-256 asset manifest entry');
+    }
     let data;
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        const response = await fetch(asset.url, { signal: AbortSignal.timeout(90000) });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        data = Buffer.from(await response.arrayBuffer());
-        if (digest(data) !== asset.sha256) throw new Error('Source content changed');
-        break;
-      } catch (error) {
-        if (attempt === 2) throw new Error(`Cannot restore ${asset.path}: ${error.message}`);
+    const sources = [
+      { name: 'production-mirror', url: 'https://enchev-auctions.vercel.app/forge/' + asset.path, attempts: 1 },
+      { name: 'captured-origin', url: asset.url, attempts: 3 },
+    ];
+    const failures = [];
+    for (const source of sources) {
+      for (let attempt = 0; attempt < source.attempts; attempt++) {
+        try {
+          const response = await fetch(source.url, {
+            redirect: 'error',
+            signal: AbortSignal.timeout(30000),
+            cache: 'no-store',
+          });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const candidate = Buffer.from(await response.arrayBuffer());
+          if (digest(candidate) !== asset.sha256) throw new Error('SHA-256 mismatch');
+          data = candidate;
+          break;
+        } catch (error) {
+          failures.push(source.name + ':' + (error?.message || 'network-error'));
+        }
       }
+      if (data) break;
+    }
+    if (!data) {
+      throw new Error(`Cannot restore ${asset.path}: ${failures.join(' | ')}`);
     }
     await mkdir(path.dirname(target), { recursive: true });
     await writeFile(target, data);
