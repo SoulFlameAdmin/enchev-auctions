@@ -9,8 +9,8 @@ const hash = "d7577b4b9f6a6acda5594e9e6171678dba58e133";
 const missingPath = "media/2480ec12b70d13d46feb.jpg";
 const manifest = JSON.parse(fs.readFileSync("config/forge-assets.json","utf8"));
 const matches = manifest.filter(x=>x.path === missingPath);
-if (matches.length!==1 || !matches[0].url.includes(hash)) {
-  throw Error("FORGE_MISSING_MEDIA_SCOPE: source drift");
+if (matches.length!==0 || manifest.length!==133) {
+  throw Error("FORGE_MISSING_MEDIA_SCOPE: expected exactly 133 remaining hashed assets");
 }
 const frontend = JSON.parse(gunzipSync(fs.readFileSync("config/forge-frontend.json.gz")));
 const needles = [missingPath, hash, "d7577b4b", "1200x630.jpg"];
