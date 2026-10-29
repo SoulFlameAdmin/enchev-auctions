@@ -4,8 +4,10 @@ on:
     paths:
       - "packages/domain/src/closed-demo-isolation.ts"
       - "packages/domain/src/closed-demo-roles.ts"
+      - "packages/domain/src/closed-demo-session-guard.ts"
       - "packages/domain/src/index.ts"
       - "scripts/verify-enchev-closed-demo-roles.mjs"
+      - "scripts/verify-enchev-closed-demo-session-guard.mjs"
       - "docs/ENCHEV_CLOSED_DEMO_MISSION003_ROLES_2026-10-30.md"
       - ".github/workflows/enchev-closed-demo-mission003-roles.yml"
   workflow_dispatch:
@@ -33,5 +35,7 @@ jobs:
         run: node --check scripts/verify-enchev-closed-demo-roles.mjs
       - name: MISSION-003 positive/negative policy fixtures
         run: node scripts/verify-enchev-closed-demo-roles.mjs
+      - name: Signed-session and authority negative fixtures
+        run: node scripts/verify-enchev-closed-demo-session-guard.mjs
       - name: Repository TypeScript check
         run: npx tsc --noEmit --pretty false
