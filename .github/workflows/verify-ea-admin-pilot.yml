@@ -1,0 +1,24 @@
+name: Verify E&A Early Access Admin Pilot
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'scripts/verify-ea-admin-pilot.mjs'
+      - '.github/workflows/verify-ea-admin-pilot.yml'
+permissions:
+  contents: read
+jobs:
+  early-access-admin-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact PR source
+        uses: actions/checkout@v4
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Syntax check (no credentials required)
+        run: node --check scripts/verify-ea-admin-pilot.mjs
+      - name: Run three isolated security/contract fixtures
+        run: node scripts/verify-ea-admin-pilot.mjs --self-test
