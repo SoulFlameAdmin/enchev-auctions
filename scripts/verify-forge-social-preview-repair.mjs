@@ -37,6 +37,10 @@ must(script.includes("replaceSocialToken(missingSocialImage, approvedSocialImage
 must(script.includes("correctSocialDimension('width', 1200, socialWidth)") &&
   script.includes("correctSocialDimension('height', 630, socialHeight)"),
   "OpenGraph dimensions not corrected");
-must(script.includes("digest(data) !== asset.sha256"),
+must(script.includes("digest(candidate) !== asset.sha256"),
   "remaining media integrity check unexpectedly removed");
+must(script.includes("https://enchev-auctions.vercel.app/forge/") &&
+  script.includes("redirect: 'error'") &&
+  script.includes("production-mirror") && script.includes("captured-origin"),
+  "verified first-party mirror and fail-closed origin fallback missing");
 console.log("FORGE_SOCIAL_REPAIR_STATIC PASS manifest=133 socialRefs=4 liveNonSocialRefs=0 sha256Checks=retained");
