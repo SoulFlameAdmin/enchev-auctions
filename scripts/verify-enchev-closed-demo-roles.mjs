@@ -27,7 +27,7 @@ try {
   must(fs.existsSync(tsc), "TypeScript compiler missing");
   const comp = spawnSync(process.execPath, [
     tsc, rolesFile, boundaryFile, "--ignoreConfig", "--target", "ES2022",
-    "--module", "CommonJS", "--moduleResolution", "Node",
+    "--module", "NodeNext", "--moduleResolution", "NodeNext",
     "--skipLibCheck", "--strict", "--outDir", tmp, "--pretty", "false"
   ], {encoding: "utf8"});
   must(comp.status === 0, "TS compilation: " + (comp.stdout || comp.stderr || "").slice(0, 2500));
