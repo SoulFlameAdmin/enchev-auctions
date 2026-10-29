@@ -5,6 +5,8 @@ on:
       - "config/forge-assets.json"
       - "config/forge-image-paths.json"
       - "scripts/inspect-forge-missing-media.mjs"
+      - "scripts/verify-forge-social-preview-repair.mjs"
+      - "scripts/restore-forge-assets.mjs"
       - ".github/workflows/inspect-forge-missing-media.yml"
   workflow_dispatch:
 
@@ -14,7 +16,7 @@ permissions:
 jobs:
   inspect-media:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 18
     steps:
       - name: Checkout exact source
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
@@ -26,3 +28,9 @@ jobs:
           node-version: "24"
       - name: Read-only reference inventory
         run: node scripts/inspect-forge-missing-media.mjs
+      - name: Verify social-only replacement and SHA-256 integrity
+        run: node scripts/verify-forge-social-preview-repair.mjs
+      - name: Clean locked dependency install
+        run: npm ci --no-audit --no-fund
+      - name: Full exact-head production build with ALL other binary integrity checks
+        run: npm run build
