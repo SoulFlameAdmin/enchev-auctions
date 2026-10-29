@@ -1,0 +1,33 @@
+name: Verify MASTER 24.13 evidence reconciliation (read-only)
+on:
+  pull_request:
+    paths:
+      - "app/components/VerifiedPlanEvidenceSync.tsx"
+      - "scripts/verify-master-24-13-evidence-reconciliation.mjs"
+      - ".github/workflows/verify-master-24-13-evidence-reconciliation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  evidence-24-13:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact commit
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Set up Node 24
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Verify canonical evidence rows
+        run: node scripts/verify-master-24-13-evidence-reconciliation.mjs
+      - name: Verify 24.13 schema invariant
+        run: node scripts/verify-schema-compatibility-tests.mjs
+      - name: Verify 24.13 negative self-tests
+        run: node scripts/verify-schema-compatibility-tests.mjs --self-test
+      - name: Verify cloud sync contract (read-only)
+        run: node scripts/verify-cloud-plan-state.mjs
