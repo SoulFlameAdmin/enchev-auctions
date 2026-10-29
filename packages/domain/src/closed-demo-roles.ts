@@ -10,15 +10,15 @@ import {
   type ClosedDemoBoundary
 } from "./closed-demo-isolation";
 
-export const CLOSED_DEMO_ROLES = ["seller", "admin", "mitko", "borko", "automation"] as const;
+export const CLOSED_DEMO_ROLES = Object.freeze(["seller", "admin", "mitko", "borko", "automation"] as const);
 export type ClosedDemoRole = typeof CLOSED_DEMO_ROLES[number];
 
-export const CLOSED_DEMO_ACTIONS = [
+export const CLOSED_DEMO_ACTIONS = Object.freeze([
   "vehicle:intake", "vehicle:submit", "vehicle:approve",
   "lot:create", "auction:start", "auction:read",
   "terms:accept", "bid:place", "document:preview",
   "audit:read"
-] as const;
+] as const);
 export type ClosedDemoAction = typeof CLOSED_DEMO_ACTIONS[number];
 
 export type ClosedDemoIdentityRecord = Readonly<{
