@@ -5,6 +5,7 @@ on:
       - "packages/domain/src/closed-demo-isolation.ts"
       - "packages/domain/src/closed-demo-roles.ts"
       - "packages/domain/src/closed-demo-session-guard.ts"
+      - "app/lib/enchev-closed-demo-auth-server.ts"
       - "packages/domain/src/index.ts"
       - "scripts/verify-enchev-closed-demo-roles.mjs"
       - "scripts/verify-enchev-closed-demo-session-guard.mjs"
