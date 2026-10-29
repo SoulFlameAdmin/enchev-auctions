@@ -8,7 +8,7 @@
 import {
   requireIssuedClosedDemoBoundary,
   type ClosedDemoBoundary
-} from "./closed-demo-isolation";
+} from "./closed-demo-isolation.js";
 
 export const CLOSED_DEMO_ROLES = Object.freeze(["seller", "admin", "mitko", "borko", "automation"] as const);
 export type ClosedDemoRole = typeof CLOSED_DEMO_ROLES[number];
