@@ -198,3 +198,8 @@ export function prepareClosedDemoPayment(
     storageMode: "memory-only"
   });
 }
+
+/** Reuse MISSION-002's unforgeable in-process boundary in dependent demo modules. */
+export function requireIssuedClosedDemoBoundary(boundary: ClosedDemoBoundary): ClosedDemoBoundary {
+  return requireBoundary(boundary);
+}

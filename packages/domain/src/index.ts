@@ -30,3 +30,4 @@ export * from "./auction-reconstruction";
 export * from "./search-discovery";
 export * from "./upload-content-policy";
 export * from "./closed-demo-isolation";
+export * from "./closed-demo-roles";
