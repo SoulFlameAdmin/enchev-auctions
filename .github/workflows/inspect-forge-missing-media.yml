@@ -6,6 +6,7 @@ on:
       - "config/forge-image-paths.json"
       - "scripts/inspect-forge-missing-media.mjs"
       - "scripts/verify-forge-social-preview-repair.mjs"
+      - "scripts/probe-forge-production-mirror.mjs"
       - "scripts/restore-forge-assets.mjs"
       - ".github/workflows/inspect-forge-missing-media.yml"
   workflow_dispatch:
@@ -30,6 +31,8 @@ jobs:
         run: node scripts/inspect-forge-missing-media.mjs
       - name: Verify social-only replacement and SHA-256 integrity
         run: node scripts/verify-forge-social-preview-repair.mjs
+      - name: Read-only production SHA-256 mirror diagnostic
+        run: node scripts/probe-forge-production-mirror.mjs
       - name: Clean locked dependency install
         run: npm ci --no-audit --no-fund
       - name: Full exact-head production build with ALL other binary integrity checks
