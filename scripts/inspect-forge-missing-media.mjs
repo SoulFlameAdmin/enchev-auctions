@@ -33,3 +33,10 @@ const localRefs=Object.entries(photoMap).filter(([k,v])=>k.includes(hash)||v.inc
 const summary={manifestAssets:manifest.length,frontendFiles:Object.keys(frontend).length,
   candidate:matches[0],references:out,sourceMap:localRefs};
 console.log("FORGE_MISSING_MEDIA_PROVENANCE "+JSON.stringify(summary));
+
+const index=String(frontend["index.html"]||"");
+for(const needle of ["og:image:width","og:image:height"]){
+ const positions=[];let at=0;
+ while((at=index.indexOf(needle,at))!==-1){positions.push(at);at+=needle.length}
+ console.log("FORGE_SOCIAL_FIELD_CONTEXT "+JSON.stringify({needle,positions,contexts:positions.map(i=>index.slice(i,i+90))}));
+}
