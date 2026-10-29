@@ -1,0 +1,28 @@
+name: Inspect broken Forge media provenance (read-only)
+on:
+  pull_request:
+    paths:
+      - "config/forge-assets.json"
+      - "config/forge-image-paths.json"
+      - "scripts/inspect-forge-missing-media.mjs"
+      - ".github/workflows/inspect-forge-missing-media.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-media:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Set up Node 24
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Read-only reference inventory
+        run: node scripts/inspect-forge-missing-media.mjs
