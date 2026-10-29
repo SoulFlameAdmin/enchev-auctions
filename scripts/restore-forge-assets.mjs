@@ -334,6 +334,60 @@ const ctaScriptPath = path.join(output, 'enchev-cta-map.js');
 await writeFile(ctaScriptPath, ctaMapScript);
 const forgeIndexPath = path.join(output, 'index.html');
 let forgeIndex = await readFile(forgeIndexPath, 'utf8');
+// The discontinued original Forge Sanity file was only an OpenGraph/Twitter
+// social preview image (not runtime layout, animation or vehicle content).
+// Replace ALL FOUR embedded SSR/RSC references with the approved local E&A
+// brand image, and remove the dead asset from the download manifest separately.
+const missingSocialImage = '/forge/media/2480ec12b70d13d46feb.jpg';
+const approvedSocialImage = '/brand/ea-approved-1to1.jpg';
+const localSocialImage = await readFile(path.join(root, 'public/brand/ea-approved-1to1.jpg'));
+if (localSocialImage.byteLength < 1024 ||
+    localSocialImage[0] !== 0xff || localSocialImage[1] !== 0xd8) {
+  throw new Error('Approved E&A social image is not a valid local JPEG');
+}
+function socialJpegDimensions(data) {
+  let offset = 2;
+  while (offset + 8 < data.length) {
+    if (data[offset] !== 0xff) throw new Error('Malformed E&A social image');
+    while (data[offset] === 0xff) offset++;
+    const marker = data[offset++];
+    if (marker === 0xda || marker === 0xd9) break;
+    if (marker === 0x01 || marker === 0xd8 || marker >= 0xd0 && marker <= 0xd7) continue;
+    const length = data.readUInt16BE(offset);
+    if (length < 2 || offset + length > data.length) throw new Error('Malformed E&A JPEG segment');
+    if ([0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf].includes(marker)) {
+      return { width: data.readUInt16BE(offset + 5), height: data.readUInt16BE(offset + 3) };
+    }
+    offset += length;
+  }
+  throw new Error('Cannot read approved E&A social image dimensions');
+}
+const { width: socialWidth, height: socialHeight } = socialJpegDimensions(localSocialImage);
+if (socialWidth < 1 || socialHeight < 1) throw new Error('Invalid E&A social image dimensions');
+function replaceSocialToken(original, replacement, expectedCount) {
+  const occurrences = forgeIndex.split(original).length - 1;
+  if (occurrences !== expectedCount) {
+    throw new Error('Forge social preview reference changed: ' + original.slice(0, 60) +
+      ' expected=' + expectedCount + ' actual=' + occurrences);
+  }
+  forgeIndex = forgeIndex.replaceAll(original, replacement);
+}
+replaceSocialToken(missingSocialImage, approvedSocialImage, 4);
+const escapedQuote = String.fromCharCode(92) + '"';
+function correctSocialDimension(field, oldSize, newSize) {
+  replaceSocialToken(
+    'og:image:' + field + '" content="' + oldSize + '"',
+    'og:image:' + field + '" content="' + newSize + '"', 1
+  );
+  replaceSocialToken(
+    'og:image:' + field + escapedQuote + ',' + escapedQuote + 'content' + escapedQuote + ':' + escapedQuote + oldSize + escapedQuote,
+    'og:image:' + field + escapedQuote + ',' + escapedQuote + 'content' + escapedQuote + ':' + escapedQuote + newSize + escapedQuote, 1
+  );
+}
+correctSocialDimension('width', 1200, socialWidth);
+correctSocialDimension('height', 630, socialHeight);
+if (forgeIndex.includes(missingSocialImage)) throw new Error('Dead Forge social asset still referenced');
+
 if (!forgeIndex.includes('/forge/enchev-responsive.css')) forgeIndex = forgeIndex.replace('</head>', '<link rel="stylesheet" href="/forge/enchev-responsive.css"></head>');
 if (!forgeIndex.includes('/forge/enchev-cta-map.js')) {
   forgeIndex = forgeIndex.replace('</body>', '<script src="/forge/enchev-cta-map.js" defer></script></body>');

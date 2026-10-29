@@ -45,11 +45,6 @@
     "sha256": "279ee096852678467e25f7d02583a38e6df1feade5900deb999827c6993994b8"
   },
   {
-    "path": "media/2480ec12b70d13d46feb.jpg",
-    "url": "https://cdn.sanity.io/images/ed72g2cx/production/d7577b4b9f6a6acda5594e9e6171678dba58e133-1200x630.jpg?w=1200&h=630",
-    "sha256": "00d7eb76a558c7f82450e25692ee75f90dad9c2b6792766d60027ea77f885b52"
-  },
-  {
     "path": "media/833f233b33cbcd789d20.jpg",
     "url": "https://cdn.sanity.io/images/ed72g2cx/production/fcdbdf14cba64b77f457e40c415f08366cd05043-2880x3600.jpg?auto=format&fit=max&w=1920",
     "sha256": "baae4f5b27ce9eb2174bd88aef53fcd56400534b87cc3fd83bd4c307a4b39ffa"
