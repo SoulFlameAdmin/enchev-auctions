@@ -9,9 +9,15 @@ import {pathToFileURL} from "node:url";
 const source = fs.readFileSync("packages/domain/src/closed-demo-session-guard.ts","utf8");
 const barrel = fs.readFileSync("packages/domain/src/index.ts","utf8");
 const workflow = fs.readFileSync(".github/workflows/enchev-closed-demo-mission003-roles.yml","utf8");
+const adapter = fs.readFileSync("app/lib/enchev-closed-demo-auth-server.ts","utf8");
 function requireTest(condition, message) {
   if (!condition) throw new Error("ENCHEV_MISSION003_SESSION_GUARD FAIL: "+message);
 }
+requireTest(adapter.includes('import "server-only"') &&
+  adapter.includes("closedDemoBoundaryFromServer") &&
+  adapter.includes("request.cookies.get") &&
+  adapter.includes("authorizeClosedDemoTicket") &&
+  !adapter.includes("NEXT_PUBLIC_"), "server-only browser adapter contract broken");
 requireTest(!barrel.includes('export * from "./closed-demo-session-guard"'),
   "server ticket verifier must not be exposed in domain barrel");
 requireTest(source.includes("timingSafeEqual") && source.includes("readSession") &&
