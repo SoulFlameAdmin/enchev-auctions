@@ -1,6 +1,12 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import {
+  CLOUD_QUOTA_BACKOFF_KEY,
+  classifyPlanEndpoint,
+  isFreshPlanRows,
+  shouldBlockPlanEndpoint,
+} from "../lib/enchev-cloud-transport-policy";
 
 type Status = "green" | "yellow" | "red";
 type Note = { evidence?: string; blocker?: string; updatedAt?: string };
@@ -83,39 +89,144 @@ function applyCloudRows(rows: CloudRow[]) {
   } catch {}
 }
 
-async function pullCloudState(signal?: AbortSignal) {
-  const response = await fetch(ENDPOINT, { cache: "no-store", signal });
-  if (!response.ok) throw new Error(`Cloud plan state HTTP ${response.status}`);
-  const body = (await response.json()) as { rows?: CloudRow[] };
-  if (Array.isArray(body.rows)) applyCloudRows(body.rows);
-}
+/**
+ * The plan-status Edge Function is a shared Free-tier governance projection.
+ * On HTTP 402, fail closed and stop both EventSource auto-reconnect and the
+ * fetch poller. Never pretend cloud data is fresh or manually promote GREEN.
+ */
+const HEALTH_CHANNEL_KEY = "enchev-plan-cloud-health-v1";
 
 export default function CloudPlanStateSync() {
+  const [quotaRestricted, setQuotaRestricted] = useState(false);
+
   useEffect(() => {
     const controller = new AbortController();
-    void pullCloudState(controller.signal).catch(() => {});
+    let active = true;
+    let source: EventSource | null = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
+    let inFlight = false;
+    let blocked = false;
+    let healthChannel: BroadcastChannel | null = null;
 
-    const source = new EventSource(`${ENDPOINT}?stream=1`);
-    const onState = (event: MessageEvent<string>) => {
-      try {
-        const body = JSON.parse(event.data) as { rows?: CloudRow[] };
-        if (Array.isArray(body.rows)) applyCloudRows(body.rows);
-      } catch {}
+    const closeStream = () => {
+      if (source) {
+        source.close();
+        source = null;
+      }
     };
-    source.addEventListener("state", onState as EventListener);
-    source.onerror = () => { void pullCloudState(controller.signal).catch(() => {}); };
 
-    const fallback = window.setInterval(() => {
-      void pullCloudState(controller.signal).catch(() => {});
-    }, 30000);
+    const stopRequests = () => {
+      closeStream();
+      if (interval !== null) {
+        window.clearInterval(interval);
+        interval = null;
+      }
+    };
+
+    function quotaCircuitOpen(persist: boolean) {
+      if (blocked || !active) return;
+      blocked = true;
+      stopRequests();
+      setQuotaRestricted(true);
+      console.warn("ENCHEV cloud plan state restricted (HTTP 402). " +
+        "Local status is NOT a fresh cloud verification. Check Supabase Usage/Billing.");
+      if (persist) {
+        try { localStorage.setItem(CLOUD_QUOTA_BACKOFF_KEY, String(Date.now())); } catch {}
+        try { healthChannel?.postMessage({ type: "quota-restricted" }); } catch {}
+      }
+    }
+
+    try {
+      healthChannel = new BroadcastChannel(HEALTH_CHANNEL_KEY);
+      healthChannel.onmessage = (event: MessageEvent<{ type?: string }>) => {
+        if (event.data?.type === "quota-restricted") quotaCircuitOpen(false);
+      };
+    } catch {}
+
+    const pull = async (): Promise<boolean> => {
+      if (!active || blocked || inFlight) return false;
+      inFlight = true;
+      try {
+        const response = await fetch(ENDPOINT, { cache: "no-store", signal: controller.signal });
+        const kind = classifyPlanEndpoint(response.status);
+        if (kind === "quota-restricted") {
+          quotaCircuitOpen(true);
+          return false;
+        }
+        if (kind !== "ok") return false;
+        const body: unknown = await response.json();
+        if (!isFreshPlanRows(body)) return false;
+        if (!active || blocked) return false;
+        applyCloudRows(body.rows as CloudRow[]);
+        try { localStorage.removeItem(CLOUD_QUOTA_BACKOFF_KEY); } catch {}
+        return true;
+      } catch {
+        // Network faults remain transient; an abort must never start new polls.
+        return false;
+      } finally {
+        inFlight = false;
+      }
+    };
+
+    const connectStream = () => {
+      if (source || !active || blocked) return;
+      source = new EventSource(`${ENDPOINT}?stream=1`);
+      const current = source;
+      current.addEventListener("state", (event: MessageEvent<string>) => {
+        if (!active || blocked) return;
+        try {
+          const data: unknown = JSON.parse(event.data);
+          if (isFreshPlanRows(data)) applyCloudRows(data.rows as CloudRow[]);
+        } catch {}
+      });
+      current.onerror = () => {
+        // EventSource otherwise reconnects immediately and indefinitely on 402.
+        closeStream();
+        void pull(); // One guarded GET detects 402, then stops ALL retries.
+      };
+    };
+
+    let isCoolingDown = false;
+    try {
+      isCoolingDown = shouldBlockPlanEndpoint(
+        localStorage.getItem(CLOUD_QUOTA_BACKOFF_KEY), Date.now());
+    } catch {}
+
+    if (isCoolingDown) {
+      quotaCircuitOpen(false);
+    } else {
+      void pull().then(success => {
+        if (success && active && !blocked) connectStream();
+      });
+      // Poll only if SSE is not connected; never run two concurrent requests.
+      interval = window.setInterval(() => {
+        if (!blocked && (!source || source.readyState !== EventSource.OPEN)) {
+          void pull();
+        }
+      }, 60000);
+    }
 
     return () => {
+      active = false;
       controller.abort();
-      window.clearInterval(fallback);
-      source.removeEventListener("state", onState as EventListener);
-      source.close();
+      stopRequests();
+      healthChannel?.close();
     };
   }, []);
 
-  return null;
+  if (!quotaRestricted) return null;
+
+  // Visible only during a proven provider restriction, not a permanent
+  // intrusive banner in the healthy auction website.
+  return (
+    <aside role="status" aria-live="polite" style={{
+      position: "fixed", right: 12, bottom: 12, zIndex: 100,
+      maxWidth: 340, padding: "9px 12px", borderRadius: 8,
+      background: "#17212f", color: "#fff", fontSize: 12,
+      border: "1px solid #57677a", boxShadow: "0 4px 16px #0004",
+    }}>
+      Master cloud: HTTP 402. Данните може да са остарели.
+      Проверете Supabase Usage/Billing и презаредете страницата след възстановяване.
+    </aside>
+  );
 }
