@@ -103,7 +103,7 @@ export default function CloudPlanStateSync() {
     const controller = new AbortController();
     let active = true;
     let source: EventSource | null = null;
-    let interval: ReturnType<typeof setInterval> | null = null;
+    let interval: number | null = null;
     let inFlight = false;
     let blocked = false;
     let healthChannel: BroadcastChannel | null = null;
