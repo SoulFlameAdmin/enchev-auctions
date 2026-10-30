@@ -12,7 +12,7 @@ export function classifyPlanEndpoint(status: number): "ok" | "quota-restricted" 
 }
 
 export function shouldBlockPlanEndpoint(storedAt: unknown, now: number): boolean {
-  if (typeof storedAt !== "string" || !/^\\d{13}$/.test(storedAt)) return false;
+  if (typeof storedAt !== "string" || !/^\d{13}$/.test(storedAt)) return false;
   const previous = Number(storedAt);
   return Number.isSafeInteger(now) &&
     Number.isSafeInteger(previous) &&
