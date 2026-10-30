@@ -60,7 +60,7 @@ export function validateBinding(config, sources) {
 function restrictionCode(raw) {
   // Never print a raw provider body: it may contain request metadata.
   const match = String(raw || "").slice(0, 4096)
-    .match(/\\b(?:exceed(?:ed)?_[a-z0-9_]+|overdue_payment)\\b/i);
+    .match(/\b(?:exceed(?:ed)?_[a-z0-9_]+|overdue_payment)\b/i);
   return match ? match[0].toLowerCase().slice(0, 80) : "provider-restricted-unspecified";
 }
 
