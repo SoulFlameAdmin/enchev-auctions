@@ -194,7 +194,8 @@ const ctaMapScript = String.raw`(() => {
   const navItems = [
     { label: "HOME", href: "/" },
     { label: "BUY", href: "/inventory" },
-    { label: "LIVE AUCTIONS", href: "/live-auctions" },
+    { label: "LIVE AUCTIONS", href: "/live-auctions/etap-1" },
+    { label: "DEMO BIDDING", href: "/live-auctions/etap-1" },
     { label: "CHECK VEHICLE", href: "/vehicle-history" },
     { label: "DOCUMENTS & TRANSPORT", href: "/transport" },
     { label: "ABOUT US", href: "/presentation" },
@@ -238,7 +239,7 @@ const ctaMapScript = String.raw`(() => {
     }
 
     for (const container of containers) {
-      if (container.dataset.enchevNavSignature === "v1") continue;
+      if (container.dataset.enchevNavSignature === "v2") continue;
 
       const links = Array.from(container.querySelectorAll("a"));
       const byHref = new Map(links.map((link) => [link.getAttribute("href"), link]));
@@ -255,19 +256,19 @@ const ctaMapScript = String.raw`(() => {
       const supportUnit = contact.closest("li") || contact;
       const parent = supportUnit.parentElement;
       if (parent) {
-        for (const item of [...navItems.slice(3, 6), navItems[7]]) {
+        for (const item of [...navItems.slice(3, 7), navItems[8]]) {
           const clone = cloneNavUnit(contact, item);
           if (clone) parent.insertBefore(clone, supportUnit);
         }
       }
-      setAnchor(contact, navItems[6]);
-      container.dataset.enchevNavSignature = "v1";
+      setAnchor(contact, navItems[7]);
+      container.dataset.enchevNavSignature = "v2";
     }
 
     const directMap = new Map([
       ["/builds/", navItems[1]],
       ["/stock/", navItems[2]],
-      ["/contact/", navItems[6]]
+      ["/contact/", navItems[7]]
     ]);
     for (const [href, item] of directMap) {
       for (const anchor of document.querySelectorAll('a[href="' + href + '"]')) {
@@ -276,6 +277,35 @@ const ctaMapScript = String.raw`(() => {
       }
     }
   }
+
+  // The large Forge mobile overlay renders its LIVE link dynamically; the
+  // static site-nav mapping alone cannot guarantee that LIVE opens the demo.
+  // Only the explicit LIVE / LIVE AUCTIONS menu links are redirected here.
+  const liveDemoHref = "/live-auctions/etap-1";
+  const isLiveMenuLink = (anchor) => {
+    const label = normalize(anchor.textContent);
+    const ariaLabel = normalize(anchor.getAttribute("aria-label"));
+    return ["live", "live auctions"].includes(label) ||
+      ["live", "live auctions"].includes(ariaLabel);
+  };
+
+  function applyLiveDemoLinks() {
+    for (const anchor of document.querySelectorAll("a")) {
+      if (!isLiveMenuLink(anchor)) continue;
+      if (anchor.getAttribute("href") !== liveDemoHref) anchor.setAttribute("href", liveDemoHref);
+      if (anchor.getAttribute("target") !== "_top") anchor.setAttribute("target", "_top");
+      anchor.setAttribute("data-enchev-live-demo", "true");
+    }
+  }
+
+  // Capture the click before the animated Forge menu can swallow navigation.
+  document.addEventListener("click", (event) => {
+    const anchor = event.target && event.target.closest && event.target.closest("a");
+    if (!anchor || !isLiveMenuLink(anchor)) return;
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    window.top.location.assign(liveDemoHref);
+  }, true);
 
   // The cinematic homepage runs inside an iframe. Navigating inside that frame
   // would leave the system command center over the functional website.
@@ -307,6 +337,7 @@ const ctaMapScript = String.raw`(() => {
       scheduled = false;
       applyCtas();
       applyNavigation();
+      applyLiveDemoLinks();
       ensurePlatformNavigation();
     });
   }
@@ -315,11 +346,13 @@ const ctaMapScript = String.raw`(() => {
     document.addEventListener("DOMContentLoaded", () => {
       applyCtas();
       applyNavigation();
+      applyLiveDemoLinks();
       ensurePlatformNavigation();
     }, { once: true });
   } else {
     applyCtas();
     applyNavigation();
+    applyLiveDemoLinks();
     ensurePlatformNavigation();
   }
 
