@@ -98,8 +98,20 @@ const HEALTH_CHANNEL_KEY = "enchev-plan-cloud-health-v1";
 
 export default function CloudPlanStateSync() {
   const [quotaRestricted, setQuotaRestricted] = useState(false);
+  const [stagesVisible, setStagesVisible] = useState(false);
+
+  // Fetch the full cloud governance projection only while Stages is open.
+  useEffect(() => {
+    const onStageVisibility = (event: Event) => {
+      const visible = (event as CustomEvent<{ open?: boolean }>).detail?.open === true;
+      setStagesVisible(visible);
+    };
+    window.addEventListener("enchev-master-stages-visible", onStageVisibility);
+    return () => window.removeEventListener("enchev-master-stages-visible", onStageVisibility);
+  }, []);
 
   useEffect(() => {
+    if (!stagesVisible) return;
     const controller = new AbortController();
     let active = true;
     let source: EventSource | null = null;
@@ -144,7 +156,7 @@ export default function CloudPlanStateSync() {
     } catch {}
 
     const pull = async (): Promise<boolean> => {
-      if (!active || blocked || inFlight) return false;
+      if (!active || blocked || inFlight || document.visibilityState === "hidden") return false;
       inFlight = true;
       try {
         const response = await fetch(ENDPOINT, { cache: "no-store", signal: controller.signal });
@@ -159,6 +171,7 @@ export default function CloudPlanStateSync() {
         if (!active || blocked) return false;
         applyCloudRows(body.rows as CloudRow[]);
         try { localStorage.removeItem(CLOUD_QUOTA_BACKOFF_KEY); } catch {}
+        setQuotaRestricted(false);
         return true;
       } catch {
         // Network faults remain transient; an abort must never start new polls.
@@ -169,20 +182,27 @@ export default function CloudPlanStateSync() {
     };
 
     const connectStream = () => {
-      if (source || !active || blocked) return;
+      if (source || !active || blocked || document.visibilityState === "hidden") return;
       source = new EventSource(`${ENDPOINT}?stream=1`);
       const current = source;
+      let receivedState = false;
       current.addEventListener("state", (event: MessageEvent<string>) => {
         if (!active || blocked) return;
         try {
           const data: unknown = JSON.parse(event.data);
-          if (isFreshPlanRows(data)) applyCloudRows(data.rows as CloudRow[]);
+          if (isFreshPlanRows(data)) {
+            applyCloudRows(data.rows as CloudRow[]);
+            receivedState = true;
+          }
         } catch {}
       });
       current.onerror = () => {
         // EventSource otherwise reconnects immediately and indefinitely on 402.
         closeStream();
-        void pull(); // One guarded GET detects 402, then stops ALL retries.
+        // The Edge SSE currently emits one snapshot, then closes.
+        // Do not duplicate the full snapshot after an already-received event.
+        // If the stream failed without an event, GET can detect HTTP 402.
+        if (!receivedState) void pull();
       };
     };
 
@@ -195,26 +215,41 @@ export default function CloudPlanStateSync() {
     if (isCoolingDown) {
       quotaCircuitOpen(false);
     } else {
-      void pull().then(success => {
-        if (success && active && !blocked) connectStream();
-      });
-      // Poll only if SSE is not connected; never run two concurrent requests.
+      if (document.visibilityState !== "hidden") {
+        void pull().then(success => {
+          if (success && active && !blocked) connectStream();
+        });
+      }
+      // 5-minute bounded fallback; update immediately when operator opens or returns.
       interval = window.setInterval(() => {
-        if (!blocked && (!source || source.readyState !== EventSource.OPEN)) {
+        if (!blocked && document.visibilityState !== "hidden" &&
+            (!source || source.readyState !== EventSource.OPEN)) {
           void pull();
         }
-      }, 60000);
+      }, 300000);
     }
 
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        closeStream();
+      } else if (!blocked) {
+        void pull().then(success => {
+          if (success && active && !blocked) connectStream();
+        });
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
     return () => {
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       active = false;
       controller.abort();
       stopRequests();
       healthChannel?.close();
     };
-  }, []);
+  }, [stagesVisible]);
 
-  if (!quotaRestricted) return null;
+  if (!stagesVisible || !quotaRestricted) return null;
 
   // Visible only during a proven provider restriction, not a permanent
   // intrusive banner in the healthy auction website.
