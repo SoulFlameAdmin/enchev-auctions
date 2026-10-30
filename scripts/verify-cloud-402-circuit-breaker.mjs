@@ -40,7 +40,14 @@ const checks=[
   ["stop requests on quota",client.includes("quotaCircuitOpen(true)")],
   ["SSE shutdown",client.includes("source.close()")],
   ["SSE error handler",client.includes("current.onerror = () =>")],
-  ["no implicit SSE reconnect",client.includes("closeStream();\n        void pull();")],
+  ["no implicit SSE reconnect",client.includes("if (!receivedState) void pull();")],
+  ["on-demand only while master stages open",client.includes("if (!stagesVisible) return;")],
+  ["stop polling on tab hidden",client.includes('document.visibilityState === "hidden"')],
+  ["only visible retries",client.includes('document.visibilityState !== "hidden"')],
+  ["bounded 5-minute fallback",client.includes("}, 300000);")],
+  ["avoid duplicate SSE snapshot",client.includes("let receivedState = false")],
+  ["react to master panel",client.includes('window.addEventListener("enchev-master-stages-visible"')],
+
   ["SSE only after good pull",client.includes("if (success && active && !blocked) connectStream()")],
   ["single active pull",client.includes("inFlight = true") && client.includes("inFlight = false")],
   ["cross-tab breaker",client.includes("BroadcastChannel(HEALTH_CHANNEL_KEY)")],
@@ -50,5 +57,9 @@ const checks=[
   ["retain SSE",client.includes("new EventSource(`${ENDPOINT}?stream=1`)")],
   ["no unsafe provider credentials",!client.includes("SUPABASE_SERVICE_ROLE_KEY")],
 ];
+const master=fs.readFileSync("app/components/MasterSystemPlanV1.tsx","utf8");
+assert.ok(master.includes('new CustomEvent("enchev-master-stages-visible"'),"Master Plan must publish visibility");
+assert.ok(master.includes("if (open) window.dispatchEvent"),"Master Plan must close signal on unmount");
+cases += 2;
 for(const [label,yes] of checks){assert.ok(yes,label);cases++;}
 console.log("CLOUD_402_CIRCUIT_GUARD PASS cases="+cases+" status=fail-closed rows=untouched");
