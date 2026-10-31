@@ -1,0 +1,25 @@
+name: ENCHEV CLOSED DEMO Mission-001 baseline (read-only)
+on:
+  pull_request:
+    paths:
+      - "config/enchev-closed-demo-gap-baseline-v1.json"
+      - "scripts/verify-enchev-closed-demo-gap-baseline.mjs"
+      - "docs/URGENT_DAVID_AGI_ENCHEV_CLOSED_DEMO_V1.md"
+      - ".github/workflows/enchev-closed-demo-gap-baseline.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mission-001-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Syntax-check the evidence gate
+        run: node --check scripts/verify-enchev-closed-demo-gap-baseline.mjs
+      - name: Validate all 35 P0 mission statuses and negative fixtures
+        run: node scripts/verify-enchev-closed-demo-gap-baseline.mjs --self-test
