@@ -20,11 +20,63 @@
   },
   "protectedOperations": [
     {
+      "method": "DELETE",
+      "path": "/api/ea-early-access/admin/session",
+      "operationId": "deleteEaEarlyAccessAdminSession",
+      "responseCodes": [
+        "200",
+        "403"
+      ],
+      "requestBodyRequired": false
+    },
+    {
       "method": "GET",
-      "path": "/api/health/web",
-      "operationId": "getWebHealth",
+      "path": "/api/carar-waitlist",
+      "operationId": "getCarArWaitlistMethodGuard",
+      "responseCodes": [
+        "405"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/ea-early-access",
+      "operationId": "getEaEarlyAccessPublic",
+      "responseCodes": [
+        "200",
+        "403",
+        "503"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/ea-early-access/admin",
+      "operationId": "getEaEarlyAccessAdmin",
+      "responseCodes": [
+        "200",
+        "400",
+        "401",
+        "503"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/ea-early-access/admin/session",
+      "operationId": "getEaEarlyAccessAdminSession",
       "responseCodes": [
         "200"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/enchev-auth/[action]",
+      "operationId": "getBuyerAuthSession",
+      "responseCodes": [
+        "200",
+        "400"
       ],
       "requestBodyRequired": false
     },
@@ -41,15 +93,6 @@
       "method": "GET",
       "path": "/api/health/realtime",
       "operationId": "getRealtimeHealth",
-      "responseCodes": [
-        "503"
-      ],
-      "requestBodyRequired": false
-    },
-    {
-      "method": "GET",
-      "path": "/api/health/worker",
-      "operationId": "getWorkerHealth",
       "responseCodes": [
         "503"
       ],
@@ -86,6 +129,24 @@
     },
     {
       "method": "GET",
+      "path": "/api/health/web",
+      "operationId": "getWebHealth",
+      "responseCodes": [
+        "200"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/health/worker",
+      "operationId": "getWorkerHealth",
+      "responseCodes": [
+        "503"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "GET",
       "path": "/api/live-auction-clock",
       "operationId": "getLiveAuctionDemoClock",
       "responseCodes": [
@@ -95,23 +156,47 @@
     },
     {
       "method": "POST",
-      "path": "/api/live-auction-clock",
-      "operationId": "postLiveAuctionDemoBid",
+      "path": "/api/carar-waitlist",
+      "operationId": "postCarArWaitlist",
       "responseCodes": [
         "200",
-        "400"
+        "400",
+        "403",
+        "413",
+        "415",
+        "429",
+        "502",
+        "503"
       ],
       "requestBodyRequired": true
     },
     {
-      "method": "GET",
-      "path": "/api/enchev-auth/[action]",
-      "operationId": "getBuyerAuthSession",
+      "method": "POST",
+      "path": "/api/ea-early-access",
+      "operationId": "postEaEarlyAccessPublic",
       "responseCodes": [
         "200",
-        "400"
+        "400",
+        "403",
+        "413",
+        "415",
+        "503"
       ],
-      "requestBodyRequired": false
+      "requestBodyRequired": true
+    },
+    {
+      "method": "POST",
+      "path": "/api/ea-early-access/admin/session",
+      "operationId": "postEaEarlyAccessAdminSession",
+      "responseCodes": [
+        "200",
+        "400",
+        "401",
+        "403",
+        "429",
+        "503"
+      ],
+      "requestBodyRequired": true
     },
     {
       "method": "POST",
@@ -126,6 +211,16 @@
         "503"
       ],
       "requestBodyRequired": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/live-auction-clock",
+      "operationId": "postLiveAuctionDemoBid",
+      "responseCodes": [
+        "200",
+        "400"
+      ],
+      "requestBodyRequired": true
     }
   ]
 }
