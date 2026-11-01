@@ -103,23 +103,21 @@ function assertEnchevIdentity(sources){
   for(const file of REQUIRED_ROUTE_FILES){
     const source=sources[file];
     if(typeof source!=="string")fail(`required user-facing route source missing from scan: ${file}`);
-    if(!/ENCHEV/.test(source))fail(`ENCHEV identity marker missing from ${file}`);
-    if(!/<strong>ENCHEV<\/strong>/.test(source)&&file!=="app/page.tsx"){
-      fail(`ENCHEV header brand marker missing from ${file}`);
+    if(!/(?:E&A|EAST WEST|East West)/.test(source))fail(`official E&A / East West identity marker missing from ${file}`);
+    if(file!=="app/page.tsx"&&!/src="\/brand\/ea-east-west\.svg"/.test(source)){
+      fail(`official E&A header brand asset missing from ${file}`);
     }
   }
 
   const home=sources["app/page.tsx"];
-  const appShell=sources["app/components/EnchevAppShell.tsx"]||"";
-  const legacyHomeBrand=/className="eaBrand"[\s\S]*?<strong>ENCHEV<\/strong>[\s\S]*?<span>AUCTIONS<\/span>/.test(home);
-  const unifiedShellBrand=/className="eaAppBrand"[\s\S]*?<strong>ENCHEV<\/strong>[\s\S]*?<span>AUCTIONS<\/span>/.test(appShell);
-  if(!legacyHomeBrand&&!unifiedShellBrand){
-    fail("homepage ENCHEV AUCTIONS brand lockup missing");
+  const homeBrand=/className="eaHeroBrand"[\s\S]*?aria-label="E&A East West Auctioneers Group[^"]*"[\s\S]*?src="\/brand\/ea-approved-1to1\.jpg"/.test(home);
+  if(!homeBrand){
+    fail("homepage E&A East West brand lockup missing");
   }
 
   const layout=sources["app/layout.tsx"];
-  if(!/title:\s*"ENCHEV Auctions"/.test(layout))fail('metadata title must be exactly "ENCHEV Auctions"');
-  if(!/description:\s*"[^"]*ENCHEV[^"]*"/.test(layout))fail("metadata description must explicitly carry ENCHEV identity");
+  if(!/title:\s*"E&A East West Auctioneers Group"/.test(layout))fail('metadata title must be exactly "E&A East West Auctioneers Group"');
+  if(!/description:\s*"[^"]*E&A East West Auctioneers Group[^"]*"/.test(layout))fail("metadata description must explicitly carry E&A East West identity");
 }
 
 function assertNoReferenceAssetUrls(sources){
@@ -156,10 +154,10 @@ export function validateSources(sources){
 }
 
 function makeGoodFixture(){
-  const route=(name)=>`export default function ${name}(){return <main><a className="brand"><strong>ENCHEV</strong><span>AUCTIONS</span></a></main>}`;
+  const route=(name)=>`export default function ${name}(){return <main><a className="brand"><img src="/brand/ea-east-west.svg" alt="E&A East West Auctioneers Group" /></a></main>}`;
   return {
-    "app/layout.tsx":'export const metadata={title:"ENCHEV Auctions",description:"ENCHEV международна платформа за автомобилни търгове"};',
-    "app/page.tsx":'export default function Home(){return <main><a className="eaBrand"><strong>ENCHEV</strong><span>AUCTIONS</span></a></main>}',
+    "app/layout.tsx":'export const metadata={title:"E&A East West Auctioneers Group",description:"E&A East West Auctioneers Group — international vehicle auctions"};',
+    "app/page.tsx":'export default function Home(){return <main><div className="eaHeroBrand" aria-label="E&A East West Auctioneers Group — SOULFLAME"><img src="/brand/ea-approved-1to1.jpg" alt="" /></div></main>}',
     "app/inventory/page.tsx":route("Inventory"),
     "app/lot/[id]/page.tsx":route("Lot"),
     "app/live-auctions/page.tsx":route("Live"),
@@ -184,7 +182,7 @@ if(process.argv.includes("--self-test")){
   expectRejected("foreign reference brand",(fixture)=>{fixture["app/page.tsx"]+=" AutoBidMaster";});
   expectRejected("reference asset URL",(fixture)=>{fixture["app/theme.css"]='.x{background:url("https://www.autobidmaster.com/logo.svg")}';});
   expectRejected("missing route identity",(fixture)=>{fixture["app/profile/page.tsx"]="export default function Profile(){return <main>profile</main>}";});
-  expectRejected("wrong metadata brand",(fixture)=>{fixture["app/layout.tsx"]='export const metadata={title:"Enchev Auctions",description:"ENCHEV platform"};';});
+  expectRejected("wrong metadata brand",(fixture)=>{fixture["app/layout.tsx"]='export const metadata={title:"Legacy Auctions",description:"Legacy platform"};';});
   console.log("ENCHEV_FINAL_CONSISTENCY_SELF_TEST PASS negative_cases=4");
 }else{
   const sources=collectProductionSources();
