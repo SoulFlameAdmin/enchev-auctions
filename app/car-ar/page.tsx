@@ -56,8 +56,8 @@ export default function CarArPage() {
   return (
     <main className="carArPage">
       <header className="carArHeader">
-        <Link className="carArBrand" href="/" aria-label="E&A East West Auctioneers Group начална страница">
-          <img src="/brand/ea-east-west.svg" alt="E&A East West Auctioneers Group 🔥SOULFLAME🔥" style={{width:165,height:56,objectFit:"contain",maxWidth:"100%"}}/>
+        <Link className="carArBrand" href="/" aria-label="East West Auctioneer Group (E&W) начална страница">
+          <img src="/brand/east-west-auctioneer-group-approved.png" alt="East West Auctioneer Group (E&W)" style={{width:72,height:72,objectFit:"contain",maxWidth:"100%"}}/>
         </Link>
         <div className="carArTopRight"><span className="carArIndicator"></span> INTERACTIVE VEHICLE EXPERIENCE</div>
       </header>
@@ -115,7 +115,7 @@ export default function CarArPage() {
       </div>
 
       <footer className="carArFooter">
-        <span>E&A EAST WEST AUCTIONEERS GROUP · 🔥SOULFLAME🔥</span>
+        <span>EAST WEST AUCTIONEER GROUP (E&W) · 🔥SOULFLAME🔥</span>
         <span>{viewerReady ? "ORIGINAL GLB LOADED" : "360° VIEWER / WEBXR"}</span>
       </footer>
     </main>

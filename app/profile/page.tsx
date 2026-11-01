@@ -7,7 +7,7 @@ import "./profile-shell.css";
 export default function ProfilePage(){
   return <main id="main-content" className="navigationPage">
     <header className="navigationRouteHeader">
-      <a href="/" className="navigationRouteBrand"><img src="/brand/ea-east-west.svg" alt="E&A East West Auctioneers Group 🔥SOULFLAME🔥" style={{width:190,height:64,objectFit:"contain"}}/></a>
+      <a href="/" className="navigationRouteBrand"><img src="/brand/east-west-auctioneer-group-approved.png" alt="East West Auctioneer Group (E&W)" style={{width:72,height:72,objectFit:"contain"}}/></a>
       <nav className="navigationRouteNav" aria-label="Основна навигация">
         {primaryNavigation.map(item=><a key={item.key} href={item.href}>{item.label}</a>)}
         <a href="/profile" aria-current="page">ПРОФИЛ</a>
