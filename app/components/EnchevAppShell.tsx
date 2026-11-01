@@ -114,7 +114,6 @@ export default function EnchevAppShell(){
         <div className="eaAppMobileLive"><i aria-hidden="true"/><div><strong>LIVE MARKET</strong><span>Follow the current auction in real time</span></div></div>
 
         <nav className="eaAppMobileNav" aria-label="Mobile main navigation">
-          <a href="/presentation-2"><span>▶</span><b>презентация 2</b><i aria-hidden="true">→</i></a>
           {primaryNavigation.map((item,index)=><a
             key={item.key}
             href={item.href}
@@ -129,7 +128,7 @@ export default function EnchevAppShell(){
           <a href={accountNavigation.register}>Register</a>
         </div>
 
-        <div className="eaAppMobileFoot"><span>BG · EUR</span><a href="/support">Help & Support</a></div>
+        <div className="eaAppMobileFoot"><span>BG · EUR</span><a href="/presentation-2">Презентация 2</a><a href="/support">Help & Support</a></div>
       </aside>
     </div>
   </div>;
