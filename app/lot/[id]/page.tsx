@@ -129,7 +129,7 @@ export default function LotPage(){
 
   return <main id="main-content" className="lotPage">
     <header className="lotHeader">
-      <a className="lotLogo" href="/"><img src="/brand/east-west-auctioneer-group-approved.png" alt="East West Auctioneer Group (E&W)" style={{width:72,height:72,objectFit:"contain"}}/></a>
+      <a className="lotLogo" href="/"><img src="/brand/ea-east-west.svg" alt="E&A East West Auctioneers Group 🔥SOULFLAME🔥" style={{width:190,height:64,objectFit:"contain"}}/></a>
       <nav className="lotNav"><a href="/inventory">Inventory</a><a href="/live-auctions">Live auctions</a><a href="/platform#how">How it works</a><a href="/transport">Transport</a></nav>
       <div className="lotHeaderActions"><a href="/inventory">← Back</a><button className="lotGreen">Вход</button></div>
     </header>

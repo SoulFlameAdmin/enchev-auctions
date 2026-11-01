@@ -59,7 +59,7 @@ export default function EarlyAccessAdmin(){
  const format=(v:string)=>{try{return new Date(v).toLocaleString("bg-BG",{dateStyle:"medium",timeStyle:"short"});}catch{return v;}};
  return <main id="main-content" className="eaLeadsAdmin">
   <header className="eaLeadsHeader">
-   <div><span>EAST WEST AUCTIONEER GROUP (E&W)</span><h1>Ранни записвания</h1><p>Единен списък с реални имейли от Supabase на Enchev</p></div>
+   <div><span>E&A EAST WEST AUCTIONEERS GROUP</span><h1>Ранни записвания</h1><p>Единен списък с реални имейли от Supabase на Enchev</p></div>
    <Link href="/">КЪМ САЙТА ↗</Link>
   </header>
   {!authReady?<p className="eaLeadsNotice">Проверка на достъпа...</p>:!authorized?

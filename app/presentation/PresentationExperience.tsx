@@ -6,7 +6,7 @@ import s from "./presentation.module.css";
 
 const CAR = "https://images.unsplash.com/photo-1655283733642-f1d813b40616?auto=format&fit=crop&w=1600&q=90";
 const scenes = [
-  ["EAST WEST AUCTIONEER GROUP (E&W)", "One car.", "Endless possibilities.", "From the first photo to the keys in your hand.", "Home"],
+  ["E&A EAST WEST AUCTIONEERS GROUP", "One car.", "Endless possibilities.", "From the first photo to the keys in your hand.", "Home"],
   ["01 / ПРИЕМАНЕ", "Всичко започва", "с един автомобил.", "Добавяме автомобила. Създаваме неговото досие.", "Acceptance"],
   ["02 / ПРОВЕРКА", "Познаваш колата.", "Преди да наддаваш.", "Снимки, състояние и документи. На едно място.", "Inspection"],
   ["03 / ИЗБОР", "Твоята следваща кола.", "Вече е тук.", "Разглеждаш информацията. Choose. Следиш търга.", "Listing"],
@@ -140,7 +140,7 @@ export default function PresentationExperience() {
   return <main id="main-content" ref={root} className={s.presentation} data-playing={playing && visible} data-reduced={reduced}
     onKeyDown={event => { if ((event.target as HTMLElement).closest("button,a,input")) return; if (event.key === "ArrowRight") { event.preventDefault(); go(active + 1); } if (event.key === "ArrowLeft") { event.preventDefault(); go(active - 1); } }} tabIndex={-1}>
     <audio ref={audioRef} preload="auto" aria-hidden="true" />
-    <header className={s.topbar}><a href="/" className={s.brand}><img src="/brand/east-west-auctioneer-group-approved.png" alt="East West Auctioneer Group (E&W)" style={{width:72,height:72,objectFit:"contain"}}/></a><span className={s.edition}>ONE VEHICLE. THE WHOLE JOURNEY.</span><a className={s.exit} href="/">Go to site ↗</a></header>
+    <header className={s.topbar}><a href="/" className={s.brand}><img src="/brand/ea-east-west.svg" alt="E&A East West Auctioneers Group 🔥SOULFLAME🔥" style={{width:174,height:65,objectFit:"contain"}}/></a><span className={s.edition}>ONE VEHICLE. THE WHOLE JOURNEY.</span><a className={s.exit} href="/">Go to site ↗</a></header>
     <section className={s.stage} aria-label="Анимирана продуктова презентация">
       <div className={s.ambient}/><div className={s.grain}/>
       <div key={`copy-${active}`} className={s.copy}>

@@ -14,7 +14,7 @@ export default function CarArDemoPage() {
     <main className="sfCarArDemo">
       <header className="sfCarArDemoTop">
         <Link className="sfCarArDemoBrand" href="/" aria-label="SOULFLAME CarAR — към E&A">
-          <img src="/brand/east-west-auctioneer-group-approved.png" width="72" height="72" alt="East West Auctioneer Group (E&W)" />
+          <img src="/brand/ea-approved-1to1.jpg" width="98" height="62" alt="E&A East West Auctioneers Group" />
           <span className="sfCarArDemoIdentity">
             <span>SOULFLAME PRESENTS</span>
             <strong>Car<span>AR</span></strong>

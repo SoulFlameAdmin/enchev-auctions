@@ -47,6 +47,6 @@ export default function Home(){
 
     <section className="eaCta" id="transport"><div><h2>Готов ли си за следващия търг?</h2><p>Отвори целия инвентар и виж кой лот е LIVE в момента.</p></div><div className="eaCtaActions"><a href="/inventory">Отвори инвентара</a><a href="/live-auctions">LIVE търгове</a></div></section>
 
-    <footer className="eaFooter" id="contact"><div><img src="/brand/east-west-auctioneer-group-approved.png" alt="East West Auctioneer Group (E&W) logo" width={72} height={72} style={{objectFit:"contain",verticalAlign:"middle",marginRight:12}}/><b>EAST WEST AUCTIONEER GROUP (E&W) · 🔥SOULFLAME🔥</b><div>International vehicle auction marketplace</div></div><div><a href="/support">Поддръжка</a> · <a href="/profile">Профил</a> · © 2026 East West Auctioneer Group (E&W) · 🔥SOULFLAME🔥 · BG / EUR</div></footer>
+    <footer className="eaFooter" id="contact"><div><b>E&A EAST WEST AUCTIONEERS GROUP · 🔥SOULFLAME🔥</b><div>International vehicle auction marketplace</div></div><div><a href="/support">Поддръжка</a> · <a href="/profile">Профил</a> · © 2026 E&A East West Auctioneers Group · 🔥SOULFLAME🔥 · BG / EUR</div></footer>
   </main>
 }

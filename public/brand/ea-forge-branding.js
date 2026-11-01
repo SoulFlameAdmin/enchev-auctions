@@ -1,7 +1,7 @@
 (()=>{"use strict";
-const brand="East West Auctioneer Group (E&W)", upper="EAST WEST AUCTIONEER GROUP (E&W)";
+const brand="E&A East West Auctioneers Group", upper="E&A EAST WEST AUCTIONEERS GROUP";
 function apply(){
- document.title="East West Auctioneer Group (E&W) | Vehicle Auctions";
+ document.title="E&A East West Auctioneers Group | Vehicle Auctions";
  for(const el of document.querySelectorAll('a[aria-label="Enchev home"]')) el.setAttribute("aria-label",brand+" home");
  const nodes=document.querySelectorAll('h1,h2,h3,h4,h5,small,strong,span,p,a,button');
  for(const el of nodes){
