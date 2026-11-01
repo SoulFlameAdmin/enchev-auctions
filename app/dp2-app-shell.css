@@ -271,3 +271,11 @@
   .eaAppBrand .eaBrandExactCopy strong{font-size:10px!important}
   .eaAppBrand .eaBrandExactCopy small{font-size:6px}
 }
+
+/* Approved E&W logo: preserve original 1:1 design, without cropping or duplicate wordmarks. */
+.eaAppBrand:has(.eaBrandExactLockup) {min-width:64px!important;width:64px!important}
+.eaBrandExactLockup {height:64px!important;gap:0!important;min-width:64px!important}
+.eaBrandExactMark {position:static!important;width:64px!important;height:64px!important;flex:0 0 64px!important;overflow:visible!important;margin:0!important}
+.eaBrandExactMark img {position:static!important;display:block!important;top:auto!important;left:auto!important;width:64px!important;height:64px!important;max-width:100%!important;object-fit:contain!important;mix-blend-mode:normal!important}
+.eaBrandExactCopy {display:none!important}
+@media(max-width:720px){.eaBrandExactLockup,.eaBrandExactMark,.eaBrandExactMark img{width:54px!important;height:54px!important}.eaAppBrand:has(.eaBrandExactLockup){width:54px!important;min-width:54px!important}.eaBrandExactMark{flex-basis:54px!important}}

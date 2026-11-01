@@ -195,7 +195,7 @@ export default function LiveAuctionsPage(){
   return <main id="main-content" className="livePage">
     <div className="liveUtility"><span><i/> E&A EAST WEST LIVE NETWORK</span><span>Server-session demo · 10 sec per lot</span></div>
     <header className="liveHeader">
-      <a href="/" className="liveLogo"><img src="/brand/ea-east-west.svg" alt="E&A East West Auctioneers Group 🔥SOULFLAME🔥" style={{width:194,height:66,objectFit:"contain"}}/></a>
+      <a href="/" className="liveLogo"><img src="/brand/east-west-auctioneer-group-approved.png" alt="East West Auctioneer Group (E&W)" style={{width:72,height:72,objectFit:"contain"}}/></a>
       <nav><a href="/inventory">Inventory</a><a className="active" href="/live-auctions">Live auctions</a><a href="/transport">Transport</a><a href="/platform#how">How to buy</a></nav>
       <div><button type="button">Log in</button><button type="button" className="liveRegister">Register</button></div>
     </header>

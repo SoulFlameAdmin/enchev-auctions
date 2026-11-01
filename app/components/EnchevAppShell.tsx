@@ -47,9 +47,9 @@ export default function EnchevAppShell(){
     </div>
 
     <header className="eaAppHeader">
-      <a href="/" className="eaAppBrand" aria-label="E&A East West Auctioneers Group home">
+      <a href="/" className="eaAppBrand" aria-label="East West Auctioneer Group (E&W) home">
         <span className="eaBrandExactLockup" aria-hidden="true">
-          <span className="eaBrandExactMark"><img src="/brand/ea-approved-1to1.jpg" alt="" /></span>
+          <span className="eaBrandExactMark"><img src="/brand/east-west-auctioneer-group-approved.png" alt="" /></span>
           <span className="eaBrandExactCopy">
             <strong>EAST WEST</strong>
             <small>AUCTIONEERS GROUP</small>
@@ -94,8 +94,8 @@ export default function EnchevAppShell(){
       <button className="eaAppMobileBackdrop" type="button" tabIndex={open?0:-1} aria-label="Close menu" onClick={()=>setOpen(false)}/>
       <aside id="ea-mobile-navigation" className="eaAppMobileDrawer" role="dialog" aria-modal="true" aria-label="Mobile navigation">
         <div className="eaAppMobileTop">
-          <a href="/" className="eaAppBrand" aria-label="E&A East West Auctioneers Group home"><span className="eaBrandExactLockup" aria-hidden="true">
-          <span className="eaBrandExactMark"><img src="/brand/ea-approved-1to1.jpg" alt="" /></span>
+          <a href="/" className="eaAppBrand" aria-label="East West Auctioneer Group (E&W) home"><span className="eaBrandExactLockup" aria-hidden="true">
+          <span className="eaBrandExactMark"><img src="/brand/east-west-auctioneer-group-approved.png" alt="" /></span>
           <span className="eaBrandExactCopy">
             <strong>EAST WEST</strong>
             <small>AUCTIONEERS GROUP</small>

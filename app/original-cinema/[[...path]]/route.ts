@@ -54,7 +54,7 @@ export async function GET(_request:Request,{params}:RouteProps){
     // Do not alter the original Lit360 motion film, slides, sound or signup form.
     const brandPattern=/<div class="soulflame-masthead">[\s\S]*?<\/div>\s*<div class="cinema-brand">[\s\S]*?<\/div>/;
     if(!brandPattern.test(html))throw Error("ORIGINAL_BRANDING_NOT_FOUND");
-    // Only center lettering, then SOULFLAME, then real signup count.
+    // Use the approved complete image, then the real signup count.
     // Reuse the existing counter ID, so original Supabase signup JS still works.
     const countPattern=/<div class="signup-count" aria-live="polite">[\s\S]*?<\/div>/;
     const counter=html.match(countPattern)?.[0];
@@ -62,9 +62,7 @@ export async function GET(_request:Request,{params}:RouteProps){
     html=html.replace(countPattern,"");
     html=html.replace(brandPattern,
       '<header class="ea-approved-cinema-brand" aria-label="EAST WEST AUCTIONEERS GROUP — SOULFLAME">'+
-      '<div class="ea-brand-name">EAST WEST</div>'+
-      '<div class="ea-brand-group">AUCTIONEERS GROUP</div>'+
-      '<div class="ea-brand-soul">SOULFLAME</div>'+
+      '<img class="ea-cinema-brand-img" src="/brand/east-west-auctioneer-group-approved.png" alt="East West Auctioneer Group approved logo" />'+
       counter+
       '</header>');
     const brandCSS=`<style id="ea-cinema-approved-brand">
@@ -76,6 +74,7 @@ export async function GET(_request:Request,{params}:RouteProps){
   border-bottom:1px solid rgba(197,164,113,.28);text-align:center;
   pointer-events:none;overflow:hidden;
 }
+.ea-cinema-brand-img{width:96px;height:96px;object-fit:contain;display:block;flex-shrink:0;}
 .ea-brand-name{
   color:#f4f4f6;font:800 clamp(22px,2.9vw,35px)/1.05 Manrope,Arial,sans-serif;
   letter-spacing:.23em;padding-left:.23em;white-space:nowrap;
@@ -113,6 +112,7 @@ export async function GET(_request:Request,{params}:RouteProps){
 @media(max-width:760px){
   #cinema{--ea-bar-height:118px;}
   .ea-approved-cinema-brand{padding:6px 16px;gap:3px;}
+  .ea-cinema-brand-img{width:72px;height:72px;}
   .ea-brand-name{font-size:clamp(20px,5vw,26px);letter-spacing:.17em;padding-left:.17em;}
   .ea-brand-group{font-size:clamp(8px,2.1vw,11px);letter-spacing:.18em;padding-left:.18em;}
   .ea-brand-soul{font-size:10px;letter-spacing:.23em;padding-left:.23em;}
@@ -131,6 +131,7 @@ export async function GET(_request:Request,{params}:RouteProps){
 @media(max-height:540px) and (orientation:landscape){
   #cinema{--ea-bar-height:98px;}
   .ea-approved-cinema-brand{gap:2px;padding:4px 70px;}
+  .ea-cinema-brand-img{width:64px;height:64px;}
   .ea-brand-name{font-size:18px;}
   .ea-brand-group{font-size:9px;}
   .ea-brand-soul{font-size:10px;}

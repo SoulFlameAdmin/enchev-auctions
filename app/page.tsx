@@ -25,10 +25,10 @@ export default function Home(){
       />
       
       
-      <div className="eaHeroBrand" aria-label="E&A East West Auctioneers Group — SOULFLAME">
+      <div className="eaHeroBrand" aria-label="East West Auctioneer Group (E&W)">
         <div className="eaBrandDesktop" aria-hidden="true">
           <div className="eaBrandSymbol">
-            <img src="/brand/ea-approved-1to1.jpg" alt="" />
+            <img src="/brand/east-west-auctioneer-group-approved.png" alt="" />
           </div>
           <div className="eaBrandCopy">
             <span className="eaBrandName">EAST WEST</span>
@@ -36,7 +36,7 @@ export default function Home(){
             <span className="eaBrandSoul">SOULFLAME</span>
           </div>
         </div>
-        <img className="eaBrandMobileImg" src="/brand/ea-approved-1to1.jpg" alt="" />
+        <img className="eaBrandMobileImg" src="/brand/east-west-auctioneer-group-approved.png" alt="" />
       </div>
       <style>{`
         .eaHeroBrand{
@@ -50,7 +50,7 @@ export default function Home(){
           display:flex;
           justify-content:center;
           align-items:flex-start;
-          mix-blend-mode:screen;
+          mix-blend-mode:normal;
           will-change:clip-path;
         }
         .eaBrandDesktop{
@@ -60,11 +60,11 @@ export default function Home(){
           gap:clamp(10px,1.45vw,20px);
           max-width:100%;
         }
-        /* Show just the E&A emblem from the approved asset; never distort it. */
+        /* Show the complete approved square E&W mark without clipping. */
         .eaBrandSymbol{
           display:block;
-          width:clamp(106px,12.8vw,162px);
-          aspect-ratio:500/233;
+          width:clamp(170px,18vw,225px);
+          aspect-ratio:1/1;
           overflow:hidden;
           flex:none;
         }
@@ -75,7 +75,7 @@ export default function Home(){
           max-width:none;
         }
         .eaBrandCopy{
-          display:flex;
+          display:none;
           flex-direction:column;
           align-items:flex-start;
           justify-content:center;

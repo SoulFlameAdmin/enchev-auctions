@@ -29,9 +29,16 @@ import EnglishUiEnforcer from "./components/EnglishUiEnforcer";
 export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" };
 
 export const metadata: Metadata = {
-  title: "E&A East West Auctioneers Group",
-  description: "E&A East West Auctioneers Group — international vehicle auctions, live bidding, vehicle history and transport. SOULFLAME",
-  icons: { icon: "/brand/ea-2026-app.svg", shortcut: "/brand/ea-2026-app.svg", apple: "/brand/ea-2026-app.svg" },
+  title: "East West Auctioneer Group (E&W)",
+  description: "East West Auctioneer Group (E&W) — international vehicle auctions, live bidding, vehicle history and transport.",
+  metadataBase: new URL("https://enchev-auctions.vercel.app"),
+  icons: { icon: "/brand/east-west-auctioneer-group-approved.png", shortcut: "/brand/east-west-auctioneer-group-approved.png", apple: "/brand/east-west-auctioneer-group-approved.png" },
+  openGraph: {
+    title: "East West Auctioneer Group (E&W)",
+    description: "International vehicle auctions and live bidding.",
+    images: [{ url: "/brand/east-west-auctioneer-group-approved.png", width: 1254, height: 1254, alt: "East West Auctioneer Group approved logo" }]
+  },
+  twitter: { card: "summary_large_image", images: ["/brand/east-west-auctioneer-group-approved.png"] },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
