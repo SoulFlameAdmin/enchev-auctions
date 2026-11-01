@@ -10,7 +10,10 @@ a[aria-label="E&A East West Auctioneers Group home"]{
 header a[href="/"]:has(img),
 header a[href="/"]:has(svg),
 header img[alt*="E&A"],
-header img[alt*="East West"],
+header img[alt*="East West"]:not(.ea-cinema-brand-img),
 img[src*="/brand/ea-east-west"],
 a[href="/"]:has(img[alt*="logo"]),
 a[href="/"]:has(img[alt*="E&A"]){display:none!important}
+
+/* Never suppress the newly approved image inserted into the cinematic header. */
+.ea-approved-cinema-brand img.ea-cinema-brand-img{display:block!important;visibility:visible!important}
