@@ -7,6 +7,36 @@
   "authorityBoundary": "Inventory is descriptive only. PostgreSQL remains authoritative for auction state, accepted bids, winner selection and final results.",
   "endpoints": [
     {
+      "method": "DELETE",
+      "path": "/api/ea-early-access/admin/session",
+      "operationId": "deleteEaEarlyAccessAdminSession",
+      "summary": "Clear the early-access admin session cookie"
+    },
+    {
+      "method": "GET",
+      "path": "/api/carar-waitlist",
+      "operationId": "getCarArWaitlistMethodGuard",
+      "summary": "Reject non-POST CarAR waitlist requests"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ea-early-access",
+      "operationId": "getEaEarlyAccessPublic",
+      "summary": "Read public E&A early-access state through the dedicated Supabase edge service"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ea-early-access/admin",
+      "operationId": "getEaEarlyAccessAdmin",
+      "summary": "List early-access signups for an authenticated admin session"
+    },
+    {
+      "method": "GET",
+      "path": "/api/ea-early-access/admin/session",
+      "operationId": "getEaEarlyAccessAdminSession",
+      "summary": "Read sanitized early-access admin session state"
+    },
+    {
       "method": "GET",
       "path": "/api/enchev-auth/[action]",
       "operationId": "getBuyerAuthSession",
@@ -59,6 +89,24 @@
       "path": "/api/live-auction-clock",
       "operationId": "getLiveAuctionDemoClock",
       "summary": "Read the server-issued non-authoritative browser-session demo clock"
+    },
+    {
+      "method": "POST",
+      "path": "/api/carar-waitlist",
+      "operationId": "postCarArWaitlist",
+      "summary": "Join the CarAR launch waitlist using a validated email address"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ea-early-access",
+      "operationId": "postEaEarlyAccessPublic",
+      "summary": "Submit public E&A early-access data to the dedicated Supabase edge service"
+    },
+    {
+      "method": "POST",
+      "path": "/api/ea-early-access/admin/session",
+      "operationId": "postEaEarlyAccessAdminSession",
+      "summary": "Create an early-access admin session using the configured admin secret"
     },
     {
       "method": "POST",
