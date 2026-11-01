@@ -264,7 +264,7 @@
     "verify:intro-platform-parity": "node scripts/verify-intro-platform-parity.mjs"
   },
   "dependencies": {
-    "next": "16.3.8",
+    "next": "16.4.3",
     "react": "latest",
     "react-dom": "latest"
   },
