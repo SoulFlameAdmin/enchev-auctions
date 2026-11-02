@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useMemo,useRef,useState} from "react";
 import plan from "../data/urgent-119-days.json";
+import LegalFoundationCenter from "./LegalFoundationCenter";
 import "./urgent-plan-119.css";
 
 type Status="planned"|"working"|"blocked"|"done";
@@ -126,6 +127,7 @@ export default function UrgentPlan119({onClose,onOpenMaster}:{onClose:()=>void;o
       <div><span>ПРОСРОЧЕНИ / БЛОКИРАНИ</span><b>{late}<small> / {blocked}</small></b></div>
     </div><div className="urgentProgress" role="progressbar" aria-label="Приети задачи" aria-valuenow={done} aria-valuemin={0} aria-valuemax={119}><i style={{width:pct+"%"}}/></div>
     <div className="urgentAudit"><b>ОДИТ КЪМ 02.11.2026</b><p>WEB/API HTTP 200 · Realtime/Worker/Redis HTTP 503 · Auth unavailable · MASTER: 308 GREEN / 6 YELLOW · Closed Demo: 35 RED.</p><small>Проверена моментна снимка, не live мониторинг. Ръчният PASS в този панел не е независима CI сертификация.</small></div>
+    <LegalFoundationCenter />
     <div className="urgentTitle"><div><small>01 / СЕДМИЦИ</small><h2>17 контролни периода</h2></div><p>Избери седмица и провери всеки ден.</p></div>
     <nav className="urgentWeeks" aria-label="Седмици">{weeks.map(w=><button type="button" key={w.number} className={filter==="week"&&week===w.number?"active":""} onClick={()=>{setFilter("week");setChosenWeek(w.number)}}>
       <span>W{String(w.number).padStart(2,"0")}</span><b>{w.done}/{w.items.length}</b><small>{w.start.slice(5)} – {w.end.slice(5)}</small><i style={{width:Math.round(w.done/w.items.length*100)+"%"}}/></button>)}</nav>
