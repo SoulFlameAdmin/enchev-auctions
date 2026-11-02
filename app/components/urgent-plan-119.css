@@ -1,0 +1,88 @@
+.urgentOverlay{position:fixed;inset:0;z-index:115;overflow-y:auto;overscroll-behavior:contain;background:radial-gradient(ellipse at 75% -10%,#252015 0%,#080b0f 42%,#05070a 100%);color:#eff2f5;padding:0 clamp(14px,3vw,52px) 42px;font-family:Inter,Arial,sans-serif}
+.urgentOverlay button,.urgentOverlay input,.urgentOverlay select,.urgentOverlay textarea{font:inherit}
+.urgentOverlay button{cursor:pointer}
+.urgentHeader{position:sticky;top:0;z-index:5;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:22px 0;background:linear-gradient(180deg,#070a0f 80%,rgba(7,10,15,.95));border-bottom:1px solid #35312a}
+.urgentEyebrow,.urgentTitle small,.urgentClock>span,.urgentToday>span{font-size:11px;letter-spacing:.16em;font-weight:900;color:#c9a569}
+.urgentHeader h1{font-size:clamp(24px,3vw,45px);letter-spacing:-.035em;margin:5px 0 4px;line-height:1.15}
+.urgentHeader h1 em{font-style:normal;color:#dbb578}
+.urgentHeader p,.urgentTitle p{margin:0;color:#94a1ac;font-size:13px}
+.urgentHeaderActions{display:flex;gap:9px;align-items:center;flex-shrink:0}
+.urgentHeaderActions button,.urgentExport button{background:#171b20;border:1px solid #564733;border-radius:11px;padding:11px 14px;color:#e1c18f;font-weight:800;font-size:12px}
+.urgentHeaderActions .urgentClose{width:44px;height:44px;padding:0;font-size:27px;border-color:#36404b;color:#fff}
+.urgentHero{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px;margin-top:24px}
+.urgentClock,.urgentToday{background:linear-gradient(140deg,#15130f,#101720);border:1px solid #52412c;border-radius:22px;padding:clamp(18px,2.5vw,32px);box-shadow:0 15px 45px #0003}
+.urgentClock strong{font-variant-numeric:tabular-nums;letter-spacing:-.04em;display:block;font-size:clamp(38px,5vw,77px);margin:16px 0 10px;color:#f3d6a0}
+.urgentClock strong small{font-size:.3em;letter-spacing:0;color:#c8af89}
+.urgentClock p,.urgentToday p{margin:6px 0 0;color:#9aa6b0;font-size:12px;line-height:1.5}
+.urgentToday b{display:block;font-size:clamp(18px,2vw,26px);margin:14px 0 8px}
+.urgentToday p{font-size:15px;max-width:560px}
+.urgentToday button{margin-top:19px;border:1px solid #916c37;background:#b68c51;color:#0d0e10;border-radius:11px;padding:10px 15px;font-weight:900;font-size:12px}
+.urgentMetrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:16px}
+.urgentMetrics>div{border:1px solid #2d353e;border-radius:14px;background:#10151a;padding:16px}
+.urgentMetrics span{display:block;color:#9fa7b0;font-size:10px;letter-spacing:.07em;font-weight:800}
+.urgentMetrics b{display:block;font-variant-numeric:tabular-nums;margin-top:12px;font-size:clamp(22px,2.5vw,36px);color:#e8e9e9}
+.urgentMetrics b small{font-size:12px;color:#a5adb5;letter-spacing:0}
+.urgentProgress{height:7px;background:#20252b;border-radius:8px;overflow:hidden;margin:10px 0 14px}
+.urgentProgress i{display:block;height:100%;background:linear-gradient(90deg,#b68b50,#f3d7a4);transition:width .2s ease}
+.urgentAudit{border-left:3px solid #b9955e;background:#151516;padding:14px 17px;border-radius:0 11px 11px 0;color:#b8c0c9}
+.urgentAudit b{color:#ead0a1;font-size:11px;letter-spacing:.1em}
+.urgentAudit p{margin:8px 0;font-size:13px;line-height:1.5}
+.urgentAudit small{color:#919aa4;line-height:1.5}
+.urgentTitle{margin:30px 0 15px;display:flex;justify-content:space-between;gap:18px;align-items:flex-end;scroll-margin-top:100px}
+.urgentTitle h2{margin:4px 0 0;font-size:clamp(21px,2.5vw,29px);letter-spacing:-.015em}
+.urgentWeeks{display:flex;overflow-x:auto;gap:9px;padding:3px 1px 12px;scrollbar-width:thin}
+.urgentWeeks button{position:relative;flex:0 0 132px;min-height:96px;text-align:left;border:1px solid #2e353c;border-radius:12px;background:#101419;color:#ddd;padding:12px;overflow:hidden}
+.urgentWeeks button.active{border-color:#c49b5f;background:#252118}
+.urgentWeeks button>span{font-size:10px;color:#cdaa74;letter-spacing:.12em;font-weight:900}
+.urgentWeeks button b{display:block;font-size:27px;margin:6px 0 4px;font-variant-numeric:tabular-nums}
+.urgentWeeks button small{display:block;color:#89949f;font-size:10px}
+.urgentWeeks button i{position:absolute;bottom:0;left:0;height:3px;background:#d2a76a}
+.urgentToolbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0}
+.urgentFilters{display:flex;flex-wrap:wrap;gap:6px}
+.urgentFilters button{border:1px solid #2d373f;background:#11171e;color:#c1cbd4;border-radius:8px;padding:10px 12px;font-size:12px;font-weight:800}
+.urgentFilters button.active{color:#ffde9b;border-color:#8c7148;background:#2a251c}
+.urgentToolbar>input{min-width:190px;width:min(340px,100%);background:#10151b;border:1px solid #34404d;color:#fff;border-radius:9px;padding:11px}
+.urgentCount{font-size:12px;color:#82909d;margin:10px 0 12px}
+.urgentList{display:grid;gap:10px}
+.urgentEmpty{border:1px solid #313943;border-radius:12px;padding:20px;color:#a9b3bc}
+.urgentTask{background:#10151a;border:1px solid #2b333c;border-radius:14px;overflow:hidden}
+.urgentTask.urgent-done{border-color:#315c42}
+.urgentTask.urgent-blocked{border-color:#81523b}
+.urgentTask summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:18px;padding:17px}
+.urgentTask summary::-webkit-details-marker{display:none}
+.urgentDate{display:flex;flex-direction:column;min-width:118px;gap:4px}
+.urgentDate strong{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;color:#caa26c}
+.urgentDate b{font-size:13px}
+.urgentDate small{font-size:10px;color:#83929f}
+.urgentTaskName{flex:1;min-width:0}
+.urgentTaskName>b{display:block;font-size:15px;line-height:1.45}
+.urgentTaskName>small{display:block;font-size:11px;color:#9aa8b3;margin-top:7px}
+.urgentPill{font-size:10px;white-space:nowrap;font-weight:900;border-radius:9px;padding:8px 10px;background:#232c33;color:#ced7df}
+.urgentPill-done{background:#183327;color:#9bebbc}
+.urgentPill-blocked{background:#3b271f;color:#f4ad8b}
+.urgentPill-working{background:#3a321f;color:#f5d997}
+.urgentTaskBody{border-top:1px solid #2a3038;padding:18px;display:grid;gap:15px}
+.urgentDetails{display:grid;grid-template-columns:105px 1fr;gap:8px;align-items:center}
+.urgentDetails span,.urgentTest small{font-size:10px;letter-spacing:.08em;color:#b2a080;font-weight:900}
+.urgentDetails b{font-size:12px;font-weight:600;color:#c7d0d8;line-height:1.45}
+.urgentTest{padding:15px;border:1px solid #4a422f;background:#181911;border-radius:10px}
+.urgentTest p{font-size:14px;line-height:1.55;margin:8px 0 0;color:#e7e9e8}
+.urgentInputs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.urgentInputs label{font-size:11px;line-height:1.4;font-weight:800;color:#a5b2be;display:flex;flex-direction:column;gap:6px}
+.urgentInputs label.urgentWide{grid-column:1/-1}
+.urgentInputs input,.urgentInputs textarea,.urgentInputs select{background:#080d11;border:1px solid #3b4651;color:#f3f6f8;border-radius:9px;padding:11px;width:100%;font-size:12px;min-width:0}
+.urgentInputs textarea{resize:vertical}
+.urgentTaskEnd{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.urgentTaskEnd small{font-size:11px;color:#8a97a4}
+.urgentTaskEnd button{border:1px solid #ad8b55;background:#a88651;color:#0b0d0e;padding:11px 16px;border-radius:9px;font-size:12px;font-weight:900}
+.urgentTaskEnd button:disabled{cursor:default;opacity:.6}
+.urgentFooter{margin-top:25px;border-top:1px solid #38332c;padding:22px 0;display:flex;justify-content:space-between;gap:20px;align-items:flex-start}
+.urgentFooter>div:first-child{max-width:700px}
+.urgentFooter b{color:#d9bb84;font-size:12px;letter-spacing:.08em}
+.urgentFooter p{color:#96a4b0;font-size:12px;line-height:1.6;margin:9px 0}
+.urgentExport{display:flex;flex-wrap:wrap;gap:8px}
+.urgentExport button{white-space:nowrap}
+.urgentNotice{position:fixed;bottom:20px;right:20px;z-index:11;background:#312719;border:1px solid #b48a52;box-shadow:0 18px 45px #0008;padding:16px;border-radius:12px;display:flex;align-items:center;gap:14px;max-width:min(540px,90vw);font-size:12px}
+.urgentNotice button{background:transparent;border:0;color:#fff;font-size:22px}
+@media(max-width:1000px){.urgentMetrics{grid-template-columns:repeat(3,minmax(0,1fr))}.urgentHero{grid-template-columns:1fr 1fr}.urgentHeader h1{font-size:30px}.urgentClock strong{font-size:42px}.urgentInputs{grid-template-columns:1fr 1fr}}
+@media(max-width:690px){.urgentHeader{align-items:flex-start}.urgentHeader h1{font-size:25px}.urgentHeader p{font-size:10px}.urgentHeaderActions button:first-child{display:none}.urgentEyebrow{font-size:9px}.urgentHero{grid-template-columns:1fr;margin-top:14px}.urgentClock,.urgentToday{padding:18px}.urgentClock strong{font-size:41px}.urgentMetrics{grid-template-columns:1fr 1fr}.urgentMetrics>div{padding:12px}.urgentMetrics b{font-size:26px}.urgentMetrics>div:last-child{grid-column:1/-1}.urgentTitle{align-items:flex-start;flex-direction:column;gap:6px}.urgentTask summary{gap:8px;flex-wrap:wrap;padding:14px}.urgentDate{min-width:90px}.urgentTaskName{flex-basis:calc(100% - 135px)}.urgentPill{margin-left:0}.urgentDetails{grid-template-columns:80px 1fr}.urgentInputs{grid-template-columns:1fr}.urgentToolbar>input{width:100%}.urgentFooter{flex-direction:column}.urgentExport{width:100%}}
