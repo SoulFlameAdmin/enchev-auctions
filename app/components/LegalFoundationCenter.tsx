@@ -43,6 +43,16 @@ export default function LegalFoundationCenter(){
  const [expanded,setExpanded]=useState(false);
  const [notice,setNotice]=useState("");
  useEffect(()=>{
+  const focus=(event:Event)=>{
+   const id=(event as CustomEvent<{id?:string}>).detail?.id;
+   if(typeof id!=="string"||!catalog.requirements.some(r=>r.id===id))return;
+   setSection(0);setFilter("all");setSearch(id);setExpanded(true);
+   window.setTimeout(()=>document.getElementById("legal-requirements")?.scrollIntoView({behavior:"smooth",block:"start"}),80);
+  };
+  window.addEventListener("enchev-legal-focus",focus);
+  return()=>window.removeEventListener("enchev-legal-focus",focus);
+ },[]);
+ useEffect(()=>{
   try{setItems(sanitize(JSON.parse(localStorage.getItem(KEY)||"{}")));}catch{setItems({});}
   setReady(true);
  },[]);
