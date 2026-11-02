@@ -1,0 +1,37 @@
+name: Enchev cloud 402 circuit breaker
+on:
+  pull_request:
+    paths:
+      - "app/components/CloudPlanStateSync.tsx"
+      - "app/lib/enchev-cloud-transport-policy.ts"
+      - "scripts/verify-cloud-402-circuit-breaker.mjs"
+      - ".github/workflows/verify-enchev-cloud-402-circuit.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  cloud-402:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout exact source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Node 24
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+          cache: npm
+      - name: Test real TypeScript policy and browser circuit contract
+        run: node scripts/verify-cloud-402-circuit-breaker.mjs
+      - name: Install pinned dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Verify original cloud governance contract
+        run: |
+          node scripts/verify-cloud-plan-state.mjs
+          node scripts/verify-cloud-plan-state.mjs --self-test
+      - name: Typecheck changed browser code
+        run: npm run typecheck

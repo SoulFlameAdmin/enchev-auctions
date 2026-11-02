@@ -166,6 +166,14 @@ function defaultsFor(source:Phase[]){ const out:Record<string,Status>={}; source
 
 export default function MasterSystemPlanV1(){
   const [menu,setMenu]=useState(false), [open,setOpen]=useState(false), [design2Open,setDesign2Open]=useState(false);
+  // The cloud governance projection is large (~284 KB/refresh). Subscribe
+  // only while an operator actually opens Stages, not on every auction page.
+  useEffect(()=>{
+    window.dispatchEvent(new CustomEvent("enchev-master-stages-visible", { detail: { open } }));
+    return () => {
+      if (open) window.dispatchEvent(new CustomEvent("enchev-master-stages-visible", { detail: { open: false } }));
+    };
+  },[open]);
   const [expansionPhases,setExpansionPhases]=useState<Phase[]>([]);
   const [expansionState,setExpansionState]=useState<"idle"|"loading"|"ready"|"error">("idle");
   const phases=useMemo(()=>sortPhases([...frozenPhases,...expansionPhases]),[expansionPhases]);

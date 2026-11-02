@@ -57,10 +57,25 @@ export function validateBinding(config, sources) {
   return { endpoint, projectRef: config.project_ref, region: config.region };
 }
 
+function restrictionCode(raw) {
+  // Never print a raw provider body: it may contain request metadata.
+  const match = String(raw || "").slice(0, 4096)
+    .match(/\b(?:exceed(?:ed)?_[a-z0-9_]+|overdue_payment)\b/i);
+  return match ? match[0].toLowerCase().slice(0, 80) : "provider-restricted-unspecified";
+}
+
 async function validateLive(config) {
   const url = `${config.project_url}/functions/v1/enchev-plan-state`;
   const response = await fetch(url, { headers: { 'Cache-Control': 'no-cache' } });
-  if (!response.ok) fail(`live endpoint HTTP ${response.status}`);
+  if (!response.ok) {
+    if (response.status === 402) {
+      let raw = "";
+      try { raw = await response.text(); } catch {}
+      fail(`live endpoint HTTP 402, restriction=${restrictionCode(raw)}; ` +
+        "owner must inspect Supabase Organization Usage/Billing. Service restriction must not be bypassed");
+    }
+    fail(`live endpoint HTTP ${response.status}`);
+  }
   const body = await response.json();
   if (!Array.isArray(body.rows)) fail('live endpoint response missing rows array');
   console.log(`SUPABASE_PROJECT_LIVE PASS endpoint=${url} rows=${body.rows.length}`);
@@ -68,6 +83,15 @@ async function validateLive(config) {
 
 function runSelfTest(config, sources) {
   validateBinding(config, sources);
+  const cases = [
+    ['{"code":"exceed_egress_quota"}', "exceed_egress_quota"],
+    ['{"code":"exceeded_edge_function_invocations"}', "exceeded_edge_function_invocations"],
+    ['{"message":"overdue_payment"}', "overdue_payment"],
+    ['{"secrets":"do-not-print","message":"Other provider restriction"}', "provider-restricted-unspecified"],
+  ];
+  for (const [input, output] of cases) {
+    if (restrictionCode(input) !== output) fail("402 restriction classification drift");
+  }
   const badCases = [
     { ...config, project_ref: 'wrong-project' },
     { ...config, project_url: 'https://wrong.supabase.co' },
