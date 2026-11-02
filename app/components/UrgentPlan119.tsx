@@ -135,7 +135,7 @@ export default function UrgentPlan119({onClose,onOpenMaster}:{onClose:()=>void;o
     <p className="urgentCount">Показани {visible.length} от 119 · Седмица {week}</p>
     <div className="urgentList">{visible.length===0&&<div className="urgentEmpty">Няма задачи в избрания филтър.</div>}
       {visible.map(task=>{const entry=entries[task.id]||base,overdue=task.date<today&&!accepted(task.id);
-        return <details className={"urgentTask urgent-"+entry.status} key={task.id} defaultOpen={task.id===active.id}>
+        return <details className={"urgentTask urgent-"+entry.status} key={task.id} open={task.id===active.id}>
           <summary><span className="urgentDate"><strong>{task.id}</strong><b>{fmt(task.date)}</b><small>{task.weekday} · W{task.week}</small></span>
             <span className="urgentTaskName"><b>{task.title}</b><small>{task.owner} · {task.plannedHours} ч. · {task.priority}</small></span>
             <span className={"urgentPill urgentPill-"+entry.status}>{statusLabels[entry.status]}{overdue?" · ПРОСРОЧЕНО":""}</span><span>⌄</span></summary>
