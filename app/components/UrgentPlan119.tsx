@@ -1,6 +1,8 @@
 "use client";
 import {useEffect,useMemo,useRef,useState} from "react";
 import plan from "../data/urgent-119-days.json";
+import legalCatalog from "../data/urgent-legal-foundation-v1.json";
+import LegalFoundationCenter from "./LegalFoundationCenter";
 import "./urgent-plan-119.css";
 
 type Status="planned"|"working"|"blocked"|"done";
@@ -10,6 +12,7 @@ type Entry={status:Status;test:Test;evidence:string;notes:string;actualHours:num
 type EntryMap=Record<string,Entry>;
 type Filter="week"|"all"|"overdue"|"blocked"|"done";
 const tasks=plan.tasks as Task[];
+const legalByDay=legalCatalog.requirements.reduce<Record<string,string[]>>((out,r)=>{(out[r.linkedDay]??=[]).push(r.id);return out;},{});
 const STORAGE="enchev-urgent-119-v1";
 const base:Entry={status:"planned",test:"none",evidence:"",notes:"",actualHours:0,updatedAt:""};
 const statusLabels:Record<Status,string>={planned:"Планирано",working:"В работа",blocked:"Блокирано",done:"Прието"};
@@ -126,6 +129,7 @@ export default function UrgentPlan119({onClose,onOpenMaster}:{onClose:()=>void;o
       <div><span>ПРОСРОЧЕНИ / БЛОКИРАНИ</span><b>{late}<small> / {blocked}</small></b></div>
     </div><div className="urgentProgress" role="progressbar" aria-label="Приети задачи" aria-valuenow={done} aria-valuemin={0} aria-valuemax={119}><i style={{width:pct+"%"}}/></div>
     <div className="urgentAudit"><b>ОДИТ КЪМ 02.11.2026</b><p>WEB/API HTTP 200 · Realtime/Worker/Redis HTTP 503 · Auth unavailable · MASTER: 308 GREEN / 6 YELLOW · Closed Demo: 35 RED.</p><small>Проверена моментна снимка, не live мониторинг. Ръчният PASS в този панел не е независима CI сертификация.</small></div>
+    <LegalFoundationCenter />
     <div className="urgentTitle"><div><small>01 / СЕДМИЦИ</small><h2>17 контролни периода</h2></div><p>Избери седмица и провери всеки ден.</p></div>
     <nav className="urgentWeeks" aria-label="Седмици">{weeks.map(w=><button type="button" key={w.number} className={filter==="week"&&week===w.number?"active":""} onClick={()=>{setFilter("week");setChosenWeek(w.number)}}>
       <span>W{String(w.number).padStart(2,"0")}</span><b>{w.done}/{w.items.length}</b><small>{w.start.slice(5)} – {w.end.slice(5)}</small><i style={{width:Math.round(w.done/w.items.length*100)+"%"}}/></button>)}</nav>
@@ -139,7 +143,7 @@ export default function UrgentPlan119({onClose,onOpenMaster}:{onClose:()=>void;o
           <summary><span className="urgentDate"><strong>{task.id}</strong><b>{fmt(task.date)}</b><small>{task.weekday} · W{task.week}</small></span>
             <span className="urgentTaskName"><b>{task.title}</b><small>{task.owner} · {task.plannedHours} ч. · {task.priority}</small></span>
             <span className={"urgentPill urgentPill-"+entry.status}>{statusLabels[entry.status]}{overdue?" · ПРОСРОЧЕНО":""}</span><span>⌄</span></summary>
-          <div className="urgentTaskBody"><div className="urgentDetails"><span>ПОТОК</span><b>{task.stream}</b><span>ЗАВИСИМОСТ</span><b>{task.dependency||"Начална задача"}</b></div>
+          <div className="urgentTaskBody"><div className="urgentDetails"><span>ПОТОК</span><b>{task.stream}</b><span>ЗАВИСИМОСТ</span><b>{task.dependency||"Начална задача"}</b>{legalByDay[task.id]?.length>0&&<><span>LEGAL ОСНОВА</span><b>{legalByDay[task.id].join(", ")} · проверките са в LEGAL & COMPLIANCE по-горе</b></>}</div>
             <div className="urgentTest"><small>КРИТЕРИЙ ЗА ПРИЕМАНЕ / ТЕСТ</small><p>{task.passCriteria}</p></div>
             <div className="urgentInputs">
               <label>Статус<select value={entry.status} onChange={e=>changeStatus(task.id,e.target.value as Status)}><option value="planned">Планирано</option><option value="working">В работа</option><option value="blocked">Блокирано</option><option value="done">Прието</option></select></label>
