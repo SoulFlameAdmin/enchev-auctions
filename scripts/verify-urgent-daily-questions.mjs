@@ -41,6 +41,9 @@ const ui=readText("app/components/DailyQuestions119.tsx");
 const urgent=readText("app/components/UrgentPlan119.tsx");
 const legalUi=readText("app/components/LegalFoundationCenter.tsx");
 assert.ok(urgent.includes("<DailyQuestions119 today={today}"));
+const home=readText("app/components/MasterSystemPlanV1.tsx");
+assert.ok(home.includes("dailyQuickLaunch")&&home.includes("ВЪПРОСИ ЗА ДЕНЯ"));
+
 assert.ok(urgent.indexOf("<DailyQuestions119")<urgent.indexOf("<LegalFoundationCenter />"));
 assert.ok(ui.includes("enchev-daily-answers-v1"));
 assert.ok(ui.includes("localStorage"));
