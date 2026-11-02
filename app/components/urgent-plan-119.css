@@ -93,3 +93,7 @@
 .sideMenuItem.urgentMenuFirst b{color:#f0d3a3}
 .sideMenuItem.urgentMenuFirst small{color:#ccb594}
 @media(max-width:690px){.urgentQuickLaunch{left:68px;top:14px;max-width:210px;font-size:9px;padding:11px 9px}}
+
+.dailyQuickLaunch{position:fixed;left:84px;top:76px;z-index:70;background:#12202b;border:1px solid #5e899c;border-radius:11px;color:#e1f4fc;padding:11px 15px;font:900 11px Inter,Arial,sans-serif;letter-spacing:.045em;box-shadow:0 10px 25px #0009;cursor:pointer}
+.dailyQuickLaunch:hover{background:#193446;border-color:#90bdcd}
+@media(max-width:690px){.dailyQuickLaunch{left:68px;top:55px;font-size:9px;padding:9px 10px}}
