@@ -3,6 +3,7 @@ import {useEffect,useMemo,useRef,useState} from "react";
 import plan from "../data/urgent-119-days.json";
 import legalCatalog from "../data/urgent-legal-foundation-v1.json";
 import LegalFoundationCenter from "./LegalFoundationCenter";
+import DailyQuestions119 from "./DailyQuestions119";
 import "./urgent-plan-119.css";
 
 type Status="planned"|"working"|"blocked"|"done";
@@ -129,6 +130,7 @@ export default function UrgentPlan119({onClose,onOpenMaster}:{onClose:()=>void;o
       <div><span>ПРОСРОЧЕНИ / БЛОКИРАНИ</span><b>{late}<small> / {blocked}</small></b></div>
     </div><div className="urgentProgress" role="progressbar" aria-label="Приети задачи" aria-valuenow={done} aria-valuemin={0} aria-valuemax={119}><i style={{width:pct+"%"}}/></div>
     <div className="urgentAudit"><b>ОДИТ КЪМ 02.11.2026</b><p>WEB/API HTTP 200 · Realtime/Worker/Redis HTTP 503 · Auth unavailable · MASTER: 308 GREEN / 6 YELLOW · Closed Demo: 35 RED.</p><small>Проверена моментна снимка, не live мониторинг. Ръчният PASS в този панел не е независима CI сертификация.</small></div>
+    <DailyQuestions119 today={today} onOpenTask={(dayId)=>{const day=tasks.find(t=>t.id===dayId);if(!day)return;setFilter("week");setChosenWeek(day.week);window.setTimeout(()=>{const element=document.getElementById("urgent-task-"+dayId) as HTMLDetailsElement|null;if(element){element.open=true;element.scrollIntoView({behavior:"smooth",block:"center"});}},120);}} />
     <LegalFoundationCenter />
     <div className="urgentTitle"><div><small>01 / СЕДМИЦИ</small><h2>17 контролни периода</h2></div><p>Избери седмица и провери всеки ден.</p></div>
     <nav className="urgentWeeks" aria-label="Седмици">{weeks.map(w=><button type="button" key={w.number} className={filter==="week"&&week===w.number?"active":""} onClick={()=>{setFilter("week");setChosenWeek(w.number)}}>
@@ -139,7 +141,7 @@ export default function UrgentPlan119({onClose,onOpenMaster}:{onClose:()=>void;o
     <p className="urgentCount">Показани {visible.length} от 119 · Седмица {week}</p>
     <div className="urgentList">{visible.length===0&&<div className="urgentEmpty">Няма задачи в избрания филтър.</div>}
       {visible.map(task=>{const entry=entries[task.id]||base,overdue=task.date<today&&!accepted(task.id);
-        return <details className={"urgentTask urgent-"+entry.status} key={task.id}>
+        return <details id={"urgent-task-"+task.id} className={"urgentTask urgent-"+entry.status} key={task.id}>
           <summary><span className="urgentDate"><strong>{task.id}</strong><b>{fmt(task.date)}</b><small>{task.weekday} · W{task.week}</small></span>
             <span className="urgentTaskName"><b>{task.title}</b><small>{task.owner} · {task.plannedHours} ч. · {task.priority}</small></span>
             <span className={"urgentPill urgentPill-"+entry.status}>{statusLabels[entry.status]}{overdue?" · ПРОСРОЧЕНО":""}</span><span>⌄</span></summary>

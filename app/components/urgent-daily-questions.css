@@ -1,0 +1,77 @@
+.dailyQ{margin:22px 0 26px;padding:22px;border:1px solid #80663b;border-radius:20px;background:radial-gradient(ellipse at 90% 0%,#2b261a,#0a1118 52%);color:#f0f3f4}
+.dailyQ *{box-sizing:border-box}
+.dailyQHeader,.dailyQHeading,.dailyQLegalTop,.dailyQCarry{display:flex;justify-content:space-between;align-items:flex-start;gap:17px}
+.dailyQHeader>div:first-child{max-width:790px}
+.dailyQHeader span,.dailyQFocus span,.dailyQHeading small,.dailyQLegalTop small,.dailyQCarry>div>span{display:block;color:#d4af76;font-size:10px;font-weight:900;letter-spacing:.12em}
+.dailyQHeader h2{font-size:clamp(25px,3vw,39px);letter-spacing:-.032em;margin:7px 0}
+.dailyQHeader h2 em{font-style:normal;color:#ecc88e}
+.dailyQHeader p,.dailyQFocus p{font-size:13px;line-height:1.6;color:#a8b4bd;margin:7px 0 0}
+.dailyQExport{display:flex;flex-wrap:wrap;gap:7px}
+.dailyQExport button,.dailyQDateBar button,.dailyQFocus button,.dailyQFilters button,.dailyQItemBottom button,.dailyQLegalTop button,.dailyQCarry button{border:1px solid #86704a;border-radius:9px;color:#efcf9b;background:#211c14;padding:10px 12px;font-weight:850;font-size:11px;cursor:pointer}
+.dailyQExport button:disabled,.dailyQDateBar button:disabled,.dailyQItemBottom button:disabled{opacity:.35;cursor:default}
+.dailyQDateBar{display:flex;gap:9px;align-items:flex-end;margin-top:18px;flex-wrap:wrap}
+.dailyQDateBar>label{display:flex;flex-direction:column;gap:6px;color:#9facb7;font-size:11px;font-weight:800;flex:1;min-width:180px}
+.dailyQDateBar select,.dailyQFields input,.dailyQFields textarea,.dailyQFields select{background:#090f15;border:1px solid #3e4c53;color:#edf3f4;border-radius:9px;width:100%;padding:10px;font:inherit;font-size:12px;min-width:0}
+.dailyQDateBar select{height:39px}
+.dailyQDateBar button{height:39px}
+.dailyQDateBar .dailyQToday{background:#936f39;color:#0e1416;border-color:#b7955a}
+.dailyQFocus{display:flex;justify-content:space-between;gap:15px;align-items:center;margin-top:12px;padding:17px;background:#191c1b;border:1px solid #524936;border-radius:13px}
+.dailyQFocus h3{font-size:clamp(17px,2vw,24px);margin:7px 0}
+.dailyQFocus button{flex-shrink:0}
+.dailyQMetrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin-top:13px}
+.dailyQMetrics>div{border:1px solid #313a41;border-radius:12px;background:#111922;padding:14px}
+.dailyQMetrics span{display:block;font-size:10px;color:#93a1ab;letter-spacing:.04em;line-height:1.5;font-weight:800}
+.dailyQMetrics strong{display:block;font-size:26px;color:#f0c88e;font-variant-numeric:tabular-nums;margin-top:9px}
+.dailyQProgress{height:6px;border-radius:4px;background:#252d36;overflow:hidden;margin:11px 0}
+.dailyQProgress i{display:block;height:100%;background:#cc9f5b;transition:width .2s}
+.dailyQDisclaimer{font-size:11px;line-height:1.65;color:#a6b5ba;padding:12px 14px;background:#181a1b;border-left:3px solid #9e7544}
+.dailyQHeading{align-items:flex-end;flex-wrap:wrap;margin:27px 0 12px}
+.dailyQHeading h3,.dailyQLegalTop h3,.dailyQCarry h3{margin:5px 0 0;font-size:clamp(17px,2vw,24px)}
+.dailyQFilters{display:flex;gap:6px;flex-wrap:wrap}
+.dailyQFilters button{border-color:#35434d;color:#b7c6cb;background:#171e26}
+.dailyQFilters button.active{background:#3d3020;color:#f4cf94;border-color:#bc9155}
+.dailyQList{display:grid;gap:9px}
+.dailyQItem{border:1px solid #343d46;border-radius:12px;background:#111921;overflow:hidden}
+.dailyQItem.isBlocked{border-color:#ac694d}
+.dailyQItem.isAnswered{border-color:#3b6c52}
+.dailyQItem summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:11px;padding:15px}
+.dailyQItem summary::-webkit-details-marker{display:none}
+.dailyQCode{display:flex;flex-direction:column;gap:5px;color:#d7ac6b;font-size:11px;white-space:nowrap;font-family:ui-monospace,SFMono-Regular,monospace}
+.dailyQCode small{font-size:10px;color:#889ba7}
+.dailyQText{flex:1;min-width:0}
+.dailyQText span{font-size:10px;color:#bba67f;font-weight:850}
+.dailyQText b{font-size:14px;line-height:1.5;display:block;margin-top:4px}
+.dailyQStatus{padding:8px 10px;border-radius:9px;background:#2b313a;font-size:10px;color:#dbe5eb;text-align:center;min-width:94px}
+.isBlocked .dailyQStatus{background:#42281f;color:#fec1a7}
+.isAnswered .dailyQStatus{background:#183d2a;color:#a2eabe}
+.dailyQItemBody{border-top:1px solid #2c3944;padding:16px}
+.dailyQItemBody>p{padding:13px;border-radius:10px;background:#1b211c;color:#bfccc7;font-size:12px;line-height:1.6;margin:0 0 13px}
+.dailyQItemBody>p b{color:#e5c28b}
+.dailyQFields{display:grid;grid-template-columns:1fr 1fr;gap:11px}
+.dailyQFields label{display:flex;flex-direction:column;gap:6px;color:#b0bdc4;font-size:11px;font-weight:800}
+.dailyQFields .dailyQWide{grid-column:1/-1}
+.dailyQFields textarea{resize:vertical}
+.dailyQItemBottom{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+.dailyQItemBottom span{font-size:10px;color:#8898a2}
+.dailyQEmpty{font-size:13px;padding:20px;color:#9aabb4}
+.dailyQLegal{margin-top:22px;padding:17px;border:1px solid #76603e;background:#191911;border-radius:13px}
+.dailyQLegalTop{align-items:center}
+.dailyQLegalGrid{margin-top:13px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.dailyQLegalGrid button{text-align:left;display:flex;flex-direction:column;gap:6px;border:1px solid #514932;background:#101615;color:#f2f3ee;padding:11px;border-radius:9px;cursor:pointer}
+.dailyQLegalGrid button span{font-size:10px;color:#d8ad6f;font-weight:850}
+.dailyQLegalGrid button b{font-size:12px;line-height:1.4}
+.dailyQLegalGrid button small{color:#9da8ad;font-size:10px;line-height:1.5}
+.dailyQLegal>p{font-size:11px;color:#9cabae;line-height:1.6;margin:12px 0 0}
+.dailyQCarry{margin-top:14px;padding:17px;border:1px solid #3e4b54;background:#12191f;border-radius:13px;align-items:center}
+.dailyQCarry p{color:#96aab6;margin:7px 0 0;font-size:11px;line-height:1.6}
+.dailyQCarry button{flex-shrink:0}
+.dailyQBacklog{max-height:390px;overflow-y:auto;padding:8px;display:grid;gap:7px;border:1px solid #384149;border-radius:11px;margin-top:8px}
+.dailyQBacklog button{display:flex;align-items:center;gap:12px;background:#151f27;border:1px solid #313f49;padding:10px;border-radius:8px;color:#edf1f4;text-align:left;cursor:pointer}
+.dailyQBacklog button b{color:#e0ba83;white-space:nowrap;font-size:10px}
+.dailyQBacklog button span{flex:1;font-size:11px;line-height:1.5}
+.dailyQBacklog button small{color:#e0a681;font-size:9px;white-space:nowrap}
+.dailyQBacklog p{padding:12px;color:#a9b5be;font-size:12px}
+.dailyQNotice{position:fixed;bottom:20px;right:20px;z-index:150;background:#35291c;border:1px solid #b48b55;color:white;font-size:12px;border-radius:12px;padding:15px;max-width:500px;display:flex;align-items:center;gap:12px;box-shadow:0 20px 44px #0008}
+.dailyQNotice button{border:0;background:none;color:#fff;cursor:pointer;font-size:22px}
+@media(max-width:1000px){.dailyQMetrics{grid-template-columns:repeat(3,minmax(0,1fr))}.dailyQHeader{flex-direction:column}}
+@media(max-width:690px){.dailyQ{padding:13px;margin:16px 0;border-radius:13px}.dailyQDateBar>label{order:-1;min-width:100%;flex:1}.dailyQDateBar button{flex:1}.dailyQFocus{flex-direction:column;align-items:flex-start}.dailyQMetrics{grid-template-columns:repeat(2,minmax(0,1fr))}.dailyQHeading{align-items:flex-start}.dailyQItem summary{flex-wrap:wrap;padding:12px;gap:7px}.dailyQText{flex-basis:calc(100% - 105px)}.dailyQStatus{margin-left:auto}.dailyQFields{grid-template-columns:1fr}.dailyQLegalTop,.dailyQCarry{flex-direction:column;align-items:flex-start}.dailyQLegalGrid{grid-template-columns:1fr}.dailyQBacklog button{flex-wrap:wrap}}
