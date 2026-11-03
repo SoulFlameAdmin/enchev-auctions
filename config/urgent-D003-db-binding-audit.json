@@ -1,0 +1,191 @@
+{
+  "schemaVersion": 1,
+  "task": "D003",
+  "asOf": "2026-11-03",
+  "scope": "Read-only audit of Supabase project identity, runtime bindings, permission boundaries, and staging isolation",
+  "auditStatus": "blocked-pending-provider-evidence",
+  "realMoneyAuctionAuthority": false,
+  "sourceOfTruthRules": [
+    "A reference from source code does not prove a live connected Supabase project or secret binding.",
+    "A connected project alone does not prove the running Vercel production or preview environment points to it.",
+    "Vercel Preview deployment isolation is NOT the same as an isolated staging database or separate DB roles.",
+    "Never connect non-production fixtures to an actual production DB without dedicated least-privilege credentials.",
+    "No real-money auction, seller payout, or authoritative bid enabled by this audit."
+  ],
+  "projects": [
+    {
+      "id": "frhletkiuupgksmgxoxc",
+      "name": "soulflame-twins",
+      "claimedRegionFromRepository": "eu-west-1",
+      "scope": "development-governance",
+      "source": "config/enchev-supabase-project.json",
+      "sharedProject": true,
+      "auctionAuthority": false,
+      "repositoryReferenceVerified": true,
+      "connectorAccess": "denied-permission",
+      "liveStatus": "unverified",
+      "dataAccess": "not-verified",
+      "roleGrants": "unverified",
+      "allowedResources": [
+        "public.enchev_development_events",
+        "public.enchev_plan_state",
+        "enchev-development-status",
+        "enchev-plan-state"
+      ]
+    },
+    {
+      "id": "ejfrnjhlggebzmpmxajl",
+      "name": "enchev-auctions",
+      "region": "eu-central-1",
+      "scope": "auction-demo-and-related-services",
+      "source": "read-only-Supabase-connector-2026-11-03",
+      "sharedProject": true,
+      "auctionAuthority": false,
+      "status": "ACTIVE_HEALTHY",
+      "postgresVersion": "17.11.0.003",
+      "publicTableCount": 28,
+      "publicTablesWithRlsEnabled": 28,
+      "migrationsCount": 28,
+      "developmentBranchesCount": 0,
+      "roleGrants": "partially-observed-read-only",
+      "runtimeBindings": "unverified",
+      "dataDomains": [
+        "enchev_*",
+        "ea_early_access_*",
+        "sf_dpp_*",
+        "sfcal_*",
+        "david_*"
+      ],
+      "note": "Candidate connected project contains demo auction tables and other systems; no real-money authoritative production DB status has been proved."
+    }
+  ],
+  "runtime": {
+    "production": {
+      "platform": "vercel",
+      "projectId": "prj_X3TAEQf9oGE79te9NdNlvB6jnhno",
+      "deploymentEnvironment": "production",
+      "gitBranch": "main",
+      "projectDbRef": null,
+      "dbBindingVerified": false,
+      "dbRoleVerified": false
+    },
+    "preview": {
+      "platform": "vercel",
+      "deploymentEnvironment": "preview",
+      "gitBranch": "non-main",
+      "projectDbRef": null,
+      "dbBindingVerified": false,
+      "dbRoleVerified": false
+    },
+    "stagingDatabase": {
+      "projectId": null,
+      "verifiedIndependent": false,
+      "roleVerified": false,
+      "noProductionDataCopied": true,
+      "readiness": "missing-evidence-or-not-created"
+    },
+    "vercelEnvironmentNamesRead": "denied-403",
+    "decryptedSecretsRead": false,
+    "secretValuesInRepository": false
+  },
+  "liveReadOnlyFindings": [
+    {
+      "code": "NO_STAGING_SUPABASE_BRANCH",
+      "severity": "P0",
+      "finding": "Accessible Enchev project reports zero development branches. A separate staging project was not returned by available connected project list.",
+      "resolution": "Owner provisions and verifies distinct staging Supabase project and least-privilege roles; check via read-only metadata before migrations."
+    },
+    {
+      "code": "GOVERNANCE_PROJECT_ACCESS_DENIED",
+      "severity": "P0",
+      "finding": "Governance project exists in repository configuration, but the connected Supabase account received permission denied on get_project.",
+      "resolution": "Authorized owner confirms project status/role grants; no cross-project data access assumed."
+    },
+    {
+      "code": "VERCEL_ENV_METADATA_403",
+      "severity": "P0",
+      "finding": "Vercel environment metadata listing denied 403; preview/production Supabase target refs cannot be independently verified.",
+      "resolution": "Authorized Vercel project administrator checks target project IDs and scoped variable names without exposing secret values."
+    },
+    {
+      "code": "DOMAIN_CO_RESIDENCY",
+      "severity": "P1",
+      "finding": "Available database contains Enchev demo, SoulFlame DPP, Calendar and DAVID tables. All 28 public tables report RLS enabled, but RLS alone is not proof of tenant-safe access.",
+      "resolution": "Document table and function allowlists, verify cross-tenant RLS and service-role boundaries on separate staging before launch."
+    },
+    {
+      "code": "PUBLIC_SECURITY_DEFINER_GRANTS",
+      "severity": "P1",
+      "finding": "Read-only catalog query shows some public SECURITY DEFINER functions callable by anon/authenticated for DAVID and calendar domains; auction bid RPCs were not shown as executable by those roles.",
+      "resolution": "Owning teams review affected functions and advisory WARN findings; no grant or function changes as part of D003."
+    },
+    {
+      "code": "LEAKED_PASSWORD_PROTECTION_DISABLED",
+      "severity": "P1",
+      "finding": "Supabase Security Advisor reports leaked-password protection disabled.",
+      "resolution": "Project administrator reviews Auth security settings before real customers."
+    },
+    {
+      "code": "DB_REGION_AND_RUNTIME",
+      "severity": "P1",
+      "finding": "Supabase located in Frankfurt eu-central-1; prior Vercel production deployment reports iad1 region.",
+      "resolution": "Measure server-to-DB latency, consider deployment region and data processing geography; do not change blindly."
+    }
+  ],
+  "gateChecks": [
+    {
+      "id": "D003-G1",
+      "requirement": "Actual production auction DB project identified and linked to running production runtime",
+      "state": "unverified"
+    },
+    {
+      "id": "D003-G2",
+      "requirement": "Governance project role verified without using it as real-auction authority",
+      "state": "blocked-permission"
+    },
+    {
+      "id": "D003-G3",
+      "requirement": "Separate staging DB project/branch and isolated data confirmed",
+      "state": "not-confirmed"
+    },
+    {
+      "id": "D003-G4",
+      "requirement": "Distinct staging/production least-privilege service roles verified without viewing secrets",
+      "state": "not-confirmed"
+    },
+    {
+      "id": "D003-G5",
+      "requirement": "Migration history and public table RLS audited on accessible Enchev project",
+      "state": "verified"
+    },
+    {
+      "id": "D003-G6",
+      "requirement": "No privileged credential exposed in source files or audit artifact",
+      "state": "verified"
+    },
+    {
+      "id": "D003-G7",
+      "requirement": "Known Supabase advisors and public function grants logged for review",
+      "state": "verified"
+    }
+  ],
+  "acceptancePolicy": {
+    "requiresAllGatesVerified": true,
+    "statusIfGatesMissing": "blocked",
+    "d003CanBeMarkedDone": false,
+    "nextDayD004CanWriteRealStagingFixtures": false,
+    "allowedNextActions": [
+      "Verify project access by owner",
+      "Provision isolated staging with owner-approved billing",
+      "Verify Vercel env metadata access",
+      "Record independent CI and role evidence",
+      "Run D003 acceptance only after all mandatory gates"
+    ],
+    "forbiddenActions": [
+      "Read or expose secret values",
+      "Use production database as staging",
+      "Activate real-money payments or authoritative bids",
+      "Auto-set D003 done based on static JSON"
+    ]
+  }
+}
