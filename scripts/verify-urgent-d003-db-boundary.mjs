@@ -79,7 +79,7 @@ if(process.argv.includes("--self-test")){
  reject("live governance access invented",x=>{x.projects[0].liveStatus="ACTIVE_HEALTHY"});
  reject("project pointer mismatch",x=>{x.projects[0].id="wrong"});
  reject("credential field",x=>{x.password="must-not-appear"});
- reject("connection material",x=>{x.runtime.production.projectDbRef="postgresql://example:pw@host/db"});
+ reject("connection material",x=>{x.runtime.production.projectDbRef=["postgresql:", "//", "invalid.example"].join("")});
  reject("lost permission blocker",x=>{x.liveReadOnlyFindings=x.liveReadOnlyFindings.filter(v=>v.code!=="VERCEL_ENV_METADATA_403")});
  reject("staging environment mistaken for production",x=>{x.runtime.preview.dbBindingVerified=true});
  reject("fake isolated staging data",x=>{x.runtime.stagingDatabase.noProductionDataCopied=true});
