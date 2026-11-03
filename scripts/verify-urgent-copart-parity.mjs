@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import {readFileSync} from "node:fs";
 const read=(p)=>readFileSync(p,"utf8");
-const file=JSON.parse(read("app/data/urgent-copart-parity-v1.json"));
+const file=JSON.parse(read("app/data/urgent-auction-benchmark-v1.json"));
 const plan=JSON.parse(read("app/data/urgent-119-days.json"));
 const legal=JSON.parse(read("app/data/urgent-legal-foundation-v1.json"));
-const screen=read("app/components/CopartParityCenter.tsx");
+const screen=read("app/components/AuctionBenchmarkCenter.tsx");
 const urgent=read("app/components/UrgentPlan119.tsx");
-const css=read("app/components/urgent-copart-parity.css");
+const css=read("app/components/urgent-auction-benchmark.css");
 const docs=read("docs/urgent-copart-benchmark-gaps-2026-11-03.md");
 
 assert.equal(plan.taskCount,119,"immutable 119-day baseline task count");
@@ -91,7 +91,7 @@ assert.match(screen,/\baccepted\b/);
 assert.match(screen,/entry\.test!=="pass"/);
 assert.match(screen,/entry\.evidence\.trim\(\)/);
 assert.match(screen,/implementationStatus|Статус на реализация/);
-assert.match(urgent,/import CopartParityCenter from ".\/CopartParityCenter"/);
-assert.match(urgent,/<CopartParityCenter onOpenTask=/);
+assert.match(urgent,/import AuctionBenchmarkCenter from ".\/AuctionBenchmarkCenter"/);
+assert.match(urgent,/<AuctionBenchmarkCenter onOpenTask=/);
 assert.ok(css.includes("@media(max-width:690px)"),"mobile dashboard presentation");
 console.log(`URGENT_COPART_PARITY PASS features=${file.features.length} fees=${file.feeComponents.length} documents=${file.documentWorkflows.length} gates=${file.decisionGates.length} gap=${file.features.filter(x=>x.baselineCoverage==="gap").length}`);
