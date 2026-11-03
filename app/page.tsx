@@ -1,4 +1,5 @@
 import MasterSystemPlanV1 from "./components/MasterSystemPlanV1";
+import AdminMenuGate from "./components/AdminMenuGate";
 import EnchevCinematicLoginGate from "./components/EnchevCinematicLoginGate";
 import EaHeroPhotoOcclusion from "./components/EaHeroPhotoOcclusion";
 
@@ -120,7 +121,7 @@ export default function Home(){
         }
       `}</style>
       <EaHeroPhotoOcclusion />
-      <MasterSystemPlanV1 />
+      <AdminMenuGate><MasterSystemPlanV1 /></AdminMenuGate>
       <EnchevCinematicLoginGate />
     </main>
   );

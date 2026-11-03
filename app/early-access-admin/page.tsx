@@ -8,9 +8,6 @@ type Signup={id:string;email:string;created_at:string;consent_at:string;source:s
 export default function EarlyAccessAdmin(){
  const [authorized,setAuthorized]=useState(false);
  const [authReady,setAuthReady]=useState(false);
- const [configured,setConfigured]=useState(false);
- const [secret,setSecret]=useState("");
- const [busy,setBusy]=useState(false);
  const [error,setError]=useState("");
  const [rows,setRows]=useState<Signup[]>([]);
  const [total,setTotal]=useState<number|null>(null);
@@ -35,26 +32,14 @@ export default function EarlyAccessAdmin(){
 
  useEffect(()=>{
   fetch("/api/ea-early-access/admin/session",{cache:"no-store",credentials:"same-origin"})
-    .then(r=>r.json()).then(data=>{setAuthorized(data.authenticated===true);setConfigured(data.configured===true);})
+    .then(r=>r.json()).then(data=>{setAuthorized(data.authenticated===true);})
     .catch(()=>setError("Админ услугата не е налична.")).finally(()=>setAuthReady(true));
  },[]);
  useEffect(()=>{if(authorized)refresh();},[authorized,refresh]);
- async function login(event:React.FormEvent<HTMLFormElement>){
-  event.preventDefault();setBusy(true);setError("");
-  try{
-   const response=await fetch("/api/ea-early-access/admin/session",{
-    method:"POST",headers:{"Content-Type":"application/json"},credentials:"same-origin",
-    body:JSON.stringify({password:secret})
-   });
-   const data=await response.json();
-   if(!response.ok||!data.ok)throw Error(data.message||"Невалиден админ код.");
-   setSecret("");setAuthorized(true);
-  }catch(e){setError(e instanceof Error?e.message:"Проблем с входа.");}
-  finally{setBusy(false);}
- }
  async function logout(){
-  await fetch("/api/ea-early-access/admin/session",{method:"DELETE",credentials:"same-origin"});
+  await fetch("/api/admin/logout",{method:"POST",credentials:"same-origin"});
   setAuthorized(false);setRows([]);setTotal(null);
+  window.location.assign("/admin/login");
  }
  const format=(v:string)=>{try{return new Date(v).toLocaleString("bg-BG",{dateStyle:"medium",timeStyle:"short"});}catch{return v;}};
  return <main id="main-content" className="eaLeadsAdmin">
@@ -64,14 +49,9 @@ export default function EarlyAccessAdmin(){
   </header>
   {!authReady?<p className="eaLeadsNotice">Проверка на достъпа...</p>:!authorized?
    <section className="eaLeadsLogin">
-    <h2>Защитен администраторски достъп</h2>
-    <p>Списъкът с имейли е достъпен само след проверка на администраторския код. Личните данни не се показват в публичната част на сайта.</p>
-    {!configured&&<p className="eaLeadsWarning">Админ достъпът не е активиран в настройките на Enchev.</p>}
-    <form onSubmit={login}>
-     <label htmlFor="eaAdminSecret">Администраторски код</label>
-     <input id="eaAdminSecret" type="password" autoComplete="current-password" value={secret} onChange={e=>setSecret(e.target.value)} required minLength={32} placeholder="Въведи защитения админ код" disabled={!configured}/>
-     <button type="submit" disabled={busy||!configured}>{busy?"ПРОВЕРКА...":"ВЛЕЗ В СПИСЪКА ↗"}</button>
-    </form>
+    <h2>Защитен Google вход</h2>
+    <p>Записванията са достъпни само след проверка на одобрен Google администраторски профил.</p>
+    <a href="/admin/login" style={{display:"inline-block",padding:"16px 22px",borderRadius:12,background:"#f1dcc0",color:"#141923",fontWeight:700,textDecoration:"none"}}>ВЛЕЗ С GOOGLE ↗</a>
     {error&&<p role="alert" className="eaLeadsWarning">{error}</p>}
    </section>:
    <section className="eaLeadsDashboard">

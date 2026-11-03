@@ -14,6 +14,24 @@
     },
     {
       "method": "GET",
+      "path": "/api/admin/callback",
+      "operationId": "finishAdminGoogleOAuth",
+      "summary": "Exchange Google authorization code and verify admin allowlist"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/google",
+      "operationId": "beginAdminGoogleOAuth",
+      "summary": "Begin administrator-only Google OAuth (PKCE)"
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/session",
+      "operationId": "getAdminGoogleSession",
+      "summary": "Verify current Google admin session against Supabase Auth"
+    },
+    {
+      "method": "GET",
       "path": "/api/carar-waitlist",
       "operationId": "getCarArWaitlistMethodGuard",
       "summary": "Reject non-POST CarAR waitlist requests"
@@ -89,6 +107,12 @@
       "path": "/api/live-auction-clock",
       "operationId": "getLiveAuctionDemoClock",
       "summary": "Read the server-issued non-authoritative browser-session demo clock"
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/logout",
+      "operationId": "logoutAdminGoogleSession",
+      "summary": "Revoke Google admin session and clear protected cookies"
     },
     {
       "method": "POST",
