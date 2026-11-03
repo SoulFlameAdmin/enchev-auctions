@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "taskId": "D004",
+  "originalDate": "2026-11-06",
+  "dependency": "D003",
+  "originalAcceptance": "Един тестов автомобил в staging, нула production writes",
+  "status": "blocked-awaiting-staging-database",
+  "releaseAuthority": false,
+  "sourceOfTruth": "config/urgent-D003-db-binding-audit.json",
+  "fixturePath": "test/fixtures/urgent-D004-synthetic-vehicle.json",
+  "staging": {
+    "projectRef": null,
+    "projectType": null,
+    "isolationVerified": false,
+    "roleVerified": false,
+    "seedApplied": false,
+    "productionDataCopied": null,
+    "ownerApprovedCost": false
+  },
+  "production": {
+    "runtimeDbRef": null,
+    "bindingVerified": false,
+    "writeCountFromD004": null
+  },
+  "dryRun": {
+    "mode": "local-in-memory-only",
+    "networkAllowed": false,
+    "credentialReadAllowed": false,
+    "persistedFiles": false,
+    "requiresNoExternalResources": true,
+    "expectedSyntheticRows": 1
+  },
+  "controls": [
+    {
+      "id": "D004-G1",
+      "requirement": "Independent staging Supabase project or branch exists and has a distinct ref",
+      "state": "blocked"
+    },
+    {
+      "id": "D004-G2",
+      "requirement": "Environment and least-privilege staging DB role confirmed, distinct from production",
+      "state": "blocked"
+    },
+    {
+      "id": "D004-G3",
+      "requirement": "One synthetic car inserted and read back on the actual isolated staging Supabase instance",
+      "state": "blocked"
+    },
+    {
+      "id": "D004-G4",
+      "requirement": "Production write counters or audit evidence proves zero production writes during staging seed",
+      "state": "blocked"
+    }
+  ],
+  "policy": {
+    "d004DoneAllowed": false,
+    "realAuctionAllowed": false,
+    "remoteSeedAllowed": false,
+    "requireD003Complete": true,
+    "neverCopyProductionCustomerData": true,
+    "neverUseProductionAsStaging": true,
+    "requireOwnerApprovalForChargeableProvisioning": true,
+    "neverExposeCredentials": true
+  },
+  "nextSafeAction": "Create isolated staging only after organization/cost approval and D003 bindings; run local ephemeral DB fixture proof in CI now."
+}

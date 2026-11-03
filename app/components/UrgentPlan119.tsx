@@ -4,6 +4,7 @@ import plan from "../data/urgent-119-days.json";
 import benchmark from "../data/urgent-auction-benchmark-v1.json";
 import architecture from "../data/urgent-auction-architecture-119-v1.json";
 import dbAudit from "../../config/urgent-D003-db-binding-audit.json";
+import stagingPlan from "../../config/urgent-D004-staging-seed-v1.json";
 import legalCatalog from "../data/urgent-legal-foundation-v1.json";
 import LegalFoundationCenter from "./LegalFoundationCenter";
 import DailyQuestions119 from "./DailyQuestions119";
@@ -40,12 +41,18 @@ const auditedD003:Entry={status:"blocked",test:"none",
   evidence:"https://github.com/SoulFlameAdmin/enchev-auctions/blob/main/docs/urgent-D003-db-binding-audit-2026-11-03.md",
   notes:"D003: 2 known project references but governance access denied; no isolated staging DB proven; Vercel env metadata 403; separate prod/staging DB roles not verified. Real-money auction NO-GO.",
   actualHours:0,updatedAt:"2026-11-03T16:54:00Z"};
+// D004 has a prepared local rehearsal, but no real Supabase staging project/role/seed proof.
+const auditedD004:Entry={status:"blocked",test:"none",
+ evidence:"https://github.com/SoulFlameAdmin/enchev-auctions/blob/main/docs/urgent-D004-synthetic-staging-rehearsal-2026-11-03.md",
+ notes:"D004: one synthetic car test is prepared for local, in-memory CI only. Real staging project, isolated role, real staging row and zero-production-write evidence are NOT verified. D003 remains blocked.",
+ actualHours:0,updatedAt:"2026-11-03T17:00:00Z"};
 const d003CanBeMarkedDone=dbAudit.acceptancePolicy.d003CanBeMarkedDone;
+const d004CanBeMarkedDone=stagingPlan.policy.d004DoneAllowed&&d003CanBeMarkedDone;
 const statusLabels:Record<Status,string>={planned:"Планирано",working:"В работа",blocked:"Блокирано",done:"Прието"};
 const fmt=(date:string)=>new Intl.DateTimeFormat("bg-BG",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}).format(new Date(date+"T12:00:00Z"));
 function dayInSofia(n:number){return n?new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Sofia",year:"numeric",month:"2-digit",day:"2-digit"}).format(n):plan.startsOn;}
 function clean(data:unknown):EntryMap {
-  if(!data||typeof data!=="object"||Array.isArray(data))return {D001:{...auditedD001},D002:{...auditedD002},D003:{...auditedD003}};
+  if(!data||typeof data!=="object"||Array.isArray(data))return {D001:{...auditedD001},D002:{...auditedD002},D003:{...auditedD003},D004:{...auditedD004}};
   const out:EntryMap={}, source=data as Record<string,unknown>;
   for(const task of tasks){
     const x=source[task.id];if(!x||typeof x!=="object"||Array.isArray(x))continue;
@@ -57,12 +64,14 @@ function clean(data:unknown):EntryMap {
     const hrs=Number(v.actualHours);
     if(status==="done"&&(test!=="pass"||!evidence.trim()))status="working";
     if(task.id==="D003"&&!d003CanBeMarkedDone&&status==="done")status="blocked";
+    if(task.id==="D004"&&!d004CanBeMarkedDone&&status==="done")status="blocked";
     out[task.id]={status,test,evidence,notes,actualHours:Number.isFinite(hrs)?Math.max(0,Math.min(200,hrs)):0,updatedAt:typeof v.updatedAt==="string"?v.updatedAt.slice(0,40):""};
   }
   // Seed the accepted D001 audit only when the operator has not explicitly set a local status.
   if(!out.D001)out.D001={...auditedD001};
   if(!out.D002)out.D002={...auditedD002};
   if(!out.D003)out.D003={...auditedD003};
+  if(!out.D004)out.D004={...auditedD004};
   return out;
 }
 function download(content:string,name:string,type:string){
@@ -131,10 +140,12 @@ export default function UrgentPlan119({onClose,onOpenMaster,focusDay}:{onClose:(
       const next={...(prev[id]||base),...patch,updatedAt:new Date().toISOString()};
       if(next.status==="done"&&(next.test!=="pass"||!next.evidence.trim()))next.status="working";
       if(id==="D003"&&!d003CanBeMarkedDone&&next.status==="done")next.status="blocked";
+      if(id==="D004"&&!d004CanBeMarkedDone&&next.status==="done")next.status="blocked";
       return {...prev,[id]:next};
     });
   }
   function changeStatus(id:string,status:Status){
+    if(id==="D004"&&!d004CanBeMarkedDone&&status==="done"){setNotice("D004: тестът в паметта НЕ е истинска Supabase staging база. Нужни са потвърдени отделна база/права, 1 фиктивна кола в staging и доказани 0 production writes.");return;}
     if(id==="D003"&&!d003CanBeMarkedDone&&status==="done"){setNotice("D003: необходими са реално потвърдени staging база, production binding, ролеви права и проверен достъп до втория проект. Без това задачата остава BLOCKED.");return;}
     if(status==="done"&&(entries[id]?.test!=="pass"||!entries[id]?.evidence.trim())){setNotice(id+": за приемане са задължителни PASS и доказателство.");return;}
     setNotice("");change(id,{status});
@@ -192,6 +203,7 @@ export default function UrgentPlan119({onClose,onOpenMaster,focusDay}:{onClose:(
           <div className="urgentTaskBody"><div className="urgentDetails"><span>ПОТОК</span><b>{task.stream}</b><span>ЗАВИСИМОСТ</span><b>{task.dependency||"Начална задача"}</b>{legalByDay[task.id]?.length>0&&<><span>LEGAL ОСНОВА</span><b>{legalByDay[task.id].join(", ")} · проверките са в LEGAL & COMPLIANCE по-горе</b></>}</div>
             <div className="urgentTest"><small>КРИТЕРИЙ ЗА ПРИЕМАНЕ / ТЕСТ</small><p>{task.passCriteria}</p></div>
             {task.id==="D003"&&<details className="urgentBenchmarkDetails" open><summary>SUPABASE D003 · ЧАСТИЧЕН ОДИТ · NO-GO ЗА РЕАЛНИ СДЕЛКИ</summary><p>Проверени са 3/7 критерия. Останалите 4 изискват реален достъп/потвърждение от собственика. Наличието на два проекта не доказва отделна staging база.</p><div>{dbAudit.gateChecks.map(g=><article key={g.id}><b>{g.id} · {g.state.toUpperCase()}</b><span>{g.requirement}</span></article>)}</div><p>Не активирай реални плащания или авторитетно наддаване без обособени среди и права.</p></details>}
+            {task.id==="D004"&&<details className="urgentBenchmarkDetails" open><summary>STAGING D004 · ГОТОВ ЛОКАЛЕН ТЕСТ · РЕАЛНАТА БАЗА Е БЛОКИРАНА</summary><p>Подготвена е една фиктивна кола. CI може да я провери във временна база само в паметта. Това НЕ е истински Supabase staging и не изпълнява приемателния критерий.</p><div>{stagingPlan.controls.map(g=><article key={g.id}><b>{g.id} · {g.state.toUpperCase()}</b><span>{g.requirement}</span></article>)}</div><p>Не се правят записи в Supabase. За платена отделна база е необходимо предварително одобрение на разхода.</p></details>}
             {benchmarkByDay[task.id]?.length>0&&<details className="urgentBenchmarkDetails"><summary>ДОПЪЛНИТЕЛНИ КРИТЕРИИ · МЕЖДУНАРОДЕН АУКЦИОНЕН СТАНДАРТ · {benchmarkByDay[task.id].length}</summary><p>Тези подточки се приемат отделно с PASS и доказателства. Наличието им в плана не означава изпълнение.</p><div>{benchmarkByDay[task.id].map(scope=><article key={scope.id}><b>{scope.id} · {scope.priority} · {scope.title}</b><span>{scope.acceptance}</span></article>)}</div><button type="button" onClick={()=>document.getElementById("benchmark-scope")?.scrollIntoView({behavior:"smooth",block:"start"})}>Отвори матрицата с доказателствата ↑</button></details>}
             {architectureByDay.get(task.id)&&<details className="urgentBenchmarkDetails"><summary>ТЕХНИЧЕСКА АРХИТЕКТУРА НА {task.id} · ДАННИ / API / ТЕСТОВЕ</summary>
               {(()=>{const architectureDay=architectureByDay.get(task.id)!;return <><p><strong>Цел:</strong> {architectureDay.goal}</p>

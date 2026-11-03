@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "taskId": "D004",
+  "kind": "synthetic-staging-vehicle",
+  "syntheticOnly": true,
+  "remoteWritesAuthorized": false,
+  "sourceCanonicalFixture": "test/fixtures/canonical-v1.json",
+  "seller": {
+    "id": "00000000-0000-4000-8000-000000000401",
+    "displayName": "STAGING TEST SELLER - NOT REAL",
+    "contactEmail": "seller-d004@example.test",
+    "verifiedForRealSales": false
+  },
+  "vehicle": {
+    "id": "00000000-0000-4000-8000-000000000201",
+    "vin": "TESTVIN00000000201",
+    "lotNumber": "TEST-LOT-0201",
+    "year": 2020,
+    "make": "Example Motors",
+    "model": "Nonexistent D004 Test Car",
+    "condition": "simulated-only",
+    "titleStatus": "TEST-ONLY-NO-TITLE",
+    "source": "synthetic",
+    "canPublish": false
+  },
+  "auction": {
+    "id": "00000000-0000-4000-8000-000000000301",
+    "currency": "XXX",
+    "liveBidsAllowed": false,
+    "realMoneyAllowed": false
+  },
+  "labels": [
+    "SYNTHETIC",
+    "STAGING ONLY",
+    "NOT A REAL VEHICLE",
+    "NO PAYMENTS"
+  ],
+  "expected": {
+    "stagingVehicles": 1,
+    "productionWrites": 0,
+    "realMoneyEvents": 0
+  }
+}
