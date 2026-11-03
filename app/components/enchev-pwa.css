@@ -1,0 +1,14 @@
+/* Shared compact navigation for E&A installed PWA and app onboarding. */
+.eaPwaBottomNav{position:fixed;left:0;right:0;bottom:0;z-index:2100;display:flex;align-items:stretch;justify-content:space-around;min-height:calc(75px + env(safe-area-inset-bottom));padding:8px max(7px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom)) max(7px,env(safe-area-inset-left));background:rgba(13,21,15,.96);border-top:1px solid rgba(181,222,183,.25);box-shadow:0 -16px 45px #0008;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.eaPwaBottomNav>a{min-width:0;flex:1 1 0;max-width:125px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:52px;text-decoration:none!important;color:#a9baac!important;border-radius:12px;padding:4px 1px;transition:color .15s,background .15s}
+.eaPwaBottomNav>a:hover,.eaPwaBottomNav>a[aria-current="page"]{color:#f2d69e!important;background:rgba(230,198,130,.11)}
+.eaPwaBottomNav .eaPwaNavIcon{font-size:24px;font-weight:800;line-height:1;display:flex;align-items:center;justify-content:center;min-width:32px;min-height:29px}
+.eaPwaBottomNav small{font:750 10px/1.2 Inter,Arial,sans-serif;text-align:center;white-space:nowrap;letter-spacing:-.01em}
+.eaPwaBottomNav>a.eaPwaNavLive .eaPwaNavIcon{width:46px;height:44px;min-height:44px;border-radius:999px;background:linear-gradient(140deg,#5fea91,#178343);color:#05110a;box-shadow:0 3px 16px rgba(73,218,121,.3);margin-top:-12px;border:3px solid #162118}
+.eaPwaBottomNav>a.eaPwaNavLive small{color:#d2edd5}
+.eaPwaUpdateBanner{position:fixed;z-index:2600;bottom:calc(82px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:min(560px,calc(100% - 26px));display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px 16px;border-radius:16px;background:#213525;border:1px solid #6bd78a;box-shadow:0 20px 55px #000c;color:#f1fcf2;font-family:Inter,Arial,sans-serif}
+.eaPwaUpdateBanner>div{display:flex;flex-direction:column;gap:3px;min-width:0}.eaPwaUpdateBanner strong{font-size:13px}.eaPwaUpdateBanner span{font-size:11px;line-height:1.5;color:#b8d7be}.eaPwaUpdateBanner button{flex:none;min-height:43px;padding:10px 15px;border:0;border-radius:10px;background:#6de69a;color:#061209;font-size:12px;font-weight:830;cursor:pointer}
+.eaPwaBottomNav :is(a,button):focus-visible,.eaPwaUpdateBanner button:focus-visible{outline:3px solid #ffe1a2;outline-offset:2px}
+@media(min-width:900px){.eaPwaBottomNav{left:50%;transform:translateX(-50%);width:min(650px,100%);border-left:1px solid #2a4b31;border-right:1px solid #2a4b31;border-radius:20px 20px 0 0}}
+@media(max-width:380px){.eaPwaBottomNav small{font-size:9px}.eaPwaBottomNav .eaPwaNavIcon{font-size:20px}.eaPwaUpdateBanner{flex-wrap:wrap}.eaPwaUpdateBanner button{width:100%}}
+@media(prefers-reduced-motion:reduce){.eaPwaBottomNav *{transition:none!important}}

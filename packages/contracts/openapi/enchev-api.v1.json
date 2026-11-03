@@ -865,6 +865,55 @@
           }
         }
       }
+    },
+    "/api/pwa-version": {
+      "get": {
+        "operationId": "getPwaVersion",
+        "summary": "Public PWA release version (read-only)",
+        "description": "Returns the active deployment commit ID for optional client-side update prompts; no credentials, user data, bidding authority or payment information.",
+        "responses": {
+          "200": {
+            "description": "PWA version and deployment channel",
+            "headers": {
+              "Cache-Control": {
+                "description": "Response must not be cached",
+                "schema": {
+                  "type": "string",
+                  "const": "private, no-store, max-age=0"
+                }
+              },
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": [
+                    "version",
+                    "channel",
+                    "app"
+                  ],
+                  "properties": {
+                    "version": {
+                      "type": "string"
+                    },
+                    "channel": {
+                      "type": "string"
+                    },
+                    "app": {
+                      "type": "string",
+                      "const": "E&A Auctions"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

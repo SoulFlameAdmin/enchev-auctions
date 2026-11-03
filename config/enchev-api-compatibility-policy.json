@@ -155,6 +155,15 @@
       "requestBodyRequired": false
     },
     {
+      "method": "GET",
+      "path": "/api/pwa-version",
+      "operationId": "getPwaVersion",
+      "responseCodes": [
+        "200"
+      ],
+      "requestBodyRequired": false
+    },
+    {
       "method": "POST",
       "path": "/api/carar-waitlist",
       "operationId": "postCarArWaitlist",
