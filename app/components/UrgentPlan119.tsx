@@ -28,11 +28,17 @@ const auditedD001:Entry={status:"done",test:"pass",
   evidence:"https://github.com/SoulFlameAdmin/enchev-auctions/actions/runs/41625670680",
   notes:"D001 HTTP одит: Web/API 200; Realtime/Worker/Redis 503; Identity 200, available=false. JSON и снимки PC/мобилен емулатор, online/offline PASS. Реални търгове: NO-GO. Няма активирани плащания.",
   actualHours:0,updatedAt:"2026-11-03T11:14:07Z"};
+// D002: accepted preview/media recovery ONLY: 134 pinned asset hashes + HTTP 200/404
+// built Next.js browser smoke. Do not override an existing operator-owned browser status.
+const auditedD002:Entry={status:"done",test:"pass",
+  evidence:"https://github.com/SoulFlameAdmin/enchev-auctions/actions/runs/41668523722",
+  notes:"D002: Vercel Preview READY (CxQT7UY2EnNqySnXAhC2UYaKL56k), Forge 134/134 SHA-256 PASS (56,462,720 bytes). CI real built-site HTTP: restored image 200 + pinned SHA-256, nonexistent asset 404. This is asset restore evidence only; real auctions NO-GO.",
+  actualHours:0,updatedAt:"2026-11-03T15:54:34Z"};
 const statusLabels:Record<Status,string>={planned:"Планирано",working:"В работа",blocked:"Блокирано",done:"Прието"};
 const fmt=(date:string)=>new Intl.DateTimeFormat("bg-BG",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}).format(new Date(date+"T12:00:00Z"));
 function dayInSofia(n:number){return n?new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Sofia",year:"numeric",month:"2-digit",day:"2-digit"}).format(n):plan.startsOn;}
 function clean(data:unknown):EntryMap {
-  if(!data||typeof data!=="object"||Array.isArray(data))return {D001:{...auditedD001}};
+  if(!data||typeof data!=="object"||Array.isArray(data))return {D001:{...auditedD001},D002:{...auditedD002}};
   const out:EntryMap={}, source=data as Record<string,unknown>;
   for(const task of tasks){
     const x=source[task.id];if(!x||typeof x!=="object"||Array.isArray(x))continue;
@@ -47,6 +53,7 @@ function clean(data:unknown):EntryMap {
   }
   // Seed the accepted D001 audit only when the operator has not explicitly set a local status.
   if(!out.D001)out.D001={...auditedD001};
+  if(!out.D002)out.D002={...auditedD002};
   return out;
 }
 function download(content:string,name:string,type:string){
