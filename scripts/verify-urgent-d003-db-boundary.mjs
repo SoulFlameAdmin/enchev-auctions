@@ -7,7 +7,7 @@ import {readFileSync} from "node:fs";
 export const D003_AUDIT_PATH="config/urgent-D003-db-binding-audit.json";
 const sourceJson=path=>JSON.parse(readFileSync(path,"utf8"));
 function fail(s){throw new Error("URGENT_D003_DB_BOUNDARY FAIL: "+s)}
-const realMoneyRiskGate=["D003-G1","D003-G2","D003-G3","D003-G4"];
+const stillMissingProviderEvidence=["D003-G1","D003-G2","D003-G4"];
 
 function rejectCredentialFields(v,trail="root"){
  if(Array.isArray(v)){v.forEach((x,i)=>rejectCredentialFields(x,trail+"["+i+"]"));return}
@@ -74,12 +74,20 @@ export function verifyD003(a,governance,environment,baseline){
  if(governance.auction_authority!==false||governance.shared_project!==true)fail("existing governance binding is not a production auction source");
  if(g.auctionAuthority!==false||g.connectorAccess!=="denied-permission"||g.liveStatus!=="unverified")fail("do not invent governance project live access");
  if(e.id!=="ejfrnjhlggebzmpmxajl"||e.name!=="enchev-auctions"||e.region!=="eu-central-1")fail("read-only connected project evidence mismatched");
- if(e.auctionAuthority!==false||e.runtimeBindings!=="unverified"||e.developmentBranchesCount!==0)fail("connected demo project is not certified production auction authority");
+ if(e.auctionAuthority!==false||e.runtimeBindings!=="unverified"||e.developmentBranchesCount!==1)fail("connected main project has one independently verified staging branch, no real-money certification");
  if(e.publicTableCount!==28||e.publicTablesWithRlsEnabled!==28||e.migrationsCount!==28)fail("read-only observation baseline drift");
  const rt=a.runtime;
  if(rt.vercelEnvironmentNamesRead!=="denied-403"||rt.decryptedSecretsRead!==false||rt.secretValuesInRepository!==false)fail("Vercel environment access must be accurately classified");
- if(rt.stagingDatabase.verifiedIndependent!==false||rt.stagingDatabase.projectId!==null||rt.stagingDatabase.roleVerified!==false)fail("staging database is not verified");
- if(rt.stagingDatabase.noProductionDataCopied!==null)fail("unverified staging-data isolation cannot be marked clean");
+ const st=rt.stagingDatabase;
+ if(st.verifiedIndependent!==true||st.projectId!=="jranctnafndbqzrwcwos"||st.parentProjectId!==e.id||
+    st.branchId!=="248ecd54-771a-4830-a7ab-4a29cb81bb32"||st.branchName!=="enchev-staging"||
+    st.branchStatus!=="FUNCTIONS_DEPLOYED"||st.roleVerified!==false||
+    st.noProductionDataCopied!==true||st.withData!==false||typeof st.persistent!=="boolean"||
+    st.publicTables!==28||st.publicTablesWithRlsEnabled!==28||
+    st.parentAppliedMigrations!==28||st.stagingAppliedMigrations!==29||
+    st.recoveryMigration!=="d003_staging_restore_missing_calendar_rpc_baseline"||
+    Object.values(st.syntheticAuctionRowCounts||{}).length!==4||
+    !Object.values(st.syntheticAuctionRowCounts).every(x=>x===0))fail("staging isolation, migration repair, or synthetic-only baseline not verified");
  if(rt.production.dbBindingVerified!==false||rt.preview.dbBindingVerified!==false)fail("can't assert production/preview DB target verified");
  if(rt.production.dbRoleVerified!==false||rt.preview.dbRoleVerified!==false)fail("must not claim separately scoped roles");
  if(rt.production.projectDbRef!==null||rt.preview.projectDbRef!==null)fail("runtime project ref must not be guessed from source code");
@@ -90,13 +98,14 @@ export function verifyD003(a,governance,environment,baseline){
  const d003=baseline.tasks.find(x=>x.id==="D003");
  if(d003?.dependency!=="D002"||!d003.passCriteria.includes("authoritative DB target"))fail("original D003 acceptance/dependency changed");
  if(a.gateChecks.length!==7||new Set(a.gateChecks.map(x=>x.id)).size!==7)fail("D003 gate list inconsistent");
- for(const id of realMoneyRiskGate){const g=a.gateChecks.find(x=>x.id===id);if(!g||g.state==="verified")fail("missing real-world proof cannot become GREEN: "+id)}
- if(a.gateChecks.filter(x=>x.state==="verified").length!==3)fail("partial gate evidence count drift");
+ for(const id of stillMissingProviderEvidence){const g=a.gateChecks.find(x=>x.id===id);if(!g||g.state==="verified")fail("missing real-world proof cannot become GREEN: "+id)}
+ if(a.gateChecks.find(x=>x.id==="D003-G3")?.state!=="verified")fail("independent staging branch confirmed and must remain correctly classified");
+ if(a.gateChecks.filter(x=>x.state==="verified").length!==4)fail("partial gate evidence count drift");
  if(a.acceptancePolicy.d003CanBeMarkedDone!==false||a.acceptancePolicy.nextDayD004CanWriteRealStagingFixtures!==false||a.acceptancePolicy.requiresAllGatesVerified!==true)fail("D003 must remain blocked for actual prod/staging integration");
  if(!a.liveReadOnlyFindings.some(x=>x.code==="PUBLIC_SECURITY_DEFINER_GRANTS"))fail("security grants risk must remain visible");
  if(!a.liveReadOnlyFindings.some(x=>x.code==="VERCEL_ENV_METADATA_403"))fail("Vercel metadata blocker must remain visible");
- if(!a.liveReadOnlyFindings.some(x=>x.code==="NO_STAGING_SUPABASE_BRANCH"))fail("staging blocker must remain visible");
- return {task:d003.id,knownProjects:a.projects.length,verifiedGates:3,blockedGates:4,decision:"BLOCKED",safeToEnableRealMoney:false};
+ if(!a.liveReadOnlyFindings.some(x=>x.code==="STAGING_BRANCH_CREATED_WITH_SCHEMA_REPAIR"))fail("staging repair evidence must remain visible");
+ return {task:d003.id,knownProjects:a.projects.length,verifiedGates:4,blockedGates:3,decision:"BLOCKED",safeToEnableRealMoney:false};
 }
 
 const governance=sourceJson("config/enchev-supabase-project.json");
@@ -116,7 +125,7 @@ if(process.argv.includes("--self-test")){
  reject("governance substituted for auction DB",x=>{x.projects[1].id=x.projects[0].id});
  reject("fake production binding",x=>{x.runtime.production.dbBindingVerified=true});
  reject("fake preview role",x=>{x.runtime.preview.dbRoleVerified=true});
- reject("missing staging record",x=>{x.runtime.stagingDatabase.verifiedIndependent=true});
+ reject("missing staging record",x=>{x.runtime.stagingDatabase.verifiedIndependent=false});
  reject("fake green",x=>{x.acceptancePolicy.d003CanBeMarkedDone=true});
  reject("fabricated provider-ready audit without receipts",x=>{x.auditStatus="verified-with-provider-evidence";x.acceptancePolicy.d003CanBeMarkedDone=true});
  reject("real money auction enabled",x=>{x.realMoneyAuctionAuthority=true});
@@ -126,6 +135,9 @@ if(process.argv.includes("--self-test")){
  reject("connection material",x=>{x.runtime.production.projectDbRef=["postgresql:", "//", "invalid.example"].join("")});
  reject("lost permission blocker",x=>{x.liveReadOnlyFindings=x.liveReadOnlyFindings.filter(v=>v.code!=="VERCEL_ENV_METADATA_403")});
  reject("staging environment mistaken for production",x=>{x.runtime.preview.dbBindingVerified=true});
- reject("fake isolated staging data",x=>{x.runtime.stagingDatabase.noProductionDataCopied=true});
- console.log("URGENT_D003_DB_BOUNDARY_SELF_TEST PASS negative_cases=14");
+ reject("fake isolated staging data",x=>{x.runtime.stagingDatabase.noProductionDataCopied=false});
+ reject("staging accidentally production",x=>{x.runtime.stagingDatabase.projectId=x.projects[1].id});
+ reject("unverified migration repair",x=>{x.runtime.stagingDatabase.stagingAppliedMigrations=28});
+ reject("staging gate downgraded",x=>{x.gateChecks.find(g=>g.id==="D003-G3").state="unverified"});
+ console.log("URGENT_D003_DB_BOUNDARY_SELF_TEST PASS negative_cases=17");
 }
