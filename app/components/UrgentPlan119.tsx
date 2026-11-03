@@ -1,6 +1,7 @@
 "use client";
 import {useEffect,useMemo,useRef,useState} from "react";
 import plan from "../data/urgent-119-days.json";
+import benchmark from "../data/urgent-auction-benchmark-v1.json";
 import legalCatalog from "../data/urgent-legal-foundation-v1.json";
 import LegalFoundationCenter from "./LegalFoundationCenter";
 import DailyQuestions119 from "./DailyQuestions119";
@@ -14,6 +15,7 @@ type Entry={status:Status;test:Test;evidence:string;notes:string;actualHours:num
 type EntryMap=Record<string,Entry>;
 type Filter="week"|"all"|"overdue"|"blocked"|"done";
 const tasks=plan.tasks as Task[];
+const benchmarkByDay=benchmark.features.reduce<Record<string,typeof benchmark.features>>((out,requirement)=>{(out[requirement.linkedDay]??=[]).push(requirement);return out;},{});
 const legalByDay=legalCatalog.requirements.reduce<Record<string,string[]>>((out,r)=>{(out[r.linkedDay]??=[]).push(r.id);return out;},{});
 const STORAGE="enchev-urgent-119-v1";
 const base:Entry={status:"planned",test:"none",evidence:"",notes:"",actualHours:0,updatedAt:""};
@@ -157,6 +159,7 @@ export default function UrgentPlan119({onClose,onOpenMaster}:{onClose:()=>void;o
             <span className={"urgentPill urgentPill-"+entry.status}>{statusLabels[entry.status]}{overdue?" · ПРОСРОЧЕНО":""}</span><span>⌄</span></summary>
           <div className="urgentTaskBody"><div className="urgentDetails"><span>ПОТОК</span><b>{task.stream}</b><span>ЗАВИСИМОСТ</span><b>{task.dependency||"Начална задача"}</b>{legalByDay[task.id]?.length>0&&<><span>LEGAL ОСНОВА</span><b>{legalByDay[task.id].join(", ")} · проверките са в LEGAL & COMPLIANCE по-горе</b></>}</div>
             <div className="urgentTest"><small>КРИТЕРИЙ ЗА ПРИЕМАНЕ / ТЕСТ</small><p>{task.passCriteria}</p></div>
+            {benchmarkByDay[task.id]?.length>0&&<details className="urgentBenchmarkDetails"><summary>ДОПЪЛНИТЕЛНИ КРИТЕРИИ · МЕЖДУНАРОДЕН АУКЦИОНЕН СТАНДАРТ · {benchmarkByDay[task.id].length}</summary><p>Тези подточки се приемат отделно с PASS и доказателства. Наличието им в плана не означава изпълнение.</p><div>{benchmarkByDay[task.id].map(scope=><article key={scope.id}><b>{scope.id} · {scope.priority} · {scope.title}</b><span>{scope.acceptance}</span></article>)}</div><button type="button" onClick={()=>document.getElementById("benchmark-scope")?.scrollIntoView({behavior:"smooth",block:"start"})}>Отвори матрицата с доказателствата ↑</button></details>}
             <div className="urgentInputs">
               <label>Статус<select value={entry.status} onChange={e=>changeStatus(task.id,e.target.value as Status)}><option value="planned">Планирано</option><option value="working">В работа</option><option value="blocked">Блокирано</option><option value="done">Прието</option></select></label>
               <label>Тест<select value={entry.test} onChange={e=>change(task.id,{test:e.target.value as Test})}><option value="none">НЕ Е ТЕСТВАНО</option><option value="pass">PASS</option><option value="fail">FAIL</option></select></label>
