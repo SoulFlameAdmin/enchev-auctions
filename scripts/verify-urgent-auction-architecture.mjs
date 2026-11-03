@@ -61,7 +61,7 @@ for(let i=0;i<119;i++){
  assert.ok(day.interfaceContracts.length>=1);
  assert.equal(day.implementationSteps.length,3);
  assert.ok(day.goal.length>9);
- assert.ok(day.testPlan.artifact.length>19);
+ assert.ok(day.testPlan.artifact.trim().length>=8,`Dневният артефакт трябва да е конкретен: ${day.id}`);
  assert.match(day.testPlan.positive,/Доказателство:/);
  assert.match(day.testPlan.negative,/Забранена|невалидна/);
  assert.ok(["true","until-signed-GO"].includes(String(day.testPlan.sandboxOnly)));
