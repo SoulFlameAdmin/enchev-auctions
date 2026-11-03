@@ -27,7 +27,8 @@
     "Само проверени правила/подписи/лицензи и sandbox плащания преди легален GO. Няма реални депозити и търгове по подразбиране.",
     "Всички CP функционални изисквания са нови acceptance подточки към конкретни дни; не увеличават броя 119 и не маркират дни или MASTER задачи като изпълнени.",
     "799 планирани човекочаса са старият baseline, а допълнителният обем изисква нова оценка на капацитета преди 1 март.",
-    "Правни правила, документи и ДДС за BG/ES/EU се избират от юрист/счетоводител; не копирай текст от Copart."
+    "Правни правила, документи и ДДС за BG/ES/EU се избират от юрист/счетоводител; не копирай текст от Copart.",
+    "Coverage explicit/partial/gap is based on the WORDING of the 119-day plan, not a live audit of implemented code. Existing master plan features may have work, but nothing becomes GREEN without evidence."
   ],
   "competitorPricingReference": {
     "territory": "ES",
@@ -186,8 +187,10 @@
         "LEG-003"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-002",
@@ -201,8 +204,10 @@
         "LEG-007"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-003",
@@ -217,8 +222,10 @@
         "LEG-014"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-004",
@@ -232,8 +239,10 @@
         "LEG-014"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-005",
@@ -247,8 +256,10 @@
         "LEG-032"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-006",
@@ -262,8 +273,10 @@
         "LEG-032"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-007",
@@ -277,8 +290,10 @@
         "LEG-032"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-008",
@@ -292,8 +307,10 @@
         "LEG-073"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-009",
@@ -307,8 +324,10 @@
         "LEG-018"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-010",
@@ -322,8 +341,10 @@
         "LEG-083"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-011",
@@ -335,8 +356,10 @@
       "sourceKey": "ES_FAQ_2026",
       "legalRefs": [],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": false
+      "delivery": "phase-2-or-after-pilot",
+      "reviewRequired": false,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-012",
@@ -350,8 +373,10 @@
         "LEG-038"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-013",
@@ -365,8 +390,10 @@
         "LEG-038"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-014",
@@ -380,8 +407,10 @@
         "LEG-014"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-015",
@@ -395,8 +424,10 @@
         "LEG-038"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-016",
@@ -410,8 +441,10 @@
         "LEG-014"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-017",
@@ -423,8 +456,10 @@
       "sourceKey": "ES_FAQ_2026",
       "legalRefs": [],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-018",
@@ -438,8 +473,10 @@
         "LEG-021"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-019",
@@ -453,8 +490,10 @@
         "LEG-017"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-020",
@@ -468,8 +507,10 @@
         "LEG-017"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-021",
@@ -483,8 +524,10 @@
         "LEG-128"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-022",
@@ -498,8 +541,10 @@
         "LEG-017"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-023",
@@ -513,8 +558,10 @@
         "LEG-017"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": false
+      "delivery": "phase-2-or-after-pilot",
+      "reviewRequired": false,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-024",
@@ -528,8 +575,10 @@
         "LEG-017"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": false
+      "delivery": "phase-2-or-after-pilot",
+      "reviewRequired": false,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-025",
@@ -543,8 +592,10 @@
         "LEG-017"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-026",
@@ -558,8 +609,10 @@
         "LEG-017"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-027",
@@ -573,8 +626,10 @@
         "LEG-128"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-028",
@@ -588,8 +643,10 @@
         "LEG-128"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-029",
@@ -603,8 +660,10 @@
         "LEG-019"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-030",
@@ -618,8 +677,10 @@
         "LEG-019"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-031",
@@ -633,8 +694,10 @@
         "LEG-019"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-032",
@@ -648,8 +711,10 @@
         "LEG-087"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-033",
@@ -663,8 +728,10 @@
         "LEG-098"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-034",
@@ -678,8 +745,10 @@
         "LEG-091"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-035",
@@ -694,8 +763,10 @@
         "LEG-092"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-036",
@@ -710,8 +781,10 @@
         "LEG-090"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-037",
@@ -727,8 +800,10 @@
         "LEG-096"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-038",
@@ -743,8 +818,10 @@
         "LEG-098"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-039",
@@ -758,8 +835,10 @@
         "LEG-091"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-040",
@@ -773,8 +852,10 @@
         "LEG-018"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": false
+      "delivery": "phase-2-or-after-pilot",
+      "reviewRequired": false,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-041",
@@ -789,8 +870,10 @@
         "LEG-038"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-042",
@@ -805,8 +888,10 @@
         "LEG-019"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-043",
@@ -820,8 +905,10 @@
         "LEG-032"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-044",
@@ -835,8 +922,10 @@
         "LEG-098"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-045",
@@ -850,8 +939,10 @@
         "LEG-098"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-046",
@@ -865,8 +956,10 @@
         "LEG-098"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-047",
@@ -881,8 +974,10 @@
         "LEG-146"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-048",
@@ -896,8 +991,10 @@
         "LEG-146"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-049",
@@ -911,8 +1008,10 @@
         "LEG-114"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-050",
@@ -926,8 +1025,10 @@
         "LEG-112"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-051",
@@ -942,8 +1043,10 @@
         "LEG-079"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-052",
@@ -957,8 +1060,10 @@
         "LEG-094"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-053",
@@ -972,8 +1077,10 @@
         "LEG-098"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-054",
@@ -988,8 +1095,10 @@
         "LEG-087"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-055",
@@ -1004,8 +1113,10 @@
         "LEG-093"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-056",
@@ -1021,8 +1132,10 @@
         "LEG-096"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-057",
@@ -1037,8 +1150,10 @@
         "LEG-098"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-058",
@@ -1052,8 +1167,10 @@
         "LEG-087"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-059",
@@ -1067,8 +1184,10 @@
         "LEG-038"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-060",
@@ -1080,8 +1199,10 @@
       "sourceKey": "ES_FAQ_2026",
       "legalRefs": [],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": false
+      "delivery": "phase-2-or-after-pilot",
+      "reviewRequired": false,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-061",
@@ -1095,8 +1216,10 @@
         "LEG-089"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-062",
@@ -1110,8 +1233,10 @@
         "LEG-103"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-063",
@@ -1125,8 +1250,10 @@
         "LEG-112"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-064",
@@ -1140,8 +1267,10 @@
         "LEG-091"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": false
+      "delivery": "phase-2-or-after-pilot",
+      "reviewRequired": false,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-065",
@@ -1155,8 +1284,10 @@
         "LEG-112"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-066",
@@ -1170,8 +1301,10 @@
         "LEG-014"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-067",
@@ -1185,8 +1318,10 @@
         "LEG-098"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-068",
@@ -1200,8 +1335,10 @@
         "LEG-079"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-069",
@@ -1213,8 +1350,10 @@
       "sourceKey": "US_BUY_GUIDE",
       "legalRefs": [],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-070",
@@ -1228,8 +1367,10 @@
         "LEG-079"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": false
+      "delivery": "phase-2-or-after-pilot",
+      "reviewRequired": false,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-071",
@@ -1243,8 +1384,10 @@
         "LEG-086"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "partial",
+      "scopeAction": "expand partially covered daily task"
     },
     {
       "id": "CP-072",
@@ -1258,8 +1401,10 @@
         "LEG-128"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-073",
@@ -1273,8 +1418,10 @@
         "LEG-086"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "gap",
+      "scopeAction": "new linked acceptance criteria"
     },
     {
       "id": "CP-074",
@@ -1288,8 +1435,10 @@
         "LEG-128"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-075",
@@ -1303,8 +1452,10 @@
         "LEG-128"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     },
     {
       "id": "CP-076",
@@ -1318,8 +1469,10 @@
         "LEG-128"
       ],
       "implementationStatus": "planned",
-      "delivery": "by-2027-03-01-if-gates-pass",
-      "reviewRequired": true
+      "delivery": "conditional-by-2027-03-01",
+      "reviewRequired": true,
+      "baselineCoverage": "explicit",
+      "scopeAction": "certify pre-existing daily acceptance with extra detail"
     }
   ],
   "feeComponents": [
