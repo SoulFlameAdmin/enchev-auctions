@@ -1,0 +1,37 @@
+.arch119{margin:26px 0;border:1px solid #675237;border-radius:20px;padding:clamp(14px,2.4vw,28px);background:linear-gradient(140deg,#191816,#0c1319 64%);color:#e9edf2;scroll-margin-top:110px}
+.arch119Header{display:flex;align-items:flex-start;justify-content:space-between;gap:16px}
+.arch119Header span{color:#d8b784;font-size:10px;letter-spacing:.1em;font-weight:900}
+.arch119Header h2{font-size:clamp(21px,2.5vw,31px);margin:8px 0;letter-spacing:-.02em}
+.arch119Header h2 em{font-style:normal;color:#edce9a}
+.arch119Header p{font-size:12px;color:#b3bec6;line-height:1.5}
+.arch119Header>strong{border:1px solid #937248;border-radius:10px;color:#e5cca5;padding:12px;font-size:10px;white-space:nowrap}
+.arch119Caution{border-left:3px solid #b99459;border-radius:3px 9px 9px 3px;background:#292116;padding:14px;margin:19px 0;color:#d4c6ae;line-height:1.6;font-size:12px}
+.arch119Caution b{color:#fff}
+.arch119Flow{border:1px solid #404747;border-radius:11px;padding:13px;background:#10181b}
+.arch119Flow summary{color:#edcb95;font-size:13px;font-weight:900;cursor:pointer}
+.arch119Flow p{color:#c3cfd6;font-size:12px;line-height:1.8}
+.arch119Graph{display:grid;gap:7px;margin-top:12px}
+.arch119Graph>div{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:9px;border:1px solid #2a363c;border-radius:7px;background:#0d1319}
+.arch119Graph code{color:#ead29d;font-size:11px;overflow-wrap:anywhere}
+.arch119Graph span{color:#b4c2cb;font-size:11px}
+.arch119Toolbar{display:flex;align-items:flex-end;flex-wrap:wrap;gap:10px;margin:20px 0}
+.arch119Toolbar label{display:grid;gap:6px;flex:1 1 180px;color:#aebbc5;font-size:11px;font-weight:800}
+.arch119Toolbar label:first-child{flex:2 1 240px}
+.arch119Toolbar select,.arch119Toolbar input{border:1px solid #54606c;background:#0b1116;border-radius:9px;color:#fff;padding:11px;width:100%;font-size:12px}
+.arch119Toolbar>button{border:1px solid #ad8551;background:#3a2c1e;color:#ffe3b5;border-radius:9px;padding:11px 13px;font-size:12px;font-weight:900}
+.arch119Stage{border:1px solid #675439;border-radius:14px;padding:16px;background:#201c15;display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+.arch119Stage small{color:#d6b382;font-size:10px;letter-spacing:.1em;font-weight:900}
+.arch119Stage h3{margin:6px 0;font-size:18px}
+.arch119Stage p{color:#c4c3bd;font-size:12px;line-height:1.6;margin:6px 0;max-width:690px}
+.arch119Days{display:grid;gap:9px;margin-top:13px}
+.arch119Day{border:1px solid #343f4a;border-radius:12px;background:#0c131a;padding:14px}
+.arch119DayHead{display:flex;align-items:center;gap:11px;flex-wrap:wrap}
+.arch119DayHead>strong{color:#e7ca9b;font-size:12px;white-space:nowrap}
+.arch119DayHead>b{font-size:12px;flex:1;line-height:1.5;min-width:180px}
+.arch119DayHead button{background:#292115;border:1px solid #947146;color:#f5dfb6;border-radius:8px;font-weight:900;font-size:11px;padding:9px 11px}
+.arch119Day p{font-size:12px;color:#b2c0cd;line-height:1.55;margin:7px 0}
+.arch119Day p b{color:#f0d9b2}
+.arch119Tech{padding:11px;border-top:1px solid #39454e;margin-top:12px}
+.arch119Gate{color:#f0b29c!important}
+.arch119Foot{margin:13px 0 3px;color:#99acb9;line-height:1.6;font-size:12px}
+@media(max-width:720px){.arch119Header{flex-direction:column}.arch119Stage{display:block}.arch119Graph>div{display:grid;gap:5px}.arch119Toolbar>button{width:100%}.arch119DayHead button{width:100%}}
