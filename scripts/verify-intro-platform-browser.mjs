@@ -30,7 +30,9 @@ try {
         assert.ok(destinations.length >= 3,"Intro must expose platform links");
         assert.ok(destinations.every(x=>x.target==="_top"),"Intro link must open a full platform page");
         const inventoryLink = page.frameLocator('iframe[src="/forge/index.html"]').locator('a[href="/inventory"]').first();
-        assert.ok(await inventoryLink.count()>0,"Intro must link directly to inventory");
+        // Hydration may mount the inventory CTA after the initial support/home anchors.
+        // Wait for the real navigation target rather than asserting against a transient empty DOM.
+        await inventoryLink.waitFor({state:"attached",timeout:15000});
         await inventoryLink.evaluate(el => el.click());
         await page.waitForURL(url=>url.pathname==="/inventory",{timeout:15000});
         assert.ok(!page.url().includes("/forge/"),"Destination must not remain inside Forge iframe");
