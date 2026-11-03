@@ -16,11 +16,17 @@ const tasks=plan.tasks as Task[];
 const legalByDay=legalCatalog.requirements.reduce<Record<string,string[]>>((out,r)=>{(out[r.linkedDay]??=[]).push(r.id);return out;},{});
 const STORAGE="enchev-urgent-119-v1";
 const base:Entry={status:"planned",test:"none",evidence:"",notes:"",actualHours:0,updatedAt:""};
+// D001 is a completed *audit* of real HTTP status, not authorization to launch real-money auctions.
+// Never override an operator\u0027s existing browser-local decision when a task already has an entry.
+const auditedD001:Entry={status:"done",test:"pass",
+  evidence:"https://github.com/SoulFlameAdmin/enchev-auctions/actions/runs/41625670680",
+  notes:"D001 HTTP одит: Web/API 200; Realtime/Worker/Redis 503; Identity 200, available=false. JSON и снимки PC/мобилен емулатор, online/offline PASS. Реални търгове: NO-GO. Няма активирани плащания.",
+  actualHours:0,updatedAt:"2026-11-03T11:14:07Z"};
 const statusLabels:Record<Status,string>={planned:"Планирано",working:"В работа",blocked:"Блокирано",done:"Прието"};
 const fmt=(date:string)=>new Intl.DateTimeFormat("bg-BG",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}).format(new Date(date+"T12:00:00Z"));
 function dayInSofia(n:number){return n?new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Sofia",year:"numeric",month:"2-digit",day:"2-digit"}).format(n):plan.startsOn;}
 function clean(data:unknown):EntryMap {
-  if(!data||typeof data!=="object"||Array.isArray(data))return {};
+  if(!data||typeof data!=="object"||Array.isArray(data))return {D001:{...auditedD001}};
   const out:EntryMap={}, source=data as Record<string,unknown>;
   for(const task of tasks){
     const x=source[task.id];if(!x||typeof x!=="object"||Array.isArray(x))continue;
@@ -33,6 +39,8 @@ function clean(data:unknown):EntryMap {
     if(status==="done"&&(test!=="pass"||!evidence.trim()))status="working";
     out[task.id]={status,test,evidence,notes,actualHours:Number.isFinite(hrs)?Math.max(0,Math.min(200,hrs)):0,updatedAt:typeof v.updatedAt==="string"?v.updatedAt.slice(0,40):""};
   }
+  // Seed the accepted D001 audit only when the operator has not explicitly set a local status.
+  if(!out.D001)out.D001={...auditedD001};
   return out;
 }
 function download(content:string,name:string,type:string){
@@ -115,7 +123,7 @@ export default function UrgentPlan119({onClose,onOpenMaster}:{onClose:()=>void;o
   }
   return <section className="urgentOverlay" role="dialog" aria-modal="true" aria-label="Спешен план до първи март">
     <header className="urgentHeader"><div><span className="urgentEyebrow">ENCHEV AUCTIONS · ПРИОРИТЕТ №1</span><h1>СПЕШЕН ПЛАН <em>119 ДНИ</em></h1><p>03.11.2026 — 01.03.2027 · 17 седмици · преди MASTER PLAN</p></div>
-      <div className="urgentHeaderActions"><button type="button" onClick={onOpenMaster}>MASTER PLAN →</button><button type="button" className="urgentClose" aria-label="Затвори" onClick={onClose}>×</button></div>
+      <div className="urgentHeaderActions"><button type="button" onClick={()=>window.location.assign("/auction-readiness")}>D001 · ПРОВЕРКА НА ОСНОВАТА ↗</button><button type="button" onClick={onOpenMaster}>MASTER PLAN →</button><button type="button" className="urgentClose" aria-label="Затвори" onClick={onClose}>×</button></div>
     </header>
     <div className="urgentHero"><div className="urgentClock"><span>ОСТАВАЩО ВРЕМЕ ДО 1 МАРТ · 09:00 СОФИЯ</span>
       <strong>{leftH===null?"—":leftH.toLocaleString("bg-BG")} <small>часа</small> {leftMin===null?"":String(leftMin).padStart(2,"0")} <small>мин</small></strong>
