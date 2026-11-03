@@ -4649,9 +4649,9 @@
       ],
       "baselinePassCriteria": "Нулев брой отворени P0 дефекти, тестовете са зелени",
       "testPlan": {
-        "positive": "Доказателство: 0 P0 в closed demo.",
+        "positive": "Доказателство: CI отчет: 0 отворени P0 дефекта в closed demo, regression PASS и линкове към всички tickets.",
         "negative": "Забранена/повторна/невалидна операция в bug_fix не променя авторитетното състояние и се записва безопасно.",
-        "artifact": "0 P0 в closed demo",
+        "artifact": "CI отчет: 0 отворени P0 дефекта в closed demo, regression PASS и линкове към всички tickets.",
         "sandboxOnly": true
       },
       "featureIds": [],
@@ -5888,9 +5888,9 @@
       ],
       "baselinePassCriteria": "Измерени RPO/RTO и възстановена завършена тестова сделка",
       "testPlan": {
-        "positive": "Доказателство: RPO/RTO измерени.",
+        "positive": "Доказателство: Протокол: измерени RPO/RTO, пробно възстановяване в staging и доказан цялостен transaction trace.",
         "negative": "Забранена/повторна/невалидна операция в db_snapshot не променя авторитетното състояние и се записва безопасно.",
-        "artifact": "RPO/RTO измерени",
+        "artifact": "Протокол: измерени RPO/RTO, пробно възстановяване в staging и доказан цялостен transaction trace.",
         "sandboxOnly": true
       },
       "featureIds": [],
@@ -6473,9 +6473,9 @@
       ],
       "baselinePassCriteria": "Нула P0; всички корекции имат regression тест",
       "testPlan": {
-        "positive": "Доказателство: 0 P0.",
+        "positive": "Доказателство: Пилот 1: 0 оставащи P0/P1, за всяка поправка регресионен тест и проследим issue/commit.",
         "negative": "Забранена/повторна/невалидна операция в issue_fix не променя авторитетното състояние и се записва безопасно.",
-        "artifact": "0 P0",
+        "artifact": "Пилот 1: 0 оставащи P0/P1, за всяка поправка регресионен тест и проследим issue/commit.",
         "sandboxOnly": "until-signed-GO"
       },
       "featureIds": [],
@@ -7400,9 +7400,9 @@
       ],
       "baselinePassCriteria": "Измерено RPO/RTO, recovery runbook подписан",
       "testPlan": {
-        "positive": "Доказателство: RPO/RTO подписани.",
+        "positive": "Доказателство: Подписан disaster recovery drill: измерени RPO/RTO, fallback сценарии и одобрен runbook.",
         "negative": "Забранена/повторна/невалидна операция в restore_runbook не променя авторитетното състояние и се записва безопасно.",
-        "artifact": "RPO/RTO подписани",
+        "artifact": "Подписан disaster recovery drill: измерени RPO/RTO, fallback сценарии и одобрен runbook.",
         "sandboxOnly": "until-signed-GO"
       },
       "featureIds": [],
