@@ -1,9 +1,13 @@
 "use client";
 import {useEffect,useMemo,useRef,useState} from "react";
 import plan from "../data/urgent-119-days.json";
+import benchmark from "../data/urgent-auction-benchmark-v1.json";
+import architecture from "../data/urgent-auction-architecture-119-v1.json";
 import legalCatalog from "../data/urgent-legal-foundation-v1.json";
 import LegalFoundationCenter from "./LegalFoundationCenter";
 import DailyQuestions119 from "./DailyQuestions119";
+import AuctionBenchmarkCenter from "./AuctionBenchmarkCenter";
+import AuctionArchitecture119 from "./AuctionArchitecture119";
 import "./urgent-plan-119.css";
 
 type Status="planned"|"working"|"blocked"|"done";
@@ -13,6 +17,8 @@ type Entry={status:Status;test:Test;evidence:string;notes:string;actualHours:num
 type EntryMap=Record<string,Entry>;
 type Filter="week"|"all"|"overdue"|"blocked"|"done";
 const tasks=plan.tasks as Task[];
+const architectureByDay=new Map(architecture.days.map(day=>[day.id,day] as const));
+const benchmarkByDay=benchmark.features.reduce<Record<string,typeof benchmark.features>>((out,requirement)=>{(out[requirement.linkedDay]??=[]).push(requirement);return out;},{});
 const legalByDay=legalCatalog.requirements.reduce<Record<string,string[]>>((out,r)=>{(out[r.linkedDay]??=[]).push(r.id);return out;},{});
 const STORAGE="enchev-urgent-119-v1";
 const base:Entry={status:"planned",test:"none",evidence:"",notes:"",actualHours:0,updatedAt:""};
@@ -138,6 +144,8 @@ export default function UrgentPlan119({onClose,onOpenMaster}:{onClose:()=>void;o
       <div><span>ПРОСРОЧЕНИ / БЛОКИРАНИ</span><b>{late}<small> / {blocked}</small></b></div>
     </div><div className="urgentProgress" role="progressbar" aria-label="Приети задачи" aria-valuenow={done} aria-valuemin={0} aria-valuemax={119}><i style={{width:pct+"%"}}/></div>
     <div className="urgentAudit"><b>ОДИТ КЪМ 02.11.2026</b><p>WEB/API HTTP 200 · Realtime/Worker/Redis HTTP 503 · Auth unavailable · MASTER: 308 GREEN / 6 YELLOW · Closed Demo: 35 RED.</p><small>Проверена моментна снимка, не live мониторинг. Ръчният PASS в този панел не е независима CI сертификация.</small></div>
+    <AuctionBenchmarkCenter onOpenTask={(dayId)=>{const day=tasks.find(t=>t.id===dayId);if(!day)return;setFilter("week");setChosenWeek(day.week);window.setTimeout(()=>{const element=document.getElementById("urgent-task-"+dayId) as HTMLDetailsElement|null;if(element){element.open=true;element.scrollIntoView({behavior:"smooth",block:"center"});}},120);}} />
+    <AuctionArchitecture119 onOpenTask={(dayId)=>{const day=tasks.find(t=>t.id===dayId);if(!day)return;setFilter("week");setChosenWeek(day.week);window.setTimeout(()=>{const element=document.getElementById("urgent-task-"+dayId) as HTMLDetailsElement|null;if(element){element.open=true;element.scrollIntoView({behavior:"smooth",block:"center"});}},120);}} />
     <DailyQuestions119 today={today} onOpenTask={(dayId)=>{const day=tasks.find(t=>t.id===dayId);if(!day)return;setFilter("week");setChosenWeek(day.week);window.setTimeout(()=>{const element=document.getElementById("urgent-task-"+dayId) as HTMLDetailsElement|null;if(element){element.open=true;element.scrollIntoView({behavior:"smooth",block:"center"});}},120);}} />
     <LegalFoundationCenter />
     <div className="urgentTitle"><div><small>01 / СЕДМИЦИ</small><h2>17 контролни периода</h2></div><p>Избери седмица и провери всеки ден.</p></div>
@@ -155,6 +163,22 @@ export default function UrgentPlan119({onClose,onOpenMaster}:{onClose:()=>void;o
             <span className={"urgentPill urgentPill-"+entry.status}>{statusLabels[entry.status]}{overdue?" · ПРОСРОЧЕНО":""}</span><span>⌄</span></summary>
           <div className="urgentTaskBody"><div className="urgentDetails"><span>ПОТОК</span><b>{task.stream}</b><span>ЗАВИСИМОСТ</span><b>{task.dependency||"Начална задача"}</b>{legalByDay[task.id]?.length>0&&<><span>LEGAL ОСНОВА</span><b>{legalByDay[task.id].join(", ")} · проверките са в LEGAL & COMPLIANCE по-горе</b></>}</div>
             <div className="urgentTest"><small>КРИТЕРИЙ ЗА ПРИЕМАНЕ / ТЕСТ</small><p>{task.passCriteria}</p></div>
+            {benchmarkByDay[task.id]?.length>0&&<details className="urgentBenchmarkDetails"><summary>ДОПЪЛНИТЕЛНИ КРИТЕРИИ · МЕЖДУНАРОДЕН АУКЦИОНЕН СТАНДАРТ · {benchmarkByDay[task.id].length}</summary><p>Тези подточки се приемат отделно с PASS и доказателства. Наличието им в плана не означава изпълнение.</p><div>{benchmarkByDay[task.id].map(scope=><article key={scope.id}><b>{scope.id} · {scope.priority} · {scope.title}</b><span>{scope.acceptance}</span></article>)}</div><button type="button" onClick={()=>document.getElementById("benchmark-scope")?.scrollIntoView({behavior:"smooth",block:"start"})}>Отвори матрицата с доказателствата ↑</button></details>}
+            {architectureByDay.get(task.id)&&<details className="urgentBenchmarkDetails"><summary>ТЕХНИЧЕСКА АРХИТЕКТУРА НА {task.id} · ДАННИ / API / ТЕСТОВЕ</summary>
+              {(()=>{const architectureDay=architectureByDay.get(task.id)!;return <><p><strong>Цел:</strong> {architectureDay.goal}</p>
+                <p><strong>Модули:</strong> {architectureDay.targetComponents.join(" · ")}</p>
+                <p><strong>Данни:</strong> {architectureDay.domainEntities.join(" · ")}</p>
+                <p><strong>Контракти:</strong> {architectureDay.interfaceContracts.join(" ; ")}</p>
+                <p><strong>Зависимост:</strong> {architectureDay.dependencyIds.join(", ")||"начален одит"}</p>
+                <div>{architectureDay.implementationSteps.map((step,index)=><article key={index}><b>Стъпка {index+1}</b><span>{step}</span></article>)}</div>
+                <p><strong>Положителен тест:</strong> {architectureDay.testPlan.positive}</p>
+                <p><strong>Отрицателен тест:</strong> {architectureDay.testPlan.negative}</p>
+                <p><strong>Доказателство:</strong> {architectureDay.testPlan.artifact}</p>
+                {architectureDay.signatureGates.map((gate,index)=><p key={index}><strong>Задължителен подпис:</strong> {gate.owner} · {gate.subject}</p>)}
+                <p><strong>Fee codes:</strong> {architectureDay.feeCodes.join(", ")||"—"} · <strong>Документи:</strong> {architectureDay.documentCodes.join(", ")||"—"}</p>
+                <button type="button" onClick={()=>document.getElementById("architecture-119")?.scrollIntoView({behavior:"smooth",block:"start"})}>Отвори архитектурата на 17 етапа ↑</button>
+                </>})()}
+            </details>}
             <div className="urgentInputs">
               <label>Статус<select value={entry.status} onChange={e=>changeStatus(task.id,e.target.value as Status)}><option value="planned">Планирано</option><option value="working">В работа</option><option value="blocked">Блокирано</option><option value="done">Прието</option></select></label>
               <label>Тест<select value={entry.test} onChange={e=>change(task.id,{test:e.target.value as Test})}><option value="none">НЕ Е ТЕСТВАНО</option><option value="pass">PASS</option><option value="fail">FAIL</option></select></label>
