@@ -93,5 +93,8 @@ assert.match(screen,/entry\.evidence\.trim\(\)/);
 assert.match(screen,/implementationStatus|Статус на реализация/);
 assert.match(urgent,/import AuctionBenchmarkCenter from ".\/AuctionBenchmarkCenter"/);
 assert.match(urgent,/<AuctionBenchmarkCenter onOpenTask=/);
+assert.match(urgent,/benchmarkByDay\[task\.id\]/,"every mapped day must show its acceptance subchecks");
+assert.doesNotMatch(screen,/\bcopart\b/i,"foreign reference brand must not appear in production-facing UI");
+assert.doesNotMatch(urgent,/\bcopart\b/i,"product brand must remain original");
 assert.ok(css.includes("@media(max-width:690px)"),"mobile dashboard presentation");
 console.log(`URGENT_COPART_PARITY PASS features=${file.features.length} fees=${file.feeComponents.length} documents=${file.documentWorkflows.length} gates=${file.decisionGates.length} gap=${file.features.filter(x=>x.baselineCoverage==="gap").length}`);
