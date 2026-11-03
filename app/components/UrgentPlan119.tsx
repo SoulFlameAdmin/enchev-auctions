@@ -3,6 +3,7 @@ import {useEffect,useMemo,useRef,useState} from "react";
 import plan from "../data/urgent-119-days.json";
 import benchmark from "../data/urgent-auction-benchmark-v1.json";
 import architecture from "../data/urgent-auction-architecture-119-v1.json";
+import dbAudit from "../../config/urgent-D003-db-binding-audit.json";
 import legalCatalog from "../data/urgent-legal-foundation-v1.json";
 import LegalFoundationCenter from "./LegalFoundationCenter";
 import DailyQuestions119 from "./DailyQuestions119";
@@ -34,11 +35,17 @@ const auditedD002:Entry={status:"done",test:"pass",
   evidence:"https://github.com/SoulFlameAdmin/enchev-auctions/actions/runs/41668523722",
   notes:"D002: Vercel Preview READY (CxQT7UY2EnNqySnXAhC2UYaKL56k), Forge 134/134 SHA-256 PASS (56,462,720 bytes). CI real built-site HTTP: restored image 200 + pinned SHA-256, nonexistent asset 404. This is asset restore evidence only; real auctions NO-GO.",
   actualHours:0,updatedAt:"2026-11-03T15:54:34Z"};
+// D003 is BLOCKED until actual provider/role evidence exists, even if project references are documented.
+const auditedD003:Entry={status:"blocked",test:"none",
+  evidence:"https://github.com/SoulFlameAdmin/enchev-auctions/blob/main/docs/urgent-D003-db-binding-audit-2026-11-03.md",
+  notes:"D003: 2 known project references but governance access denied; no isolated staging DB proven; Vercel env metadata 403; separate prod/staging DB roles not verified. Real-money auction NO-GO.",
+  actualHours:0,updatedAt:"2026-11-03T16:54:00Z"};
+const d003CanBeMarkedDone=dbAudit.acceptancePolicy.d003CanBeMarkedDone;
 const statusLabels:Record<Status,string>={planned:"Планирано",working:"В работа",blocked:"Блокирано",done:"Прието"};
 const fmt=(date:string)=>new Intl.DateTimeFormat("bg-BG",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}).format(new Date(date+"T12:00:00Z"));
 function dayInSofia(n:number){return n?new Intl.DateTimeFormat("sv-SE",{timeZone:"Europe/Sofia",year:"numeric",month:"2-digit",day:"2-digit"}).format(n):plan.startsOn;}
 function clean(data:unknown):EntryMap {
-  if(!data||typeof data!=="object"||Array.isArray(data))return {D001:{...auditedD001},D002:{...auditedD002}};
+  if(!data||typeof data!=="object"||Array.isArray(data))return {D001:{...auditedD001},D002:{...auditedD002},D003:{...auditedD003}};
   const out:EntryMap={}, source=data as Record<string,unknown>;
   for(const task of tasks){
     const x=source[task.id];if(!x||typeof x!=="object"||Array.isArray(x))continue;
@@ -49,11 +56,13 @@ function clean(data:unknown):EntryMap {
     const notes=typeof v.notes==="string"?v.notes.slice(0,2000):"";
     const hrs=Number(v.actualHours);
     if(status==="done"&&(test!=="pass"||!evidence.trim()))status="working";
+    if(task.id==="D003"&&!d003CanBeMarkedDone&&status==="done")status="blocked";
     out[task.id]={status,test,evidence,notes,actualHours:Number.isFinite(hrs)?Math.max(0,Math.min(200,hrs)):0,updatedAt:typeof v.updatedAt==="string"?v.updatedAt.slice(0,40):""};
   }
   // Seed the accepted D001 audit only when the operator has not explicitly set a local status.
   if(!out.D001)out.D001={...auditedD001};
   if(!out.D002)out.D002={...auditedD002};
+  if(!out.D003)out.D003={...auditedD003};
   return out;
 }
 function download(content:string,name:string,type:string){
@@ -111,10 +120,12 @@ export default function UrgentPlan119({onClose,onOpenMaster}:{onClose:()=>void;o
     setEntries(prev=>{
       const next={...(prev[id]||base),...patch,updatedAt:new Date().toISOString()};
       if(next.status==="done"&&(next.test!=="pass"||!next.evidence.trim()))next.status="working";
+      if(id==="D003"&&!d003CanBeMarkedDone&&next.status==="done")next.status="blocked";
       return {...prev,[id]:next};
     });
   }
   function changeStatus(id:string,status:Status){
+    if(id==="D003"&&!d003CanBeMarkedDone&&status==="done"){setNotice("D003: необходими са реално потвърдени staging база, production binding, ролеви права и проверен достъп до втория проект. Без това задачата остава BLOCKED.");return;}
     if(status==="done"&&(entries[id]?.test!=="pass"||!entries[id]?.evidence.trim())){setNotice(id+": за приемане са задължителни PASS и доказателство.");return;}
     setNotice("");change(id,{status});
   }
@@ -170,6 +181,7 @@ export default function UrgentPlan119({onClose,onOpenMaster}:{onClose:()=>void;o
             <span className={"urgentPill urgentPill-"+entry.status}>{statusLabels[entry.status]}{overdue?" · ПРОСРОЧЕНО":""}</span><span>⌄</span></summary>
           <div className="urgentTaskBody"><div className="urgentDetails"><span>ПОТОК</span><b>{task.stream}</b><span>ЗАВИСИМОСТ</span><b>{task.dependency||"Начална задача"}</b>{legalByDay[task.id]?.length>0&&<><span>LEGAL ОСНОВА</span><b>{legalByDay[task.id].join(", ")} · проверките са в LEGAL & COMPLIANCE по-горе</b></>}</div>
             <div className="urgentTest"><small>КРИТЕРИЙ ЗА ПРИЕМАНЕ / ТЕСТ</small><p>{task.passCriteria}</p></div>
+            {task.id==="D003"&&<details className="urgentBenchmarkDetails" open><summary>SUPABASE D003 · ЧАСТИЧЕН ОДИТ · NO-GO ЗА РЕАЛНИ СДЕЛКИ</summary><p>Проверени са 3/7 критерия. Останалите 4 изискват реален достъп/потвърждение от собственика. Наличието на два проекта не доказва отделна staging база.</p><div>{dbAudit.gateChecks.map(g=><article key={g.id}><b>{g.id} · {g.state.toUpperCase()}</b><span>{g.requirement}</span></article>)}</div><p>Не активирай реални плащания или авторитетно наддаване без обособени среди и права.</p></details>}
             {benchmarkByDay[task.id]?.length>0&&<details className="urgentBenchmarkDetails"><summary>ДОПЪЛНИТЕЛНИ КРИТЕРИИ · МЕЖДУНАРОДЕН АУКЦИОНЕН СТАНДАРТ · {benchmarkByDay[task.id].length}</summary><p>Тези подточки се приемат отделно с PASS и доказателства. Наличието им в плана не означава изпълнение.</p><div>{benchmarkByDay[task.id].map(scope=><article key={scope.id}><b>{scope.id} · {scope.priority} · {scope.title}</b><span>{scope.acceptance}</span></article>)}</div><button type="button" onClick={()=>document.getElementById("benchmark-scope")?.scrollIntoView({behavior:"smooth",block:"start"})}>Отвори матрицата с доказателствата ↑</button></details>}
             {architectureByDay.get(task.id)&&<details className="urgentBenchmarkDetails"><summary>ТЕХНИЧЕСКА АРХИТЕКТУРА НА {task.id} · ДАННИ / API / ТЕСТОВЕ</summary>
               {(()=>{const architectureDay=architectureByDay.get(task.id)!;return <><p><strong>Цел:</strong> {architectureDay.goal}</p>
