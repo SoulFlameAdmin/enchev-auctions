@@ -12,6 +12,7 @@ const pages=[
   {path:"/inventory",name:"inventory"},
   {path:"/inventory?make=BMW&model=M4%20F82",name:"filtered-bmw"},
   {path:"/live-auctions",name:"live-auctions"},
+  {path:"/auction-readiness",name:"auction-readiness"},
   {path:"/lot/EA-10511",name:"lot-bmw"},
   {path:"/profile",name:"profile"},
   {path:"/vehicle-history",name:"vehicle-history"},
@@ -41,6 +42,32 @@ try{
         if(target.name!=="presentation")await page.locator("body").waitFor();
         await page.evaluate(async()=>{await document.fonts.ready;});
         await page.waitForTimeout(target.name==="intro"||target.name==="workspace"?1200:550);
+        if(target.name==="auction-readiness"){
+          // D001 acceptance evidence: wait for actual browser GET probes, never guessed status colors.
+          await page.waitForFunction(() => {
+            const probes=[...document.querySelectorAll(".arService[data-probe]")];
+            return probes.length===7 && probes.every(node => node.getAttribute("data-state")!=="checking");
+          },null,{timeout:25000});
+          const [download]=await Promise.all([
+            page.waitForEvent("download",{timeout:15000}),
+            page.getByRole("button",{name:/ЕКСПОРТ НА ДОКАЗАТЕЛСТВА/}).click(),
+          ]);
+          const evidenceFile=path.join(DIR,`${device.name}-auction-readiness-evidence.json`);
+          await download.saveAs(evidenceFile);
+          const evidence=JSON.parse(fs.readFileSync(evidenceFile,"utf8"));
+          const critical=evidence?.checks?.filter(x=>x.requiredForAuction);
+          if(evidence?.kind!=="ENCHEV_D001_BROWSER_HEALTH_AUDIT"||
+             evidence?.checks?.length!==7||critical?.length!==6||
+             critical.some(x=>typeof x.httpStatus!=="number"||x.state==="checking")){
+            throw new Error("D001 export missing real HTTP evidence for six critical services");
+          }
+          manifest.evidence??=[];
+          manifest.evidence.push({device:device.name,route:target.path,file:path.basename(evidenceFile),
+            observedAt:evidence.observedAt,
+            services:critical.map(x=>({service:x.service,httpStatus:x.httpStatus,state:x.state})),
+            certifiedForRealAuctions:false});
+          console.log("D001_EVIDENCE_PASS",device.name,critical.map(x=>x.service+":"+x.httpStatus+":"+x.state).join(" "));
+        }
         const width=await page.evaluate(()=>document.documentElement.scrollWidth);
         if(width>device.width+2){throw new Error(`Horizontal scroll: ${width}px at viewport ${device.width}px`);}
         const screenshot=path.join(DIR,`${device.name}-${target.name}.png`);
