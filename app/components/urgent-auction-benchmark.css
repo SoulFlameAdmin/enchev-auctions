@@ -1,0 +1,53 @@
+.benchmarkCenter{margin:28px 0 18px;border:1px solid #685138;border-radius:22px;padding:clamp(14px,2.3vw,26px);background:linear-gradient(145deg,#17191b,#0e141a 72%);color:#e9edf0}
+.benchmarkHeading{display:flex;justify-content:space-between;align-items:flex-start;gap:18px}
+.benchmarkEyebrow{font-size:10px;letter-spacing:.14em;color:#dab57b;font-weight:900}
+.benchmarkHeading h2{font-size:clamp(20px,2.5vw,30px);letter-spacing:-.02em;margin:8px 0}
+.benchmarkHeading h2 em{font-style:normal;color:#f1c993}
+.benchmarkHeading p,.benchmarkFoot{font-size:12px;color:#99a6af;line-height:1.6;margin:7px 0}
+.benchmarkHeading>button{background:#a9814d;color:#13110c;border:1px solid #edc98e;border-radius:10px;padding:11px 13px;font-weight:900;font-size:11px;white-space:nowrap}
+.benchmarkStatGrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:22px 0 14px}
+.benchmarkStatGrid>div{border:1px solid #34404a;background:#10171e;border-radius:12px;padding:13px 12px}
+.benchmarkStatGrid small{display:block;font-weight:900;color:#9aa9b3;font-size:9px;letter-spacing:.06em}
+.benchmarkStatGrid b{display:block;font-size:clamp(21px,2.3vw,29px);color:#f2debd;margin:9px 0 0}
+.benchmarkWarning{font-size:12px;line-height:1.6;color:#d4be94;border:1px solid #755e36;border-radius:11px;background:#242116;padding:13px}
+.benchmarkWarning strong{color:#fff;font-weight:800}
+.benchmarkControls{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin:18px 0 13px}
+.benchmarkChips{display:flex;gap:7px;flex-wrap:wrap}
+.benchmarkChips button,.benchmarkActions button{border:1px solid #3c4a53;background:#121b22;color:#bfcad3;border-radius:8px;padding:9px 13px;font-weight:800;font-size:11px}
+.benchmarkChips button.active{background:#3a2b1b;color:#ffe6b7;border-color:#bb9158}
+.benchmarkControls input{border:1px solid #3c4a53;background:#0a1016;color:#f5f7f7;border-radius:9px;padding:11px;width:min(340px,100%);font-size:12px}
+.benchmarkCategoryList{display:grid;gap:10px}
+.benchmarkCategory{border:1px solid #2d3a46;border-radius:12px;background:#10171c;overflow:hidden}
+.benchmarkCategory>summary{cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px;color:#f3e2c3}
+.benchmarkCategory>summary b{font-size:14px}
+.benchmarkCategory>summary span{font-size:10px;color:#9fb0bc}
+.benchmarkItems{border-top:1px solid #2d3a46;padding:8px;display:grid;gap:6px}
+.benchmarkItem{background:#0d1318;border:1px solid #29313a;border-radius:9px;overflow:hidden}
+.benchmarkItem>summary{display:flex;align-items:center;gap:11px;padding:12px;cursor:pointer}
+.benchmarkItem>summary b{font-size:12px;line-height:1.5;flex:1;color:#e8ecee}
+.benchmarkId{font-size:10px;font-weight:900;color:#d2ae79;min-width:56px}
+.benchmarkAccepted,.benchmarkPending{font-size:10px;font-weight:900;white-space:nowrap}
+.benchmarkAccepted{color:#9be9b6}.benchmarkPending{color:#a8a6ad}
+.benchmarkBody{padding:16px;border-top:1px solid #29333b}
+.benchmarkBody p{font-size:12px;line-height:1.6;color:#c4ced6;margin:0 0 10px}
+.benchmarkMeta{color:#9baab5!important}
+.benchmarkActions{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.benchmarkActions button{border-color:#a5804e;color:#f2d8a9}
+.benchmarkActions a,.benchmarkSubmatrices a{color:#c4dce4;font-size:12px;text-decoration:underline;text-underline-offset:3px}
+.benchmarkEdit{margin-top:15px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.benchmarkEdit label{display:grid;gap:5px;color:#aab8c4;font-size:11px;font-weight:800}
+.benchmarkEdit .benchmarkWide{grid-column:1/-1}
+.benchmarkEdit select,.benchmarkEdit input,.benchmarkEdit textarea{min-width:0;width:100%;border:1px solid #41505c;border-radius:9px;background:#0b1117;color:#f0f3f6;padding:10px;font-size:12px}
+.benchmarkSubmatrices{margin-top:14px;display:grid;gap:9px}
+.benchmarkSubmatrices details{border:1px solid #39444d;border-radius:10px;padding:13px;background:#121a20}
+.benchmarkSubmatrices summary{cursor:pointer;color:#eacb94;font-size:13px;font-weight:900}
+.benchmarkSubmatrices p{font-size:12px;color:#abb9c3;line-height:1.6}
+.benchmarkMatrix{margin-top:12px;display:grid;gap:5px}
+.benchmarkMatrix>div{display:grid;grid-template-columns:minmax(115px,1fr) minmax(0,3fr) auto;align-items:center;gap:10px;border-bottom:1px solid #29333a;padding:9px 4px}
+.benchmarkMatrix code{font-size:10px;overflow-wrap:anywhere;color:#edcd9b}
+.benchmarkMatrix span{font-size:12px;color:#ced6dc;line-height:1.4}
+.benchmarkMatrix button{background:#252017;border:1px solid #76613d;border-radius:8px;color:#e2c28e;padding:7px 10px;font-size:11px;font-weight:800}
+.benchmarkNotice{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:12px;padding:12px;background:#302517;color:#f4d1a2;border:1px solid #987445;border-radius:10px;font-size:12px}
+.benchmarkNotice button{border:0;background:transparent;color:#fff;font-size:20px}
+@media(max-width:890px){.benchmarkStatGrid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:690px){.benchmarkHeading{flex-direction:column}.benchmarkHeading>button{white-space:normal;width:100%}.benchmarkStatGrid{grid-template-columns:repeat(2,minmax(0,1fr))}.benchmarkControls input{width:100%}.benchmarkItem>summary{flex-wrap:wrap}.benchmarkItem>summary b{flex-basis:calc(100% - 82px)}.benchmarkEdit{grid-template-columns:1fr}.benchmarkMatrix>div{grid-template-columns:1fr auto}.benchmarkMatrix code{grid-column:1/3}.benchmarkMatrix span{grid-column:1}.benchmarkMatrix button{grid-column:2}}
