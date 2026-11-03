@@ -865,6 +865,56 @@
           }
         }
       }
+    },
+    "/api/admin/google": {
+      "get": {
+        "operationId": "beginAdminGoogleOAuth",
+        "summary": "Begin administrator-only Google OAuth (PKCE)",
+        "responses": {
+          "302": {
+            "description": "Redirect to Supabase Google authorization endpoint"
+          }
+        }
+      }
+    },
+    "/api/admin/callback": {
+      "get": {
+        "operationId": "finishAdminGoogleOAuth",
+        "summary": "Exchange Google authorization code and verify admin allowlist",
+        "responses": {
+          "303": {
+            "description": "Session established or request denied"
+          }
+        }
+      }
+    },
+    "/api/admin/session": {
+      "get": {
+        "operationId": "getAdminGoogleSession",
+        "summary": "Verify current Google admin session against Supabase Auth",
+        "responses": {
+          "200": {
+            "description": "Allowlisted Google admin session is valid"
+          },
+          "401": {
+            "description": "Missing or unapproved session"
+          }
+        }
+      }
+    },
+    "/api/admin/logout": {
+      "post": {
+        "operationId": "logoutAdminGoogleSession",
+        "summary": "Revoke Google admin session and clear protected cookies",
+        "responses": {
+          "200": {
+            "description": "Signed out"
+          },
+          "403": {
+            "description": "Cross-site request rejected"
+          }
+        }
+      }
     }
   },
   "components": {
