@@ -17,7 +17,7 @@ type Entry={status:Status;test:Test;evidence:string;notes:string;actualHours:num
 type EntryMap=Record<string,Entry>;
 type Filter="week"|"all"|"overdue"|"blocked"|"done";
 const tasks=plan.tasks as Task[];
-const architectureByDay=new Map(architecture.days.map(day=>[day.id,day]));
+const architectureByDay=new Map(architecture.days.map(day=>[day.id,day] as const));
 const benchmarkByDay=benchmark.features.reduce<Record<string,typeof benchmark.features>>((out,requirement)=>{(out[requirement.linkedDay]??=[]).push(requirement);return out;},{});
 const legalByDay=legalCatalog.requirements.reduce<Record<string,string[]>>((out,r)=>{(out[r.linkedDay]??=[]).push(r.id);return out;},{});
 const STORAGE="enchev-urgent-119-v1";
