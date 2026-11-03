@@ -19,11 +19,54 @@ function rejectCredentialFields(v,trail="root"){
  }
 }
 function project(a,scope){return a.projects.find(x=>x.scope===scope)}
+
+// Verified acceptance must use reviewed external provider evidence. Never infer
+// it from a green build or editable status alone. D003 success does not enable
+// real-money bids or payments; those remain governed by separate release gates.
+function verifyProviderEvidence(a,governance,environment,baseline){
+ const gates=a.gateChecks;
+ if(gates.length!==7||new Set(gates.map(x=>x.id)).size!==7||
+    !["D003-G1","D003-G2","D003-G3","D003-G4","D003-G5","D003-G6","D003-G7"].every(id=>gates.some(g=>g.id===id&&g.state==="verified")))fail("all seven verified gates required");
+ const gov=project(a,"development-governance"), auction=project(a,"auction-demo-and-related-services");
+ if(!gov||!auction||a.projects.length!==2||gov.id===auction.id)fail("two distinct audited project identities required");
+ if(gov.id!==governance.project_ref||gov.name!==governance.project_name||gov.auctionAuthority!==false||
+    governance.auction_authority!==false||gov.liveStatus==="unverified"||
+    !["verified-read-only","owner-reviewed-metadata"].includes(gov.connectorAccess))fail("governance access/authority not evidenced");
+ if(auction.id!=="ejfrnjhlggebzmpmxajl"||auction.name!=="enchev-auctions"||auction.region!=="eu-central-1")fail("auction DB project identity changed");
+ const rt=a.runtime,st=rt.stagingDatabase,p=rt.production,v=rt.preview;
+ if(!st.verifiedIndependent||!st.roleVerified||st.noProductionDataCopied!==true||!st.projectId||
+    [gov.id,auction.id].includes(st.projectId))fail("separate data-less staging DB required");
+ if(p.projectDbRef!==auction.id||v.projectDbRef!==st.projectId||
+    p.dbBindingVerified!==true||v.dbBindingVerified!==true||
+    p.dbRoleVerified!==true||v.dbRoleVerified!==true||
+    !p.dbRoleName||!v.dbRoleName||p.dbRoleName===v.dbRoleName)fail("distinct verified production/preview project and DB roles required");
+ if(rt.vercelEnvironmentNamesRead!=="verified-metadata-only"||
+    rt.decryptedSecretsRead!==false||rt.secretValuesInRepository!==false)fail("review environment metadata, never decrypt or commit secrets");
+ if(environment.environments.find(x=>x.name==="staging")?.production_authority!==false||
+    environment.environments.find(x=>x.name==="staging")?.platform_environment!=="preview"||
+    environment.environments.find(x=>x.name==="production")?.platform_environment!=="production")fail("environment authority policy drift");
+ if(baseline.tasks.find(x=>x.id==="D003")?.passCriteria?.includes("authoritative DB target")!==true)fail("original acceptance criterion changed");
+ const proofs=a.providerEvidence;
+ if(!proofs||typeof proofs!=="object"||Array.isArray(proofs))fail("provider evidence records missing");
+ for(const g of gates){
+   const e=proofs[g.id];
+   if(!e||e.reviewStatus!=="accepted"||
+      typeof e.reviewer!=="string"||e.reviewer.trim().length<2||
+      typeof e.checkedAt!=="string"||!/^\\d{4}-\\d{2}-\\d{2}T/.test(e.checkedAt)||
+      typeof e.url!=="string"||!/^https:\/\/(?:github\\.com\/SoulFlameAdmin\/enchev-auctions\/|vercel\\.com\/|supabase\\.com\/)/i.test(e.url))fail("missing independently reviewed, traceable provider evidence for "+g.id);
+ }
+ if(a.acceptancePolicy.requiresAllGatesVerified!==true||
+    a.acceptancePolicy.d003CanBeMarkedDone!==true||
+    a.acceptancePolicy.nextDayD004CanWriteRealStagingFixtures!==true)fail("acceptance policy not justified by provider evidence");
+ return {task:"D003",knownProjects:a.projects.length,verifiedGates:7,blockedGates:0,decision:"VERIFIED_FOR_D003",safeToEnableRealMoney:false};
+}
+
 export function verifyD003(a,governance,environment,baseline){
- if(a.schemaVersion!==1||a.task!=="D003"||a.asOf!=="2026-11-03")fail("audit identity drift");
- if(a.auditStatus!=="blocked-pending-provider-evidence")fail("cannot claim D003 completed without new independent evidence");
+ if(a.schemaVersion!==1||a.task!=="D003"||typeof a.asOf!=="string"||!/^\d{4}-\d{2}-\d{2}$/.test(a.asOf))fail("audit identity drift");
  if(a.realMoneyAuctionAuthority!==false)fail("real-money authority must remain disabled");
  rejectCredentialFields(a);
+ if(a.auditStatus==="verified-with-provider-evidence")return verifyProviderEvidence(a,governance,environment,baseline);
+ if(a.auditStatus!=="blocked-pending-provider-evidence")fail("unsupported evidence status");
  const g=project(a,"development-governance");
  const e=project(a,"auction-demo-and-related-services");
  if(!g||!e||g.id===e.id||a.projects.length!==2)fail("two distinct known project roles required");
@@ -75,6 +118,7 @@ if(process.argv.includes("--self-test")){
  reject("fake preview role",x=>{x.runtime.preview.dbRoleVerified=true});
  reject("missing staging record",x=>{x.runtime.stagingDatabase.verifiedIndependent=true});
  reject("fake green",x=>{x.acceptancePolicy.d003CanBeMarkedDone=true});
+ reject("fabricated provider-ready audit without receipts",x=>{x.auditStatus="verified-with-provider-evidence";x.acceptancePolicy.d003CanBeMarkedDone=true});
  reject("real money auction enabled",x=>{x.realMoneyAuctionAuthority=true});
  reject("live governance access invented",x=>{x.projects[0].liveStatus="ACTIVE_HEALTHY"});
  reject("project pointer mismatch",x=>{x.projects[0].id="wrong"});
@@ -83,5 +127,5 @@ if(process.argv.includes("--self-test")){
  reject("lost permission blocker",x=>{x.liveReadOnlyFindings=x.liveReadOnlyFindings.filter(v=>v.code!=="VERCEL_ENV_METADATA_403")});
  reject("staging environment mistaken for production",x=>{x.runtime.preview.dbBindingVerified=true});
  reject("fake isolated staging data",x=>{x.runtime.stagingDatabase.noProductionDataCopied=true});
- console.log("URGENT_D003_DB_BOUNDARY_SELF_TEST PASS negative_cases=13");
+ console.log("URGENT_D003_DB_BOUNDARY_SELF_TEST PASS negative_cases=14");
 }
