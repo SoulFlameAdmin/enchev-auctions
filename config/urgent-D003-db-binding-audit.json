@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "task": "D003",
   "asOf": "2026-11-03",
-  "scope": "Read-only audit of Supabase project identity, runtime bindings, permission boundaries, and staging isolation",
+  "scope": "Verified primary Enchev DB and isolated no-data Supabase staging branch; runtime binding and governance access remain pending",
   "auditStatus": "blocked-pending-provider-evidence",
   "realMoneyAuctionAuthority": false,
   "sourceOfTruthRules": [
@@ -46,7 +46,7 @@
       "publicTableCount": 28,
       "publicTablesWithRlsEnabled": 28,
       "migrationsCount": 28,
-      "developmentBranchesCount": 0,
+      "developmentBranchesCount": 1,
       "roleGrants": "partially-observed-read-only",
       "runtimeBindings": "unverified",
       "dataDomains": [
@@ -56,7 +56,7 @@
         "sfcal_*",
         "david_*"
       ],
-      "note": "Candidate connected project contains demo auction tables and other systems; no real-money authoritative production DB status has been proved."
+      "note": "Owner designated this main Supabase project as primary Enchev Auctions project; actual Vercel production DB binding and real-money authority remain unverified."
     }
   ],
   "runtime": {
@@ -78,11 +78,29 @@
       "dbRoleVerified": false
     },
     "stagingDatabase": {
-      "projectId": null,
-      "verifiedIndependent": false,
+      "projectId": "jranctnafndbqzrwcwos",
+      "parentProjectId": "ejfrnjhlggebzmpmxajl",
+      "branchId": "248ecd54-771a-4830-a7ab-4a29cb81bb32",
+      "branchName": "enchev-staging",
+      "branchStatus": "FUNCTIONS_DEPLOYED",
+      "verifiedIndependent": true,
       "roleVerified": false,
-      "noProductionDataCopied": null,
-      "readiness": "missing-evidence-or-not-created"
+      "noProductionDataCopied": true,
+      "withData": false,
+      "persistent": false,
+      "publicTables": 28,
+      "publicTablesWithRlsEnabled": 28,
+      "parentAppliedMigrations": 28,
+      "stagingAppliedMigrations": 29,
+      "recoveryMigration": "d003_staging_restore_missing_calendar_rpc_baseline",
+      "syntheticAuctionRowCounts": {
+        "auctions": 0,
+        "bids": 0,
+        "rooms": 0,
+        "earlyAccessSignups": 0
+      },
+      "source": "Supabase provider branch metadata plus read-only isolated database catalog/counts, 2026-11-03T19:00Z",
+      "readiness": "schema-ready-but-vercel-preview-binding-unverified"
     },
     "vercelEnvironmentNamesRead": "denied-403",
     "decryptedSecretsRead": false,
@@ -90,10 +108,10 @@
   },
   "liveReadOnlyFindings": [
     {
-      "code": "NO_STAGING_SUPABASE_BRANCH",
-      "severity": "P0",
-      "finding": "Accessible Enchev project reports zero development branches. A separate staging project was not returned by available connected project list.",
-      "resolution": "Owner provisions and verifies distinct staging Supabase project and least-privilege roles; check via read-only metadata before migrations."
+      "code": "STAGING_BRANCH_CREATED_WITH_SCHEMA_REPAIR",
+      "severity": "P1",
+      "finding": "A separate data-less Supabase branch enchev-staging (jranctnafndbqzrwcwos) exists and is FUNCTIONS_DEPLOYED: 28 public RLS-enabled tables, 28 parent migrations and 1 staging-only repair, zero auction/bid/early-access rows. Initial automatic migration #24 failed because sfcal_day_view(text,date) was absent from replayed base schema; its and sfcal_day_set_status definitions were restored from live schema to staging only with PUBLIC/anon/authenticated EXECUTE revoked; branch rebase then completed.",
+      "resolution": "Keep the recovery migration staged only and fix original migration reproducibility before resetting/rebuilding branches. Branch persistent=false (ephemeral; may be deleted/paused); plan long-term persistent staging. Vercel Preview binding still denied (403), so do not route app fixtures to production or treat this as runtime staging."
     },
     {
       "code": "GOVERNANCE_PROJECT_ACCESS_DENIED",
@@ -146,7 +164,7 @@
     {
       "id": "D003-G3",
       "requirement": "Separate staging DB project/branch and isolated data confirmed",
-      "state": "not-confirmed"
+      "state": "verified"
     },
     {
       "id": "D003-G4",
@@ -175,11 +193,12 @@
     "d003CanBeMarkedDone": false,
     "nextDayD004CanWriteRealStagingFixtures": false,
     "allowedNextActions": [
-      "Verify project access by owner",
-      "Provision isolated staging with owner-approved billing",
-      "Verify Vercel env metadata access",
-      "Record independent CI and role evidence",
-      "Run D003 acceptance only after all mandatory gates"
+      "Inspect production and preview Vercel environment-variable metadata without decryption, 403 currently",
+      "Verify live governance project's restricted development-only role (access denied)",
+      "Enable Preview server API with staging-specific URLs and separate least-privilege role/keys after authorized configuration review",
+      "Review and persist the currently ephemeral staging branch; fix migration replay baseline in upstream source",
+      "Run isolated synthetic dry runs only after exact Preview→staging runtime binding is confirmed",
+      "Record independent provider evidence and rerun all D003 acceptance gates"
     ],
     "forbiddenActions": [
       "Read or expose secret values",
