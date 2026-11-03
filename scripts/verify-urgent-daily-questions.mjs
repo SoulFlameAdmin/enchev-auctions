@@ -42,7 +42,8 @@ const urgent=readText("app/components/UrgentPlan119.tsx");
 const legalUi=readText("app/components/LegalFoundationCenter.tsx");
 assert.ok(urgent.includes("<DailyQuestions119 today={today}"));
 const home=readText("app/components/MasterSystemPlanV1.tsx");
-assert.ok(home.includes("dailyQuickLaunch")&&home.includes("ВЪПРОСИ ЗА ДЕНЯ"));
+assert.ok(!home.includes('className="dailyQuickLaunch"')&&!home.includes('className="urgentQuickLaunch"'),"Home must not render urgent plan or questions shortcuts");
+assert.ok(home.includes("<b>СПЕШЕН ПЛАН · ДО 1 МАРТ</b>")&&home.includes("<b>ВЪПРОСИ КЪМ ЕНЧЕВ</b>"),"Sidebar must retain urgent plan and Enchev questions");
 
 assert.ok(urgent.indexOf("<DailyQuestions119")<urgent.indexOf("<LegalFoundationCenter />"));
 assert.ok(ui.includes("enchev-daily-answers-v1"));
