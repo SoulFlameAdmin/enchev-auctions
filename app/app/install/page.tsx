@@ -1,13 +1,23 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useEnchevPwa } from "../../components/EnchevPwaProvider";
 import "../mobile-app.css";
 
 export default function EnchevAppInstall() {
   const {installed,canPrompt,promptInstall,updateReady,applyUpdate} = useEnchevPwa();
   const [message,setMessage] = useState("");
+  const [isPreview,setIsPreview] = useState(false);
+
+  useEffect(()=>{
+    let active=true;
+    fetch("/api/pwa-version",{cache:"no-store"})
+      .then(r=>r.ok?r.json():null)
+      .then((data:{channel?:string}|null)=>{if(active && data?.channel==="preview")setIsPreview(true);})
+      .catch(()=>{});
+    return ()=>{active=false;};
+  },[]);
 
   async function install() {
     if (!canPrompt) {
@@ -29,6 +39,8 @@ export default function EnchevAppInstall() {
         <Link href="/app" className="eaMobileLogo"><img src="/brand/ea-2026-app.svg" alt="E&A" width={50} height={50}/><span><strong>E&A AUCTIONS</strong><small>MOBILE APP</small></span></Link>
         <Link href="/app" className="eaInstallClose" aria-label="Към приложението">×</Link>
       </header>
+
+      {isPreview&&<aside className="eaInstallPreviewWarning" role="note"><strong>ТЕСТОВ АДРЕС</strong><p>Тази версия е за преглед. За постоянни автоматични обновления инсталирай приложението от основния адрес <b>enchev-auctions.vercel.app</b> след одобряване и публикуване. Инсталирана тестова версия е свързана с отделния временен адрес.</p></aside>}
 
       <section className="eaInstallHero">
         <span className="eaMobileEyebrow">E&A · ТВОЕТО ПРИЛОЖЕНИЕ</span>
