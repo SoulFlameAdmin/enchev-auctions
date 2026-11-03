@@ -25,7 +25,7 @@ Official sources:
 
 ## 2. Plan comparison — important difference between COVERAGE and DELIVERED CODE
 
-Source of truth: `app/data/urgent-copart-parity-v1.json` cross-linked with `app/data/urgent-119-days.json` and the separate 163-point legal catalog. The first 119 plan's **wording** includes:
+Source of truth: `app/data/urgent-auction-benchmark-v1.json` cross-linked with `app/data/urgent-119-days.json` and the separate 163-point legal catalog. The first 119 plan's **wording** includes:
 - **27 explicit** functionalities, but these have not been independently certified as implemented.
 - **23 partial** areas where detailed business and acceptance rules are missing.
 - **26 specification gaps** added to the linked days.
@@ -133,7 +133,7 @@ P1 / phase 2 options: optional Buy It Now and Make an Offer, richer watchlist/in
 
 ## 9. Technical implementation contract
 
-The `app/data/urgent-copart-parity-v1.json` planning layer contains:
+The `app/data/urgent-auction-benchmark-v1.json` planning layer contains:
 - **76** CP-nnn function IDs with acceptance, linked D day, source, legal refs and baseline coverage.
 - **20** fee codes, all `enabled:false`, `amount:null`, `feeRuleVersion:null`.
 - **17** document workflows, each `templateStatus:"not-legal-approved"`.
