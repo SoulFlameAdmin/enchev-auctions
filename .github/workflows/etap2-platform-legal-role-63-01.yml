@@ -1,0 +1,35 @@
+name: ENCHEV Etap 2 - SYSTEM 63.01 platform legal role
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - packages/domain/src/platform-legal-role.ts
+      - packages/domain/src/platform-legal-role-lifecycle.ts
+      - packages/domain/src/index.ts
+      - scripts/verify-etap2-platform-legal-role-63-01.mjs
+      - scripts/verify-etap2-platform-legal-role-lifecycle-63-02.mjs
+      - .github/workflows/etap2-platform-legal-role-63-01.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  legal-role-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout proposal
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Compile and verify role model
+        run: |
+          node scripts/verify-etap2-platform-legal-role-63-01.mjs
+          node scripts/verify-etap2-platform-legal-role-lifecycle-63-02.mjs
