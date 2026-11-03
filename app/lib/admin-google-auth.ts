@@ -70,3 +70,19 @@ export function adminCookies(request:NextRequest) {
   return {access:request.cookies.get(ACCESS_COOKIE)?.value||"",refresh:request.cookies.get(REFRESH_COOKIE)?.value||""};
 }
 export const PRIVATE_HEADERS={"Cache-Control":"private, no-store, max-age=0","Vary":"Cookie","X-Content-Type-Options":"nosniff"};
+
+export async function resolveAuthorizedGoogleAdmin(request:NextRequest):Promise<{email:string;freshTokens:AdminTokens|null}|null>{
+  const {access,refresh}=adminCookies(request);
+  if(access){
+    const valid=await verifiedGoogleAdmin(access);
+    if(valid)return {email:valid.email,freshTokens:null};
+  }
+  if(refresh){
+    const renewed=await refreshAdminTokens(refresh);
+    if(renewed){
+      const valid=await verifiedGoogleAdmin(renewed.access_token);
+      if(valid)return {email:valid.email,freshTokens:renewed};
+    }
+  }
+  return null;
+}
