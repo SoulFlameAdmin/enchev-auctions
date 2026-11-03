@@ -90,7 +90,7 @@ export default function AuctionReadinessPage() {
   const [lastRun,setLastRun] = useState("");
   const checks = useMemo(() => SERVICES.filter(x=>x.critical),[]);
   const readyCount = checks.filter(x=>results[x.id]?.state === "ready").length;
-  const checkedCount = checks.filter(x=>results[x.id]?.httpStatus !== undefined).length;
+  const checkedCount = checks.filter(x=>results[x.id] && results[x.id]?.state !== "checking").length;
 
   const runAll = useCallback(async () => {
     setBusy(true);setStarted(true);setNotice("");
@@ -205,7 +205,7 @@ export default function AuctionReadinessPage() {
         <div className="arLinks"><a href="/inventory">РАЗГЛЕДАЙ КАТАЛОГА ↗</a><a href="/live-auctions">ОТВОРИ DEMO АУКЦИОН ↗</a><a href="/register">РЕГИСТРАЦИЯ ↗</a></div>
       </section>
       {notice&&<p className="arNotice" role="status">{notice}</p>}
-      <footer className="arFoot">E&A East West Auctioneers Group · Read-only audit · Никакви парични операции или промяна на production данни. HTTP GET статус ≠ пълен end-to-end тест.</footer>
+      <footer className="arFoot">E&A East West Auctioneers Group · Read-only audit · Никакви парични операции или промяна на production данни. Demo GET може да създаде временна браузърна cookie сесия. HTTP GET статус ≠ пълен end-to-end тест.</footer>
     </div>
   </main>;
 }
