@@ -74,6 +74,24 @@ try{
         await page.screenshot({path:screenshot,fullPage:target.name!=="intro",animations:"disabled",timeout:50000});
         manifest.screenshots.push({device:device.name,route:target.path,file:path.basename(screenshot),title:await page.title(),pageErrors:failures});
         console.log("SCREENSHOT_PASS",device.name,target.path,path.basename(screenshot));
+        if(target.name==="auction-readiness"){
+          // A disconnected browser must never present stale HTTP statuses as live auction readiness.
+          await ctx.setOffline(true);
+          try {
+            await page.getByRole("button",{name:/ПРОВЕРИ СИСТЕМАТА/}).click();
+            await page.waitForFunction(() => {
+              const probes=[...document.querySelectorAll(".arService[data-probe]")];
+              return probes.length===7 && probes.every(node=>node.getAttribute("data-state")==="unavailable");
+            },null,{timeout:20000});
+            const offlineFile=path.join(DIR,`${device.name}-auction-readiness-offline.png`);
+            await page.screenshot({path:offlineFile,fullPage:true,animations:"disabled",timeout:50000});
+            manifest.screenshots.push({device:device.name,route:target.path,
+              file:path.basename(offlineFile),network:"offline",verifiedFailClosed:true});
+            console.log("D001_OFFLINE_PASS",device.name,path.basename(offlineFile));
+          }finally{
+            await ctx.setOffline(false);
+          }
+        }
       }catch(e){
         console.error("SCREENSHOT_FAIL",device.name,target.path,String(e));
         process.exitCode=1;
