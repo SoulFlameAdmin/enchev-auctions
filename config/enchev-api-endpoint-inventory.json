@@ -91,6 +91,12 @@
       "summary": "Read the server-issued non-authoritative browser-session demo clock"
     },
     {
+      "method": "GET",
+      "path": "/api/pwa-version",
+      "operationId": "getPwaVersion",
+      "summary": "Public PWA release version (read-only)"
+    },
+    {
       "method": "POST",
       "path": "/api/carar-waitlist",
       "operationId": "postCarArWaitlist",
