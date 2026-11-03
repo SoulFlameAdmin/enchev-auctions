@@ -13,7 +13,7 @@ export default function AuctionArchitecture119({onOpenTask}:{onOpenTask:(id:stri
  return <section className="arch119" id="architecture-119" aria-label="Аукционна архитектура за 119 дни">
   <header className="arch119Header"><div><span>02 / СИСТЕМНА АРХИТЕКТУРА · ПЛАН ЗА РАЗРАБОТКА</span><h2>119 дни · <em>17 технически етапа</em></h2>
    <p>Регистрация → автомобили → каталог → наддаване → победител → такси → документи → плащания → транспорт.</p></div><strong>СОБСТВЕНА E&A АРХИТЕКТУРА</strong></header>
-  <p className="arch119Caution"><b>Това е проектна спецификация, не сертификат за внедряване.</b> Показаните модели/API са целеви и се изграждат поетапно. Вътрешната инфраструктура на конкурентните оператори не е известна. Реални средства и аукциони се разрешават само след юридически, финансов и технически GO.</p>
+  <p className="arch119Caution"><b>Това е проектна спецификация, не сертификат за внедряване.</b> Показаните модели/API са целеви и се изграждат поетапно. Вътрешната инфраструктура на конкурентните оператори не е известна. Реални средства и аукциони: NO-GO до подписано юридическо, финансово, техническо и оперативно разрешение.</p>
   <details className="arch119Flow"><summary>Покажи цялата системна архитектура и границите на доверие</summary>
    <p>Web/PWA → Identity & Policy → Auction Command → PostgreSQL (единствен авторитет за bid/winner) → Transactional Outbox → Worker → Redis/WebSocket → Web/PWA.</p>
    <p>Seller Intake → Protected Document Vault → Verified Lot → Auction → Fee Rule Snapshot → Invoice → PSP/Bank Reconciliation → Double-entry Ledger → Release Gate → Yard/Transport → Seller Settlement.</p>
