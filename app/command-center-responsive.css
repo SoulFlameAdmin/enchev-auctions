@@ -125,3 +125,29 @@
     height:48px;
   }
 }
+
+/* Install action stays the LAST operator item; it opens the E&A PWA installer. */
+.sidePanel .eaPwaInstallMenuItem{
+  margin-top:18px;
+  margin-bottom:max(14px,env(safe-area-inset-bottom));
+  background:linear-gradient(115deg,rgba(24,65,36,.98),rgba(11,28,18,.96));
+  border:1px solid rgba(99,229,140,.52);
+  border-radius:15px;
+  box-shadow:0 14px 28px rgba(4,26,11,.35);
+  color:#f3fff5;
+}
+.sidePanel .eaPwaInstallMenuItem .sideMenuIcon{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:35px;
+  height:35px;
+  border-radius:10px;
+  background:rgba(71,210,116,.15);
+}
+.sidePanel .eaPwaInstallMenuItem b{color:#8cf3af;letter-spacing:.05em}
+.sidePanel .eaPwaInstallMenuItem small{color:#d0e7d6;line-height:1.4}
+.sidePanel .eaPwaInstallMenuItem:hover,.sidePanel .eaPwaInstallMenuItem:focus-visible{
+  background:linear-gradient(115deg,#255a35,#12311c);
+  border-color:#a3f1b9;
+}
