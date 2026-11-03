@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 const cases = [
   ["scripts/verify-urgent-daily-questions.mjs"],
   ["scripts/verify-urgent-copart-parity.mjs"],
+  ["scripts/verify-urgent-auction-architecture.mjs"],
   ["scripts/verify-urgent-legal-foundation.mjs"],
   ["scripts/verify-dp2-06-home-discovery.mjs"],
   ["scripts/verify-master-task-ids.mjs", "--self-test"],
