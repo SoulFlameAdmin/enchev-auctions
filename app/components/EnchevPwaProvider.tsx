@@ -167,7 +167,7 @@ export default function EnchevPwaProvider({ children }: { children: ReactNode })
         <small>{item.label}</small>
       </a>)}
     </nav>}
-    {(workerWaiting || Boolean(newVersion)) && <aside className="eaPwaUpdateBanner" role="status" aria-live="polite">
+    {(installed || isAppPage) && (workerWaiting || Boolean(newVersion)) && <aside className="eaPwaUpdateBanner" role="status" aria-live="polite">
       <div><strong>Нова версия на E&A Auctions</strong><span>Обнови приложението без ново инсталиране. Завърши текущите си действия преди това.</span></div>
       <button type="button" onClick={applyUpdate}>Обнови</button>
     </aside>}
