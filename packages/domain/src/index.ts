@@ -29,3 +29,4 @@ export * from "./auction-trust-record";
 export * from "./auction-reconstruction";
 export * from "./search-discovery";
 export * from "./upload-content-policy";
+export * from "./closed-demo-isolation";
