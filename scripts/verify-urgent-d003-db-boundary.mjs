@@ -52,8 +52,8 @@ function verifyProviderEvidence(a,governance,environment,baseline){
    const e=proofs[g.id];
    if(!e||e.reviewStatus!=="accepted"||
       typeof e.reviewer!=="string"||e.reviewer.trim().length<2||
-      typeof e.checkedAt!=="string"||!/^\\d{4}-\\d{2}-\\d{2}T/.test(e.checkedAt)||
-      typeof e.url!=="string"||!/^https:\/\/(?:github\\.com\/SoulFlameAdmin\/enchev-auctions\/|vercel\\.com\/|supabase\\.com\/)/i.test(e.url))fail("missing independently reviewed, traceable provider evidence for "+g.id);
+      typeof e.checkedAt!=="string"||Number.isNaN(Date.parse(e.checkedAt))||
+      typeof e.url!=="string"||!["https://github.com/SoulFlameAdmin/enchev-auctions/","https://vercel.com/","https://supabase.com/"].some(prefix=>e.url.startsWith(prefix)))fail("missing independently reviewed, traceable provider evidence for "+g.id);
  }
  if(a.acceptancePolicy.requiresAllGatesVerified!==true||
     a.acceptancePolicy.d003CanBeMarkedDone!==true||
