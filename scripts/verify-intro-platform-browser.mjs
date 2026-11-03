@@ -21,7 +21,9 @@ try {
         await page.goto(base+"/",{waitUntil:"domcontentloaded"});
         await page.locator('iframe[src="/forge/index.html"]').waitFor();
         const links = page.frameLocator('iframe[src="/forge/index.html"]').locator('a[href^="/"]');
-        await links.first().waitFor({timeout:15000});
+        // Structural navigation checks must not require the first (possibly off-screen) animated link to be visible.
+        // Actual top-level navigation and destination rendering are exercised below.
+        await links.first().waitFor({timeout:15000,state:"attached"});
         const destinations = await links.evaluateAll(nodes => nodes.map(n => ({
           href:n.getAttribute("href"),target:n.getAttribute("target")
         })).filter(x => x.href && !x.href.startsWith("/forge/")));
