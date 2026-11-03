@@ -36,6 +36,7 @@ export function verifyD003(a,governance,environment,baseline){
  const rt=a.runtime;
  if(rt.vercelEnvironmentNamesRead!=="denied-403"||rt.decryptedSecretsRead!==false||rt.secretValuesInRepository!==false)fail("Vercel environment access must be accurately classified");
  if(rt.stagingDatabase.verifiedIndependent!==false||rt.stagingDatabase.projectId!==null||rt.stagingDatabase.roleVerified!==false)fail("staging database is not verified");
+ if(rt.stagingDatabase.noProductionDataCopied!==null)fail("unverified staging-data isolation cannot be marked clean");
  if(rt.production.dbBindingVerified!==false||rt.preview.dbBindingVerified!==false)fail("can't assert production/preview DB target verified");
  if(rt.production.dbRoleVerified!==false||rt.preview.dbRoleVerified!==false)fail("must not claim separately scoped roles");
  if(rt.production.projectDbRef!==null||rt.preview.projectDbRef!==null)fail("runtime project ref must not be guessed from source code");
@@ -60,6 +61,10 @@ const environment=sourceJson("config/enchev-runtime-environments.json");
 const baseline=sourceJson("app/data/urgent-119-days.json");
 const audit=sourceJson(D003_AUDIT_PATH);
 const result=verifyD003(audit,governance,environment,baseline);
+const dashboard=readFileSync("app/components/UrgentPlan119.tsx","utf8");
+for(const marker of ["auditedD003:Entry={status:\"blocked\"","dbAudit.acceptancePolicy.d003CanBeMarkedDone","task.id===\"D003\"","d003CanBeMarkedDone&&status===\"done\""]){
+ if(!dashboard.includes(marker))fail("D003 UI gate missing: "+marker);
+}
 console.log("URGENT_D003_DB_BOUNDARY PASS audit=read_only known_projects="+result.knownProjects+" gates_verified="+result.verifiedGates+" gates_blocked="+result.blockedGates+" production_authority=NO-GO");
 
 if(process.argv.includes("--self-test")){
@@ -77,5 +82,6 @@ if(process.argv.includes("--self-test")){
  reject("connection material",x=>{x.runtime.production.projectDbRef="postgresql://example:pw@host/db"});
  reject("lost permission blocker",x=>{x.liveReadOnlyFindings=x.liveReadOnlyFindings.filter(v=>v.code!=="VERCEL_ENV_METADATA_403")});
  reject("staging environment mistaken for production",x=>{x.runtime.preview.dbBindingVerified=true});
- console.log("URGENT_D003_DB_BOUNDARY_SELF_TEST PASS negative_cases=12");
+ reject("fake isolated staging data",x=>{x.runtime.stagingDatabase.noProductionDataCopied=true});
+ console.log("URGENT_D003_DB_BOUNDARY_SELF_TEST PASS negative_cases=13");
 }
