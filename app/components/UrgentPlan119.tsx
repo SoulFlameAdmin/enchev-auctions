@@ -64,7 +64,7 @@ function download(content:string,name:string,type:string){
 }
 function csv(v:unknown){return '"'+String(v??"").replaceAll('"','""')+'"';}
 
-export default function UrgentPlan119({onClose,onOpenMaster}:{onClose:()=>void;onOpenMaster:()=>void}){
+export default function UrgentPlan119({onClose,onOpenMaster,focusDay}:{onClose:()=>void;onOpenMaster:()=>void;focusDay?:string|null}){
   const [entries,setEntries]=useState<EntryMap>({});
   const [loaded,setLoaded]=useState(false);
   const [now,setNow]=useState(0);
@@ -83,6 +83,16 @@ export default function UrgentPlan119({onClose,onOpenMaster}:{onClose:()=>void;o
     return()=>{clearInterval(timer);window.removeEventListener("storage",storage);window.removeEventListener("keydown",key)};
   },[onClose]);
   useEffect(()=>{if(loaded){try{localStorage.setItem(STORAGE,JSON.stringify(entries))}catch{setNotice("Съхранението не е достъпно. Експортирай отчета.")}}},[entries,loaded]);
+  useEffect(()=>{
+    if(!focusDay)return;
+    const target=tasks.find(task=>task.id===focusDay);if(!target)return;
+    setFilter("week");setChosenWeek(target.week);
+    const timer=window.setTimeout(()=>{
+      const el=document.getElementById("urgent-task-"+focusDay) as HTMLDetailsElement|null;
+      if(el){el.open=true;el.scrollIntoView({behavior:"smooth",block:"center"});}
+    },250);
+    return()=>window.clearTimeout(timer);
+  },[focusDay]);
   const today=dayInSofia(now),active=tasks.find(t=>t.date===today)||tasks.find(t=>t.date>today)||tasks[tasks.length-1];
   const week=chosenWeek??active.week;
   const leftMs=now?Math.max(0,Date.parse(plan.deadline)-now):0;
