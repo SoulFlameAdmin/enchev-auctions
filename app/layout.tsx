@@ -24,14 +24,17 @@ import PlanStatusAuditTrail from "./components/PlanStatusAuditTrail";
 import CloudPlanStateSync from "./components/CloudPlanStateSync";
 import LotNavigationBridge from "./components/LotNavigationBridge";
 import EnchevAppShell from "./components/EnchevAppShell";
+import EnchevPwaProvider from "./components/EnchevPwaProvider";
 import EnglishUiEnforcer from "./components/EnglishUiEnforcer";
 
-export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" };
+export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover", themeColor: "#090e0b" };
 
 export const metadata: Metadata = {
   title: "E&A East West Auctioneers Group",
   description: "E&A East West Auctioneers Group — international vehicle auctions, live bidding, vehicle history and transport. SOULFLAME",
-  icons: { icon: "/brand/ea-2026-app.svg", shortcut: "/brand/ea-2026-app.svg", apple: "/brand/ea-2026-app.svg" },
+  manifest: "/manifest.webmanifest",
+  appleWebApp: { capable: true, title: "E&A Auctions", statusBarStyle: "black-translucent" },
+  icons: { icon: "/brand/ea-2026-app.svg", shortcut: "/brand/ea-2026-app.svg", apple: "/pwa-icon/192" },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
@@ -46,8 +49,10 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <CloudPlanStateSync />
         <LotNavigationBridge />
         <EnglishUiEnforcer />
-        <EnchevAppShell />
-        {children}
+        <EnchevPwaProvider>
+          <EnchevAppShell />
+          {children}
+        </EnchevPwaProvider>
       </body>
     </html>
   );
