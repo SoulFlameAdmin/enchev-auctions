@@ -1,6 +1,8 @@
 // Browser-level regression for the preserved cinematic-to-marketplace journey.
 // Runs against a local built site; it does NOT certify real bidding or payments.
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { readFile } from "node:fs/promises";
 import { createRequire } from "node:module";
 const require = createRequire(import.meta.url);
 const { chromium } = require("/tmp/enchev-browser/node_modules/playwright");
@@ -14,6 +16,20 @@ async function caseRun(name, body) {
 }
 
 try {
+  await caseRun("D002 restored historical media HTTP 200 + SHA-256; missing file HTTP 404",async()=>{
+    const manifest=JSON.parse(await readFile("config/forge-assets.json","utf8"));
+    const entry=manifest.find(a=>a.path==="media/2480ec12b70d13d46feb.jpg");
+    assert.ok(entry,"historically missing file pinned in the asset manifest");
+    assert.equal(entry.sha256,"00d7eb76a558c7f82450e25692ee75f90dad9c2b6792766d60027ea77f885b52");
+    const recovered=await fetch(base+"/forge/"+entry.path);
+    assert.equal(recovered.status,200,"D002 recovered media must return real HTTP 200");
+    const bytes=Buffer.from(await recovered.arrayBuffer());
+    assert.ok(bytes.length>0,"recovered media is not empty");
+    assert.equal(createHash("sha256").update(bytes).digest("hex"),entry.sha256,"served restored media must match immutable SHA-256");
+    const absent=await fetch(base+"/forge/media/__d002-definitely-not-present.jpg");
+    assert.equal(absent.status,404,"static missing media must not be rewritten into a fake HTTP 200");
+    console.log("URGENT_D002_PREVIEW_HTTP PASS repaired_media=200 sha256=verified nonexistent=404 bytes="+bytes.length);
+  });
   for (const size of [{width:1440,height:900}, {width:390,height:844}]) {
     const page = await browser.newPage({viewport:size});
     try {
