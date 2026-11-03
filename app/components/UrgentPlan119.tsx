@@ -115,7 +115,7 @@ export default function UrgentPlan119({onClose,onOpenMaster}:{onClose:()=>void;o
   }
   return <section className="urgentOverlay" role="dialog" aria-modal="true" aria-label="Спешен план до първи март">
     <header className="urgentHeader"><div><span className="urgentEyebrow">ENCHEV AUCTIONS · ПРИОРИТЕТ №1</span><h1>СПЕШЕН ПЛАН <em>119 ДНИ</em></h1><p>03.11.2026 — 01.03.2027 · 17 седмици · преди MASTER PLAN</p></div>
-      <div className="urgentHeaderActions"><button type="button" onClick={onOpenMaster}>MASTER PLAN →</button><button type="button" className="urgentClose" aria-label="Затвори" onClick={onClose}>×</button></div>
+      <div className="urgentHeaderActions"><button type="button" onClick={()=>window.location.assign("/auction-readiness")}>D001 · ПРОВЕРКА НА ОСНОВАТА ↗</button><button type="button" onClick={onOpenMaster}>MASTER PLAN →</button><button type="button" className="urgentClose" aria-label="Затвори" onClick={onClose}>×</button></div>
     </header>
     <div className="urgentHero"><div className="urgentClock"><span>ОСТАВАЩО ВРЕМЕ ДО 1 МАРТ · 09:00 СОФИЯ</span>
       <strong>{leftH===null?"—":leftH.toLocaleString("bg-BG")} <small>часа</small> {leftMin===null?"":String(leftMin).padStart(2,"0")} <small>мин</small></strong>
