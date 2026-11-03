@@ -2,6 +2,7 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { gunzipSync } from 'node:zlib';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
+import { validateManifest, verifyRestoredAssets } from './verify-urgent-d002-forge-media.mjs';
 
 const root = process.cwd();
 const output = path.join(root, 'public/forge');
@@ -345,6 +346,7 @@ forgeIndex = forgeIndex.replace(/<meta property="og:site_name" content="[^"]*"/,
 await writeFile(forgeIndexPath, forgeIndex);
 
 const pending = JSON.parse(await readFile(path.join(root, 'config/forge-assets.json'), 'utf8'));
+validateManifest(pending);
 let downloaded = 0;
 await Promise.all(Array.from({ length: 6 }, async () => {
   while (pending.length) {
@@ -374,4 +376,6 @@ await Promise.all(Array.from({ length: 6 }, async () => {
     downloaded++;
   }
 }));
+const confirmed = await verifyRestoredAssets(JSON.parse(await readFile(path.join(root, 'config/forge-assets.json'), 'utf8')),output);
+console.log(`URGENT_D002_FORGE_MEDIA PASS count=${confirmed.count} bytes=${confirmed.bytes} repaired_404_asset=${confirmed.knownMissingMediaVerified}`);
 console.log(`Forge frontend restored; ${downloaded} binary assets downloaded and verified.`);
