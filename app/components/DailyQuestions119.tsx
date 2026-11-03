@@ -35,7 +35,7 @@ function fileDownload(s:string,name:string,mime:string){
 }
 function quote(x:unknown){return '"'+String(x??"").replaceAll('"','""')+'"';}
 function formatDay(date:string){return new Intl.DateTimeFormat("bg-BG",{day:"numeric",month:"short",year:"numeric",timeZone:"UTC"}).format(new Date(date+"T12:00:00Z"));}
-export default function DailyQuestions119({today,onOpenTask}:{today:string;onOpenTask:(dayId:string)=>void}){
+export default function DailyQuestions119({today,onOpenTask,scope="all"}:{today:string;onOpenTask:(dayId:string)=>void;scope?:"all"|"enchev"}){
  const [chosenId,setChosenId]=useState("D001");
  const [chosenManually,setChosenManually]=useState(false);
  const [answers,setAnswers]=useState<Answers>({});
@@ -45,9 +45,10 @@ export default function DailyQuestions119({today,onOpenTask}:{today:string;onOpe
  const [showLegal,setShowLegal]=useState(true);
  const [notice,setNotice]=useState("");
  const importRef=useRef<HTMLInputElement>(null);
- const index=data.days.findIndex(d=>d.dayId===chosenId);
- const day:PlanDay=data.days[Math.max(0,index)];
- const todayDay=data.days.find(d=>d.date===today)||data.days.find(d=>d.date>today)||data.days[data.days.length-1];
+ const scopedDays=useMemo(()=>scope==="enchev"?data.days.filter(d=>d.questionIds.some(id=>questionById.get(id)?.owner.includes("Енчев"))):data.days,[scope]);
+ const index=scopedDays.findIndex(d=>d.dayId===chosenId);
+ const day:PlanDay=scopedDays[Math.max(0,index)];
+ const todayDay=scopedDays.find(d=>d.date===today)||scopedDays.find(d=>d.date>today)||scopedDays[scopedDays.length-1];
  useEffect(()=>{if(!chosenManually)setChosenId(todayDay.dayId);},[todayDay.dayId,chosenManually]);
  useEffect(()=>{
   try{setAnswers(sanitize(JSON.parse(localStorage.getItem(STORAGE)||"{}")));}catch{setAnswers({});}
@@ -56,15 +57,15 @@ export default function DailyQuestions119({today,onOpenTask}:{today:string;onOpe
   window.addEventListener("storage",update);return()=>window.removeEventListener("storage",update);
  },[]);
  useEffect(()=>{if(loaded){try{localStorage.setItem(STORAGE,JSON.stringify(answers));}catch{setNotice("Съхранението е недостъпно — експортирай отговорите.")}}},[answers,loaded]);
- const questions=useMemo(()=>day.questionIds.map(id=>questionById.get(id)).filter((x):x is Question=>!!x),[day]);
+ const questions=useMemo(()=>day.questionIds.map(id=>questionById.get(id)).filter((x):x is Question=>!!x&&(scope!=="enchev"||x.owner.includes("Енчев"))),[day,scope]);
  const accepted=questions.filter(q=>isAccepted(answers[q.id])).length;
  const blockers=questions.filter(q=>answers[q.id]?.status==="blocked").length;
- const carry=data.questions.filter(q=>q.date<day.date&&q.priority==="P0"&&!isAccepted(answers[q.id]));
+ const carry=data.questions.filter(q=>q.date<day.date&&q.priority==="P0"&&!isAccepted(answers[q.id])&&(scope!=="enchev"||q.owner.includes("Енчев")));
  const previousCarry=carry.length;
  const shown=questions.filter(q=>filter==="all"||(filter==="open"&&!isAccepted(answers[q.id]))||(filter==="blocked"&&answers[q.id]?.status==="blocked")||(filter==="answered"&&isAccepted(answers[q.id])));
  const related=day.relatedLegalIds.map(id=>legalById.get(id)).filter((x):x is NonNullable<typeof x>=>!!x);
  const questionPct=Math.round(accepted/questions.length*100);
- function navigate(next:string){if(!data.days.some(x=>x.dayId===next))return;setChosenId(next);setChosenManually(true);setNotice("");}
+ function navigate(next:string){if(!scopedDays.some(x=>x.dayId===next))return;setChosenId(next);setChosenManually(true);setNotice("");}
  function update(id:string,patch:Partial<Answer>){
   setAnswers(prev=>{
    const question=questionById.get(id);if(!question)return prev;
@@ -84,7 +85,7 @@ export default function DailyQuestions119({today,onOpenTask}:{today:string;onOpe
  function exportJson(){fileDownload(JSON.stringify({schemaVersion:1,plan:"ENCHEV_DAILY_119_QUESTIONS",exportedAt:new Date().toISOString(),answers},null,2),"enchev-daily-119-answers.json","application/json;charset=utf-8");}
  function exportCsv(){
   const head=["ID","Дата","Задача","Категория","Приоритет","Въпрос","Отговорник","Статус","Отговор","Доказателство","Обновено"];
-  const lines=data.questions.map(q=>{const a=answers[q.id];return [q.id,q.date,q.dayId,q.category,q.priority,q.question,a?.owner||q.owner,a?.status||"open",a?.answer||"",a?.evidence||"",a?.updatedAt||""].map(quote).join(",");});
+  const lines=data.questions.filter(q=>scope!=="enchev"||q.owner.includes("Енчев")).map(q=>{const a=answers[q.id];return [q.id,q.date,q.dayId,q.category,q.priority,q.question,a?.owner||q.owner,a?.status||"open",a?.answer||"",a?.evidence||"",a?.updatedAt||""].map(quote).join(",");});
   fileDownload("\ufeff"+[head.map(quote).join(","),...lines].join("\r\n"),"enchev-daily-119-questions.csv","text/csv;charset=utf-8");
  }
  async function importJson(file?:File){
@@ -102,14 +103,14 @@ export default function DailyQuestions119({today,onOpenTask}:{today:string;onOpe
   document.getElementById("legal-requirements")?.scrollIntoView({behavior:"smooth",block:"start"});
  }
  return <section className="dailyQ" id="daily-questions" aria-label="Дневни въпроси по спешния план">
-  <header className="dailyQHeader"><div><span>ПРОЕКТЕН КОНТРОЛ / 119 ДНИ · 1 190 ВЪПРОСА</span><h2>ДНЕВНИ ВЪПРОСИ <em>НА ВСЕКИ ЕТАП</em></h2>
-   <p>Виждаш всичко, което трябва да решим за днешната разработка — техническо, бизнес, законово, финансово, тестове и рискове.</p></div>
+  <header className="dailyQHeader"><div><span>{scope==="enchev"?"РЕШЕНИЯ С ЕНЧЕВ / 26 ДНИ · 260 ВЪПРОСА":"ПРОЕКТЕН КОНТРОЛ / 119 ДНИ · 1 190 ВЪПРОСА"}</span><h2>{scope==="enchev"?"ВЪПРОСИ КЪМ":"ДНЕВНИ ВЪПРОСИ"} <em>{scope==="enchev"?"ЕНЧЕВ":"НА ВСЕКИ ЕТАП"}</em></h2>
+   <p>{scope==="enchev"?"Само въпросите, в които Енчев участва в решението. Отговорите и доказателствата остават в същия регистър като спешния план.":"Виждаш всичко, което трябва да решим за днешната разработка — техническо, бизнес, законово, финансово, тестове и рискове."}</p></div>
    <div className="dailyQExport"><button type="button" onClick={exportCsv}>CSV</button><button type="button" onClick={exportJson}>JSON архив</button><button type="button" onClick={()=>importRef.current?.click()}>Импорт</button><input ref={importRef} hidden type="file" accept=".json,application/json" onChange={e=>void importJson(e.target.files?.[0])}/></div>
   </header>
   <div className="dailyQDateBar">
-   <button type="button" disabled={index===0} onClick={()=>navigate(data.days[index-1]?.dayId)}>‹ Предишен</button>
-   <label>Ден и конкретна задача<select aria-label="Избери ден за въпросите" value={day.dayId} onChange={e=>navigate(e.target.value)}>{data.days.map(d=><option key={d.dayId} value={d.dayId}>{d.dayId} · {d.date} · {d.task.slice(0,75)}</option>)}</select></label>
-   <button type="button" disabled={index===data.days.length-1} onClick={()=>navigate(data.days[index+1]?.dayId)}>Следващ ›</button>
+   <button type="button" disabled={index<=0} onClick={()=>navigate(scopedDays[index-1]?.dayId)}>‹ Предишен</button>
+   <label>Ден и конкретна задача<select aria-label="Избери ден за въпросите" value={day.dayId} onChange={e=>navigate(e.target.value)}>{scopedDays.map(d=><option key={d.dayId} value={d.dayId}>{d.dayId} · {d.date} · {d.task.slice(0,75)}</option>)}</select></label>
+   <button type="button" disabled={index===scopedDays.length-1} onClick={()=>navigate(scopedDays[index+1]?.dayId)}>Следващ ›</button>
    <button type="button" className="dailyQToday" onClick={()=>{setChosenManually(false);setChosenId(todayDay.dayId)}}>ДНЕС · {todayDay.dayId}</button>
   </div>
   <div className="dailyQFocus">
@@ -125,7 +126,7 @@ export default function DailyQuestions119({today,onOpenTask}:{today:string;onOpe
   </div>
   <div className="dailyQProgress" role="progressbar" aria-label="Отговорени въпроси за деня" aria-valuemin={0} aria-valuemax={questions.length} aria-valuenow={accepted}><i style={{width:questionPct+"%"}}/></div>
   <div className="dailyQDisclaimer">Отговорен въпрос ≠ завършена разработка, независим тест или юридическо одобрение. Всички отговори се пазят <b>само в този браузър</b>. Не записвай лични документи, банкови данни или тайни ключове.</div>
-  <div className="dailyQHeading"><div><small>ПЪЛЕН СПИСЪК / {day.dayId}</small><h3>10 задължителни въпроса за разработката</h3></div>
+  <div className="dailyQHeading"><div><small>ПЪЛЕН СПИСЪК / {day.dayId}</small><h3>{scope==="enchev"?"10 въпроса с Енчев за избрания етап":"10 задължителни въпроса за разработката"}</h3></div>
    <div className="dailyQFilters">{([["all","Всички"],["open","Нерешени"],["blocked","Блокирани"],["answered","Отговорени"]] as const).map(([k,v])=><button key={k} type="button" className={filter===k?"active":""} onClick={()=>setFilter(k)}>{v}</button>)}</div>
   </div>
   <div className="dailyQList">
