@@ -31,3 +31,5 @@
 @media(max-width:360px){.eaMobileLogo strong{font-size:13px}.eaMobileInstallTop{font-size:11px;padding:9px}.eaMobileInstallTop span{display:none}.eaMobileHeroText{padding-top:57px}}
 @media(min-width:900px){.eaMobileApp{padding-bottom:70px}}
 @media(prefers-reduced-motion:reduce){.eaMobileApp *{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+
+.eaInstallPreviewWarning{padding:15px 19px;margin:0 0 18px;border:1px solid #ddad5c80;border-radius:14px;background:#3d2d1a;color:#fbe4b9;font:500 12px/1.65 Inter,Arial,sans-serif}.eaInstallPreviewWarning strong{font-size:11px;letter-spacing:.1em;color:#ffdf96}.eaInstallPreviewWarning p{margin:4px 0 0}.eaInstallPreviewWarning b{overflow-wrap:anywhere}
