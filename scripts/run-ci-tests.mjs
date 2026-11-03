@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 
 const cases = [
+  ["scripts/verify-urgent-d002-forge-media.mjs","--self-test"],
   ["scripts/verify-urgent-daily-questions.mjs"],
   ["scripts/verify-urgent-copart-parity.mjs"],
   ["scripts/verify-urgent-auction-architecture.mjs"],
