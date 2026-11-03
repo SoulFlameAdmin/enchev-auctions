@@ -1,5 +1,5 @@
 # ENCHEV AUCTIONS — D001 Foundation Health Audit (2026-11-03)
-Status: **IN PROGRESS** · owner: Митко + Борко · task source: `app/data/urgent-119-days.json#D001`.
+Status: **AUDIT EVIDENCE VERIFIED · FINAL CI/MERGE PENDING** (NOT a real-auction GO) · owner: Митко + Борко · task source: `app/data/urgent-119-days.json#D001`.
 
 ## Purpose
 Distinguish **working browser demo**, **claimed service health contract**, and **certified real auction operation**. Do not mark D001 DONE/GREEN until a time-stamped, unredacted-of-status but secret-safe browser report and independent acceptance evidence exist.
@@ -122,3 +122,30 @@ Web and API report healthy. Realtime and worker report service-pending. Buyer au
 ## D002 preflight evidence
 
 A [cache-free Vercel preview build](https://vercel.com/dimitar-lambovs-projects/enchev-auctions/8NrKN2kbxfDYES3mPXHyhvNLtDoL) for `be06bd8799f01dfb794aa36a83ca5d74f33c0761` downloaded and verified all 134 binary assets and completed the build. [Build provenance](https://github.com/SoulFlameAdmin/enchev-auctions/actions/runs/41555174272) and [web verification](https://github.com/SoulFlameAdmin/enchev-auctions/actions/runs/41555174218) passed. D002 awaits D001 acceptance and owner review.
+
+## D001 acceptance evidence — browser and CI
+
+**Scope:** Completion means the launch-readiness audit has measured and archived the required six HTTP services with separate demo labeling; it does **not** mean those six services must all be healthy. Readiness for money-backed, multi-bidder auctions stays explicitly **NO-GO**.
+
+### Measured evidence (2026-11-03, never fictitious GREEN)
+| Probe | Actual online result | Launch interpretation |
+|---|---|---|
+| Web | HTTP 200 ready | Frontend health probe passed |
+| API | HTTP 200 ready | API health contract passed |
+| Realtime | HTTP 503 pending | NOT ready |
+| Worker | HTTP 503 pending | NOT ready |
+| Identity | HTTP 200, `available:false` | Endpoint responds but **buyer identity NOT ready** |
+| Redis | HTTP 503 pending | NOT configured; NO verified PONG |
+| Live demo | HTTP 200, `auctionAuthority:false` | Browser-only demonstration, NOT an authoritative auction |
+
+- **Isolated branch browser evidence:** [desktop+mobile CI screenshots, timestamped sanitized JSON, offline failures](https://github.com/SoulFlameAdmin/enchev-auctions/actions/runs/41625670680) — artifact ID `13226400142`, expires 2026-11-17. Verified desktop 1440px, emulated mobile 390px, connected and disconnected.
+- **Disconnected fail-closed:** Online: 2/6 critical services ready. Offline: 7/7 probes `unavailable`, with desktop and mobile screenshots. This verifies safe UI behavior, not resilience of the eventual bidding backend.
+- **Browser gateway acceptance:** [CI navigation parity PASS](https://github.com/SoulFlameAdmin/enchev-auctions/actions/runs/41625670706) after resolving timing/race failures; no production bid writes.
+- **Independent production HTTP baseline:** raw measured response matrix above, 2026-11-03 10:46 UTC. This baseline is not a continuous monitor or a live authenticated-user test.
+- **Code location:** `/auction-readiness` in PR [#398](https://github.com/SoulFlameAdmin/enchev-auctions/pull/398). Actual release requires exact-head CI and PR merge.
+
+### Completion and safety boundary
+- **Audit exit criterion:** measured Web/API/Realtime/Worker/Auth/Redis matrix + screenshots + JSON + explicit demo-vs-production distinction = **SATISFIED in isolated CI evidence**.
+- **Release gates remain independent:** last-commit full CI/DAST, reviewer release decision, authentic device verification, production endpoint retest. Do not merge with unverified failing gates.
+- **Future implementation blockers (NOT fake audit failures):** real multi-user authoritative auction state, Realtime and Worker rollout, buyer identity lifecycle, Redis/Valkey configuration and staging PONG, authenticated bidding transaction atomicity. They belong to later dedicated tasks.
+- No changes to user records, bid/ledger authority, payment operation, environments, secrets, frozen 119/4,374 plans or DAVID supervisor infrastructure.
