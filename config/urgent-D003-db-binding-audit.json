@@ -81,7 +81,7 @@
       "projectId": null,
       "verifiedIndependent": false,
       "roleVerified": false,
-      "noProductionDataCopied": true,
+      "noProductionDataCopied": null,
       "readiness": "missing-evidence-or-not-created"
     },
     "vercelEnvironmentNamesRead": "denied-403",
