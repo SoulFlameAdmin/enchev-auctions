@@ -881,6 +881,9 @@
                   "type": "string",
                   "const": "private, no-store, max-age=0"
                 }
+              },
+              "X-Request-ID": {
+                "$ref": "#/components/headers/RequestCorrelationId"
               }
             },
             "content": {
