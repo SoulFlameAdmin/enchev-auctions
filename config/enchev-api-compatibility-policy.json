@@ -31,6 +31,34 @@
     },
     {
       "method": "GET",
+      "path": "/api/admin/callback",
+      "operationId": "finishAdminGoogleOAuth",
+      "responseCodes": [
+        "303"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/google",
+      "operationId": "beginAdminGoogleOAuth",
+      "responseCodes": [
+        "302"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "GET",
+      "path": "/api/admin/session",
+      "operationId": "getAdminGoogleSession",
+      "responseCodes": [
+        "200",
+        "401"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "GET",
       "path": "/api/carar-waitlist",
       "operationId": "getCarArWaitlistMethodGuard",
       "responseCodes": [
@@ -151,6 +179,16 @@
       "operationId": "getLiveAuctionDemoClock",
       "responseCodes": [
         "200"
+      ],
+      "requestBodyRequired": false
+    },
+    {
+      "method": "POST",
+      "path": "/api/admin/logout",
+      "operationId": "logoutAdminGoogleSession",
+      "responseCodes": [
+        "200",
+        "403"
       ],
       "requestBodyRequired": false
     },
