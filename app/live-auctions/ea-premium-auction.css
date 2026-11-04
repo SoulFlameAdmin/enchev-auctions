@@ -1,3 +1,4 @@
+body:has(.eaPremium) .eaAppShell{display:none!important;}
 /* E&A premium lobby and live auction. Scoped to /live-auctions only. */
 .livePage:has(> .eaPremium) {width:100%;max-width:none;margin:0;padding:0!important;background:#030303;color:#f9f6f6;}
 .livePage:has(> .eaPremium)>:not(.eaPremium){display:none!important;}
