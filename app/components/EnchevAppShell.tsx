@@ -13,7 +13,6 @@ function activeKey(pathname:string){
   if(pathname.startsWith("/transport"))return "transport";
   if(pathname.startsWith("/vehicle-history"))return "history";
   if(pathname.startsWith("/support"))return "support";
-  if(pathname.startsWith("/business-plan"))return "business";
   return "";
 }
 
