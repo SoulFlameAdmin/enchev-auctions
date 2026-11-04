@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="3840" height="1120" viewBox="0 0 3840 1120" role="img" aria-labelledby="title">
+<title id="title">E&amp;A — East and West Auctioneers Group</title>
+<g font-family="Arial,Helvetica,sans-serif" font-style="italic" font-weight="900">
+<text x="55" y="799" font-size="865" letter-spacing="-68" fill="#101722">E</text>
+<text x="435" y="825" font-size="710" letter-spacing="-33" fill="#E30613">&amp;</text>
+<text x="848" y="799" font-size="865" letter-spacing="-68" fill="#101722">A</text>
+<path d="M1425 156 V869" fill="none" stroke="#E30613" stroke-width="32"/>
+<text x="1540" y="520" font-size="330" letter-spacing="-13" textLength="2230" lengthAdjust="spacingAndGlyphs" fill="#101722">EAST AND WEST</text>
+<text x="1540" y="811" font-size="272" letter-spacing="-8" textLength="2208" lengthAdjust="spacingAndGlyphs" fill="#E30613">AUCTIONEERS GROUP</text>
+</g>
+</svg>
