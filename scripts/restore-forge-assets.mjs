@@ -8,10 +8,51 @@ const root = process.cwd();
 const output = path.join(root, 'public/forge');
 const digest = value => createHash('sha256').update(value).digest('hex');
 const frontend = JSON.parse(gunzipSync(await readFile(path.join(root, 'config/forge-frontend.json.gz'))));
+// The desktop intro frames are not GLB: they are WebCodecs/ActiveFrame
+// frames composited into a 2D/WebGL canvas. Track decoder instances and
+// switch to software decoding if the PC hardware decoder starts failing.
+// Keep the native animation/scroll timeline and original media unchanged.
+function recoverDesktopActiveFrame(original) {
+  let code = original;
+  const rewrites = [
+    [
+      "\t\tthis.file = file;\n\t\tthis.init();",
+      "\t\tthis.file = file;\n\t\t(window.__enchevActiveFrames ??= new Set()).add(this);\n\t\tthis.init();"
+    ],
+    [
+      "\t\tthis.decoder.configure(this.config);\n\t\tthis._needsKeyFrame = true;",
+      "\t\ttry { this.decoder.configure(this.config); }\n" +
+      "\t\tcatch (error) {\n" +
+      "\t\t\tif (this.config?.hardwareAcceleration !== 'prefer-software') throw error;\n" +
+      "\t\t\tthis.config = { ...this.config, hardwareAcceleration: 'no-preference' };\n" +
+      "\t\t\tthis.decoder.configure(this.config);\n" +
+      "\t\t}\n" +
+      "\t\tthis._needsKeyFrame = true;"
+    ],
+    [
+      "\t\tif (this._decoderFailed) {\n\t\t\tthis._decoderFailed = false;\n\t\t\tthis._recoveries += 1;",
+      "\t\tif (this._decoderFailed) {\n\t\t\tthis._decoderFailed = false;\n\t\t\tthis._recoveries += 1;\n" +
+      "\t\t\tif (this._recoveries === 1) {\n" +
+      "\t\t\t\tthis.config = { ...this.config, hardwareAcceleration: 'prefer-software' };\n" +
+      "\t\t\t}"
+    ],
+    [
+      "\t\tthis.stop();\n\n\t\tif (this.decoder && this.decoder.state !== 'closed')",
+      "\t\tthis.stop();\n\t\twindow.__enchevActiveFrames?.delete(this);\n\n\t\tif (this.decoder && this.decoder.state !== 'closed')"
+    ]
+  ];
+  for (const [before, after] of rewrites) {
+    if (code.split(before).length !== 2) {
+      throw new Error('ActiveFrame desktop recovery patch unexpectedly changed upstream');
+    }
+    code = code.replace(before, after);
+  }
+  return code;
+}
 for (const [relative, content] of Object.entries(frontend)) {
   const target = path.join(output, relative);
   await mkdir(path.dirname(target), { recursive: true });
-  await writeFile(target, content);
+  await writeFile(target, relative === 'ActiveFrame.js' ? recoverDesktopActiveFrame(content) : content);
 }
 const responsiveCss = String.raw`
 html,body{max-width:100%;overflow-x:hidden}
