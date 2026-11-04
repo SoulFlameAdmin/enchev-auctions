@@ -5,8 +5,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import "./live-auctions.css";
 import "./live-d24.css";
 import ProfessionalLiveAuctionUx from "./ProfessionalLiveAuctionUx";
+import EaPremiumAuction from "./EaPremiumAuction";
 
-const LOT_SECONDS=10;
+const LOT_SECONDS=60;
 const RESYNC_INTERVAL_MS=3000;
 const STALE_AFTER_MS=4500;
 const lots=[
@@ -193,7 +194,8 @@ export default function LiveAuctionsPage(){
   const fmt=(v:number)=>`00:${String(v).padStart(2,"0")}`;
 
   return <main id="main-content" className="livePage">
-    <div className="liveUtility"><span><i/> E&A EAST WEST LIVE NETWORK</span><span>Server-session demo · 10 sec per lot</span></div>
+    <EaPremiumAuction current={current} next={next} remaining={remaining} price={price} connectionState={connectionState} bidFeedback={bidFeedback} onBid={bid} onResync={syncClock}/>
+    <div className="liveUtility"><span><i/> E&A EAST WEST LIVE NETWORK</span><span>Server-session demo · 60 sec per lot</span></div>
     <header className="liveHeader">
       <a href="/" className="liveLogo"><img src="/brand/ea-east-west.svg" alt="E&A East West Auctioneers Group 🔥SOULFLAME🔥" style={{width:194,height:66,objectFit:"contain"}}/></a>
       <nav><a href="/inventory">Inventory</a><a className="active" href="/live-auctions">Live auctions</a><a href="/transport">Transport</a><a href="/platform#how">How to buy</a></nav>
@@ -201,7 +203,7 @@ export default function LiveAuctionsPage(){
     </header>
 
     <section className="liveHero">
-      <div><span className="liveEyebrow">● LIVE AUCTION ROOM</span><h1>Live auctions</h1><span className="liveHeroMobileLead">Vehicle previews · Live demo timer · Two-step demo bids</span><p>Demo-only auction: the server-session clock controls each 10-second lot round. A confirmed demo bid updates the session state; prices and outcomes are illustrative, not real-money transactions.</p></div>
+      <div><span className="liveEyebrow">● LIVE AUCTION ROOM</span><h1>Live auctions</h1><span className="liveHeroMobileLead">Vehicle previews · Live demo timer · Two-step demo bids</span><p>Demo-only auction: the server-session clock controls each 60-second lot round. A confirmed demo bid updates the session state; prices and outcomes are illustrative, not real-money transactions.</p></div>
       <div className="liveHeroStatusStack">
         <div
           className={`liveConnectionState is-${connectionState}`}
