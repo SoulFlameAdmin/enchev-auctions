@@ -10,8 +10,8 @@ import {
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
-const COOKIE_NAME = "enchev_live_demo_v2";
-const LOT_DURATION_MS = 10_000;
+const COOKIE_NAME = "enchev_live_demo_v3_60s";
+const LOT_DURATION_MS = 60_000;
 const LOT_IDS = ["EA-10511", "EA-10539", "EA-10603", "EA-10627"] as const;
 const BID_FEEDBACK_SEQUENCE = ["accepted", "leading", "outbid", "rejected"] as const;
 
