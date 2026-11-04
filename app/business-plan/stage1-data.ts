@@ -32,24 +32,24 @@ const custom:Record<string,Preset[]>={
 };
 
 export const stage1Areas=sections.map(section=>{
-  const generated:Preset[]=section.services.map((service,index)=>{
+  const generated:Preset[]=section.services.flatMap((service,index):Preset[]=>{
     const calc=lineCost(section,service,index);
     const track=detailed[section.id].tracks[index%detailed[section.id].tracks.length];
-    const excluded=!enabledByLevel(calc,"bg");
+    if(!enabledByLevel(calc,"bg"))return [];
     const monthlyRaw=service.monthly[0];
     const setupRaw=service.setup[0];
     const mainlyPeople=calc.laborByRoster;
-    return {
+    return [{
       title:service.name,
       description:service.detail,
       includes:track.tasks.slice(0,3),
-      setupExpense:excluded?0:Math.round(setupRaw*0.72),
-      setupLabor:excluded?0:Math.round(setupRaw*0.28),
-      monthlyExpense:excluded?0:mainlyPeople?0:Math.round(monthlyRaw*0.7),
-      monthlyLabor:excluded?0:mainlyPeople?monthlyRaw:Math.round(monthlyRaw*0.3),
-      enabled:!excluded,
+      setupExpense:Math.round(setupRaw*0.72),
+      setupLabor:Math.round(setupRaw*0.28),
+      monthlyExpense:mainlyPeople?0:Math.round(monthlyRaw*0.7),
+      monthlyLabor:mainlyPeople?monthlyRaw:Math.round(monthlyRaw*0.3),
+      enabled:true,
       expenseLabel:mainlyPeople?"Други разходи":"Услуга / доставчик"
-    };
+    }];
   });
   return {
     id:section.id,
