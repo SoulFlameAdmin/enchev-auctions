@@ -56,7 +56,6 @@ export default function StageOneBusinessPlan(){
   const pageCount=Math.max(1,Math.ceil(currentOffers.length/offerPerPage));
   const boundedOfferPage=Math.min(offerPage,pageCount-1);
   const showing=currentOffers.slice(boundedOfferPage*offerPerPage,(boundedOfferPage+1)*offerPerPage);
-  const chosen=currentOffers.find(x=>x.id===expandedOffer);
 
   const selectCategory=(id:string)=>{
     setActiveCategory(id);
@@ -110,24 +109,24 @@ export default function StageOneBusinessPlan(){
                 </button>
                 {expandedOffer===offer.id&&<div className="s1-offer-detail">
                   <p className="s1-desc">{offer.description}</p>
-                  <button className="s1-more" type="button" onClick={()=>setIncludeDescription(v=>!v)}>{includeDescription?"− Скрий дейностите":"+ Какво включва"}</button>
-                  {includeDescription&&<div className="s1-includes">{offer.includes.slice(0,3).map((item,i)=><div key={i}><span>✓</span>{item}</div>)}</div>}
-                  <div className="s1-cost">
-                    <div><span>{offer.expenseLabel}</span><b>{euros(offer.monthlyExpense)}/месец</b></div>
-                    <div><span>Наш труд</span><b>{euros(offer.monthlyLabor)}/месец</b></div>
-                    <div className="s1-cost-total"><strong>Общо</strong><b>{euros(offer.monthlyExpense+offer.monthlyLabor)}/месец</b></div>
-                  </div>
+                  <button className="s1-more" type="button" onClick={()=>{setIncludeDescription(v=>!v);setEditPrices(false);}}>{includeDescription?"← Покажи цените":"+ Какво включва"}</button>
+                  {includeDescription?<div className="s1-includes">{offer.includes.slice(0,3).map((item,i)=><div key={i}><span>✓</span>{item}</div>)}</div>:
+                    editPrices?<div className="s1-edit-grid">
+                      <MoneyInput label="Месечен бюджет" value={offer.monthlyExpense} onChange={n=>save(offer.id,"monthlyExpense",n)}/>
+                      <MoneyInput label="Месечен труд" value={offer.monthlyLabor} onChange={n=>save(offer.id,"monthlyLabor",n)}/>
+                      <MoneyInput label="Начални разходи" value={offer.setupExpense} onChange={n=>save(offer.id,"setupExpense",n)}/>
+                      <MoneyInput label="Начален труд" value={offer.setupLabor} onChange={n=>save(offer.id,"setupLabor",n)}/>
+                    </div>:
+                    <div className="s1-cost">
+                      <div><span>{offer.expenseLabel}</span><b>{euros(offer.monthlyExpense)}/месец</b></div>
+                      <div><span>Наш труд</span><b>{euros(offer.monthlyLabor)}/месец</b></div>
+                      <div className="s1-cost-total"><strong>Общо</strong><b>{euros(offer.monthlyExpense+offer.monthlyLabor)}/месец</b></div>
+                    </div>}
                   <div className="s1-cost-footer">
                     <span>Първоначално: <b>{euros(offer.setupExpense+offer.setupLabor)}</b></span>
                     <label><input type="checkbox" checked={offer.enabled} onChange={e=>toggle(offer.id,e.target.checked)}/> Включи</label>
                   </div>
-                  <button className="s1-edit" type="button" onClick={()=>setEditPrices(x=>!x)}>{editPrices?"− Затвори стойностите":"✎ Редактирай разходите"}</button>
-                  {editPrices&&<div className="s1-edit-grid">
-                    <MoneyInput label="Месечен бюджет" value={offer.monthlyExpense} onChange={n=>save(offer.id,"monthlyExpense",n)}/>
-                    <MoneyInput label="Месечен труд" value={offer.monthlyLabor} onChange={n=>save(offer.id,"monthlyLabor",n)}/>
-                    <MoneyInput label="Начални разходи" value={offer.setupExpense} onChange={n=>save(offer.id,"setupExpense",n)}/>
-                    <MoneyInput label="Начален труд" value={offer.setupLabor} onChange={n=>save(offer.id,"setupLabor",n)}/>
-                  </div>}
+                  {!includeDescription&&<button className="s1-edit" type="button" onClick={()=>setEditPrices(x=>!x)}>{editPrices?"← Покажи цените":"✎ Редактирай разходите"}</button>}
                 </div>}
               </article>)}
             </div>
