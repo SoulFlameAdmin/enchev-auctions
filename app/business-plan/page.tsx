@@ -1,6 +1,7 @@
 "use client";
 import {useMemo,useState} from "react";
 import {marketConfig,sections} from "./data";
+import MasterPlanBlocks from "./MasterPlanBlocks";
 import "./business-plan.css";
 
 type Market=keyof typeof marketConfig;
@@ -82,7 +83,7 @@ export default function BusinessPlanPage(){
  const choose=(id:string)=>{setSelected(id);document.getElementById("bp-detail")?.scrollIntoView({behavior:"smooth",block:"start"});};
  return <main id="main-content" className="bp" lang="bg">
   <div className="bp-container">
-   <div className="bp-top"><div><span className="bp-overline">E&A EAST WEST AUCTIONEERS GROUP</span><h1>Бизнес план <em>&</em> услуги</h1><p>Всичките 16 направления на ENCHEV AUCTIONS — какво изграждаме, колко струва, какви хора трябват и как се печели.</p></div><a className="bp-back" href="/">← Начална страница</a></div>
+   <div className="bp-top"><div><span className="bp-overline">E&A EAST WEST AUCTIONEERS GROUP</span><h1>Бизнес план <em>&</em> услуги</h1><p>16 раздела → услуги → задачи → труд Митко и Борко → всички наши екипи → обща цена за България и Европа.</p></div><a className="bp-back" href="/">← Начална страница</a></div>
    <div className="bp-truth"><strong>ИНВЕСТИЦИОНЕН ПЛАН · НЕ Е ОФЕРТА</strong><span>Всички бюджети са ориентировъчни без ДДС. Трудът на едни и същи хора не се начислява повторно между разделите. Реалните цени се определят след техническо задание и доставни оферти.</span></div>
    <div className="bp-summary">
     <div><span>ОБЛАСТИ</span><b>16</b><small>Бизнес и технологии</small></div>
@@ -95,9 +96,7 @@ export default function BusinessPlanPage(){
    <section id="bp-detail" className="bp-detail">
     <div className="bp-section-header"><div><span className="bp-overline">РАЗДЕЛ {section.id} / 16</span><h2>{section.title}</h2><p>{section.goal}</p></div><span className="bp-detail-icon">{section.icon}</span></div>
     <div className="bp-detail-grid"><div className="bp-panel"><h3>Необходими хора</h3><div className="bp-chips">{section.team.map(t=><span key={t}>{t}</span>)}</div></div><div className="bp-panel"><h3>Последователност</h3><ol>{section.steps.map((x,i)=><li key={i}>{x}</li>)}</ol></div></div>
-    <div className="bp-services-head"><h3>Услуги и ориентировъчни цени</h3><span>€ без ДДС · разход за отделна услуга, НЕ общ сбор</span></div>
-    <div className="bp-service-list">{section.services.map((item,i)=><article className="bp-service" key={i}><div><strong>{item.name}</strong><p>{item.detail}</p><small>Екип: {item.team}{item.phase?" · "+item.phase:""}</small></div><div className="bp-service-price"><span>ЕДНОКРАТНО</span><b>{range(item.setup)}</b><span>МЕСЕЧНО</span><b>{range(item.monthly)}</b></div></article>)}</div>
-    <div className="bp-warning-panel"><b>Контролен риск</b><p>{section.risk}</p></div>
+    <MasterPlanBlocks selected={section} marketing={{adMonthly,creativeCost,toolsCost,staffCost,sales,support,marketers,market}} onMarket={m=>setPreset(m,level)}/>
    </section>
    {selected==="02"&&<section className="bp-marketing" aria-label="Интерактивен маркетинг калкулатор">
     <div className="bp-section-header"><div><span className="bp-overline">MARKETING INTELLIGENCE</span><h2>Маркетинг калкулатор</h2><p>Редактирай бюджетите и виж моделни показвания, кликове, лийдове, потенциални дилъри и общ месечен разход.</p></div><button className="bp-export" onClick={download}>↓ Свали CSV</button></div>
