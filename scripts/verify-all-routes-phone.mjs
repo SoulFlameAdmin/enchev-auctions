@@ -67,7 +67,7 @@ try{
             assert.ok(await page.locator(".eaFuel").isVisible(),"Yellow low-fuel indicator must be visible");
             assert.match(await page.locator(".eaPremiumBidActions").innerText(),/НАДДАЙ.*100/,"Safe demo bid action must be visible");
             const liveGeometry=await page.evaluate(()=>({width:document.documentElement.scrollWidth,car:document.querySelector(".eaPremiumCarPanel")?.getBoundingClientRect().width??0,gauge:document.querySelector(".eaSpeedometer")?.getBoundingClientRect().width??0}));
-            assert.ok(liveGeometry.width<=innerWidth+2,"Premium auction must not overflow mobile width");
+            assert.ok(liveGeometry.width<=viewport.width+2,"Premium auction must not overflow mobile width");
             assert.ok(liveGeometry.car>=viewport.width*.87&&liveGeometry.gauge>=viewport.width*.75,"Premium mobile car and dial must remain readable");
           }else{
           assert.equal(result.dockPosition,"static","Live bid dock overlays cards on mobile");
