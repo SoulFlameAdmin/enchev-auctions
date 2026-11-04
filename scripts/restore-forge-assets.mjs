@@ -344,6 +344,8 @@ if (!forgeIndex.includes('/brand/ea-forge-branding.css')) forgeIndex = forgeInde
 if (!forgeIndex.includes('/brand/ea-cinematic-intro.css')) forgeIndex = forgeIndex.replace('</head>', '<link rel="stylesheet" href="/brand/ea-cinematic-intro.css"></head>');
 if (!forgeIndex.includes('/brand/ea-forge-branding.js')) forgeIndex = forgeIndex.replace('</body>', '<script src="/brand/ea-forge-branding.js" defer></script></body>');
 if (!forgeIndex.includes('/brand/ea-cinematic-intro.js')) forgeIndex = forgeIndex.replace('</body>', '<script src="/brand/ea-cinematic-intro.js" defer></script></body>');
+// Restore the original Forge scroller/canvas lifecycle after either ad exit path.
+if (!forgeIndex.includes('/brand/ea-forge-resume.js')) forgeIndex = forgeIndex.replace('</body>', '<script src="/brand/ea-forge-resume.js" defer></script></body>');
 forgeIndex = forgeIndex.replace(/<title>[^<]*<\/title>/, '<title>E&amp;A East West Auctioneers Group | Vehicle Auctions</title>');
 forgeIndex = forgeIndex.replace(/<meta property="og:site_name" content="[^"]*"/, '<meta property="og:site_name" content="E&amp;A East West Auctioneers Group"');
 await writeFile(forgeIndexPath, forgeIndex);
