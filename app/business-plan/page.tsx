@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { hasEnchevMenuAccess } from "../lib/enchev-menu-access";
-import BusinessPlanClient from "./BusinessPlanClient";
+import FullScreenBusinessPlan from "./FullScreenBusinessPlan";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -19,5 +19,5 @@ export default async function BusinessPlanPage() {
       </div>
     </main>;
   }
-  return <BusinessPlanClient/>;
+  return <FullScreenBusinessPlan/>;
 }
