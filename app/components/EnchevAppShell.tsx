@@ -1,5 +1,6 @@
-import EaOfficialLogo from "./EaOfficialLogo";
 "use client";
+
+import EaOfficialLogo from "./EaOfficialLogo";
 
 import { useEffect, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
