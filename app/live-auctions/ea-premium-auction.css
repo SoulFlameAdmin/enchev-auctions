@@ -1,0 +1,191 @@
+/* E&A premium lobby and live auction. Scoped to /live-auctions only. */
+.livePage:has(> .eaPremium) {width:100%;max-width:none;margin:0;padding:0!important;background:#030303;color:#f9f6f6;}
+.livePage:has(> .eaPremium)>:not(.eaPremium){display:none!important;}
+.eaPremium{--eaRed:#ef091d;--eaEdge:rgba(230,29,45,.43);font-family:Inter,Arial,Helvetica,sans-serif;background:radial-gradient(ellipse at 50% 12%,#22040a,#020203 64%);color:#f7f6f6;min-height:100dvh;overflow:hidden;padding-bottom:30px;}
+.eaPremium *, .eaPremium *::before,.eaPremium *::after{box-sizing:border-box;}
+.eaPremium a{color:inherit;text-decoration:none;}
+.eaPremium button{font:inherit;cursor:pointer;}
+.eaPremium button:focus-visible,.eaPremium a:focus-visible{outline:3px solid #f7334a;outline-offset:3px;}
+.eaPremiumHeader{position:relative;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:8px clamp(18px,4vw,70px);border-bottom:1px solid var(--eaEdge);background:#030303;box-shadow:0 5px 45px rgba(238,5,32,.16);z-index:2;min-height:76px;}
+.eaPremiumBrand{display:block;flex:0 1 350px;min-width:185px;}
+.eaPremiumBrand img{display:block;width:100%;max-height:59px;object-fit:contain;object-position:left;}
+.eaPremiumDesktopLinks{display:flex;gap:clamp(15px,2vw,30px);align-items:center;justify-content:center;}
+.eaPremiumDesktopLinks a,.eaPremiumDesktopLinks button{border:0;background:none;color:#ddd;font-size:13px;font-weight:700;white-space:nowrap;padding:13px 2px;}
+.eaPremiumDesktopLinks .is-current{color:#fff;border-bottom:2px solid #f10d22;}
+.eaPremiumHeaderRight{display:flex;align-items:center;gap:12px;}
+.eaPremiumLive,.eaLivePill{font-weight:900;letter-spacing:.11em;font-size:11px;color:#fff;border:1px solid #d51427;background:linear-gradient(120deg,#e50718,#550207);padding:10px 15px;border-radius:8px;white-space:nowrap;box-shadow:0 0 22px rgba(238,5,32,.35);}
+.eaPremiumLive i{display:inline-block;width:8px;height:8px;background:#fff;border-radius:50%;margin-right:3px;}
+.eaPremiumHeaderRight button{height:40px;min-width:40px;background:#09090b;border:1px solid #473238;border-radius:10px;color:white;font-size:22px;}
+.eaPremiumDropdown{position:absolute;top:76px;right:15px;z-index:15;display:grid;gap:3px;padding:12px;min-width:210px;border:1px solid var(--eaEdge);background:#101014;box-shadow:0 18px 35px #000c;}
+.eaPremiumDropdown a,.eaPremiumDropdown button{border:0;border-radius:6px;text-align:left;padding:12px;background:transparent;color:#fff;font-size:14px;}
+.eaPremiumDropdown a:hover,.eaPremiumDropdown button:hover{background:#64030e;}
+.eaPremiumLobby,.eaPremiumAuctionRoom{width:min(1560px,100% - 38px);margin:20px auto 0;}
+.eaLobbyScene{position:relative;min-height:350px;overflow:hidden;border:1px solid #601a20;border-radius:20px;background:linear-gradient(90deg,#000 0%,#120108 65%,#060708 100%);box-shadow:0 35px 100px #0009;}
+.eaLobbyImage{position:absolute;inset:0;background:linear-gradient(90deg,#010102 1%,#090307e8 36%,#03030338 75%),linear-gradient(180deg,transparent 65%,#000b),url("/images/enchev-lamborghini-hero.jpg") center right / cover no-repeat;filter:saturate(1.15);}
+.eaLobbyScene::after{content:"";position:absolute;right:-8%;top:-70%;width:50%;aspect-ratio:1;border:2px solid #f30727;border-radius:50%;box-shadow:0 0 70px #eb08267a, inset 0 0 50px #e40e25a3;transform:perspective(800px) rotateY(-25deg);pointer-events:none;}
+.eaLobbySceneContent{position:relative;z-index:1;width:min(700px,75%);padding:32px clamp(20px,5vw,75px) 35px;}
+.eaLobbyEyebrow{display:block;color:#f7e9e9;font-size:10px;font-weight:900;letter-spacing:.16em;margin-bottom:18px;}
+.eaLobbyScene h1{font-size:clamp(42px,6vw,88px);line-height:.95;letter-spacing:-.065em;margin:22px 0 16px;font-weight:1000;text-shadow:0 8px 28px #000;}
+.eaLobbyScene h1 em{font-style:normal;color:#ff1531;text-shadow:0 0 35px #c20521b0;}
+.eaLobbyScene p{max-width:480px;color:#d4caca;font-size:clamp(12px,1.3vw,16px);line-height:1.6;}
+.eaLobbySceneBadges{display:flex;flex-wrap:wrap;gap:12px;margin-top:24px;}
+.eaLobbySceneBadges span{font-size:10px;letter-spacing:.05em;color:#fff;border:1px solid #64242e;border-radius:8px;padding:10px 12px;background:#12060ccc;}
+.eaLobbyDashboard{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.85fr) minmax(0,.75fr);gap:17px;margin-top:18px;}
+.eaLobbyDashboard>section{min-width:0;border:1px solid #48212a;background:linear-gradient(160deg,#140b0e,#080809);padding:21px;border-radius:18px;box-shadow:0 10px 42px #0007;}
+.eaSectionKicker{font-size:11px;font-weight:900;letter-spacing:.14em;color:#f5c3c8;}
+.eaLobbyFeature{display:flex;flex-direction:column;gap:11px;}
+.eaLobbyFeature img{display:block;width:100%;height:225px;object-fit:cover;object-position:center;border-radius:12px;border:1px solid #5c1c28;}
+.eaLobbyFeature strong{font-size:clamp(19px,2vw,27px);display:block;}
+.eaLobbyFeature small{display:block;color:#baabad;margin-top:6px;}
+.eaLobbyWaiting{text-align:center;}
+.eaLobbyWaiting>.eaSectionKicker{display:block;text-align:left;}
+.eaLobbyRing{margin:10px auto 13px;width:min(210px,74%);aspect-ratio:1;border-radius:50%;border:7px solid #e90b25;box-shadow:inset 0 0 30px #ad001b,0 0 35px #c800226a;background:radial-gradient(circle,#26010c,#060507 75%);display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;}
+.eaLobbyRing>span{font-size:36px;color:#f51a36;line-height:1;}
+.eaLobbyRing strong{font-size:24px;letter-spacing:-.05em;}
+.eaLobbyRing small{font-size:10px;color:#bba5a6;}
+.eaLobbySession{display:grid;gap:4px;margin-bottom:16px;}
+.eaLobbySession span{font-size:11px;color:#aaa;}
+.eaLobbySession b{font-size:14px;}
+.eaLobbySession small{font-size:9px;color:#8e7a80;}
+.eaLobbyActions{display:grid;gap:10px;}
+.eaLobbyActions button{width:100%;min-height:48px;border-radius:10px;font-size:13px;font-weight:900;border:1px solid #d70b25;background:#17070d;color:white;}
+.eaLobbyActions button.is-ready{border-color:#2aca6f;color:#c8ffd8;}
+.eaLobbyActions .eaRedAction{background:linear-gradient(130deg,#fa162d,#9c0219);box-shadow:0 8px 30px #ae001967;}
+.eaLobbyDetails{display:grid;align-content:start;gap:12px;}
+.eaServerStatus{border:1px solid #ed995a;background:#3a1c0c;color:#ffd0b5;border-radius:9px;padding:13px 10px;font-size:11px;font-weight:900;}
+.eaServerStatus.online{background:#062b17;border-color:#1ec874;color:#92ffb8;}
+.eaLobbyDetailLabel{color:#b6a5a7;font-size:11px;margin-top:4px;}
+.eaLobbyDetails>b{font-size:17px;}
+.eaLobbyDetails>strong{font-size:49px;letter-spacing:-.07em;color:#ff2443;font-variant-numeric:tabular-nums;text-shadow:0 0 18px #ff0d3380;}
+.eaLobbyDetails>button{border:1px solid #793039;color:#eee;background:#170d0e;border-radius:8px;min-height:44px;font-size:11px;font-weight:900;}
+.eaDemoDisclosure{text-align:center;color:#a88890;font-size:10px;line-height:1.6;margin:18px auto 10px;max-width:900px;}
+.eaPremiumRoomRibbon{display:flex;align-items:center;gap:15px;min-height:54px;border-bottom:1px solid var(--eaEdge);margin-bottom:13px;}
+.eaPremiumRoomRibbon strong{flex:1;font-size:12px;letter-spacing:.06em;}
+.eaPremiumRoomRibbon>span:last-of-type{font-size:10px;color:#bca8a8;}
+.eaPremiumRoomRibbon button{color:#eee;background:#111;border:1px solid #563138;padding:10px;border-radius:8px;font-size:12px;}
+.eaPremiumAuctionGrid{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1.1fr) minmax(250px,.7fr);gap:16px;align-items:stretch;}
+.eaPremiumCarPanel,.eaPremiumControlPanel,.eaPremiumOffers{min-width:0;border:1px solid #442027;background:radial-gradient(ellipse at 50% 20%,#25030b,#040404 75%);border-radius:16px;overflow:hidden;box-shadow:0 12px 40px #0009;}
+.eaPremiumCarPanel{padding:13px;}
+.eaPremiumCarBackdrop{position:relative;height:clamp(280px,34vw,490px);border-radius:13px;overflow:hidden;background:#100606;}
+.eaPremiumCarBackdrop>img{width:100%;height:100%;object-fit:cover;object-position:center;filter:contrast(1.12) saturate(.86);}
+.eaPremiumCarBackdrop::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#000b,transparent 30%,transparent 58%,#000b),linear-gradient(90deg,#06020478,transparent);}
+.eaPremiumCarHeading{position:absolute;left:22px;right:22px;top:20px;z-index:1;text-shadow:0 2px 13px #000;}
+.eaPremiumCarHeading small{font-size:11px;color:#fbcaca;letter-spacing:.14em;}
+.eaPremiumCarHeading h1{font-size:clamp(19px,2.5vw,34px);line-height:1.2;margin:5px 0;}
+.eaPremiumCarHeading p{font-size:12px;color:#e2d6d6;margin:4px 0;}
+.eaCarLiveBadge{position:absolute;z-index:2;left:20px;bottom:18px;border-radius:8px;padding:9px 15px;background:#d60b24;color:#fff;font-weight:1000;font-size:12px;}
+.eaPremiumGallery{display:flex;gap:10px;justify-content:center;margin-top:11px;}
+.eaPremiumGallery button{width:100px;height:68px;padding:2px;border-radius:9px;border:1px solid #72303b;background:#000;overflow:hidden;}
+.eaPremiumGallery button[aria-pressed="true"]{border:2px solid #ed1633;box-shadow:0 0 14px #ef142f80;}
+.eaPremiumGallery img{width:100%;height:100%;object-fit:cover;}
+.eaPremiumControlPanel{padding:12px 14px 18px;text-align:center;}
+.eaSpeedometer{width:100%;max-width:600px;margin:0 auto;position:relative;aspect-ratio:600/305;}
+.eaSpeedometerFace{width:100%;height:100%;display:block;filter:drop-shadow(0 3px 12px #f40c2850);}
+.eaSpeedometerNeedle{transition:x2 .22s linear,y2 .22s linear;}
+.eaDialOverlay{position:absolute;top:22%;left:0;right:0;display:flex;align-items:center;flex-direction:column;gap:4px;pointer-events:none;}
+.eaDialCaption{font-size:clamp(9px,1.15vw,14px);font-weight:900;letter-spacing:.09em;text-shadow:0 2px 12px #000;}
+.eaDialDigital{font-family:Impact,"Arial Narrow",Arial,sans-serif;font-style:italic;font-size:clamp(42px,5vw,78px);font-weight:900;letter-spacing:.01em;color:#ff2039;text-shadow:0 0 18px #f10c2899;font-variant-numeric:tabular-nums;line-height:1;}
+.eaFuel{font-size:clamp(19px,2.6vw,29px);color:#ffe000;filter:drop-shadow(0 0 7px #ffb400);line-height:1;}
+.eaDialRhythm{font-size:clamp(7px,.8vw,10px);color:#ffe27c;font-weight:900;letter-spacing:.04em;max-width:78%;}
+.eaSpeedometer.is-critical .eaDialDigital{animation:eaUrgentPulse .8s ease-in-out infinite alternate;}
+@keyframes eaUrgentPulse{from{text-shadow:0 0 8px #d30b1b}to{text-shadow:0 0 28px red;}}
+.eaCurrentOffer{margin:0 auto 11px;border-top:1px solid #69323c;padding-top:11px;display:grid;gap:1px;}
+.eaCurrentOffer span{font-size:11px;color:#ddd;letter-spacing:.12em;font-weight:900;}
+.eaCurrentOffer strong{font-size:clamp(31px,3.9vw,62px);font-weight:1000;white-space:nowrap;letter-spacing:-.05em;color:#fff;text-shadow:0 2px 20px #e5133a6b;}
+.eaPremiumBidActions{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
+.eaPremiumBidActions button{min-height:60px;border-radius:10px;border:1px solid #e72b43;color:#fff;font-size:clamp(11px,1.1vw,15px);font-weight:1000;padding:9px;line-height:1.2;}
+.eaPremiumBidActions .eaOutlineBid,.eaPremiumBidActions .eaConfirmBid{background:linear-gradient(135deg,#f91b37,#9d001d);box-shadow:0 4px 26px #da003b70;}
+.eaPremiumBidActions .eaConfirmBid{animation:eaUrgentPulse .5s infinite alternate;}
+.eaPremiumBidActions .eaSecondaryBid{background:linear-gradient(135deg,#222,#080808);border-color:#727272;}
+.eaPremiumBidActions button:disabled{opacity:.45;cursor:not-allowed;}
+.eaPremiumBidResult{margin:9px 0;padding:10px;background:#130d0f;border:1px solid #573038;border-radius:9px;font-size:11px;color:#d9b5c0;min-height:37px;}
+.eaPremiumBidResult.is-accepted,.eaPremiumBidResult.is-leading{color:#9dffbf;border-color:#31c176;}
+.eaPremiumBidResult.is-rejected{color:#fda5ae;}
+.eaPremiumClockCaption{font-size:10px;color:#988185;line-height:1.5;}
+.eaPremiumOffers{padding:16px;}
+.eaPremiumOffers>div:first-child{display:flex;justify-content:space-between;gap:6px;align-items:center;border-bottom:1px solid #53222b;padding-bottom:13px;}
+.eaPremiumOffers>div:first-child>span:last-child{font-size:9px;color:#8f757d;}
+.eaOfferEntry{display:grid;grid-template-columns:35px 1fr;gap:9px;align-items:center;margin:16px 0 8px;background:#170609;padding:11px;border-radius:12px;border:1px solid #8b1a2f;}
+.eaOfferAvatar{width:30px;height:30px;border-radius:50%;border:1px solid #ea263c;display:grid;place-items:center;}
+.eaOfferEntry b,.eaOfferEntry small{display:block;font-size:11px;}
+.eaOfferEntry small{color:#ab979b;margin-top:3px;}
+.eaOfferEntry strong{grid-column:1/-1;font-size:clamp(21px,2vw,28px);color:#ff2443;}
+.eaPremiumOffers>p{font-size:12px;line-height:1.55;color:#b39da0;}
+.eaNextLot{border-top:1px solid #54303a;margin-top:22px;padding-top:16px;display:grid;gap:8px;}
+.eaNextLot img{width:100%;height:155px;object-fit:cover;border-radius:10px;}
+.eaNextLot b{font-size:13px;}
+.eaNextLot small{color:#aaa;}
+.eaPremiumSpecs{margin-top:13px;border:1px solid #49272e;border-radius:13px;min-height:73px;background:#0b080a;display:flex;align-items:center;justify-content:space-around;flex-wrap:wrap;gap:12px;padding:12px 18px;}
+.eaPremiumSpecs span{font-size:11px;color:#b68e96;}
+.eaPremiumSpecs b{color:#fff;font-size:12px;}
+.eaPremiumBottomNav{display:none;}
+@media(max-width:1120px){.eaPremiumDesktopLinks{display:none}.eaPremiumAuctionGrid{grid-template-columns:minmax(0,1.1fr) minmax(0,1fr)}.eaPremiumOffers{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:14px}.eaPremiumOffers>div:first-child{grid-column:1/-1}.eaNextLot{margin-top:0;border-top:0;padding:0}.eaLobbyDashboard{grid-template-columns:1fr 1fr}.eaLobbyDetails{grid-column:1/-1;grid-template-columns:repeat(3,1fr);align-items:center;}.eaLobbyDetails .eaSectionKicker,.eaLobbyDetails .eaServerStatus,.eaLobbyDetails>button{grid-column:1/-1}.eaLobbyDetails>strong{font-size:35px}}
+@media(max-width:760px){
+ .eaPremium{padding-bottom:calc(79px + env(safe-area-inset-bottom));}
+ .eaPremiumHeader{min-height:62px;padding:7px 14px;gap:8px;position:sticky;top:0;z-index:20;}
+ .eaPremiumBrand{flex:1;min-width:0;max-width:240px}.eaPremiumBrand img{max-height:40px;}
+ .eaPremiumLive{font-size:9px;padding:8px 9px;}
+ .eaPremiumHeaderRight{gap:5px}.eaPremiumHeaderRight button{height:35px;min-width:35px;font-size:18px;}
+ .eaPremiumDropdown{top:60px;}
+ .eaPremiumLobby,.eaPremiumAuctionRoom{width:calc(100% - 20px);margin-top:10px;}
+ .eaLobbyScene{min-height:295px;border-radius:13px;}
+ .eaLobbyImage{background:linear-gradient(180deg,#000b 0%,#0008 45%,#000d 100%),url("/images/enchev-lamborghini-hero.jpg") center / cover no-repeat;}
+ .eaLobbyScene::after{top:-45%;right:-38%;width:82%;opacity:.6;}
+ .eaLobbySceneContent{width:100%;padding:24px 19px;display:flex;flex-direction:column;align-items:flex-start;}
+ .eaLobbyEyebrow{font-size:9px;margin-bottom:12px;}
+ .eaLobbyScene h1{font-size:clamp(44px,12vw,66px);margin:19px 0 11px;}
+ .eaLobbyScene p{font-size:12px;max-width:92%;}
+ .eaLobbySceneBadges{gap:5px;margin-top:12px;}
+ .eaLobbySceneBadges span{font-size:8px;padding:8px 7px;}
+ .eaLobbyDashboard{grid-template-columns:1fr;gap:10px;margin-top:10px;}
+ .eaLobbyDashboard>section{padding:14px;border-radius:14px;}
+ .eaLobbyFeature img{height:176px;}
+ .eaLobbyWaiting{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:center;}
+ .eaLobbyWaiting>.eaSectionKicker{grid-column:1/-1;}
+ .eaLobbyRing{grid-row:2/4;grid-column:1;margin:5px auto;max-width:160px;width:100%;}
+ .eaLobbyRing strong{font-size:17px;}.eaLobbyRing>span{font-size:25px;}
+ .eaLobbySession{grid-column:2;margin:0;}
+ .eaLobbyActions{grid-column:2;}
+ .eaLobbyActions button{font-size:10px;min-height:45px;}
+ .eaLobbyDetails{grid-template-columns:1fr 1fr;gap:7px;}
+ .eaLobbyDetails>strong{font-size:32px;}
+ .eaLobbyDetails>button{min-height:42px;}
+ .eaPremiumRoomRibbon{gap:7px;min-height:38px;padding-bottom:8px;margin-bottom:8px;}
+ .eaPremiumRoomRibbon strong{font-size:9px;}.eaPremiumRoomRibbon .eaLivePill{font-size:8px;padding:7px;}
+ .eaPremiumRoomRibbon>span:last-of-type{display:none;}
+ .eaPremiumRoomRibbon button{font-size:10px;padding:7px;}
+ .eaPremiumAuctionGrid{grid-template-columns:1fr;gap:8px;}
+ .eaPremiumCarPanel{padding:6px;border-radius:13px;}
+ .eaPremiumCarBackdrop{height:clamp(185px,54vw,280px);border-radius:10px;}
+ .eaPremiumCarHeading{left:13px;top:10px;}
+ .eaPremiumCarHeading small{font-size:9px;}
+ .eaPremiumCarHeading h1{font-size:20px;}
+ .eaPremiumCarHeading p{font-size:9px;}
+ .eaCarLiveBadge{left:10px;bottom:10px;font-size:9px;padding:5px 9px;}
+ .eaPremiumGallery{margin-top:6px;}
+ .eaPremiumGallery button{width:73px;height:46px;}
+ .eaPremiumControlPanel{padding:7px 10px 12px;}
+ .eaSpeedometer{max-width:490px;}
+ .eaDialCaption{font-size:clamp(9px,2.5vw,13px);}
+ .eaDialDigital{font-size:clamp(45px,12vw,72px);}
+ .eaFuel{font-size:clamp(20px,5vw,27px);}
+ .eaDialRhythm{font-size:clamp(8px,1.9vw,11px);}
+ .eaCurrentOffer{margin-top:-1px;padding-top:7px;}
+ .eaCurrentOffer span{font-size:9px;}
+ .eaCurrentOffer strong{font-size:clamp(32px,8.8vw,48px);}
+ .eaPremiumBidActions button{min-height:57px;font-size:11px;}
+ .eaPremiumClockCaption{font-size:9px;}
+ .eaPremiumOffers{grid-column:1;grid-template-columns:1fr;gap:7px;padding:12px;}
+ .eaPremiumOffers>div:first-child{grid-column:1;}
+ .eaNextLot{grid-template-columns:82px 1fr;column-gap:10px;align-items:center;border-top:1px solid #54303a;padding-top:10px;margin-top:2px;}
+ .eaNextLot .eaSectionKicker{grid-column:1/-1;}
+ .eaNextLot img{width:82px;height:70px;grid-row:2/4;}
+ .eaPremiumSpecs{gap:8px;justify-content:flex-start;}
+ .eaPremiumSpecs span{font-size:10px;}
+ .eaPremiumBottomNav{display:flex;position:fixed;z-index:30;bottom:0;left:0;right:0;justify-content:space-around;align-items:center;padding:8px 8px calc(8px + env(safe-area-inset-bottom));background:#070508f9;border-top:1px solid #a1051b;box-shadow:0 -4px 29px #000a;}
+ .eaPremiumBottomNav button,.eaPremiumBottomNav a{background:none;border:0;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#f0dddd;font-size:21px;min-height:45px;flex:1;}
+ .eaPremiumBottomNav small{font-size:10px;margin-top:1px;}
+ .eaPremiumBottomNav .selected{color:#ff2e46;}
+}
+@media(prefers-reduced-motion:reduce){.eaSpeedometerNeedle{transition:none}.eaSpeedometer.is-critical .eaDialDigital{animation:none;}}
+@media(forced-colors:active){.eaPremium button:focus-visible{outline-color:Highlight}.eaPremium{background:Canvas;color:CanvasText}.eaPremiumLobby section,.eaPremiumAuctionGrid>section,.eaPremiumOffers{background:Canvas;color:CanvasText;border-color:CanvasText}}
