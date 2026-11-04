@@ -6,6 +6,12 @@
   const reduced=window.matchMedia?.("(prefers-reduced-motion: reduce)");
   const finePointer=window.matchMedia?.("(pointer:fine)");
   const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+  // Screenshot-calibrated extremes (694px x 1276px reference viewport):
+  // white-heavy: red starts at right edge ~38.5% down and bottom ~38.5% across;
+  // red-heavy: red starts at top ~51% across and left edge ~51% down.
+  // 0 = neutral diagonal. Both colors must ALWAYS remain visible.
+  const MIN_LIQUID=-0.385; // maximum white, k=1.385
+  const MAX_LIQUID=0.49;   // maximum red,   k=0.51
   let current=null,base=null,n=0,betaSum=0,gammaSum=0;
   let target=0,liquid=0,velocity=0,phase=0,raf=0,last=0,scheduled=false;
   let sensorSeen=false,permissionAsked=false,gsapRequested=false,logoRed=false;
@@ -25,8 +31,8 @@
     if(!current)return;
     const w=current.clientWidth||window.innerWidth,h=current.clientHeight||window.innerHeight;
     if(w<1||h<1)return;
-    const k=clamp(1-amount,0,2);
-    // k=0: full RED; k=1: reference diagonal; k=2: full WHITE.
+    const k=clamp(1-amount,1-MAX_LIQUID,1-MIN_LIQUID);
+    // Only the two photographed limits are allowed (never all red/white).
     const a=k<=1?{x:k*w,y:0}:{x:w,y:(k-1)*h};
     const b=k<=1?{x:0,y:k*h}:{x:(k-1)*w,y:h};
     const dx=b.x-a.x,dy=b.y-a.y,length=Math.hypot(dx,dy);
@@ -64,7 +70,10 @@
     if(now-last<pace){raf=requestAnimationFrame(step);return;}
     last=now;
     velocity=(velocity+(target-liquid)*.047)*.84;
-    liquid=clamp(liquid+velocity,-1.07,1.07);
+    liquid+=velocity;
+    // Hard-stop the spring at BOTH screenshot edges: no overshoot on fast tilts.
+    if(liquid<=MIN_LIQUID){liquid=MIN_LIQUID;if(velocity<0)velocity=0;}
+    if(liquid>=MAX_LIQUID){liquid=MAX_LIQUID;if(velocity>0)velocity=0;}
     phase+=Math.min(.3,Math.abs(velocity)*7);
     const settled=Math.abs(target-liquid)<.0006&&Math.abs(velocity)<.0005;
     if(settled){liquid=target;velocity=0;}
@@ -89,14 +98,14 @@
       beta=-sign*gamma;gamma=rotated;
     }
     // Upper-left (negative) => more white; down-right (positive) => more red.
-    target=clamp((gamma*.68+beta*.32)/29,-1.03,1.03);
+    target=clamp((gamma*.68+beta*.32)/29,MIN_LIQUID,MAX_LIQUID);
     paint();
   }
   function pointer(e) {
     // Desktop preview: bottom-right cursor simulates the down-right phone tilt.
     if(!current||sensorSeen||reduced?.matches||!finePointer?.matches)return;
     const dx=e.clientX/window.innerWidth-.5,dy=e.clientY/window.innerHeight-.5;
-    target=clamp((dx*.62+dy*.38)*2,-1,1);
+    target=clamp((dx*.62+dy*.38)*2,MIN_LIQUID,MAX_LIQUID);
     paint();
   }
   function requestMotion() {
