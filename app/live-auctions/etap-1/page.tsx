@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import Etap1DemoVehicle from "./Etap1DemoVehicle";
+import CinematicLobby from "./CinematicLobby";
 import "./etap1.css";
+import "./lobby-premium.css";
 
 type Role = "admin"|"mitko"|"borko"|"enchev";
 type Bid = {sequence:number;role:string;amount:number;at:string};
@@ -451,7 +453,7 @@ export default function EnchevStageOnePage(){
   return <main id="main-content" className={"eaEtap1 eaRoom"+(showAuction&&bidder?" eaHasBidDock":"")}>
     <header className="eaRoomHeader">
       <a className="eaRoomLogo" href="/" aria-label="ENCHEV Home">
-        <strong>ENCHEV</strong><span>AUCTIONS</span>
+        <img src="/brand/ea-official-dark.svg" alt="E&A East and West Auctioneers Group" />
       </a>
       <div className="eaRoomTitle">
         <strong><span className="eaLiveDot"/> LIVE AUCTION</strong>
@@ -512,29 +514,13 @@ export default function EnchevStageOnePage(){
         <small>Достъпът е само за поканени участници в демото.</small>
       </form>
     </section>:<div className="eaRoomContent">
-      {preparingRound&&<section className={"eaReadyCard"+(status==="countdown"?" eaCountdownActive":"")} aria-label="Participant readiness">
-        <img className="eaLobbyVehiclePhoto" src={gClassPhotos.FRONT} alt="Black Mercedes-Benz G-Class reference vehicle" loading="eager" decoding="async"/>
-        <div className="eaLobbyVehicleShade"/>
-        <div className="eaReadyText">
-          <span className="eaEyebrow"><span className="eaLiveDot"/> {status==="countdown"?"ЗАЛАТА Е ЗАКЛЮЧЕНА":"СЛЕДВАЩ ТЪРГ"}</span>
-          <h2>{status==="countdown"?"ТЪРГЪТ ЗАПОЧВА СЛЕД "+String(Math.floor(countdownRemaining/60)).padStart(2,"0")+":"+String(countdownRemaining%60).padStart(2,"0"):status==="live"?"Търгът е в ход — изчакайте следващия етап":((lobby?.count??0)<minPlayers||!corePresent)?"Изчакваме поканените участници":myReady?"Вие сте готови.":"Готови ли сте за старт?"}</h2>
-          <div className="eaReadyPeople">{(lobby?.participants??[]).map(person=>
-            <span className={person.ready?"is-ready":""} key={person.role}>{person.ready?"●":"○"} {labelRole(person.role)} {person.ready&&"· ГОТОВ"}</span>)}
-          </div>
-          <p>{status==="countdown"?"3/3 готови. Залата е заключена и наддаването ще се отвори автоматично, когато таймерът стигне нула.":status==="live"
-            ?"Този търг е започнал без текущия ви вход. След края натиснете „ГОТОВ СЪМ“ за следващия."
-            :((lobby?.count??0)<minPlayers||!corePresent)?"Митко, Борко и Енчев трябва да влязат, да зададат ДЕМО бюджетите си и всички да натиснат „ГОТОВ СЪМ“."
-            :(lobby?.readyCount??0)===(lobby?.count??0)?"Стартира отброяването…":"И тримата трябва да натиснат „ГОТОВ СЪМ“, за да започне отброяването."}</p>
-        </div>
-        <div className="eaReadyControl">
-          <span>{status==="countdown"?"3/3 ГОТОВИ · ЗАКЛЮЧЕНО":(lobby?.readyCount??0)+"/"+(lobby?.count??0)+" ГОТОВИ"}</span>
-          {status==="countdown"&&<strong className="eaCountdownNumber">{String(Math.floor(countdownRemaining/60)).padStart(2,"0")}:{String(countdownRemaining%60).padStart(2,"0")}</strong>}
-          {participant?(status==="live"||status==="countdown"
-            ?<small>{status==="countdown"?"Наддаването ще се отключи автоматично.":"Нов вход? Изчакайте текущият търг да приключи."}</small>
-            :<button type="button" onClick={()=>void setReady(!myReady)} disabled={!connected||busy||(Number(wallet?.lotBudget??0)<16300&&!myReady)} className={myReady?"is-ready":""}>{busy?"ОБНОВЯВАНЕ…":myReady?"✓ ГОТОВ":"ГОТОВ СЪМ →"}</button>
-          ):<small>Админът не се брои като участник.</small>}
-        </div>
-      </section>}
+      {preparingRound&&<CinematicLobby
+        status={status} lobby={lobby} countdownRemaining={countdownRemaining}
+        connected={connected} busy={busy} participant={participant} myReady={myReady}
+        minPlayers={minPlayers} corePresent={corePresent}
+        canReady={connected&&!busy&&(Number(wallet?.lotBudget??0)>=16300||myReady)}
+        onReady={next=>{void setReady(next);}}
+      />}
       {role==="admin"&&<div className="eaMonitorEntry"><a href="/live-auctions/etap-1/admin" aria-label="Open live admin dashboard">▣ OPEN ADMIN CONTROL ROOM →</a><small>Full-screen PC monitor · LIVE roster · ГОТОВ · active bidders</small></div>}
       {role==="admin"&&preparingRound&&<p className="eaOperatorNote">🔒 The first round starts on three bidder logins; later rounds require three ГОТОВ clicks. The operator never starts or blocks the auction.</p>}
       {participant&&status!=="live"&&status!=="countdown"&&<section className="eaDemoWallet" aria-label="ДЕМО сметка и лимит">
