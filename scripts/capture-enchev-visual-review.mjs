@@ -58,10 +58,12 @@ try{
           await play.click();
           await page.locator(".eaPDBotRoster").waitFor({state:"visible",timeout:10000});
           const startedAt=Date.now();
+          if(await page.locator(".eaPDBotRoster>div.is-here").count()!==0)throw Error("Bot lobby must start empty");
+          await page.waitForTimeout(4250);
+          const joined=await page.locator(".eaPDBotRoster>div.is-here").count();
+          if(joined!==3)throw Error("Expected all three bots to join within the 5-second lobby; got "+joined);
           await page.locator(".eaPDAuctionLayout").waitFor({state:"visible",timeout:12000});
           if(Date.now()-startedAt<3800)throw Error("5-second bot entrance was skipped");
-          const joined=await page.locator(".eaPDBotRoster>div.is-here").count().catch(()=>3);
-          if(joined!==3)console.log("Bot join completed at auction switch; prior roster is unmounted");
           if(!await page.locator(".eaPDGaugeSvg").isVisible())throw Error("Speedometer missing");
           if(!await page.locator(".eaPDTime").isVisible())throw Error("Countdown missing");
           const pre=await page.locator(".eaPDPrice strong").innerText();
