@@ -6,6 +6,6 @@
 :where(html[data-theme="light"],html.light,body.light,body.theme-light,[data-theme="light"],.theme-light,.light-theme,.bg-white,.bg-light) .eaOfficialLogoOnLight{visibility:visible}
 .eaAppBrand .eaOfficialLogo{width:clamp(185px,21vw,300px)}
 .eaAppMobileTop .eaOfficialLogo{width:min(250px,70vw)}
-.eaHeroBrand{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));z-index:7;width:min(430px,calc(100vw - 32px));pointer-events:none}
+.eaHeroBrand{position:fixed;left:50%;transform:translateX(-50%);top:max(18px,env(safe-area-inset-top));right:auto;bottom:auto;z-index:7;width:min(390px,calc(100vw - 120px));pointer-events:none;display:flex;justify-content:center;align-items:center}
 .eaHeroBrand .eaOfficialLogo{width:100%;filter:drop-shadow(0 3px 12px rgba(0,0,0,.75))}
-@media(max-width:760px){.eaHeroBrand{right:max(9px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));width:min(255px,65vw)}}
+@media(max-width:760px){.eaHeroBrand{top:max(24px,env(safe-area-inset-top));width:min(235px,calc(100vw - 132px))}}
