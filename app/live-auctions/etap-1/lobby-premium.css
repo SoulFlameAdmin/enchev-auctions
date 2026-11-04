@@ -497,3 +497,33 @@ body:has(.eaEtap1) .eaAppShell{display:none!important}
  .eaGuestStage .eaLxControlDeck{padding:17px 15px}
  .eaGuestStage .eaLxMobileCta{scroll-margin-top:80px}
 }
+
+/* Independent local PLAY DEMO entrypoint for guests and invite-only participants. */
+.eaLxMobilePlayDemo{display:none}
+.eaRoom .eaLxReadyAction .eaLxDesktopPlayDemo{
+  display:grid;place-items:center;width:100%;min-height:66px;
+  border:1px solid #f6465c;border-radius:14px;
+  background:linear-gradient(145deg,#ff344f,#b50028 64%,#630016);
+  color:#fff;font-size:17px;font-weight:1000;letter-spacing:.06em;
+  box-shadow:0 6px 30px #d6002c83,inset 0 2px #ffe4e67e;
+  text-shadow:0 1px 3px #000a;
+}
+.eaRoom .eaLxReadyAction .eaLxDesktopPlayDemo:active{transform:translateY(1px)}
+@media(max-width:700px){
+ .eaLxDesktopPlayDemo{display:none!important}
+ .eaRoom .eaLxMobileExtras .eaLxMobilePlayDemo{
+    display:flex;justify-content:center;align-items:center;flex-direction:column;gap:5px;
+    width:100%;min-height:72px;margin-top:14px;
+    border:1px solid #ff546b;border-radius:16px;
+    background:linear-gradient(145deg,#fb4963,#f00930 26%,#97001b 85%);
+    color:#fff;
+    font-size:20px;font-weight:1000;letter-spacing:.045em;
+    box-shadow:0 4px 21px #de053c88,inset 0 1px #ffffffa6;
+    text-shadow:0 1px 5px #000b;
+ }
+ .eaRoom .eaLxMobileExtras .eaLxMobilePlayDemo small{
+    font-size:10px;letter-spacing:.1em;font-weight:950;color:#fff4f6
+ }
+ .eaLxMobileCta{margin-top:9px;min-height:45px;background:linear-gradient(135deg,#292629,#09090d)!important;border-color:#80737a!important;box-shadow:0 3px 17px #0007!important;font-size:13px}
+ .eaRoom .eaLxReadyAction .eaLxGuestEnter{min-height:52px}
+}
