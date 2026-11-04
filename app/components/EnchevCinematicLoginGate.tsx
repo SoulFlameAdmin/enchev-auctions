@@ -27,6 +27,7 @@ export default function EnchevCinematicLoginGate() {
   const entryStartedRef=useRef(false);
   const entryRetryRef=useRef<ReturnType<typeof setTimeout>|null>(null);
   const wakeTimersRef=useRef<Array<ReturnType<typeof setTimeout>>>([]);
+  const wakeObserverRef=useRef<MutationObserver|null>(null);
 
   const show=useCallback(()=>{
     // Once the Forge app has actually started, never replay the advert.
@@ -64,6 +65,7 @@ export default function EnchevCinematicLoginGate() {
     if(exitTimer.current!==null)clearTimeout(exitTimer.current);
     if(entryRetryRef.current!==null)clearTimeout(entryRetryRef.current);
     wakeTimersRef.current.forEach(clearTimeout);
+    wakeObserverRef.current?.disconnect();
   },[]);
 
   const startHomepageAfterAd=useCallback(()=>{
@@ -97,31 +99,57 @@ export default function EnchevCinematicLoginGate() {
       try{enter.click();}
       finally{replayingEnterRef.current=false;}
     }
-    // The native Forge loader animates out asynchronously and keeps #page
-    // inert until it has finished. Do NOT force-remove inert or replace
-    // any canvas/GLB; wake only after native activation has completed.
+    // The desktop movie / WebCodecs loader can finish well AFTER six seconds.
+    // Track actual native Forge readiness instead of guessing a delay.
+    // This is shared by completed and skipped adverts on PC and phone.
     wakeTimersRef.current.forEach(clearTimeout);
     wakeTimersRef.current=[];
-    for(const delay of [100,650,1550,3000,6000]){
-      const timer=setTimeout(()=>{
-        if(!forge.isConnected)return;
-        let page:HTMLElement|null=null;
-        let introVisible=false;
-        try{
-          page=forge.contentDocument?.querySelector<HTMLElement>("#page")??null;
-          introVisible=!!forge.contentDocument?.querySelector(
-            '[role="dialog"][aria-label="Welcome to ENCHEV Auctions"]'
+    wakeObserverRef.current?.disconnect();
+    wakeObserverRef.current=null;
+    let awoken=false;
+    const nativeReady=()=>{
+      if(!forge.isConnected)return false;
+      try{
+        const doc=forge.contentDocument;
+        const page=doc?.querySelector<HTMLElement>("#page");
+        const welcome=doc?.querySelector(
+          '[role="dialog"][aria-label="Welcome to ENCHEV Auctions"]'
+        );
+        return !!page && !page.hasAttribute("inert") && !welcome;
+      }catch{return false;}
+    };
+    const wake=()=>{
+      if(awoken || !nativeReady())return;
+      awoken=true;
+      wakeObserverRef.current?.disconnect();
+      wakeObserverRef.current=null;
+      // Wait for the real loader, then update layout and native visual
+      // runtime. Never reload Forge or reset the user's scroll position.
+      for(const delay of [0,300,1350]){
+        const timer=setTimeout(()=>{
+          if(!forge.isConnected)return;
+          frameWindow.postMessage(
+            {type:"ENCHEV_FORGE_RESUME"},window.location.origin
           );
-        }catch{return;}
-        if(!page||page.hasAttribute("inert")||introVisible)return;
-        // The same-origin Forge bridge knows which scroll/video engines
-        // can be refreshed. Normal resize remains the safe fallback.
-        frameWindow.postMessage({type:"ENCHEV_FORGE_RESUME"},window.location.origin);
-        frameWindow.dispatchEvent(new Event("resize"));
-        frameWindow.dispatchEvent(new Event("scroll"));
-      },delay);
-      wakeTimersRef.current.push(timer);
+          frameWindow.dispatchEvent(new Event("resize"));
+          frameWindow.dispatchEvent(new Event("scroll"));
+        },delay);
+        wakeTimersRef.current.push(timer);
+      }
+    };
+    const doc=forge.contentDocument;
+    if(doc?.documentElement){
+      wakeObserverRef.current=new MutationObserver(wake);
+      wakeObserverRef.current.observe(doc.documentElement,{
+        childList:true,subtree:true,attributes:true,
+        attributeFilter:["inert","aria-hidden"]
+      });
     }
+    wake();
+    // Resize/visibility after a cold desktop decoder may not mutate DOM.
+    // This safety probe is NOT the activation condition; nativeReady is.
+    const later=setTimeout(wake,12000);
+    wakeTimersRef.current.push(later);
   },[]);
 
   const dismiss=useCallback(()=>{
