@@ -11,6 +11,26 @@ type Props={
 };
 const nameOf=(r:string)=>r==="mitko"?"Митко":r==="borko"?"Борко":r==="enchev"?"Енчев":r==="admin"?"Администратор":r;
 const clock=(t:number)=>String(Math.max(0,Math.floor(t/60))).padStart(2,"0")+":"+String(Math.max(0,t%60)).padStart(2,"0");
+const features=[
+  {icon:"globe",title:"Глобални",subtitle:"търгове"},
+  {icon:"car",title:"Автомобилни",subtitle:"лотове"},
+  {icon:"shield",title:"Защитен",subtitle:"достъп"},
+  {icon:"truck",title:"Доставка",subtitle:"и транспорт"},
+  {icon:"users",title:"Участници",subtitle:"в залата"},
+  {icon:"calendar",title:"Търгов",subtitle:"календар"},
+] as const;
+function LobbyIcon({type}:{type:string}){
+  const attrs={fill:"none",stroke:"currentColor",strokeWidth:1.8,strokeLinecap:"round" as const,strokeLinejoin:"round" as const};
+  return <svg viewBox="0 0 24 24" width="27" height="27" aria-hidden="true" {...attrs}>
+    {type==="globe"&&<><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c-4 3.8-4 14.2 0 18M12 3c4 3.8 4 14.2 0 18"/></>}
+    {type==="car"&&<><path d="M5 11 7 6h10l2 5 1.5 1v6H3.5v-6zM4 11h16M7 15h.01M17 15h.01"/><path d="M5.5 18v2m13-2v2"/></>}
+    {type==="shield"&&<><path d="m12 2 8 3v6c0 5-3.3 8.2-8 11-4.7-2.8-8-6-8-11V5z"/><path d="m8.6 12.2 2.4 2.2 4.6-4.8"/></>}
+    {type==="truck"&&<><path d="M2 6h12v11H2zM14 10h4l4 3v4h-8z"/><circle cx="6" cy="18" r="2"/><circle cx="18" cy="18" r="2"/></>}
+    {type==="users"&&<><circle cx="9" cy="8" r="3"/><path d="M2.7 21v-3.6A5.4 5.4 0 0 1 8 12h2a5.4 5.4 0 0 1 5.3 5.4V21z"/><path d="M16 5a3 3 0 0 1 0 6m2 3c2.1.7 3.3 2.2 3.3 4.6V21"/></>}
+    {type==="calendar"&&<><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18m-12 5h.01M15 15h.01"/></>}
+  </svg>;
+}
+
 const folds=[
   ["M177 199C185 238 170 258 169 309","url(#coverDeep)",7],
   ["M227 169C233 239 212 269 210 315","url(#coverLight)",9],
@@ -22,11 +42,11 @@ const folds=[
 ] as const;
 
 function CoveredCar(){
-  return <div className="eaLxDisplay" aria-label="Кинематографична 3D анимация на концептуален автомобил под червен покривен плат">
+  return <div className="eaLxDisplay" aria-label="Кинематографична 3D анимация на концептуален автомобил под черен сатенен плат">
     <div className="eaLxGroundGlow"/>
     <div className="eaLxStage"><div className="eaLxStageInner"/></div>
     <div className="eaLxCarMotion">
-      <svg className="eaLxCoveredSvg" viewBox="0 0 680 390" role="img" aria-label="Покрит с червен плат концептуален автомобил, който плавно се завърта на подиум">
+      <svg className="eaLxCoveredSvg" viewBox="0 0 680 390" role="img" aria-label="Покрит с черен сатенен плат концептуален автомобил, който плавно се завърта на подиум">
         <defs>
           <linearGradient id="coverBody" x1="0" y1="0" x2="1" y2=".3"><stop stopColor="#3c0208"/><stop offset=".11" stopColor="#d91b32"/><stop offset=".22" stopColor="#4b0010"/><stop offset=".35" stopColor="#fa4152"/><stop offset=".48" stopColor="#700313"/><stop offset=".62" stopColor="#f30c2c"/><stop offset=".76" stopColor="#7e0419"/><stop offset=".9" stopColor="#ca091d"/><stop offset="1" stopColor="#220007"/></linearGradient>
           <linearGradient id="coverDeep" x1="0" y1="0" x2="1" y2="1"><stop stopColor="#ff5768"/><stop offset=".24" stopColor="#5d0011"/><stop offset=".59" stopColor="#ba081d"/><stop offset="1" stopColor="#160006"/></linearGradient>
@@ -60,7 +80,7 @@ export default function CinematicLobby(p:Props){
   const started=p.status==="live";
   const active=!countdown&&!started;
   return <section className={`eaReadyCard eaLuxuryLobby ${countdown?"is-counting":""}`} aria-label="Participant readiness">
-    <div className="eaLxHero">
+    <div className="eaLxHero" id="ea-lobby-top">
       <div className="eaLxRoof"><i/><i/><i/></div>
       <div className="eaLxWorldMap" aria-hidden="true">✦ <span>Ｅ ＆ Ａ</span> ✦</div>
       <div className="eaLxBrandWall"><img src="/brand/ea-official-dark.svg" alt="E&A East and West Auctioneers Group"/><small>МЕЖДУНАРОДНИ АВТОМОБИЛНИ ТЪРГОВЕ</small></div>
@@ -84,12 +104,29 @@ export default function CinematicLobby(p:Props){
         <h2>{countdown?"Всички са готови. Търгът започва.":started?"Търгът е започнал.":p.myReady?"Вие сте готови за старта.":"ЛОБИ НА ТЪРГА"}</h2>
         <p>{countdown?"Стартът се контролира от сървъра. Офертите ще се отключат автоматично.":started?"Изчакайте текущия кръг да приключи, преди следващата готовност.":!p.corePresent||count<p.minPlayers?"Митко, Борко и Енчев влизат със своите покани, задават ДЕМО бюджет и натискат ГОТОВ СЪМ.":"Когато всички трима са готови, започва реалното сървърно отброяване."}</p>
       </div>
-      <div className="eaLxRoster" aria-label="Участници в лобито">{["mitko","borko","enchev"].map(r=>{const person=p.lobby?.participants.find(x=>x.role===r);return <span key={r} className={person?.ready?"ready":""}><i>{person?.ready?"✓":"○"}</i>{nameOf(r)} <small>{person?.ready?"ГОТОВ":person?"В ЗАЛАТА":"ЧАКАМЕ"}</small></span>;})}</div>
-      <div className="eaLxReadyAction">
+      <div className="eaLxRoster" id="ea-lobby-roster" aria-label="Участници в лобито">{["mitko","borko","enchev"].map(r=>{const person=p.lobby?.participants.find(x=>x.role===r);return <span key={r} className={person?.ready?"ready":""}><i>{person?.ready?"✓":"○"}</i>{nameOf(r)} <small>{person?.ready?"ГОТОВ":person?"В ЗАЛАТА":"ЧАКАМЕ"}</small></span>;})}</div>
+      <div className="eaLxReadyAction" id="ea-lobby-ready">
         {p.participant&&!countdown&&!started?<button type="button" disabled={!p.canReady||p.busy} onClick={()=>p.onReady(!p.myReady)} className={p.myReady?"is-ready":""}>{p.busy?"СИНХРОНИЗАЦИЯ…":p.myReady?"✓ ГОТОВ СЪМ":"ГОТОВ СЪМ →"}</button>:<div className="eaLxLocked">{countdown?"◷ ИЗЧАКВАНЕ НА СТАРТА":started?"● ТЪРГЪТ Е АКТИВЕН":"◉ РЕЖИМ НА НАБЛЮДЕНИЕ"}</div>}
         {p.participant&&!p.myReady&&active&&!p.canReady&&<small>За READY е нужен активен сървър и ДЕМО бюджет минимум 16 300 €.</small>}
         <small>Само ДЕМО · без реални плащания</small>
       </div>
     </div>
+    <div className="eaLxMobileExtras">
+      <div className="eaLxMobileFeatures" aria-label="Секции на платформата">
+        {features.map(f=><div key={f.icon} className="eaLxFeatureTile"><LobbyIcon type={f.icon}/><strong>{f.title}</strong><span>{f.subtitle}</span></div>)}
+      </div>
+      <a href="#ea-lobby-ready" className="eaLxMobileCta"><span aria-hidden="true">▶</span><strong>КЪМ ЛОБИТО И ГОТОВНОСТТА</strong><span aria-hidden="true">→</span></a>
+      <div className="eaLxMobileTrust" aria-label="Действителен статус на тестовата зала">
+        <div><LobbyIcon type="users"/><strong>{count}/{p.minPlayers}</strong><span>Участници в<br/>DEMO залата</span></div>
+        <div><LobbyIcon type="shield"/><strong>{ready}/{p.minPlayers}</strong><span>Готови за<br/>старта</span></div>
+        <div><LobbyIcon type="globe"/><strong>{p.connected?"ONLINE":"OFFLINE"}</strong><span>Сървърна<br/>връзка</span></div>
+      </div>
+    </div>
+    <nav className="eaLxMobileNav" aria-label="Мобилна навигация в лобито">
+      <a href="#ea-lobby-top" aria-current="page"><LobbyIcon type="globe"/><span>Лоби</span></a>
+      <a href="#ea-lobby-roster"><LobbyIcon type="users"/><span>Участници</span></a>
+      <a href="#ea-lobby-ready"><LobbyIcon type="shield"/><span>Готов</span></a>
+      <a href="/inventory"><LobbyIcon type="car"/><span>Автомобили</span></a>
+    </nav>
   </section>;
 }
