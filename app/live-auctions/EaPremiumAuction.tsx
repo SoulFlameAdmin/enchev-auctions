@@ -116,7 +116,7 @@ export default function EaPremiumAuction(props:Props){
     try{await props.onBid();}finally{setSubmitting(false);setArmed(false);}
   };
 
-  return <section className="eaPremium" data-ea-premium="2026" data-auction-authority="false">
+  return <section className="eaPremium" lang="bg" data-ea-premium="2026" data-auction-authority="false">
     <div className="eaPremiumHeader">
       <a href="/" aria-label="E&A начална страница" className="eaPremiumBrand"><img src="/brand/ea-official-dark.svg" alt="E&A East and West Auctioneers Group"/></a>
       <nav className="eaPremiumDesktopLinks" aria-label="Аукционно меню"><a href="/">Начало</a><button type="button" className={!entered?"is-current":""} onClick={()=>setEntered(false)}>Лоби</button><button className={entered?"is-current":""} type="button" onClick={enterRoom}>LIVE AUCTIONS</button><a href="/inventory">Автомобили</a></nav>
