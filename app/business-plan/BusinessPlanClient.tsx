@@ -32,7 +32,7 @@ function project(spend:Spend,market:Market,ctr:number,cv:number,qual:number,clos
  });
 }
 export default function BusinessPlanPage(){
- const [selected,setSelected]=useState("02");
+ const [selected,setSelected]=useState("");
  const [market,setMarket]=useState<Market>("BG");
  const [level,setLevel]=useState("pilot");
  const [spend,setSpend]=useState<Spend>({...marketConfig.BG.defaultSpend});
@@ -81,7 +81,7 @@ export default function BusinessPlanPage(){
   const csv="\uFEFF"+data.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(";")).join("\r\n");
   const a=document.createElement("a");const url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8"}));a.href=url;a.download="enchev-marketing-plan-"+market.toLowerCase()+".csv";a.click();URL.revokeObjectURL(url);
  };
- const choose=(id:string)=>{setSelected(id);document.getElementById("bp-detail")?.scrollIntoView({behavior:"smooth",block:"start"});};
+ const choose=(id:string)=>{setSelected(current=>current===id?"":id);};
  return <main id="main-content" className="bp" lang="bg">
   <SoulFlameServicesMenu onSelect={choose}/>
   <div className="bp-container">
@@ -94,7 +94,14 @@ export default function BusinessPlanPage(){
     <div><span>REAL-MONEY</span><b className="bp-warning">NO-GO</b><small>D003 и правни проверки</small></div>
    </div>
    <div className="bp-section-header"><div><span className="bp-overline">01 / НАПРАВЛЕНИЯ</span><h2>Целият бизнес план</h2><p>Избери карта, за да видиш дейности, предложени цени, екипи и етапи.</p></div><span className="bp-counter">16 СЕКЦИИ</span></div>
-   <div className="bp-cards">{sections.map(s=><button className={"bp-card "+(selected===s.id?"is-selected":"")} key={s.id} onClick={()=>choose(s.id)} aria-pressed={selected===s.id}><span className="bp-card-top"><span className="bp-card-icon">{s.icon}</span><small>{s.id}/16</small></span><strong>{s.title}</strong><span className="bp-card-tag">{s.tagline}</span><span className="bp-card-arrow">ОТВОРИ <b>↗</b></span></button>)}</div>
+   <div className="bp-cards">
+    {sections.map(s=><div id={"bp-box-"+s.id} className={"bp-card-slot "+(selected===s.id?"is-expanded":"")} key={s.id}>
+      <button className={"bp-card "+(selected===s.id?"is-selected":"")} type="button" onClick={()=>choose(s.id)} aria-expanded={selected===s.id} aria-controls={"bp-card-details-"+s.id}>
+        <span className="bp-card-top"><span className="bp-card-icon">{s.icon}</span><small>{s.id}/16</small></span>
+        <strong>{s.title}</strong><span className="bp-card-tag">{s.tagline}</span>
+        <span className="bp-card-arrow">{selected===s.id?"ЗАТВОРИ":"ОТВОРИ"} <b>{selected===s.id?"−":"+"}</b></span>
+      </button>
+      {selected===s.id&&<div id={"bp-card-details-"+s.id} className="bp-card-expanded" role="region" aria-label={"Подробности: "+s.title}>
    <section id="bp-detail" className="bp-detail">
     <div className="bp-section-header"><div><span className="bp-overline">РАЗДЕЛ {section.id} / 16</span><h2>{section.title}</h2><p>{section.goal}</p></div><span className="bp-detail-icon">{section.icon}</span></div>
     <div className="bp-detail-grid"><div className="bp-panel"><h3>Необходими хора</h3><div className="bp-chips">{section.team.map(t=><span key={t}>{t}</span>)}</div></div><div className="bp-panel"><h3>Последователност</h3><ol>{section.steps.map((x,i)=><li key={i}>{x}</li>)}</ol></div></div>
@@ -126,6 +133,10 @@ export default function BusinessPlanPage(){
     <div className="bp-advice"><b>Как се чете прогнозата?</b><p>Изчислените показвания са рекламни импресии, не уникални хора. Един човек може да види няколко реклами и да бъде преброен многократно в различни платформи. Не можем надеждно да сумираме уникален reach между Meta, TikTok и Google. Реалните стойности се получават от Ads Manager и GA4 след старта на кампаниите. Google Reach Planner и TikTok forecast инструментите също не гарантират резултат.</p></div>
     <div className="bp-evidence"><h3>Официални източници</h3><a href="https://business.google.com/en-all/business-profile/" target="_blank" rel="noreferrer">Google Business Profile — безплатно</a><a href="https://knowledge.workspace.google.com/admin/billing/compare-flexible-and-annual-fixed-term-payment-plans" target="_blank" rel="noreferrer">Google Workspace — €6,80 / €8,10</a><a href="https://ads.tiktok.com/resources/help/article/budget" target="_blank" rel="noreferrer">TikTok — минимален рекламен бюджет</a><a href="https://support.google.com/adsense/answer/76231" target="_blank" rel="noreferrer">AdSense срещу Google Ads</a><a href="https://support.google.com/google-ads/answer/9427120" target="_blank" rel="noreferrer">YouTube Reach Planner</a></div>
    </section>}
+
+      </div>}
+    </div>)}
+   </div>
    <section className="bp-roadmap"><span className="bp-overline">ОБЩ МАСТЕР ПЛАН</span><h2>От демо до истински международен бизнес</h2><div className="bp-steps"><article><span>0–90 дни</span><b>Пилот и доказателства</b><p>D003, правни проверки, 5–10 продавача, първи годни автомобили, реални цени.</p></article><article><span>90–180 дни</span><b>Работещи операции</b><p>Контролиран B2B пилот, CRM, външни превозвачи, измерени CAC и разходи.</p></article><article><span>180–365 дни</span><b>България + подготовка за Испания</b><p>Реални продажби, Country GO, плащания и повторяем инвентар.</p></article><article><span>2028–2029</span><b>Международно мащабиране</b><p>Екипи и услуги по търсене; собствен автовоз само след доказана печалба.</p></article></div></section>
    <footer className="bp-footer"><strong>E&A EAST WEST AUCTIONEERS GROUP</strong><span>Работен бизнес калкулатор · версия 1.0 · 04.11.2026</span><a href="/">← Към ENCHEV AUCTIONS</a></footer>
   </div>
