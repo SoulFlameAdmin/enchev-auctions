@@ -1,0 +1,11 @@
+/* Canonical E&A identity: two transparent 4K SVG master logos. */
+.eaOfficialLogo{display:inline-grid;position:relative;width:min(100%,320px);aspect-ratio:24/7;align-items:center;line-height:0;vertical-align:middle;flex-shrink:0}
+.eaOfficialLogo img{grid-area:1/1;width:100%;height:100%;display:block;object-fit:contain}
+.eaOfficialLogoOnLight{visibility:hidden}
+:where(html[data-theme="light"],html.light,body.light,body.theme-light,[data-theme="light"],.theme-light,.light-theme,.bg-white,.bg-light) .eaOfficialLogoOnDark{visibility:hidden}
+:where(html[data-theme="light"],html.light,body.light,body.theme-light,[data-theme="light"],.theme-light,.light-theme,.bg-white,.bg-light) .eaOfficialLogoOnLight{visibility:visible}
+.eaAppBrand .eaOfficialLogo{width:clamp(185px,21vw,300px)}
+.eaAppMobileTop .eaOfficialLogo{width:min(250px,70vw)}
+.eaHeroBrand{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(16px,env(safe-area-inset-bottom));z-index:7;width:min(430px,calc(100vw - 32px));pointer-events:none}
+.eaHeroBrand .eaOfficialLogo{width:100%;filter:drop-shadow(0 3px 12px rgba(0,0,0,.75))}
+@media(max-width:760px){.eaHeroBrand{right:max(9px,env(safe-area-inset-right));bottom:max(12px,env(safe-area-inset-bottom));width:min(255px,65vw)}}
