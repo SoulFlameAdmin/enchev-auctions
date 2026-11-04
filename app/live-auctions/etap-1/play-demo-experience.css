@@ -1,0 +1,172 @@
+/* E&A demo simulator: isolated visual-only bots, never calls the real auction backend. */
+body:has(.eaPlayDemo) .eaAppShell{display:none!important}
+body:has(.eaPlayDemo){background:#020204!important}
+.eaPlayDemo{
+  --pdRed:#ed0b29;--pdGold:#ffcd47;
+  min-height:100dvh;background:
+    radial-gradient(ellipse 70% 45% at 50% 2%,#251013,#030305 68%),
+    #020204;
+  color:#f8f7f7;font-family:Inter,Arial,Helvetica,sans-serif;
+  padding:0 22px 28px;width:100%;overflow-x:hidden;
+}
+.eaPlayDemo *, .eaPlayDemo *:before,.eaPlayDemo *:after{box-sizing:border-box}
+.eaPlayDemo button{font:inherit;cursor:pointer}
+.eaPlayDemo button:disabled{opacity:.46;cursor:not-allowed}
+.eaPlayDemo button:focus-visible,.eaPlayDemo a:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.eaPDHeader{display:flex;gap:18px;align-items:center;justify-content:space-between;min-height:86px;padding:10px clamp(3px,2vw,22px);border-bottom:1px solid #5c161f;box-shadow:0 10px 25px #0007;background:#030305f9;position:sticky;top:0;z-index:20}
+.eaPDHeader>img{display:block;object-fit:contain;object-position:left center;max-height:57px;flex:0 1 380px;max-width:min(380px,35%)}
+.eaPDBack,.eaPDVolume{display:grid;place-items:center;min-width:43px;width:43px;height:43px;border:1px solid #52313b;border-radius:10px;background:#0c0b0d;color:#f8f8fa}
+.eaPDBadges{display:flex;flex-direction:column;align-items:flex-end;gap:5px;white-space:nowrap}
+.eaPDLive{display:inline-flex;gap:4px;align-items:center;justify-content:center;border-radius:10px;border:1px solid #f4344b;background:linear-gradient(135deg,#f71934,#8f0017);min-height:34px;padding:7px 13px;font-size:13px;letter-spacing:.08em;font-weight:1000;color:#fff;box-shadow:0 2px 18px #fe12374b}
+.eaPDBadges small{font-size:11px;color:#d4d0d1;letter-spacing:.04em}
+.eaPDAuctionLayout{max-width:1450px;margin:18px auto 0;display:grid;grid-template-columns:minmax(0,1.06fr) minmax(330px,.68fr);align-items:start;gap:20px}
+.eaPDMainPanel{min-width:0;background:linear-gradient(165deg,#0f0d10,#050506 45%,#010102);border:1px solid #55202b;border-radius:19px;overflow:hidden;box-shadow:0 20px 60px #000a}
+.eaPDCarInfo{padding:21px 24px 5px;background:#0a070b;}
+.eaPDLotLabel{display:inline-block;border:1px solid #76303c;border-radius:6px;background:#1f0b11;padding:7px 10px;color:#ffbac1;font-size:10px;font-weight:900;letter-spacing:.15em}
+.eaPDCarInfo h1{font-size:clamp(19px,2.9vw,33px);letter-spacing:-.04em;margin:8px 0 4px;line-height:1.07;font-weight:700}
+.eaPDCarInfo h1 b{font-weight:1000;font-size:1.45em;letter-spacing:-.035em}
+.eaPDCarInfo p{font-size:12px;color:#cec8c7;margin:4px 0 8px;display:flex;gap:9px;align-items:center;flex-wrap:wrap}
+.eaPDCarInfo em{height:12px;width:1px;background:#7a4a45}
+.eaPDCarScene{isolation:isolate;position:relative;min-height:245px;aspect-ratio:18/8.5;background:radial-gradient(ellipse at 55% 60%,#2d1b19,#050405 70%);overflow:hidden}
+.eaPDCarScene::before{content:"";position:absolute;inset:0;z-index:-1;background:
+  radial-gradient(ellipse at 50% 40%,#88604032,transparent 62%),
+  repeating-linear-gradient(90deg,#0000 0 17%,#b38a4830 17.2% 17.3%,#0000 17.4% 25%)}
+.eaPDCarScene img{display:block;width:100%;height:100%;object-fit:cover;object-position:center;filter:contrast(1.16) brightness(.85) saturate(.8);transform:scale(1.02);transition:transform .4s ease,filter .4s ease}
+.eaPDCarScene.variant-1 img{transform:scale(1.18) translateX(-3%);filter:brightness(.93) contrast(1.15)}
+.eaPDCarScene.variant-2 img{transform:scale(1.18) translateX(3%);filter:brightness(.78) contrast(1.16) saturate(.85)}
+.eaPDCarScene::after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,#0505062e,transparent 30%,transparent 50%,#000e 98%)}
+.eaPDHalo{position:absolute;z-index:1;pointer-events:none;left:7%;right:7%;bottom:5%;height:15%;border-radius:50%;border:3px solid #f22437;box-shadow:0 0 13px #fa243c,0 0 39px #a5001c8f;transform:perspective(420px) rotateX(64deg)}
+.eaPDImageArrow{position:absolute;top:49%;z-index:3;transform:translateY(-50%);width:43px;height:43px;border:1px solid #de1b38;border-radius:50%;background:#020203ca;color:#fff;font-size:38px!important;line-height:.7}
+.eaPDImageArrow.left{left:15px}.eaPDImageArrow.right{right:15px}
+.eaPDCarouselDots{display:flex;justify-content:center;gap:8px;position:absolute;z-index:3;bottom:21px;left:0;right:0}
+.eaPDCarouselDots i{width:8px;height:8px;border-radius:50%;background:#a7a5a5b8}
+.eaPDCarouselDots i.active{background:#fff;box-shadow:0 0 6px #fff}
+.eaPDCarDisclosure{position:absolute;bottom:8px;left:16px;font-size:9px;letter-spacing:.08em;color:#f1d4ce;z-index:2;text-shadow:0 1px 6px #000}
+.eaPDActionPanel{padding:0 21px 19px;text-align:center;background:radial-gradient(ellipse at 50% 0%,#271007,#030303 62%)}
+.eaPDGauge{position:relative;width:min(100%,610px);aspect-ratio:560/282;margin:13px auto 0}
+.eaPDGaugeSvg{display:block;width:100%;height:100%;filter:drop-shadow(0 0 6px #e8002775)}
+.eaPDTickNum{font-family:Arial,Helvetica,sans-serif;fill:#faf8fa;font-size:21px;font-weight:950;text-anchor:middle}
+.eaPDGaugeCenter{position:absolute;top:34%;left:0;right:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;pointer-events:none;text-shadow:0 2px 7px #000}
+.eaPDGaugeTitle{font-size:clamp(10px,1.1vw,13px);font-weight:1000;letter-spacing:.08em}
+.eaPDTime{font-family:Impact,'Arial Narrow',Arial,sans-serif;font-weight:950;font-size:clamp(46px,5vw,77px);letter-spacing:.01em;line-height:.98;color:#fa1736;text-shadow:0 0 12px #f4052dc8;font-variant-numeric:tabular-nums}
+.eaPDGauge.is-critical .eaPDTime{animation:eaPDFinalPulse .6s ease-in-out infinite alternate}
+@keyframes eaPDFinalPulse{from{text-shadow:0 0 8px #f00}to{text-shadow:0 0 20px #f00,0 0 44px #ff133ca6}}
+.eaPDFuel{display:grid;place-items:center;width:38px;height:36px;color:#ffda09;filter:drop-shadow(0 0 12px #ffcc00)}
+.eaPDFuel svg{width:31px;height:31px}
+.eaPDTicks{font-size:10px;color:#f6d4a7;font-weight:1000;letter-spacing:.09em;margin-top:3px}
+.eaPDPrice{margin:-13px 0 12px;display:grid;justify-items:center;gap:1px}
+.eaPDPrice strong{font-family:'Arial Black',Impact,Arial,sans-serif;font-size:clamp(38px,5vw,60px);line-height:1.03;letter-spacing:-.06em;white-space:nowrap;font-variant-numeric:tabular-nums;color:#ffd866;background:linear-gradient(180deg,#fffbdc 6%,#ffd962 35%,#d78c0a 78%,#fff0ba);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 1px 2px #a56a12a8)}
+.eaPDPrice span{font-size:12px;font-weight:900;letter-spacing:.08em;color:#ece3db}
+.eaPDBidButtons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}
+.eaPDBidButtons button{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:74px;gap:2px;border-radius:15px;font-weight:1000;border:1px solid #e0d9d9;box-shadow:inset 0 2px 4px #ffffffa0,0 5px 16px #000b;padding:10px 7px;white-space:nowrap}
+.eaPDBidButtons button span{font-size:12px;font-weight:950}
+.eaPDBidButtons button strong{font-size:clamp(20px,2.5vw,31px);letter-spacing:-.035em}
+.eaPDMetalBid{background:linear-gradient(155deg,#fff,#797478 42%,#1b1b1f 88%);color:#fff;text-shadow:0 2px 5px #000,0 0 3px #000}
+.eaPDRedBid{background:linear-gradient(155deg,#ff8a94,#f10929 26%,#9c001b 78%,#56000d);color:#fff;text-shadow:0 2px 5px #000}
+.eaPDBidButtons button:active{transform:translateY(2px)}
+.eaPDStatus{min-height:30px;margin:10px auto 0;padding:4px;font-size:11px;line-height:1.4;color:#efc2c6}
+.eaPDAside{display:grid;gap:13px;min-width:0}
+.eaPDOfferHead{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 3px 10px;border-bottom:1px solid #614045}
+.eaPDOfferHead strong{font-size:15px;font-weight:1000}
+.eaPDOfferHead button{background:transparent;border:none;color:#ddd;font-size:11px}
+.eaPDOfferList{display:grid;gap:0;background:#09080a;border:1px solid #373036;border-radius:13px;overflow:hidden}
+.eaPDOffer{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:7px;padding:12px 10px;align-items:center;border-bottom:1px solid #383439;font-size:12px}
+.eaPDOffer:last-child{border-bottom:0}
+.eaPDUserIcon{display:grid;place-items:center;border:1px solid #f4c83f;width:24px;height:24px;border-radius:50%;color:#ffdc4b;font-size:16px}
+.eaPDOffer b{font-size:13px;color:#fff;white-space:nowrap}
+.eaPDOffer:first-child b{color:#ff2c48}
+.eaPDOffer small{grid-column:2/-1;color:#99908d;font-size:10px;text-align:right}
+.eaPDSpecs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding:13px 8px;gap:0;border:1px solid #5b5252;border-radius:15px;background:#060608}
+.eaPDSpecs>div{min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border-right:1px solid #454048}
+.eaPDSpecs>div:last-child{border-right:0}
+.eaPDSpecs svg{color:#e6bb26;width:23px;height:23px}
+.eaPDSpecs span{text-align:center;color:#e2d6cc;font-size:10px;white-space:nowrap}
+.eaPDDetailsBox{border:1px solid #493033;border-radius:14px;background:linear-gradient(165deg,#130b0d,#040404);padding:18px;color:#d0b7bc;font-size:12px;line-height:1.6}
+.eaPDDetailsBox strong{display:block;color:#ff7b8b;font-size:11px;letter-spacing:.07em}
+.eaPDDetailsBox p{margin:10px 0 0}
+.eaPDWinner{display:grid;gap:10px;text-align:center;border:1px solid #f2cb4b;border-radius:13px;padding:17px;background:#190f0a}
+.eaPDWinner span{color:#ffe3a1;font-size:10px;font-weight:900}
+.eaPDWinner strong{font-size:20px}.eaPDWinner b{font-size:26px;color:#f8d07a}
+.eaPDWinner button{display:inline-flex;align-items:center;justify-content:center;gap:8px;background:#a80020;color:white;border:1px solid #fe344b;border-radius:9px;padding:13px;font-weight:950}
+.eaPDFooter{max-width:1450px;margin:25px auto 0;padding:10px 3px;border-top:1px solid #513337;display:flex;justify-content:space-between;align-items:center;gap:16px}
+.eaPDFooter span{font-size:10px;color:#9f9298;letter-spacing:.1em}
+.eaPDFooter button{background:#10090c;color:#f4e5e7;border:1px solid #693540;border-radius:9px;padding:10px 13px;font-size:11px}
+.eaPDJoining{max-width:780px;margin:clamp(20px,6vh,65px) auto 25px;border:1px solid #812132;border-radius:20px;background:linear-gradient(160deg,#1a080d,#020204 65%);padding:28px clamp(18px,3vw,33px);text-align:center;box-shadow:0 22px 70px #000c}
+.eaPDCover{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:18px;margin:0 auto 22px;aspect-ratio:2.5/1;max-height:240px;border:1px solid #571929;border-radius:15px;background:
+  linear-gradient(180deg,#0006,#000b),
+  radial-gradient(ellipse at center,#610d23,#17020c 60%,#070307);
+  box-shadow:inset 0 -5px 15px #c51d354b}
+.eaPDCover img{max-width:70%;max-height:100px}
+.eaPDRound{font-size:11px;color:#f1a3ae;font-weight:950;letter-spacing:.15em}
+.eaPDCover>span:last-child{font-size:11px;color:#dfc0c4;letter-spacing:.14em;font-weight:850}
+.eaPDJoiningClock{display:grid;gap:6px;margin:0 auto 16px}
+.eaPDJoiningClock>span{font-size:11px;letter-spacing:.1em;color:#eee;font-weight:950}
+.eaPDJoiningClock strong{font:950 75px/1 Impact,Arial,sans-serif;color:#fb1838;text-shadow:0 0 25px #c90030;font-variant-numeric:tabular-nums}
+.eaPDJoining h1{font-size:clamp(22px,4vw,37px);margin:10px 0}
+.eaPDJoining p{font-size:12px;color:#bcb0b5;line-height:1.5}
+.eaPDBotRoster{display:grid;gap:9px;margin:23px 0 16px;text-align:left}
+.eaPDBotRoster>div{display:flex;align-items:center;gap:12px;padding:13px 15px;border:1px solid #4b2a34;border-radius:12px;background:#140a0f;color:#b9abb1}
+.eaPDBotRoster .eaPDBotAvatar{display:grid;place-items:center;width:35px;height:35px;border:1px solid #65424c;border-radius:50%;font-size:22px}
+.eaPDBotRoster b{flex:1;font-size:14px}
+.eaPDBotRoster span:last-child{font-size:10px}
+.eaPDBotRoster>div.is-here{color:#fff;border-color:#19a45d;background:linear-gradient(135deg,#10281b,#080d0b)}
+.eaPDBotRoster>div.is-here .eaPDBotAvatar{color:#36f094;border-color:#21d377}
+.eaPDJoinProgress{height:7px;background:#2a1118;border-radius:7px;overflow:hidden}
+.eaPDJoinProgress i{display:block;height:100%;background:linear-gradient(90deg,#9e021b,#ff2b45);transition:width 80ms linear;border-radius:8px}
+@media(max-width:860px){
+ .eaPlayDemo{padding:0 10px 16px}
+ .eaPDHeader{gap:9px;min-height:73px;padding:8px 2px}
+ .eaPDHeader>img{max-width:45%;max-height:43px}
+ .eaPDBadges small{font-size:9px}
+ .eaPDLive{font-size:10px;padding:5px 9px;min-height:29px}
+ .eaPDBack,.eaPDVolume{min-width:32px;width:34px;height:34px}
+ .eaPDBack svg,.eaPDVolume svg{width:20px;height:20px}
+ .eaPDAuctionLayout{display:block;margin:10px auto 0}
+ .eaPDMainPanel{border-radius:14px}
+ .eaPDCarInfo{padding:13px 15px 6px}
+ .eaPDLotLabel{font-size:8px;padding:5px 7px}
+ .eaPDCarInfo h1{font-size:18px;margin:7px 0 3px}
+ .eaPDCarInfo h1 b{font-size:1.5em}
+ .eaPDCarInfo p{font-size:10px;gap:5px}
+ .eaPDCarScene{aspect-ratio:1.65/1;min-height:195px}
+ .eaPDCarDisclosure{font-size:8px;bottom:5px}
+ .eaPDImageArrow{width:35px;height:35px;font-size:27px!important}
+ .eaPDImageArrow.left{left:8px}
+ .eaPDImageArrow.right{right:8px}
+ .eaPDActionPanel{padding:0 9px 12px}
+ .eaPDGauge{margin:4px auto 0}
+ .eaPDGaugeCenter{top:34%;gap:0}
+ .eaPDGaugeTitle{font-size:clamp(9px,2vw,12px)}
+ .eaPDTime{font-size:clamp(40px,11vw,66px)}
+ .eaPDFuel{height:32px}
+ .eaPDFuel svg{width:26px;height:26px}
+ .eaPDTicks{font-size:clamp(8px,1.8vw,10px);margin-top:3px}
+ .eaPDTickNum{font-size:22px}
+ .eaPDPrice{margin:-8px 0 12px}
+ .eaPDPrice strong{font-size:clamp(32px,8.5vw,51px)}
+ .eaPDPrice span{font-size:9px}
+ .eaPDBidButtons{gap:7px}
+ .eaPDBidButtons button{min-height:68px;border-radius:12px;padding:6px 4px}
+ .eaPDBidButtons button strong{font-size:clamp(17px,4.6vw,25px)}
+ .eaPDBidButtons button span{font-size:10px}
+ .eaPDAside{gap:9px;margin-top:14px}
+ .eaPDOfferHead strong{font-size:13px}
+ .eaPDOffer{padding:9px 8px;grid-template-columns:22px minmax(0,1fr) auto}
+ .eaPDOffer b{font-size:12px}
+ .eaPDSpecs{padding:13px 0;border-radius:12px}
+ .eaPDSpecs svg{width:20px;height:20px}
+ .eaPDSpecs span{font-size:clamp(8px,2vw,10px)}
+ .eaPDDetailsBox{padding:12px;font-size:11px}
+ .eaPDFooter{margin-top:14px}
+}
+@media(max-width:380px){
+ .eaPDHeader>img{max-width:40%}
+ .eaPDCarScene{min-height:174px}
+ .eaPDPrice strong{font-size:31px}
+ .eaPDOffer{font-size:10px}
+ .eaPDSpecs span{font-size:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .eaPDTime{animation:none!important}
+ .eaPDCarScene img{transition:none}
+}
