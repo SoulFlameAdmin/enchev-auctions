@@ -8,6 +8,7 @@ on:
       - scripts/verify-intro-platform-browser.mjs
       - scripts/verify-cinematic-post-ad.mjs
       - public/brand/ea-forge-resume.js
+      - public/brand/ea-desktop-3d-recovery.js
       - app/components/EnchevCinematicLoginGate.tsx
       - scripts/verify-all-routes-phone.mjs
       - scripts/verify-buyer-auth-off.mjs
@@ -21,6 +22,7 @@ on:
     paths:
       - app/components/EnchevCinematicLoginGate.tsx
       - public/brand/ea-forge-resume.js
+      - public/brand/ea-desktop-3d-recovery.js
       - scripts/restore-forge-assets.mjs
       - scripts/verify-intro-platform-browser.mjs
       - scripts/verify-cinematic-post-ad.mjs
