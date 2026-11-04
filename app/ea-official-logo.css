@@ -13,6 +13,10 @@
 html.ea-intro-redwhite .eaHeroBrand .eaOfficialLogoOnDark{visibility:hidden}
 html.ea-intro-redwhite .eaHeroBrand .eaOfficialLogoOnLight{visibility:visible}
 html.ea-intro-redwhite .eaHeroBrand .eaOfficialLogo{filter:drop-shadow(0 2px 5px rgba(0,0,0,.10))}
+/* Flip to the same approved white-letter logo when liquid red covers the masthead. */
+html.ea-intro-redwhite.ea-intro-red-cover .eaHeroBrand .eaOfficialLogoOnDark{visibility:visible}
+html.ea-intro-redwhite.ea-intro-red-cover .eaHeroBrand .eaOfficialLogoOnLight{visibility:hidden}
+html.ea-intro-redwhite.ea-intro-red-cover .eaHeroBrand .eaOfficialLogo{filter:drop-shadow(0 3px 10px rgba(0,0,0,.45))}
 @media(max-width:760px){.eaHeroBrand{top:max(24px,env(safe-area-inset-top));width:min(235px,calc(100vw - 132px))}}
 
 /* One centered brand row across all buyer pages; never overlap search/nav/actions. */
