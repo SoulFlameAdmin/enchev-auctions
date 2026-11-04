@@ -24,8 +24,13 @@ export default function EnchevCinematicLoginGate() {
   // Keep the Forge entry animation untouched until the ads have closed.
   const deferredEnterRef=useRef<HTMLElement|null>(null);
   const replayingEnterRef=useRef(false);
+  const entryStartedRef=useRef(false);
+  const entryRetryRef=useRef<ReturnType<typeof setTimeout>|null>(null);
+  const wakeTimersRef=useRef<Array<ReturnType<typeof setTimeout>>>([]);
 
   const show=useCallback(()=>{
+    // Once the Forge app has actually started, never replay the advert.
+    if(entryStartedRef.current)return;
     if(exitTimer.current!==null){
       clearTimeout(exitTimer.current);
       exitTimer.current=null;
@@ -57,6 +62,8 @@ export default function EnchevCinematicLoginGate() {
   useEffect(()=>()=>{ 
     if(transitionTimer.current!==null)clearTimeout(transitionTimer.current);
     if(exitTimer.current!==null)clearTimeout(exitTimer.current);
+    if(entryRetryRef.current!==null)clearTimeout(entryRetryRef.current);
+    wakeTimersRef.current.forEach(clearTimeout);
   },[]);
 
   const startHomepageAfterAd=useCallback(()=>{
@@ -64,28 +71,57 @@ export default function EnchevCinematicLoginGate() {
       'iframe[title="ENCHEV Auctions cinematic homepage"]'
     );
     if(!forge?.contentWindow)return;
+    // Every completion path (played, skipped, and nested promo closed)
+    // uses this same native Forge ENTER, exactly once.
     const frameWindow=forge.contentWindow;
-    let trigger=deferredEnterRef.current;
-    // Handle a keyboard-only entry, too, without reloading the iframe.
-    if(!trigger?.isConnected){
-      try{
-        trigger=Array.from(forge.contentDocument?.querySelectorAll<HTMLElement>(
-          'button,a,[role="button"]'
-        )||[]).find(element=>/^ENTER(?:\s*[→↗›])?$/i.test(
-          (element.textContent||element.getAttribute("aria-label")||"").replace(/\s+/g," ").trim()
-        ))||null;
-      }catch{trigger=null;}
-    }
-    deferredEnterRef.current=null;
-    if(trigger){
+    const frameDocument=forge.contentDocument;
+    if(!frameDocument)return;
+    const enter=frameDocument.querySelector<HTMLButtonElement>(
+      'button[aria-label="Enter Website"]'
+    ) ?? (deferredEnterRef.current?.isConnected
+      ? deferredEnterRef.current : null);
+    if(!entryStartedRef.current){
+      if(!enter){
+        // The dynamic Forge loader can still be hydrating when a short
+        // advert is skipped. Retry instead of leaving an inert blank page.
+        if(entryRetryRef.current!==null)clearTimeout(entryRetryRef.current);
+        entryRetryRef.current=setTimeout(()=>{
+          entryRetryRef.current=null;
+          startHomepageAfterAd();
+        },240);
+        return;
+      }
+      entryStartedRef.current=true;
+      deferredEnterRef.current=null;
       replayingEnterRef.current=true;
-      try{trigger.click();}finally{replayingEnterRef.current=false;}
+      try{enter.click();}
+      finally{replayingEnterRef.current=false;}
     }
-    // Refresh existing scroll layout; never reset/reload Forge animations.
-    frameWindow.requestAnimationFrame(()=>{
-      frameWindow.dispatchEvent(new Event("resize"));
-      frameWindow.dispatchEvent(new Event("scroll"));
-    });
+    // The native Forge loader animates out asynchronously and keeps #page
+    // inert until it has finished. Do NOT force-remove inert or replace
+    // any canvas/GLB; wake only after native activation has completed.
+    wakeTimersRef.current.forEach(clearTimeout);
+    wakeTimersRef.current=[];
+    for(const delay of [100,650,1550,3000,6000]){
+      const timer=setTimeout(()=>{
+        if(!forge.isConnected)return;
+        let page:HTMLElement|null=null;
+        let introVisible=false;
+        try{
+          page=forge.contentDocument?.querySelector<HTMLElement>("#page")??null;
+          introVisible=!!forge.contentDocument?.querySelector(
+            '[role="dialog"][aria-label="Welcome to ENCHEV Auctions"]'
+          );
+        }catch{return;}
+        if(!page||page.hasAttribute("inert")||introVisible)return;
+        // The same-origin Forge bridge knows which scroll/video engines
+        // can be refreshed. Normal resize remains the safe fallback.
+        frameWindow.postMessage({type:"ENCHEV_FORGE_RESUME"},window.location.origin);
+        frameWindow.dispatchEvent(new Event("resize"));
+        frameWindow.dispatchEvent(new Event("scroll"));
+      },delay);
+      wakeTimersRef.current.push(timer);
+    }
   },[]);
 
   const dismiss=useCallback(()=>{
@@ -156,8 +192,8 @@ export default function EnchevCinematicLoginGate() {
     );
   },[]);
 
-  // The real Forge ENTER triggers the two ads. Its native handler is not
-  // cancelled: by the time X is pressed, the underlying site is already open.
+  // Defer the real Forge ENTER until the last ad closes; then wake the
+  // native video/scroll runtime after Forge has removed its own loader.
   useEffect(()=>{
     const forge=document.querySelector<HTMLIFrameElement>(
       'iframe[title="ENCHEV Auctions cinematic homepage"]'
