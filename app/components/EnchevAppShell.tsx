@@ -48,10 +48,9 @@ export default function EnchevAppShell(){
       <div className="eaAppUtilityMeta"><span>BG · EUR</span><a href="/support">Help</a></div>
     </div>
 
+    <div className="eaAppCenteredBrandRow"><a href="/" className="eaAppCenteredBrand" aria-label="E&A East West Auctioneers Group home"><EaOfficialLogo /></a></div>
+
     <header className="eaAppHeader">
-      <a href="/" className="eaAppBrand" aria-label="E&A East West Auctioneers Group home">
-        <EaOfficialLogo />
-      </a>
 
       <form className="eaAppSearch" action="/inventory" role="search">
         <span aria-hidden="true">⌕</span>
