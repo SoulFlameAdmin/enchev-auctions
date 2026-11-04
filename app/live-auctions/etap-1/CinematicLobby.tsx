@@ -4,6 +4,7 @@ import CoveredCar3D from "./CoveredCar3D";
 type Person={role:string;ready:boolean};
 type Lobby={count:number;readyCount:number;minPlayers:number;participants:Person[];activeDevices?:number;admitted?:boolean};
 type Props={
+  guest?:boolean;
   status:"idle"|"countdown"|"live"|"closed"|"canceled";
   lobby:Lobby|null;countdownRemaining:number;connected:boolean;busy:boolean;
   participant:boolean;myReady:boolean;corePresent:boolean;minPlayers:number;
@@ -75,6 +76,7 @@ function CoveredCar(){
 }
 
 export default function CinematicLobby(p:Props){
+  const guest=p.guest===true;
   const count=p.lobby?.count??0,ready=p.lobby?.readyCount??0;
   const countdown=p.status==="countdown";
   const started=p.status==="live";
@@ -90,11 +92,11 @@ export default function CinematicLobby(p:Props){
       </div>
       <aside className="eaLxCountdown" aria-live="polite">
         <div className="eaLxTimerEyebrow">◷ <b>ЛОБИ</b></div>
-        <span className="eaLxTimerCaption">{countdown?"ТЪРГЪТ ЗАПОЧВА СЛЕД":started?"ТЪРГЪТ ВЕЧЕ Е В ХОД":"ИЗЧАКВАНЕ НА УЧАСТНИЦИТЕ"}</span>
-        <strong className="eaLxDigits">{countdown?clock(p.countdownRemaining):"--:--"}</strong>
-        <span className="eaLxServerNote">{countdown?"СЪРВЪРНО ОТБРОЯВАНЕ":started?"НА ЖИВО":"ОТБРОЯВАНЕТО СТАРТИРА ПРИ ГОТОВНОСТ"}</span>
-        <div className="eaLxReadyStats"><span>УЧАСТНИЦИ <b>{count}/{p.minPlayers}</b></span><span>ГОТОВИ <b>{ready}/{p.minPlayers}</b></span></div>
-        <div className="eaLxConnection" role="status"><i className={p.connected?"online":""}/>{p.connected?"СВЪРЗАНО СЪС СЪРВЪРА":"ИЗЧАКВАМЕ ВРЪЗКА"}</div>
+        <span className="eaLxTimerCaption">{guest?"ЧАСТНА ДЕМО ЗАЛА":countdown?"ТЪРГЪТ ЗАПОЧВА СЛЕД":started?"ТЪРГЪТ ВЕЧЕ Е В ХОД":"ИЗЧАКВАНЕ НА УЧАСТНИЦИТЕ"}</span>
+        <strong className="eaLxDigits">{guest?"--:--":countdown?clock(p.countdownRemaining):"--:--"}</strong>
+        <span className="eaLxServerNote">{guest?"ВЛЕЗ С ПОКАНА, ЗА ДА ВИДИШ ТАЙМЕРА":countdown?"СЪРВЪРНО ОТБРОЯВАНЕ":started?"НА ЖИВО":"ОТБРОЯВАНЕТО СТАРТИРА ПРИ ГОТОВНОСТ"}</span>
+        <div className="eaLxReadyStats"><span>УЧАСТНИЦИ <b>{guest?"—":`${count}/${p.minPlayers}`}</b></span><span>ГОТОВИ <b>{guest?"—":`${ready}/${p.minPlayers}`}</b></span></div>
+        <div className="eaLxConnection" role="status"><i className={p.connected?"online":""}/>{guest?"ДОСТЪП С ПОКАНА":p.connected?"СВЪРЗАНО СЪС СЪРВЪРА":"ИЗЧАКВАМЕ ВРЪЗКА"}</div>
       </aside>
       <div className="eaLxHeroCaption"><span>БЪЛГАРИЯ</span><i/> <span>ИСПАНИЯ</span><i/><span>ЕВРОПА</span></div>
     </div>
@@ -102,30 +104,30 @@ export default function CinematicLobby(p:Props){
       <div className="eaLxMobileFeatures" aria-label="Секции на платформата">
         {features.map(f=><div key={f.icon} className="eaLxFeatureTile"><LobbyIcon type={f.icon}/><strong>{f.title}</strong><span>{f.subtitle}</span></div>)}
       </div>
-      <a href="#ea-lobby-ready" className="eaLxMobileCta"><span aria-hidden="true">▶</span><strong>КЪМ ЛОБИТО И ГОТОВНОСТТА</strong><span aria-hidden="true">→</span></a>
+      <a href={guest?"#ea-guest-login":"#ea-lobby-ready"} className="eaLxMobileCta"><span aria-hidden="true">▶</span><strong>{guest?"ВЛЕЗ В ЛОБИТО":"КЪМ ЛОБИТО И ГОТОВНОСТТА"}</strong><span aria-hidden="true">→</span></a>
       <div className="eaLxMobileTrust" aria-label="Действителен статус на тестовата зала">
-        <div><LobbyIcon type="users"/><strong>{count}/{p.minPlayers}</strong><span>Участници в<br/>DEMO залата</span></div>
-        <div><LobbyIcon type="shield"/><strong>{ready}/{p.minPlayers}</strong><span>Готови за<br/>старта</span></div>
-        <div><LobbyIcon type="globe"/><strong>{p.connected?"ONLINE":"OFFLINE"}</strong><span>Сървърна<br/>връзка</span></div>
+        <div><LobbyIcon type="users"/><strong>{guest?"—":`${count}/${p.minPlayers}`}</strong><span>Участници в<br/>DEMO залата</span></div>
+        <div><LobbyIcon type="shield"/><strong>{guest?"—":`${ready}/${p.minPlayers}`}</strong><span>Готови за<br/>старта</span></div>
+        <div><LobbyIcon type="globe"/><strong>{guest?"🔒":p.connected?"ONLINE":"OFFLINE"}</strong><span>{guest?"Частен":"Сървърен"}<br/>достъп</span></div>
       </div>
     </div>
     <div className="eaLxControlDeck">
       <div className="eaLxWelcome">
         <span className="eaLxSmall">E&A EAST AND WEST · PRIVATE DEMO LOBBY</span>
-        <h2>{countdown?"Всички са готови. Търгът започва.":started?"Търгът е започнал.":p.myReady?"Вие сте готови за старта.":"ЛОБИ НА ТЪРГА"}</h2>
-        <p>{countdown?"Стартът се контролира от сървъра. Офертите ще се отключат автоматично.":started?"Изчакайте текущия кръг да приключи, преди следващата готовност.":!p.corePresent||count<p.minPlayers?"Митко, Борко и Енчев влизат със своите покани, задават ДЕМО бюджет и натискат ГОТОВ СЪМ.":"Когато всички трима са готови, започва реалното сървърно отброяване."}</p>
+        <h2>{guest?"ВЛЕЗ В ЛОБИТО":countdown?"Всички са готови. Търгът започва.":started?"Търгът е започнал.":p.myReady?"Вие сте готови за старта.":"ЛОБИ НА ТЪРГА"}</h2>
+        <p>{guest?"Това е оригиналната частна ДЕМО зала на Митко, Борко и Енчев. Влез с покана, за да видиш действителните участници, READY и сървърния брояч.":countdown?"Стартът се контролира от сървъра. Офертите ще се отключат автоматично.":started?"Изчакайте текущия кръг да приключи, преди следващата готовност.":!p.corePresent||count<p.minPlayers?"Митко, Борко и Енчев влизат със своите покани, задават ДЕМО бюджет и натискат ГОТОВ СЪМ.":"Когато всички трима са готови, започва реалното сървърно отброяване."}</p>
       </div>
-      <div className="eaLxRoster" id="ea-lobby-roster" aria-label="Участници в лобито">{["mitko","borko","enchev"].map(r=>{const person=p.lobby?.participants.find(x=>x.role===r);return <span key={r} className={person?.ready?"ready":""}><i>{person?.ready?"✓":"○"}</i>{nameOf(r)} <small>{person?.ready?"ГОТОВ":person?"В ЗАЛАТА":"ЧАКАМЕ"}</small></span>;})}</div>
+      <div className={`eaLxRoster ${guest?"eaLxGuestRoster":""}`} id="ea-lobby-roster" aria-label="Участници в лобито">{["mitko","borko","enchev"].map(r=>{const person=p.lobby?.participants.find(x=>x.role===r);return <span key={r} className={person?.ready?"ready":""}><i>{guest?"◇":person?.ready?"✓":"○"}</i>{nameOf(r)} <small>{guest?"ПОКАНА":person?.ready?"ГОТОВ":person?"В ЗАЛАТА":"ЧАКАМЕ"}</small></span>;})}</div>
       <div className="eaLxReadyAction" id="ea-lobby-ready">
-        {p.participant&&!countdown&&!started?<button type="button" disabled={!p.canReady||p.busy} onClick={()=>p.onReady(!p.myReady)} className={p.myReady?"is-ready":""}>{p.busy?"СИНХРОНИЗАЦИЯ…":p.myReady?"✓ ГОТОВ СЪМ":"ГОТОВ СЪМ →"}</button>:<div className="eaLxLocked">{countdown?"◷ ИЗЧАКВАНЕ НА СТАРТА":started?"● ТЪРГЪТ Е АКТИВЕН":"◉ РЕЖИМ НА НАБЛЮДЕНИЕ"}</div>}
-        {p.participant&&!p.myReady&&active&&!p.canReady&&<small>За READY е нужен активен сървър и ДЕМО бюджет минимум 16 300 €.</small>}
+        {guest?<a className="eaLxGuestEnter" href="#ea-guest-login">ВХОД С ПОКАНА →</a>:p.participant&&!countdown&&!started?<button type="button" disabled={!p.canReady||p.busy} onClick={()=>p.onReady(!p.myReady)} className={p.myReady?"is-ready":""}>{p.busy?"СИНХРОНИЗАЦИЯ…":p.myReady?"✓ ГОТОВ СЪМ":"ГОТОВ СЪМ →"}</button>:<div className="eaLxLocked">{countdown?"◷ ИЗЧАКВАНЕ НА СТАРТА":started?"● ТЪРГЪТ Е АКТИВЕН":"◉ РЕЖИМ НА НАБЛЮДЕНИЕ"}</div>}
+        {!guest&&p.participant&&!p.myReady&&active&&!p.canReady&&<small>За READY е нужен активен сървър и ДЕМО бюджет минимум 16 300 €.</small>}
         <small>Само ДЕМО · без реални плащания</small>
       </div>
     </div>
     <nav className="eaLxMobileNav" aria-label="Мобилна навигация в лобито">
       <a href="#ea-lobby-top" aria-current="page"><LobbyIcon type="globe"/><span>Лоби</span></a>
-      <a href="#ea-lobby-roster"><LobbyIcon type="users"/><span>Участници</span></a>
-      <a href="#ea-lobby-ready"><LobbyIcon type="shield"/><span>Готов</span></a>
+      <a href={guest?"#ea-guest-login":"#ea-lobby-roster"}><LobbyIcon type="users"/><span>{guest?"Вход":"Участници"}</span></a>
+      <a href={guest?"#ea-guest-login":"#ea-lobby-ready"}><LobbyIcon type="shield"/><span>{guest?"Достъп":"Готов"}</span></a>
       <a href="/inventory"><LobbyIcon type="car"/><span>Автомобили</span></a>
     </nav>
   </section>;
