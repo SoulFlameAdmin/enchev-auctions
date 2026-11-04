@@ -1,4 +1,5 @@
 "use client";
+import CoveredCar3D from "./CoveredCar3D";
 
 type Person={role:string;ready:boolean};
 type Lobby={count:number;readyCount:number;minPlayers:number;participants:Person[];activeDevices?:number;admitted?:boolean};
@@ -47,8 +48,9 @@ function CoveredCar(){
         <path d="M85 309Q100 331 128 317Q157 335 185 315Q225 334 249 316Q278 341 308 323Q348 337 375 326Q410 340 447 321Q485 334 512 317Q540 334 565 314Q600 324 622 307" fill="none" stroke="#fc1729" strokeOpacity=".5" strokeWidth="3"/>
         <ellipse cx="345" cy="317" rx="265" ry="17" fill="#260008" opacity=".48"/>
       </svg>
+      <CoveredCar3D/>
     </div>
-    <div className="eaLxTurntableLabel">360° SHOWROOM PREVIEW <span>·</span> КОНЦЕПТУАЛНА ВИЗУАЛИЗАЦИЯ</div>
+    <div className="eaLxTurntableLabel">360° WEBGL SHOWROOM <span>·</span> КОНЦЕПТУАЛНА ВИЗУАЛИЗАЦИЯ</div>
   </div>;
 }
 
