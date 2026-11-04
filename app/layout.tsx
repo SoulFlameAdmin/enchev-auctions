@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import "./ea-official-logo.css";
 import "./enchev-theme.css";
 import "./home-v2.css";
 import "./navigation.css";
@@ -31,7 +32,7 @@ export const viewport: Viewport = { width: "device-width", initialScale: 1, view
 export const metadata: Metadata = {
   title: "E&A East West Auctioneers Group",
   description: "E&A East West Auctioneers Group — international vehicle auctions, live bidding, vehicle history and transport. SOULFLAME",
-  icons: { icon: "/brand/ea-2026-app.svg", shortcut: "/brand/ea-2026-app.svg", apple: "/brand/ea-2026-app.svg" },
+  icons: { icon: "/brand/ea-official-mark.svg", shortcut: "/brand/ea-official-mark.svg", apple: "/brand/ea-official-mark.svg" },
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
