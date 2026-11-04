@@ -132,3 +132,17 @@
 .bp-breakdown thead th{color:#979ca8;font-size:10px;letter-spacing:.06em}
 .bp-breakdown tbody tr:last-child th,.bp-breakdown tbody tr:last-child td{border-bottom:0}
 .bp-breakdown>p{margin:15px 0 0}
+
+
+/* The selected block expands IN PLACE. No page-level scrollIntoView or separate detail area. */
+.bp-card-slot{display:flex;flex-direction:column;min-width:0}
+.bp-card-slot .bp-card{width:100%;flex:1}
+.bp-card-slot.is-expanded{grid-column:1/-1;min-width:0}
+.bp-card-slot.is-expanded>.bp-card{flex:none;min-height:148px;border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom:0}
+.bp-card-expanded{background:#131519;border:1px solid #daa96c;border-top:1px solid #745843;border-radius:0 0 20px 20px;padding:22px;max-height:min(76dvh,900px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#6a5849 #17191d}
+.bp-card-expanded .bp-detail{scroll-margin-top:0;margin-top:0;padding-top:0;border-top:0}
+.bp-card-expanded .bp-marketing{margin-top:32px}
+.bp-card-expanded .bm{margin-top:25px}
+.bp-card-slot.is-expanded>.bp-card .bp-card-arrow{color:#f0d29d}
+@media(max-width:740px){.bp-card-expanded{padding:13px;max-height:72dvh;border-radius:0 0 17px 17px}.bp-card-slot.is-expanded>.bp-card{min-height:120px;padding:14px}.bp-card-expanded .bp-detail-grid{gap:10px}.bp-card-expanded .bp-panel{padding:14px}}
+@media(prefers-reduced-motion:reduce){.bp-card-expanded{scroll-behavior:auto}}
