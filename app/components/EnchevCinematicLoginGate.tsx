@@ -21,6 +21,9 @@ export default function EnchevCinematicLoginGate() {
   const exitTimer=useRef<ReturnType<typeof setTimeout>|null>(null);
   const close=useRef<HTMLButtonElement>(null);
   const cinematicFrame=useRef<HTMLIFrameElement>(null);
+  // Keep the Forge entry animation untouched until the ads have closed.
+  const deferredEnterRef=useRef<HTMLElement|null>(null);
+  const replayingEnterRef=useRef(false);
 
   const show=useCallback(()=>{
     if(exitTimer.current!==null){
@@ -56,6 +59,35 @@ export default function EnchevCinematicLoginGate() {
     if(exitTimer.current!==null)clearTimeout(exitTimer.current);
   },[]);
 
+  const startHomepageAfterAd=useCallback(()=>{
+    const forge=document.querySelector<HTMLIFrameElement>(
+      'iframe[title="ENCHEV Auctions cinematic homepage"]'
+    );
+    if(!forge?.contentWindow)return;
+    const frameWindow=forge.contentWindow;
+    let trigger=deferredEnterRef.current;
+    // Handle a keyboard-only entry, too, without reloading the iframe.
+    if(!trigger?.isConnected){
+      try{
+        trigger=Array.from(forge.contentDocument?.querySelectorAll<HTMLElement>(
+          'button,a,[role="button"]'
+        )||[]).find(element=>/^ENTER(?:\s*[→↗›])?$/i.test(
+          (element.textContent||element.getAttribute("aria-label")||"").replace(/\s+/g," ").trim()
+        ))||null;
+      }catch{trigger=null;}
+    }
+    deferredEnterRef.current=null;
+    if(trigger){
+      replayingEnterRef.current=true;
+      try{trigger.click();}finally{replayingEnterRef.current=false;}
+    }
+    // Refresh existing scroll layout; never reset/reload Forge animations.
+    frameWindow.requestAnimationFrame(()=>{
+      frameWindow.dispatchEvent(new Event("resize"));
+      frameWindow.dispatchEvent(new Event("scroll"));
+    });
+  },[]);
+
   const dismiss=useCallback(()=>{
     // Pause all audio when the viewer exits; remove the iframe after the fade
     // so nothing continues playing over the entered site.
@@ -68,11 +100,14 @@ export default function EnchevCinematicLoginGate() {
     exitTimer.current=setTimeout(()=>{
       exitTimer.current=null;
       setHasOpened(false);
+      window.requestAnimationFrame(()=>{
+        startHomepageAfterAd();
+        document.querySelector<HTMLIFrameElement>(
+          'iframe[title="ENCHEV Auctions cinematic homepage"]'
+        )?.focus();
+      });
     },460);
-    window.requestAnimationFrame(()=>{
-      document.querySelector<HTMLIFrameElement>('iframe[title="ENCHEV Auctions cinematic homepage"]')?.focus();
-    });
-  },[]);
+  },[startHomepageAfterAd]);
 
   // Close the most recently opened overlay first (nested iframe promo
   // before the outer login dialog). DOM check also handles fast clicks
@@ -140,6 +175,11 @@ export default function EnchevCinematicLoginGate() {
           const label=(node.textContent||node.getAttribute("aria-label")||"")
             .replace(/\s+/g," ").trim();
           if(/^ENTER(?:\s*[→↗›])?$/i.test(label)){
+            if(replayingEnterRef.current)return;
+            // Defer Forge's native animation until the advert is dismissed.
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            deferredEnterRef.current=(node.closest('button,a,[role="button"]')||node) as HTMLElement;
             window.requestAnimationFrame(show);
             return;
           }
