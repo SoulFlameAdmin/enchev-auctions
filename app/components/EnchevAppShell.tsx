@@ -40,7 +40,7 @@ export default function EnchevAppShell(){
     };
   },[open]);
 
-  if(pathname==="/" || pathname==="/car-ar" || pathname==="/car-ar-demo" || pathname==="/auction-readiness")return null;
+  if(pathname==="/" || pathname.startsWith("/business-plan") || pathname==="/car-ar" || pathname==="/car-ar-demo" || pathname==="/auction-readiness")return null;
 
   return <div className="eaAppShell" data-design-task="DP2-04" data-shell-open={open?"true":"false"}>
     <div className="eaAppUtility">

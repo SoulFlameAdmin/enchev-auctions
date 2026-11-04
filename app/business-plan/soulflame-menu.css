@@ -1,0 +1,53 @@
+/* Independent private SoulFlame services drawer for /business-plan. Never affects public ENCHEV auction shell. */
+.sf-open-menu{position:fixed;z-index:90;right:max(18px,env(safe-area-inset-right));top:max(14px,env(safe-area-inset-top));display:flex;align-items:center;gap:15px;background:#17191d;border:1px solid #62666c;border-radius:18px;color:#fff;padding:12px 15px 12px 19px;box-shadow:0 13px 35px #000b;cursor:pointer;max-width:calc(100vw - 30px)}
+.sf-open-menu:hover{border-color:#e05252;background:#25262a}
+.sf-open-menu:focus-visible,.sf-services-drawer button:focus-visible,.sf-services-drawer input:focus-visible,.sf-services-drawer a:focus-visible,.sf-services-drawer summary:focus-visible{outline:3px solid #ef6868;outline-offset:2px}
+.sf-open-text{font-size:13px;font-weight:900;letter-spacing:.1em;text-align:left}
+.sf-open-text small{display:block;font-size:9px;letter-spacing:.14em;color:#bcbfc4;margin-top:2px}
+.sf-burger-lines{display:flex;flex-direction:column;gap:5px;justify-content:center;align-items:center;min-width:29px;min-height:29px}
+.sf-burger-lines i{width:27px;height:2px;border-radius:3px;background:#f2f3f4;display:block}
+.sf-menu-backdrop{position:fixed;z-index:101;inset:0;width:100%;height:100dvh;border:0;background:#000b;backdrop-filter:blur(5px);cursor:pointer}
+.sf-services-drawer{position:fixed;z-index:102;top:0;right:0;bottom:0;width:min(540px,100vw);max-height:100dvh;overflow-y:auto;overscroll-behavior:contain;background:#0b0d10;color:#fff;border-left:1px solid #36393f;box-shadow:-25px 0 80px #000c;font-family:Arial,Helvetica,sans-serif;padding:0 22px 24px;scrollbar-width:thin;scrollbar-color:#56565d transparent}
+.sf-services-drawer *{box-sizing:border-box}
+.sf-menu-top{position:sticky;top:0;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:16px;background:#0b0d10f5;border-bottom:1px solid #34383f;padding:22px 0 18px}
+.sf-brand{display:block;font-size:21px;font-weight:950;letter-spacing:.07em}
+.sf-brand b{color:#e25454;font-size:13px;margin-left:3px}
+.sf-tag{display:block;font-size:9px;letter-spacing:.14em;color:#a5abb3;margin-top:4px;font-weight:800}
+.sf-menu-close{border:1px solid #4e5055;border-radius:12px;background:#24262a;color:#fff;font-size:27px;width:42px;height:42px;line-height:1;cursor:pointer}
+.sf-menu-intro{padding:24px 0 10px}
+.sf-menu-intro h2{font-size:clamp(24px,4.5vw,32px);line-height:1.1;letter-spacing:-.045em;margin:0 0 13px}
+.sf-menu-intro p{font-size:13px;color:#b6b8bd;line-height:1.65;margin:0 0 13px}
+.sf-menu-disclaimer{font-size:11px;color:#d1adad;border-left:3px solid #b94d4d;background:#311a1b7a;padding:11px 13px;border-radius:8px}
+.sf-menu-search{display:block;padding:15px 0}
+.sf-menu-search span{display:block;color:#bfc3c8;font-size:10px;letter-spacing:.13em;font-weight:900;margin-bottom:7px}
+.sf-menu-search input{width:100%;border:1px solid #484a50;background:#1a1c20;color:#fff;border-radius:11px;padding:13px 14px;font-size:15px}
+.sf-menu-list{display:flex;flex-direction:column;gap:9px}
+.sf-menu-section{border:1px solid #41444b;background:#1c1e22;border-radius:14px;overflow:hidden}
+.sf-menu-section.sf-active{border-color:#93504c}
+.sf-menu-section-trigger{display:flex;gap:12px;align-items:center;width:100%;border:0;background:transparent;color:#fff;text-align:left;cursor:pointer;padding:15px 13px}
+.sf-menu-num{color:#de8884;font-size:12px;font-weight:900;min-width:24px}
+.sf-menu-section-heading{flex:1;min-width:0}
+.sf-menu-section-heading strong{display:block;font-size:16px;line-height:1.25}
+.sf-menu-section-heading small{display:block;color:#afb2bb;font-size:11px;line-height:1.35;margin-top:4px}
+.sf-menu-expand-icon{display:grid;place-items:center;background:#34363b;border-radius:50%;width:27px;height:27px;flex-shrink:0;font-size:20px}
+.sf-menu-section-content{padding:0 15px 16px;border-top:1px solid #3f4147}
+.sf-menu-goal{font-size:12px;line-height:1.6;color:#c6c9d0;margin:14px 0}
+.sf-menu-eyebrow{font-size:10px;color:#df9291;font-weight:900;letter-spacing:.12em;margin:19px 0 9px}
+.sf-menu-services,.sf-menu-workflows{display:grid;gap:7px}
+.sf-menu-service,.sf-menu-workflows details{border:1px solid #45474d;background:#131519;border-radius:10px;padding:0 11px}
+.sf-menu-service summary,.sf-menu-workflows summary{cursor:pointer;color:#f7f7f9;font-size:12px;font-weight:800;padding:12px 0;line-height:1.4}
+.sf-menu-service summary{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.sf-menu-service summary::marker{color:#bf6666}
+.sf-menu-more{color:#d18181;font-size:19px}
+.sf-menu-service-body{border-top:1px solid #3f4147;padding:9px 0 12px}
+.sf-menu-service-body p,.sf-menu-workflows p{font-size:11px;color:#c4c6ca;line-height:1.55;margin:6px 0}
+.sf-menu-service-body strong,.sf-menu-workflows strong{color:#f1c0bf}
+.sf-menu-service-body small{color:#969aa5;font-size:10px;line-height:1.5}
+.sf-menu-workflows ul{margin:0;padding:0 0 5px 19px;color:#c9ccd1;display:grid;gap:7px;font-size:11px;line-height:1.5}
+.sf-menu-plan-link{display:flex;justify-content:space-between;align-items:center;gap:9px;background:#a93e3e;color:#fff;border:1px solid #d66868;border-radius:10px;font-size:12px;font-weight:900;padding:12px 14px;margin:17px 0 2px;width:100%;cursor:pointer;text-align:left}
+.sf-menu-plan-link:hover{background:#c54b4b}
+.sf-menu-no-results{color:#aeb0b5;font-size:12px;text-align:center;padding:24px 10px}
+.sf-menu-footer{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;font-size:10px;letter-spacing:.07em;color:#92979f;border-top:1px solid #373a40;margin-top:23px;padding-top:20px}
+.sf-menu-footer a{color:#e4aaaa;text-decoration:none}
+@media(max-width:650px){.sf-services-drawer{width:100vw;padding:0 15px 20px;border-left:0}.sf-menu-top{padding:17px 0 12px}.sf-open-menu{top:max(8px,env(safe-area-inset-top));right:max(9px,env(safe-area-inset-right));padding:9px 11px 9px 12px;border-radius:14px}.sf-open-text{font-size:11px}.sf-open-text small{font-size:8px}.sf-burger-lines i{width:23px}.bp:has(.sf-open-menu) .bp-top{padding-top:80px}}
+@media(prefers-reduced-motion:reduce){.sf-open-menu,.sf-menu-section{transition:none}}

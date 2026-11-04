@@ -2,6 +2,7 @@
 import {useMemo,useState} from "react";
 import {marketConfig,sections} from "./data";
 import MasterPlanBlocks from "./MasterPlanBlocks";
+import SoulFlameServicesMenu from "./SoulFlameServicesMenu";
 import "./business-plan.css";
 
 type Market=keyof typeof marketConfig;
@@ -82,6 +83,7 @@ export default function BusinessPlanPage(){
  };
  const choose=(id:string)=>{setSelected(id);document.getElementById("bp-detail")?.scrollIntoView({behavior:"smooth",block:"start"});};
  return <main id="main-content" className="bp" lang="bg">
+  <SoulFlameServicesMenu onSelect={choose}/>
   <div className="bp-container">
    <div className="bp-top"><div><span className="bp-overline">E&A EAST WEST AUCTIONEERS GROUP</span><h1>Бизнес план <em>&</em> услуги</h1><p>16 раздела → услуги → задачи → труд Митко и Борко → всички наши екипи → обща цена за България и Европа.</p></div><a className="bp-back" href="/">← Начална страница</a></div>
    <div className="bp-truth"><strong>ИНВЕСТИЦИОНЕН ПЛАН · НЕ Е ОФЕРТА</strong><span>Всички бюджети са ориентировъчни без ДДС. Трудът на едни и същи хора не се начислява повторно между разделите. Реалните цени се определят след техническо задание и доставни оферти.</span></div>
