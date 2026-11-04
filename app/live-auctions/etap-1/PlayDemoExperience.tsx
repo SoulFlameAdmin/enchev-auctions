@@ -90,6 +90,9 @@ export default function PlayDemoExperience({audio,onExit}:Props){
   const [pendingStep,setPendingStep]=useState<number|null>(null);
   const [status,setStatus]=useState("");
   const [carousel,setCarousel]=useState(0);
+  const [carMode,setCarMode]=useState<"3d"|"photo">("3d");
+  const [modelLoaded,setModelLoaded]=useState(false);
+  const [modelError,setModelError]=useState(false);
   const startedAt=useRef<number|null>(null);
   const clockStartedAt=useRef<number|null>(null);
   const deadline=useRef<number|null>(null);
@@ -206,14 +209,39 @@ export default function PlayDemoExperience({audio,onExit}:Props){
     </section>:<div className="eaPDAuctionLayout">
       <section className="eaPDMainPanel">
         <div className="eaPDCarInfo"><span className="eaPDLotLabel">ЛОТ №001 · ВИРТУАЛЕН ТЪРГ</span><h1>LAMBORGHINI<br/><b>REVUELTO</b></h1><p>V12 HYBRID <em/> 1 015 к.с. <em/> 0–100 км/ч: 2.5 s</p></div>
-        <div className={`eaPDCarScene variant-${carousel}`}>
-          <div className="eaPDHalo"/>
-          <img src="/images/enchev-lamborghini-hero.jpg" alt="Илюстративно изображение на Lamborghini, не реален аукционен лот" loading="eager"/>
-          <button type="button" className="eaPDImageArrow left" aria-label="Предишен изглед" onClick={()=>setCarousel(v=>(v+2)%3)}>‹</button>
-          <button type="button" className="eaPDImageArrow right" aria-label="Следващ изглед" onClick={()=>setCarousel(v=>(v+1)%3)}>›</button>
-          <div className="eaPDCarouselDots"><i className={carousel===0?"active":""}/><i className={carousel===1?"active":""}/><i className={carousel===2?"active":""}/></div>
-          <span className="eaPDCarDisclosure">ВИЗУАЛИЗАЦИЯ · НЕ Е РЕАЛЕН ЛОТ</span>
+        <div className="eaPDCarViewHeader">
+          <div><strong>ИНТЕРАКТИВЕН 360° АВТОМОБИЛ</strong><small>Завърти с пръст или мишка · мащабирай с два пръста</small></div>
+          <div className="eaPDCarModeSwitch" role="group" aria-label="Избор между 3D модел и снимка">
+            <button type="button" className={carMode==="3d"?"selected":""} aria-pressed={carMode==="3d"} onClick={()=>setCarMode("3d")}>◉ 360° 3D</button>
+            <button type="button" className={carMode==="photo"?"selected":""} aria-pressed={carMode==="photo"} onClick={()=>setCarMode("photo")}>▧ Снимка</button>
+          </div>
         </div>
+        <div className={`eaPDCarScene ${carMode==="3d"?"eaPDCarScene3D":"eaPDCarScenePhoto"} variant-${carousel}`}>
+          {carMode==="3d"?<>
+            {!modelLoaded&&!modelError&&<div className="eaPDModelLoading" role="status"><span className="eaPDModelSpinner" aria-hidden="true"/>ЗАРЕЖДАНЕ НА ИСТИНСКИЯ 3D АВТОМОБИЛ…</div>}
+            {modelError?<div className="eaPDModelFail"><strong>3D моделът е недостъпен.</strong><button type="button" onClick={()=>setCarMode("photo")}>ПОКАЖИ СНИМКА</button></div>:
+            <iframe
+              className="eaPDModelIframe"
+              title="Lamborghini Revuelto — истински интерактивен 360-градусов 3D модел"
+              src="https://sketchfab.com/models/cf52245eb68f48daa909c7ad2a8deaa3/embed?autostart=1&autospin=0.25&ui_theme=dark&ui_hint=2"
+              loading="eager"
+              allow="autoplay; fullscreen; xr-spatial-tracking"
+              allowFullScreen
+              referrerPolicy="strict-origin-when-cross-origin"
+              onLoad={()=>setModelLoaded(true)}
+              onError={()=>{setModelError(true);setModelLoaded(false);}}
+            />}
+            <div className="eaPDModelHint" aria-hidden="true">↔ ВЪРТИ 360° · СВОБОДЕН ОГЛЕД</div>
+          </>:<>
+            <div className="eaPDHalo"/>
+            <img src="/images/enchev-lamborghini-hero.jpg" alt="Илюстративна снимка на концептуален автомобил, не реален аукционен лот" loading="eager"/>
+            <button type="button" className="eaPDImageArrow left" aria-label="Предишен фотографски изглед" onClick={()=>setCarousel(v=>(v+2)%3)}>‹</button>
+            <button type="button" className="eaPDImageArrow right" aria-label="Следващ фотографски изглед" onClick={()=>setCarousel(v=>(v+1)%3)}>›</button>
+            <div className="eaPDCarouselDots"><i className={carousel===0?"active":""}/><i className={carousel===1?"active":""}/><i className={carousel===2?"active":""}/></div>
+          </>}
+          <span className="eaPDCarDisclosure">3D ДЕМО · НЕ Е РЕАЛЕН ЛОТ</span>
+        </div>
+        {carMode==="3d"&&<p className="eaPDModelCredit">3D модел: <a href="https://sketchfab.com/3d-models/free-lamborghini-revuelto-cf52245eb68f48daa909c7ad2a8deaa3" target="_blank" rel="noreferrer noopener">ALIEEEN / Sketchfab</a> · CC BY · Зависим от външен 3D преглед</p>}
         <section className="eaPDActionPanel">
           <Gauge leftMs={phase==="finished"?0:nowMs}/>
           <div className="eaPDPrice"><strong>{cash(price)}</strong><span>ТЕКУЩА ДЕМО ОФЕРТА</span></div>
