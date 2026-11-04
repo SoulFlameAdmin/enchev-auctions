@@ -311,6 +311,9 @@ function translateValue(value:string){
 }
 
 function translateNode(node:Node){
+  // Premium Bulgarian live-auction UX is intentionally localized; keep its exact labels.
+  if(node instanceof Element && (node.matches(".eaPremium") || node.closest(".eaPremium"))) return;
+  if(node.nodeType===Node.TEXT_NODE && node.parentElement?.closest(".eaPremium")) return;
   if(node.nodeType===Node.TEXT_NODE){
     const parent=(node.parentElement?.tagName||"").toLowerCase();
     if(parent==="script"||parent==="style"||parent==="code"||parent==="pre") return;
