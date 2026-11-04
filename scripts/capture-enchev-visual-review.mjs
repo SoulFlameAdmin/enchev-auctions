@@ -66,6 +66,18 @@ try{
           if(Date.now()-startedAt<3800)throw Error("5-second bot entrance was skipped");
           if(!await page.locator(".eaPDGaugeSvg").isVisible())throw Error("Speedometer missing");
           if(!await page.locator(".eaPDTime").isVisible())throw Error("Countdown missing");
+          const model=page.locator(".eaPDModelIframe");
+          await model.waitFor({state:"visible",timeout:9000});
+          const modelSrc=await model.getAttribute("src");
+          if(!modelSrc?.includes("sketchfab.com/models/cf52245eb68f48daa909c7ad2a8deaa3/embed"))throw Error("Licensed 360-degree Revuelto source missing");
+          if(!modelSrc.includes("autospin="))throw Error("360-degree auto-rotation not configured");
+          if(!await page.getByText("◉ 360° 3D").isVisible())throw Error("3D mode switch missing");
+          await page.locator(".eaPDCarModeSwitch button").nth(1).click();
+          if(!await page.locator(".eaPDCarScenePhoto img").isVisible())throw Error("Photographic fallback missing");
+          await page.locator(".eaPDCarModeSwitch button").nth(0).click();
+          await model.waitFor({state:"visible",timeout:9000});
+          await page.waitForTimeout(900);
+          console.log("VIEW360_PASS",device.name,"true orbitable Revuelto viewer, autospin, photo fallback");
           const pre=await page.locator(".eaPDPrice strong").innerText();
           if(!pre.includes("1,000,000"))throw Error("Unexpected initial demo bid: "+pre);
           await page.locator(".eaPDMetalBid").click();
