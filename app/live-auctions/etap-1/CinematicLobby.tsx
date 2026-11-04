@@ -98,6 +98,17 @@ export default function CinematicLobby(p:Props){
       </aside>
       <div className="eaLxHeroCaption"><span>БЪЛГАРИЯ</span><i/> <span>ИСПАНИЯ</span><i/><span>ЕВРОПА</span></div>
     </div>
+    <div className="eaLxMobileExtras">
+      <div className="eaLxMobileFeatures" aria-label="Секции на платформата">
+        {features.map(f=><div key={f.icon} className="eaLxFeatureTile"><LobbyIcon type={f.icon}/><strong>{f.title}</strong><span>{f.subtitle}</span></div>)}
+      </div>
+      <a href="#ea-lobby-ready" className="eaLxMobileCta"><span aria-hidden="true">▶</span><strong>КЪМ ЛОБИТО И ГОТОВНОСТТА</strong><span aria-hidden="true">→</span></a>
+      <div className="eaLxMobileTrust" aria-label="Действителен статус на тестовата зала">
+        <div><LobbyIcon type="users"/><strong>{count}/{p.minPlayers}</strong><span>Участници в<br/>DEMO залата</span></div>
+        <div><LobbyIcon type="shield"/><strong>{ready}/{p.minPlayers}</strong><span>Готови за<br/>старта</span></div>
+        <div><LobbyIcon type="globe"/><strong>{p.connected?"ONLINE":"OFFLINE"}</strong><span>Сървърна<br/>връзка</span></div>
+      </div>
+    </div>
     <div className="eaLxControlDeck">
       <div className="eaLxWelcome">
         <span className="eaLxSmall">E&A EAST AND WEST · PRIVATE DEMO LOBBY</span>
@@ -109,17 +120,6 @@ export default function CinematicLobby(p:Props){
         {p.participant&&!countdown&&!started?<button type="button" disabled={!p.canReady||p.busy} onClick={()=>p.onReady(!p.myReady)} className={p.myReady?"is-ready":""}>{p.busy?"СИНХРОНИЗАЦИЯ…":p.myReady?"✓ ГОТОВ СЪМ":"ГОТОВ СЪМ →"}</button>:<div className="eaLxLocked">{countdown?"◷ ИЗЧАКВАНЕ НА СТАРТА":started?"● ТЪРГЪТ Е АКТИВЕН":"◉ РЕЖИМ НА НАБЛЮДЕНИЕ"}</div>}
         {p.participant&&!p.myReady&&active&&!p.canReady&&<small>За READY е нужен активен сървър и ДЕМО бюджет минимум 16 300 €.</small>}
         <small>Само ДЕМО · без реални плащания</small>
-      </div>
-    </div>
-    <div className="eaLxMobileExtras">
-      <div className="eaLxMobileFeatures" aria-label="Секции на платформата">
-        {features.map(f=><div key={f.icon} className="eaLxFeatureTile"><LobbyIcon type={f.icon}/><strong>{f.title}</strong><span>{f.subtitle}</span></div>)}
-      </div>
-      <a href="#ea-lobby-ready" className="eaLxMobileCta"><span aria-hidden="true">▶</span><strong>КЪМ ЛОБИТО И ГОТОВНОСТТА</strong><span aria-hidden="true">→</span></a>
-      <div className="eaLxMobileTrust" aria-label="Действителен статус на тестовата зала">
-        <div><LobbyIcon type="users"/><strong>{count}/{p.minPlayers}</strong><span>Участници в<br/>DEMO залата</span></div>
-        <div><LobbyIcon type="shield"/><strong>{ready}/{p.minPlayers}</strong><span>Готови за<br/>старта</span></div>
-        <div><LobbyIcon type="globe"/><strong>{p.connected?"ONLINE":"OFFLINE"}</strong><span>Сървърна<br/>връзка</span></div>
       </div>
     </div>
     <nav className="eaLxMobileNav" aria-label="Мобилна навигация в лобито">
