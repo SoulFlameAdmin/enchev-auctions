@@ -165,7 +165,7 @@ export default function PlayDemoExperience({audio,onExit}:Props){
         if(lastBeat.current!==bucket&&ms>0){
           if(lastBeat.current!==null){
             tone(ms<=10000?830:520,0,.043,.029);
-            if(ms<=10000&&lastBeat.current>20){tone(990,.12,.12,.053);tone(730,.29,.15,.043);}
+            if(ms<=10000&&bucket%2===0){tone(990,.11,.12,.049);tone(730,.29,.15,.04);}
           }
           lastBeat.current=bucket;
         }
