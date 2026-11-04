@@ -213,3 +213,24 @@
 @media(prefers-reduced-motion:reduce){
  .eaPDGauge.is-critical .eaPDTime{animation:none}
 }
+
+/* Preserve accessible skip navigation without letting its idle state cover the car. */
+body:has(.eaPlayDemo) .eaSkipLink{
+  position:fixed!important;
+  top:-100px!important;
+  left:10px!important;
+  transform:translateY(-200%)!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  width:auto!important;
+  max-width:calc(100vw - 20px)!important;
+}
+body:has(.eaPlayDemo) .eaSkipLink:focus-visible{
+  top:10px!important;
+  transform:none!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  z-index:9999!important;
+  background:#08080a!important;
+  color:#fff!important;
+}
