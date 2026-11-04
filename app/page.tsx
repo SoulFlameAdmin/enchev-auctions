@@ -14,6 +14,7 @@ export default function Home(){
       <iframe
         src="/forge/index.html"
         title="ENCHEV Auctions cinematic homepage"
+        allow="accelerometer; gyroscope"
         style={{
           position:"fixed",
           inset:0,
