@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
 import Etap1DemoVehicle from "./Etap1DemoVehicle";
 import CinematicLobby from "./CinematicLobby";
+import PlayDemoExperience from "./PlayDemoExperience";
 import "./etap1.css";
 import "./lobby-premium.css";
 
@@ -61,6 +62,8 @@ export default function EnchevStageOnePage(){
   const [bonusUntil,setBonusUntil]=useState(0);
   const [moreOpen,setMoreOpen]=useState(false);
   const [historyExpanded,setHistoryExpanded]=useState(false);
+  const [demoActive,setDemoActive]=useState(false);
+  const demoAudioRef=useRef<AudioContext|null>(null);
   const [walletNotice,setWalletNotice]=useState("");
   const voiceRef=useRef(false);
   const voiceLangRef=useRef("bg-BG");
@@ -450,7 +453,23 @@ export default function EnchevStageOnePage(){
     SIDE:"https://images.pexels.com/photos/14445435/pexels-photo-14445435.jpeg?auto=compress&cs=tinysrgb&w=1800",
   };
 
-  return <main id="main-content" className={"eaEtap1 eaRoom"+(showAuction&&bidder?" eaHasBidDock":"")}>
+  // Completely isolated client-side showcase. It never registers fake bidders in Supabase.
+  const openPlayDemo=()=>{
+    try {
+      if(!demoAudioRef.current&&typeof window!=="undefined"){
+        demoAudioRef.current=new window.AudioContext();
+      }
+      if(demoAudioRef.current)void demoAudioRef.current.resume();
+    }catch{/* Some devices do not expose Web Audio. Visual mode still works. */}
+    setDemoActive(true);
+  };
+  const leavePlayDemo=()=>{
+    setDemoActive(false);
+    const current=demoAudioRef.current;demoAudioRef.current=null;
+    if(current)void current.close();
+  };
+
+  return demoActive?<PlayDemoExperience audio={demoAudioRef.current} onExit={leavePlayDemo}/>:<main id="main-content" className={"eaEtap1 eaRoom"+(showAuction&&bidder?" eaHasBidDock":"")}>
     <header className="eaRoomHeader">
       <a className="eaRoomLogo" href="/" aria-label="ENCHEV Home">
         <img src="/brand/ea-official-dark.svg" alt="E&A East and West Auctioneers Group" />
@@ -495,7 +514,7 @@ export default function EnchevStageOnePage(){
         guest status="idle" lobby={null} countdownRemaining={0}
         connected={false} busy={busy} participant={false} myReady={false}
         minPlayers={3} corePresent={false} canReady={false}
-        onReady={()=>{}}
+        onReady={()=>{}} onPlayDemo={openPlayDemo}
       />
       <section className="eaLoginCard" id="ea-guest-login">
       <div className="eaLoginWelcome">
@@ -526,7 +545,7 @@ export default function EnchevStageOnePage(){
         connected={connected} busy={busy} participant={participant} myReady={myReady}
         minPlayers={minPlayers} corePresent={corePresent}
         canReady={connected&&!busy&&(Number(wallet?.lotBudget??0)>=16300||myReady)}
-        onReady={next=>{void setReady(next);}}
+        onReady={next=>{void setReady(next);}} onPlayDemo={openPlayDemo}
       />}
       {role==="admin"&&<div className="eaMonitorEntry"><a href="/live-auctions/etap-1/admin" aria-label="Open live admin dashboard">▣ OPEN ADMIN CONTROL ROOM →</a><small>Full-screen PC monitor · LIVE roster · ГОТОВ · active bidders</small></div>}
       {role==="admin"&&preparingRound&&<p className="eaOperatorNote">🔒 The first round starts on three bidder logins; later rounds require three ГОТОВ clicks. The operator never starts or blocks the auction.</p>}
