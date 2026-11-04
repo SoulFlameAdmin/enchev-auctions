@@ -9,3 +9,12 @@
 .eaHeroBrand{position:fixed;left:50%;transform:translateX(-50%);top:max(18px,env(safe-area-inset-top));right:auto;bottom:auto;z-index:7;width:min(390px,calc(100vw - 120px));pointer-events:none;display:flex;justify-content:center;align-items:center}
 .eaHeroBrand .eaOfficialLogo{width:100%;filter:drop-shadow(0 3px 12px rgba(0,0,0,.75))}
 @media(max-width:760px){.eaHeroBrand{top:max(24px,env(safe-area-inset-top));width:min(235px,calc(100vw - 132px))}}
+
+/* One centered brand row across all buyer pages; never overlap search/nav/actions. */
+.eaAppCenteredBrandRow{display:flex;justify-content:center;align-items:center;min-height:78px;padding:10px 16px 6px;background:rgba(5,7,6,.92)}
+.eaAppCenteredBrand{display:flex;justify-content:center;align-items:center;width:min(360px,calc(100vw - 36px));max-width:100%;text-decoration:none}
+.eaAppCenteredBrand .eaOfficialLogo{width:100%;margin:0}
+.eaAppHeader{grid-template-columns:minmax(170px,230px) minmax(0,1fr) auto}
+@media(max-width:1180px){.eaAppHeader{grid-template-columns:minmax(160px,220px) minmax(0,1fr) auto}}
+@media(max-width:1050px){.eaAppHeader{grid-template-columns:minmax(0,1fr) auto}}
+@media(max-width:640px){.eaAppCenteredBrandRow{min-height:65px;padding:7px 12px 4px}.eaAppCenteredBrand{width:min(245px,calc(100vw - 40px))}.eaAppHeader{grid-template-columns:minmax(0,1fr) auto;min-height:56px}}
