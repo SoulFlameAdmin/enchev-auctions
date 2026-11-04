@@ -127,7 +127,9 @@
     if(af?.manifest&&af.enabled&&af.frameProcessed==null&&attempts===2){
       try{af.refresh(af.desideredFrame??0);}catch{}
     }
-    if(attempts>=2)showFallback();
+    // Missing canvas means unsupported WebCodecs: show fallback immediately.
+    // A slow but present canvas gets one recovery attempt first.
+    if(!view.canvas||attempts>=2)showFallback();
     // Back off once the native animation has had ample time to recover.
     if(attempts<13)timers.push(setTimeout(check,2000));
   }
