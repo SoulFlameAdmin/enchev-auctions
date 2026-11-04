@@ -124,7 +124,7 @@ export default function EaPremiumAuction(props:Props){
     </div>
     {menu&&<nav className="eaPremiumDropdown" aria-label="Бързо меню"><button onClick={()=>{setEntered(false);setMenu(false);}}>Лоби</button><button onClick={()=>{enterRoom();setMenu(false);}}>Тестов търг</button><a href="/inventory">Автомобили</a><a href="/">Начало</a></nav>}
 
-    {!entered?<main className="eaPremiumLobby" aria-label="Лоби на тестовия търг">
+    {!entered?<div className="eaPremiumLobby" aria-label="Лоби на тестовия търг">
       <div className="eaLobbyScene">
         <div className="eaLobbyImage"/>
         <div className="eaLobbySceneContent">
@@ -141,7 +141,7 @@ export default function EaPremiumAuction(props:Props){
         <section className="eaLobbyDetails"><span className="eaSectionKicker">СТАТУС НА СИСТЕМАТА</span><div className={`eaServerStatus ${isOnline?"online":""}`}>● {isOnline?"ТЕСТОВ СЪРВЪР СВЪРЗАН":"ИЗЧАКВА СИНХРОНИЗАЦИЯ"}</div><span className="eaLobbyDetailLabel">Текущ тестов лот</span><b>{current.lot}</b><span className="eaLobbyDetailLabel">Остава до следващ лот</span><strong>{secondsLabel(props.remaining)}</strong><span className="eaLobbyDetailLabel">Начална цена на следващия</span><b>{money(props.next.price)}</b><button type="button" onClick={()=>void props.onResync()}>↻ ОПРЕСНИ СТАТУСА</button></section>
       </div>
       <p className="eaDemoDisclosure">ДЕМО РЕЖИМ · Готовността е локална визуална настройка, а не реална регистрация. Няма плащания.</p>
-    </main>:<main className="eaPremiumAuctionRoom" aria-label="Професионален тестов търг">
+    </div>:<div className="eaPremiumAuctionRoom" aria-label="Професионален тестов търг">
       <div className="eaPremiumRoomRibbon"><span className="eaLivePill">● LIVE / TEST</span><strong>ТЪРГ НА ЖИВО · {current.lot}</strong><span>{isOnline?"● СЪРВЪРНА СИНХРОНИЗАЦИЯ":"⚠ НЯМА АКТУАЛНА ВРЪЗКА"}</span><button type="button" onClick={()=>setEntered(false)}>↩ Лоби</button></div>
       <div className="eaPremiumAuctionGrid">
         <section className="eaPremiumCarPanel">
@@ -159,7 +159,7 @@ export default function EaPremiumAuction(props:Props){
       </div>
       <div className="eaPremiumSpecs"><span>⚑ ЛОТ: <b>{current.lot}</b></span><span>◈ АВТОМОБИЛ: <b>{current.title}</b></span><span>⌖ ЛОКАЦИЯ: <b>{current.location}</b></span><span>◷ ВРЕМЕ: <b>{secondsLabel(props.remaining)}</b></span></div>
       <p className="eaDemoDisclosure">ТЕСТОВ ТЪРГ · Офертите са примерни и са ограничени до сървърната демо сесия; не са реални сделки. Актуалните оферти от други устройства не се показват в общ поток.</p>
-    </main>}
+    </div>}
     <nav className="eaPremiumBottomNav" aria-label="Навигация на мобилното приложение"><button type="button" className={!entered?"selected":""} onClick={()=>setEntered(false)}>⌂<small>Лоби</small></button><button type="button" className={entered?"selected":""} onClick={enterRoom}>⚒<small>Търгове</small></button><a href="/inventory">▤<small>Автомобили</small></a><a href="/profile">♙<small>Профил</small></a></nav>
   </section>;
 }
