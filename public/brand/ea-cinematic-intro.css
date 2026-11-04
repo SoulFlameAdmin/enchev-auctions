@@ -1,77 +1,131 @@
-/* E&A red/white diagonal: INTRO ONLY. Forge's auction scenes remain unchanged. */
-[role="dialog"][aria-label="Welcome to ENCHEV Auctions"]{
-  --ea-parallax-x:0px;--ea-parallax-y:0px;--ea-shine:1;
-  isolation:isolate!important;
-  overflow:hidden!important;
+/* QUANTUM CARS / E&A — GPU-conscious RED × WHITE racing intro.
+   Strictly scoped to Forge's opening dialog: never touches auction pages,
+   the real ENTER handler, advertisements, or subsequent scroll animations. */
+[role="dialog"][aria-label="Welcome to ENCHEV Auctions"] {
+  --ea-parallax-x: 0px;
+  --ea-parallax-y: 0px;
+  --ea-shine: 1;
+  --ea-red: #e6001b;
+  --ea-ink: #12151a;
+  position: fixed;
+  isolation: isolate !important;
+  overflow: hidden !important;
   background:
-    radial-gradient(ellipse at 8% 48%,rgba(215,217,220,.55),transparent 60%),
-    linear-gradient(145deg,#fff 0%,#fafafa 52%,#ededee 100%)!important;
-  color:#17191d!important;
+    /* clean, brushed titanium / pearl white side */
+    radial-gradient(ellipse 100% 62% at 6% 8%, #fff 5%, rgba(255,255,255,0) 79%),
+    radial-gradient(ellipse 58% 60% at 25% 77%, rgba(172,181,194,.23), transparent 79%),
+    repeating-linear-gradient(151deg, transparent 0 74px, rgba(41,46,56,.018) 75px 76px, transparent 77px 153px),
+    linear-gradient(151deg,#fdfdfe 4%,#f3f5f7 53%,#d9dde4 100%) !important;
+  color: var(--ea-ink) !important;
 }
 [role="dialog"][aria-label="Welcome to ENCHEV Auctions"]::before,
-[role="dialog"][aria-label="Welcome to ENCHEV Auctions"]::after{
-  content:"";position:absolute;inset:0;pointer-events:none;
+[role="dialog"][aria-label="Welcome to ENCHEV Auctions"]::after {
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
 }
-[role="dialog"][aria-label="Welcome to ENCHEV Auctions"]::before{
+[role="dialog"][aria-label="Welcome to ENCHEV Auctions"]::before {
   z-index:0;
-  clip-path:polygon(100% 0,100% 100%,0 100%);
+  /* EXACT diagonal: top-right down to bottom-left. */
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
   background:
-    radial-gradient(ellipse at 94% 98%,#170004 0%,transparent 61%),
-    radial-gradient(ellipse at 79% 68%,rgba(252,29,36,.87) 0%,transparent 48%),
-    linear-gradient(140deg,#f30d18 0%,#cf0010 50%,#620009 83%,#220004 100%);
-  background-size:120% 120%;
-  background-position:calc(50% + var(--ea-parallax-x)) calc(50% + var(--ea-parallax-y));
-  will-change:background-position;
+    /* Quantum reflections, shaped like light moving across a supercar shell */
+    linear-gradient(151deg,transparent 0 39%,rgba(255,255,255,.14) 39.15%,transparent 40.2%,transparent 50%,rgba(255,255,255,.065) 50.15%,transparent 51.2%,transparent),
+    linear-gradient(163deg,transparent 0 65%,rgba(255,60,81,.26) 65.2%,rgba(255,255,255,.025) 65.8%,transparent 68%),
+    radial-gradient(ellipse 80% 47% at 85% 48%,rgba(255,17,39,.8),transparent 74%),
+    radial-gradient(ellipse 65% 60% at 72% 95%,rgba(85,0,10,.72),transparent 79%),
+    linear-gradient(137deg,#fe1831 0%,#e80017 27%,#ad0012 61%,#330009 100%);
+  background-size: 120% 120%;
+  background-position: calc(50% + var(--ea-parallax-x)) calc(50% + var(--ea-parallax-y));
 }
-[role="dialog"][aria-label="Welcome to ENCHEV Auctions"]::after{
+[role="dialog"][aria-label="Welcome to ENCHEV Auctions"]::after {
   z-index:1;
-  background:linear-gradient(95deg,#ff2334 0%,#f50016 44%,#fff6f6 49%,#ef0014 55%,#ff001b 100%);
-  clip-path:polygon(calc(100% - 2px) 0,100% 0,2px 100%,0 100%);
+  /* Ultra-fine racing/tuning laser seam, no large glow or full-screen filter. */
+  clip-path:polygon(calc(100% - 3px) 0,100% 0,3px 100%,0 100%);
+  background:linear-gradient(125deg,#fff 0%,#fa001d 16%,#f5001b 46%,#fff 51%,#de001b 58%,#ff4455 100%);
   opacity:var(--ea-shine);
-  filter:drop-shadow(0 0 4px rgba(248,0,19,.4));
+  animation:eaQuantumSeam 4.8s ease-in-out infinite;
 }
-[role="dialog"][aria-label="Welcome to ENCHEV Auctions"] > waffl-grid{
-  position:relative;z-index:2;
+@keyframes eaQuantumSeam {
+  0%,100% {opacity:.84}
+  48% {opacity:1}
+  52% {opacity:.9}
 }
-[role="dialog"][aria-label="Welcome to ENCHEV Auctions"] [data-cinematic-words]{
-  width:min(86vw,670px)!important;max-width:86vw!important;
-  font-family:Arial,Helvetica,sans-serif!important;
-  font-size:clamp(12px,1.2vw,17px)!important;
-  font-weight:750!important;line-height:2.1!important;
-  letter-spacing:clamp(.12em,.7vw,.38em)!important;
-  color:#fff!important;
-  background:linear-gradient(90deg,#19191b 0%,#19191b 48%,#fff 54%,#fff 100%);
-  background-clip:text;-webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
-  text-align:center!important;
-}
-[role="dialog"][aria-label="Welcome to ENCHEV Auctions"] [data-ea-intro-enter]{
-  position:relative;z-index:3;color:#fff!important;text-shadow:0 2px 12px #40000590;
-}
-[role="dialog"][aria-label="Welcome to ENCHEV Auctions"] [data-ea-intro-enter]:focus-visible{
-  outline:2px solid #fff;outline-offset:5px;
-}
-[role="dialog"][aria-label="Welcome to ENCHEV Auctions"] .sc-60e682e4-2{
+/* Restore normal stacking of the real native splash content. */
+[role="dialog"][aria-label="Welcome to ENCHEV Auctions"] > waffl-grid {
+  position:relative;
   z-index:2;
 }
-[role="dialog"][aria-label="Welcome to ENCHEV Auctions"] .sc-60e682e4-4{
-  background:rgba(255,255,255,.24);
+[role="dialog"][aria-label="Welcome to ENCHEV Auctions"] [data-cinematic-words] {
+  width:min(86vw,670px) !important;
+  max-width:86vw !important;
+  font-family:Arial,Helvetica,sans-serif !important;
+  font-size:clamp(12px,1.17vw,17px) !important;
+  font-weight:750 !important;
+  line-height:2.12 !important;
+  letter-spacing:clamp(.12em,.7vw,.35em) !important;
+  color:#fff !important;
+  background:linear-gradient(90deg,#15171d 0%,#15171d 47%,#fff 54%,#fff 100%);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent;
+  text-align:center !important;
+  text-shadow:none !important;
 }
-[role="dialog"][aria-label="Welcome to ENCHEV Auctions"] .sc-60e682e4-5{
-  background:#fff;
+/* Deliberately keep the original native ENTER click handling. */
+[role="dialog"][aria-label="Welcome to ENCHEV Auctions"] [data-ea-intro-enter] {
+  position:relative;
+  z-index:3;
+  color:#fff !important;
+  text-shadow:0 2px 12px rgba(62,0,7,.35);
+  transition:color .25s ease,letter-spacing .35s ease,text-shadow .3s ease;
 }
+@media(hover:hover) and (pointer:fine) {
+  [role="dialog"][aria-label="Welcome to ENCHEV Auctions"] [data-ea-intro-enter]:hover {
+    letter-spacing:.06em;
+    text-shadow:0 0 17px rgba(255,255,255,.7);
+  }
+}
+[role="dialog"][aria-label="Welcome to ENCHEV Auctions"] [data-ea-intro-enter]:focus-visible {
+  outline:2px solid #fff;
+  outline-offset:5px;
+}
+/* Keep the native Forge loading/transition indicator visible. */
+[role="dialog"][aria-label="Welcome to ENCHEV Auctions"] .sc-60e682e4-2 {z-index:2}
+[role="dialog"][aria-label="Welcome to ENCHEV Auctions"] .sc-60e682e4-4 {background:rgba(255,255,255,.3)}
+[role="dialog"][aria-label="Welcome to ENCHEV Auctions"] .sc-60e682e4-5 {background:#fff}
 @media(max-width:700px){
+  [role="dialog"][aria-label="Welcome to ENCHEV Auctions"] {
+    /* Reduce mobile paint complexity and maintain readable typography. */
+    background:
+      radial-gradient(ellipse 75% 48% at 17% 66%,rgba(187,194,202,.2),transparent 80%),
+      linear-gradient(150deg,#fff 0%,#fbfbfc 47%,#e7ebef 100%) !important;
+  }
+  [role="dialog"][aria-label="Welcome to ENCHEV Auctions"]::before{
+    background:
+      linear-gradient(154deg,transparent 0 49%,rgba(255,255,255,.08) 49.2%,transparent 50.1%),
+      radial-gradient(ellipse 75% 49% at 82% 50%,rgba(255,30,53,.7),transparent 84%),
+      linear-gradient(143deg,#ff1330 0%,#d7001b 51%,#370009 100%);
+    background-size:110% 110%;
+  }
   [role="dialog"][aria-label="Welcome to ENCHEV Auctions"] [data-cinematic-words]{
-    width:82vw!important;max-width:82vw!important;
-    font-size:clamp(10px,2.45vw,13px)!important;
-    line-height:2.3!important;letter-spacing:.28em!important;
+    width:82vw !important;
+    max-width:82vw !important;
+    font-size:clamp(10px,2.45vw,13px) !important;
+    line-height:2.3 !important;
+    letter-spacing:.28em !important;
   }
 }
-@media(prefers-reduced-motion:reduce){
-  [role="dialog"][aria-label="Welcome to ENCHEV Auctions"]::before{
-    will-change:auto!important;background-position:50% 50%!important;
-  }
+@media(prefers-reduced-motion:reduce) {
   [role="dialog"][aria-label="Welcome to ENCHEV Auctions"]::after{
-    filter:none;
+    animation:none !important;
+    opacity:1 !important;
+  }
+  [role="dialog"][aria-label="Welcome to ENCHEV Auctions"]::before{
+    background-position:center !important;
+  }
+  [role="dialog"][aria-label="Welcome to ENCHEV Auctions"] [data-ea-intro-enter]{
+    transition:none !important;
   }
 }
