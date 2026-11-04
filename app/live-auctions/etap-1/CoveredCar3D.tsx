@@ -1,7 +1,7 @@
 "use client";
 import {useEffect,useRef,useState} from "react";
 
-// Procedural car-shaped red cloth mesh, rotating 360° in WebGL. No model/CDN required.
+// Procedural car-shaped black satin cloth mesh, rotating 360° in WebGL. No model/CDN required.
 // Clearly a showroom visualization, not a verified vehicle or listing.
 const vertexSource=`
 attribute vec3 aPosition;
@@ -29,20 +29,22 @@ varying vec3 vNormal;
 varying vec3 vPosition;
 varying vec3 vView;
 void main(){
- vec3 n=normalize(vNormal);
- vec3 lightA=normalize(vec3(-.58,.95,.52));
- vec3 lightB=normalize(vec3(.55,.7,-.7));
- float direct=max(0.0,dot(n,lightA));
- float bounce=max(0.0,dot(n,lightB));
- float grain=sin(vPosition.x*25.0+vPosition.z*8.5)*sin(vPosition.z*15.0-vPosition.x*5.0);
- float folds=sin(vPosition.x*15.5+vPosition.z*5.6)*.11+grain*.12;
- float rim=pow(1.0-max(0.0,dot(n,normalize(vec3(.3,.3,1.0)))),3.0);
- float glimmer=pow(max(dot(reflect(-lightA,n),normalize(vec3(.25,.32,1.0))),0.0),26.0);
- float intensity=.17+direct*.67+bounce*.19+rim*.2+folds;
- vec3 crimson=vec3(.98,.017,.067)*intensity;
- crimson+=vec3(1.0,.17,.20)*glimmer*.58;
- crimson+=vec3(.25,.0,.03)*sin(vPosition.x*31.0+vPosition.z*4.2)*.17;
- gl_FragColor=vec4(clamp(crimson,0.0,1.0),1.0);
+  vec3 n=normalize(vNormal);
+  vec3 key=normalize(vec3(-.55,1.0,.6));
+  vec3 side=normalize(vec3(.62,.76,-.45));
+  float diffuse=max(0.0,dot(n,key));
+  float fill=max(0.0,dot(n,side));
+  float wrinkle=sin(vPosition.x*22.0+vPosition.z*8.0)*sin(vPosition.z*14.0-vPosition.x*5.0);
+  float weave=sin(vPosition.x*45.0+vPosition.z*17.0)*.015;
+  float fabric=.034+diffuse*.11+fill*.07+wrinkle*.028+weave;
+  vec3 viewDir=normalize(vec3(.2,.42,1.2));
+  float sheen=pow(max(dot(reflect(-key,n),viewDir),0.0),12.0);
+  float rim=pow(1.0-abs(dot(n,viewDir)),4.0);
+  vec3 blackSilk=vec3(fabric)+vec3(.64,.68,.75)*sheen*.58;
+  blackSilk+=vec3(.88,.012,.052)*rim*.28;
+  float sideStripe=pow(abs(sin(vPosition.x*8.0+vPosition.z*1.8)),24.0);
+  blackSilk+=vec3(.1,.11,.14)*sideStripe*.2;
+  gl_FragColor=vec4(clamp(blackSilk,0.0,1.0),1.0);
 }
 `;
 
