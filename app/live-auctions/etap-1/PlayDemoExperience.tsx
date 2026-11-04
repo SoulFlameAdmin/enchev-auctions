@@ -93,7 +93,7 @@ export default function PlayDemoExperience({audio,onExit}:Props){
   const [pendingStep,setPendingStep]=useState<number|null>(null);
   const [status,setStatus]=useState("");
   const [carousel,setCarousel]=useState(0);
-  const [carMode,setCarMode]=useState<"3d"|"photo">("3d");
+  const [carMode,setCarMode]=useState<"3d"|"photo">("photo");
   const [modelLoaded,setModelLoaded]=useState(false);
   const [modelError,setModelError]=useState(false);
   const startedAt=useRef<number|null>(null);
