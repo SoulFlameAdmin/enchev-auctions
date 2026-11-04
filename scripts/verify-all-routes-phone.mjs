@@ -24,9 +24,16 @@ try{
           const mainRect=root?.getBoundingClientRect();
           const shellRect=shell?.getBoundingClientRect();
           const bidder=document.querySelector(".proLiveBidDock");
+          const premium=document.querySelector(".eaPremium");
+          const premiumHeader=document.querySelector(".eaPremiumHeader");
+          const premiumNav=document.querySelector(".eaPremiumBottomNav");
           const next=document.querySelector(".proLiveNowNext");
           return {
             viewport:innerWidth,
+            hasPremium:Boolean(premium),
+            premiumHeaderWidth:premiumHeader?.getBoundingClientRect().width??0,
+            premiumNavWidth:premiumNav?.getBoundingClientRect().width??0,
+            premiumNavPosition:premiumNav?getComputedStyle(premiumNav).position:null,
             documentWidth:document.documentElement.scrollWidth,
             bodyWidth:document.body.scrollWidth,
             mainWidth:mainRect?.width??0,
@@ -44,8 +51,25 @@ try{
         assert.ok(result.documentWidth<=viewport.width+2,route+" page overflows viewport: "+JSON.stringify(result));
         assert.ok(result.bodyWidth<=viewport.width+2,route+" body overflows viewport: "+JSON.stringify(result));
         assert.ok(result.mainWidth>=viewport.width*.87,route+" main clipped to partial width: "+JSON.stringify(result));
-        if(route!=="/presentation" && route!=="/" && route!=="/workspace")assert.ok(result.shellWidth>=viewport.width*.98,route+" header clipped to partial width: "+JSON.stringify(result));
+        if(route!=="/presentation" && route!=="/" && route!=="/workspace" && !(route==="/live-auctions"&&result.hasPremium))assert.ok(result.shellWidth>=viewport.width*.98,route+" header clipped to partial width: "+JSON.stringify(result));
         if(route==="/live-auctions"){
+          if(result.hasPremium){
+            assert.ok(result.premiumHeaderWidth>=viewport.width-2,"Premium E&A header must span the phone");
+            assert.equal(result.premiumNavPosition,"fixed","Mobile app navigation must be fixed");
+            assert.ok(result.premiumNavWidth>=viewport.width-2,"Mobile app navigation must span viewport");
+            await page.locator(".eaPremiumLobby").waitFor({state:"visible"});
+            assert.ok(await page.locator(".eaPremiumBrand img").isVisible(),"Official E&A logo must be visible");
+            await page.locator(".eaLobbyActions button").first().click();
+            assert.ok((await page.locator(".eaLobbyRing").innerText()).includes("ГОТОВ"),"Lobby ready status must update");
+            await page.locator(".eaRedAction").click();
+            await page.locator(".eaSpeedometerFace").waitFor({state:"visible"});
+            assert.ok(await page.locator(".eaSpeedometerNeedle").isVisible(),"Live speedometer must contain a moving needle");
+            assert.ok(await page.locator(".eaFuel").isVisible(),"Yellow low-fuel indicator must be visible");
+            assert.match(await page.locator(".eaPremiumBidActions").innerText(),/НАДДАЙ.*100/,"Safe demo bid action must be visible");
+            const liveGeometry=await page.evaluate(()=>({width:document.documentElement.scrollWidth,car:document.querySelector(".eaPremiumCarPanel")?.getBoundingClientRect().width??0,gauge:document.querySelector(".eaSpeedometer")?.getBoundingClientRect().width??0}));
+            assert.ok(liveGeometry.width<=innerWidth+2,"Premium auction must not overflow mobile width");
+            assert.ok(liveGeometry.car>=viewport.width*.87&&liveGeometry.gauge>=viewport.width*.75,"Premium mobile car and dial must remain readable");
+          }else{
           assert.equal(result.dockPosition,"static","Live bid dock overlays cards on mobile");
           assert.ok(result.dockWidth>=viewport.width*.75,"Live bidder too narrow");
           const quickBar=page.locator(".liveMobileActionBar");
@@ -75,6 +99,7 @@ try{
           assert.equal(await diag.isVisible(),false,"Diagnostics must collapse again");
           const bidAction=page.locator(".proLiveBidDock button");
           assert.ok(await bidAction.isVisible(),"Primary bid control must remain visible");
+          }
         }
         if(route==="/lot/EA-10603"){
           const source=await page.locator(".lotMainImage img").first().getAttribute("src");
