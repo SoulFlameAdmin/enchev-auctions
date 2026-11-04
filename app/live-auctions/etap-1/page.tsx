@@ -490,7 +490,14 @@ export default function EnchevStageOnePage(){
     </div>
     {!available&&<div className="eaRoomAlert" role="alert">Това частно демо не е активно. Наддаването е изключено.</div>}
     {error&&<div className="eaRoomAlert" role="alert">{error}<button type="button" onClick={()=>setError("")}>×</button></div>}
-    {!role?<section className="eaLoginCard">
+    {!role?<div className="eaGuestStage">
+      <CinematicLobby
+        guest status="idle" lobby={null} countdownRemaining={0}
+        connected={false} busy={busy} participant={false} myReady={false}
+        minPlayers={3} corePresent={false} canReady={false}
+        onReady={()=>{}}
+      />
+      <section className="eaLoginCard" id="ea-guest-login">
       <div className="eaLoginWelcome">
         <img className="eaLoginHeroPhoto" src={gClassPhotos.SIDE} alt="Black Mercedes-Benz G-Class reference vehicle for the ENCHEV demo" loading="eager" decoding="async"/>
         <div className="eaLoginHeroShade"/>
@@ -513,7 +520,7 @@ export default function EnchevStageOnePage(){
         <button className="eaActionPrimary" type="submit" disabled={!available||busy}>{busy?"СВЪРЗВАНЕ…":"ВЛЕЗ В ЗАЛАТА →"}</button>
         <small>Достъпът е само за поканени участници в демото.</small>
       </form>
-    </section>:<div className="eaRoomContent">
+    </section></div>:<div className="eaRoomContent">
       {preparingRound&&<CinematicLobby
         status={status} lobby={lobby} countdownRemaining={countdownRemaining}
         connected={connected} busy={busy} participant={participant} myReady={myReady}
