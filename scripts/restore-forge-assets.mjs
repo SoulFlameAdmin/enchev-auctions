@@ -387,6 +387,8 @@ if (!forgeIndex.includes('/brand/ea-forge-branding.js')) forgeIndex = forgeIndex
 if (!forgeIndex.includes('/brand/ea-cinematic-intro.js')) forgeIndex = forgeIndex.replace('</body>', '<script src="/brand/ea-cinematic-intro.js" defer></script></body>');
 // Restore the original Forge scroller/canvas lifecycle after either ad exit path.
 if (!forgeIndex.includes('/brand/ea-forge-resume.js')) forgeIndex = forgeIndex.replace('</body>', '<script src="/brand/ea-forge-resume.js" defer></script></body>');
+// Desktop-only progressive enhancement: retain native canvas, fallback to 3D GLB if no pixels.
+if (!forgeIndex.includes('/brand/ea-desktop-3d-recovery.js')) forgeIndex = forgeIndex.replace('</body>', '<script src="/brand/ea-desktop-3d-recovery.js" defer></script></body>');
 forgeIndex = forgeIndex.replace(/<title>[^<]*<\/title>/, '<title>E&amp;A East West Auctioneers Group | Vehicle Auctions</title>');
 forgeIndex = forgeIndex.replace(/<meta property="og:site_name" content="[^"]*"/, '<meta property="og:site_name" content="E&amp;A East West Auctioneers Group"');
 await writeFile(forgeIndexPath, forgeIndex);
