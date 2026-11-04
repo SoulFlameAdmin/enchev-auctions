@@ -8,6 +8,11 @@
 .eaAppMobileTop .eaOfficialLogo{width:min(250px,70vw)}
 .eaHeroBrand{position:fixed;left:50%;transform:translateX(-50%);top:max(18px,env(safe-area-inset-top));right:auto;bottom:auto;z-index:7;width:min(390px,calc(100vw - 120px));pointer-events:none;display:flex;justify-content:center;align-items:center}
 .eaHeroBrand .eaOfficialLogo{width:100%;filter:drop-shadow(0 3px 12px rgba(0,0,0,.75))}
+/* The intro is WHITE above the racing diagonal, so select the approved dark-text SVG.
+   It returns to the original white-text SVG as soon as ENTER closes the intro. */
+html.ea-intro-redwhite .eaHeroBrand .eaOfficialLogoOnDark{visibility:hidden}
+html.ea-intro-redwhite .eaHeroBrand .eaOfficialLogoOnLight{visibility:visible}
+html.ea-intro-redwhite .eaHeroBrand .eaOfficialLogo{filter:drop-shadow(0 2px 5px rgba(0,0,0,.10))}
 @media(max-width:760px){.eaHeroBrand{top:max(24px,env(safe-area-inset-top));width:min(235px,calc(100vw - 132px))}}
 
 /* One centered brand row across all buyer pages; never overlap search/nav/actions. */
