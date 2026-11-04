@@ -66,18 +66,30 @@ try{
           if(Date.now()-startedAt<3800)throw Error("5-second bot entrance was skipped");
           if(!await page.locator(".eaPDGaugeSvg").isVisible())throw Error("Speedometer missing");
           if(!await page.locator(".eaPDTime").isVisible())throw Error("Countdown missing");
+          const photo=page.locator(".eaPDCarScenePhoto img");
+          await photo.waitFor({state:"visible",timeout:9000});
+          const photoIsLoaded=await photo.evaluate(img=>img instanceof HTMLImageElement && img.complete && img.naturalWidth>0);
+          if(!photoIsLoaded)throw Error("Default car hero photo is missing or broken");
+          if(!await page.getByText("◉ 360° 3D").isVisible())throw Error("360-degree viewer toggle missing");
+          await page.locator(".eaPDCarModeSwitch button").nth(0).click();
           const model=page.locator(".eaPDModelIframe");
           await model.waitFor({state:"visible",timeout:9000});
           const modelSrc=await model.getAttribute("src");
           if(!modelSrc?.includes("sketchfab.com/models/cf52245eb68f48daa909c7ad2a8deaa3/embed"))throw Error("Licensed 360-degree Revuelto source missing");
           if(!modelSrc.includes("autospin="))throw Error("360-degree auto-rotation not configured");
-          if(!await page.getByText("◉ 360° 3D").isVisible())throw Error("3D mode switch missing");
           await page.locator(".eaPDCarModeSwitch button").nth(1).click();
-          if(!await page.locator(".eaPDCarScenePhoto img").isVisible())throw Error("Photographic fallback missing");
-          await page.locator(".eaPDCarModeSwitch button").nth(0).click();
-          await model.waitFor({state:"visible",timeout:9000});
-          await page.waitForTimeout(900);
-          console.log("VIEW360_PASS",device.name,"true orbitable Revuelto viewer, autospin, photo fallback");
+          await photo.waitFor({state:"visible",timeout:9000});
+          console.log("VIEW360_PASS",device.name,"real 360° viewer option, verified default poster and fallback");
+          if(mobile){
+             const slots=await page.evaluate(()=>{
+               const rect=(q)=>{const node=document.querySelector(q);const r=node?.getBoundingClientRect();return r?{top:r.top,bottom:r.bottom,width:r.width,height:r.height}:null;};
+               return {viewport:innerWidth,header:rect(".eaPDHeader"),car:rect(".eaPDCarScene"),dial:rect(".eaPDGauge"),price:rect(".eaPDPrice"),buttons:rect(".eaPDBidButtons"),offers:rect(".eaPDOfferList"),specs:rect(".eaPDSpecs")};
+             });
+             for(const [name,r] of Object.entries(slots)){if(name!=="viewport"&&!r)throw Error("Missing auction UI segment: "+name);}
+             if(slots.car.width<slots.viewport*.91||slots.car.height<200||slots.car.height>310)throw Error("Car hero not sized like reference: "+JSON.stringify(slots));
+             if(slots.dial.top<slots.car.bottom-40||slots.price.top<slots.dial.top||slots.buttons.top<slots.price.top||slots.offers.top<slots.buttons.top||slots.specs.top<slots.offers.top)throw Error("Auction layout order mismatches reference: "+JSON.stringify(slots));
+             console.log("MOBILE_REFERENCE_LAYOUT_PASS",JSON.stringify(slots));
+          }
           const pre=await page.locator(".eaPDPrice strong").innerText();
           if(!pre.includes("1,000,000"))throw Error("Unexpected initial demo bid: "+pre);
           await page.locator(".eaPDMetalBid").click();
