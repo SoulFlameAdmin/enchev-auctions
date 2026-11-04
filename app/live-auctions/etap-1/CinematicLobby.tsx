@@ -5,6 +5,7 @@ type Person={role:string;ready:boolean};
 type Lobby={count:number;readyCount:number;minPlayers:number;participants:Person[];activeDevices?:number;admitted?:boolean};
 type Props={
   guest?:boolean;
+  onPlayDemo?:()=>void;
   status:"idle"|"countdown"|"live"|"closed"|"canceled";
   lobby:Lobby|null;countdownRemaining:number;connected:boolean;busy:boolean;
   participant:boolean;myReady:boolean;corePresent:boolean;minPlayers:number;
@@ -104,6 +105,7 @@ export default function CinematicLobby(p:Props){
       <div className="eaLxMobileFeatures" aria-label="Секции на платформата">
         {features.map(f=><div key={f.icon} className="eaLxFeatureTile"><LobbyIcon type={f.icon}/><strong>{f.title}</strong><span>{f.subtitle}</span></div>)}
       </div>
+      {p.onPlayDemo&&<button type="button" className="eaLxMobilePlayDemo" onClick={p.onPlayDemo}>▶ PLAY DEMO <small>3 БОТА · СТАРТ СЛЕД 5 СЕК.</small></button>}
       <a href={guest?"#ea-guest-login":"#ea-lobby-ready"} className="eaLxMobileCta"><span aria-hidden="true">▶</span><strong>{guest?"ВЛЕЗ В ЛОБИТО":"КЪМ ЛОБИТО И ГОТОВНОСТТА"}</strong><span aria-hidden="true">→</span></a>
       <div className="eaLxMobileTrust" aria-label="Действителен статус на тестовата зала">
         <div><LobbyIcon type="users"/><strong>{guest?"—":`${count}/${p.minPlayers}`}</strong><span>Участници в<br/>DEMO залата</span></div>
@@ -119,6 +121,7 @@ export default function CinematicLobby(p:Props){
       </div>
       <div className={`eaLxRoster ${guest?"eaLxGuestRoster":""}`} id="ea-lobby-roster" aria-label="Участници в лобито">{["mitko","borko","enchev"].map(r=>{const person=p.lobby?.participants.find(x=>x.role===r);return <span key={r} className={person?.ready?"ready":""}><i>{guest?"◇":person?.ready?"✓":"○"}</i>{nameOf(r)} <small>{guest?"ПОКАНА":person?.ready?"ГОТОВ":person?"В ЗАЛАТА":"ЧАКАМЕ"}</small></span>;})}</div>
       <div className="eaLxReadyAction" id="ea-lobby-ready">
+        {p.onPlayDemo&&<button type="button" className="eaLxDesktopPlayDemo" onClick={p.onPlayDemo}>▶ PLAY DEMO · 5 СЕКУНДИ</button>}
         {guest?<a className="eaLxGuestEnter" href="#ea-guest-login">ВХОД С ПОКАНА →</a>:p.participant&&!countdown&&!started?<button type="button" disabled={!p.canReady||p.busy} onClick={()=>p.onReady(!p.myReady)} className={p.myReady?"is-ready":""}>{p.busy?"СИНХРОНИЗАЦИЯ…":p.myReady?"✓ ГОТОВ СЪМ":"ГОТОВ СЪМ →"}</button>:<div className="eaLxLocked">{countdown?"◷ ИЗЧАКВАНЕ НА СТАРТА":started?"● ТЪРГЪТ Е АКТИВЕН":"◉ РЕЖИМ НА НАБЛЮДЕНИЕ"}</div>}
         {!guest&&p.participant&&!p.myReady&&active&&!p.canReady&&<small>За READY е нужен активен сървър и ДЕМО бюджет минимум 16 300 €.</small>}
         <small>Само ДЕМО · без реални плащания</small>
