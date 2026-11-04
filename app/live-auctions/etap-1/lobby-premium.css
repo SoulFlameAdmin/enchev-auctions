@@ -126,3 +126,292 @@ body:has(.eaEtap1) .eaAppShell{display:none!important}
 @media(max-width:700px){
  .eaLxCarMotion:has(.eaLxWebglCanvas.is-ready){inset:-17% -2% 4%;}
 }
+
+/* E&A luxury monochrome refresh: black glass / pearl-white light / precise racing-red accents. */
+.eaLuxuryLobby {
+  border:1px solid #4a3339!important;
+  background:#020204!important;
+  box-shadow:0 20px 70px #000d,0 0 12px #aa00151c!important
+}
+.eaLuxuryLobby .eaLxHero{
+  background:
+    linear-gradient(180deg,#0304081a 0%,#02030614 43%,#020204a8 88%,#020204 100%),
+    radial-gradient(ellipse 48% 46% at 48% 43%,#1a202a 0%,#07090e 58%,#010102 100%)
+}
+.eaLuxuryLobby .eaLxHero:before{
+  background:
+    linear-gradient(90deg,#0007 0%,transparent 16%,transparent 83%,#0007 100%),
+    repeating-linear-gradient(90deg,transparent 0 10.8%,#d1e0fa22 10.9% 11%,transparent 11.1% 20%),
+    radial-gradient(ellipse at 50% 34%,#f6fbff26,transparent 67%);
+  opacity:.95
+}
+.eaLuxuryLobby .eaLxHero:after{
+  background:
+    radial-gradient(ellipse 55% 11% at 49% 82%,#e50e276a,transparent 100%),
+    linear-gradient(180deg,transparent,#020203e0 100%)
+}
+.eaLuxuryLobby .eaLxRoof{
+  border-color:#e7eef9;
+  box-shadow:
+    0 0 6px #fff,0 0 18px #edf7ffb3,0 0 38px #c505244b,
+    inset 0 0 9px #fff,inset 0 0 18px #fff9
+}
+.eaLuxuryLobby .eaLxRoof:after{
+  border-color:#d50a25;
+  box-shadow:0 0 8px #ff2840,0 0 25px #cc082a81
+}
+.eaLuxuryLobby .eaLxRoof i{
+  background:linear-gradient(#ffffff78,transparent)
+}
+.eaLuxuryLobby .eaLxWorldMap{
+  color:#9299ad;
+  opacity:.42;
+  background:radial-gradient(#d4d8e5 1.15px,transparent 1.5px) 0 0/9px 9px
+}
+.eaLuxuryLobby .eaLxWorldMap span{color:#eff2f8;text-shadow:0 0 22px #f1f6ff83}
+.eaLuxuryLobby .eaLxStage{
+  border-color:#d7dee8;
+  background:radial-gradient(ellipse at 50% 30%,#18191e 8%,#060608 72%);
+  box-shadow:0 0 9px #fff9,0 0 28px #bf09274d,inset 0 0 19px #f0f3ff7d
+}
+.eaLuxuryLobby .eaLxStageInner{
+  border-color:#eaf0fa;
+  box-shadow:0 0 9px #f7faff,0 0 20px #cc0a237e
+}
+.eaLuxuryLobby .eaLxGroundGlow{
+  background:radial-gradient(ellipse,#fc18272e,transparent 72%)
+}
+.eaLuxuryLobby .eaLxCoveredSvg{
+  filter:grayscale(1) contrast(1.36) brightness(.38)
+}
+.eaLuxuryLobby .eaLxCarMotion{
+  filter:drop-shadow(0 12px 18px #000e) drop-shadow(0 0 8px #d006283d)
+}
+.eaLuxuryLobby .eaLxBrandWall{
+  filter:drop-shadow(0 6px 15px #000e)
+}
+.eaLuxuryLobby .eaLxBrandWall small{
+  color:#e3e7ef;
+  font-weight:850
+}
+.eaLuxuryLobby .eaLxCountdown{
+  border-color:#d9213d;
+  background:linear-gradient(155deg,#121115f0,#030305f5 85%);
+  box-shadow:0 0 27px #c4071d46,0 18px 39px #000d,inset 0 0 12px #eee2e209
+}
+.eaLuxuryLobby .eaLxTimerEyebrow{color:#ff2740}
+.eaLuxuryLobby .eaLxTimerCaption{color:#f0edf1}
+.eaLuxuryLobby .eaLxDigits{color:#fa1d38}
+.eaLuxuryLobby .eaLxServerNote{color:#b3acb3}
+.eaLuxuryLobby .eaLxConnection{color:#d9d3da}
+.eaLuxuryLobby .eaLxControlDeck{
+  background:linear-gradient(170deg,#111013,#050507 90%);
+  border-top-color:#e61730
+}
+.eaLuxuryLobby .eaLxWelcome p{color:#c9c6cf}
+.eaLuxuryLobby .eaLxRoster>span{
+  border-color:#45424b;
+  background:linear-gradient(135deg,#151519,#08080a);
+  color:#f3f4f7
+}
+.eaLuxuryLobby .eaLxRoster>span.ready{
+  border-color:#2a8d5c;background:#0d2018
+}
+.eaLuxuryLobby .eaLxReadyAction button:not(.is-ready){
+  background:linear-gradient(145deg,#fe1939,#be001c 67%,#6f0015);
+  border-color:#ff5364;
+  box-shadow:0 6px 21px #e1002a52,inset 0 1px #ffffff5a
+}
+/* Full mobile design reference modules, hidden on large screens. */
+.eaLxMobileExtras,.eaLxMobileNav{display:none}
+@media(max-width:700px){
+  html:has(.eaLuxuryLobby){scroll-padding-top:80px}
+  body:has(.eaLuxuryLobby){background:#020204!important}
+  .eaRoom:has(.eaLuxuryLobby){
+    background:#020204;
+    padding-bottom:calc(83px + env(safe-area-inset-bottom))
+  }
+  .eaRoom:has(.eaLuxuryLobby) .eaRoomContent{width:100%;padding:0 8px 26px}
+  .eaRoom:has(.eaLuxuryLobby) .eaRoomHeader{
+    min-height:70px;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:7px;
+    background:#030305;
+    padding:8px 12px!important;
+    border-color:#761023;
+    box-shadow:0 7px 26px #000b;
+  }
+  .eaRoom:has(.eaLuxuryLobby) .eaRoomLogo{max-width:280px!important;min-width:0!important}
+  .eaRoom:has(.eaLuxuryLobby) .eaRoomLogo img{max-height:48px;max-width:100%;object-fit:contain}
+  .eaRoom:has(.eaLuxuryLobby) .eaRoomTitle{display:none}
+  .eaRoom:has(.eaLuxuryLobby) .eaHeaderActions{min-width:0;gap:6px}
+  .eaRoom:has(.eaLuxuryLobby) .eaHeaderActions>.eaConnection{display:none}
+  .eaRoom:has(.eaLuxuryLobby) .eaSoundToggle{
+    width:38px;min-width:38px;height:40px;min-height:40px;
+    padding:0;background:#09090b;border:1px solid #5b4b50;color:#f7f7f9
+  }
+  .eaRoom:has(.eaLuxuryLobby) .eaSoundToggle span{display:none}
+  .eaRoom:has(.eaLuxuryLobby) .eaSettingsToggle{
+    width:40px;height:40px;border-color:#6a4b55;background:#111014
+  }
+  .eaRoom:has(.eaLuxuryLobby) .eaRoomStatus{
+    padding:7px 14px;
+    background:#09090b;
+    border-color:#5e1725;
+    color:#f1d9df;
+    font-size:9px;
+    letter-spacing:.03em
+  }
+  .eaRoom:has(.eaLuxuryLobby) .eaRoomStatus>span:last-child{font-size:8px}
+  .eaLuxuryLobby{
+    margin:0 0 16px!important;
+    border-radius:0!important;
+    border-left:0!important;border-right:0!important;
+    border-top:0!important;
+    box-shadow:none!important
+  }
+  .eaLuxuryLobby .eaLxHero{height:clamp(492px,133vw,612px)!important}
+  .eaLuxuryLobby .eaLxRoof{
+    left:-8%;top:-14%;width:116%;height:34%;
+    border-width:8px;
+    box-shadow:0 0 7px #f0f2ff,0 0 20px #ffffff5e
+  }
+  .eaLuxuryLobby .eaLxRoof:after{
+    inset:10px 8px;border-width:5px
+  }
+  .eaLuxuryLobby .eaLxWorldMap{
+    left:5%;top:12%;width:90%;height:34%;opacity:.52
+  }
+  .eaLuxuryLobby .eaLxBrandWall{top:18%;left:9%;right:9%;gap:4px}
+  .eaLuxuryLobby .eaLxBrandWall img{
+    max-height:66px;width:min(330px,84%);object-fit:contain
+  }
+  .eaLuxuryLobby .eaLxBrandWall small{font-size:clamp(8px,2vw,10px);letter-spacing:.1em}
+  .eaLuxuryLobby .eaLxStageArea{
+    left:-6%;top:32%;width:112%;height:31%;
+  }
+  .eaLuxuryLobby .eaLxStage{
+    left:3%;right:3%;bottom:1%;border-width:5px;
+    box-shadow:0 0 7px #f7faff,0 0 17px #ed0e3c
+  }
+  .eaLuxuryLobby .eaLxStageInner{border-width:3px;inset:7px}
+  .eaLuxuryLobby .eaLxCarMotion:has(.eaLxWebglCanvas.is-ready){
+    inset:-24% -1% -1%
+  }
+  .eaLuxuryLobby .eaLxTurntableLabel{bottom:-10px;font-size:7px;color:#bab9c3}
+  .eaLuxuryLobby .eaLxCountdown{
+    top:64%;left:6%;right:6%;width:88%;
+    padding:10px 12px 9px;
+    min-height:0;height:174px;
+    border:1px solid #f52339;border-radius:18px;
+    background:linear-gradient(180deg,#0b0a0df5,#030305f8);
+    box-shadow:0 6px 25px #000b,0 0 18px #dd062548
+  }
+  .eaLuxuryLobby .eaLxTimerEyebrow{font-size:20px;gap:8px}
+  .eaLuxuryLobby .eaLxTimerEyebrow b{font-size:21px}
+  .eaLuxuryLobby .eaLxTimerCaption{font-size:9px;margin-top:3px;letter-spacing:.1em}
+  .eaLuxuryLobby .eaLxDigits{
+    font:900 clamp(44px,12vw,66px)/1 Impact,'Arial Narrow',Arial,sans-serif;
+    font-variant-numeric:tabular-nums;
+    margin:1px auto 5px
+  }
+  .eaLuxuryLobby .eaLxServerNote{font-size:8px;min-height:11px;line-height:1.2}
+  .eaLuxuryLobby .eaLxReadyStats{margin-top:6px;padding-top:8px}
+  .eaLuxuryLobby .eaLxReadyStats span{font-size:9px}
+  .eaLuxuryLobby .eaLxReadyStats b{font-size:14px}
+  .eaLuxuryLobby .eaLxConnection{margin-top:3px;font-size:8px}
+  .eaLuxuryLobby .eaLxHeroCaption{bottom:8px;gap:8px;font-size:10px}
+  .eaLxMobileExtras{display:block;background:linear-gradient(180deg,#07080a,#010102);padding:11px 14px 16px}
+  .eaLxMobileFeatures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+  .eaLxFeatureTile{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-height:106px;gap:2px;text-align:center;
+    padding:10px 4px 11px;
+    border:1px solid #63616b;
+    border-bottom:2px solid #e31b32;
+    border-radius:16px;
+    background:linear-gradient(152deg,#14151a,#040405 81%);
+    box-shadow:inset 0 1px #ffffff19,0 5px 22px #0008;
+    color:#f6f6f8
+  }
+  .eaLxFeatureTile svg{margin-bottom:6px;color:#f2f4f9;filter:drop-shadow(0 0 3px #fff2)}
+  .eaLxFeatureTile strong,.eaLxFeatureTile>span{font-size:clamp(10px,2.5vw,13px);font-weight:760;line-height:1.25}
+  .eaLxFeatureTile>span{font-weight:650}
+  .eaLxMobileCta{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    width:100%;min-height:56px;padding:10px 13px;margin-top:15px;
+    color:#fff!important;text-decoration:none!important;
+    border:1px solid #fa3d50;border-radius:15px;
+    background:linear-gradient(180deg,#ff2944,#df062b 32%,#920014 92%);
+    box-shadow:0 6px 20px #b8002882,inset 0 1px #ffffff9c;
+    text-shadow:0 1px 4px #000;
+    letter-spacing:.004em
+  }
+  .eaLxMobileCta strong{font-size:clamp(11px,2.9vw,15px);font-weight:950;text-align:center}
+  .eaLxMobileCta>span:first-child{font-size:19px}
+  .eaLxMobileCta>span:last-child{font-size:24px;margin-left:auto}
+  .eaLxMobileTrust{
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:0;margin-top:18px;
+    padding:16px 0 8px;border-top:1px solid #5c1b28
+  }
+  .eaLxMobileTrust>div{
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    min-width:0;text-align:center;padding:2px 5px
+  }
+  .eaLxMobileTrust>div:not(:last-child){border-right:1px solid #55505a}
+  .eaLxMobileTrust svg{color:#ed1e39}
+  .eaLxMobileTrust strong{font-size:clamp(14px,4vw,20px);font-weight:950;color:#f5f5f6}
+  .eaLxMobileTrust span{font-size:10px;line-height:1.3;color:#ccc9d0}
+  .eaLuxuryLobby .eaLxControlDeck{
+    display:flex;flex-direction:column;gap:12px;
+    padding:18px 15px;
+    background:#0a0a0d;border-top:1px solid #e01830
+  }
+  .eaLuxuryLobby .eaLxWelcome{grid-column:auto}
+  .eaLuxuryLobby .eaLxWelcome h2{font-size:clamp(20px,5.2vw,26px)!important;line-height:1.2}
+  .eaLuxuryLobby .eaLxWelcome p{font-size:11px}
+  .eaLuxuryLobby .eaLxRoster{
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;
+  }
+  .eaLuxuryLobby .eaLxRoster>span{
+    display:flex;flex-wrap:wrap;gap:3px;justify-content:center;
+    padding:10px 4px;font-size:12px;border-radius:11px;text-align:center
+  }
+  .eaLuxuryLobby .eaLxRoster>span>small{width:100%;font-size:9px;margin:0}
+  .eaLuxuryLobby .eaLxReadyAction button{min-height:52px}
+  .eaLxMobileNav{
+    display:grid;grid-template-columns:repeat(4,1fr);
+    position:fixed;left:0;bottom:0;right:0;
+    z-index:65;
+    padding:8px 5px calc(7px + env(safe-area-inset-bottom));
+    background:linear-gradient(180deg,#1b161bfa,#030304ff 67%);
+    border-top:1px solid #b5162e;
+    box-shadow:0 -6px 24px #000c,0 -1px 8px #ff172e22;
+  }
+  .eaLxMobileNav>a{
+    display:flex;align-items:center;justify-content:center;flex-direction:column;
+    gap:3px;min-height:46px;
+    color:#dedce3;text-decoration:none;
+    font-size:10px;font-weight:730;
+  }
+  .eaLxMobileNav>a svg{width:24px;height:24px}
+  .eaLxMobileNav>a[aria-current="page"]{color:#ff4059}
+  .eaLuxuryLobby .eaLxMobileNav a:focus-visible,
+  .eaLuxuryLobby .eaLxMobileCta:focus-visible{outline:3px solid #fff;outline-offset:2px}
+}
+@media(max-width:380px){
+  .eaLuxuryLobby .eaLxHero{height:510px!important}
+  .eaLuxuryLobby .eaLxCountdown{height:162px;top:63%}
+  .eaLuxuryLobby .eaLxRoof{top:-11%;height:30%}
+  .eaLuxuryLobby .eaLxStageArea{top:30%;height:32%}
+  .eaLuxuryLobby .eaLxBrandWall{top:15%}
+  .eaLuxuryLobby .eaLxDigits{font-size:45px}
+  .eaLxFeatureTile{min-height:98px;border-radius:13px}
+  .eaLxMobileFeatures{gap:6px}
+  .eaLxMobileExtras{padding-left:10px;padding-right:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  .eaLxMobileCta{transition:none}
+}
