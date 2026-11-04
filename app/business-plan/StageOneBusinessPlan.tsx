@@ -29,19 +29,15 @@ function Pager({at,total,change,label}:{at:number;total:number;change:(n:number)
 export default function StageOneBusinessPlan(){
   const [categoryPage,setCategoryPage]=useState(0);
   const [activeCategory,setActiveCategory]=useState<string|null>(null);
-  const [offerPage,setOfferPage]=useState(0);
   const [expandedOffer,setExpandedOffer]=useState<string|null>(null);
   const [includeDescription,setIncludeDescription]=useState(false);
   const [editPrices,setEditPrices]=useState(false);
   const [overrides,setOverrides]=useState<Record<string,Override>>({});
-  const [offerPerPage,setOfferPerPage]=useState(3);
 
   useEffect(()=>{
     const oldBody=document.body.style.overflow,oldHtml=document.documentElement.style.overflow;
     document.body.style.overflow="hidden";document.documentElement.style.overflow="hidden";
-    const update=()=>setOfferPerPage(window.innerHeight<720?2:window.innerHeight<900?3:4);
-    update();window.addEventListener("resize",update);
-    return ()=>{document.body.style.overflow=oldBody;document.documentElement.style.overflow=oldHtml;window.removeEventListener("resize",update);};
+    return ()=>{document.body.style.overflow=oldBody;document.documentElement.style.overflow=oldHtml;};
   },[]);
 
   const current=stage1Areas.find(x=>x.id===activeCategory);
@@ -53,19 +49,12 @@ export default function StageOneBusinessPlan(){
   const areaTotal=aggregate(currentOffers);
   const allTotal=aggregate(normalized.flatMap(x=>x.offers));
   const visibleCategories=stage1Areas.slice(categoryPage*4,(categoryPage+1)*4);
-  const pageCount=Math.max(1,Math.ceil(currentOffers.length/offerPerPage));
-  const boundedOfferPage=Math.min(offerPage,pageCount-1);
-  const showing=currentOffers.slice(boundedOfferPage*offerPerPage,(boundedOfferPage+1)*offerPerPage);
 
   const selectCategory=(id:string)=>{
     setActiveCategory(id);
-    setOfferPage(0);setIncludeDescription(false);setEditPrices(false);
+    setIncludeDescription(false);setEditPrices(false);
     const area=stage1Areas.find(x=>x.id===id);
     setExpandedOffer(area?.offers[0]?.id||null);
-  };
-  const changeOfferPage=(p:number)=>{
-    if(p<0||p>=pageCount)return;
-    setOfferPage(p);setExpandedOffer(null);setIncludeDescription(false);setEditPrices(false);
   };
   const save=(id:string,key:MoneyKey,value:number)=>setOverrides(prev=>({...prev,[id]:{...prev[id],[key]:value}}));
   const toggle=(id:string,value:boolean)=>setOverrides(prev=>({...prev,[id]:{...prev[id],enabled:value}}));
@@ -102,8 +91,8 @@ export default function StageOneBusinessPlan(){
             </div>
             <div className="s1-caption">Етап 1 · България · {currentOffers.length} услуги</div>
             <div className="s1-divider"/>
-            <div className="s1-offer-list">
-              {showing.map(offer=><article className={"s1-offer "+(expandedOffer===offer.id?"s1-offer-expanded":"")} key={offer.id}>
+            <div className="s1-offer-list" role="list" aria-label={"Всички "+currentOffers.length+" услуги в раздел "+current.title}>
+              {currentOffers.map(offer=><article className={"s1-offer "+(expandedOffer===offer.id?"s1-offer-expanded":"")} key={offer.id}>
                 <button type="button" className="s1-offer-trigger" onClick={()=>chooseOffer(offer.id)} aria-expanded={expandedOffer===offer.id}>
                   <strong>{offer.title}</strong><span className="s1-caret">{expandedOffer===offer.id?"⌃":"›"}</span>
                 </button>
@@ -131,7 +120,6 @@ export default function StageOneBusinessPlan(){
               </article>)}
             </div>
             <div className="s1-offer-footer">
-              <Pager at={boundedOfferPage} total={pageCount} change={changeOfferPage} label="Услуги"/>
               <div className="s1-area-total"><span>Общо за раздела</span><b>{euros(areaTotal.monthlyExpense+areaTotal.monthlyLabor)}/месец</b></div>
             </div>
           </div>
