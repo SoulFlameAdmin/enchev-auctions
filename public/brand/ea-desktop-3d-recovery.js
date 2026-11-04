@@ -8,8 +8,14 @@
   const modelSrc="https://raw.githubusercontent.com/JaronKBragg7337/spectral-gt-rs/34499c501908818a2b08e589a7aecf963343cee7/spectral_gt_rs_game_ready.glb";
   const modelPoster="https://raw.githubusercontent.com/JaronKBragg7337/spectral-gt-rs/34499c501908818a2b08e589a7aecf963343cee7/spectral_gt_beauty.png";
   function scene() {
-    const canvas=document.querySelector("canvas.sc-2b039258-2");
-    return canvas ? {canvas,wrap:canvas.parentElement} : null;
+    // Forge removes the ENTIRE video background on unsupported desktop
+    // decoders. Its scene heading remains in the DOM even without a canvas.
+    const heading=document.querySelector('[data-sanity*="path=introductionHeading"]');
+    const section=heading?.closest("section")||
+      document.querySelector("section.sc-2b039258-0");
+    if(!section)return null;
+    const canvas=section.querySelector("canvas.sc-2b039258-2");
+    return {canvas,wrap:canvas?.parentElement||section};
   }
   function hasPixels(canvas){
     if(!canvas||canvas.width<4||canvas.height<4)return false;
@@ -88,9 +94,11 @@
       "animation:ea3dFallbackDrift 18s ease-in-out infinite alternate;pointer-events:none";
     stage.appendChild(poster);
     source.wrap.prepend(stage);
-    source.canvas.style.position="relative";
-    source.canvas.style.zIndex="1";
-    source.canvas.style.opacity="0";
+    if(source.canvas){
+      source.canvas.style.position="relative";
+      source.canvas.style.zIndex="1";
+      source.canvas.style.opacity="0";
+    }
     fallback=stage;
     if(!document.getElementById("ea3dFallbackStyle")){
       const style=document.createElement("style");
@@ -106,7 +114,11 @@
   function check(){
     attempts++;
     const view=scene();
-    if(!view)return;
+    if(!view){
+      // Intro may still be hydrating; retry before giving up.
+      if(attempts<13)timers.push(setTimeout(check,1500));
+      return;
+    }
     if(hasPixels(view.canvas)){
       hideFallback();
       return;
