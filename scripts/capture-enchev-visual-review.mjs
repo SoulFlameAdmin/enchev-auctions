@@ -12,6 +12,7 @@ const pages=[
   {path:"/inventory",name:"inventory"},
   {path:"/inventory?make=BMW&model=M4%20F82",name:"filtered-bmw"},
   {path:"/live-auctions",name:"live-auctions"},
+  {path:"/live-auctions/etap-1",name:"etap1-demo-lobby"},
   {path:"/lot/EA-10511",name:"lot-bmw"},
   {path:"/profile",name:"profile"},
   {path:"/vehicle-history",name:"vehicle-history"},
@@ -46,6 +47,39 @@ try{
         const screenshot=path.join(DIR,`${device.name}-${target.name}.png`);
         await page.screenshot({path:screenshot,fullPage:target.name!=="intro",animations:"disabled",timeout:50000});
         manifest.screenshots.push({device:device.name,route:target.path,file:path.basename(screenshot),title:await page.title(),pageErrors:failures});
+
+        if(target.name==="etap1-demo-lobby"){
+          // Real interaction test: authenticated auction remains untouched; guest can
+          // open the local three-bot demo from the lobby.
+          const mobile=device.isMobile;
+          const play=page.locator(mobile?".eaLxMobilePlayDemo":".eaLxDesktopPlayDemo");
+          await page.locator(".eaLuxuryLobby").waitFor({state:"visible",timeout:12000});
+          if(!await play.isVisible())throw Error("PLAY DEMO CTA missing from lobby");
+          await play.click();
+          await page.locator(".eaPDBotRoster").waitFor({state:"visible",timeout:10000});
+          const startedAt=Date.now();
+          await page.locator(".eaPDAuctionLayout").waitFor({state:"visible",timeout:12000});
+          if(Date.now()-startedAt<3800)throw Error("5-second bot entrance was skipped");
+          const joined=await page.locator(".eaPDBotRoster>div.is-here").count().catch(()=>3);
+          if(joined!==3)console.log("Bot join completed at auction switch; prior roster is unmounted");
+          if(!await page.locator(".eaPDGaugeSvg").isVisible())throw Error("Speedometer missing");
+          if(!await page.locator(".eaPDTime").isVisible())throw Error("Countdown missing");
+          const pre=await page.locator(".eaPDPrice strong").innerText();
+          if(!pre.includes("1,000,000"))throw Error("Unexpected initial demo bid: "+pre);
+          await page.locator(".eaPDMetalBid").click();
+          if(!(await page.locator(".eaPDMetalBid").innerText()).includes("ПОТВЪРДИ"))throw Error("Two-tap bid confirmation missing");
+          await page.locator(".eaPDMetalBid").click();
+          const after=await page.locator(".eaPDPrice strong").innerText();
+          if(!after.includes("1,100,000"))throw Error("Confirmed bid not applied: "+after);
+          if(!await page.getByText("ВИЕ · ДЕМО").first().isVisible())throw Error("Demo bid absent from offer history");
+          const fullWidth=await page.evaluate(()=>document.documentElement.scrollWidth);
+          if(fullWidth>device.width+2)throw Error("PLAY DEMO horizontal overflow "+fullWidth+"px");
+          const demoShot=path.join(DIR,`${device.name}-etap1-play-demo-auction.png`);
+          await page.screenshot({path:demoShot,fullPage:true,animations:"disabled",timeout:50000});
+          manifest.screenshots.push({device:device.name,route:target.path+"#play-demo",file:path.basename(demoShot),pageErrors:failures});
+          console.log("PLAY_DEMO_PASS",device.name,"5s bots, gauge, bid confirmation, feed, no overflow");
+        }
+
         console.log("SCREENSHOT_PASS",device.name,target.path,path.basename(screenshot));
       }catch(e){
         console.error("SCREENSHOT_FAIL",device.name,target.path,String(e));
