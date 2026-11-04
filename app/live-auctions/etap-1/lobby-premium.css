@@ -117,3 +117,12 @@ body:has(.eaEtap1) .eaAppShell{display:none!important}
 @media(max-width:380px){.eaLuxuryLobby .eaLxHero{height:545px!important}.eaLxCountdown{top:62%}.eaLxStageArea{top:33%;height:30%}.eaLxHeroCaption{font-size:8px}}
 @media(prefers-reduced-motion:reduce){.eaLxCarMotion{animation:none!important}.eaLuxuryLobby.is-counting .eaLxDigits{animation:none!important}}
 @media(forced-colors:active){.eaLuxuryLobby,.eaLxCountdown,.eaLxControlDeck{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}}
+
+/* True 360-degree WebGL cloth-car turntable; SVG fallback remains for unsupported devices. */
+.eaLxCarMotion:has(.eaLxWebglCanvas.is-ready){animation:none;transform:none;inset:-20% -3% 3%;}
+.eaLxWebglCanvas{display:none;position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.eaLxWebglCanvas.is-ready{display:block;}
+.eaLxCarMotion:has(.eaLxWebglCanvas.is-ready) .eaLxCoveredSvg{display:none;}
+@media(max-width:700px){
+ .eaLxCarMotion:has(.eaLxWebglCanvas.is-ready){inset:-17% -2% 4%;}
+}
