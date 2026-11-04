@@ -340,7 +340,10 @@ if (!forgeIndex.includes('/forge/enchev-cta-map.js')) {
   forgeIndex = forgeIndex.replace('</body>', '<script src="/forge/enchev-cta-map.js" defer></script></body>');
 }
 if (!forgeIndex.includes('/brand/ea-forge-branding.css')) forgeIndex = forgeIndex.replace('</head>', '<link rel="stylesheet" href="/brand/ea-forge-branding.css"></head>');
+// 1:1 red/white racing splash. Loaded AFTER Forge styles; only the intro dialog is styled.
+if (!forgeIndex.includes('/brand/ea-cinematic-intro.css')) forgeIndex = forgeIndex.replace('</head>', '<link rel="stylesheet" href="/brand/ea-cinematic-intro.css"></head>');
 if (!forgeIndex.includes('/brand/ea-forge-branding.js')) forgeIndex = forgeIndex.replace('</body>', '<script src="/brand/ea-forge-branding.js" defer></script></body>');
+if (!forgeIndex.includes('/brand/ea-cinematic-intro.js')) forgeIndex = forgeIndex.replace('</body>', '<script src="/brand/ea-cinematic-intro.js" defer></script></body>');
 forgeIndex = forgeIndex.replace(/<title>[^<]*<\/title>/, '<title>E&amp;A East West Auctioneers Group | Vehicle Auctions</title>');
 forgeIndex = forgeIndex.replace(/<meta property="og:site_name" content="[^"]*"/, '<meta property="og:site_name" content="E&amp;A East West Auctioneers Group"');
 await writeFile(forgeIndexPath, forgeIndex);
