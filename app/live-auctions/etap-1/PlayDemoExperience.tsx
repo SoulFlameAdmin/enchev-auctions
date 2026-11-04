@@ -2,6 +2,7 @@
 
 import {useCallback,useEffect,useMemo,useRef,useState} from "react";
 import "./play-demo-experience.css";
+import "./play-demo-1to1.css";
 
 type Phase="joining"|"live"|"finished";
 type BidEntry={id:number;name:string;amount:number;time:number;mine?:boolean};
@@ -57,11 +58,13 @@ function Gauge({leftMs}:{leftMs:number}){
       <path d="M65 250A215 215 0 0 1 495 250" stroke="#151518" strokeWidth="20" fill="none"/>
       <path d="M65 250A215 215 0 0 1 495 250" stroke="url(#eaPDGlow)" strokeWidth="13" strokeLinecap="round" fill="none"/>
       {gaugeTicks.map(p=><line key={p.n} x1={p.x1} y1={p.y1} x2={p.x2} y2={p.y2} stroke={p.color} strokeWidth={p.width}/>)}
-      <text x="62" y="275" className="eaPDTickNum">60</text>
-      <text x="103" y="111" className="eaPDTickNum">45</text>
-      <text x="267" y="34" className="eaPDTickNum">30</text>
-      <text x="417" y="111" className="eaPDTickNum">15</text>
-      <text x="496" y="275" className="eaPDTickNum">0</text>
+      <text x="66" y="271" className="eaPDTickNum">60</text>
+      <text x="81" y="156" className="eaPDTickNum">50</text>
+      <text x="160" y="68" className="eaPDTickNum">40</text>
+      <text x="280" y="33" className="eaPDTickNum">30</text>
+      <text x="400" y="68" className="eaPDTickNum">10</text>
+      <text x="482" y="156" className="eaPDTickNum">5</text>
+      <text x="498" y="271" className="eaPDTickNum">0</text>
       <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#ee0d30" strokeWidth="8" strokeLinecap="round"/>
       <line x1={cx} y1={cy} x2={nx} y2={ny} stroke="#fff1e9" strokeWidth="2" strokeLinecap="round"/>
       <circle cx={cx} cy={cy} r="14" fill="#171619" stroke="#ff5f69" strokeWidth="4"/>
@@ -208,7 +211,11 @@ export default function PlayDemoExperience({audio,onExit}:Props){
       <div className="eaPDJoinProgress"><i style={{width:(100*(JOIN_DURATION_MS-nowMs)/JOIN_DURATION_MS)+"%"}}/></div>
     </section>:<div className="eaPDAuctionLayout">
       <section className="eaPDMainPanel">
-        <div className="eaPDCarInfo"><span className="eaPDLotLabel">ЛОТ №001 · ВИРТУАЛЕН ТЪРГ</span><h1>LAMBORGHINI<br/><b>REVUELTO</b></h1><p>V12 HYBRID <em/> 1 015 к.с. <em/> 0–100 км/ч: 2.5 s</p></div>
+        <div className="eaPDCarShowcase">
+          <div className="eaPDCarInfo">
+            <span className="eaPDCarCrest" role="img" aria-label="Стилизирана автомобилна емблема"><small>LAMBORGHINI</small><b>♉</b></span>
+            <div className="eaPDCarInfoWords"><span className="eaPDLotLabel">ЛОТ №001 · DEMO</span><h1>LAMBORGHINI<br/><b>REVUELTO</b></h1><p>V12 HYBRID <em/> 1 015 к.с. <em/> 0–100 км/ч: 2.5 s</p></div>
+          </div>
         <div className="eaPDCarViewHeader">
           <div><strong>ИНТЕРАКТИВЕН 360° АВТОМОБИЛ</strong><small>Завърти с пръст или мишка · мащабирай с два пръста</small></div>
           <div className="eaPDCarModeSwitch" role="group" aria-label="Избор между 3D модел и снимка">
@@ -241,7 +248,8 @@ export default function PlayDemoExperience({audio,onExit}:Props){
           </>}
           <span className="eaPDCarDisclosure">3D ДЕМО · НЕ Е РЕАЛЕН ЛОТ</span>
         </div>
-        {carMode==="3d"&&<p className="eaPDModelCredit">3D модел: <a href="https://sketchfab.com/3d-models/free-lamborghini-revuelto-cf52245eb68f48daa909c7ad2a8deaa3" target="_blank" rel="noreferrer noopener">ALIEEEN / Sketchfab</a> · CC BY · Зависим от външен 3D преглед</p>}
+        {carMode==="3d"&&<p className="eaPDModelCredit">3D модел: <a href="https://sketchfab.com/3d-models/free-lamborghini-revuelto-cf52245eb68f48daa909c7ad2a8deaa3" target="_blank" rel="noreferrer noopener">ALIEEEN / Sketchfab</a> · CC BY · външен 3D преглед</p>}
+        </div>
         <section className="eaPDActionPanel">
           <Gauge leftMs={phase==="finished"?0:nowMs}/>
           <div className="eaPDPrice"><strong>{cash(price)}</strong><span>ТЕКУЩА ДЕМО ОФЕРТА</span></div>
@@ -263,7 +271,7 @@ export default function PlayDemoExperience({audio,onExit}:Props){
           <div><Icon name="speed"/><span>0–100: 2.5 s</span></div>
           <div><Icon name="calendar"/><span>2024</span></div>
         </div>
-        <div className="eaPDDetailsBox"><strong>ВИРТУАЛНА АУКЦИОННА СЕСИЯ</strong><p>3 тестови бота · автоматични демо оферти · двустъпково наддаване · удължаване в последните 10 сек.</p><p>Звуков сигнал от 60 сек.; тик-так ×2 в последните 10 сек. Звукът е наличен след PLAY DEMO.</p></div>
+        <details className="eaPDDetailsBox"><summary>ИНФОРМАЦИЯ ЗА ТЕСТОВИЯ ТЪРГ</summary><p>3 тестови бота · автоматични демо оферти · двустъпково наддаване · удължаване в последните 10 сек.</p><p>Звуков сигнал от 60 сек.; тик-так ×2 в последните 10 сек. Звукът е наличен след PLAY DEMO. Няма реални сделки или плащания.</p></details>
         {phase==="finished"&&<div className="eaPDWinner"><span>🏁 ТЕСТОВИЯТ ТЪРГ ЗАВЪРШИ</span><strong>Победител: {bidLead.current}</strong><b>{cash(price)}</b><button type="button" onClick={replay}><Icon name="refresh"/> НОВО ДЕМО</button></div>}
       </aside>
     </div>}
