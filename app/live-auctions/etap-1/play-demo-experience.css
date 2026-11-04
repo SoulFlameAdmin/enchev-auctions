@@ -170,3 +170,95 @@ body:has(.eaPlayDemo){background:#020204!important}
  .eaPDTime{animation:none!important}
  .eaPDCarScene img{transition:none}
 }
+
+/* Interactive licensed 3D Revuelto replaces a flat fake-360 carousel. */
+.eaPDCarViewHeader{
+  display:flex;align-items:center;justify-content:space-between;
+  gap:12px;min-height:63px;padding:12px 18px;
+  border-top:1px solid #301b23;border-bottom:1px solid #612534;
+  background:linear-gradient(110deg,#0e090e,#070608);
+}
+.eaPDCarViewHeader>div:first-child{display:grid;gap:3px;min-width:0}
+.eaPDCarViewHeader strong{font-size:12px;letter-spacing:.075em;color:#fff;font-weight:1000}
+.eaPDCarViewHeader small{font-size:10px;color:#a99da0;line-height:1.4}
+.eaPDCarModeSwitch{display:flex;gap:5px;align-items:center;flex-shrink:0}
+.eaPDCarModeSwitch button{
+  border-radius:9px;border:1px solid #66505b;
+  background:#0e0b10;color:#ded2d9;
+  padding:9px 12px;min-height:38px;
+  white-space:nowrap;font-size:11px;font-weight:950;
+}
+.eaPDCarModeSwitch button.selected{
+  border-color:#ff425a;
+  color:#fff;background:linear-gradient(135deg,#d81334,#680a20);
+  box-shadow:0 0 13px #e909363e;
+}
+.eaPDCarScene3D{
+  height:clamp(330px,32vw,530px);
+  min-height:330px;
+  aspect-ratio:auto!important;
+  isolation:isolate;
+  background:radial-gradient(ellipse at 50% 30%,#271721,#08070b 70%);
+}
+.eaPDCarScene3D::before{
+  background:radial-gradient(ellipse at 55% 53%,#bc172b28,transparent 66%);
+}
+.eaPDCarScene3D::after{z-index:0;opacity:.18;pointer-events:none}
+.eaPDModelIframe{
+  position:absolute;inset:0;display:block;
+  width:100%;height:100%;border:0;border-radius:0;
+  z-index:2;
+  background:transparent;
+  touch-action:pan-y;
+}
+.eaPDModelLoading{
+  position:absolute;inset:0;z-index:1;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:13px;color:#dbc6cd;text-align:center;
+  font-size:11px;letter-spacing:.12em;font-weight:950;
+}
+.eaPDModelSpinner{
+  display:block;width:42px;height:42px;border-radius:50%;
+  border:4px solid #7d3445;border-top-color:#ff2844;
+  animation:eaPDSpin .85s linear infinite;
+}
+@keyframes eaPDSpin{to{transform:rotate(360deg)}}
+.eaPDModelHint{
+  position:absolute;z-index:4;left:50%;bottom:22px;transform:translateX(-50%);
+  pointer-events:none;
+  border-radius:20px;white-space:nowrap;padding:7px 13px;
+  background:#070609c4;border:1px solid #6c2e3c;
+  box-shadow:0 2px 13px #0009;
+  color:#f6e9eb;text-shadow:0 1px 3px #000;
+  font-size:10px;letter-spacing:.09em;font-weight:950;
+}
+.eaPDModelFail{position:absolute;inset:0;z-index:4;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:16px;text-align:center;color:#f7dce1;padding:20px}
+.eaPDModelFail button{color:white;border:1px solid #f34a61;background:#b20c2e;border-radius:10px;padding:11px 18px;font-weight:950}
+.eaPDCarScene3D .eaPDCarDisclosure{z-index:4;bottom:6px;left:10px;font-size:8px;pointer-events:none;color:#bda9af}
+.eaPDModelCredit{
+  display:flex;justify-content:center;flex-wrap:wrap;align-items:center;gap:4px;
+  background:#07060a;padding:7px 12px;margin:0!important;
+  border-top:1px solid #49313a;
+  color:#b5a6b1;text-align:center;line-height:1.5;
+  font-size:10px;letter-spacing:0;
+}
+.eaPDModelCredit a{color:#ffe0d2;text-decoration:underline;text-underline-offset:3px}
+.eaPDCarScenePhoto{min-height:245px}
+@media(max-width:860px){
+ .eaPDCarViewHeader{padding:9px 10px;min-height:52px;gap:8px}
+ .eaPDCarViewHeader strong{font-size:10px}
+ .eaPDCarViewHeader small{font-size:9px}
+ .eaPDCarModeSwitch{gap:3px}
+ .eaPDCarModeSwitch button{padding:8px 8px;min-height:33px;font-size:10px}
+ .eaPDCarScene3D{height:clamp(265px,77vw,410px);min-height:265px!important;aspect-ratio:auto}
+ .eaPDModelHint{bottom:24px;font-size:9px;padding:6px 9px}
+ .eaPDModelCredit{font-size:9px}
+ .eaPDModelIframe{touch-action:pan-y}
+}
+@media(max-width:380px){
+ .eaPDCarViewHeader strong{font-size:9px}
+ .eaPDCarViewHeader small{font-size:8px}
+ .eaPDCarModeSwitch button{font-size:9px;padding:6px}
+ .eaPDCarScene3D{height:265px}
+}
+@media(prefers-reduced-motion:reduce){.eaPDModelSpinner{animation:none}}
