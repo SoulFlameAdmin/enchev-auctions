@@ -35,6 +35,46 @@ try{
       await forge.locator("#page:not([inert])").waitFor({state:"attached",timeout:30000});
       await forge.locator('[role="dialog"][aria-label="Welcome to ENCHEV Auctions"]')
         .waitFor({state:"detached",timeout:30000});
+      // Desktop scene is only proven when pixels are painted OR the model
+      // fallback has visibly recovered the scene (a sized canvas is not proof).
+      if(viewport.width>=1024){
+        const render=await forge.locator("body").evaluate(async()=>{
+          const start=performance.now();
+          const sample=()=>{
+            const c=document.querySelector("canvas.sc-2b039258-2");
+            let painted=false;
+            if(c && c.width>4 && c.height>4){
+              try{
+                const ctx=c.getContext("2d");
+                const points=[[.5,.5],[.25,.5],[.75,.5],[.5,.25],[.5,.75]];
+                let visible=0;
+                for(const [x,y] of points){
+                  const v=ctx.getImageData(Math.floor(x*c.width),Math.floor(y*c.height),1,1).data;
+                  if(v[3]>20&&v[0]+v[1]+v[2]>22)visible++;
+                }
+                painted=visible>=2;
+              }catch{}
+            }
+            const fallback=document.querySelector(".eaDesktop3dRecovery");
+            const poster=fallback?.querySelector("img");
+            const recovered=!!fallback&&!!poster?.complete&&poster.naturalWidth>0;
+            const active=[...(window.__enchevActiveFrames||[])].map(x=>({
+              file:x.file,frame:x.frameProcessed,ready:!!x.manifest,
+              enabled:x.enabled,decoder:x.decoder?.state
+            }));
+            return {painted,recovered,active,backupModel:!!fallback?.querySelector("model-viewer")};
+          };
+          let result=sample();
+          while(!result.painted&&!result.recovered&&performance.now()-start<12000){
+            await new Promise(r=>setTimeout(r,250));
+            result=sample();
+          }
+          return result;
+        });
+        console.log("DESKTOP_3D_VISIBILITY "+name+" "+JSON.stringify(render));
+        assert.ok(render.painted||render.recovered,
+          "Desktop 3D blank: neither WebCodecs pixels nor fallback image rendered");
+      }
       const photo=forge.locator('[data-sanity*="path=approachHeading"]').first();
       await photo.waitFor({state:"attached",timeout:12000});
       const previous=await photo.evaluate(el=>el.getBoundingClientRect().top);
