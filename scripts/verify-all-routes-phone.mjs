@@ -63,7 +63,7 @@ try{
             assert.ok((await page.locator(".eaLobbyRing").innerText()).includes("ГОТОВ"),"Lobby ready status must update");
             await page.locator(".eaRedAction").click();
             await page.locator(".eaSpeedometerFace").waitFor({state:"visible"});
-            assert.ok(await page.locator(".eaSpeedometerNeedle").isVisible(),"Live speedometer must contain a moving needle");
+            assert.equal(await page.locator(".eaSpeedometerNeedle").count(),1,"Live speedometer must contain a moving needle");
             assert.ok(await page.locator(".eaFuel").isVisible(),"Yellow low-fuel indicator must be visible");
             assert.match(await page.locator(".eaPremiumBidActions").innerText(),/НАДДАЙ.*100/,"Safe demo bid action must be visible");
             const liveGeometry=await page.evaluate(()=>({width:document.documentElement.scrollWidth,car:document.querySelector(".eaPremiumCarPanel")?.getBoundingClientRect().width??0,gauge:document.querySelector(".eaSpeedometer")?.getBoundingClientRect().width??0}));
