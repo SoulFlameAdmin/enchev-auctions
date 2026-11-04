@@ -6,6 +6,7 @@ export const primaryNavigation = [
   { href: "/transport", label: "TRANSPORT", key: "transport" },
   { href: "/vehicle-history", label: "VEHICLE HISTORY", key: "history" },
   { href: "/support", label: "SUPPORT", key: "support" },
+  { href: "/business-plan", label: "БИЗНЕС ПЛАН", key: "business" },
 ] as const;
 
 export const accountNavigation = {
