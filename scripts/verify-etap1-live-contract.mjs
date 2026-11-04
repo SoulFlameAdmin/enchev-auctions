@@ -18,6 +18,9 @@ const css=read("app/live-auctions/etap-1/etap1.css");
 const krumSql=read("supabase/migrations/20261012160000_enchev_etap1_krum_preview_bidder.sql");
 const admissionSql=read("supabase/migrations/20261012170000_enchev_etap1_session_admission.sql");
 const professionalSql=read("supabase/migrations/20261013060000_enchev_professional_demo_v2.sql");
+const qaSql=read("supabase/migrations/20261013093000_enchev_etap1_live_qa_repair.sql");
+const admin=read("app/live-auctions/etap-1/admin/page.tsx");
+const adminApi=read("app/api/etap1/admin/route.ts");
 
 const gates=[
   ["dedicated DB and explicit activation", gateway.includes('ENCHEV_ETAP1_ENABLED !== "true"')&&gateway.includes("SHARED_SOULFLAME_PROJECT")],
@@ -56,10 +59,16 @@ const gates=[
     client.includes('const showAuction=status==="live"&&admitted') &&
     client.includes("This round started without your current login")],
   ["opt-in Web Audio",client.includes("new AudioContext()") && client.includes("ENABLE SOUND")],
-  ["response snapshots every second",client.includes('window.setInterval(()=>void poll(),1000)')],
+  ["response snapshots twice per second",client.includes('window.setInterval(()=>void poll(),500)')],
   ["server-owned global five-second cooldown",professionalSql.includes("next_bid_allowed_at=v_now+interval '5 seconds'") && client.includes("cooldownRemaining")],
   ["new 30-second READY countdown",professionalSql.includes("v_now+interval '30 seconds'") && client.includes('status==="countdown"')],
   ["server wallet cap and auction budget",professionalSql.includes("100000") && professionalSql.includes("v_wallet.lot_budget") && api.includes('action === "wallet"')],
+  ["second device does not replace original bidder",qaSql.includes("enchev_etap1_device_sessions") && qaSql.includes("on conflict(role) do update") && qaSql.includes("sessionCurrent',false")],
+  ["shared wallet role budget",qaSql.includes("where role=p_actor for update") && client.includes("eaWalletLive")],
+  ["atomic server global cooldown and reliable second anti-snipe",qaSql.includes("next_bid_allowed_at=v_now+interval '5 seconds'") && qaSql.includes("greatest(ends_at,v_now+interval '10 seconds')") && qaSql.includes("extension_count=extension_count+")],
+  ["deduplicated button and stale offer message",client.includes("pendingBidRef.current=true") && client.includes("PRICE_CHANGED")],
+  ["bid button displays time remaining",client.includes("BID AVAILABLE IN") && client.includes('toFixed(1)')],
+  ["millisecond administrative bid attempt logs",qaSql.includes("enchev_etap1_bid_attempts") && admin.includes("whenMs(") && adminApi.includes("attempts:attempts.map")],
   ["mobile width CSS",css.includes("@media(max-width:480px)")],
 ];
 const failed=gates.filter(([_,pass])=>!pass);

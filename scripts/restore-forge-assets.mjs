@@ -2,11 +2,12 @@ import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { gunzipSync } from 'node:zlib';
 import { createHash } from 'node:crypto';
 import path from 'node:path';
+import { recoverForgeLoader } from './forge-loader-recovery.mjs';
 
 const root = process.cwd();
 const output = path.join(root, 'public/forge');
 const digest = value => createHash('sha256').update(value).digest('hex');
-const frontend = JSON.parse(gunzipSync(await readFile(path.join(root, 'config/forge-frontend.json.gz'))));
+const frontend = recoverForgeLoader(JSON.parse(gunzipSync(await readFile(path.join(root, 'config/forge-frontend.json.gz')))));
 for (const [relative, content] of Object.entries(frontend)) {
   const target = path.join(output, relative);
   await mkdir(path.dirname(target), { recursive: true });
@@ -138,6 +139,85 @@ a[data-enchev-cta-label]{
   [data-sanity*="path=heroHeading"]{font-size:clamp(5.2rem,10vw,8rem)!important}
 }
 `;
+
+// Mobile browsers (including in-app WebViews) sometimes leave Next/Image's
+// low-quality placeholder in data-loaded=false even though the real original
+// image is already decoded. The placeholder should never remain blurred.
+const imageRecoveryCss = String.raw`
+img.ckbPhL[data-loaded='false'] {
+  filter: none !important;
+}
+img.ckbPhL[data-loaded='true'] {
+  filter: none !important;
+  background-image: none !important;
+}
+/* A sharp, original photographic fallback behind ActiveFrame's hero canvas.
+   ActiveFrame keeps rendering normally on browsers that support its animation. */
+@media (max-width: 767px) {
+  .dKbqDu {
+    background: #050608 url('/forge/media/a7d5d4e97875d7604f97.jpg') center 42% / cover no-repeat;
+  }
+}
+/* Only on devices with no usable WebGL, display a crisp original poster above
+   an unusable ActiveFrame canvas. Text and original navigation stay visible. */
+html[data-enchev-no-webgl='1'] .dKbqDu::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(0,0,0,.18), rgba(0,0,0,.04) 45%, rgba(0,0,0,.55)),
+              url('/forge/media/a7d5d4e97875d7604f97.jpg') center / cover no-repeat;
+}
+`;
+await writeFile(path.join(output,'enchev-visual-recovery.css'),imageRecoveryCss);
+
+const imageRecoveryJs = String.raw`(() => {
+  const testCanvas = document.createElement('canvas');
+  let webgl = null;
+  try {
+    webgl = testCanvas.getContext('webgl2', {failIfMajorPerformanceCaveat:true})
+      || testCanvas.getContext('webgl', {failIfMajorPerformanceCaveat:true});
+  } catch {}
+  if (!webgl) document.documentElement.dataset.enchevNoWebgl = '1';
+  // Some Android in-app browsers expose WebGL yet fail to initialize the
+  // ActiveFrame canvas. An un-resized backing store after startup is a
+  // reliable sign the original scene never began rendering.
+  if (window.matchMedia('(max-width: 767px)').matches) {
+    window.setTimeout(() => {
+      const scene = document.querySelector('.dKbqDu canvas.gDERNK');
+      if (scene && scene.width === 300 && scene.height === 150) {
+        document.documentElement.dataset.enchevNoWebgl = '1';
+      }
+    }, 4000);
+  }
+
+  function revealDecodedImages() {
+    for (const img of document.querySelectorAll('img.ckbPhL')) {
+      if (img.dataset.enchevSharpHook !== '1') {
+        img.dataset.enchevSharpHook = '1';
+        img.addEventListener('load', () => {
+          if (img.naturalWidth > 0) img.setAttribute('data-loaded','true');
+        }, {passive:true});
+      }
+      if (img.complete && img.naturalWidth > 0 && img.getAttribute('data-loaded') !== 'true') {
+        img.setAttribute('data-loaded','true');
+      }
+    }
+  }
+  let queued = false;
+  function scheduleReveal() {
+    if (queued) return;
+    queued = true;
+    requestAnimationFrame(() => {queued = false; revealDecodedImages();});
+  }
+  const observer = new MutationObserver(scheduleReveal);
+  observer.observe(document.documentElement,{subtree:true,childList:true});
+  document.addEventListener('DOMContentLoaded',scheduleReveal,{once:true});
+  window.addEventListener('load',scheduleReveal,{once:true});
+  scheduleReveal();
+})();`;
+await writeFile(path.join(output,'enchev-visual-recovery.js'),imageRecoveryJs);
 await writeFile(path.join(output,'enchev-responsive.css'),responsiveCss);
 
 const ctaMapScript = String.raw`(() => {
@@ -335,6 +415,9 @@ const ctaMapScript = String.raw`(() => {
     scheduled = true;
     requestAnimationFrame(() => {
       scheduled = false;
+      // Do not rewrite server-rendered text while the imported React root is
+      // hydrating. The loader provider has an 8-second recovery deadline.
+      if (!document.querySelector('main') || document.querySelector('[aria-label="Welcome to ENCHEV Auctions"]')) return;
       applyCtas();
       applyNavigation();
       applyLiveDemoLinks();
@@ -344,16 +427,10 @@ const ctaMapScript = String.raw`(() => {
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
-      applyCtas();
-      applyNavigation();
-      applyLiveDemoLinks();
-      ensurePlatformNavigation();
+      scheduleApply();
     }, { once: true });
   } else {
-    applyCtas();
-    applyNavigation();
-    applyLiveDemoLinks();
-    ensurePlatformNavigation();
+    scheduleApply();
   }
 
   new MutationObserver(scheduleApply).observe(document.documentElement, {
@@ -368,13 +445,30 @@ await writeFile(ctaScriptPath, ctaMapScript);
 const forgeIndexPath = path.join(output, 'index.html');
 let forgeIndex = await readFile(forgeIndexPath, 'utf8');
 if (!forgeIndex.includes('/forge/enchev-responsive.css')) forgeIndex = forgeIndex.replace('</head>', '<link rel="stylesheet" href="/forge/enchev-responsive.css"></head>');
+if (!forgeIndex.includes('/forge/enchev-visual-recovery.css')) {
+  forgeIndex = forgeIndex.replace('</head>', '<link rel="stylesheet" href="/forge/enchev-visual-recovery.css"></head>');
+}
+if (!forgeIndex.includes('/forge/enchev-visual-recovery.js')) {
+  forgeIndex = forgeIndex.replace('</body>', '<script src="/forge/enchev-visual-recovery.js" defer></script></body>');
+}
 if (!forgeIndex.includes('/forge/enchev-cta-map.js')) {
   forgeIndex = forgeIndex.replace('</body>', '<script src="/forge/enchev-cta-map.js" defer></script></body>');
 }
 await writeFile(forgeIndexPath, forgeIndex);
 
 const pending = JSON.parse(await readFile(path.join(root, 'config/forge-assets.json'), 'utf8'));
+// Archived deployments contain the exact, original checked-in manifest images
+// before the upstream Sanity CDN removed them. These are emergency recovery
+// sources, NOT substitute vehicle photos or approximations. Always verify SHA256.
+// The primary alias is only a fallback once a healthy image-complete build is live.
+const archivedForgeOrigins = [
+  'https://enchev-auctions-2954ebwil-dimitar-lambovs-projects.vercel.app',
+  'https://enchev-auctions-nowvojijd-dimitar-lambovs-projects.vercel.app',
+  'https://enchev-auctions.vercel.app',
+];
 let downloaded = 0;
+let recoveredFromArchives = 0;
+const missingVisuals = [];
 await Promise.all(Array.from({ length: 6 }, async () => {
   while (pending.length) {
     const asset = pending.shift();
@@ -382,21 +476,76 @@ await Promise.all(Array.from({ length: 6 }, async () => {
     try {
       if (digest(await readFile(target)) === asset.sha256) continue;
     } catch {}
-    let data;
-    for (let attempt = 0; attempt < 3; attempt++) {
-      try {
-        const response = await fetch(asset.url, { signal: AbortSignal.timeout(90000) });
-        if (!response.ok) throw new Error(`HTTP ${response.status}`);
-        data = Buffer.from(await response.arrayBuffer());
-        if (digest(data) !== asset.sha256) throw new Error('Source content changed');
-        break;
-      } catch (error) {
-        if (attempt === 2) throw new Error(`Cannot restore ${asset.path}: ${error.message}`);
+    const candidates = [asset.url];
+    if (asset.path.startsWith('media/')) {
+      for (const origin of archivedForgeOrigins) {
+        candidates.push(origin + '/forge/' + asset.path);
       }
+    }
+    let data;
+    const errors = [];
+    for (const candidate of candidates) {
+      const maxAttempts = candidate === asset.url ? 3 : 2;
+      for (let attempt = 0; attempt < maxAttempts; attempt++) {
+        try {
+          const response = await fetch(candidate, { signal: AbortSignal.timeout(90000) });
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const bytes = Buffer.from(await response.arrayBuffer());
+          if (digest(bytes) !== asset.sha256) throw new Error('SHA256 mismatch');
+          data = bytes;
+          if (candidate !== asset.url) recoveredFromArchives++;
+          break;
+        } catch (error) {
+          errors.push(`${candidate}: ${error.message}`);
+          // A deleted CDN asset will not reappear on immediate retry.
+          if (error.message === 'HTTP 404') break;
+        }
+      }
+      if (data) break;
+    }
+    if (!data) {
+      if (asset.path.startsWith('media/')) {
+        missingVisuals.push(asset.path);
+        console.error(`Missing verified photo ${asset.path}: ${errors.join(' | ')}`);
+        continue;
+      }
+      throw new Error(`Cannot restore ${asset.path}: ${errors.join(' | ')}`);
     }
     await mkdir(path.dirname(target), { recursive: true });
     await writeFile(target, data);
     downloaded++;
   }
 }));
-console.log(`Forge frontend restored; ${downloaded} binary assets downloaded and verified.`);
+console.log(`Forge frontend restored; ${downloaded} binary assets downloaded and verified; ${recoveredFromArchives} exact originals recovered from archived deployments.`);
+if (missingVisuals.length) {
+  throw new Error(`FORGE VISUAL QA BLOCKED: ${missingVisuals.length} original media files could not be verified; refusing to publish blurred or missing photos.`);
+}
+if (missingVisuals.length) {
+  console.warn(`FORGE VISUAL QA WARNING: ${missingVisuals.length} remote images returned HTTP 404. Missing: ${missingVisuals.join(', ')}. Fix images before production lock.`);
+  // Prevent broken-image icons in the legacy Forge shell. Never invent a
+  // vehicle photograph: use an explicitly marked neutral placeholder instead.
+  const missingPaths=JSON.stringify(missingVisuals.map(name=>"/forge/"+name));
+  const fallbackScript=`(() => {
+    const missing=${missingPaths};
+    const svg='<svg xmlns="http://www.w3.org/2000/svg" width="900" height="600" viewBox="0 0 900 600"><rect width="900" height="600" fill="#17251d"/><rect x="44" y="44" width="812" height="512" rx="18" fill="none" stroke="#8db69b" stroke-width="3"/><text x="450" y="290" text-anchor="middle" fill="#e2f7e9" font-family="Arial, sans-serif" font-size="35">IMAGE UNAVAILABLE</text><text x="450" y="345" text-anchor="middle" fill="#abd0b6" font-family="Arial, sans-serif" font-size="20">Original external asset missing - not a vehicle photo</text></svg>';
+    function substitute(image){
+      if(!(image instanceof HTMLImageElement) || image.dataset.enchevMissingMedia==='1')return;
+      try {
+        const path=new URL(image.currentSrc||image.src,window.location.href).pathname;
+        if(!missing.some(name=>path.endsWith(name) || path.endsWith(name.slice(6))))return;
+      } catch{return;}
+      image.dataset.enchevMissingMedia='1';
+      image.alt='Original external image unavailable; no replacement photograph provided';
+      image.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg);
+    }
+    document.addEventListener('error',ev=>substitute(ev.target),true);
+    function scan(){document.querySelectorAll('img').forEach(img=>{if(img.complete&&img.naturalWidth===0)substitute(img);});}
+    if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',scan,{once:true});else scan();
+  })();`;
+  await writeFile(path.join(output,'missing-media-fallback.js'),fallbackScript);
+  let html=await readFile(forgeIndexPath,'utf8');
+  if(!html.includes('/forge/missing-media-fallback.js')){
+    html=html.replace('</body>','<script src="/forge/missing-media-fallback.js" defer></script></body>');
+    await writeFile(forgeIndexPath,html);
+  }
+}

@@ -37,8 +37,20 @@ export async function POST(request: NextRequest, context: Context) {
   if (!config) return etap1Json({error:"Pilot not activated"},503);
 
   if (action === "logout") {
+    const scope=request.nextUrl.searchParams.get("scope")==="admin"?"admin":"bidder";
+    const previous=etap1Session(request,config,scope);
+    if (scope==="bidder" && previous && previous.role!=="admin") {
+      try {
+        await etap1Rpc(config,"etap1_device_signout",{
+          p_actor:previous.role,p_session_id:previous.sid,
+        });
+      } catch {
+        // Do not claim a remote sign-out if the authoritative database did not confirm it.
+        return etap1Json({error:"Could not end device session. Retry sign out."},503);
+      }
+    }
     const response=etap1Json({ok:true});
-    clearEtap1Cookie(response,request.nextUrl.searchParams.get("scope")==="admin"?"admin":"bidder");
+    clearEtap1Cookie(response,scope);
     return response;
   }
   const body=await etap1Body(request);
@@ -60,8 +72,8 @@ export async function POST(request: NextRequest, context: Context) {
     }
     if (!valid) return etap1Json({error:"Invalid demo access code"},401);
     const sid=randomUUID();
-    // A new login MUST reset that role's readiness and invalidate the
-    // previous signed session before any bid can be admitted.
+    // Each login obtains an independent signed device session; the role is
+    // counted once in READY/auction even if used on multiple devices.
     if (role !== "admin") {
       try {
         await etap1Rpc(config,"etap1_join_lobby_automatic",{
@@ -121,8 +133,8 @@ export async function POST(request: NextRequest, context: Context) {
     if (role !== "admin") return etap1Json({error:"Admin only"},403);
     // Operator panel is watch-only for this demonstration.
     // A manual start used to bypass the session-bound READY admission ledger.
-    // The first round starts as soon as all three bidders log in, and later rounds after all three press READY.
-    return etap1Json({error:"Only Mitko, Borko and Enchev participate. The first round starts when all three join; later rounds require all three to press READY."},409);
+    // Each round requires all three invited roles to explicitly press READY.
+    return etap1Json({error:"Only Mitko, Borko and Enchev participate. Every round starts after all three participants set their demo budgets and press READY."},409);
   }
 
   if (role !== "mitko" && role !== "borko" && role !== "enchev") return etap1Json({error:"Bidder only"},403);

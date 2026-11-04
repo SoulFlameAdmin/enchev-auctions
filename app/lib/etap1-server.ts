@@ -121,7 +121,7 @@ export async function etap1Body(request: NextRequest): Promise<Record<string,unk
   } catch { return null; }
 }
 
-export async function etap1Rpc(config: Config, name: "etap1_snapshot"|"etap1_start"|"etap1_bid"|"etap1_ready_lobby"|"etap1_ready_lobby_secure"|"etap1_join_lobby_automatic"|"etap1_bid_admitted"|"etap1_bid_offer_secure"|"etap1_wallet_update_secure"|"etap1_admin_code_matches",
+export async function etap1Rpc(config: Config, name: "etap1_snapshot"|"etap1_start"|"etap1_bid"|"etap1_ready_lobby"|"etap1_ready_lobby_secure"|"etap1_join_lobby_automatic"|"etap1_bid_admitted"|"etap1_bid_offer_secure"|"etap1_wallet_update_secure"|"etap1_admin_code_matches"|"etap1_device_signout",
   params: Record<string,unknown> = {}): Promise<unknown> {
   const response = await fetch(config.url + "/rest/v1/rpc/" + name, {
     method: "POST", cache: "no-store",

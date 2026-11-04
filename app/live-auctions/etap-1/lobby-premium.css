@@ -1,0 +1,529 @@
+/* E&A | ETAP 1 cinematic lobby 2026. Scoped to actual server-backed demo room. */
+body:has(.eaEtap1) .eaAppShell{display:none!important}
+.eaRoom:has(.eaLuxuryLobby){--ea-green:#f41a31;--ea-bg:#050507;--ea-border:#6a1f2b;background:#030204;color:#fff}
+.eaRoom:has(.eaLuxuryLobby) .eaRoomContent{width:min(1500px,calc(100% - 34px));max-width:1500px}
+.eaRoom .eaRoomHeader .eaRoomLogo{flex:0 1 315px;min-width:182px;max-width:315px}
+.eaRoom .eaRoomLogo img{width:100%;height:auto;max-height:59px;object-fit:contain;object-position:left}
+.eaRoom:has(.eaLuxuryLobby) .eaRoomHeader{background:#060406;border-bottom-color:#8d1021}
+.eaRoom:has(.eaLuxuryLobby) .eaRoomTitle strong{color:#fff}
+.eaRoom:has(.eaLuxuryLobby) .eaRoomStatus{background:#12080b;border-bottom-color:#481b24}
+.eaLuxuryLobby{position:relative;display:block!important;padding:0!important;overflow:hidden;isolation:isolate;border:1px solid #a8172e!important;border-radius:20px!important;background:#040304!important;box-shadow:0 30px 95px #000b,0 0 32px #9b002629!important;margin:0 0 18px!important}
+.eaLuxuryLobby .eaLxHero{position:relative;height:clamp(440px,42vw,610px);overflow:hidden;background:
+ linear-gradient(180deg,transparent 60%,#050307 98%),
+ repeating-linear-gradient(90deg,transparent 0 17.2%,#ff31321b 17.3% 17.5%,transparent 17.6% 25%),
+ radial-gradient(ellipse 42% 53% at 48% 58%,#4b070e 0%,#230409 47%,transparent 83%),
+ linear-gradient(165deg,#131922 0%,#080609 20%,#030508 54%,#180b0e 100%)}
+.eaLxHero:before{content:"";position:absolute;z-index:1;inset:0;pointer-events:none;background:
+ linear-gradient(130deg,transparent 8%,#fff2 8.4%,transparent 9%,transparent 24%,#fefefe12 24.5%,transparent 25%,transparent 70%,#ffffff18 70.5%,transparent 71%),
+ repeating-linear-gradient(0deg,transparent 0 44px,#f22b3624 45px,transparent 46px),
+ linear-gradient(180deg,#0003,transparent 50%,#0008)}
+.eaLxHero:after{content:"";position:absolute;inset:auto -10% 0;height:45%;pointer-events:none;background:radial-gradient(ellipse 40% 22% at 52% 89%,#f9152c88,transparent 85%),linear-gradient(0deg,#030306e8,transparent);z-index:1}
+.eaLxRoof{position:absolute;left:19%;top:-24%;width:61%;height:55%;border-radius:50%;border:14px solid #d70726;transform:perspective(730px) rotateX(52deg);box-shadow:0 0 8px #fff,0 0 32px #f91b39,0 0 76px #9b041b,inset 0 0 8px #fefefe,inset 0 0 52px #fa2641;z-index:3}
+.eaLxRoof:after{content:"";position:absolute;inset:15px 10px;border:7px solid #f9fbff;border-radius:50%;box-shadow:0 0 19px #fff,0 0 50px #f30a2a}
+.eaLxRoof i{position:absolute;bottom:-15%;left:16%;width:12px;height:40%;background:linear-gradient(#fff7,transparent);filter:blur(5px)}
+.eaLxRoof i:nth-child(2){left:52%}.eaLxRoof i:nth-child(3){left:81%}
+.eaLxWorldMap{position:absolute;z-index:0;left:29%;top:15%;width:40%;height:38%;display:grid;place-items:center;color:#9f061d;font-size:45px;font-weight:1000;letter-spacing:.08em;opacity:.5;background:radial-gradient(#f3162a 1.4px,transparent 1.8px) 0 0/10px 10px;mask-image:radial-gradient(ellipse,black 40%,transparent 75%)}
+.eaLxWorldMap span{text-shadow:0 0 24px #fa2646;color:#f51b33}
+.eaLxBrandWall{position:absolute;z-index:4;left:25%;right:27%;top:23%;display:grid;place-items:center;gap:4px;filter:drop-shadow(0 6px 15px #000c)}
+.eaLxBrandWall img{width:min(410px,85%);height:auto;max-height:108px}
+.eaLxBrandWall small{color:#fff;font-size:clamp(9px,.9vw,12px);font-weight:900;letter-spacing:.16em}
+.eaLxStageArea{position:absolute;z-index:5;left:11%;top:38%;width:71%;height:55%;pointer-events:none}
+.eaLxDisplay{position:relative;width:min(100%,810px);height:100%;margin:auto;perspective:1100px;transform-style:preserve-3d}
+.eaLxCarMotion{position:absolute;inset:-10% 3% 11%;transform-origin:center 67%;animation:eaLxCarShowcase 11s ease-in-out infinite;filter:drop-shadow(0 13px 22px #000d) drop-shadow(0 0 23px #d7022088);will-change:transform}
+.eaLxCoveredSvg{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+@keyframes eaLxCarShowcase{0%,100%{transform:translateX(-1%) perspective(900px) rotateY(-13deg) scale(1.02)}48%{transform:translateX(2%) perspective(900px) rotateY(13deg) scale(1.055)}}
+.eaLxStage{position:absolute;left:2%;right:2%;bottom:6%;height:27%;border-radius:50%;background:radial-gradient(ellipse at 50% 35%,#230a11,#07070b 70%);border:6px solid #e11b30;box-shadow:0 0 15px #f5162f,0 0 38px #af0224,inset 0 0 13px #fff7;transform:perspective(450px) rotateX(55deg)}
+.eaLxStageInner{position:absolute;inset:10px;border-radius:50%;border:4px solid #eee;box-shadow:0 0 15px #fff7}
+.eaLxGroundGlow{position:absolute;left:5%;right:5%;bottom:0;height:40%;border-radius:50%;background:radial-gradient(ellipse,#f50b294e,transparent 68%)}
+.eaLxTurntableLabel{position:absolute;left:0;bottom:0;width:100%;text-align:center;font-size:9px;letter-spacing:.1em;color:#eaaeb8;font-weight:900}
+.eaLxTurntableLabel span{color:#f00}
+.eaLxCountdown{position:absolute;z-index:8;right:2.4%;top:23%;width:clamp(235px,23%,330px);min-height:265px;padding:19px 17px 14px;border:1px solid #ed3449;border-radius:18px;background:linear-gradient(160deg,#13080ded,#050508eb 83%);box-shadow:0 0 36px #c60a2d74,0 24px 50px #0009,inset 0 1px #ffffff3a;text-align:center;backdrop-filter:blur(12px)}
+.eaLxTimerEyebrow{display:flex;align-items:center;justify-content:center;gap:10px;color:#ff3045;font-size:29px}
+.eaLxTimerEyebrow b{font-size:24px;color:white}
+.eaLxTimerCaption{display:block;font-size:10px;color:#e2c7cb;font-weight:900;letter-spacing:.07em;margin:10px auto 0}
+.eaLxDigits{display:block;font:1000 clamp(40px,4.3vw,70px)/1.1 Impact,'Arial Narrow',Arial,sans-serif;letter-spacing:.005em;font-variant-numeric:tabular-nums;color:#ff2748;text-shadow:0 0 18px #ff153a,0 0 36px #ff0a3971;margin:7px auto 5px}
+.eaLuxuryLobby.is-counting .eaLxDigits{animation:eaLxPulse .9s ease-in-out infinite alternate}
+@keyframes eaLxPulse{to{text-shadow:0 0 8px #ff2237}from{text-shadow:0 0 28px #ff203f,0 0 48px #ff112488}}
+.eaLxServerNote{display:block;font-size:9px;line-height:1.3;color:#c9abb1;min-height:22px}
+.eaLxReadyStats{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:11px;padding-top:13px;border-top:1px solid #8a1a28}
+.eaLxReadyStats span{display:grid;gap:5px;color:#bca1a5;font-size:10px}
+.eaLxReadyStats b{font-size:18px;color:#fff}
+.eaLxConnection{margin-top:14px;display:flex;align-items:center;gap:5px;justify-content:center;color:#bda5ab;font-size:9px}
+.eaLxConnection i{width:8px;height:8px;border-radius:50%;background:#ffb800}
+.eaLxConnection i.online{background:#3ee382;box-shadow:0 0 10px #2cfa72}
+.eaLxHeroCaption{position:absolute;bottom:16px;z-index:6;left:0;right:0;display:flex;justify-content:center;align-items:center;gap:17px;text-shadow:0 3px 9px #000;font-size:12px;font-weight:900;letter-spacing:.15em;color:#fcebef}
+.eaLxHeroCaption i{width:6px;height:6px;border-radius:50%;background:#ff193b}
+.eaLxControlDeck{position:relative;display:grid;grid-template-columns:minmax(0,1.3fr) minmax(280px,1fr) minmax(215px,.8fr);gap:21px;padding:20px 27px 23px;background:linear-gradient(180deg,#0a080a,#1a070c);border-top:2px solid #fc182f}
+.eaLxSmall{font-size:10px;color:#ff7081;font-weight:950;letter-spacing:.12em}
+.eaLxWelcome h2{font-size:clamp(21px,2.6vw,34px);line-height:1.2;font-weight:1000;margin:6px 0 7px!important}
+.eaLxWelcome p{font-size:11px;color:#c9b8bd;line-height:1.6}
+.eaLxRoster{display:grid;grid-template-columns:1fr;gap:8px;align-content:center}
+.eaLxRoster>span{display:flex;align-items:center;gap:8px;padding:8px 12px;border:1px solid #4c222b;border-radius:8px;background:#140b0e;font-size:12px;font-weight:850;color:#eacfd5}
+.eaLxRoster>span.ready{border-color:#288b5a;background:#0c2018}
+.eaLxRoster>span>i{font-size:14px;color:#ff4155}
+.eaLxRoster>span.ready>i{color:#44e69c}
+.eaLxRoster>span>small{margin-left:auto;font-size:9px;color:#aa8d93}
+.eaLxReadyAction{display:grid;gap:10px;align-content:center}
+.eaRoom .eaLxReadyAction button,.eaLxLocked{width:100%;min-height:59px;padding:9px 12px;border-radius:12px;font-size:15px;font-weight:1000;letter-spacing:.02em;text-align:center;display:grid;place-items:center}
+.eaRoom .eaLxReadyAction button{background:linear-gradient(110deg,#f61532,#9c001d);color:#fff;border:1px solid #ff3c52;box-shadow:0 8px 29px #e4093361}
+.eaRoom .eaLxReadyAction button.is-ready{background:#113d2a;border-color:#31e58d;color:#b5ffda}
+.eaLxLocked{border:1px solid #66333f;color:#a99ea3;background:#10090e;font-size:11px}
+.eaLxReadyAction small{color:#bba5ac;font-size:10px;line-height:1.5;text-align:center}
+.eaRoom:has(.eaLuxuryLobby) .eaDemoWallet{border-color:#5e3038;background:#11080b}
+.eaRoom:has(.eaLuxuryLobby) .eaRoomContent>.eaVehicleFacts{border-color:#492229;background:#0e0a0b}
+@media(max-width:1120px){
+ .eaLxHero{height:510px!important}.eaLxStageArea{left:1%;width:81%;top:39%;height:50%}
+ .eaLxBrandWall{left:13%;right:32%;top:22%}
+ .eaLxCountdown{width:248px;right:12px;top:22%}
+ .eaLxControlDeck{grid-template-columns:1fr 1fr;gap:13px}
+ .eaLxWelcome{grid-column:1/-1}
+}
+@media(max-width:700px){
+ .eaRoom:has(.eaLuxuryLobby) .eaRoomContent{width:calc(100% - 18px)}
+ .eaRoom .eaRoomHeader .eaRoomLogo{flex:0 1 190px;min-width:0}
+ .eaRoom .eaRoomLogo img{max-height:36px}
+ .eaLuxuryLobby{border-radius:14px!important}
+ .eaLuxuryLobby .eaLxHero{height:600px!important}
+ .eaLxRoof{left:-9%;top:-16%;width:115%;height:30%;border-width:8px;box-shadow:0 0 16px #ff0a31}
+ .eaLxRoof:after{border-width:4px;inset:9px}
+ .eaLxBrandWall{left:4%;right:4%;top:15%;gap:1px}
+ .eaLxBrandWall img{width:min(270px,80%);max-height:78px}
+ .eaLxBrandWall small{font-size:8px;letter-spacing:.1em}
+ .eaLxWorldMap{left:5%;width:90%;top:9%;height:29%}
+ .eaLxStageArea{left:-8%;width:116%;top:31%;height:33%}
+ .eaLxCarMotion{inset:-9% 0 0}
+ .eaLxStage{bottom:1%}
+ .eaLxTurntableLabel{font-size:7px;bottom:-6px}
+ .eaLxCountdown{right:5%;top:64%;width:90%;min-height:170px;padding:10px 12px 11px;border-radius:12px}
+ .eaLxTimerEyebrow{font-size:19px;gap:5px}
+ .eaLxTimerEyebrow b{font-size:17px}
+ .eaLxTimerCaption{font-size:9px;margin-top:4px}
+ .eaLxDigits{font-size:49px;margin:2px auto}
+ .eaLxServerNote{font-size:8px;min-height:13px}
+ .eaLxReadyStats{margin-top:4px;padding-top:7px}
+ .eaLxReadyStats span{font-size:8px;gap:2px}
+ .eaLxReadyStats b{font-size:14px}
+ .eaLxConnection{margin-top:6px}
+ .eaLxHeroCaption{bottom:11px;gap:9px;font-size:9px}
+ .eaLxControlDeck{grid-template-columns:1fr;padding:16px;gap:14px}
+ .eaLxWelcome{grid-column:1}
+ .eaLxWelcome h2{font-size:22px!important}
+ .eaLxRoster{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}
+ .eaLxRoster>span{padding:8px 5px;flex-wrap:wrap;justify-content:center;text-align:center;gap:3px;font-size:10px}
+ .eaLxRoster>span>small{width:100%;margin:0;font-size:8px}
+ .eaLxReadyAction{gap:6px}
+ .eaRoom .eaLxReadyAction button{min-height:53px}
+}
+@media(max-width:380px){.eaLuxuryLobby .eaLxHero{height:545px!important}.eaLxCountdown{top:62%}.eaLxStageArea{top:33%;height:30%}.eaLxHeroCaption{font-size:8px}}
+@media(prefers-reduced-motion:reduce){.eaLxCarMotion{animation:none!important}.eaLuxuryLobby.is-counting .eaLxDigits{animation:none!important}}
+@media(forced-colors:active){.eaLuxuryLobby,.eaLxCountdown,.eaLxControlDeck{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}}
+
+/* True 360-degree WebGL cloth-car turntable; SVG fallback remains for unsupported devices. */
+.eaLxCarMotion:has(.eaLxWebglCanvas.is-ready){animation:none;transform:none;inset:-20% -3% 3%;}
+.eaLxWebglCanvas{display:none;position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+.eaLxWebglCanvas.is-ready{display:block;}
+.eaLxCarMotion:has(.eaLxWebglCanvas.is-ready) .eaLxCoveredSvg{display:none;}
+@media(max-width:700px){
+ .eaLxCarMotion:has(.eaLxWebglCanvas.is-ready){inset:-17% -2% 4%;}
+}
+
+/* E&A luxury monochrome refresh: black glass / pearl-white light / precise racing-red accents. */
+.eaLuxuryLobby {
+  border:1px solid #4a3339!important;
+  background:#020204!important;
+  box-shadow:0 20px 70px #000d,0 0 12px #aa00151c!important
+}
+.eaLuxuryLobby .eaLxHero{
+  background:
+    linear-gradient(180deg,#0304081a 0%,#02030614 43%,#020204a8 88%,#020204 100%),
+    radial-gradient(ellipse 48% 46% at 48% 43%,#1a202a 0%,#07090e 58%,#010102 100%)
+}
+.eaLuxuryLobby .eaLxHero:before{
+  background:
+    linear-gradient(90deg,#0007 0%,transparent 16%,transparent 83%,#0007 100%),
+    repeating-linear-gradient(90deg,transparent 0 10.8%,#d1e0fa22 10.9% 11%,transparent 11.1% 20%),
+    radial-gradient(ellipse at 50% 34%,#f6fbff26,transparent 67%);
+  opacity:.95
+}
+.eaLuxuryLobby .eaLxHero:after{
+  background:
+    radial-gradient(ellipse 55% 11% at 49% 82%,#e50e276a,transparent 100%),
+    linear-gradient(180deg,transparent,#020203e0 100%)
+}
+.eaLuxuryLobby .eaLxRoof{
+  border-color:#e7eef9;
+  box-shadow:
+    0 0 6px #fff,0 0 18px #edf7ffb3,0 0 38px #c505244b,
+    inset 0 0 9px #fff,inset 0 0 18px #fff9
+}
+.eaLuxuryLobby .eaLxRoof:after{
+  border-color:#d50a25;
+  box-shadow:0 0 8px #ff2840,0 0 25px #cc082a81
+}
+.eaLuxuryLobby .eaLxRoof i{
+  background:linear-gradient(#ffffff78,transparent)
+}
+.eaLuxuryLobby .eaLxWorldMap{
+  color:#9299ad;
+  opacity:.42;
+  background:radial-gradient(#d4d8e5 1.15px,transparent 1.5px) 0 0/9px 9px
+}
+.eaLuxuryLobby .eaLxWorldMap span{color:#eff2f8;text-shadow:0 0 22px #f1f6ff83}
+.eaLuxuryLobby .eaLxStage{
+  border-color:#d7dee8;
+  background:radial-gradient(ellipse at 50% 30%,#18191e 8%,#060608 72%);
+  box-shadow:0 0 9px #fff9,0 0 28px #bf09274d,inset 0 0 19px #f0f3ff7d
+}
+.eaLuxuryLobby .eaLxStageInner{
+  border-color:#eaf0fa;
+  box-shadow:0 0 9px #f7faff,0 0 20px #cc0a237e
+}
+.eaLuxuryLobby .eaLxGroundGlow{
+  background:radial-gradient(ellipse,#fc18272e,transparent 72%)
+}
+.eaLuxuryLobby .eaLxCoveredSvg{
+  filter:grayscale(1) contrast(1.36) brightness(.38)
+}
+.eaLuxuryLobby .eaLxCarMotion{
+  filter:drop-shadow(0 12px 18px #000e) drop-shadow(0 0 8px #d006283d)
+}
+.eaLuxuryLobby .eaLxBrandWall{
+  filter:drop-shadow(0 6px 15px #000e)
+}
+.eaLuxuryLobby .eaLxBrandWall small{
+  color:#e3e7ef;
+  font-weight:850
+}
+.eaLuxuryLobby .eaLxCountdown{
+  border-color:#d9213d;
+  background:linear-gradient(155deg,#121115f0,#030305f5 85%);
+  box-shadow:0 0 27px #c4071d46,0 18px 39px #000d,inset 0 0 12px #eee2e209
+}
+.eaLuxuryLobby .eaLxTimerEyebrow{color:#ff2740}
+.eaLuxuryLobby .eaLxTimerCaption{color:#f0edf1}
+.eaLuxuryLobby .eaLxDigits{color:#fa1d38}
+.eaLuxuryLobby .eaLxServerNote{color:#b3acb3}
+.eaLuxuryLobby .eaLxConnection{color:#d9d3da}
+.eaLuxuryLobby .eaLxControlDeck{
+  background:linear-gradient(170deg,#111013,#050507 90%);
+  border-top-color:#e61730
+}
+.eaLuxuryLobby .eaLxWelcome p{color:#c9c6cf}
+.eaLuxuryLobby .eaLxRoster>span{
+  border-color:#45424b;
+  background:linear-gradient(135deg,#151519,#08080a);
+  color:#f3f4f7
+}
+.eaLuxuryLobby .eaLxRoster>span.ready{
+  border-color:#2a8d5c;background:#0d2018
+}
+.eaLuxuryLobby .eaLxReadyAction button:not(.is-ready){
+  background:linear-gradient(145deg,#fe1939,#be001c 67%,#6f0015);
+  border-color:#ff5364;
+  box-shadow:0 6px 21px #e1002a52,inset 0 1px #ffffff5a
+}
+/* Full mobile design reference modules, hidden on large screens. */
+.eaLxMobileExtras,.eaLxMobileNav{display:none}
+@media(max-width:700px){
+  html:has(.eaLuxuryLobby){scroll-padding-top:80px}
+  body:has(.eaLuxuryLobby){background:#020204!important}
+  .eaRoom:has(.eaLuxuryLobby){
+    background:#020204;
+    padding-bottom:calc(83px + env(safe-area-inset-bottom))
+  }
+  .eaRoom:has(.eaLuxuryLobby) .eaRoomContent{width:100%;padding:0 8px 26px}
+  .eaRoom:has(.eaLuxuryLobby) .eaRoomHeader{
+    min-height:70px;
+    display:grid;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:7px;
+    background:#030305;
+    padding:8px 12px!important;
+    border-color:#761023;
+    box-shadow:0 7px 26px #000b;
+  }
+  .eaRoom:has(.eaLuxuryLobby) .eaRoomLogo{max-width:280px!important;min-width:0!important}
+  .eaRoom:has(.eaLuxuryLobby) .eaRoomLogo img{max-height:48px;max-width:100%;object-fit:contain}
+  .eaRoom:has(.eaLuxuryLobby) .eaRoomTitle{display:none}
+  .eaRoom:has(.eaLuxuryLobby) .eaHeaderActions{min-width:0;gap:6px}
+  .eaRoom:has(.eaLuxuryLobby) .eaHeaderActions>.eaConnection{display:none}
+  .eaRoom:has(.eaLuxuryLobby) .eaSoundToggle{
+    width:38px;min-width:38px;height:40px;min-height:40px;
+    padding:0;background:#09090b;border:1px solid #5b4b50;color:#f7f7f9
+  }
+  .eaRoom:has(.eaLuxuryLobby) .eaSoundToggle span{display:none}
+  .eaRoom:has(.eaLuxuryLobby) .eaSettingsToggle{
+    width:40px;height:40px;border-color:#6a4b55;background:#111014
+  }
+  .eaRoom:has(.eaLuxuryLobby) .eaRoomStatus{
+    padding:7px 14px;
+    background:#09090b;
+    border-color:#5e1725;
+    color:#f1d9df;
+    font-size:9px;
+    letter-spacing:.03em
+  }
+  .eaRoom:has(.eaLuxuryLobby) .eaRoomStatus>span:last-child{font-size:8px}
+  .eaLuxuryLobby{
+    margin:0 0 16px!important;
+    border-radius:0!important;
+    border-left:0!important;border-right:0!important;
+    border-top:0!important;
+    box-shadow:none!important
+  }
+  .eaLuxuryLobby .eaLxHero{height:clamp(492px,133vw,612px)!important}
+  .eaLuxuryLobby .eaLxRoof{
+    left:-8%;top:-14%;width:116%;height:34%;
+    border-width:8px;
+    box-shadow:0 0 7px #f0f2ff,0 0 20px #ffffff5e
+  }
+  .eaLuxuryLobby .eaLxRoof:after{
+    inset:10px 8px;border-width:5px
+  }
+  .eaLuxuryLobby .eaLxWorldMap{
+    left:5%;top:12%;width:90%;height:34%;opacity:.52
+  }
+  .eaLuxuryLobby .eaLxBrandWall{top:18%;left:9%;right:9%;gap:4px}
+  .eaLuxuryLobby .eaLxBrandWall img{
+    max-height:66px;width:min(330px,84%);object-fit:contain
+  }
+  .eaLuxuryLobby .eaLxBrandWall small{font-size:clamp(8px,2vw,10px);letter-spacing:.1em}
+  .eaLuxuryLobby .eaLxStageArea{
+    left:-6%;top:32%;width:112%;height:31%;
+  }
+  .eaLuxuryLobby .eaLxStage{
+    left:3%;right:3%;bottom:1%;border-width:5px;
+    box-shadow:0 0 7px #f7faff,0 0 17px #ed0e3c
+  }
+  .eaLuxuryLobby .eaLxStageInner{border-width:3px;inset:7px}
+  .eaLuxuryLobby .eaLxCarMotion:has(.eaLxWebglCanvas.is-ready){
+    inset:-24% -1% -1%
+  }
+  .eaLuxuryLobby .eaLxTurntableLabel{bottom:-10px;font-size:7px;color:#bab9c3}
+  .eaLuxuryLobby .eaLxCountdown{
+    top:64%;left:6%;right:6%;width:88%;
+    padding:10px 12px 9px;
+    min-height:0;height:174px;
+    border:1px solid #f52339;border-radius:18px;
+    background:linear-gradient(180deg,#0b0a0df5,#030305f8);
+    box-shadow:0 6px 25px #000b,0 0 18px #dd062548
+  }
+  .eaLuxuryLobby .eaLxTimerEyebrow{font-size:20px;gap:8px}
+  .eaLuxuryLobby .eaLxTimerEyebrow b{font-size:21px}
+  .eaLuxuryLobby .eaLxTimerCaption{font-size:9px;margin-top:3px;letter-spacing:.1em}
+  .eaLuxuryLobby .eaLxDigits{
+    font:900 clamp(44px,12vw,66px)/1 Impact,'Arial Narrow',Arial,sans-serif;
+    font-variant-numeric:tabular-nums;
+    margin:1px auto 5px
+  }
+  .eaLuxuryLobby .eaLxServerNote{font-size:8px;min-height:11px;line-height:1.2}
+  .eaLuxuryLobby .eaLxReadyStats{margin-top:6px;padding-top:8px}
+  .eaLuxuryLobby .eaLxReadyStats span{font-size:9px}
+  .eaLuxuryLobby .eaLxReadyStats b{font-size:14px}
+  .eaLuxuryLobby .eaLxConnection{margin-top:3px;font-size:8px}
+  .eaLuxuryLobby .eaLxHeroCaption{bottom:8px;gap:8px;font-size:10px}
+  .eaLxMobileExtras{display:block;background:linear-gradient(180deg,#07080a,#010102);padding:11px 14px 16px}
+  .eaLxMobileFeatures{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+  .eaLxFeatureTile{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-height:106px;gap:2px;text-align:center;
+    padding:10px 4px 11px;
+    border:1px solid #63616b;
+    border-bottom:2px solid #e31b32;
+    border-radius:16px;
+    background:linear-gradient(152deg,#14151a,#040405 81%);
+    box-shadow:inset 0 1px #ffffff19,0 5px 22px #0008;
+    color:#f6f6f8
+  }
+  .eaLxFeatureTile svg{margin-bottom:6px;color:#f2f4f9;filter:drop-shadow(0 0 3px #fff2)}
+  .eaLxFeatureTile strong,.eaLxFeatureTile>span{font-size:clamp(10px,2.5vw,13px);font-weight:760;line-height:1.25}
+  .eaLxFeatureTile>span{font-weight:650}
+  .eaLxMobileCta{
+    display:flex;align-items:center;justify-content:center;gap:8px;
+    width:100%;min-height:56px;padding:10px 13px;margin-top:15px;
+    color:#fff!important;text-decoration:none!important;
+    border:1px solid #fa3d50;border-radius:15px;
+    background:linear-gradient(180deg,#ff2944,#df062b 32%,#920014 92%);
+    box-shadow:0 6px 20px #b8002882,inset 0 1px #ffffff9c;
+    text-shadow:0 1px 4px #000;
+    letter-spacing:.004em
+  }
+  .eaLxMobileCta strong{font-size:clamp(11px,2.9vw,15px);font-weight:950;text-align:center}
+  .eaLxMobileCta>span:first-child{font-size:19px}
+  .eaLxMobileCta>span:last-child{font-size:24px;margin-left:auto}
+  .eaLxMobileTrust{
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:0;margin-top:18px;
+    padding:16px 0 8px;border-top:1px solid #5c1b28
+  }
+  .eaLxMobileTrust>div{
+    display:flex;flex-direction:column;align-items:center;gap:4px;
+    min-width:0;text-align:center;padding:2px 5px
+  }
+  .eaLxMobileTrust>div:not(:last-child){border-right:1px solid #55505a}
+  .eaLxMobileTrust svg{color:#ed1e39}
+  .eaLxMobileTrust strong{font-size:clamp(14px,4vw,20px);font-weight:950;color:#f5f5f6}
+  .eaLxMobileTrust span{font-size:10px;line-height:1.3;color:#ccc9d0}
+  .eaLuxuryLobby .eaLxControlDeck{
+    display:flex;flex-direction:column;gap:12px;
+    padding:18px 15px;
+    background:#0a0a0d;border-top:1px solid #e01830
+  }
+  .eaLuxuryLobby .eaLxWelcome{grid-column:auto}
+  .eaLuxuryLobby .eaLxWelcome h2{font-size:clamp(20px,5.2vw,26px)!important;line-height:1.2}
+  .eaLuxuryLobby .eaLxWelcome p{font-size:11px}
+  .eaLuxuryLobby .eaLxRoster{
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;
+  }
+  .eaLuxuryLobby .eaLxRoster>span{
+    display:flex;flex-wrap:wrap;gap:3px;justify-content:center;
+    padding:10px 4px;font-size:12px;border-radius:11px;text-align:center
+  }
+  .eaLuxuryLobby .eaLxRoster>span>small{width:100%;font-size:9px;margin:0}
+  .eaLuxuryLobby .eaLxReadyAction button{min-height:52px}
+  .eaLxMobileNav{
+    display:grid;grid-template-columns:repeat(4,1fr);
+    position:fixed;left:0;bottom:0;right:0;
+    z-index:65;
+    padding:8px 5px calc(7px + env(safe-area-inset-bottom));
+    background:linear-gradient(180deg,#1b161bfa,#030304ff 67%);
+    border-top:1px solid #b5162e;
+    box-shadow:0 -6px 24px #000c,0 -1px 8px #ff172e22;
+  }
+  .eaLxMobileNav>a{
+    display:flex;align-items:center;justify-content:center;flex-direction:column;
+    gap:3px;min-height:46px;
+    color:#dedce3;text-decoration:none;
+    font-size:10px;font-weight:730;
+  }
+  .eaLxMobileNav>a svg{width:24px;height:24px}
+  .eaLxMobileNav>a[aria-current="page"]{color:#ff4059}
+  .eaLuxuryLobby .eaLxMobileNav a:focus-visible,
+  .eaLuxuryLobby .eaLxMobileCta:focus-visible{outline:3px solid #fff;outline-offset:2px}
+}
+@media(max-width:380px){
+  .eaLuxuryLobby .eaLxHero{height:510px!important}
+  .eaLuxuryLobby .eaLxCountdown{height:162px;top:63%}
+  .eaLuxuryLobby .eaLxRoof{top:-11%;height:30%}
+  .eaLuxuryLobby .eaLxStageArea{top:30%;height:32%}
+  .eaLuxuryLobby .eaLxBrandWall{top:15%}
+  .eaLuxuryLobby .eaLxDigits{font-size:45px}
+  .eaLxFeatureTile{min-height:98px;border-radius:13px}
+  .eaLxMobileFeatures{gap:6px}
+  .eaLxMobileExtras{padding-left:10px;padding-right:10px}
+}
+@media(prefers-reduced-motion:reduce){
+  .eaLxMobileCta{transition:none}
+}
+
+/* Guest-visible lobby (before invitation login): no fictional countdown/participants. */
+.eaGuestStage{width:min(1500px,calc(100% - 34px));margin:15px auto 45px;scroll-margin-top:85px;}
+.eaGuestStage .eaLuxuryLobby{margin:0!important;}
+.eaGuestStage .eaLxCountdown{box-shadow:0 8px 25px #000b,0 0 19px #b6052945;}
+.eaLxGuestRoster>span{border-color:#4b4350;background:#0c0c0e;}
+.eaLxGuestRoster>span small{color:#cebfca;}
+.eaLuxuryLobby .eaLxGuestEnter{
+  display:grid;place-items:center;width:100%;min-height:56px;
+  color:#fff;text-decoration:none;font-size:14px;font-weight:950;
+  border:1px solid #f4364d;border-radius:11px;
+  background:linear-gradient(130deg,#ee1533,#8f0018);
+  box-shadow:0 7px 23px #e006284d;
+}
+.eaGuestStage .eaLoginCard{
+  width:min(750px,calc(100% - 26px));max-width:750px;
+  margin:22px auto 35px;min-height:0;
+  display:block;grid-template-columns:none;padding:26px;
+  background:linear-gradient(160deg,#131318,#08080b 80%);
+  border:1px solid #9e293d;border-radius:17px;
+  box-shadow:0 12px 35px #000b,inset 0 1px #ffffff10;
+  scroll-margin-top:95px;
+}
+.eaGuestStage .eaLoginWelcome{display:none!important}
+.eaGuestStage .eaLoginCard>form{display:grid;gap:15px}
+.eaGuestStage .eaLoginFormHead{display:grid;gap:6px;text-align:left;margin-bottom:4px}
+.eaGuestStage .eaLoginFormHead>span{
+  color:#ef5269;font-size:11px;font-weight:950;letter-spacing:.14em
+}
+.eaGuestStage .eaLoginFormHead>strong{font-size:clamp(23px,3.6vw,34px);line-height:1.2;color:#fff}
+.eaGuestStage .eaLoginFormHead>small{font-size:11px;color:#bcbcc7}
+.eaGuestStage .eaLoginCard form label{color:#f6f2f4;font-size:12px}
+.eaGuestStage .eaLoginCard :is(input,select){
+  border:1px solid #57505a;background:#0b0d11;
+  border-radius:10px;min-height:52px;color:#fff;font-size:14px
+}
+.eaGuestStage .eaLoginCard :is(input,select):focus{
+  border-color:#fa304b;outline:2px solid #c21b395e;outline-offset:1px
+}
+.eaGuestStage .eaLoginCard .eaActionPrimary{
+  background:linear-gradient(140deg,#ff314e,#b50022 72%);
+  color:white;border:1px solid #fa4055;
+  border-radius:10px;min-height:56px;
+  font-size:15px;font-weight:950
+}
+.eaGuestStage .eaLoginCard form small{color:#b6afba}
+.eaRoom:has(.eaGuestStage){background:#030305;color:#fff}
+.eaRoom:has(.eaGuestStage) .eaRoomHeader{
+  background:#050507;border-color:#7f1a2b
+}
+.eaRoom:has(.eaGuestStage) .eaRoomTitle strong{color:#fff}
+.eaRoom:has(.eaGuestStage) .eaRoomStatus{
+  background:#0b0b0e;color:#d9d6dc;border-color:#591b27
+}
+.eaRoom:has(.eaGuestStage) .eaLiveDot{background:#ef1c39;box-shadow:0 0 10px #ea163e80}
+.eaRoom:has(.eaGuestStage) .eaSettingsToggle{
+  background:#111114;color:#fff;border-color:#50414b
+}
+.eaRoom:has(.eaGuestStage) .eaSettingsMenu{background:#0a090d;color:#fff;border-color:#7a2535}
+.eaRoom:has(.eaGuestStage) .eaSettingsMenu a{color:#fff}
+@media(max-width:700px){
+ .eaGuestStage{width:100%;margin:0 auto 25px}
+ .eaRoom:has(.eaGuestStage){padding-bottom:calc(82px + env(safe-area-inset-bottom))}
+ .eaRoom:has(.eaGuestStage) .eaRoomHeader{
+   min-height:70px;display:grid;grid-template-columns:minmax(0,1fr) auto;
+   gap:7px;padding:8px 12px!important;
+   border-color:#701b2c;box-shadow:0 7px 24px #000a
+ }
+ .eaRoom:has(.eaGuestStage) .eaRoomLogo img{max-height:48px;max-width:100%;object-fit:contain}
+ .eaRoom:has(.eaGuestStage) .eaRoomTitle{display:none}
+ .eaRoom:has(.eaGuestStage) .eaHeaderActions{min-width:0}
+ .eaRoom:has(.eaGuestStage) .eaRoomStatus{padding:8px 11px}
+ .eaGuestStage .eaLoginCard{
+   margin:14px 10px 22px;width:calc(100% - 20px);
+   padding:20px 14px;border-radius:16px;
+ }
+ .eaGuestStage .eaLoginFormHead>strong{font-size:27px}
+ .eaGuestStage .eaLoginCard :is(input,select){font-size:16px}
+ .eaGuestStage .eaLxGuestEnter{min-height:51px}
+ .eaGuestStage .eaLxControlDeck{padding:17px 15px}
+ .eaGuestStage .eaLxMobileCta{scroll-margin-top:80px}
+}
+
+/* Independent local PLAY DEMO entrypoint for guests and invite-only participants. */
+.eaLxMobilePlayDemo{display:none}
+.eaRoom .eaLxReadyAction .eaLxDesktopPlayDemo{
+  display:grid;place-items:center;width:100%;min-height:66px;
+  border:1px solid #f6465c;border-radius:14px;
+  background:linear-gradient(145deg,#ff344f,#b50028 64%,#630016);
+  color:#fff;font-size:17px;font-weight:1000;letter-spacing:.06em;
+  box-shadow:0 6px 30px #d6002c83,inset 0 2px #ffe4e67e;
+  text-shadow:0 1px 3px #000a;
+}
+.eaRoom .eaLxReadyAction .eaLxDesktopPlayDemo:active{transform:translateY(1px)}
+@media(max-width:700px){
+ .eaLxDesktopPlayDemo{display:none!important}
+ .eaRoom .eaLxMobileExtras .eaLxMobilePlayDemo{
+    display:flex;justify-content:center;align-items:center;flex-direction:column;gap:5px;
+    width:100%;min-height:72px;margin-top:14px;
+    border:1px solid #ff546b;border-radius:16px;
+    background:linear-gradient(145deg,#fb4963,#f00930 26%,#97001b 85%);
+    color:#fff;
+    font-size:20px;font-weight:1000;letter-spacing:.045em;
+    box-shadow:0 4px 21px #de053c88,inset 0 1px #ffffffa6;
+    text-shadow:0 1px 5px #000b;
+ }
+ .eaRoom .eaLxMobileExtras .eaLxMobilePlayDemo small{
+    font-size:10px;letter-spacing:.1em;font-weight:950;color:#fff4f6
+ }
+ .eaLxMobileCta{margin-top:9px;min-height:45px;background:linear-gradient(135deg,#292629,#09090d)!important;border-color:#80737a!important;box-shadow:0 3px 17px #0007!important;font-size:13px}
+ .eaRoom .eaLxReadyAction .eaLxGuestEnter{min-height:52px}
+}

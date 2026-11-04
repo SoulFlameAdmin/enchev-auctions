@@ -1,0 +1,236 @@
+
+/* E&A PLAY DEMO — reference-driven interface: faithful mobile proportions.
+   Everything stays live React/SVG/3D; never flatten the screenshot into an image. */
+.eaPlayDemo{
+  --eaRefGold:#f4ca43;
+  --eaRefRed:#ec062c;
+  background:#010102;
+  color:#f8f8fa;
+}
+.eaPDAuctionLayout{max-width:1440px;gap:16px;grid-template-columns:minmax(0,1fr) minmax(325px,.58fr)}
+.eaPDMainPanel{background:#030304;border-color:#3b262d;box-shadow:0 15px 48px #000c;}
+.eaPDCarShowcase{position:relative;isolation:isolate;background:#030303}
+.eaPDCarInfo{
+  position:absolute;z-index:7;
+  top:0;left:0;right:0;min-height:104px;
+  display:flex;align-items:flex-start;gap:16px;
+  padding:16px 22px 12px;
+  background:linear-gradient(180deg,#020204fd 4%,#030204e5 54%,#0302043b 87%,transparent 100%);
+  pointer-events:none;
+}
+.eaPDCarInfoWords{min-width:0;flex:1}
+.eaPDCarCrest{
+  display:flex;align-items:center;justify-content:center;flex-direction:column;
+  flex:0 0 74px;height:89px;
+  border:3px solid #f4c344;border-radius:22px 22px 40px 40px;
+  background:radial-gradient(circle at 50% 30%,#30200c,#020203 70%);
+  box-shadow:inset 0 0 10px #b07e236c,0 0 15px #000b;
+  clip-path:polygon(8% 1%,92% 1%,100% 17%,92% 68%,50% 100%,8% 68%,0 17%);
+  color:#e4c04f;text-shadow:0 0 6px #d99a19b0
+}
+.eaPDCarCrest small{font-family:Arial,sans-serif;font-size:8px;letter-spacing:.01em;font-weight:1000}
+.eaPDCarCrest b{font-size:36px;line-height:1.1}
+.eaPDCarInfo .eaPDLotLabel{
+  padding:0;background:none;border:0;color:#ecc7bd;
+  font-size:9px;letter-spacing:.075em
+}
+.eaPDCarInfo h1{
+  font-family:Inter,Arial,sans-serif;font-size:clamp(19px,2.7vw,36px);
+  line-height:.96;margin:3px 0 8px;letter-spacing:-.025em;
+  text-shadow:0 2px 12px #000e
+}
+.eaPDCarInfo h1 b{font-size:1.3em}
+.eaPDCarInfo p{font-size:12px;letter-spacing:.018em;color:#f0e8e8;line-height:1.2;text-shadow:0 2px 9px #000}
+.eaPDCarViewHeader{
+  position:absolute;z-index:8;bottom:13px;right:12px;
+  min-height:0;padding:0;background:none;border:0;
+  pointer-events:none;justify-content:flex-end
+}
+.eaPDCarViewHeader>div:first-child{display:none}
+.eaPDCarModeSwitch{pointer-events:auto;padding:4px;border-radius:11px;background:#060508d9;border:1px solid #8b4048;box-shadow:0 2px 13px #000b}
+.eaPDCarModeSwitch button{border:0;background:#17121a;font-size:10px;min-height:32px;padding:7px 10px}
+.eaPDCarModeSwitch button.selected{background:linear-gradient(180deg,#ec1b37,#ad001b);box-shadow:0 0 13px #a50327a3}
+.eaPDCarScene3D{
+  height:clamp(330px,35vw,520px);min-height:330px;
+  background:
+    radial-gradient(ellipse 55% 39% at 50% 71%,#a3412962,transparent 90%),
+    repeating-linear-gradient(90deg,transparent 0 23%,#cd90520b 24%,transparent 25% 33%),
+    linear-gradient(180deg,#050507,#0c0a0a 80%,#000);
+}
+.eaPDCarScene3D::before{
+  background:linear-gradient(180deg,#06030415,transparent 35%,#f31b1a18 87%,#0007),
+  radial-gradient(ellipse at 50% 80%,#c411244d,transparent 65%);
+}
+.eaPDCarScene3D .eaPDModelIframe{z-index:2}
+.eaPDCarScene3D .eaPDCarDisclosure{display:none}
+.eaPDModelHint{display:none}
+.eaPDCarScenePhoto .eaPDCarDisclosure{bottom:12px;left:16px}
+.eaPDCarScenePhoto{height:clamp(330px,35vw,520px);min-height:0}
+.eaPDModelCredit{font-size:9px;background:#090507;border-color:#4c202a}
+.eaPDActionPanel{background:linear-gradient(180deg,#0d0809,#020203 70%);padding:0 24px 16px}
+.eaPDGauge{margin:0 auto;max-width:590px}
+.eaPDGaugeSvg{filter:drop-shadow(0 0 6px #ef093d54)}
+.eaPDTickNum{font-family:Arial,sans-serif;font-size:22px;fill:#fff;text-shadow:0 2px 7px #000}
+.eaPDGaugeCenter{top:32%;gap:3px}
+.eaPDGaugeTitle{font-size:14px;letter-spacing:.025em}
+.eaPDTime{font-size:clamp(50px,5.3vw,80px);font-style:italic;text-shadow:0 0 12px red,0 0 26px #fa0b3d}
+.eaPDFuel{color:#ffdd14}
+.eaPDTicks{color:#f8c66a;font-size:9px;letter-spacing:.045em}
+.eaPDPrice{position:relative;margin:-5px 0 10px;padding:0 24px}
+.eaPDPrice strong{font-size:clamp(46px,5.2vw,72px);line-height:1.02;filter:drop-shadow(0 2px 4px #ecb03488)}
+.eaPDPrice::before,.eaPDPrice::after{
+  position:absolute;top:0;font-family:Georgia,serif;
+  color:#e6bf33;font-weight:700;font-size:46px;line-height:1;
+}
+.eaPDPrice::before{content:"❧";left:0;transform:rotate(-45deg)}
+.eaPDPrice::after{content:"❧";right:0;transform:scaleX(-1) rotate(-45deg)}
+.eaPDBidButtons{gap:12px}
+.eaPDBidButtons button{min-height:80px;border-radius:17px}
+.eaPDMetalBid{background:linear-gradient(160deg,#fff 0%,#eee 11%,#62646c 45%,#212126 81%,#5a262e 97%);
+  border-color:#fff!important;box-shadow:0 1px 9px #fff8,inset 0 1px #ffffffa0!important}
+.eaPDRedBid{background:linear-gradient(160deg,#fca3aa 0%,#fb2548 16%,#e00930 49%,#850019 90%);
+  border-color:#ff8191!important;box-shadow:0 0 13px #e90d3e8c,inset 0 1px #ffffff9a!important}
+.eaPDStatus{min-height:19px;margin:6px auto 0;font-size:11px}
+.eaPDAside{background:#050406;border:1px solid #39252b;border-radius:15px;padding:16px 14px}
+.eaPDOfferHead{padding:2px 2px 10px}
+.eaPDOfferHead strong{font-weight:1000;font-size:15px}
+.eaPDOfferHead button{color:#f8f7f8}
+.eaPDOfferList{border:0;background:transparent}
+.eaPDOffer{grid-template-columns:25px minmax(0,1fr) auto auto;gap:9px;padding:10px 6px}
+.eaPDOffer small{grid-column:auto;font-size:10px;white-space:nowrap;color:#b9b1b1}
+.eaPDOffer b{font-size:12px}
+.eaPDSpecs{margin-top:3px;border-color:#514a47;background:#030304;padding:14px 6px}
+.eaPDSpecs svg{color:#e9be2d}
+.eaPDDetailsBox{background:transparent;border:1px solid #393137;padding:0}
+.eaPDDetailsBox summary{
+  display:block;list-style:none;padding:12px 14px;
+  color:#bcb3bb;font-size:11px;font-weight:850;cursor:pointer;
+}
+.eaPDDetailsBox summary::before{content:"ⓘ  ";color:#ff4b63}
+.eaPDDetailsBox summary::-webkit-details-marker{display:none}
+.eaPDDetailsBox p{margin:10px 14px 14px}
+.eaPDDetailsBox[open]{padding-bottom:5px}
+.eaPDHeader{border-color:#562932}
+.eaPDHeader>img{max-height:55px}
+.eaPDHeader .eaPDLive{background:linear-gradient(135deg,#ed162f,#9c001f)}
+.eaPDFooter{opacity:.85}
+@media(max-width:860px){
+ .eaPlayDemo{padding:0 8px 10px;background:#000}
+ .eaPDHeader{
+   min-height:63px;height:63px;
+   position:sticky;top:0;z-index:30;
+   padding:6px 4px;gap:8px;
+   border-bottom:1px solid #322024;
+ }
+ .eaPDBack{width:28px;min-width:28px;height:37px;border:0;background:transparent}
+ .eaPDHeader>img{flex:1;max-width:min(265px,60%);max-height:39px;object-position:center}
+ .eaPDBadges{gap:0}
+ .eaPDLive{font-size:10px;min-height:27px;padding:5px 8px}
+ .eaPDBadges small{font-size:9px}
+ .eaPDVolume{min-width:28px;width:29px;height:33px;border-color:#534045}
+ .eaPDVolume svg{width:17px;height:17px}
+ .eaPDAuctionLayout{max-width:430px;margin:0 auto;display:block}
+ .eaPDMainPanel{border:0;border-radius:0;box-shadow:none;overflow:visible;background:#010102}
+ .eaPDCarShowcase{background:#010102;overflow:hidden}
+ .eaPDCarInfo{
+   top:0;left:0;right:0;z-index:7;
+   height:78px;min-height:78px;gap:9px;
+   padding:8px 8px 6px;
+   background:linear-gradient(180deg,#000 0%,#040307ed 70%,#03020312 100%);
+ }
+ .eaPDCarCrest{flex:0 0 47px;height:61px;border-width:2px;border-radius:13px 13px 24px 24px}
+ .eaPDCarCrest small{font-size:5.3px}
+ .eaPDCarCrest b{font-size:26px}
+ .eaPDCarInfoWords{min-width:0}
+ .eaPDCarInfo .eaPDLotLabel{display:none}
+ .eaPDCarInfo h1{font-size:13px;line-height:1.01;letter-spacing:0;margin:0 0 4px;text-shadow:0 1px 5px #000}
+ .eaPDCarInfo h1 b{font-size:1.63em;letter-spacing:-.025em}
+ .eaPDCarInfo p{font-size:clamp(9px,2.25vw,10px);margin:0;white-space:nowrap;gap:5px}
+ .eaPDCarInfo em{height:10px}
+ .eaPDCarViewHeader{right:7px;bottom:8px;z-index:8}
+ .eaPDCarModeSwitch{padding:3px;gap:2px;border-radius:8px}
+ .eaPDCarModeSwitch button{min-height:26px;padding:4px 8px;font-size:9px}
+ .eaPDCarScene3D{
+    height:clamp(242px,64vw,288px)!important;
+    min-height:242px!important;aspect-ratio:auto;
+    background:#020202;
+ }
+ .eaPDCarScenePhoto{height:clamp(242px,64vw,288px);min-height:0!important;aspect-ratio:auto!important}
+ .eaPDCarScenePhoto img{object-fit:cover}
+ .eaPDCarScene .eaPDImageArrow{width:30px;height:30px;font-size:24px!important}
+ .eaPDModelIframe{height:100%;z-index:2}
+ .eaPDModelCredit{min-height:18px;padding:2px 8px;font-size:8px;line-height:1.2}
+ .eaPDCarDisclosure{font-size:7px!important}
+ .eaPDActionPanel{padding:0 5px 9px;background:#000}
+ .eaPDGauge{margin:-3px auto -1px;width:100%;max-width:440px}
+ .eaPDGaugeCenter{top:30%;gap:0}
+ .eaPDGaugeTitle{font-size:clamp(9px,2.6vw,12px)}
+ .eaPDTime{font-size:clamp(41px,11.8vw,59px);line-height:1.05}
+ .eaPDFuel{height:30px;width:30px}
+ .eaPDFuel svg{height:26px;width:26px}
+ .eaPDTicks{font-size:clamp(7px,2vw,9px);letter-spacing:.02em}
+ .eaPDTickNum{font-size:22px}
+ .eaPDPrice{margin:-3px 0 7px;padding:0 22px}
+ .eaPDPrice strong{font-size:clamp(34px,9.2vw,45px);letter-spacing:-.055em}
+ .eaPDPrice span{font-size:10px}
+ .eaPDPrice::before,.eaPDPrice::after{font-size:25px;top:3px}
+ .eaPDBidButtons{gap:8px}
+ .eaPDBidButtons button{min-height:60px;padding:6px 3px;border-radius:13px}
+ .eaPDBidButtons button span{font-size:10px}
+ .eaPDBidButtons button strong{font-size:clamp(18px,4.8vw,23px);white-space:nowrap}
+ .eaPDStatus{font-size:9px;min-height:15px;margin:2px auto 0;padding:2px}
+ .eaPDAside{margin:0 auto;background:#000;border:0;border-radius:0;padding:0 8px 12px;gap:4px;display:grid}
+ .eaPDOfferHead{padding:6px 0 6px;border-bottom:0}
+ .eaPDOfferHead strong{font-size:12px}
+ .eaPDOfferHead button{font-size:10px}
+ .eaPDOfferList{border:0}
+ .eaPDOffer{display:grid;grid-template-columns:20px minmax(0,1fr) auto auto;gap:5px;align-items:center;padding:5px 0;font-size:10px;min-height:29px}
+ .eaPDUserIcon{width:18px;height:18px;font-size:13px}
+ .eaPDOffer b{font-size:10px;letter-spacing:-.03em}
+ .eaPDOffer small{font-size:9px}
+ .eaPDSpecs{margin:6px -1px 0;padding:8px 2px;border-radius:13px;min-height:62px}
+ .eaPDSpecs>div{gap:4px}
+ .eaPDSpecs svg{width:22px;height:22px}
+ .eaPDSpecs span{font-size:clamp(8px,2vw,9px)}
+ .eaPDDetailsBox{margin-top:6px}
+ .eaPDDetailsBox summary{font-size:10px;padding:8px}
+ .eaPDFooter{margin:6px auto 0;max-width:430px;padding:6px 4px}
+ .eaPDFooter span{font-size:8px}
+ .eaPDFooter button{font-size:9px;padding:7px}
+}
+@media(max-width:360px){
+ .eaPDHeader>img{max-width:55%}
+ .eaPDCarInfo p{font-size:8px;gap:4px}
+ .eaPDCarScene3D{height:230px!important;min-height:230px!important}
+ .eaPDCarScenePhoto{height:230px}
+ .eaPDPrice strong{font-size:32px}
+ .eaPDBidButtons button strong{font-size:16px}
+ .eaPDOffer small{font-size:8px}
+}
+@media(min-width:861px){
+ .eaPDAside{position:sticky;top:102px}
+}
+@media(prefers-reduced-motion:reduce){
+ .eaPDGauge.is-critical .eaPDTime{animation:none}
+}
+
+/* Preserve accessible skip navigation without letting its idle state cover the car. */
+body:has(.eaPlayDemo) .eaSkipLink{
+  position:fixed!important;
+  top:-100px!important;
+  left:10px!important;
+  transform:translateY(-200%)!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  width:auto!important;
+  max-width:calc(100vw - 20px)!important;
+}
+body:has(.eaPlayDemo) .eaSkipLink:focus-visible{
+  top:10px!important;
+  transform:none!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+  z-index:9999!important;
+  background:#08080a!important;
+  color:#fff!important;
+}
