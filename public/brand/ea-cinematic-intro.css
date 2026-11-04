@@ -7,6 +7,8 @@
   --ea-liquid-red-clip: polygon(100% 0, 100% 100%, 0 100%);
   --ea-liquid-edge-clip: polygon(calc(100% - 3px) 0,100% 0,3px 100%,0 100%);
   --ea-text-cut: 48%;
+  --ea-enter-color: #fff;
+  --ea-enter-shadow: 0 2px 12px rgba(62,0,7,.35);
   --ea-shine: 1;
   --ea-red: #e6001b;
   --ea-ink: #12151a;
@@ -84,8 +86,8 @@
 [role="dialog"][aria-label="Welcome to ENCHEV Auctions"] [data-ea-intro-enter] {
   position:relative;
   z-index:3;
-  color:#fff !important;
-  text-shadow:0 2px 12px rgba(62,0,7,.35);
+  color:var(--ea-enter-color) !important;
+  text-shadow:var(--ea-enter-shadow);
   transition:color .25s ease,letter-spacing .35s ease,text-shadow .3s ease;
 }
 @media(hover:hover) and (pointer:fine) {
