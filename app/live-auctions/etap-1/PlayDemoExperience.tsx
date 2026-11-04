@@ -78,7 +78,7 @@ function Gauge({leftMs}:{leftMs:number}){
 
 export default function PlayDemoExperience({audio,onExit}:Props){
   const [phase,setPhase]=useState<Phase>("joining");
-  const [nowMs,setNowMs]=useState(0);
+  const [nowMs,setNowMs]=useState(JOIN_DURATION_MS);
   const [price,setPrice]=useState(INITIAL_PRICE);
   const [bids,setBids]=useState<BidEntry[]>([
     {id:3,name:"Bidder_7482",amount:INITIAL_PRICE,time:0},
