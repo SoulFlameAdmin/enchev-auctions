@@ -415,3 +415,85 @@ body:has(.eaEtap1) .eaAppShell{display:none!important}
 @media(prefers-reduced-motion:reduce){
   .eaLxMobileCta{transition:none}
 }
+
+/* Guest-visible lobby (before invitation login): no fictional countdown/participants. */
+.eaGuestStage{width:min(1500px,calc(100% - 34px));margin:15px auto 45px;scroll-margin-top:85px;}
+.eaGuestStage .eaLuxuryLobby{margin:0!important;}
+.eaGuestStage .eaLxCountdown{box-shadow:0 8px 25px #000b,0 0 19px #b6052945;}
+.eaLxGuestRoster>span{border-color:#4b4350;background:#0c0c0e;}
+.eaLxGuestRoster>span small{color:#cebfca;}
+.eaLuxuryLobby .eaLxGuestEnter{
+  display:grid;place-items:center;width:100%;min-height:56px;
+  color:#fff;text-decoration:none;font-size:14px;font-weight:950;
+  border:1px solid #f4364d;border-radius:11px;
+  background:linear-gradient(130deg,#ee1533,#8f0018);
+  box-shadow:0 7px 23px #e006284d;
+}
+.eaGuestStage .eaLoginCard{
+  width:min(750px,calc(100% - 26px));max-width:750px;
+  margin:22px auto 35px;min-height:0;
+  display:block;grid-template-columns:none;padding:26px;
+  background:linear-gradient(160deg,#131318,#08080b 80%);
+  border:1px solid #9e293d;border-radius:17px;
+  box-shadow:0 12px 35px #000b,inset 0 1px #ffffff10;
+  scroll-margin-top:95px;
+}
+.eaGuestStage .eaLoginWelcome{display:none!important}
+.eaGuestStage .eaLoginCard>form{display:grid;gap:15px}
+.eaGuestStage .eaLoginFormHead{display:grid;gap:6px;text-align:left;margin-bottom:4px}
+.eaGuestStage .eaLoginFormHead>span{
+  color:#ef5269;font-size:11px;font-weight:950;letter-spacing:.14em
+}
+.eaGuestStage .eaLoginFormHead>strong{font-size:clamp(23px,3.6vw,34px);line-height:1.2;color:#fff}
+.eaGuestStage .eaLoginFormHead>small{font-size:11px;color:#bcbcc7}
+.eaGuestStage .eaLoginCard form label{color:#f6f2f4;font-size:12px}
+.eaGuestStage .eaLoginCard :is(input,select){
+  border:1px solid #57505a;background:#0b0d11;
+  border-radius:10px;min-height:52px;color:#fff;font-size:14px
+}
+.eaGuestStage .eaLoginCard :is(input,select):focus{
+  border-color:#fa304b;outline:2px solid #c21b395e;outline-offset:1px
+}
+.eaGuestStage .eaLoginCard .eaActionPrimary{
+  background:linear-gradient(140deg,#ff314e,#b50022 72%);
+  color:white;border:1px solid #fa4055;
+  border-radius:10px;min-height:56px;
+  font-size:15px;font-weight:950
+}
+.eaGuestStage .eaLoginCard form small{color:#b6afba}
+.eaRoom:has(.eaGuestStage){background:#030305;color:#fff}
+.eaRoom:has(.eaGuestStage) .eaRoomHeader{
+  background:#050507;border-color:#7f1a2b
+}
+.eaRoom:has(.eaGuestStage) .eaRoomTitle strong{color:#fff}
+.eaRoom:has(.eaGuestStage) .eaRoomStatus{
+  background:#0b0b0e;color:#d9d6dc;border-color:#591b27
+}
+.eaRoom:has(.eaGuestStage) .eaLiveDot{background:#ef1c39;box-shadow:0 0 10px #ea163e80}
+.eaRoom:has(.eaGuestStage) .eaSettingsToggle{
+  background:#111114;color:#fff;border-color:#50414b
+}
+.eaRoom:has(.eaGuestStage) .eaSettingsMenu{background:#0a090d;color:#fff;border-color:#7a2535}
+.eaRoom:has(.eaGuestStage) .eaSettingsMenu a{color:#fff}
+@media(max-width:700px){
+ .eaGuestStage{width:100%;margin:0 auto 25px}
+ .eaRoom:has(.eaGuestStage){padding-bottom:calc(82px + env(safe-area-inset-bottom))}
+ .eaRoom:has(.eaGuestStage) .eaRoomHeader{
+   min-height:70px;display:grid;grid-template-columns:minmax(0,1fr) auto;
+   gap:7px;padding:8px 12px!important;
+   border-color:#701b2c;box-shadow:0 7px 24px #000a
+ }
+ .eaRoom:has(.eaGuestStage) .eaRoomLogo img{max-height:48px;max-width:100%;object-fit:contain}
+ .eaRoom:has(.eaGuestStage) .eaRoomTitle{display:none}
+ .eaRoom:has(.eaGuestStage) .eaHeaderActions{min-width:0}
+ .eaRoom:has(.eaGuestStage) .eaRoomStatus{padding:8px 11px}
+ .eaGuestStage .eaLoginCard{
+   margin:14px 10px 22px;width:calc(100% - 20px);
+   padding:20px 14px;border-radius:16px;
+ }
+ .eaGuestStage .eaLoginFormHead>strong{font-size:27px}
+ .eaGuestStage .eaLoginCard :is(input,select){font-size:16px}
+ .eaGuestStage .eaLxGuestEnter{min-height:51px}
+ .eaGuestStage .eaLxControlDeck{padding:17px 15px}
+ .eaGuestStage .eaLxMobileCta{scroll-margin-top:80px}
+}
