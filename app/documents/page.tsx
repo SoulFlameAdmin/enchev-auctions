@@ -1,4 +1,5 @@
 import "./documents.css";
+import BuyerPrivateRecords from "../components/BuyerPrivateRecords";
 const items=[
   {n:"01",title:"Buyer identity",copy:"Approved personal or business account, identity verification and eligibility decision before bidding."},
   {n:"02",title:"Vehicle and seller records",copy:"VIN, verified vehicle description, condition disclosures, ownership documents and seller-of-record details."},
@@ -13,6 +14,7 @@ export default function DocumentsPage(){
   <h1>DOCUMENTS<br/><em>& RELEASE.</em></h1>
   <p className="eaDocsLead">Your documents will appear here only after a verified account is associated with a real vehicle and an authorized order. We do not fabricate invoices, ownership titles or delivery confirmations.</p>
   <div className="eaDocsStatus" role="status"><strong>Document issuance: not active</strong><span>No live orders or confirmed winners have been registered.</span></div>
+  <BuyerPrivateRecords scope="documents"/>
   <div className="eaDocsGrid">{items.map(item=><article key={item.n}><span>{item.n}</span><h2>{item.title}</h2><p>{item.copy}</p><small>Required for live transaction</small></article>)}</div>
   <div className="eaDocsActions"><a href="/start">Buyer journey →</a><a href="/profile">Buyer workspace →</a><a href="/payments">Payments →</a><a href="/transport">Transport →</a></div>
  </div></main>;
