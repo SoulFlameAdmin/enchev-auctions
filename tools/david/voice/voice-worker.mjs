@@ -37,12 +37,14 @@ if (!CONFIG.requireHumanVoiceArming || CONFIG.managedMainEdgeProfile) {
 }
 
 function readState() {
-  try {
-    const saved = JSON.parse(fs.readFileSync(STATE_PATH,"utf8"));
-    if (!Array.isArray(saved.turns)) throw new Error("Bad state");
-    for (const t of saved.turns) if (t.state === "sending") t.state = "uncertain";
-    return saved;
-  } catch { return { turns: [], lastError: null, rolloverRequired: false }; }
+  if (!fs.existsSync(STATE_PATH)) {
+    return { turns: [], lastError: null, rolloverRequired: false };
+  }
+  // Fail closed; never discard a possibly delivered transcript after corrupted state.
+  const saved = JSON.parse(fs.readFileSync(STATE_PATH,"utf8"));
+  if (!Array.isArray(saved.turns)) throw new Error("Corrupt DAVID Voice queue: operator repair required");
+  for (const t of saved.turns) if (t.state === "sending") t.state = "uncertain";
+  return saved;
 }
 const state = readState();
 function persist() {
