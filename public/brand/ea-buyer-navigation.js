@@ -13,7 +13,7 @@
   ];
   const rootId="ea-buyer-footer-entry-v1";
   function addBuyerFooter(){
-    const footer=document.querySelector("footer.site-nav");
+    const footer=document.querySelector("footer[data-global-cta]") || document.querySelector("footer.site-nav");
     if(!footer || !footer.parentElement)return;
     let section=document.getElementById(rootId);
     if(section && section.nextElementSibling===footer)return;
