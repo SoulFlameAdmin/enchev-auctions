@@ -5,10 +5,10 @@
   // The seven actions match the exact buyer process, not arbitrary marketing labels.
   const links = [
     {label:"REGISTER",href:"/register",primary:true,small:"01 / 07"},
-    {label:"VERIFICATION & DEPOSIT",href:"/payments#verification",small:"02 / 07"},
-    {label:"CHOOSE A VEHICLE",href:"/auctions",small:"03 / 07"},
+    {label:"VERIFICATION & DEPOSIT",href:"/verification",small:"02 / 07"},
+    {label:"CHOOSE A VEHICLE",href:"/vehicles",small:"03 / 07"},
     {label:"LIVE AUCTIONS",href:"/auctions",small:"04 / 07"},
-    {label:"MY AUCTIONS & WINS",href:"/profile#my-auctions",small:"05 / 07"},
+    {label:"MY AUCTIONS & WINS",href:"/my-auctions",small:"05 / 07"},
     {label:"PAYMENT & DOCUMENTS",href:"/payments",small:"06 / 07"},
     {label:"TRANSPORT & COLLECTION",href:"/transport",small:"07 / 07"},
   ];
