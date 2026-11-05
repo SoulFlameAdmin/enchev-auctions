@@ -51,11 +51,11 @@ function recoverDesktopActiveFrame(original) {
 }
 // Localize the source text before Next/React hydrates it. A DOM-only
 // translation is not sufficient because hydration can restore English copy.
-const englishHomeStatement = /vehicle\\s+auctions\\s+with\\s+inventory\\s*,?\\s*live\\s+bidding\\s*,?\\s*vehicle\\s+history\\s+and\\s+transport\\s+in\\s+one\\s+place\\s*\\.?/gi;
+const englishHomeStatement = /vehicle\s+auctions\s+with\s+inventory\s*,?\s*live\s+bidding\s*,?\s*vehicle\s+history\s+and\s+transport\s+in\s+one\s+place\s*\.?/gi;
 const bulgarianHomeStatement = 'АВТОМОБИЛНИ ТЪРГОВЕ, НАДДАВАНЕ НА ЖИВО, ИСТОРИЯ НА АВТОМОБИЛИТЕ И ТРАНСПОРТ — ВСИЧКО НА ЕДНО МЯСТО.';
 let translatedHomeSourceCount = 0;
 function localizeHomeSource(relative, content) {
-  if (!/\\.(?:html|js|json)$/.test(relative)) return content;
+  if (!/\.(?:html|js|json)$/.test(relative)) return content;
   return content.replace(englishHomeStatement, () => {
     translatedHomeSourceCount += 1;
     return bulgarianHomeStatement;
