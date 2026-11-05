@@ -50,7 +50,7 @@ const translations=new Map(Object.entries({
  "TERMS":"ОБЩИ УСЛОВИЯ",
  "TERMS & CONDITIONS":"ОБЩИ УСЛОВИЯ",
  "POWERED BY":"ТЕХНОЛОГИЯ ОТ",
- "COPYRIGHT © 2026":"АВТОРСКИ ПРАВА © 2026",
+ "COPYRIGHT © 2026":"© 2026 · ВСИЧКИ ПРАВА ЗАПАЗЕНИ",
  "© 2026":"© 2026",
  "MADE BY 12 STUDIO":"SOULFLAME",
  "REGISTER":"РЕГИСТРАЦИЯ",
@@ -138,7 +138,7 @@ function applyBulgarianInterface(){
  }
  // Preserve the meaning of copyright and credits without English boilerplate.
  for(const el of document.querySelectorAll("footer,footer *")){
-   if(el.children.length)return;
+   if(el.children.length)continue;
    if(/^copyright\s*©?\s*2026$/i.test((el.textContent||"").trim()))el.textContent="© 2026 · ВСИЧКИ ПРАВА ЗАПАЗЕНИ";
  }
 }
