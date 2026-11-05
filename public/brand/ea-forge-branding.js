@@ -133,6 +133,9 @@ for(const [english,bulgarian] of Object.entries({
 function key(value){
  return (value||"").replace(/\u00a0/g," ").replace(/\s+/g," ").trim().toUpperCase();
 }
+translations.set("NAVIGATE","НАВИГАЦИЯ");
+translations.set("NAVIGATION","НАВИГАЦИЯ");
+translations.set("EXPLORE MORE","ВИЖ ПОВЕЧЕ");
 function creditWithoutLink(){
  const nodes=document.querySelectorAll("footer a, a, footer span, footer small, footer p");
  for(const el of nodes){
@@ -153,6 +156,7 @@ function creditWithoutLink(){
  }
 }
 function translateSafeText(){
+ creditWithoutLink();
  document.documentElement.lang="bg";
  document.title="E&A East West Auctioneers Group | Автомобилни търгове";
  const nodes=document.querySelectorAll("a,button,span,small,strong,p,h1,h2,h3,h4,h5,label,li,figcaption,footer,input,textarea");
@@ -180,7 +184,12 @@ function translateSafeText(){
     if(translation && value!==translation)el.setAttribute(attr,translation);
   }
  }
- creditWithoutLink();
+ for(const link of document.querySelectorAll("a")){
+   const label=key(link.textContent);
+   if((label==="ТЪРГОВЕ НА ЖИВО"||label==="ПОДДРЪЖКА") && parseFloat(getComputedStyle(link).fontSize)>55){
+     link.setAttribute("data-ea-bg-large-nav",label==="ТЪРГОВЕ НА ЖИВО"?"live":"support");
+   }
+ }
 }
 let timer=null;
 function queue(){
@@ -199,5 +208,8 @@ function begin(){
  window.addEventListener("pagehide",()=>{observer.disconnect();if(timer!==null)clearTimeout(timer);},{once:true});
 }
 if(document.readyState==="complete")window.setTimeout(begin,0);
-else window.addEventListener("load",()=>window.setTimeout(begin,100),{once:true});
+else {
+  window.addEventListener("load",()=>window.setTimeout(begin,100),{once:true});
+  document.addEventListener("DOMContentLoaded",()=>window.setTimeout(translateSafeText,1300),{once:true});
+}
 })();
