@@ -224,7 +224,9 @@ const ctaMapScript = String.raw`(() => {
     const candidates=Array.from(document.querySelectorAll("a.sc-6f2721c4-0,button.sc-6f2721c4-0"))
       .filter(element=>{
         const value=normalize(element.textContent);
-        return value==="start your project" || value==="start your project" ||
+        return value==="start your project" ||
+          element.getAttribute("aria-label")==="Explore Inventory" ||
+          element.getAttribute("aria-label")==="Browse Auctions" ||
           element.hasAttribute("data-enchev-cta-label");
       });
 
