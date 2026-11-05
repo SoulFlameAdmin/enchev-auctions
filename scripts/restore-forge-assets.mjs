@@ -235,16 +235,11 @@ const ctaMapScript = String.raw`(() => {
 
   const navItems = [
     { label: "HOME", href: "/" },
-    { label: "BUY", href: "/auctions" },
+    { label: "BUY", href: "/start" },
     { label: "LIVE AUCTIONS", href: "/auctions" },
-    { label: "BUYER JOURNEY", href: "/start" },
     { label: "REGISTER", href: "/register" },
     { label: "SIGN IN", href: "/login" },
-    { label: "DEPOSIT & PAYMENTS", href: "/payments" },
-    { label: "DOCUMENTS", href: "/documents" },
-    { label: "TRANSPORT", href: "/transport" },
-    { label: "CHECK VEHICLE", href: "/vehicle-history" },
-    { label: "ABOUT US", href: "/presentation" },
+    { label: "PAYMENTS", href: "/payments" },
     { label: "SUPPORT", href: "/support" }
   ];
 
