@@ -272,7 +272,7 @@ export default function InventoryPage(){
       <div className="inventoryAccount"><a href={accountNavigation.profile}>Login / Profile</a><a className="registerBtn" href={accountNavigation.register}>Register</a></div>
     </header>
 
-    <nav className="inventoryNav" aria-label="Основна навигация"><a href="/">Home</a>{primaryNavigation.map(item=><a key={item.key} className={`${item.key==="inventory"?"active":""} ${item.key==="live"?"navLive":""}`.trim()} href={item.href}>{item.label}</a>)}</nav>
+    <nav className="inventoryNav" aria-label="Основна навигация"><a href="/">Home</a>{primaryNavigation.map(item=><a key={item.key} className={`${item.key==="vehicles"?"active":""} ${item.key==="live"?"navLive":""}`.trim()} href={item.href}>{item.label}</a>)}</nav>
 
     <section className="inv2Hero">
       <div className="inventoryIntro"><div><span>E&A EAST WEST MARKETPLACE</span><h1>Vehicles from international auctions</h1><p>Filter, watch and bid. LIVE лотът има 10-секунден брояч; всяка нова оферта връща времето на 10 секунди.</p></div></div>
