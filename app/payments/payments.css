@@ -1,0 +1,36 @@
+
+.eaPay{background:#090a0c;color:#fafafa;min-height:100vh;font-family:Arial,Helvetica,sans-serif}
+.eaPay *{box-sizing:border-box}
+.eaPayInner{max-width:1400px;margin:auto;padding:60px clamp(18px,5vw,75px) 85px}
+.eaPayEyebrow{color:#ed5059;letter-spacing:.17em;font-size:11px;font-weight:800}
+.eaPayIntro{display:grid;grid-template-columns:1.5fr minmax(260px,.7fr);gap:32px;align-items:end;padding:44px 0}
+.eaPayIntro h1{font-size:clamp(65px,9.5vw,136px);line-height:.84;letter-spacing:-.075em;font-weight:750;margin:0 0 25px}
+.eaPayIntro h1 em{font-style:normal;color:#e1323d}
+.eaPayIntro p{max-width:670px;line-height:1.65;font-size:15px;color:#b9bbc2}
+.eaPayFlag{background:#1c1519;border:1px solid #65333b;padding:26px}
+.eaPayFlag span,.eaPayNotice span{color:#f06b72;font-size:11px;font-weight:750;letter-spacing:.12em}
+.eaPayFlag strong{display:block;font-size:23px;margin:15px 0}
+.eaPayFlag p{font-size:13px;line-height:1.6;margin:0}
+.eaPayCards{display:grid;grid-template-columns:1fr 1fr;gap:15px;margin:40px 0 16px}
+.eaPayCards button{cursor:pointer;text-align:left;border:1px solid #484b51;background:#191a1e;padding:30px;display:grid;gap:16px;color:#fff;min-height:225px}
+.eaPayCards button.is-chosen{border-color:#d73947;background:linear-gradient(120deg,#302023,#17181c)}
+.eaPayCards span{font-size:10px;font-weight:750;letter-spacing:.16em;color:#e67d86}
+.eaPayCards strong{font-size:42px;letter-spacing:-.05em}
+.eaPayCards small{font-size:14px;color:#c0c2c8}
+.eaPayCards em{font-style:normal;font-size:11px;font-weight:700;color:#fff;letter-spacing:.06em;text-transform:uppercase}
+.eaPayNotice{display:grid;grid-template-columns:1fr .8fr;gap:32px;padding:32px;background:#121315;border:1px solid #33363b}
+.eaPayNotice h2{font-size:27px;margin:14px 0}
+.eaPayNotice p{color:#adaeb4;line-height:1.6}
+.eaPayInactive{border-left:1px solid #414247;padding-left:28px;display:grid;gap:12px;align-content:center}
+.eaPayInactive strong{font-size:18px}
+.eaPayInactive small{color:#c3c5c9}
+.eaPay a{color:#fff}
+.eaPayInactive a{font-size:13px;text-decoration:underline;text-underline-offset:5px}
+.eaPayTwo{display:grid;grid-template-columns:1fr 1fr;gap:36px;margin-top:65px}
+.eaPayTwo>div{border-top:2px solid #be2935;background:#191a1d;padding:27px;display:flex;flex-direction:column;align-items:flex-start}
+.eaPayTwo h2{font-size:clamp(27px,3vw,41px);margin:20px 0}
+.eaPayTwo p{line-height:1.68;color:#b9bbc2;font-size:14px;flex:1}
+.eaPayTwo a{display:block;font-size:13px;font-weight:750;margin-top:12px}
+.eaPayFooter{margin:35px 0 0;color:#9e9fa6;font-size:12px;line-height:1.6}
+.eaPay button:focus-visible,.eaPay a:focus-visible{outline:2px solid #fff;outline-offset:3px}
+@media(max-width:760px){.eaPayInner{padding:36px 16px 70px}.eaPayIntro,.eaPayCards,.eaPayNotice,.eaPayTwo{grid-template-columns:1fr}.eaPayIntro h1{font-size:clamp(55px,14vw,85px)}.eaPayCards{margin-top:20px}.eaPayCards button{min-height:170px;padding:20px}.eaPayNotice{padding:20px}.eaPayInactive{border-left:0;border-top:1px solid #414247;padding:20px 0 0}.eaPayTwo{margin-top:42px;gap:15px}}
