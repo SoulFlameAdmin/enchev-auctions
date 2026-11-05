@@ -129,13 +129,16 @@ async function sendOne(turn) {
     await ensurePage();
     if (!correctChat()) throw new Error("ChatGPT page is not the configured Voice conversation");
     if (await inspectBlocked()) return;
-    if (await page.locator('[data-testid="stop-button"]').count()) return;
+    if (await page.locator('[data-testid="stop-button"]').first().isVisible().catch(()=>false)) return;
     let field=await composer();
     if (!field) { armed=false; throw new Error("ChatGPT composer unavailable in Voice mode; manual UI validation required"); }
     const userBubbles=page.locator('[data-message-author-role="user"]');
     const before=await userBubbles.count();
+    const assistantBubbles=page.locator('[data-message-author-role="assistant"]');
+    const beforeAssistant=await assistantBubbles.count();
     // Shared account-wide pacing across SYSTEM/DESIGN/CONTROL/APP2/APK and VOICE.
-    await waitForGlobalSendPermit(OWNER);
+    const grant=await waitForGlobalSendPermit(OWNER);
+    const probe=grant.mode==="probe";
     permit=true;
     if (!armed || !correctChat()) return;
     field=await composer();
@@ -156,7 +159,21 @@ async function sendOne(turn) {
       await new Promise(r=>setTimeout(r,750));
     }
     turn.state=accepted?"sent":"uncertain";
-    if (accepted) { turn.sentAt=new Date().toISOString(); await reportProbeSuccess(OWNER); }
+    if (accepted) {
+      turn.sentAt=new Date().toISOString();
+      // A delivered user bubble is NOT proof that the assistant completed a rate-limit probe.
+      if (probe) {
+        let settled=0;
+        const completionDeadline=Date.now()+120_000;
+        while (Date.now()<completionDeadline) {
+          const assistantAppeared=(await assistantBubbles.count())>beforeAssistant;
+          const producing=await page.locator('[data-testid="stop-button"]').first().isVisible().catch(()=>false);
+          settled=(assistantAppeared && !producing) ? settled+1 : 0;
+          if (settled>=5) {await reportProbeSuccess(OWNER);break;}
+          await new Promise(r=>setTimeout(r,1000));
+        }
+      }
+    }
     else { armed=false;state.lastError="Send not verified; held as uncertain (will not auto-resend)"; }
     persist();
   } catch(e) {
