@@ -8,6 +8,8 @@ import { accountNavigation, primaryNavigation } from "../site-navigation";
 
 function activeKey(pathname:string){
   if(pathname==="/start")return "start";
+  if(pathname.startsWith("/verification"))return "verification";
+  if(pathname.startsWith("/vehicles"))return "vehicles";
   if(pathname.startsWith("/payments"))return "payments";
   if(pathname.startsWith("/documents"))return "documents";
   if(pathname==="/platform")return "";
@@ -55,7 +57,7 @@ export default function EnchevAppShell(){
 
     <header className="eaAppHeader">
 
-      <form className="eaAppSearch" action="/inventory" role="search">
+      <form className="eaAppSearch" action="/vehicles" role="search">
         <span aria-hidden="true">⌕</span>
         <input name="q" type="search" placeholder="Make, model, VIN, LOT..." aria-label="Search vehicles"/>
       </form>
