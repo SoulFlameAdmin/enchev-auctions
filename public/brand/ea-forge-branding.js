@@ -206,7 +206,15 @@ function queue(){
 }
 function begin(){
  translateSafeText();
- window.setTimeout(translateSafeText,1700);
+ window.setTimeout(()=>{
+   translateSafeText();
+   // Re-measure native scroll/3D sections after Bulgarian text and font wrapping.
+   window.requestAnimationFrame(()=>{
+     window.dispatchEvent(new Event("resize"));
+     try{window.ScrollTrigger?.refresh?.(true);}catch{}
+     try{window.gsap?.core?.globals?.()?.ScrollTrigger?.refresh?.(true);}catch{}
+   });
+ },1400);
  window.setTimeout(translateSafeText,4200);
  // Only new structural nodes trigger work; animation styles/text frames do not.
  const observer=new MutationObserver(mutations=>{
