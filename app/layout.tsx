@@ -40,7 +40,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body>
-        <a className="eaSkipLink" href="#main-content">Skip to main content</a>
+        <a className="eaSkipLink" href="#main-content">Към основното съдържание</a>
         <VerifiedPlanEvidenceSync />
         <TestPassGreenGuard />
         <GapAppendOnlyGuard />
