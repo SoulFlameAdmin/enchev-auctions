@@ -1,7 +1,7 @@
 export const primaryNavigation = [
   { href: "/platform", label: "PLATFORM", key: "platform" },
   { href: "/inventory", label: "VEHICLES", key: "inventory" },
-  { href: "/live-auctions", label: "LIVE AUCTIONS", key: "live" },
+  { href: "/auctions", label: "LIVE AUCTIONS", key: "live" },
   { href: "/platform#how", label: "HOW TO BUY", key: "how" },
   { href: "/transport", label: "TRANSPORT", key: "transport" },
   { href: "/vehicle-history", label: "VEHICLE HISTORY", key: "history" },
