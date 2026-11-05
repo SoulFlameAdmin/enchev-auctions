@@ -9,7 +9,7 @@ import { accountNavigation, primaryNavigation } from "../site-navigation";
 function activeKey(pathname:string){
   if(pathname==="/platform")return "platform";
   if(pathname.startsWith("/inventory"))return "inventory";
-  if(pathname.startsWith("/live-auctions"))return "live";
+  if(pathname.startsWith("/auctions") || pathname.startsWith("/live-auctions"))return "live";
   if(pathname.startsWith("/transport"))return "transport";
   if(pathname.startsWith("/vehicle-history"))return "history";
   if(pathname.startsWith("/support"))return "support";
@@ -44,7 +44,7 @@ export default function EnchevAppShell(){
 
   return <div className="eaAppShell" data-design-task="DP2-04" data-shell-open={open?"true":"false"}>
     <div className="eaAppUtility">
-      <div className="eaAppUtilityLive"><i aria-hidden="true"/><strong>LIVE MARKET</strong><span>Europe · USA · Canada</span><a className="eaAppPresentationButton" href="/presentation">PRESENTATION</a><a className="eaAppPresentationButton" href="/presentation-2">презентация 2</a></div>
+      <div className="eaAppUtilityLive"><i aria-hidden="true"/><strong>AUCTION MARKETPLACE</strong><span>Verified listings only</span><a className="eaAppPresentationButton" href="/presentation">PRESENTATION</a><a className="eaAppPresentationButton" href="/presentation-2">презентация 2</a></div>
       <div className="eaAppUtilityMeta"><span>BG · EUR</span><a href="/support">Help</a></div>
     </div>
 
@@ -98,7 +98,7 @@ export default function EnchevAppShell(){
           <button type="submit">Search</button>
         </form>
 
-        <div className="eaAppMobileLive"><i aria-hidden="true"/><div><strong>LIVE MARKET</strong><span>Follow the current auction in real time</span></div></div>
+        <div className="eaAppMobileLive"><i aria-hidden="true"/><div><strong>AUCTION MARKETPLACE</strong><span>Explore verified auctions and buyer access</span></div></div>
 
         <nav className="eaAppMobileNav" aria-label="Mobile main navigation">
           {primaryNavigation.map((item,index)=><a
