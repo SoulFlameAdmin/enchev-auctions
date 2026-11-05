@@ -7,7 +7,10 @@ import { usePathname } from "next/navigation";
 import { accountNavigation, primaryNavigation } from "../site-navigation";
 
 function activeKey(pathname:string){
-  if(pathname==="/platform")return "platform";
+  if(pathname==="/start")return "start";
+  if(pathname.startsWith("/payments"))return "payments";
+  if(pathname.startsWith("/documents"))return "documents";
+  if(pathname==="/platform")return "";
   if(pathname.startsWith("/inventory"))return "inventory";
   if(pathname.startsWith("/auctions") || pathname.startsWith("/live-auctions"))return "live";
   if(pathname.startsWith("/transport"))return "transport";
