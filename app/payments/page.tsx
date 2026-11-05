@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import "./payments.css";
+import BuyerPrivateRecords from "../components/BuyerPrivateRecords";
 
 type Readiness = {livePaymentsEnabled:boolean;depositCollectionEnabled:boolean;methods:{id:string;name:string;status:string}[]};
 
@@ -33,7 +34,7 @@ export default function PaymentsPage(){
 
       <div className="eaPayNotice" role="status">
         <div><span>SELECTED PAYMENT CHANNEL</span><h2>{selected==="stripe"?"Stripe · secure card payment":"Revolut · merchant payment"}</h2><p>{selected==="stripe"?"The future checkout will redirect to Stripe's hosted payment screen for the approved amount. No card number will be entered into E&A.":"The future checkout will use an approved Revolut Business Merchant integration. Personal Revolut transfers are not an accepted substitute."}</p></div>
-        <div className="eaPayInactive"><strong>{readiness?.livePaymentsEnabled?"Review payment availability":"Payment not available yet"}</strong><small>No amount is due. This page does not charge your card or create a deposit.</small><a href="/start">Back to buyer journey →</a></div>
+        <div className="eaPayInactive"><strong>{readiness?.livePaymentsEnabled?"Review payment availability":"Payment not available yet"}</strong><small>No amount is due. This page does not charge your card or create a deposit.</small><a href="/verification">Verify buyer before payment →</a></div>
       </div>
 
       <section className="eaPayTwo" id="verification">
@@ -41,6 +42,7 @@ export default function PaymentsPage(){
         <div><span className="eaPayEyebrow">STEP 06 · AFTER WINNING</span><h2>Pay against an invoice.</h2><p>A confirmed winner receives an itemized invoice with the winning bid, buyer fees, taxes and logistics where applicable. Only the verified owner of that invoice can open its checkout. Payment confirmation must come from the provider webhook before release.</p><a href="/documents">Documents and vehicle release →</a><a href="/transport">Transport and pickup →</a></div>
       </section>
 
+      <BuyerPrivateRecords scope="payments"/>
       <p className="eaPayFooter">No real-money auction, card payment, Revolut transfer or payout is possible from this page until payment infrastructure and legal approvals are completed.</p>
     </div>
   </main>;
