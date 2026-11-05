@@ -5,18 +5,21 @@ import "./buyer-journey-rail.css";
 
 const steps = [
   {number:"01",title:"REGISTER",description:"Create buyer profile",url:"/register"},
-  {number:"02",title:"VERIFY & DEPOSIT",description:"Eligibility and terms",url:"/payments#verification"},
-  {number:"03",title:"CHOOSE VEHICLE",description:"Verified listings",url:"/auctions"},
+  {number:"02",title:"VERIFY & DEPOSIT",description:"Eligibility and terms",url:"/verification"},
+  {number:"03",title:"CHOOSE VEHICLE",description:"Verified listings",url:"/vehicles"},
   {number:"04",title:"LIVE AUCTION",description:"Bidding schedule",url:"/auctions"},
-  {number:"05",title:"MY WINNINGS",description:"Results and orders",url:"/profile#my-auctions"},
+  {number:"05",title:"MY WINNINGS",description:"Results and orders",url:"/my-auctions"},
   {number:"06",title:"PAY & DOCUMENTS",description:"Invoice and release",url:"/payments"},
   {number:"07",title:"TRANSPORT",description:"Pickup and delivery",url:"/transport"},
 ] as const;
 
 function selectedStep(path:string){
   if(path.startsWith("/register")||path.startsWith("/login"))return 0;
-  if(path.startsWith("/auctions")||path.startsWith("/inventory")||path.startsWith("/lot/"))return 2;
-  if(path.startsWith("/profile"))return 4;
+  if(path.startsWith("/verification"))return 1;
+  if(path.startsWith("/vehicles")||path.startsWith("/inventory")||path.startsWith("/lot/"))return 2;
+  if(path.startsWith("/auctions"))return 3;
+  if(path.startsWith("/my-auctions"))return 4;
+  if(path.startsWith("/profile"))return -1;
   if(path.startsWith("/payments")||path.startsWith("/documents"))return 5;
   if(path.startsWith("/transport"))return 6;
   return -1;
@@ -25,9 +28,9 @@ function selectedStep(path:string){
 export default function BuyerJourneyRail(){
   const pathname=usePathname();
   if(!pathname || ![
-    "/start","/register","/login","/auctions","/inventory","/profile","/payments",
+    "/start","/register","/login","/verification","/vehicles","/auctions","/inventory","/profile","/my-auctions","/payments",
     "/documents","/transport","/vehicle-history","/support",
-  ].some(path=>pathname===path || (path==="/inventory"&&pathname.startsWith("/lot/")))){
+   ].some(path=>pathname===path || (path==="/inventory"&&(pathname.startsWith("/lot/")||pathname.startsWith("/vehicles/"))))){
     return null;
   }
   const current=selectedStep(pathname);
