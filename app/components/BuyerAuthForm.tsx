@@ -72,7 +72,7 @@ export default function BuyerAuthForm({mode}:{mode:Mode}){
         {available===false?<div role="status" className="buyerAuthNotice">
           <strong>Account activation pending</strong>
           <p>Registration and login will be enabled after a dedicated E&A identity database is connected and verified. No registration is being accepted yet.</p>
-          <a href="/platform">Explore the demo marketplace →</a>
+          <a href="/start#early-access">Join early access while buyer accounts are being activated →</a>
         </div>:<form onSubmit={submit}>
           <span className="buyerAuthCardTitle">{isRegister?"Create a buyer profile":"Sign in to your profile"}</span>
           <label>Email address<input type="email" name="email" autoComplete="email" required maxLength={254} value={email} onChange={event=>setEmail(event.target.value)} placeholder="you@example.com" disabled={pending||available!==true}/></label>
