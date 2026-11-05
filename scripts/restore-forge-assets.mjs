@@ -237,11 +237,15 @@ const ctaMapScript = String.raw`(() => {
     { label: "HOME", href: "/" },
     { label: "BUY", href: "/auctions" },
     { label: "LIVE AUCTIONS", href: "/auctions" },
+    { label: "BUYER JOURNEY", href: "/start" },
+    { label: "REGISTER", href: "/register" },
+    { label: "SIGN IN", href: "/login" },
+    { label: "DEPOSIT & PAYMENTS", href: "/payments" },
+    { label: "DOCUMENTS", href: "/documents" },
+    { label: "TRANSPORT", href: "/transport" },
     { label: "CHECK VEHICLE", href: "/vehicle-history" },
-    { label: "DOCUMENTS & TRANSPORT", href: "/transport" },
     { label: "ABOUT US", href: "/presentation" },
-    { label: "SUPPORT", href: "/support" },
-    { label: "BUYER JOURNEY", href: "/start" }
+    { label: "SUPPORT", href: "/support" }
   ];
 
   function setAnchor(anchor, item) {
@@ -297,19 +301,19 @@ const ctaMapScript = String.raw`(() => {
       const supportUnit = contact.closest("li") || contact;
       const parent = supportUnit.parentElement;
       if (parent) {
-        for (const item of [...navItems.slice(3, 6), navItems[7]]) {
+        for (const item of navItems.slice(3, navItems.length-1)) {
           const clone = cloneNavUnit(contact, item);
           if (clone) parent.insertBefore(clone, supportUnit);
         }
       }
-      setAnchor(contact, navItems[6]);
+      setAnchor(contact, navItems[navItems.length-1]);
       container.dataset.enchevNavSignature = "v1";
     }
 
     const directMap = new Map([
       ["/builds/", navItems[1]],
       ["/stock/", navItems[2]],
-      ["/contact/", navItems[6]]
+      ["/contact/", navItems[navItems.length-1]]
     ]);
     for (const [href, item] of directMap) {
       for (const anchor of document.querySelectorAll('a[href="' + href + '"]')) {
