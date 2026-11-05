@@ -175,6 +175,9 @@ function applyBulgarianInterface(){
   const key=normalizeText(el.textContent);
   const translated=translations.get(key);
   if(translated && key!==normalizeText(translated)){
+   if(el.tagName==="A" && (key==="LIVE AUCTIONS" || key==="SUPPORT") && parseFloat(getComputedStyle(el).fontSize)>55){
+     el.setAttribute("data-ea-bg-large-nav",key==="LIVE AUCTIONS"?"live":"support");
+   }
    if(!el.children.length){
      el.textContent=translated;
    }else{
