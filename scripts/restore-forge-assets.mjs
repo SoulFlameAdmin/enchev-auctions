@@ -184,52 +184,78 @@ await writeFile(path.join(output,'enchev-responsive.css'),responsiveCss);
 
 const ctaMapScript = String.raw`(() => {
   const normalize = (value) => String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
+  // The cinematic homepage has fourteen CTA buttons in its visual sections.
+  // Map them to the same seven buyer stages used by /start; don't divert all
+  // original "Start your project" controls to one generic destination.
   const rules = [
-    { heading: "Your Route To Your Next Vehicle", label: "BID NOW", href: "/auctions" },
-    { heading: "Identity", label: "BID NOW", href: "/auctions" },
-    { heading: "Insight", label: "DOCUMENTS & TRANSPORT", href: "/transport" },
-    { heading: "Cohesion", label: "BUY", href: "/auctions" },
-    { heading: "Discovery", label: "CHECK VEHICLE", href: "/vehicle-history" },
-    { heading: "Inspection", label: "ABOUT US", href: "/presentation" },
-    { heading: "Auctions", label: "BID NOW", href: "/auctions" },
-    { heading: "History", label: "CHECK VEHICLE", href: "/vehicle-history" },
-    { heading: "Transport", label: "DOCUMENTS & TRANSPORT", href: "/transport" },
-    { heading: "Support", label: "SUPPORT", href: "/support" }
+    { heading: "Identity", label: "REGISTER", href: "/register" },
+    { heading: "Insight", label: "VERIFY & DEPOSIT", href: "/payments#verification" },
+    { heading: "Cohesion", label: "CHOOSE VEHICLE", href: "/auctions" },
+    { heading: "Discovery", label: "CHOOSE VEHICLE", href: "/auctions" },
+    { heading: "Inspection", label: "CHECK VEHICLE", href: "/vehicle-history" },
+    { heading: "Auctions", label: "LIVE AUCTIONS", href: "/auctions" },
+    { heading: "History", label: "MY AUCTIONS", href: "/profile#my-auctions" },
+    { heading: "Transport", label: "TRANSPORT", href: "/transport" },
+    { heading: "Support", label: "SUPPORT", href: "/support" },
+    { heading: "Vehicle Inventory", label: "FIND VEHICLES", href: "/auctions" },
+    { heading: "Live Auctions", label: "LIVE AUCTIONS", href: "/auctions" },
+    { heading: "Refuse Ordinary", label: "7 STEPS TO BUY", href: "/start" },
+    { heading: "Your Route To Your Next Vehicle", label: "START HERE", href: "/start" }
   ];
 
+  const defaultDestination = { label: "7 STEPS TO BUY", href: "/start" };
   function nearestRule(element) {
-    let node = element.parentElement;
-    while (node && node !== document.body) {
-      const headings = Array.from(node.querySelectorAll("h1,h2,h3,h4,h5"));
-      for (const heading of headings) {
-        const value = normalize(heading.textContent);
-        const match = rules.find((rule) => value === normalize(rule.heading) || value.includes(normalize(rule.heading)));
-        if (match) return match;
+    let section=element.closest("section");
+    while (section && section !== document.body) {
+      const headingNodes=Array.from(section.querySelectorAll("h1,h2,h3,h4,h5"));
+      for (const heading of headingNodes) {
+        const value=normalize(heading.textContent);
+        const rule=rules.find(item=>value===normalize(item.heading));
+        if(rule)return rule;
       }
-      node = node.parentElement;
+      const routeTo=section.dataset.enchevBuyerDestination;
+      if(routeTo) return rules.find(item=>item.href===routeTo)||defaultDestination;
+      section=section.parentElement && section.parentElement.closest("section");
     }
-    return null;
+    return defaultDestination;
   }
 
   function applyCtas() {
-    const candidates = Array.from(document.querySelectorAll("a,button")).filter((element) => {
-      const value = normalize(element.textContent);
-      return value === "start your project" || value === "start your project";
-    });
+    const candidates=Array.from(document.querySelectorAll("a.sc-6f2721c4-0,button.sc-6f2721c4-0"))
+      .filter(element=>{
+        const value=normalize(element.textContent);
+        return value==="start your project" || value==="start your project" ||
+          element.hasAttribute("data-enchev-cta-label");
+      });
 
     for (const element of candidates) {
-      const rule = nearestRule(element);
-      const destination = rule || { label: "OPEN FULL PLATFORM", href: "/platform" };
-      if (element.dataset.enchevCtaLabel === destination.label) continue;
-      element.textContent = destination.label;
-      if (element.tagName === "A") {
-        element.setAttribute("href", destination.href);
-        element.setAttribute("target", "_top");
+      const destination=nearestRule(element);
+      if(element.dataset.enchevCtaHref===destination.href &&
+         element.dataset.enchevCtaLabel===destination.label)continue;
+
+      // Preserve the original split-letter spans and hover animation of Forge.
+      const originalSpan=element.querySelector(":scope > span");
+      if(originalSpan) {
+        const letters=document.createDocumentFragment();
+        for(const char of destination.label){
+          const letter=document.createElement("span");
+          letter.textContent=char===" "?"\u00a0":char;
+          letters.append(letter);
+        }
+        originalSpan.replaceChildren(letters);
       } else {
-        element.dataset.enchevCtaHref = destination.href;
+        element.textContent=destination.label;
       }
-      element.setAttribute("aria-label", destination.label);
-      element.dataset.enchevCtaLabel = destination.label;
+
+      if(element.tagName==="A"){
+        element.setAttribute("href",destination.href);
+        element.setAttribute("target","_top");
+      }else {
+        element.dataset.enchevCtaHref=destination.href;
+      }
+      element.dataset.enchevCtaHref=destination.href;
+      element.dataset.enchevCtaLabel=destination.label;
+      element.setAttribute("aria-label",destination.label);
     }
   }
 
