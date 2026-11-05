@@ -109,6 +109,16 @@ for (const [relative, content] of Object.entries(frontend)) {
   await writeFile(target, localizeHomeSource(relative, translateCinematicSource(relative,restored)));
 }
 console.log('Bulgarian Home Index source replacements: ' + translatedHomeSourceCount + '; marketing copy: ' + translatedCopyCount);
+
+// Build-only audit of leftover static marketing HTML; no output in the browser.
+const homeHtmlAudit=String(frontend["index.html"]||"");
+const homeEnglishFragments=Array.from(homeHtmlAudit.matchAll(/>([^<>]{4,180})</g),m=>m[1].trim())
+ .filter(part=>/[A-Za-z]{4}/.test(part)&&!/^\s*(?:script|style|__|data:)/i.test(part))
+ .map(part=>part.replace(/&[a-z]+;/gi," ").replace(/\s+/g," "))
+ .filter(Boolean);
+console.log("HOME HTML TEXT AUDIT: "+JSON.stringify([...new Set(homeEnglishFragments)].slice(0,100)));
+console.log("HOME FRONTEND KEYS: "+JSON.stringify(Object.keys(frontend).filter(x=>/index|chunk|script|page|app/i.test(x)).slice(0,25)));
+
 const responsiveCss = String.raw`
 html,body{max-width:100%;overflow-x:hidden}
 [data-sanity*="path=introductionHeading"],
