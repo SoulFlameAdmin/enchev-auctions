@@ -238,7 +238,7 @@ export default function EnchevCinematicLoginGate() {
         for(let depth=0;node&&depth<7;depth++,node=node.parentElement){
           const label=(node.textContent||node.getAttribute("aria-label")||"")
             .replace(/\s+/g," ").trim();
-          if(/^ENTER(?:\s*[→↗›])?$/i.test(label)){
+          if(/^(?:ENTER|ВЛЕЗ)(?:\s*[→↗›])?$/i.test(label)){
             if(replayingEnterRef.current)return;
             // Defer Forge's native animation until the advert is dismissed.
             event.preventDefault();
