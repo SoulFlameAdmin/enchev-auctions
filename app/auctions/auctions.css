@@ -1,0 +1,46 @@
+
+.eaRealAuctions{min-height:100vh;background:#070809;color:#f9fafb;font-family:Arial,Helvetica,sans-serif;overflow:hidden}
+.eaRealAuctions *{box-sizing:border-box}
+.eaRealAuctionsInner{max-width:1500px;margin-inline:auto;padding:clamp(36px,5vw,85px) clamp(18px,4.5vw,72px) 100px}
+.eaRealKicker{display:flex;align-items:center;gap:11px;color:#b6bec8;font-size:11px;font-weight:700;letter-spacing:.18em}
+.eaRealDot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#dc232e;box-shadow:0 0 15px #dc232e99}
+.eaRealHeading{display:grid;grid-template-columns:minmax(0,1fr) minmax(240px,330px);gap:35px;align-items:end;margin:34px 0 50px}
+.eaRealHeading h1{font-size:clamp(3.5rem,8.5vw,10rem);font-weight:800;line-height:.85;letter-spacing:-.082em;margin:0 0 24px}
+.eaRealHeading h1 em{font-style:normal;color:#e12b33}
+.eaRealHeading>div:first-child>p{color:#b8b9bd;max-width:720px;font-size:clamp(15px,1.5vw,20px);line-height:1.6;margin:0}
+.eaRealStatus{border:1px solid #353539;padding:22px;background:linear-gradient(135deg,#191a1e,#0e0f10);display:grid;gap:9px}
+.eaRealStatus span{font-size:10px;letter-spacing:.19em;color:#e34b51;font-weight:800}
+.eaRealStatus strong{font-size:17px;font-weight:650}
+.eaRealStatus small{font-size:12px;color:#a8aab0;line-height:1.55}
+.eaRealTabs{display:flex;gap:8px;border-bottom:1px solid #3a3a3d;overflow-x:auto}
+.eaRealTabs button{background:none;color:#9e9fa4;border:0;border-bottom:2px solid transparent;padding:17px 21px;cursor:pointer;font-weight:750;letter-spacing:.11em;font-size:12px;white-space:nowrap}
+.eaRealTabs button:hover,.eaRealTabs button:focus-visible{color:#fff}
+.eaRealTabs button.is-active{color:#fff;border-bottom-color:#e02e36}
+.eaRealEmpty{margin-top:22px;min-height:420px;display:grid;grid-template-columns:minmax(210px,42%) minmax(0,58%);background:radial-gradient(ellipse at 18% 50%,#281014 0%,#151418 43%,#111214 72%);border:1px solid #343136;overflow:hidden}
+.eaRealEmptyVisual{display:flex;justify-content:center;align-items:center;min-height:315px}
+.eaRealEmptyRing{height:min(22vw,265px);width:min(22vw,265px);min-width:160px;min-height:160px;display:flex;align-items:center;justify-content:center;border:1px solid #742d35;border-radius:50%;box-shadow:0 0 0 35px #ffffff05,0 0 0 70px #ffffff03,inset 0 0 45px #f4433630}
+.eaRealEmptyRing span{font-size:clamp(60px,8vw,100px);font-family:Georgia,serif;font-style:italic;font-weight:800;letter-spacing:-.13em;color:#eee;transform:translateX(-5px)}
+.eaRealEmptyCopy{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;padding:clamp(25px,4.5vw,70px)}
+.eaRealEyebrow{color:#f35f65;letter-spacing:.16em;font-size:11px;font-weight:800}
+.eaRealEmptyCopy h2{font-size:clamp(30px,3.4vw,52px);max-width:670px;letter-spacing:-.052em;line-height:1.05;margin:20px 0}
+.eaRealEmptyCopy>p{color:#b4b7bb;font-size:15px;line-height:1.65;max-width:625px;margin:0}
+.eaRealActions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}
+.eaRealActions a{text-decoration:none;display:inline-flex;align-items:center;justify-content:center;gap:18px;min-height:52px;padding:13px 20px;font-size:13px;font-weight:750}
+.eaRealPrimary{background:#e32634;color:#fff}.eaRealPrimary:hover{background:#f23e48}
+.eaRealSecondary{color:#f6f6f6;border:1px solid #76777e}.eaRealSecondary:hover{background:#ffffff12}
+.eaRealEmptyCopy .eaRealAccountNote{font-size:11px;color:#888b91;line-height:1.4;margin-top:23px}
+.eaRealHow{margin:74px 0}
+.eaRealSectionHead span{font-size:11px;color:#ed4b51;font-weight:800;letter-spacing:.15em}
+.eaRealSectionHead h2{font-size:clamp(30px,4vw,60px);line-height:1.1;letter-spacing:-.06em;margin:14px 0 26px}
+.eaRealSteps{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.eaRealSteps article{background:#141519;border-top:2px solid #a72430;padding:24px 18px;min-height:225px}
+.eaRealSteps article>span{font-size:14px;font-weight:800;color:#e34248}
+.eaRealSteps h3{font-size:18px;margin:24px 0 12px;letter-spacing:-.02em}
+.eaRealSteps p{font-size:13px;color:#adb0b6;line-height:1.65;margin:0}
+.eaRealDemo{display:flex;align-items:center;justify-content:space-between;gap:30px;padding:28px 32px;border:1px solid #424246;background:#151619}
+.eaRealDemo strong{font-size:20px}.eaRealDemo p{color:#afb1b7;font-size:13px;line-height:1.5;margin:9px 0 0;max-width:620px}
+.eaRealDemo>a{white-space:nowrap;color:#fff;text-decoration:none;font-size:13px;font-weight:800;border-bottom:1px solid #c9323f;padding:10px 0}
+.eaRealAuctions a:focus-visible,.eaRealAuctions button:focus-visible{outline:2px solid #fff;outline-offset:3px}
+@media(max-width:1100px){.eaRealHeading{grid-template-columns:1fr}.eaRealStatus{max-width:520px}.eaRealSteps{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:720px){.eaRealAuctionsInner{padding:26px 17px 70px}.eaRealHeading{margin:28px 0}.eaRealHeading h1{font-size:clamp(56px,13.2vw,88px)}.eaRealStatus{padding:18px}.eaRealTabs button{padding:16px 15px;font-size:10px}.eaRealEmpty{grid-template-columns:1fr}.eaRealEmptyVisual{min-height:195px}.eaRealEmptyRing{width:135px;height:135px;min-width:135px;min-height:135px;box-shadow:0 0 0 23px #ffffff05,0 0 0 42px #ffffff03}.eaRealEmptyRing span{font-size:65px}.eaRealEmptyCopy{padding:16px 22px 28px}.eaRealEmptyCopy h2{font-size:34px}.eaRealActions{width:100%}.eaRealActions a{width:100%}.eaRealHow{margin:48px 0}.eaRealSteps{grid-template-columns:1fr 1fr;gap:10px}.eaRealSteps article{padding:19px 14px;min-height:190px}.eaRealSteps h3{font-size:16px;margin:18px 0 9px}.eaRealSteps p{font-size:12px}.eaRealDemo{display:grid;padding:22px}.eaRealDemo>a{justify-self:start}}
+@media(max-width:380px){.eaRealSteps{grid-template-columns:1fr}.eaRealHeading h1{font-size:50px}}
