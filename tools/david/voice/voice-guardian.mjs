@@ -19,7 +19,7 @@ export function normalizeTranscript(value) {
 export function classifyTranscript(value) {
   const text = normalizeTranscript(value);
   // False positives are acceptable: sensitive requests must wait for a second human approval.
-  if (/^(?:давид[\s,]*)?(?:пауза|спри слушането|спри гласа|pause|stop listening)[.!?]*$/i.test(text)) {
+  if (/^(?:(?:давид|дейвид|девид|david)[\s,]*)?(?:пауза|спри слушането|спри гласа|pause|stop listening)[.!?]*$/i.test(text)) {
     return { intent: "pause", requiresApproval: false };
   }
   const risky = /(?:изтри|изтрий|премахни|унищожи|форматирай|изключи защит|парол|api[ -]?key|токен|secret|deploy|deployment|деплой|публикувай|плати|плащан|преведи пари|купи|продай|подпиши|rollback|restart|рестарт|delete|remove|wipe|purchase|transfer funds|execute shell|powershell|cmd\.exe|sudo|rm -rf|mfa|captcha)/i.test(text);
