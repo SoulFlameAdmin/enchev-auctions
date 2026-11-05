@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "primaryChatUrl": "https://chatgpt.com/c/6ae76768-b7cc-83ed-8960-415469e2dacb",
+  "checkIntervalMs": 10000,
+  "voiceBrowserProfile": "DAVID-Voice",
+  "requireHumanVoiceArming": true,
+  "autoSend": false,
+  "managedMainEdgeProfile": false,
+  "rolloverMode": "approval-required",
+  "guardianRiskPolicy": "hold-for-separate-approval",
+  "transcriptSource": "gemini-relay"
+}
