@@ -169,7 +169,7 @@ function normalizeText(value){
 }
 function applyBulgarianInterface(){
  document.documentElement.lang="bg";
- const candidates=document.querySelectorAll("a,button,h1,h2,h3,h4,h5,p,small,strong,span,label,footer");
+ const candidates=document.querySelectorAll("a,button,h1,h2,h3,h4,h5,p,small,strong,span,label,footer,input,textarea,figcaption,li,[data-sanity]");
  for(const el of candidates){
   if(el.closest("script,style,[data-soulflame-credit]"))continue;
   const key=normalizeText(el.textContent);
@@ -199,7 +199,7 @@ function applyBulgarianInterface(){
      }
    }
   }
-  for(const attribute of ["aria-label","title","placeholder"]){
+  for(const attribute of ["aria-label","title","placeholder","alt"]){
     const value=el.getAttribute(attribute);
     if(!value)continue;
     const copy=translations.get(normalizeText(value));
