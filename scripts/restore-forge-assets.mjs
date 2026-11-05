@@ -68,11 +68,11 @@ function translateCinematicSource(relative,content){
   if(!/\.(?:html|js|json)$/.test(relative) || relative==="ActiveFrame.js")return content;
   let result=content;
   for(const [english,bg] of marketingDictionary){
-    const longCopy=english.length>=26&&english.includes(" ");
+    const longCopy=english.length>=17&&english.trim().split(/\s+/).length>=3;
     // Long prose is unique marketing copy; replace in HTML, Flight metadata
     // and Next's JS chunks together to avoid server/client hydration mismatch.
     if(longCopy){
-      const pattern=new RegExp(escapePattern(english),'gi');
+      const pattern=new RegExp(escapePattern(english).replace(/ +/g,'\\s+'),'gi');
       result=result.replace(pattern,()=>{translatedCopyCount++;return bg;});
     }else if(english.length>=5){
       // Short words are only replaced as complete literal labels. Never mutate
