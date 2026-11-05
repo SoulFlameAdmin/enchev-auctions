@@ -25,6 +25,7 @@ import PlanStatusAuditTrail from "./components/PlanStatusAuditTrail";
 import CloudPlanStateSync from "./components/CloudPlanStateSync";
 import LotNavigationBridge from "./components/LotNavigationBridge";
 import EnchevAppShell from "./components/EnchevAppShell";
+import BuyerJourneyRail from "./components/BuyerJourneyRail";
 import EnglishUiEnforcer from "./components/EnglishUiEnforcer";
 
 export const viewport: Viewport = { width: "device-width", initialScale: 1, viewportFit: "cover" };
@@ -49,6 +50,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <EnglishUiEnforcer />
         <EnchevAppShell />
         {children}
+        <BuyerJourneyRail />
       </body>
     </html>
   );
