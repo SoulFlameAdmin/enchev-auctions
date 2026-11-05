@@ -49,11 +49,25 @@ function recoverDesktopActiveFrame(original) {
   }
   return code;
 }
+// Localize the source text before Next/React hydrates it. A DOM-only
+// translation is not sufficient because hydration can restore English copy.
+const englishHomeStatement = /vehicle\\s+auctions\\s+with\\s+inventory\\s*,?\\s*live\\s+bidding\\s*,?\\s*vehicle\\s+history\\s+and\\s+transport\\s+in\\s+one\\s+place\\s*\\.?/gi;
+const bulgarianHomeStatement = 'АВТОМОБИЛНИ ТЪРГОВЕ, НАДДАВАНЕ НА ЖИВО, ИСТОРИЯ НА АВТОМОБИЛИТЕ И ТРАНСПОРТ — ВСИЧКО НА ЕДНО МЯСТО.';
+let translatedHomeSourceCount = 0;
+function localizeHomeSource(relative, content) {
+  if (!/\\.(?:html|js|json)$/.test(relative)) return content;
+  return content.replace(englishHomeStatement, () => {
+    translatedHomeSourceCount += 1;
+    return bulgarianHomeStatement;
+  });
+}
 for (const [relative, content] of Object.entries(frontend)) {
   const target = path.join(output, relative);
   await mkdir(path.dirname(target), { recursive: true });
-  await writeFile(target, relative === 'ActiveFrame.js' ? recoverDesktopActiveFrame(content) : content);
+  const restored = relative === 'ActiveFrame.js' ? recoverDesktopActiveFrame(content) : content;
+  await writeFile(target, localizeHomeSource(relative, restored));
 }
+console.log('Bulgarian Home Index source replacements: ' + translatedHomeSourceCount);
 const responsiveCss = String.raw`
 html,body{max-width:100%;overflow-x:hidden}
 [data-sanity*="path=introductionHeading"],
