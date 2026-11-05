@@ -14,3 +14,64 @@ header img[alt*="East West"],
 img[src*="/brand/ea-east-west"],
 a[href="/"]:has(img[alt*="logo"]),
 a[href="/"]:has(img[alt*="E&A"]){display:none!important}
+
+
+/*
+ * Keep the exact same cinematic hero composition on desktop as on mobile:
+ * centered E&A masthead (rendered by the parent), a balanced two-line
+ * editorial headline above the car, and supporting copy beneath it.
+ *
+ * Forge's original ActiveFrame canvases, scroll effects, menus and buttons
+ * remain untouched. This only corrects the desktop text/grid geometry.
+ */
+@media (min-width: 768px) {
+  .sc-12ea9db1-0 [data-text="top"] {
+    height: 50svh !important;
+    padding-top: clamp(100px, 10svh, 155px) !important;
+    align-items: center !important;
+    justify-items: center !important;
+  }
+
+  .sc-12ea9db1-0 [data-sanity*="path=heroHeading"] {
+    grid-column: 1 / -1 !important;
+    width: min(90vw, 980px) !important;
+    max-width: min(90vw, 980px) !important;
+    margin-inline: auto !important;
+    padding-inline: 0 !important;
+    font-size: clamp(4.1rem, 7vw, 8.65rem) !important;
+    line-height: .96 !important;
+    letter-spacing: -.055em !important;
+    white-space: normal !important;
+    text-align: center !important;
+    text-wrap: balance !important;
+  }
+
+  .sc-12ea9db1-0 [data-text="bottom"] {
+    justify-items: center !important;
+    padding-bottom: clamp(48px, 7.5svh, 112px) !important;
+  }
+
+  .sc-12ea9db1-0 [data-sanity*="path=heroDescription"] {
+    grid-column: 1 / -1 !important;
+    width: min(76vw, 760px) !important;
+    max-width: min(76vw, 760px) !important;
+    margin-inline: auto !important;
+    font-size: clamp(1.05rem, 1.45vw, 1.45rem) !important;
+    line-height: 1.42 !important;
+    text-align: center !important;
+    text-wrap: balance !important;
+  }
+}
+
+/* On short laptop displays, preserve readable space for the car. */
+@media (min-width: 768px) and (max-height: 700px) {
+  .sc-12ea9db1-0 [data-text="top"] {
+    padding-top: 76px !important;
+  }
+  .sc-12ea9db1-0 [data-sanity*="path=heroHeading"] {
+    font-size: clamp(3.7rem, 6.2vw, 6.5rem) !important;
+  }
+  .sc-12ea9db1-0 [data-text="bottom"] {
+    padding-bottom: 42px !important;
+  }
+}
