@@ -4,13 +4,13 @@
   "use strict";
   // The seven actions match the exact buyer process, not arbitrary marketing labels.
   const links = [
-    {label:"REGISTER",href:"/register",primary:true,small:"01 / 07"},
-    {label:"VERIFICATION & DEPOSIT",href:"/verification",small:"02 / 07"},
-    {label:"CHOOSE A VEHICLE",href:"/vehicles",small:"03 / 07"},
-    {label:"LIVE AUCTIONS",href:"/auctions",small:"04 / 07"},
-    {label:"MY AUCTIONS & WINS",href:"/my-auctions",small:"05 / 07"},
-    {label:"PAYMENT & DOCUMENTS",href:"/payments",small:"06 / 07"},
-    {label:"TRANSPORT & COLLECTION",href:"/transport",small:"07 / 07"},
+    {label:"РЕГИСТРАЦИЯ",href:"/register",primary:true,small:"01 / 07"},
+    {label:"ПОТВЪРЖДЕНИЕ И ДЕПОЗИТ",href:"/verification",small:"02 / 07"},
+    {label:"ИЗБЕРИ АВТОМОБИЛ",href:"/vehicles",small:"03 / 07"},
+    {label:"ТЪРГОВЕ НА ЖИВО",href:"/auctions",small:"04 / 07"},
+    {label:"МОИТЕ ТЪРГОВЕ И ПОБЕДИ",href:"/my-auctions",small:"05 / 07"},
+    {label:"ПЛАЩАНЕ И ДОКУМЕНТИ",href:"/payments",small:"06 / 07"},
+    {label:"ТРАНСПОРТ И ПОЛУЧАВАНЕ",href:"/transport",small:"07 / 07"},
   ];
   const rootId="ea-buyer-footer-entry-v1";
   function addBuyerFooter(){
@@ -25,15 +25,15 @@
       section.setAttribute("aria-labelledby","eaBuyerFooterHeading");
       const kicker=document.createElement("div");
       kicker.className="eaBuyerFooterKicker";
-      kicker.textContent="E&A EAST AND WEST · BUYER SERVICES";
+      kicker.textContent="E&A · УСЛУГИ ЗА КУПУВАЧИ";
       const title=document.createElement("h2");
       title.id="eaBuyerFooterHeading";
-      title.textContent="7 steps. One complete journey.";
+      title.textContent="7 стъпки. Един цялостен процес.";
       const subtitle=document.createElement("p");
-      subtitle.textContent="From buyer registration to transport. Select any step to open its dedicated page. Buyer login, document storage and live payments activate after verification.";
+      subtitle.textContent="От регистрацията до доставката. Избери стъпка, за да отвориш съответната страница. Входът, документите и плащанията се активират след необходимите проверки.";
       const nav=document.createElement("nav");
       nav.className="eaBuyerFooterNav";
-      nav.setAttribute("aria-label","Buyer service destinations");
+      nav.setAttribute("aria-label","Услуги за купувачи");
       links.forEach(item=>{
         const anchor=document.createElement("a");
         anchor.href=item.href;
@@ -47,10 +47,10 @@
       });
       const disclosure=document.createElement("p");
       disclosure.className="eaBuyerFooterNotice";
-      disclosure.textContent="Real-money bidding and card payments are not enabled. Early-access registration is available on the buyer journey page.";
+      disclosure.textContent="Наддаването с реални средства и картовите плащания още не са активни. Предварителната регистрация е достъпна на страницата за купувачи.";
       const secondary=document.createElement("div");
       secondary.className="eaBuyerFooterSecondary";
-      for(const item of [{label:"SIGN IN",href:"/login"},{label:"ALL 7 STEPS",href:"/start"},{label:"DOCUMENTS",href:"/documents"}]){
+      for(const item of [{label:"ВХОД",href:"/login"},{label:"ВСИЧКИ 7 СТЪПКИ",href:"/start"},{label:"ДОКУМЕНТИ",href:"/documents"}]){
         const a=document.createElement("a");a.href=item.href;a.target="_top";a.textContent=item.label+" ↗";secondary.append(a);
       }
       section.append(kicker,title,subtitle,nav,secondary,disclosure);
