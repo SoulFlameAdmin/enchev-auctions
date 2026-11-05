@@ -1,10 +1,10 @@
 export const primaryNavigation = [
-  { href: "/platform", label: "PLATFORM", key: "platform" },
-  { href: "/inventory", label: "VEHICLES", key: "inventory" },
+  { href: "/start", label: "BUYER JOURNEY", key: "start" },
   { href: "/auctions", label: "LIVE AUCTIONS", key: "live" },
-  { href: "/platform#how", label: "HOW TO BUY", key: "how" },
+  { href: "/inventory", label: "DEMO VEHICLES", key: "inventory" },
+  { href: "/payments", label: "PAYMENTS", key: "payments" },
+  { href: "/documents", label: "DOCUMENTS", key: "documents" },
   { href: "/transport", label: "TRANSPORT", key: "transport" },
-  { href: "/vehicle-history", label: "VEHICLE HISTORY", key: "history" },
   { href: "/support", label: "SUPPORT", key: "support" },
 ] as const;
 
