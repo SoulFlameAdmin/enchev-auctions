@@ -185,13 +185,13 @@ await writeFile(path.join(output,'enchev-responsive.css'),responsiveCss);
 const ctaMapScript = String.raw`(() => {
   const normalize = (value) => String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
   const rules = [
-    { heading: "Your Route To Your Next Vehicle", label: "BID NOW", href: "/live-auctions" },
-    { heading: "Identity", label: "BID NOW", href: "/live-auctions" },
+    { heading: "Your Route To Your Next Vehicle", label: "BID NOW", href: "/auctions" },
+    { heading: "Identity", label: "BID NOW", href: "/auctions" },
     { heading: "Insight", label: "DOCUMENTS & TRANSPORT", href: "/transport" },
     { heading: "Cohesion", label: "BUY", href: "/inventory" },
     { heading: "Discovery", label: "CHECK VEHICLE", href: "/vehicle-history" },
     { heading: "Inspection", label: "ABOUT US", href: "/presentation" },
-    { heading: "Auctions", label: "BID NOW", href: "/live-auctions" },
+    { heading: "Auctions", label: "BID NOW", href: "/auctions" },
     { heading: "History", label: "CHECK VEHICLE", href: "/vehicle-history" },
     { heading: "Transport", label: "DOCUMENTS & TRANSPORT", href: "/transport" },
     { heading: "Support", label: "SUPPORT", href: "/support" }
@@ -236,7 +236,7 @@ const ctaMapScript = String.raw`(() => {
   const navItems = [
     { label: "HOME", href: "/" },
     { label: "BUY", href: "/inventory" },
-    { label: "LIVE AUCTIONS", href: "/live-auctions" },
+    { label: "LIVE AUCTIONS", href: "/auctions" },
     { label: "CHECK VEHICLE", href: "/vehicle-history" },
     { label: "DOCUMENTS & TRANSPORT", href: "/transport" },
     { label: "ABOUT US", href: "/presentation" },
