@@ -113,7 +113,7 @@ export default function BuyerStartPage(){
         </div>
       </section>
 
-      <section className="eaStartEarly" aria-labelledby="ea-early-title">
+      <section id="early-access" className="eaStartEarly" aria-labelledby="ea-early-title">
         <div><span className="eaStartKicker">E&A PRIVATE BUYER ACCESS</span><h2 id="ea-early-title">{copy.earlyTitle}</h2><p>{copy.earlyText}</p></div>
         <form onSubmit={signUp}>
           <label htmlFor="ea-start-email">{copy.email}</label>
