@@ -47,7 +47,7 @@ export default function ProfilePage(){
 
             <div className="profileOverviewActions" aria-label="Бързи действия">
               <a href="/inventory">Search vehicles</a>
-              <a href="/live-auctions">Live auctions</a>
+              <a href="/auctions">Live auctions</a>
             </div>
           </section>
 
@@ -61,7 +61,7 @@ export default function ProfilePage(){
             </div>
             <div className="navigationRouteGrid">
               <article className="navigationRouteCard"><b>Inventory</b><p>Continue searching and find your next vehicle or lot.</p><a href="/inventory">Go to inventory →</a></article>
-              <article className="navigationRouteCard"><b>Live auctions</b><p>Enter the dedicated auction room and follow the active lot.</p><a href="/live-auctions">Open live →</a></article>
+              <article className="navigationRouteCard"><b>Live auctions</b><p>See verified live and upcoming auctions. Demo auctions are separate.</p><a href="/auctions">Open live →</a></article>
               <article className="navigationRouteCard"><b>Поддръжка</b><p>Open the help center for transport, vehicle history and platform use.</p><a href="/support">Open help →</a></article>
             </div>
           </section>
