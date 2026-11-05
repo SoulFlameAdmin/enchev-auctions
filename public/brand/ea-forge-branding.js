@@ -1,41 +1,6 @@
-(()=>{"use strict";
-const brand="E&A East West Auctioneers Group", upper="E&A EAST WEST AUCTIONEERS GROUP";
-
-// Replace the former template studio credit in both the menu and footer.
-// Match the smallest wrapper that contains the complete credit, including
-// cases where the source splits "Made by" and "12 Studio" across spans.
-function applyStudioCredit(){
- const credit=/^MADE\s*BY\s*12\s*STUDIO\.?$/i;
- const nodes=document.querySelectorAll("a,small,span,p,strong,div,footer");
- for(const el of nodes){
-  const label=el.textContent?.replace(/\s+/g," ").trim();
-  if(!label||!credit.test(label))continue;
-  if(Array.from(el.children).some(child=>credit.test(child.textContent?.replace(/\s+/g," ").trim()||"")))continue;
-  const link=el.closest("a");
-  if(link){
-    // Keep the appearance while replacing the hyperlink with plain text.
-    const labelNode=document.createElement("span");
-    const appearance=getComputedStyle(link);
-    labelNode.className=link.className;
-    labelNode.style.cssText=link.style.cssText;
-    for(const property of ["color","font-family","font-size","font-weight","line-height","letter-spacing","text-transform","display","white-space","opacity","padding","margin"]){
-      labelNode.style.setProperty(property,appearance.getPropertyValue(property));
-    }
-    labelNode.style.cursor="default";
-    labelNode.style.textDecoration="none";
-    labelNode.textContent="SOULFLAME";
-    labelNode.setAttribute("data-soulflame-credit","");
-    link.replaceWith(labelNode);
-  }else{
-    el.textContent="SOULFLAME";
-    if(el.getAttribute("title")?.match(/12\s*STUDIO/i))el.setAttribute("title","SOULFLAME");
-    if(el.getAttribute("aria-label")?.match(/12\s*STUDIO/i))el.setAttribute("aria-label","SOULFLAME");
-  }
- }
-}
-
-// Bulgarian copy for the cinematic homepage and its full-screen navigation.
-// Official brand names E&A / SOULFLAME are intentionally kept as brands.
+(()=>{
+"use strict";
+const brand="E&A East West Auctioneers Group";
 const translations=new Map(Object.entries({
  "HOME":"НАЧАЛО",
  "BUY":"КУПИ",
@@ -164,76 +129,75 @@ for(const [english,bulgarian] of Object.entries({
  "POWERED BY WRPD":"РАЗРАБОТЕНО ОТ SOULFLAME"
 }))translations.set(english,bulgarian);
 
-function normalizeText(value){
+
+function key(value){
  return (value||"").replace(/\u00a0/g," ").replace(/\s+/g," ").trim().toUpperCase();
 }
-function applyBulgarianInterface(){
- document.documentElement.lang="bg";
- const candidates=document.querySelectorAll("a,button,h1,h2,h3,h4,h5,p,small,strong,span,label,footer,input,textarea,figcaption,li,[data-sanity]");
- for(const el of candidates){
-  if(el.closest("script,style,[data-soulflame-credit]"))continue;
-  const key=normalizeText(el.textContent);
-  const translated=translations.get(key);
-  if(translated && key!==normalizeText(translated)){
-   if(el.tagName==="A" && (key==="LIVE AUCTIONS" || key==="SUPPORT") && parseFloat(getComputedStyle(el).fontSize)>55){
-     el.setAttribute("data-ea-bg-large-nav",key==="LIVE AUCTIONS"?"live":"support");
-   }
-   if(!el.children.length){
-     el.textContent=translated;
-   }else{
-     // Keep original animated wrappers, classes and click handlers intact.
-     const children=Array.from(el.children);
-     const spansOnly=children.length>0 &&
-       children.every(child=>child.tagName==="SPAN" && !child.querySelector("a,button,svg,img,canvas"));
-     const directText=Array.from(el.childNodes).some(node=>node.nodeType===3 && (node.nodeValue||"").trim());
-     const childMatches=children.some(child=>translations.has(normalizeText(child.textContent)));
-     if(spansOnly && !directText && !childMatches){
-       const letterGroup=children.length>1 &&
-         children.every(child=>!child.children.length && child.textContent.length<=2);
-       const pieces=letterGroup?Array.from(translated):translated.split(/\s+/).filter(Boolean);
-       const template=children[0];
-       while(children.length<pieces.length){
-         const clone=template.cloneNode(false);
-         el.appendChild(clone);
-         children.push(clone);
-       }
-       children.forEach((child,index)=>{
-         const part=pieces[index];
-         if(part===undefined){child.textContent="";return;}
-         child.textContent=letterGroup?(part===" "?"\u00a0":part):(part+(index<pieces.length-1?"\u00a0":""));
-       });
-     }
-   }
-  }
-  for(const attribute of ["aria-label","title","placeholder","alt"]){
-    const value=el.getAttribute(attribute);
-    if(!value)continue;
-    const copy=translations.get(normalizeText(value));
-    if(copy && copy!==value)el.setAttribute(attribute,copy);
-  }
- }
- // Preserve the meaning of copyright and credits without English boilerplate.
- for(const el of document.querySelectorAll("footer,footer *")){
-   if(el.children.length)continue;
-   if(/^copyright\s*©?\s*2026$/i.test((el.textContent||"").trim()))el.textContent="© 2026 · ВСИЧКИ ПРАВА ЗАПАЗЕНИ";
- }
-}
-
-function apply(){
- applyStudioCredit();
- applyBulgarianInterface();
- document.title="E&A East West Auctioneers Group | Автомобилни търгове";
- for(const el of document.querySelectorAll('a[aria-label="Enchev home"]')) el.setAttribute("aria-label",brand+" home");
- const nodes=document.querySelectorAll('h1,h2,h3,h4,h5,small,strong,span,p,a,button');
+function creditWithoutLink(){
+ const nodes=document.querySelectorAll("footer a, a, footer span, footer small, footer p");
  for(const el of nodes){
-  if(el.children.length!==0)continue;
-  const t=el.textContent?.trim();if(!t||t.length>75)continue;
-  if(t==="ENCHEV Auctions"||t==="ENCHEV AUCTIONS"||t==="Enchev Auctions"||t==="ENCHEV")el.textContent=t==="ENCHEV"?upper:brand;
-  else if(t==="EAuctions by SOULFLAME"||t==="ENCHEV AUCTIONS × SOULFLAME")el.textContent=brand+"  SOULFLAME";
+  const label=key(el.textContent);
+  if(label!=="MADE BY 12 STUDIO" && label!=="SOULFLAME")continue;
+  const link=el.closest("a");
+  if(link && (label==="MADE BY 12 STUDIO" || link.hasAttribute("data-ea-credit"))){
+    link.removeAttribute("href");
+    link.removeAttribute("target");
+    link.removeAttribute("rel");
+    link.removeAttribute("onclick");
+    link.tabIndex=-1;
+    link.setAttribute("data-ea-credit","");
+    link.style.pointerEvents="none";
+    link.style.cursor="default";
+    link.style.textDecoration="none";
+  }
  }
 }
-let scheduled=false;
-function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;apply()})}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",apply,{once:true});else apply();
-new MutationObserver(schedule).observe(document.body,{subtree:true,childList:true});
+function translateSafeText(){
+ document.documentElement.lang="bg";
+ document.title="E&A East West Auctioneers Group | Автомобилни търгове";
+ const nodes=document.querySelectorAll("a,button,span,small,strong,p,h1,h2,h3,h4,h5,label,li,figcaption,footer,input,textarea");
+ for(const el of nodes){
+  if(el.closest("script,style,noscript,[contenteditable=true]"))continue;
+  // Only replace actual text leaf nodes. Never clone/remove letter spans,
+  // rewrite React-owned structure, or override canvas/scroll elements.
+  if(el.childElementCount===0){
+   for(const node of el.childNodes){
+    if(node.nodeType!==3)continue;
+    const content=node.nodeValue||"";
+    const trim=content.trim();
+    const translated=translations.get(key(trim));
+    if(translated && trim && key(trim)!==key(translated)){
+      const before=content.slice(0,content.indexOf(trim));
+      const after=content.slice(content.indexOf(trim)+trim.length);
+      node.nodeValue=before+translated+after;
+    }
+   }
+  }
+  for(const attr of ["title","placeholder","aria-label","alt"]){
+    const value=el.getAttribute(attr);
+    if(!value)continue;
+    const translation=translations.get(key(value));
+    if(translation && value!==translation)el.setAttribute(attr,translation);
+  }
+ }
+ creditWithoutLink();
+}
+let timer=null;
+function queue(){
+ if(timer!==null)return;
+ timer=window.setTimeout(()=>{timer=null;translateSafeText();},600);
+}
+function begin(){
+ translateSafeText();
+ window.setTimeout(translateSafeText,1700);
+ window.setTimeout(translateSafeText,4200);
+ // Only new structural nodes trigger work; animation styles/text frames do not.
+ const observer=new MutationObserver(mutations=>{
+  if(mutations.some(m=>m.addedNodes.length>0))queue();
+ });
+ observer.observe(document.body,{childList:true,subtree:true});
+ window.addEventListener("pagehide",()=>{observer.disconnect();if(timer!==null)clearTimeout(timer);},{once:true});
+}
+if(document.readyState==="complete")window.setTimeout(begin,0);
+else window.addEventListener("load",()=>window.setTimeout(begin,100),{once:true});
 })();
