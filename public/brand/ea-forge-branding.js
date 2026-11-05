@@ -178,24 +178,27 @@ function applyBulgarianInterface(){
    if(!el.children.length){
      el.textContent=translated;
    }else{
-     // Preserve Forge's animated single-letter span structure when present.
+     // Keep original animated wrappers, classes and click handlers intact.
      const children=Array.from(el.children);
-     const letterGroup=children.length>1 &&
-       children.every(child=>child.tagName==="SPAN" && !child.children.length && child.textContent.length<=2);
-     if(letterGroup){
+     const spansOnly=children.length>0 &&
+       children.every(child=>child.tagName==="SPAN" && !child.querySelector("a,button,svg,img,canvas"));
+     const directText=Array.from(el.childNodes).some(node=>node.nodeType===3 && (node.nodeValue||"").trim());
+     const childMatches=children.some(child=>translations.has(normalizeText(child.textContent)));
+     if(spansOnly && !directText && !childMatches){
+       const letterGroup=children.length>1 &&
+         children.every(child=>!child.children.length && child.textContent.length<=2);
+       const pieces=letterGroup?Array.from(translated):translated.split(/\s+/).filter(Boolean);
        const template=children[0];
-       el.replaceChildren(...Array.from(translated,char=>{
-         const span=template.cloneNode(false);
-         span.textContent=char===" "?"\u00a0":char;
-         return span;
-       }));
-     }else{
-       // Translate only the deepest matching wrapper; avoid flattening icons,
-       // nested links, 3D canvases or any functional controls.
-       const childMatches=children.some(child=>translations.has(normalizeText(child.textContent)));
-       if(!childMatches && children.every(child=>child.nodeType===1 && child.tagName==="SPAN" && !child.querySelector("a,button,svg,img,canvas"))){
-         el.textContent=translated;
+       while(children.length<pieces.length){
+         const clone=template.cloneNode(false);
+         el.appendChild(clone);
+         children.push(clone);
        }
+       children.forEach((child,index)=>{
+         const part=pieces[index];
+         if(part===undefined){child.textContent="";return;}
+         child.textContent=letterGroup?(part===" "?"\u00a0":part):(part+(index<pieces.length-1?"\u00a0":""));
+       });
      }
    }
   }
