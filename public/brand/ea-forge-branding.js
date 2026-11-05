@@ -11,9 +11,26 @@ function applyStudioCredit(){
   const label=el.textContent?.replace(/\s+/g," ").trim();
   if(!label||!credit.test(label))continue;
   if(Array.from(el.children).some(child=>credit.test(child.textContent?.replace(/\s+/g," ").trim()||"")))continue;
-  el.textContent="SOULFLAME";
-  if(el.getAttribute("title")?.match(/12\s*STUDIO/i))el.setAttribute("title","SOULFLAME");
-  if(el.getAttribute("aria-label")?.match(/12\s*STUDIO/i))el.setAttribute("aria-label","SOULFLAME");
+  const link=el.closest("a");
+  if(link){
+    // Keep the appearance while replacing the hyperlink with plain text.
+    const labelNode=document.createElement("span");
+    const appearance=getComputedStyle(link);
+    labelNode.className=link.className;
+    labelNode.style.cssText=link.style.cssText;
+    for(const property of ["color","font-family","font-size","font-weight","line-height","letter-spacing","text-transform","display","white-space","opacity","padding","margin"]){
+      labelNode.style.setProperty(property,appearance.getPropertyValue(property));
+    }
+    labelNode.style.cursor="default";
+    labelNode.style.textDecoration="none";
+    labelNode.textContent="SOULFLAME";
+    labelNode.setAttribute("data-soulflame-credit","");
+    link.replaceWith(labelNode);
+  }else{
+    el.textContent="SOULFLAME";
+    if(el.getAttribute("title")?.match(/12\s*STUDIO/i))el.setAttribute("title","SOULFLAME");
+    if(el.getAttribute("aria-label")?.match(/12\s*STUDIO/i))el.setAttribute("aria-label","SOULFLAME");
+  }
  }
 }
 function apply(){
