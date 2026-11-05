@@ -189,15 +189,15 @@ const ctaMapScript = String.raw`(() => {
   // original "Start your project" controls to one generic destination.
   const rules = [
     { heading: "Identity", label: "REGISTER", href: "/register" },
-    { heading: "Insight", label: "VERIFY & DEPOSIT", href: "/payments#verification" },
-    { heading: "Cohesion", label: "CHOOSE VEHICLE", href: "/auctions" },
+    { heading: "Insight", label: "VERIFY & DEPOSIT", href: "/verification" },
+    { heading: "Cohesion", label: "CHOOSE VEHICLE", href: "/vehicles" },
     { heading: "Discovery", label: "CHOOSE VEHICLE", href: "/auctions" },
     { heading: "Inspection", label: "CHECK VEHICLE", href: "/vehicle-history" },
     { heading: "Auctions", label: "LIVE AUCTIONS", href: "/auctions" },
-    { heading: "History", label: "MY AUCTIONS", href: "/profile#my-auctions" },
+    { heading: "History", label: "MY AUCTIONS", href: "/my-auctions" },
     { heading: "Transport", label: "TRANSPORT", href: "/transport" },
     { heading: "Support", label: "SUPPORT", href: "/support" },
-    { heading: "Vehicle Inventory", label: "FIND VEHICLES", href: "/auctions" },
+    { heading: "Vehicle Inventory", label: "FIND VEHICLES", href: "/vehicles" },
     { heading: "Live Auctions", label: "LIVE AUCTIONS", href: "/auctions" },
     { heading: "Refuse Ordinary", label: "7 STEPS TO BUY", href: "/start" },
     { heading: "Your Route To Your Next Vehicle", label: "START HERE", href: "/start" }
