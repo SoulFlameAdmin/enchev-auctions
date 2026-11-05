@@ -62,7 +62,7 @@ const marketingDictionary=new Map([
   ["NAVIGATION","НАВИГАЦИЯ"],
   ["BROWSE VEHICLES","РАЗГЛЕДАЙ АВТОМОБИЛИТЕ"]
 ]);
-const escapePattern=value=>value.replace(/[-/\\^$*+?.()|[\]{}]/g,'\\// Localize the source text before Next/React hydrates it.');
+const escapePattern=value=>value.replace(/[-/\\^$*+?.()|[\]{}]/g,'\\$&');
 let translatedCopyCount=0;
 function translateCinematicSource(relative,content){
   if(!/\.(?:html|js|json)$/.test(relative) || relative==="ActiveFrame.js")return content;
