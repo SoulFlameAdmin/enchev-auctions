@@ -49,6 +49,47 @@ function recoverDesktopActiveFrame(original) {
   }
   return code;
 }
+// Read one authoritative dictionary for the cinematic marketing source and
+// the later, small accessibility/credit fallbacks. Keep them synchronized.
+const brandingScript=await readFile(path.join(root,'public/brand/ea-forge-branding.js'),'utf8');
+const firstTranslations=brandingScript.match(/const translations=new Map\(Object\.entries\((\{[\s\S]*?\})\)\);/);
+const extraTranslations=brandingScript.match(/for\(const \[english,bulgarian\] of Object\.entries\((\{[\s\S]*?\})\)\)translations\.set\(english,bulgarian\);/);
+if(!firstTranslations||!extraTranslations)throw new Error('Bulgarian Home copy dictionary missing');
+const marketingDictionary=new Map([
+  ...Object.entries(JSON.parse(firstTranslations[1])),
+  ...Object.entries(JSON.parse(extraTranslations[1])),
+  ["NAVIGATE","НАВИГАЦИЯ"],
+  ["NAVIGATION","НАВИГАЦИЯ"],
+  ["BROWSE VEHICLES","РАЗГЛЕДАЙ АВТОМОБИЛИТЕ"]
+]);
+const escapePattern=value=>value.replace(/[-/\\^$*+?.()|[\]{}]/g,'\\// Localize the source text before Next/React hydrates it.');
+let translatedCopyCount=0;
+function translateCinematicSource(relative,content){
+  if(!/\.(?:html|js|json)$/.test(relative) || relative==="ActiveFrame.js")return content;
+  let result=content;
+  for(const [english,bg] of marketingDictionary){
+    const longCopy=english.length>=26&&english.includes(" ");
+    // Long prose is unique marketing copy; replace in HTML, Flight metadata
+    // and Next's JS chunks together to avoid server/client hydration mismatch.
+    if(longCopy){
+      const pattern=new RegExp(escapePattern(english),'gi');
+      result=result.replace(pattern,()=>{translatedCopyCount++;return bg;});
+    }else if(english.length>=5){
+      // Short words are only replaced as complete literal labels. Never mutate
+      // routes, CSS classes, dynamic keys, or unrelated code identifiers.
+      for(const [left,right] of [['"','"'],["'","'"],['>','<']]){
+        const pattern=left+english+right;
+        if(result.includes(pattern)){
+          const matches=result.split(pattern).length-1;
+          result=result.split(pattern).join(left+bg+right);
+          translatedCopyCount+=matches;
+        }
+      }
+    }
+  }
+  return result;
+}
+
 // Localize the source text before Next/React hydrates it. A DOM-only
 // translation is not sufficient because hydration can restore English copy.
 const englishHomeStatement = /vehicle\s+auctions\s+with\s+inventory\s*,?\s*live\s+bidding\s*,?\s*vehicle\s+history\s+and\s+transport\s+in\s+one\s+place\s*\.?/gi;
@@ -65,9 +106,9 @@ for (const [relative, content] of Object.entries(frontend)) {
   const target = path.join(output, relative);
   await mkdir(path.dirname(target), { recursive: true });
   const restored = relative === 'ActiveFrame.js' ? recoverDesktopActiveFrame(content) : content;
-  await writeFile(target, localizeHomeSource(relative, restored));
+  await writeFile(target, localizeHomeSource(relative, translateCinematicSource(relative,restored)));
 }
-console.log('Bulgarian Home Index source replacements: ' + translatedHomeSourceCount);
+console.log('Bulgarian Home Index source replacements: ' + translatedHomeSourceCount + '; marketing copy: ' + translatedCopyCount);
 const responsiveCss = String.raw`
 html,body{max-width:100%;overflow-x:hidden}
 [data-sanity*="path=introductionHeading"],
