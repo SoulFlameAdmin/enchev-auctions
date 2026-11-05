@@ -15,4 +15,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - run: node --check tools/david/voice/voice-worker.mjs
+      - run: node --check tools/david/voice/voice-guardian.mjs
       - run: node --test tools/david/voice/voice-guardian.test.mjs
