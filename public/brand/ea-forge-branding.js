@@ -2,6 +2,14 @@
 "use strict";
 const brand="E&A East West Auctioneers Group";
 const translations=new Map(Object.entries({
+ "SKIP TO CONTENT":"КЪМ СЪДЪРЖАНИЕТО",
+ "NAVIGATE":"НАВИГАЦИЯ",
+ "BUILDS":"АВТОМОБИЛИ",
+ "STOCK":"КАТАЛОГ",
+ "SITEMAP":"КАРТА НА САЙТА",
+ "ORDINARY":"ОБИКНОВЕНОТО",
+ "HISTORY GIVES A VEHICLE ITS EXPRESSION. FROM SUBTLE TINTING TO SIGNATURE ILLUMINATION AND REFINED VISUAL DETAILS, WE USE LIGHT TO SHARPEN CHARACTER, PRESENCE AND ATMOSPHERE.":"ИСТОРИЯТА НА АВТОМОБИЛА ПОКАЗВА ВАЖНИТЕ ДЕТАЙЛИ. ПРОВЕРИ ДАННИТЕ, ИЗВЕСТНИТЕ ЩЕТИ И ПРЕДИШНИТЕ СЪБИТИЯ ПРЕДИ ПОКУПКА.",
+ "TRANSPORT UPGRADES ARE CHOSEN FOR TONE, RESPONSE AND PRESENCE. NOT NOISE FOR THE SAKE OF NOISE, BUT A SOUND PROFILE THAT GIVES THE VEHICLE MORE CHARACTER AND DEPTH.":"ТРАНСПОРТЪТ СЕ ОРГАНИЗИРА СПОРЕД АВТОМОБИЛА, МАРШРУТА И НУЖДИТЕ ТИ. ПОЛУЧИ ИНФОРМАЦИЯ ЗА ДОСТАВКАТА И СЪОТВЕТНИТЕ ДОКУМЕНТИ.",
  "HOME":"НАЧАЛО",
  "BUY":"КУПИ",
  "LIVE AUCTIONS":"ТЪРГОВЕ НА ЖИВО",
