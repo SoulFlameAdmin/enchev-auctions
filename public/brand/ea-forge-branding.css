@@ -75,3 +75,19 @@ a[href="/"]:has(img[alt*="E&A"]){display:none!important}
     padding-bottom: 42px !important;
   }
 }
+
+
+/* Bulgarian labels are longer than their English originals. Keep full-screen
+   cinematic menu lines visible on narrow phones and desktop without clipping. */
+[data-ea-bg-large-nav="live"]{
+  font-size:clamp(34px,8vw,132px)!important;
+  line-height:1.02!important;
+  letter-spacing:-.045em!important;
+  white-space:nowrap!important;
+}
+[data-ea-bg-large-nav="support"]{
+  font-size:clamp(31px,7.8vw,138px)!important;
+  line-height:1.02!important;
+  letter-spacing:-.045em!important;
+  white-space:nowrap!important;
+}
