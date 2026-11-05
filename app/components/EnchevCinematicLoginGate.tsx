@@ -409,7 +409,7 @@ export default function EnchevCinematicLoginGate() {
               rel="noopener noreferrer"
               aria-label="Сканирай QR кода за CarAR WebXR и 360° GLB модел"
             >
-              <span className="qrEyebrow">SCAN FOR AR</span>
+              <span className="qrEyebrow">СКАНИРАЙ ЗА AR</span>
               <img src={"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIwAAACMAQAAAACGu3yTAAABAElEQVR42uWWsU0FQAxDnxG9swH7j/U3cCYwxYcGOkKDSBVdYTl2FJ/Kl9oXvtVff1pJO0iwkm7wbbxLJNrcsFbAW+Cj/THW69O7WHR+S0Kj3LFc8D7iwT3OKMgCDxD051i0bdO0/ugv+8XuMDtEmuXCK6HFcRvgxMsgEnYXn3aVhtZ2cIMvvGgdqBvHrW9YxdSQctOLxolDnzbkxivUJBC7V71MS2P3qldc25hefVRBgTfIWsF70st2KHbSq48FP9cCH31smxJC09zuhCTEYBZxz6HWFaacc2gHxmjmnh2G5RE390xjVY1Bl3v/mUNZs4uPM0qzGXAsfMDSP/h/vQOJcM0xnmZGVQAAAABJRU5ErkJggg=="} width="119" height="119" alt="QR код: enchev-auctions.vercel.app/car-ar" />
               <span className="qrLabel">CARAR ↗</span>
               <span className="qrHelper">WebXR · 360° GLB</span>
@@ -419,12 +419,12 @@ export default function EnchevCinematicLoginGate() {
               href="/car-ar"
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="MAKE YOUR CAR AR — отвори WebXR или 360° GLB модел"
+              aria-label="Виж автомобила в AR — отвори WebXR или 360° GLB модел"
             >
               <span className="qrArBadge">AR</span>
               <span className="qrArText">
-                <strong>MAKE YOUR CAR → AR</strong>
-                <small>Отвори в телефона · 360° fallback</small>
+                <strong>ВИЖ КОЛАТА СИ В AR</strong>
+                <small>Отвори на телефона · резервен 360° изглед</small>
               </span>
               <span className="qrArArrow" aria-hidden="true">↗</span>
             </a>
