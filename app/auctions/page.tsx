@@ -43,8 +43,8 @@ export default function AuctionsPage() {
             <h2>{tab==="live"?"No live auctions published":tab==="upcoming"?"No scheduled auctions published":"No verified results published"}</h2>
             <p>{selection.description} Only seller-authorized, reviewed vehicle listings will appear here. The current test auctions remain separate.</p>
             <div className="eaRealActions">
-              <a className="eaRealPrimary" href="/register">Buyer registration <span aria-hidden="true">→</span></a>
-              <a className="eaRealSecondary" href="/support">Contact the auction team <span aria-hidden="true">↗</span></a>
+              <a className="eaRealPrimary" href="/start">How to register and bid <span aria-hidden="true">→</span></a>
+              <a className="eaRealSecondary" href="/documents">Documents and buyer requirements <span aria-hidden="true">↗</span></a>
             </div>
             <p className="eaRealAccountNote">Registration may be unavailable until identity-provider activation is complete. No real-money bids or payments are accepted on this page.</p>
           </div>
