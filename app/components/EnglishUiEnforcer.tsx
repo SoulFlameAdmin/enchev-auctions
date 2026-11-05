@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 const replacements: Array<[string,string]> = [
   ["Към основното съдържание","Skip to main content"],
@@ -335,7 +336,13 @@ function translateNode(node:Node){
 }
 
 export default function EnglishUiEnforcer(){
+  const pathname=usePathname();
   useEffect(()=>{
+    if(pathname==="/"){
+      document.documentElement.lang="bg";
+      return()=>{document.documentElement.lang="en";};
+    }
+    document.documentElement.lang="en";
     const run=()=>translateNode(document.body);
     run();
     const observer=new MutationObserver((mutations)=>{
@@ -346,6 +353,6 @@ export default function EnglishUiEnforcer(){
     });
     observer.observe(document.body,{subtree:true,childList:true,characterData:true,attributes:true,attributeFilter:[...attrs]});
     return()=>observer.disconnect();
-  },[]);
+  },[pathname]);
   return null;
 }
