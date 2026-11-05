@@ -1,0 +1,58 @@
+
+.eaStart{background:#08090b;color:#f6f6f7;min-height:100vh;font-family:Arial,Helvetica,sans-serif}
+.eaStart *{box-sizing:border-box}
+.eaStartInner{max-width:1450px;margin:0 auto;padding:32px clamp(18px,5vw,72px) 70px}
+.eaStartTop,.eaStartTopActions,.eaStartLang,.eaStartHeroActions{display:flex;align-items:center}
+.eaStartTop{justify-content:space-between;gap:20px}
+.eaStartKicker{font-size:11px;letter-spacing:.18em;color:#ed565c;font-weight:750}
+.eaStartTopActions{gap:16px}
+.eaStartTopActions>a{font-size:13px;font-weight:700;color:#f5f5f5;text-decoration:none;white-space:nowrap}
+.eaStartTopActions>a.eaStartRegister{background:#ce232e;padding:12px 19px}
+.eaStartLang{border:1px solid #393a3f;border-radius:2px;padding:2px;gap:2px}
+.eaStartLang button{background:transparent;color:#a4a5a9;border:0;font-weight:750;font-size:11px;min-width:35px;padding:8px 10px;cursor:pointer}
+.eaStartLang button[aria-pressed=true]{background:#e8e9eb;color:#111}
+.eaStartHero{padding:clamp(40px,7vw,100px) 0 clamp(30px,5vw,65px);border-bottom:1px solid #292b31}
+.eaStartHero h1{font-size:clamp(52px,8.5vw,126px);font-family:Georgia,Times New Roman,serif;font-weight:400;line-height:.99;letter-spacing:-.065em;margin:0 0 30px}
+.eaStartHero h1 em{color:#e03440;font-weight:400}
+.eaStartHero>p{font-size:clamp(15px,1.3vw,20px);color:#afb1b9;line-height:1.6;max-width:725px}
+.eaStartHeroActions{gap:10px;flex-wrap:wrap;margin-top:30px}
+.eaStartHeroActions a{min-width:150px;display:flex;justify-content:space-between;align-items:center;padding:15px 18px;border:1px solid #47484e;color:#fff;font-size:13px;font-weight:750;letter-spacing:.03em;text-decoration:none}
+.eaStartHeroActions a:first-child{background:#e02937;border-color:#e02937}
+.eaStartHeroActions a:hover{background:#302e31}
+.eaStartHeroActions a:first-child:hover{background:#c41b29}
+.eaStartReadiness{display:grid;grid-template-columns:1fr 2fr;gap:30px;border-bottom:1px solid #292b31;padding:26px 0}
+.eaStartReadiness>div{display:grid;gap:10px}
+.eaStartReadiness small{font-size:11px;color:#ec515a;font-weight:700;text-transform:uppercase;letter-spacing:.13em}
+.eaStartReadiness strong{font-size:18px}
+.eaStartReadiness span{color:#c1c3c8;line-height:1.5;font-size:13px}
+.eaStartTimeline{padding-top:70px}
+.eaStartTimeline>header{display:flex;gap:18px;align-items:baseline;padding-bottom:20px}
+.eaStartTimeline>header>span{color:#ed565c;font-size:13px;font-weight:750}
+.eaStartTimeline h2{font-size:clamp(30px,3.3vw,48px);letter-spacing:-.055em;margin:0}
+.eaStartSteps{display:grid;gap:9px}
+.eaStartStep{display:grid;grid-template-columns:76px minmax(0,1fr) auto;align-items:center;gap:20px;min-height:128px;padding:23px 27px;background:#18191c;border:1px solid #2a2a2e;position:relative;transition:background .2s,border-color .2s}
+.eaStartStep:hover{background:#222226;border-color:#48484d}
+.eaStartStepNumber{font-family:Georgia,serif;font-size:48px;color:#ed3945;letter-spacing:-.04em}
+.eaStartStepContent h3{font-size:clamp(17px,1.55vw,23px);font-weight:700;letter-spacing:-.025em;margin:0 0 8px}
+.eaStartStepContent p{font-size:13px;color:#babdc3;line-height:1.55;margin:0 0 8px}
+.eaStartStepContent small{color:#e1a0a4;text-transform:uppercase;letter-spacing:.1em;font-size:10px;font-weight:700}
+.eaStartStep>a{display:inline-flex;align-items:center;gap:15px;min-width:142px;justify-content:space-between;color:#f8f8f8;text-decoration:none;font-size:12px;font-weight:750;border:1px solid #65666c;padding:14px}
+.eaStartStep>a:hover{border-color:#e4424c;background:#3d181d}
+.eaStartEarly{display:grid;grid-template-columns:1fr 1fr;gap:65px;margin-top:95px;padding:clamp(25px,4vw,60px);border:1px solid #443438;background:linear-gradient(125deg,#291416,#17171c 66%,#111215)}
+.eaStartEarly h2{font-family:Georgia,serif;font-size:clamp(37px,4.1vw,60px);font-weight:400;letter-spacing:-.04em;margin:20px 0}
+.eaStartEarly p{color:#c2c3c8;font-size:14px;line-height:1.65}
+.eaStartEarly form{display:flex;flex-direction:column;gap:10px;justify-content:center}
+.eaStartEarly form>label:not(.eaStartConsent){font-weight:700;font-size:13px}
+.eaStartEarly input[type=email]{width:100%;min-height:51px;padding:13px 16px;background:#0d0d10;border:1px solid #606068;color:#fff;font-size:16px}
+.eaStartConsent{display:flex;gap:10px;align-items:flex-start;color:#bfc0c7;font-size:12px;line-height:1.5;margin:12px 0}
+.eaStartConsent input{width:18px;height:18px;accent-color:#df2936;flex:0 0 auto}
+.eaStartEarly button{min-height:52px;padding:14px 18px;font-weight:800;border:0;background:#d82533;color:#fff;cursor:pointer}
+.eaStartEarly button:disabled{opacity:.5;cursor:not-allowed}
+.eaStartEarly .is-success{color:#9ed9b1;font-weight:650}
+.eaStartEarly .is-error{color:#f9afb6}
+.eaStartFoot{display:flex;justify-content:flex-end;flex-wrap:wrap;gap:20px;margin-top:45px;border-top:1px solid #34353a;padding-top:25px;font-size:11px;color:#92949b}
+.eaStartFoot span{margin-right:auto}
+.eaStartFoot a{color:#e9e9ed;text-decoration:none;font-weight:700;letter-spacing:.08em}
+.eaStart a:focus-visible,.eaStart input:focus-visible,.eaStart button:focus-visible{outline:2px solid #fff;outline-offset:3px}
+@media(max-width:800px){.eaStartReadiness,.eaStartEarly{grid-template-columns:1fr;gap:22px}.eaStartStep{grid-template-columns:52px minmax(0,1fr);gap:10px}.eaStartStep>a{grid-column:2;justify-self:start}.eaStartStepNumber{font-size:35px}.eaStartEarly{margin-top:65px}}
+@media(max-width:600px){.eaStartInner{padding:22px 15px 50px}.eaStartTop{flex-wrap:wrap}.eaStartTopActions{width:100%;justify-content:space-between;gap:10px}.eaStartHero{padding:45px 0 32px}.eaStartHero h1{font-size:clamp(45px,11.5vw,69px)}.eaStartHeroActions a{flex:1;min-width:140px}.eaStartReadiness{padding:22px 0}.eaStartTimeline{padding-top:40px}.eaStartTimeline>header{flex-wrap:wrap;gap:12px}.eaStartStep{padding:18px 14px;min-height:110px;gap:8px}.eaStartStepContent h3{font-size:18px}.eaStartStepContent p{font-size:12px}.eaStartStep>a{padding:11px 12px;font-size:12px}.eaStartEarly{padding:23px 17px}.eaStartFoot{justify-content:flex-start}.eaStartFoot span{width:100%}}
