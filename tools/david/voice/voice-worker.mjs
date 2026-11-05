@@ -192,13 +192,20 @@ const server=http.createServer(async(req,res)=>{
       state.turns.push(t);persist();
       return respond(res,202,{id:t.id,state:t.state});
     }
+    if (u.pathname==="/open" && req.method==="POST") {
+      if (!bearer(req,"guardian")) return respond(res,401,{error:"unauthorized"});
+      if (!LIVE) return respond(res,409,{error:"dry_run_cannot_open_browser"});
+      await ensurePage();
+      return respond(res,200,{opened:true,conversation:CHAT_URL,
+        note:"Start ChatGPT voice output and mute ChatGPT microphone manually, then call /arm"});
+    }
     if (u.pathname==="/arm" && req.method==="POST") {
       if (!bearer(req,"guardian")) return respond(res,401,{error:"unauthorized"});
       const data=await bodyJson(req);
       if (data.voiceOutputStarted!==true || data.chatgptInputMuted!==true)
         return respond(res,400,{error:"confirm_voice_output_and_muted_gpt_microphone"});
       if (LIVE) {
-        await ensurePage();
+        if (!page || page.isClosed()) return respond(res,409,{error:"open_voice_window_first"});
         if (!correctChat() || !(await composer()))
           return respond(res,409,{error:"voice_conversation_or_composer_not_ready"});
       }
