@@ -188,29 +188,40 @@ const ctaMapScript = String.raw`(() => {
   // Map them to the same seven buyer stages used by /start; don't divert all
   // original "Start your project" controls to one generic destination.
   const rules = [
-    { heading: "Identity", label: "REGISTER", href: "/register" },
-    { heading: "Insight", label: "VERIFY & DEPOSIT", href: "/verification" },
-    { heading: "Cohesion", label: "CHOOSE VEHICLE", href: "/vehicles" },
-    { heading: "Discovery", label: "CHOOSE VEHICLE", href: "/auctions" },
-    { heading: "Inspection", label: "CHECK VEHICLE", href: "/vehicle-history" },
-    { heading: "Auctions", label: "LIVE AUCTIONS", href: "/auctions" },
-    { heading: "History", label: "MY AUCTIONS", href: "/my-auctions" },
+    { heading: "Identity", label: "РЕГИСТРАЦИЯ", href: "/register" },
+    { heading: "Insight", label: "ПОТВЪРЖДЕНИЕ И ДЕПОЗИТ", href: "/verification" },
+    { heading: "Cohesion", label: "ИЗБЕРИ АВТОМОБИЛ", href: "/vehicles" },
+    { heading: "Discovery", label: "ИЗБЕРИ АВТОМОБИЛ", href: "/auctions" },
+    { heading: "Inspection", label: "ПРОВЕРИ АВТОМОБИЛ", href: "/vehicle-history" },
+    { heading: "Auctions", label: "ТЪРГОВЕ НА ЖИВО", href: "/auctions" },
+    { heading: "History", label: "МОИТЕ ТЪРГОВЕ", href: "/my-auctions" },
     { heading: "Transport", label: "TRANSPORT", href: "/transport" },
-    { heading: "Support", label: "SUPPORT", href: "/support" },
-    { heading: "Vehicle Inventory", label: "FIND VEHICLES", href: "/vehicles" },
-    { heading: "Live Auctions", label: "LIVE AUCTIONS", href: "/auctions" },
-    { heading: "Refuse Ordinary", label: "7 STEPS TO BUY", href: "/start" },
-    { heading: "Your Route To Your Next Vehicle", label: "START HERE", href: "/start" }
+    { heading: "Support", label: "ПОДДРЪЖКА", href: "/support" },
+    { heading: "Vehicle Inventory", label: "НАМЕРИ АВТОМОБИЛИ", href: "/vehicles" },
+    { heading: "Live Auctions", label: "ТЪРГОВЕ НА ЖИВО", href: "/auctions" },
+    { heading: "Refuse Ordinary", label: "7 СТЪПКИ ДО ПОКУПКА", href: "/start" },
+    { heading: "Your Route To Your Next Vehicle", label: "ЗАПОЧНИ ОТТУК", href: "/start" }
   ];
 
-  const defaultDestination = { label: "7 STEPS TO BUY", href: "/start" };
+  const defaultDestination = { label: "7 СТЪПКИ ДО ПОКУПКА", href: "/start" };
+  const bgHeadingAliases = new Map([
+    ["Identity","ИДЕНТИЧНОСТ"], ["Insight","ИНФОРМАЦИЯ"],
+    ["Cohesion","СВЪРЗАНОСТ"], ["Discovery","ОТКРИВАНЕ"],
+    ["Inspection","ПРОВЕРКА"], ["Auctions","ТЪРГОВЕ"],
+    ["History","ИСТОРИЯ"], ["Transport","ТРАНСПОРТ"],
+    ["Support","ПОДДРЪЖКА"], ["Vehicle Inventory","КАТАЛОГ АВТОМОБИЛИ"],
+    ["Live Auctions","ТЪРГОВЕ НА ЖИВО"],
+    ["Refuse Ordinary","ИЗБЕРИ НЕОБИКНОВЕНОТО"],
+    ["Your Route To Your Next Vehicle","ПЪТЯТ КЪМ СЛЕДВАЩИЯ ТИ АВТОМОБИЛ"]
+  ]);
+
   function nearestRule(element) {
     let section=element.closest("section");
     while (section && section !== document.body) {
       const headingNodes=Array.from(section.querySelectorAll("h1,h2,h3,h4,h5"));
       for (const heading of headingNodes) {
         const value=normalize(heading.textContent);
-        const rule=rules.find(item=>value===normalize(item.heading));
+        const rule=rules.find(item=>value===normalize(item.heading) || value===normalize(bgHeadingAliases.get(item.heading)));
         if(rule)return rule;
       }
       const routeTo=section.dataset.enchevBuyerDestination;
@@ -262,13 +273,13 @@ const ctaMapScript = String.raw`(() => {
   }
 
   const navItems = [
-    { label: "HOME", href: "/" },
-    { label: "BUY", href: "/start" },
-    { label: "LIVE AUCTIONS", href: "/auctions" },
-    { label: "REGISTER", href: "/register" },
-    { label: "SIGN IN", href: "/login" },
-    { label: "PAYMENTS", href: "/payments" },
-    { label: "SUPPORT", href: "/support" }
+    { label: "НАЧАЛО", href: "/" },
+    { label: "КУПИ", href: "/start" },
+    { label: "ТЪРГОВЕ НА ЖИВО", href: "/auctions" },
+    { label: "РЕГИСТРАЦИЯ", href: "/register" },
+    { label: "ВХОД", href: "/login" },
+    { label: "ПЛАЩАНИЯ", href: "/payments" },
+    { label: "ПОДДРЪЖКА", href: "/support" }
   ];
 
   function setAnchor(anchor, item) {
