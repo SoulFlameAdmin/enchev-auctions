@@ -77,17 +77,65 @@ a[href="/"]:has(img[alt*="E&A"]){display:none!important}
 }
 
 
-/* Bulgarian labels are longer than their English originals. Keep full-screen
-   cinematic menu lines visible on narrow phones and desktop without clipping. */
-[data-ea-bg-large-nav="live"]{
-  font-size:clamp(34px,8vw,132px)!important;
+/* Bulgarian language fixes: fit cinematic copy inside its original visual grid.
+   Do not transform, remove or reorder GSAP letter spans or 3D media. */
+html[lang="bg"] [data-sanity*="path=heroHeading"]{
+  font-size:clamp(40px,6.2vw,106px)!important;
   line-height:1.02!important;
-  letter-spacing:-.045em!important;
-  white-space:nowrap!important;
+  letter-spacing:-.055em!important;
+  max-width:100%!important;
+  white-space:normal!important;
+  text-wrap:balance!important;
+  overflow-wrap:break-word!important;
 }
-[data-ea-bg-large-nav="support"]{
-  font-size:clamp(31px,7.8vw,138px)!important;
-  line-height:1.02!important;
-  letter-spacing:-.045em!important;
-  white-space:nowrap!important;
+html[lang="bg"] [data-sanity*="path=introductionHeading"],
+html[lang="bg"] [data-sanity*="path=approachHeading"],
+html[lang="bg"] [data-sanity*="path=servicesHeading"],
+html[lang="bg"] [data-sanity*="path=heading"]{
+  font-size:clamp(28px,4.2vw,76px)!important;
+  line-height:1.08!important;
+  letter-spacing:-.04em!important;
+  max-width:100%!important;
+  white-space:normal!important;
+  text-wrap:balance!important;
+  overflow-wrap:break-word!important;
+}
+html[lang="bg"] [data-sanity*="path=heroDescription"],
+html[lang="bg"] [data-sanity*="path=introductionDescription"]{
+  font-size:clamp(15px,1.4vw,22px)!important;
+  line-height:1.52!important;
+  letter-spacing:normal!important;
+  white-space:normal!important;
+  max-width:100%!important;
+  overflow-wrap:break-word!important;
+}
+html[lang="bg"] [data-ea-bg-large-nav]{
+  display:block!important;
+  width:min(100%,95vw)!important;
+  max-width:100%!important;
+  font-size:clamp(28px,5.4vw,92px)!important;
+  line-height:1.05!important;
+  letter-spacing:-.05em!important;
+  white-space:normal!important;
+  text-wrap:balance!important;
+  overflow-wrap:break-word!important;
+}
+@media(max-width:767px){
+  html[lang="bg"] [data-sanity*="path=heroHeading"]{
+    font-size:clamp(32px,9vw,62px)!important;
+    line-height:1.05!important;
+    max-width:92vw!important;
+  }
+  html[lang="bg"] [data-sanity*="path=introductionHeading"],
+  html[lang="bg"] [data-sanity*="path=approachHeading"],
+  html[lang="bg"] [data-sanity*="path=servicesHeading"],
+  html[lang="bg"] [data-sanity*="path=heading"]{
+    font-size:clamp(28px,7.5vw,48px)!important;
+    line-height:1.09!important;
+  }
+  html[lang="bg"] [data-ea-bg-large-nav]{
+    font-size:clamp(27px,7.9vw,55px)!important;
+    max-width:94vw!important;
+    text-align:center!important;
+  }
 }
