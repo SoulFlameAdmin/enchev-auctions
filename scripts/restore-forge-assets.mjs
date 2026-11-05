@@ -188,7 +188,7 @@ const ctaMapScript = String.raw`(() => {
     { heading: "Your Route To Your Next Vehicle", label: "BID NOW", href: "/auctions" },
     { heading: "Identity", label: "BID NOW", href: "/auctions" },
     { heading: "Insight", label: "DOCUMENTS & TRANSPORT", href: "/transport" },
-    { heading: "Cohesion", label: "BUY", href: "/inventory" },
+    { heading: "Cohesion", label: "BUY", href: "/auctions" },
     { heading: "Discovery", label: "CHECK VEHICLE", href: "/vehicle-history" },
     { heading: "Inspection", label: "ABOUT US", href: "/presentation" },
     { heading: "Auctions", label: "BID NOW", href: "/auctions" },
@@ -235,13 +235,13 @@ const ctaMapScript = String.raw`(() => {
 
   const navItems = [
     { label: "HOME", href: "/" },
-    { label: "BUY", href: "/inventory" },
+    { label: "BUY", href: "/auctions" },
     { label: "LIVE AUCTIONS", href: "/auctions" },
     { label: "CHECK VEHICLE", href: "/vehicle-history" },
     { label: "DOCUMENTS & TRANSPORT", href: "/transport" },
     { label: "ABOUT US", href: "/presentation" },
     { label: "SUPPORT", href: "/support" },
-    { label: "PLATFORM", href: "/platform" }
+    { label: "BUYER JOURNEY", href: "/start" }
   ];
 
   function setAnchor(anchor, item) {
@@ -381,6 +381,9 @@ if (!forgeIndex.includes('/forge/enchev-cta-map.js')) {
   forgeIndex = forgeIndex.replace('</body>', '<script src="/forge/enchev-cta-map.js" defer></script></body>');
 }
 if (!forgeIndex.includes('/brand/ea-forge-branding.css')) forgeIndex = forgeIndex.replace('</head>', '<link rel="stylesheet" href="/brand/ea-forge-branding.css"></head>');
+if (!forgeIndex.includes('/brand/ea-buyer-navigation.css')) forgeIndex = forgeIndex.replace('</head>', '<link rel="stylesheet" href="/brand/ea-buyer-navigation.css"></head>');
+if (!forgeIndex.includes('/brand/ea-buyer-navigation.js')) forgeIndex = forgeIndex.replace('</body>', '<script src="/brand/ea-buyer-navigation.js" defer></script></body>');
+
 // 1:1 red/white racing splash. Loaded AFTER Forge styles; only the intro dialog is styled.
 if (!forgeIndex.includes('/brand/ea-cinematic-intro.css')) forgeIndex = forgeIndex.replace('</head>', '<link rel="stylesheet" href="/brand/ea-cinematic-intro.css"></head>');
 if (!forgeIndex.includes('/brand/ea-forge-branding.js')) forgeIndex = forgeIndex.replace('</body>', '<script src="/brand/ea-forge-branding.js" defer></script></body>');
