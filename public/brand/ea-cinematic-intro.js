@@ -119,7 +119,7 @@
   function markEnter(dialog) {
     for(const el of dialog.querySelectorAll("button,a,[role=button]")){
       const label=(el.textContent||el.getAttribute("aria-label")||"").replace(/\s+/g," ").trim();
-      if(/^ENTER(?:\s*[→↗›])?$/i.test(label)&&!el.hasAttribute("data-ea-intro-enter"))
+      if(/^(?:ENTER|ВЛЕЗ)(?:\s*[→↗›])?$/i.test(label)&&!el.hasAttribute("data-ea-intro-enter"))
         el.setAttribute("data-ea-intro-enter","");
     }
   }
