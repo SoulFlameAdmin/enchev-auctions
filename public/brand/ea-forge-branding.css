@@ -139,3 +139,29 @@ html[lang="bg"] [data-ea-bg-large-nav]{
     text-align:center!important;
   }
 }
+
+/*
+ * Verified against the original Forge DOM on 320/360/390/430px devices.
+ * The long Bulgarian titles are actual H3 descendants of Sanity wrappers:
+ * path=approachUsps:<id>.heading and path=heading.
+ * The original 58px H3 had an intrinsic 484px width at a 390px viewport,
+ * pushing the entire card and its CTA outside the screen.
+ * Fit the actual H3 (not only its outer wrapper) so card, description,
+ * link and scroll animation share the correct geometry.
+ */
+@media (max-width: 767px) {
+  html[lang="bg"] [data-sanity*="path=approachUsps"][data-sanity*=".heading"] :is(h1,h2,h3,h4),
+  html[lang="bg"] [data-sanity*="path=heading"] :is(h1,h2,h3,h4) {
+    font-size:clamp(27px,8.8vw,42px)!important;
+    line-height:1.08!important;
+    letter-spacing:-.04em!important;
+    max-width:calc(100vw - 48px)!important;
+    white-space:normal!important;
+  }
+
+  html[lang="bg"] [data-sanity*="path=approachUsps"][data-sanity*=".heading"],
+  html[lang="bg"] [data-sanity*="path=heading"] {
+    max-width:calc(100vw - 48px)!important;
+    min-width:0!important;
+  }
+}
