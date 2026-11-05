@@ -9,6 +9,7 @@ export default function VehiclesPage(){
   const [query,setQuery]=useState("");
   const [feedback,setFeedback]=useState("");
   const [saving,setSaving]=useState<string|null>(null);
+  useEffect(()=>{setQuery(new URLSearchParams(window.location.search).get("q")||"");},[]);
   useEffect(()=>{
     let stopped=false;
     fetch("/api/buyer/catalog",{cache:"no-store"})
