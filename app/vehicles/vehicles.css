@@ -618,6 +618,8 @@
 @media(max-width:375px){
  .eaMarketCatalogControls{gap:5px}
  .eaMarketCatalogCount{font-size:9px}
+ .eaMarketTop{padding-left:60px}
+ .eaMarketBrand{max-width:184px}
  .eaMarketViewSwitch{gap:1px}
  .eaMarketAppearanceToggle{min-width:40px;padding:7px}
 }
