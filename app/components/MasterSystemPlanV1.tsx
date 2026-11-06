@@ -167,8 +167,8 @@ const VERIFIED_EVIDENCE: Record<string,string> = {
 const SK="enchev-system-status-v5", NK="enchev-system-notes-v5", GK="enchev-system-gaps-v5", CK="enchev-system-realtime-v5";
 function defaultsFor(source:Phase[]){ const out:Record<string,Status>={}; source.forEach(p=>p.tasks.forEach(t=>out[t.id]=t.defaultStatus)); return out; }
 
-export default function MasterSystemPlanV1(){
-  const [menu,setMenu]=useState(false), [menuUnlocked,setMenuUnlocked]=useState(false), [menuPassword,setMenuPassword]=useState(""), [menuError,setMenuError]=useState(""), [menuBusy,setMenuBusy]=useState(false), [open,setOpen]=useState(false), [design2Open,setDesign2Open]=useState(false), [urgentOpen,setUrgentOpen]=useState(false), [questionsOpen,setQuestionsOpen]=useState(false), [urgentFocusDay,setUrgentFocusDay]=useState<string|null>(null);
+export default function MasterSystemPlanV1({initialMenuOpen=false,authorizedByServer=false}:{initialMenuOpen?:boolean;authorizedByServer?:boolean}={}){
+  const [menu,setMenu]=useState(initialMenuOpen), [menuUnlocked,setMenuUnlocked]=useState(authorizedByServer), [menuPassword,setMenuPassword]=useState(""), [menuError,setMenuError]=useState(""), [menuBusy,setMenuBusy]=useState(false), [open,setOpen]=useState(false), [design2Open,setDesign2Open]=useState(false), [urgentOpen,setUrgentOpen]=useState(false), [questionsOpen,setQuestionsOpen]=useState(false), [urgentFocusDay,setUrgentFocusDay]=useState<string|null>(null);
   const [expansionPhases,setExpansionPhases]=useState<Phase[]>([]);
   const [expansionState,setExpansionState]=useState<"idle"|"loading"|"ready"|"error">("idle");
   const phases=useMemo(()=>sortPhases([...frozenPhases,...expansionPhases]),[expansionPhases]);
@@ -233,7 +233,7 @@ export default function MasterSystemPlanV1(){
   const preFinalOpen=useMemo(()=>[...phases.filter(p=>p.id!==FINAL_PHASE).flatMap(p=>p.tasks),...gaps].filter(t=>(statuses[t.id]||t.defaultStatus)!=="green").length,[phases,statuses,gaps]);
   const visible=useMemo(()=>{ const q=query.trim().toLowerCase(), src:Phase[]=gaps.length?[...phases,{id:"GAP",title:"Discovered gaps",wave:99,tasks:gaps}]:phases; return src.map(p=>({...p,tasks:p.tasks.filter(t=>{const s=statuses[t.id]||t.defaultStatus;return(filter==="all"||s===filter)&&(!q||`${t.id} ${t.label} ${p.title}`.toLowerCase().includes(q));})})).filter(p=>p.tasks.length); },[phases,gaps,query,filter,statuses]);
 
-  useEffect(()=>{fetch("/api/menu-access",{credentials:"same-origin",cache:"no-store"}).then(r=>r.json()).then(data=>setMenuUnlocked(data.authorized===true)).catch(()=>{});},[]);
+  useEffect(()=>{if(authorizedByServer)return;fetch("/api/menu-access",{credentials:"same-origin",cache:"no-store"}).then(r=>r.json()).then(data=>setMenuUnlocked(data.authorized===true)).catch(()=>{});},[authorizedByServer]);
   async function unlockMenu(event:React.FormEvent<HTMLFormElement>){
     event.preventDefault();
     if(menuBusy)return;
