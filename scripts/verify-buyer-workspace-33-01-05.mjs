@@ -108,7 +108,7 @@ async function verifyDomain(config){
 
 function verifyBinding(){
   const binding=readJson(BINDING_PATH);
-  if(binding.scope!=="development-governance"||binding.auction_authority!==false) fail("Supabase authority boundary drift");
+  if(binding.scope!=="enchev-only-development-governance"||binding.shared_project!==false||binding.project_ref!=="ejfrnjhlggebzmpmxajl"||binding.auction_authority!==false) fail("Enchev-only Supabase authority boundary drift");
 }
 
 const config=readJson(CONFIG_PATH);
