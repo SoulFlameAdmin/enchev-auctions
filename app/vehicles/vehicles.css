@@ -415,3 +415,214 @@
  .eaMarketQuick a{font-size:9.5px}
  .eaMarketPreviewCard{grid-template-columns:40% 60%}
 }
+
+
+/* V3 — premium user-selected appearance and catalog display modes.
+ * Scoped to /vehicles; never changes the global site or the home logo animation. */
+.eaMarketPage{
+ --ea-ease:cubic-bezier(.22,1,.36,1);
+ -webkit-font-smoothing:antialiased;
+ text-rendering:optimizeLegibility;
+}
+.eaMarketPage :is(a,button,select){-webkit-tap-highlight-color:transparent}
+.eaMarketPage button{touch-action:manipulation}
+.eaMarketCatalogControls{display:flex;align-items:center;justify-content:flex-end;gap:9px;min-width:0}
+.eaMarketCatalogCount{margin-right:4px}
+.eaMarketViewSwitch{display:flex;align-items:center;padding:3px;gap:2px;border:1px solid #40414a;background:#15161b;border-radius:11px}
+.eaMarketViewSwitch button,.eaMarketAppearanceToggle{
+ display:inline-flex;align-items:center;justify-content:center;gap:7px;
+ min-height:37px;min-width:38px;padding:7px 9px;
+ border:1px solid transparent;border-radius:8px;
+ background:transparent;color:#bcc0ca;cursor:pointer;
+ transition:background-color .2s ease,color .2s ease,border-color .2s ease,box-shadow .2s ease;
+}
+.eaMarketViewSwitch button:hover,.eaMarketAppearanceToggle:hover{background:#30323b;color:#fff}
+.eaMarketViewSwitch button.is-selected{
+ color:#fff;background:linear-gradient(135deg,#e62c40,#b51b2e);
+ box-shadow:0 3px 14px rgba(204,27,48,.19);
+}
+.eaMarketAppearanceToggle{border-color:#45454f;background:#1c1e24;color:#eceef2;font-size:11px;font-weight:800;padding:7px 11px;white-space:nowrap}
+.eaMarketAppearanceToggle:active,.eaMarketViewSwitch button:active{transform:scale(.96)}
+.eaMarketPage .eaMarketLive,
+.eaMarketPage .eaMarketPreviewCard,
+.eaMarketPage .eaMarketCard,
+.eaMarketPage .eaMarketPromo{
+ will-change:auto;
+ transition:transform .28s var(--ea-ease),border-color .24s ease,box-shadow .28s var(--ea-ease);
+}
+@media(hover:hover) and (pointer:fine){
+ .eaMarketPreviewCard:hover,.eaMarketCard:hover{transform:translateY(-4px);border-color:#b93146;box-shadow:0 15px 36px #0005}
+ .eaMarketPreviewCard:hover .eaMarketPreviewPhoto img,
+ .eaMarketCard:hover .eaMarketLotPhoto img{transform:scale(1.055)}
+ .eaMarketPromo:hover{border-color:#ad3846;box-shadow:0 12px 36px rgba(140,20,39,.14)}
+}
+.eaMarketPreviewPhoto img,.eaMarketLotPhoto img{transition:transform .55s var(--ea-ease);transform-origin:center}
+.eaMarketLivePhoto:after{background:linear-gradient(180deg,transparent 57%,rgba(0,0,0,.56))}
+.eaMarketLiveBody{position:relative}
+.eaMarketLiveBody:before{content:"";position:absolute;top:0;left:0;right:0;height:1px;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(255,81,100,.45),transparent);opacity:.55}
+.eaMarketActionHot,.eaMarketPromoButton{transition:filter .18s ease,box-shadow .2s ease,transform .18s var(--ea-ease)}
+.eaMarketActionHot:hover,.eaMarketPromoButton:hover{box-shadow:0 8px 25px rgba(210,38,55,.22)}
+.eaMarketActionHot:active,.eaMarketPromoButton:active{transform:scale(.985)}
+.eaMarketSearch:focus-within{box-shadow:0 0 0 3px rgba(231,44,63,.12)}
+.eaMarketPage :is(a,button,select,input):focus-visible{outline:2px solid #f33b56;outline-offset:3px}
+.eaMarketPage[data-view="list"] .eaMarketLotGrid,
+.eaMarketPage[data-view="list"] .eaMarketPreviewGrid{grid-template-columns:1fr;gap:12px}
+.eaMarketPage[data-view="list"] .eaMarketCard,
+.eaMarketPage[data-view="list"] .eaMarketPreviewCard{
+ display:grid;grid-template-columns:minmax(185px,27%) minmax(0,1fr);
+ min-height:194px;
+}
+.eaMarketPage[data-view="list"] .eaMarketCardImage,
+.eaMarketPage[data-view="list"] .eaMarketPreviewPhoto{
+ height:100%;min-height:190px;aspect-ratio:auto;
+}
+.eaMarketPage[data-view="list"] .eaMarketCardContent,
+.eaMarketPage[data-view="list"] .eaMarketPreviewCardBody{
+ padding:clamp(13px,2vw,24px);
+ display:flex;flex-direction:column;justify-content:center;min-width:0;
+}
+.eaMarketPage[data-view="list"] .eaMarketPreviewCardBody h3,
+.eaMarketPage[data-view="list"] .eaMarketCardContent h3{
+ font-size:clamp(16px,1.6vw,24px);min-height:0;margin:4px 0 11px;
+}
+.eaMarketPage[data-view="list"] .eaMarketPreviewPrice,
+.eaMarketPage[data-view="list"] .eaMarketCardBottom{
+ margin-top:auto;max-width:760px;
+}
+.eaMarketPage[data-view="list"] .eaMarketPreviewCardBody>a,
+.eaMarketPage[data-view="list"] .eaMarketCardDetails{max-width:330px}
+.eaMarketPage[data-view="list"] .eaMarketPreviewCardBody p,
+.eaMarketPage[data-view="list"] .eaMarketCardSpecs{font-size:12px}
+/* Light mode keeps the live stage and registration campaign cinematic; the
+ * catalogue, navigation and cards become paper white with legible charcoal text. */
+.eaMarketPage[data-appearance="light"]{
+ color:#171c29;background:#f4f6f9;
+ --ea-muted:#596171;--ea-line:#d6dce5;--ea-card:#fff;
+}
+.eaMarketPage[data-appearance="light"] .eaMarketShell{color:#1b2130}
+.eaMarketPage[data-appearance="light"] .eaMarketTop{border-color:#d5dbe5}
+.eaMarketPage[data-appearance="light"] .eaMarketBrand .eaOfficialLogoOnDark{visibility:hidden}
+.eaMarketPage[data-appearance="light"] .eaMarketBrand .eaOfficialLogoOnLight{visibility:visible}
+.eaMarketPage[data-appearance="light"] .eaMarketTopLinks a{color:#343b49}
+.eaMarketPage[data-appearance="light"] .eaMarketTopLinks a:hover{color:#ca263a}
+.eaMarketPage[data-appearance="light"] .eaMarketTopLinks a[aria-current=page]{color:#ad2334}
+.eaMarketPage[data-appearance="light"] .eaMarketProfile,
+.eaMarketPage[data-appearance="light"] .eaMarketTopSquare,
+.eaMarketPage[data-appearance="light"] .eaMarketStepsLink{
+ color:#263041;background:#fff;border:1px solid #d6dce5;
+ box-shadow:0 3px 12px #252d4011;
+}
+.eaMarketPage[data-appearance="light"] .eaMarketQuick{border-color:#dde2e9}
+.eaMarketPage[data-appearance="light"] .eaMarketQuick a{color:#344052}
+.eaMarketPage[data-appearance="light"] .eaMarketQuick a:hover{background:#e5eaf1;color:#151b26}
+.eaMarketPage[data-appearance="light"] .eaMarketQuick a.active{color:#b72238}
+.eaMarketPage[data-appearance="light"] .eaMarketQuick a:nth-child(2){color:#fff}
+.eaMarketPage[data-appearance="light"] .eaMarketHeroIntro{color:#fff}
+.eaMarketPage[data-appearance="light"] .eaMarketHeroIntro h1{color:#fff}
+.eaMarketPage[data-appearance="light"] .eaMarketHeroIntro p{color:#e4e4e9}
+.eaMarketPage[data-appearance="light"] .eaMarketHeroIntro .eaMarketEyebrow{color:#ff5c71}
+.eaMarketPage[data-appearance="light"] .eaMarketLive{border-color:#3a3440;color:#fff}
+.eaMarketPage[data-appearance="light"] .eaMarketLiveBody{color:#fff}
+.eaMarketPage[data-appearance="light"] .eaMarketPromo{color:#fff}
+.eaMarketPage[data-appearance="light"] .eaMarketSearchTop h2{color:#151b27}
+.eaMarketPage[data-appearance="light"] .eaMarketSearchTop>a{color:#606c7a}
+.eaMarketPage[data-appearance="light"] .eaMarketSearch{
+ color:#6b7281;background:#fff;border-color:#d0d8e3;box-shadow:0 1px 3px #242d3e0a;
+}
+.eaMarketPage[data-appearance="light"] .eaMarketSearch input{color:#202636}
+.eaMarketPage[data-appearance="light"] .eaMarketSearch input::placeholder{color:#858e9b}
+.eaMarketPage[data-appearance="light"] .eaMarketSearchRow>select,
+.eaMarketPage[data-appearance="light"] .eaMarketMoreFilters select{
+ background:#fff;color:#232c3d;border-color:#d0d8e3;
+}
+.eaMarketPage[data-appearance="light"] .eaMarketMoreFilters{background:#fff;border-color:#d7dee8}
+.eaMarketPage[data-appearance="light"] .eaMarketMoreFilters label{color:#475467}
+.eaMarketPage[data-appearance="light"] .eaMarketMoreFilters button{color:#283044;border-color:#c7d0db}
+.eaMarketPage[data-appearance="light"] .eaMarketCatalogBar{border-color:#d7dee6}
+.eaMarketPage[data-appearance="light"] .eaMarketCatalogTabs button{
+ background:#fff;color:#404b5b;border-color:#d3dae4;
+}
+.eaMarketPage[data-appearance="light"] .eaMarketCatalogTabs button.selected{background:#fff0f2;color:#a61d31;border-color:#d9384e}
+.eaMarketPage[data-appearance="light"] .eaMarketCatalogTabs small{background:#e8ebf0;color:#485363}
+.eaMarketPage[data-appearance="light"] .eaMarketCatalogCount{color:#657080}
+.eaMarketPage[data-appearance="light"] .eaMarketViewSwitch{background:#fff;border-color:#d4dae3}
+.eaMarketPage[data-appearance="light"] .eaMarketViewSwitch button{color:#566276}
+.eaMarketPage[data-appearance="light"] .eaMarketViewSwitch button:hover{background:#e8ebf2;color:#333c4b}
+.eaMarketPage[data-appearance="light"] .eaMarketViewSwitch button.is-selected{color:#fff}
+.eaMarketPage[data-appearance="light"] .eaMarketAppearanceToggle{background:#fff;color:#2c3444;border-color:#d1d9e4}
+.eaMarketPage[data-appearance="light"] .eaMarketAppearanceToggle:hover{background:#e9edf5}
+.eaMarketPage[data-appearance="light"] .eaMarketPreviewNotice{
+ background:linear-gradient(110deg,#fff,#fff6f7);
+ border-color:#e7c1c8;box-shadow:0 7px 25px #68152a08;
+}
+.eaMarketPage[data-appearance="light"] .eaMarketPreviewNotice strong{color:#1e2738}
+.eaMarketPage[data-appearance="light"] .eaMarketPreviewNotice p{color:#5a6372}
+.eaMarketPage[data-appearance="light"] .eaMarketPreviewCard,
+.eaMarketPage[data-appearance="light"] .eaMarketCard{
+ background:#fff;color:#202838;border-color:#d9dfe7;
+ box-shadow:0 4px 20px #17203309;
+}
+.eaMarketPage[data-appearance="light"] .eaMarketPreviewCardBody p,
+.eaMarketPage[data-appearance="light"] .eaMarketCardSpecs,
+.eaMarketPage[data-appearance="light"] .eaMarketCardLot{color:#5f6879}
+.eaMarketPage[data-appearance="light"] .eaMarketPreviewPrice,
+.eaMarketPage[data-appearance="light"] .eaMarketCardBottom{border-color:#e4e8ef}
+.eaMarketPage[data-appearance="light"] .eaMarketPreviewPrice small,
+.eaMarketPage[data-appearance="light"] .eaMarketCardBottom small{color:#636b7b}
+.eaMarketPage[data-appearance="light"] .eaMarketPreviewPrice strong,
+.eaMarketPage[data-appearance="light"] .eaMarketCardBottom strong{color:#bc2439}
+.eaMarketPage[data-appearance="light"] .eaMarketPreviewCardBody>a,
+.eaMarketPage[data-appearance="light"] .eaMarketCardDetails{
+ background:#f3f5f8;color:#222b3c;border-color:#dee3eb;
+}
+.eaMarketPage[data-appearance="light"] .eaMarketPreviewCardBody>a:hover,
+.eaMarketPage[data-appearance="light"] .eaMarketCardDetails:hover{background:#e4e9f0}
+.eaMarketPage[data-appearance="light"] .eaMarketCardBottom button{color:#2b3547;background:#f3f6f9;border-color:#d2d9e3}
+.eaMarketPage[data-appearance="light"] .eaMarketEmpty{
+ color:#192232;background:#fff;border-color:#d9dfe8;
+}
+.eaMarketPage[data-appearance="light"] .eaMarketEmptyImage:after{background:linear-gradient(90deg,transparent,#fff 99%)}
+.eaMarketPage[data-appearance="light"] .eaMarketEmptyContent p{color:#5b6575}
+.eaMarketPage[data-appearance="light"] .eaMarketEmptyActions a{border-color:#d2dae5;color:#223044}
+.eaMarketPage[data-appearance="light"] .eaMarketEmptyActions a:first-child{border-color:#d12d42;color:#fff}
+.eaMarketPage[data-appearance="light"] .eaMarketFooterProof{color:#657080}
+.eaMarketPage[data-appearance="light"] .eaMarketFooterProof a{color:#b82e42}
+@media(max-width:720px){
+ .eaMarketCatalogBar{gap:11px;align-items:stretch}
+ .eaMarketCatalogControls{width:100%;justify-content:space-between}
+ .eaMarketCatalogCount{margin-right:auto;font-size:10px}
+ .eaMarketViewSwitch button{min-width:38px;min-height:40px}
+ .eaMarketAppearanceToggle{min-height:44px}
+ .eaMarketAppearanceToggle span{display:none}
+ .eaMarketPreviewCardBody>a{min-height:34px}
+ .eaMarketPage[data-view="list"] .eaMarketCard,
+ .eaMarketPage[data-view="list"] .eaMarketPreviewCard{grid-template-columns:40% minmax(0,1fr);min-height:164px}
+ .eaMarketPage[data-view="list"] .eaMarketCardImage,
+ .eaMarketPage[data-view="list"] .eaMarketPreviewPhoto{min-height:164px}
+ .eaMarketPage[data-view="grid"] .eaMarketPreviewCard,
+ .eaMarketPage[data-view="grid"] .eaMarketCard{
+   display:block;
+ }
+ .eaMarketPage[data-view="grid"] .eaMarketPreviewPhoto,
+ .eaMarketPage[data-view="grid"] .eaMarketCardImage{
+   display:block;width:100%;height:auto;min-height:0;aspect-ratio:16/9;
+ }
+ .eaMarketPage[data-view="grid"] .eaMarketPreviewPhoto img,
+ .eaMarketPage[data-view="grid"] .eaMarketCardImage .eaMarketLotPhoto img{
+   width:100%;height:100%;object-fit:cover;
+ }
+ .eaMarketPage[data-view="grid"] .eaMarketPreviewCardBody,
+ .eaMarketPage[data-view="grid"] .eaMarketCardContent{padding:14px}
+ .eaMarketPage[data-appearance="light"] .eaMarketEmptyImage:after{background:linear-gradient(0deg,#fff,transparent 82%)}
+}
+@media(max-width:375px){
+ .eaMarketCatalogControls{gap:5px}
+ .eaMarketCatalogCount{font-size:9px}
+ .eaMarketViewSwitch{gap:1px}
+ .eaMarketAppearanceToggle{min-width:40px;padding:7px}
+}
+@media(prefers-reduced-motion:reduce){
+ .eaMarketPage :is(a,button,.eaMarketCard,.eaMarketPreviewCard,.eaMarketLotPhoto img,.eaMarketPreviewPhoto img){
+  scroll-behavior:auto;transition-duration:.01ms;animation:none;
+ }
+}
