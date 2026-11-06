@@ -1,49 +1,148 @@
-/* One shared E&A navigation system for the cinematic homepage and every buyer route. */
-.eaUnifiedTrigger{position:fixed;top:max(18px,env(safe-area-inset-top));left:max(18px,env(safe-area-inset-left));z-index:1900;width:58px;height:58px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border:1px solid #ffffff29;border-radius:17px;background:#0b0f0eeb;box-shadow:0 12px 34px #000b;color:#fff;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.eaUnifiedTrigger span{display:block;width:23px;height:2.2px;border-radius:4px;background:#f8f8fa}
-.eaUnifiedTrigger:hover,.eaUnifiedTrigger:focus-visible{border-color:#d53032}
-.eaUnifiedBackdrop{position:fixed;inset:0;z-index:1950;background:#000b;border:0;cursor:pointer;backdrop-filter:blur(6px)}
-.eaUnifiedDrawer{position:fixed;inset:0 auto 0 0;z-index:1951;display:flex;flex-direction:column;box-sizing:border-box;width:min(420px,94vw);height:100dvh;padding:26px 26px max(22px,env(safe-area-inset-bottom));background:#060708;color:#f7f7f7;border-right:1px solid #303035;box-shadow:20px 0 70px #000b;overflow-y:auto;overscroll-behavior:contain;font-family:Montserrat,Inter,Arial,Helvetica,sans-serif}
+/* E&A · premium unified navigation — cinematic homepage + buyer journeys */
+.eaUnifiedTrigger{
+ position:fixed;z-index:1900;top:max(18px,env(safe-area-inset-top));left:max(18px,env(safe-area-inset-left));
+ display:inline-flex;align-items:center;justify-content:center;gap:14px;
+ min-width:130px;height:56px;padding:0 18px;
+ background:linear-gradient(135deg,rgba(17,18,22,.98),rgba(8,9,12,.96));
+ border:1px solid rgba(255,255,255,.22);border-radius:14px;
+ color:#f9f9fb;box-shadow:0 14px 40px rgba(0,0,0,.45),inset 0 1px 0 rgba(255,255,255,.08);
+ cursor:pointer;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+ transition:background .18s ease,border-color .18s ease,transform .18s ease;
+ -webkit-tap-highlight-color:transparent;
+}
+.eaUnifiedTrigger:hover{background:#1a1b21;border-color:#d03c3d;transform:translateY(-1px)}
+.eaUnifiedTriggerLines{display:flex;flex-direction:column;gap:5px;align-items:flex-start;width:23px}
+.eaUnifiedTriggerLines i{display:block;width:23px;height:2px;background:#fff;border-radius:2px}
+.eaUnifiedTriggerLines i:nth-child(2){width:16px;background:#e02e37;transition:width .2s}
+.eaUnifiedTrigger:hover .eaUnifiedTriggerLines i:nth-child(2){width:23px}
+.eaUnifiedTriggerText{font:750 12px/1 Inter,Arial,sans-serif;letter-spacing:.14em}
+.eaUnifiedBackdrop{position:fixed;inset:0;z-index:1950;background:rgba(0,0,0,.76);border:0;cursor:pointer;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px);animation:eaMenuBackdropIn .22s ease both}
+.eaUnifiedDrawer{
+ position:fixed;inset:0 auto 0 0;z-index:1951;isolation:isolate;
+ display:flex;flex-direction:column;box-sizing:border-box;
+ width:min(466px,94vw);height:100dvh;max-height:100dvh;
+ padding:26px 29px max(19px,env(safe-area-inset-bottom));
+ background:#090a0e;color:#f8f8fa;
+ border-right:1px solid rgba(255,255,255,.13);
+ box-shadow:35px 0 100px rgba(0,0,0,.67);
+ overflow-x:hidden;overflow-y:auto;overscroll-behavior:contain;
+ font-family:Inter,Montserrat,Arial,Helvetica,sans-serif;
+ animation:eaMenuDrawerIn .33s cubic-bezier(.18,.76,.2,1) both;
+ scrollbar-width:thin;scrollbar-color:#3b3b43 transparent;
+}
+.eaUnifiedDrawer:before{content:"";position:fixed;z-index:-1;pointer-events:none;top:0;left:0;width:min(466px,94vw);height:44vh;background:radial-gradient(ellipse at 0 0,rgba(125,16,23,.2),transparent 65%)}
 .eaUnifiedDrawer *{box-sizing:border-box}
-.eaUnifiedHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:76px;border-bottom:1px solid #2a2a2c;padding-bottom:19px}
-.eaUnifiedBrand{display:flex;align-items:center;max-width:250px;min-width:0;color:#fff;text-decoration:none}
-.eaUnifiedBrand .eaOfficialLogo{display:block;width:min(235px,55vw);height:55px;overflow:hidden}
-.eaUnifiedBrand .eaOfficialLogo img{max-width:100%;height:100%;object-fit:contain}
-.eaUnifiedHeaderActions{display:flex;align-items:center;gap:7px}
-.eaUnifiedHeaderActions a,.eaUnifiedHeaderActions button{display:grid;place-items:center;width:42px;height:44px;flex:none;border:0;background:transparent;color:#f0f0f0;text-decoration:none;border-radius:9px;cursor:pointer}
-.eaUnifiedHeaderActions button{font-size:30px;line-height:1}
-.eaUnifiedHeaderActions a:hover,.eaUnifiedHeaderActions button:hover{background:#252529}
-.eaUnifiedLabel{font-weight:700;font-size:12px;letter-spacing:.1em;color:#9e9fa5;padding:29px 0 12px}
-.eaUnifiedLinks{display:flex;flex-direction:column;gap:0}
-.eaUnifiedLinks a{min-height:63px;display:grid;grid-template-columns:31px minmax(0,1fr) 18px;gap:16px;align-items:center;padding:8px 4px;text-decoration:none;color:#eeeeef;border-bottom:1px solid #1e1e21;font-size:clamp(16px,3.9vw,19px);font-weight:750;line-height:1.28}
-.eaUnifiedLinks a svg{width:24px;height:24px;color:#b0b1b6}
-.eaUnifiedLinks a.is-live svg{color:#ff4242}
-.eaUnifiedLinks a b{font-size:30px;line-height:1;color:#71747b;font-weight:300;text-align:right}
-.eaUnifiedLinks a:hover,.eaUnifiedLinks a[aria-current="page"]{color:#fff;background:#1b1b20}
-.eaUnifiedLinks a[aria-current="page"]{box-shadow:inset 3px 0 #e52a2c}
-.eaUnifiedFooter{margin-top:auto;padding-top:22px}
-.eaUnifiedAccounts{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:20px;border-top:1px solid #242426}
-.eaUnifiedAccounts a{min-height:86px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:9px;border-radius:13px;background:#242427;color:#fff;font-weight:780;font-size:clamp(14px,3.7vw,17px);text-decoration:none}
-.eaUnifiedAccounts a:hover{background:#36363a}
-.eaUnifiedAccounts svg{width:24px;height:24px}
-.eaUnifiedAdminButton{width:100%;min-height:54px;margin-top:13px;display:flex;align-items:center;gap:12px;padding:10px 16px;border:1px solid #683536;background:#240d0e;color:#ffc6c6;border-radius:11px;text-align:left;font-size:15px;letter-spacing:.08em;font-weight:820;cursor:pointer}
-.eaUnifiedAdminButton span{flex:1}
-.eaUnifiedAdminButton b{font-size:26px;line-height:1;font-weight:300}
-.eaUnifiedAdminButton:hover{background:#381112;border-color:#b32c2d}
-.eaUnifiedFooter p{color:#62636b;font-size:9px;line-height:1.6;letter-spacing:.02em;text-align:center;margin:15px 0 0}
-.eaUnifiedAdmin{padding:24px 0;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
-.eaUnifiedBack{background:none;color:#d7d7d8;border:0;padding:9px 0;font-size:14px;cursor:pointer}
-.eaUnifiedAdmin>svg{color:#ff8383;margin-top:25px;width:34px;height:34px}
-.eaUnifiedAdmin h2{font-size:clamp(22px,5vw,28px);line-height:1.18;margin:11px 0 2px;font-weight:830}
-.eaUnifiedAdmin p{font-size:14px;color:#bcbcc0;line-height:1.6;margin:0 0 18px}
+.eaUnifiedDrawer a{-webkit-tap-highlight-color:transparent}
+.eaUnifiedHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:0 0 auto;min-height:83px;padding:0 0 18px;border-bottom:1px solid rgba(255,255,255,.12)}
+.eaUnifiedBrandGroup{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0}
+.eaUnifiedBrand{display:flex;align-items:center;min-width:0;max-width:255px;text-decoration:none;color:#fff}
+.eaUnifiedBrand .eaOfficialLogo{display:inline-grid;width:min(247px,58vw);height:56px;overflow:hidden}
+.eaUnifiedBrand .eaOfficialLogo img{width:100%;height:100%;object-fit:contain}
+.eaUnifiedBrandCaption{padding-left:2px;color:#8e929c;font-size:9px;letter-spacing:.12em;font-weight:750;white-space:nowrap}
+.eaUnifiedHeaderActions{display:flex;align-items:center;gap:5px;flex:0 0 auto}
+.eaUnifiedHeaderActions a,.eaUnifiedHeaderActions button{width:43px;height:43px;flex:none;display:grid;place-items:center;border:1px solid rgba(255,255,255,.13);border-radius:12px;background:#1a1b20;color:#e7e7e9;text-decoration:none;cursor:pointer}
+.eaUnifiedHeaderActions a:hover,.eaUnifiedHeaderActions button:hover{color:#fff;background:#272830;border-color:#656571}
+.eaUnifiedHeaderActions svg{width:20px;height:20px}
+.eaUnifiedMenuIntro{padding:22px 2px 18px;display:flex;align-items:end;justify-content:space-between;gap:12px}
+.eaUnifiedEyebrow,.eaUnifiedFooterEyebrow{display:block;color:#9fa1aa;font-size:10px;letter-spacing:.18em;font-weight:800}
+.eaUnifiedMenuIntro h2{font-weight:780;letter-spacing:-.045em;font-size:clamp(21px,3vw,29px);line-height:1.11;margin:8px 0 0;color:#fff}
+.eaUnifiedMenuIntro h2 span{color:#e1353d}
+.eaUnifiedMenuCount{align-self:center;white-space:nowrap;color:#84858d;font:700 10px/1.2 Inter,Arial,sans-serif;letter-spacing:.08em}
+.eaUnifiedLinks{display:flex;flex-direction:column;gap:4px}
+.eaUnifiedLinks a{
+ position:relative;min-height:65px;padding:9px 11px;
+ display:grid;grid-template-columns:43px minmax(0,1fr) 27px;align-items:center;gap:11px;
+ border:1px solid transparent;border-radius:12px;
+ color:#d7d8dd;text-decoration:none;transition:background .17s ease,border .17s ease,color .17s ease;
+}
+.eaUnifiedNavIcon{width:40px;height:40px;display:grid;place-items:center;border-radius:11px;background:#171820;border:1px solid rgba(255,255,255,.075);color:#a9acb5}
+.eaUnifiedNavIcon svg{width:21px;height:21px}
+.eaUnifiedNavText{display:flex;flex-direction:column;gap:4px;min-width:0}
+.eaUnifiedNavText strong{color:inherit;font-size:15.5px;font-weight:740;line-height:1.22;letter-spacing:-.014em}
+.eaUnifiedNavText small{font-size:11px;line-height:1.25;color:#81858e;font-weight:500}
+.eaUnifiedNavArrow{width:25px;height:25px;display:grid;place-items:center;color:#555861;transform:translateX(-1px);transition:transform .18s ease,color .18s ease}
+.eaUnifiedLinks a:hover,.eaUnifiedLinks a:focus-visible{background:rgba(255,255,255,.065);color:#fff;border-color:rgba(255,255,255,.08)}
+.eaUnifiedLinks a:hover .eaUnifiedNavArrow{color:#dfe0e3;transform:translateX(3px)}
+.eaUnifiedLinks a.is-active{background:linear-gradient(96deg,rgba(153,28,37,.2),rgba(57,17,22,.1));border-color:rgba(231,65,69,.33);color:#fff}
+.eaUnifiedLinks a.is-active:before{content:"";position:absolute;left:0;top:13px;bottom:13px;width:3px;border-radius:3px;background:#ed3941}
+.eaUnifiedLinks a.is-active .eaUnifiedNavIcon{background:rgba(196,41,49,.18);border-color:rgba(238,81,83,.2);color:#ffaaa9}
+.eaUnifiedLinks a.is-active .eaUnifiedNavArrow{color:#e6545a}
+.eaUnifiedLinks a.is-live .eaUnifiedNavIcon{color:#ff626a}
+.eaUnifiedFooter{margin-top:auto;padding:22px 1px 0}
+.eaUnifiedFooterEyebrow{border-top:1px solid rgba(255,255,255,.12);padding:16px 0 12px}
+.eaUnifiedAccounts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.eaUnifiedAccounts a{min-height:57px;display:flex;align-items:center;justify-content:center;gap:9px;padding:10px 8px;border-radius:11px;text-decoration:none;font-size:14px;font-weight:800;line-height:1.22}
+.eaUnifiedAccounts svg{width:19px;height:19px;flex:none}
+.eaUnifiedLogin{background:#202127;border:1px solid rgba(255,255,255,.13);color:#f2f2f4}
+.eaUnifiedLogin:hover{background:#2e2f36}
+.eaUnifiedRegister{background:linear-gradient(135deg,#e1363c,#b71d28);border:1px solid #ed555c;color:#fff;box-shadow:0 7px 21px rgba(192,32,41,.18)}
+.eaUnifiedRegister:hover{background:linear-gradient(135deg,#f1434b,#cd2530)}
+.eaUnifiedAdminButton{
+ width:100%;min-height:58px;display:grid;grid-template-columns:38px minmax(0,1fr) 18px;align-items:center;gap:11px;
+ margin-top:12px;padding:8px 11px;
+ border:1px solid rgba(255,255,255,.12);border-radius:11px;background:#111216;color:#e1e3e8;text-align:left;cursor:pointer;transition:background .2s,border-color .2s;
+}
+.eaUnifiedAdminButton:hover{background:#1b1d23;border-color:#5f4349}
+.eaUnifiedAdminIcon{width:35px;height:35px;display:grid;place-items:center;border:1px solid rgba(255,255,255,.12);border-radius:9px;color:#e6a8aa;background:#21191d}
+.eaUnifiedAdminIcon svg{width:20px;height:20px}
+.eaUnifiedAdminText{display:flex;flex-direction:column;gap:4px;min-width:0}
+.eaUnifiedAdminText strong{font-size:13px;font-weight:730;color:#e5e5e7}
+.eaUnifiedAdminText small{color:#878993;font-size:10.5px}
+.eaUnifiedAdminArrow{color:#b5b6bc;font-size:18px}
+.eaUnifiedFooter>p{font-size:9px;line-height:1.4;letter-spacing:.015em;color:#6c707b;text-align:center;margin:13px 0 0}
+.eaUnifiedFooter>p span{color:#bb444b}
+.eaUnifiedAdmin{padding:22px 0;display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.eaUnifiedBack{background:none;border:0;padding:9px 0;color:#c1c3cb;font-size:14px;cursor:pointer}
+.eaUnifiedBack:hover{color:#fff}
+.eaUnifiedAdmin>svg{width:35px;height:35px;margin-top:24px;color:#e7535b}
+.eaUnifiedAdmin h2{margin:11px 0 2px;color:#fff;font-size:clamp(23px,5vw,29px);line-height:1.15;font-weight:790;letter-spacing:-.035em}
+.eaUnifiedAdmin p{margin:0 0 18px;color:#a9acb5;font-size:14px;line-height:1.6}
 .eaUnifiedAdmin form{width:100%;display:flex;flex-direction:column;gap:11px}
-.eaUnifiedAdmin label{font-size:13px;color:#f3f3f3}
-.eaUnifiedAdmin input{display:block;width:100%;min-height:52px;border:1px solid #55545b;border-radius:9px;background:#131316;color:#fff;padding:12px 15px;font-size:16px}
-.eaUnifiedAdmin form>button{min-height:50px;border:0;border-radius:9px;background:#e12c30;color:#fff;font-weight:850;letter-spacing:.03em;cursor:pointer}
-.eaUnifiedAdmin form>button:disabled{opacity:.65;cursor:wait}
-.eaUnifiedAdmin .eaUnifiedError{font-size:13px;color:#ff9c9c;border-left:3px solid #ec4a4a;padding-left:11px;margin:5px 0}
-.eaUnifiedGoogle{font-size:12px;color:#b9bdc7;line-height:1.6;margin-top:20px}
-.eaUnifiedDrawer :is(a,button,input):focus-visible,.eaUnifiedTrigger:focus-visible{outline:2px solid #f44a4a;outline-offset:3px}
-@media(max-width:420px){.eaUnifiedTrigger{width:54px;height:54px;left:max(12px,env(safe-area-inset-left));top:max(12px,env(safe-area-inset-top))}.eaUnifiedDrawer{width:min(100%,400px);padding:19px 22px max(16px,env(safe-area-inset-bottom))}.eaUnifiedLinks a{min-height:56px;gap:12px;font-size:17px}.eaUnifiedLabel{padding-top:18px}.eaUnifiedAccounts a{min-height:72px}.eaUnifiedHeader{min-height:65px}}
-@media(max-height:660px){.eaUnifiedDrawer{padding-top:12px}.eaUnifiedLinks a{min-height:48px}.eaUnifiedAccounts a{min-height:58px}.eaUnifiedLabel{padding:13px 0 6px}}
-@media(prefers-reduced-motion:reduce){.eaUnifiedBackdrop{backdrop-filter:none}}
+.eaUnifiedAdmin label{font-size:13px;font-weight:700;color:#e9e9ed}
+.eaUnifiedAdmin input{min-height:52px;width:100%;padding:12px 15px;border:1px solid #4d4e58;border-radius:10px;background:#14151b;color:#fff;font-size:16px}
+.eaUnifiedAdmin form>button{min-height:52px;border:0;border-radius:10px;background:linear-gradient(135deg,#e13941,#bb222b);color:#fff;font-weight:800;cursor:pointer}
+.eaUnifiedAdmin form>button:disabled{opacity:.6;cursor:wait}
+.eaUnifiedAdmin .eaUnifiedError{margin:5px 0;color:#ffacb0;border-left:3px solid #f04a4e;padding-left:11px;font-size:13px}
+.eaUnifiedGoogle{font-size:12px;color:#c1c3c9;line-height:1.6;margin-top:20px}
+.eaUnifiedDrawer :is(a,button,input):focus-visible,.eaUnifiedTrigger:focus-visible{outline:2px solid #ed525a;outline-offset:3px}
+@keyframes eaMenuDrawerIn{from{opacity:.7;transform:translateX(-24px)}to{opacity:1;transform:translateX(0)}}
+@keyframes eaMenuBackdropIn{from{opacity:0}to{opacity:1}}
+@media(max-width:720px){
+ .eaUnifiedTrigger{left:max(12px,env(safe-area-inset-left));top:max(12px,env(safe-area-inset-top));width:54px;min-width:54px;height:54px;padding:0;border-radius:14px}
+ .eaUnifiedTriggerText{display:none}
+ .eaUnifiedDrawer{width:min(430px,100vw);padding:18px 22px max(15px,env(safe-area-inset-bottom))}
+ .eaUnifiedHeader{min-height:77px}
+ .eaUnifiedMenuIntro{padding-top:20px;padding-bottom:14px}
+ .eaUnifiedLinks a{min-height:62px}
+}
+@media(max-width:375px){
+ .eaUnifiedDrawer{width:100vw;padding:16px 16px max(14px,env(safe-area-inset-bottom))}
+ .eaUnifiedBrand .eaOfficialLogo{width:min(205px,57vw);height:48px}
+ .eaUnifiedBrandCaption{font-size:8px;letter-spacing:.09em}
+ .eaUnifiedHeaderActions a,.eaUnifiedHeaderActions button{width:36px;height:38px}
+ .eaUnifiedMenuIntro h2{font-size:22px}
+ .eaUnifiedLinks a{min-height:58px;grid-template-columns:36px minmax(0,1fr) 20px;gap:10px;padding:7px 6px}
+ .eaUnifiedNavIcon{width:35px;height:35px}
+ .eaUnifiedNavText strong{font-size:14.5px}
+ .eaUnifiedNavText small{font-size:10.5px}
+ .eaUnifiedFooter{padding-top:15px}
+ .eaUnifiedAccounts a{font-size:13px;min-height:52px}
+}
+@media(max-height:790px) and (max-width:720px){
+ .eaUnifiedHeader{min-height:66px;padding-bottom:12px}
+ .eaUnifiedMenuIntro{padding:13px 2px 11px}
+ .eaUnifiedMenuIntro h2{font-size:20px;margin-top:4px}
+ .eaUnifiedLinks{gap:1px}
+ .eaUnifiedLinks a{min-height:53px;padding-top:5px;padding-bottom:5px}
+ .eaUnifiedNavIcon{width:34px;height:34px}
+ .eaUnifiedNavText small{display:none}
+ .eaUnifiedFooter{padding-top:12px}
+ .eaUnifiedFooterEyebrow{padding:10px 0 9px}
+ .eaUnifiedAccounts a{min-height:49px}
+ .eaUnifiedAdminButton{min-height:52px;margin-top:9px}
+}
+@media(prefers-reduced-motion:reduce){
+ .eaUnifiedBackdrop,.eaUnifiedDrawer{animation:none}
+ .eaUnifiedTrigger,.eaUnifiedNavArrow,.eaUnifiedLinks a,.eaUnifiedAdminButton{transition:none}
+ .eaUnifiedBackdrop{-webkit-backdrop-filter:none;backdrop-filter:none}
+}
