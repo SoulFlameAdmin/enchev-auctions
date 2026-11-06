@@ -1,6 +1,6 @@
 import fs from "node:fs";
 
-const endpoint = "https://frhletkiuupgksmgxoxc.supabase.co/functions/v1/enchev-plan-state";
+const endpoint = "https://ejfrnjhlggebzmpmxajl.supabase.co/functions/v1/enchev-plan-state";
 const audience = "enchev-plan-state";
 const MAX_BATCH_BODY_CHARS = 60000;
 const verifiedSource = fs.readFileSync("app/components/VerifiedPlanEvidenceSync.tsx", "utf8");
@@ -78,6 +78,10 @@ async function writeBatch(token, batch, index, total) {
   if (!write.ok) {
     throw new Error(`Cloud plan write failed for batch ${index}/${total}: HTTP ${write.status} ${writeText.slice(0, 300)}`);
   }
+}
+
+if (process.env.GITHUB_REF !== "refs/heads/main" || process.env.GITHUB_EVENT_NAME !== "push") {
+  throw new Error("Cloud sync requires verified main-branch push workflow");
 }
 
 const rows = extractVerifiedRows(verifiedSource);
