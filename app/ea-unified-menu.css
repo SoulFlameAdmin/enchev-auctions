@@ -277,3 +277,143 @@
   .eaUnifiedAccounts a{min-height:31px}
   .eaUnifiedAdminButton{min-height:31px}
 }
+
+/* V4 | Cropless official logo, photographic navigation, larger Bulgarian type.
+   Grid rows remain bounded by the available viewport height; never scroll. */
+.eaUnifiedHeader{
+  display:grid;
+  grid-template-columns:minmax(0,1fr) max-content;
+  align-items:center;
+  gap:clamp(6px,1.6vw,12px);
+  min-height:clamp(47px,9.2dvh,96px);
+  overflow:visible;
+  padding-bottom:clamp(4px,.8dvh,11px);
+}
+.eaUnifiedBrandGroup{display:block;width:100%;min-width:0;max-width:100%}
+.eaUnifiedBrand{
+  display:block;
+  width:100%;
+  min-width:0;
+  max-width:100%;
+  overflow:visible;
+}
+.eaUnifiedBrand .eaOfficialLogo{
+  display:grid;
+  position:relative;
+  aspect-ratio:24 / 7;
+  width:100%;
+  max-width:100%;
+  min-width:0;
+  height:auto;
+  min-height:0;
+  overflow:visible;
+}
+.eaUnifiedBrand .eaOfficialLogo img{
+  display:block;
+  width:100%;
+  height:100%;
+  min-width:0;
+  min-height:0;
+  object-fit:contain;
+}
+.eaUnifiedHeaderActions{gap:clamp(4px,.5vw,7px)}
+.eaUnifiedHeaderActions a,
+.eaUnifiedHeaderActions button{
+  width:clamp(32px,4.6dvh,42px);
+  height:clamp(32px,4.6dvh,42px);
+  border-radius:10px;
+}
+.eaUnifiedMenuIntro{
+  padding-top:clamp(3px,1dvh,9px);
+  padding-bottom:clamp(3px,.8dvh,9px);
+}
+.eaUnifiedMenuIntro h2{font-size:clamp(17px,2.3dvh,23px);line-height:1.07}
+.eaUnifiedLinks{gap:clamp(1px,.27dvh,3px)}
+.eaUnifiedLinks a{
+  grid-template-columns:clamp(28px,5.8dvh,48px) minmax(0,1fr) 18px;
+  gap:clamp(7px,1.4dvw,11px);
+  padding:clamp(2px,.42dvh,5px) clamp(5px,1dvw,10px);
+  border-radius:11px;
+}
+.eaUnifiedNavMedia{
+  position:relative;
+  display:block;
+  width:clamp(28px,5.8dvh,48px);
+  height:clamp(28px,5.8dvh,48px);
+  aspect-ratio:1;
+  flex-shrink:0;
+  overflow:hidden;
+  border:1px solid rgba(255,255,255,.2);
+  border-radius:9px;
+  background:#191b20;
+  isolation:isolate;
+}
+.eaUnifiedNavMedia:after{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  z-index:1;
+  background:linear-gradient(160deg,transparent 25%,rgba(0,0,0,.46));
+}
+.eaUnifiedNavPhoto{
+  display:block;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center;
+  filter:saturate(.82) contrast(1.09);
+  transition:filter .18s ease,transform .24s ease;
+}
+.eaUnifiedNavPhotoBadge{
+  position:absolute;
+  z-index:2;
+  right:1px;
+  bottom:1px;
+  display:grid;
+  place-items:center;
+  width:clamp(10px,1.9dvh,16px);
+  height:clamp(10px,1.9dvh,16px);
+  border-radius:4px;
+  background:rgba(5,5,8,.75);
+  color:#fff;
+}
+.eaUnifiedNavPhotoBadge svg{width:75%;height:75%;stroke-width:2}
+.eaUnifiedLinks a:hover .eaUnifiedNavPhoto{transform:scale(1.06);filter:saturate(1.03) contrast(1.1)}
+.eaUnifiedLinks a.is-live .eaUnifiedNavPhotoBadge{background:#ba1d28}
+.eaUnifiedLinks a.is-active .eaUnifiedNavMedia{border-color:#e13b49;box-shadow:0 0 0 1px rgba(217,51,64,.35)}
+.eaUnifiedNavText strong{
+  font-size:clamp(15px,2.45dvh,19px);
+  font-weight:790;
+  letter-spacing:-.022em;
+  line-height:1.13;
+  overflow-wrap:normal;
+  white-space:normal;
+}
+.eaUnifiedNavText small{
+  font-size:clamp(9px,1.42dvh,12px);
+  line-height:1.13;
+}
+.eaUnifiedAccounts a{font-size:clamp(13px,2.05dvh,17px)}
+.eaUnifiedAdminText strong{font-size:clamp(12px,1.86dvh,15.5px)}
+.eaUnifiedFooterEyebrow{font-size:clamp(9px,1.25dvh,11px)}
+@media(max-width:375px){
+  .eaUnifiedHeader{gap:5px}
+  .eaUnifiedHeaderActions a,.eaUnifiedHeaderActions button{width:32px;height:34px}
+  .eaUnifiedNavText strong{font-size:clamp(14px,2.45dvh,17px)}
+}
+@media(max-height:740px){
+  .eaUnifiedBrand .eaOfficialLogo{max-width:min(100%,245px)}
+  .eaUnifiedNavText small{display:none}
+  .eaUnifiedMenuIntro h2{font-size:clamp(16px,2.7dvh,20px)}
+  .eaUnifiedNavText strong{font-size:clamp(14px,2.55dvh,18px)}
+}
+@media(max-height:570px){
+  .eaUnifiedBrand .eaOfficialLogo{max-width:min(100%,190px)}
+  .eaUnifiedHeader{min-height:39px}
+  .eaUnifiedMenuIntro{padding:2px 0}
+  .eaUnifiedNavText strong{font-size:clamp(13px,2.8dvh,15px)}
+  .eaUnifiedNavMedia{width:clamp(22px,5.8dvh,29px);height:clamp(22px,5.8dvh,29px)}
+  .eaUnifiedLinks a{grid-template-columns:clamp(22px,5.8dvh,29px) minmax(0,1fr) 17px}
+  .eaUnifiedNavPhotoBadge{display:none}
+}
