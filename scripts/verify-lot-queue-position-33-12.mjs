@@ -32,7 +32,7 @@ function verifyConfig(config){
   if(frozenTaskMap().get("33.12")!=="Lot queue position / lots-away indicator") fail("frozen task identity drift: 33.12");
 
   const binding=readJson(BINDING_PATH);
-  if(binding.scope!=="development-governance"||binding.auction_authority!==false) fail("Supabase authority boundary drift");
+  if(binding.scope!=="enchev-only-development-governance"||binding.shared_project!==false||binding.project_ref!=="ejfrnjhlggebzmpmxajl"||binding.auction_authority!==false) fail("Supabase authority boundary drift");
   if(config.persistence?.newBusinessTableRequired!==false) fail("33.12 must not invent persistence");
   if(config.authority?.lotQueue!=="postgresql"||config.authority?.realtimeTransportAuthoritative!==false) fail("lot queue authority drift");
   for(const key of ["projectionMayChangeAuctionState","projectionMayAcceptBid","projectionMayChooseWinner"]) if(config.authority?.[key]!==false) fail(`authority guardrail drift: ${key}`);
