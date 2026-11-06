@@ -1,12 +1,12 @@
 "use client";
 
-import {useEffect,useMemo,useRef,useState} from "react";
+import {useEffect,useMemo,useState} from "react";
 import EaOfficialLogo from "../components/EaOfficialLogo";
 import "./auctions.css";
 
 type DemoLot=Readonly<{lot:string;title:string;year:string;fuel:string;mileage:string;transmission:string;location:string;startingPrice:number;image:string}>;
 type VerifiedLot={id:string;lot_number:string;title:string;make:string;model:string;model_year:number|null;fuel_type:string|null;mileage_km:number|null;transmission:string|null;image_url:string|null;starting_price:number|null;price_currency:string;status:string;auction_starts_at:string|null;auction_ends_at:string|null};
-type LiveDemoClock={serverNow:number;roundEndsAt:number;lotIndex:number;auctionAuthority:boolean;scope:string};
+type LiveDemoClock={serverNow:number;roundEndsAt:number;lotIndex:number;auctionAuthority:boolean;scope:string;receivedAt:number};
 type Network="loading"|"connected"|"offline";
 const demoLots:readonly DemoLot[]=[
  {lot:"EA-10511",title:"Mercedes-Benz GLC (демо)",year:"2021",fuel:"Бензин",mileage:"64 900 км",transmission:"Автоматик",location:"Мюнхен, Германия",startingPrice:18400,image:"https://images.unsplash.com/photo-1612280782903-d34dcdc10107?auto=format&fit=crop&w=1200&q=82"},
@@ -56,11 +56,8 @@ export default function AuctionsPage(){
  const [demoClock,setDemoClock]=useState<LiveDemoClock|null>(null);
  const [now,setNow]=useState(0);
  const [authenticated,setAuthenticated]=useState(false);
- const [authReady,setAuthReady]=useState(false);
  const [panel,setPanel]=useState<"upcoming"|"history">("upcoming");
- const mounted=useRef(true);
  useEffect(()=>{
-  mounted.current=true;
   const controller=new AbortController();
   async function loadCatalog(){
    try{
@@ -72,10 +69,10 @@ export default function AuctionsPage(){
    }catch{if(!controller.signal.aborted)setCatalogState("unavailable")}
   }
   async function session(){
-   try{const r=await fetch("/api/enchev-auth/session",{signal:controller.signal,cache:"no-store"});const j=await r.json();if(!controller.signal.aborted){setAuthenticated(j?.authenticated===true);setAuthReady(j?.available===true)}}catch{}
+   try{const r=await fetch("/api/enchev-auth/session",{signal:controller.signal,cache:"no-store"});const j=await r.json();if(!controller.signal.aborted){setAuthenticated(j?.authenticated===true)}}catch{}
   }
   void loadCatalog();void session();
-  return()=>{mounted.current=false;controller.abort()};
+  return()=>controller.abort();
  },[]);
  useEffect(()=>{
   const controller=new AbortController();
@@ -87,7 +84,7 @@ export default function AuctionsPage(){
     if(!response.ok)throw new Error("clock-http");
     const d=await response.json() as LiveDemoClock;
     if(d.auctionAuthority!==false||d.scope!=="server-issued-browser-session-demo"||!Number.isFinite(d.serverNow)||!Number.isFinite(d.roundEndsAt)||!Number.isInteger(d.lotIndex)||d.lotIndex<0||d.lotIndex>=demoLots.length)throw new Error("invalid-clock");
-    if(!controller.signal.aborted){setDemoClock(d);setNet("connected");}
+    if(!controller.signal.aborted){setDemoClock({...d,receivedAt:Date.now()});setNet("connected");}
    }catch{if(!controller.signal.aborted)setNet("offline")}
    finally{busy=false}
   }
@@ -100,7 +97,7 @@ export default function AuctionsPage(){
  const realUpcoming=useMemo(()=>lots.filter(x=>x.status==="scheduled"),[lots]);
  const real=realLive[0]??null;
  const preview=demoLots[featured];
- const demoRemaining=demoClock&&net==="connected"?asRemaining(demoClock.roundEndsAt-(now+(demoClock.serverNow-now))):"--:--";
+ const demoRemaining=demoClock&&net==="connected"?asRemaining(demoClock.roundEndsAt-(now+(demoClock.serverNow-demoClock.receivedAt))):"--:--";
  const realSelected=Boolean(real);
  const primaryTitle=real?real.title:preview.title;
  const primaryPrice=real?euro(real.starting_price,real.price_currency):euro(preview.startingPrice);
