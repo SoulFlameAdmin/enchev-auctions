@@ -13,7 +13,7 @@ type MarketLot={
 };
 type Session={available:boolean;authenticated:boolean;user?:{id:string;email:string;accountAgeDays?:number|null}};
 type Mode="loading"|"ready"|"inactive"|"error";
-type Filter="all"|"live"|"scheduled"|"ended";
+type Filter="all"|"scheduled"|"ended";
 type ViewMode="grid"|"list";
 type Appearance="dark"|"light";
 const marketPhotos=["/forge/media/9b20239c5e1099a605ec.jpg","/forge/media/20ac6eaa8d0b086cee3c.jpg","/forge/media/81f625f9053d53ae5f72.jpg"];
@@ -35,18 +35,8 @@ function dateLabel(source:string|null){
  const date=new Date(source);
  return Number.isFinite(date.valueOf())?new Intl.DateTimeFormat("bg-BG",{timeZone:"Europe/Sofia",day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit"}).format(date):null;
 }
-function activeLive(lot:MarketLot,time:number){
- return lot.status==="live"&&!!lot.auction_starts_at&&!!lot.auction_ends_at&&
- Date.parse(lot.auction_starts_at)<=time&&Date.parse(lot.auction_ends_at)>time;
-}
-function remaining(target:string|null,time:number){
- if(!target)return "—";
- const t=Math.max(0,Math.floor((Date.parse(target)-time)/1000));
- const h=Math.floor(t/3600),m=Math.floor(t%3600/60),s=t%60;
- return [h,m,s].map(n=>String(n).padStart(2,"0")).join(":");
-}
 function photoFor(lot:MarketLot){return typeof lot.image_url==="string"&&lot.image_url.startsWith("https://ejfrnjhlggebzmpmxajl.supabase.co/storage/v1/object/public/enchev-lot-public/")?lot.image_url:null}
-function statusLabel(lot:MarketLot,now:number){return activeLive(lot,now)?"НА ЖИВО":lot.status==="scheduled"?"ПРЕДСТОЯЩ":lot.status==="ended"?"ЗАВЪРШЕН":"ОБЯВА";}
+function statusLabel(lot:MarketLot){return lot.status==="scheduled"?"ПРЕДСТОЯЩ":lot.status==="ended"?"ЗАВЪРШЕН":"ОБЯВА";}
 function LotPhoto({lot,hero=false}:{lot:MarketLot;hero?:boolean}){
  const [broken,setBroken]=useState(false);
  const src=photoFor(lot);
@@ -67,7 +57,6 @@ export default function VehiclesPage(){
  const [viewMode,setViewMode]=useState<ViewMode>("grid");
  const [appearance,setAppearance]=useState<Appearance>("dark");
  const [filtersOpen,setFiltersOpen]=useState(false);
- const [now,setNow]=useState(0);
  const [notice,setNotice]=useState("");
  const [busy,setBusy]=useState<string|null>(null);
  const [gated,setGated]=useState<MarketLot|null>(null);
@@ -98,25 +87,17 @@ export default function VehiclesPage(){
    .then(({ok,body})=>{
     if(ctrl.signal.aborted)return;
     if(!ok){setMode(body?.available===false?"inactive":"error");return}
-    setLots(Array.isArray(body.lots)?body.lots:[]);
+    // Live bidding is managed only on /auctions. The vehicles catalogue excludes active live lots.
+    setLots(Array.isArray(body.lots)?body.lots.filter((lot:MarketLot)=>lot?.status!=="live"):[]);
     setMode("ready");
    }).catch(()=>{if(!ctrl.signal.aborted)setMode("error")});
   fetch("/api/enchev-auth/session",{credentials:"same-origin",cache:"no-store",signal:ctrl.signal})
    .then(r=>r.json()).then(data=>{if(!ctrl.signal.aborted)setSession(data)}).catch(()=>{});
   return()=>ctrl.abort();
  },[]);
- const liveCount=lots.filter(l=>l.status==="live").length;
- useEffect(()=>{
-  setNow(Date.now());
-  if(!liveCount)return;
-  const id=window.setInterval(()=>setNow(Date.now()),1000);
-  return()=>window.clearInterval(id);
- },[liveCount]);
- const clock=now||0;
- const live=lots.find(l=>activeLive(l,clock))??null;
  const makes=useMemo(()=>[...new Set(lots.map(l=>l.make).filter(Boolean))].sort((a,b)=>a.localeCompare(b,"bg")),[lots]);
  const years=useMemo(()=>[...new Set(lots.map(l=>l.model_year).filter((n):n is number=>typeof n==="number"))].sort((a,b)=>b-a),[lots]);
- const tabs:{id:Filter;label:string}[]=[{id:"all",label:"Всички"},{id:"live",label:"LIVE"},{id:"scheduled",label:"Предстоящи"},{id:"ended",label:"Завършени"}];
+ const tabs:{id:Filter;label:string}[]=[{id:"all",label:"Всички"},{id:"scheduled",label:"Предстоящи"},{id:"ended",label:"Завършени"}];
  const filtered=useMemo(()=>{
   const q=query.trim().toLocaleLowerCase("bg");
   const values=lots.filter(l=>{
@@ -166,7 +147,6 @@ export default function VehiclesPage(){
 
    <nav className="eaMarketQuick" aria-label="Бърза навигация">
     <a className="active" href="/vehicles"><CarIcon/> Автомобили</a>
-    <a href="/auctions"><span className="eaMarketPulse"/> LIVE</a>
     <a href="#ea-market-catalog">Каталог</a>
     <a href={registered?"/profile":"/login"}><Bookmark/> Запазени</a>
    </nav>
@@ -197,18 +177,10 @@ export default function VehiclesPage(){
     </div>
     </div>
 
-    <div className="eaMarketLive" aria-label="Акцент на търговете">
-     <div className="eaMarketLivePhoto">
-      {live?<LotPhoto lot={live} hero/>:<img src="/forge/media/9b20239c5e1099a605ec.jpg" alt="Илюстративен автомобил за представяне на платформата" loading="eager"/>}
-      <span className={live?"eaMarketLiveTag live":"eaMarketLiveTag"}><span className="eaMarketPulse"/> {live?"LIVE АУКЦИОН":"ПРЕДСТОЯЩ LIVE"}</span>
-      {!live&&<span className="eaMarketIllustration">ИЛЮСТРАТИВНО ИЗОБРАЖЕНИЕ</span>}
-      {live&&<span className="eaMarketLotId">Лот {live.lot_number}</span>}
-     </div>
-     <div className="eaMarketLiveBody">
-      {live?<><h2>{live.title}</h2><div className="eaMarketChips"><span>{live.model_year||"Година предстои"}</span><span>{live.fuel_type||"Детайли в обявата"}</span>{live.mileage_km!==null&&<span>{live.mileage_km.toLocaleString("bg-BG")} км</span>}</div><div className="eaMarketLiveStats"><div><small>Начална цена</small><strong>{price(live.starting_price,live.price_currency)}</strong></div><div><small>До края на лота</small><strong className="eaMarketTimer">{remaining(live.auction_ends_at,clock)}</strong></div></div><a className="eaMarketActionHot" href={nextFor(live)}>Виж лота и условията ↗</a><p className="eaMarketLiveDisclaimer">Участието и реалните оферти изискват потвърден профил и отделно активиране на наддаването.</p></>:
-       <div className="eaMarketLiveEmpty"><span>ПРОВЕРЕНА LIVE ИНФОРМАЦИЯ</span><h2>Следващият търг предстои.</h2><p>В момента няма активен потвърден търг. Когато бъде публикуван, тук ще се покажат автомобилът, началната цена и реалният таймер.</p><a className="eaMarketActionHot" href="/auctions">Виж търговете ↗</a></div>}
-     </div>
-    </div>
+    <figure className="eaMarketShowcase" aria-label="Илюстративен автомобил">
+     <img src="/forge/media/9b20239c5e1099a605ec.jpg" alt="Автомобил Defender — илюстративна снимка за каталога" loading="eager"/>
+     <figcaption>Илюстративна снимка · Не е реална обява</figcaption>
+    </figure>
    </section>
 
    <aside className="eaMarketPromo" aria-label="Регистрация и отстъпка">
@@ -221,7 +193,7 @@ export default function VehiclesPage(){
 
 
     {mode==="ready"&&filtered.length>0?<div className="eaMarketLotGrid">{filtered.map(l=><article className="eaMarketCard" key={l.id}>
-      <a className="eaMarketCardImage" href={nextFor(l)}><LotPhoto lot={l}/><span className={activeLive(l,clock)?"eaMarketCardStatus live":"eaMarketCardStatus"}>{statusLabel(l,clock)}</span></a>
+      <a className="eaMarketCardImage" href={nextFor(l)}><LotPhoto lot={l}/><span className="eaMarketCardStatus">{statusLabel(l)}</span></a>
       <div className="eaMarketCardContent"><span className="eaMarketCardLot">ЛОТ {l.lot_number} · {l.country_code||"ЕВРОПА"}</span><h3><a href={nextFor(l)}>{l.title}</a></h3><div className="eaMarketCardSpecs">{l.model_year&&<span>{l.model_year} г.</span>}{l.mileage_km!==null&&<span>{l.mileage_km.toLocaleString("bg-BG")} км</span>}{l.fuel_type&&<span>{l.fuel_type}</span>}{l.transmission&&<span>{l.transmission}</span>}</div><div className="eaMarketCardBottom"><div><small>Начална цена</small><strong>{price(l.starting_price,l.price_currency)}</strong></div><button type="button" onClick={()=>void save(l)} disabled={busy===l.id} aria-label={"Запази "+l.title}><Bookmark/></button></div><a className="eaMarketCardDetails" href={nextFor(l)}>Виж детайли <span>↗</span></a></div>
      </article>)}</div>:
      <>{(mode==="inactive"||mode==="ready")&&!query&&!make&&!year&&tab==="all"&&<div className="eaMarketAwaiting" role="status">
@@ -243,7 +215,7 @@ export default function VehiclesPage(){
       <div className="eaMarketEmptyContent"><span className="eaMarketEyebrow">{mode==="inactive"?"ПРЕДСТОЯЩО АКТИВИРАНЕ":mode==="error"?"ВРЕМЕНЕН ПРОБЛЕМ":mode==="loading"?"ЗАРЕЖДАНЕ":query||make||year||tab!=="all"?"ТЪРСЕНЕ":"ПРОВЕРЕН КАТАЛОГ"}</span>
        <h3>{mode==="inactive"?"Каталогът се подготвя.":mode==="error"?"Не успяхме да заредим каталога.":mode==="loading"?"Проверяваме одобрените автомобили...":query||make||year||tab!=="all"?"Няма автомобили с тези критерии.":"Очакваме първите реални обяви."}</h3>
        <p>Показваме само потвърдени автомобили от проверени продавачи. Няма да публикуваме примерни оферти като реални. Изображението е илюстративно.</p>
-       <div className="eaMarketEmptyActions"><a href="/start#early-access">Заяви ранен достъп ↗</a><a href="/auctions">Търгове ↗</a></div>
+       <div className="eaMarketEmptyActions"><a href="/start#early-access">Заяви ранен достъп ↗</a><a href="/start">Как се купува ↗</a></div>
       </div>
      </div></>}
     {notice&&<p className="eaMarketNotice" role="status">{notice}</p>}
