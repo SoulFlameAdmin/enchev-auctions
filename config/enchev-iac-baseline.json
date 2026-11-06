@@ -1,0 +1,51 @@
+{
+  "taskId": "48.01",
+  "version": 1,
+  "name": "Infrastructure-as-Code baseline",
+  "scope": "source-controlled declarative inventory, not provider provisioning",
+  "resources": [
+    {
+      "id": "web-deployment",
+      "source": "vercel.json",
+      "kind": "deployment-configuration",
+      "provisioningCertified": false
+    },
+    {
+      "id": "database-schema",
+      "source": "supabase/migrations",
+      "kind": "versioned-postgresql-migrations",
+      "provisioningCertified": false
+    },
+    {
+      "id": "ci-pipelines",
+      "source": ".github/workflows",
+      "kind": "versioned-ci-workflows",
+      "provisioningCertified": false
+    },
+    {
+      "id": "environment-matrix",
+      "source": "config/enchev-runtime-environments.json",
+      "kind": "environment-contract",
+      "provisioningCertified": false
+    }
+  ],
+  "environments": [
+    "local",
+    "staging",
+    "production"
+  ],
+  "security": {
+    "secretValuesInRepository": false,
+    "productionProviderApplyAllowedByThisTask": false,
+    "stagingIsolatedFromProductionMustBeProven": true,
+    "infrastructureChangesRequireReview": true,
+    "providerStateOwnershipVerified": false
+  },
+  "boundaries": {
+    "verifiedBy": "scripts/verify-infrastructure-as-code-baseline.mjs",
+    "providerCredentialsNotRequired": true,
+    "noNetworkOrCloudWrite": true,
+    "noDnsTlsOrStagingProvisioningClaim": true,
+    "futureProvisioningTask": "48.02"
+  }
+}
