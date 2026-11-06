@@ -338,7 +338,7 @@ function translateNode(node:Node){
 export default function EnglishUiEnforcer(){
   const pathname=usePathname();
   useEffect(()=>{
-    if(pathname==="/" || pathname==="/vehicles" || pathname.startsWith("/vehicles/")){
+    if(pathname==="/" || pathname==="/vehicles" || pathname.startsWith("/vehicles/") || pathname==="/login" || pathname==="/register"){
       document.documentElement.lang="bg";
       return()=>{document.documentElement.lang="en";};
     }
