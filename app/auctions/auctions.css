@@ -269,3 +269,10 @@
 @media(prefers-reduced-motion:reduce){
  .eaLiveMarket *{scroll-behavior:auto!important;transition-duration:.01ms!important;animation:none!important}
 }
+
+
+/* Keep the E&A wordmark clear of the global fixed hamburger at tablet widths. */
+@media(min-width:761px) and (max-width:1080px){
+ .eaLiveHeader{padding-left:154px}
+ .eaLiveBrand{width:clamp(198px,27vw,265px)}
+}
