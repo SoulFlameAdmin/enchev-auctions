@@ -138,7 +138,7 @@ export default function EaUnifiedMenu(){
        </div>
        <nav className="eaUnifiedLinks" aria-label="Главна навигация">
        {sections.map((item,index)=><a key={item.href} href={item.href} onClick={()=>setOpen(false)} className={[item.icon==="live"?"is-live":"",isActiveSection(pathname,item.href)?"is-active":""].filter(Boolean).join(" ")} aria-current={isActiveSection(pathname,item.href)?"page":undefined}>
-         <span className="eaUnifiedNavMedia eaUnifiedNavEmoji" aria-hidden="true">{item.emoji}</span>
+         <span className="eaUnifiedNav3D" aria-hidden="true" style={{backgroundPositionY:`${index * 100 / 6}%`}} />
          <span className="eaUnifiedNavText"><strong>{item.label}</strong><small>{item.description}</small></span>
          <span className="eaUnifiedNavArrow" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
        </a>)}
