@@ -48,7 +48,12 @@ export function validate(config,sources){
   need(sources.accessibility,/@media\(forced-colors:active\)/,"28.05 forced-colors support missing");
   need(sources.accessibility,/@media\(prefers-reduced-motion:reduce\)/,"28.10 reduced-motion support missing");
 
-  need(sources.profile,/aria-label="Навигация на профила"/,"28.04 profile navigation label missing");
+  if (sources.profile.includes("<BuyerAccountDashboard />")) {
+    need(sources.buyerProfile, /<nav className="eaBuyerStages" aria-label="Навигация на профила">/, "28.04 buyer workspace profile navigation label missing");
+    need(sources.buyerProfile, /aria-live="polite"/, "28.04 live authenticated profile state label missing");
+  } else {
+    need(sources.profile,/aria-label="Навигация на профила"/,"28.04 profile navigation label missing");
+  }
   need(sources.lot,/aria-label={`Галерия за/,"28.04 lot gallery label missing");
   need(sources.lot,/role="dialog" aria-modal="true" aria-labelledby="lot-viewer-title"/,"28.08 labelled modal dialog missing");
   need(sources.lot,/event\.key==="Escape"/,"28.08 Escape close handling missing");
@@ -130,6 +135,7 @@ function readSources(){
     lot:read("app/lot/[id]/page.tsx"),
     live:read("app/live-auctions/page.tsx"),
     profile:read("app/profile/page.tsx"),
+    buyerProfile:read("app/components/BuyerAccountDashboard.tsx"),
     capture:read("scripts/capture-visual-regression.mjs"),
     workflow:read(".github/workflows/verify-enchev-web.yml"),
   };
