@@ -27,6 +27,8 @@ function selectedStep(path:string){
 
 export default function BuyerJourneyRail(){
   const pathname=usePathname();
+  // Marketplace has its own complete navigation; do not append a second giant journey rail.
+  if(pathname==="/vehicles" || pathname?.startsWith("/vehicles/"))return null;
   if(!pathname || ![
     "/start","/register","/login","/verification","/vehicles","/auctions","/inventory","/profile","/my-auctions","/payments",
     "/documents","/transport","/vehicle-history","/support",
