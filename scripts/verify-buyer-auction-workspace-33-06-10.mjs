@@ -56,7 +56,7 @@ async function loadDomain(){
 
 function verifyAuthority(config){
   const binding=readJson(BINDING_PATH);
-  if(binding.scope!=="development-governance"||binding.auction_authority!==false) fail("Supabase authority boundary drift");
+  if(binding.scope!=="enchev-only-development-governance"||binding.shared_project!==false||binding.project_ref!=="ejfrnjhlggebzmpmxajl"||binding.auction_authority!==false) fail("Enchev-only Supabase authority boundary drift");
   if(config.persistence?.newBusinessTableRequired!==false) fail("projection block must not invent duplicate persistence");
   if(config.authority?.auctionState!=="postgresql") fail("PostgreSQL authority drift");
   if(config.authority?.realtimeTransportAuthoritative!==false) fail("realtime transport became authoritative");

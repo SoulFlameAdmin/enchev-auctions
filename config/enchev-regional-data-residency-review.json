@@ -22,13 +22,14 @@
     {
       "id": "development-governance-db",
       "provider": "supabase",
-      "role": "development-governance",
+      "role": "enchev-only-development-governance",
       "status": "verified-region",
-      "region": "eu-west-1",
+      "region": "eu-central-1",
       "residency_claim": false,
       "evidence": [
         "config/enchev-supabase-project.json",
-        "docs/01_05_SUPABASE_PROJECT.md"
+        "supabase/migrations/20261106221943_enchev_governance_isolation_v1.sql",
+        "docs/ENCHEV_GOVERNANCE_ISOLATION_2026_11_07.md"
       ]
     },
     {

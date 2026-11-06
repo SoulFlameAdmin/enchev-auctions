@@ -14,7 +14,7 @@ export function validatePlanVersionSource(source) {
 
   if (!/Plan version displayed in UI/.test(source)) fail('32.10 task label is missing from the frozen plan');
 
-  const compactSurface = /Master\s+System\s+Plan\s+v\s*\{\s*PLAN_VERSION\s*\}/.test(source);
+  const compactSurface = /(?:Master\s+System\s+Plan|Основен\s+системен\s+план)\s+v\s*\{\s*PLAN_VERSION\s*\}/i.test(source);
   const commandCenterSurface = /MASTER\s+SYSTEM\s+PLAN\s+v\s*\{\s*PLAN_VERSION\s*\}/.test(source);
   if (!compactSurface) fail('compact Command Center plan version display is missing');
   if (!commandCenterSurface) fail('full Command Center plan version display is missing');
@@ -33,6 +33,11 @@ function runSelfTest() {
     <div>MASTER SYSTEM PLAN v{PLAN_VERSION}</div>
   `;
   validatePlanVersionSource(good);
+  const localized = good.replace('Master System Plan v{PLAN_VERSION}', 'Основен системен план v{PLAN_VERSION}');
+  validatePlanVersionSource(localized);
+  let localizedRejected = false;
+  try { validatePlanVersionSource(localized.replace('Основен системен план v{PLAN_VERSION}', 'Основен системен план')); } catch { localizedRejected = true; }
+  if (!localizedRejected) fail('localized visibility negative test was not rejected');
 
   const badCases = [
     good.replace('1.0 FROZEN', '1.1 DRAFT'),
@@ -47,7 +52,7 @@ function runSelfTest() {
     if (!rejected) fail(`negative self-test ${index + 1} was not rejected`);
   }
 
-  console.log('PLAN_VERSION_UI_SELF_TEST PASS cases=4');
+  console.log('PLAN_VERSION_UI_SELF_TEST PASS cases=5 localized_bg=true');
 }
 
 if (process.argv.includes('--self-test')) {

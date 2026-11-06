@@ -33,7 +33,7 @@ function verifyConfig(config){
   if(JSON.stringify(config.tasks?.map(x=>[x.id,x.name,x.kind]))!==JSON.stringify(expected)) fail("task contract drift");
 
   const binding=readJson(BINDING_PATH);
-  if(binding.scope!=="development-governance"||binding.auction_authority!==false) fail("Supabase authority boundary drift");
+  if(binding.scope!=="enchev-only-development-governance"||binding.shared_project!==false||binding.project_ref!=="ejfrnjhlggebzmpmxajl"||binding.auction_authority!==false) fail("Supabase authority boundary drift");
   if(config.persistence?.newGovernanceBusinessTableRequired!==false) fail("must not invent governance business persistence");
   if(config.authority?.deliveryLedger!=="postgresql"||config.authority?.governanceSupabaseAuthoritative!==false||config.authority?.realtimeTransportAuthoritative!==false) fail("delivery authority drift");
   for(const key of ["suppressionMayChangeAuctionState","suppressionMayAcceptBid","suppressionMayChooseWinner"]) if(config.authority?.[key]!==false) fail(`authority guardrail drift: ${key}`);

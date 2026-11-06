@@ -34,8 +34,14 @@ function extractVerifiedRows(source) {
   return rows;
 }
 
-assert(cloudClient.includes("frhletkiuupgksmgxoxc.supabase.co/functions/v1/enchev-plan-state"), "client must use the dedicated Enchev Edge Function");
-assert(cloudClient.includes("new EventSource(`${ENDPOINT}?stream=1`)"), "client must use SSE cloud realtime stream");
+assert(cloudClient.includes("ejfrnjhlggebzmpmxajl.supabase.co/functions/v1/enchev-plan-state"), "client must use the Enchev-owned Edge Function");
+assert(!cloudClient.includes("frhletkiuupgksmgxoxc"), "client must not access old shared Twins project");
+assert(!syncScript.includes("frhletkiuupgksmgxoxc"), "CI must not write to Twins");
+assert(!cloudClient.includes("new EventSource("), "full-snapshot SSE must not run inside public or admin browser");
+assert(cloudClient.includes('pathname !== "/admin/console"'), "public pages must never open full-snapshot governance streams");
+assert(!cloudClient.includes("EventSource.OPEN"), "browser must not depend on SSE");
+assert(cloudClient.includes('document.visibilityState !== "visible"'), "hidden tabs must not poll the full governance snapshot");
+assert(cloudClient.includes("300000"), "admin-only full-snapshot polling must be rate-limited");
 assert(cloudClient.includes("BroadcastChannel(CHANNEL_KEY)"), "cloud updates must fan out through existing realtime channel");
 assert(cloudClient.includes("localIsNewer"), "newer local manual state must not be silently overwritten");
 assert(!cloudClient.includes("SUPABASE_SERVICE_ROLE_KEY"), "service-role credentials must never exist in browser code");
@@ -47,6 +53,8 @@ assert(workflow.includes("needs: verify-web"), "cloud write must happen only aft
 assert(workflow.includes("node scripts/sync-cloud-plan-state.mjs"), "workflow must invoke cloud sync script");
 assert(syncScript.includes('audience = "enchev-plan-state"'), "sync must request dedicated OIDC audience");
 assert(syncScript.includes('method: "POST"'), "sync must write through Edge Function POST");
+assert(syncScript.includes('process.env.GITHUB_REF !== "refs/heads/main"'), "cloud writes must refuse non-main branches");
+assert(syncScript.includes('process.env.GITHUB_EVENT_NAME !== "push"'), "cloud writes must refuse non-push jobs");
 assert(syncScript.includes("MAX_BATCH_BODY_CHARS = 60000"), "sync must stay below Edge Function 65,536-char payload limit");
 assert(syncScript.includes("function buildBatches("), "sync must split verified rows into bounded request batches");
 assert(syncScript.includes("for (let index = 0; index < batches.length; index += 1)"), "sync must write every bounded batch sequentially");

@@ -25,7 +25,14 @@ for (const file of requiredRoutes) {
 
 const intro = read("app/page.tsx");
 requireText(intro, 'src="/forge/index.html"', "Cinematic intro preserved");
-requireText(intro, "<MasterSystemPlanV1 />", "System status menu preserved");
+// The MASTER system is intentionally restricted to the authenticated admin console.
+const layout = read("app/layout.tsx");
+const adminConsole = read("app/admin/console/page.tsx");
+requireText(layout, "<EaUnifiedMenu />", "Global navigation preserved");
+requireText(adminConsole, "<MasterSystemPlanV1 initialMenuOpen authorizedByServer />", "Protected MASTER stages preserved");
+requireText(adminConsole, "hasEnchevMenuAccess", "Admin session authorization preserved");
+requireText(adminConsole, 'redirect("/admin/login")', "Unauthenticated admin redirect preserved");
+assert.ok(!intro.includes("<MasterSystemPlanV1"), "Protected MASTER must not be mounted on public cinematic homepage");
 
 const classic = read("app/platform/page.tsx");
 for (const token of [
@@ -51,13 +58,20 @@ for (const token of [
 requireText(read("app/components/LotNavigationBridge.tsx"), "/lot/", "Inventory card-to-lot navigation bridge");
 
 const nav = read("app/site-navigation.ts");
-requireText(nav, 'href: "/platform"', "Marketplace navigation");
-requireText(nav, 'href: "/platform#how"', "How to Buy must reach classic page");
+for (const [href, label] of [
+  ['href: "/vehicles"', "Vehicle catalog navigation"],
+  ['href: "/auctions"', "Live auction navigation"],
+  ['href: "/start"', "How to Buy journey navigation"],
+]) requireText(nav, href, label);
+const unifiedMenu=read("app/components/EaUnifiedMenu.tsx");
+for(const href of ['href:"/vehicles"','href:"/auctions"','href:"/start"']) {
+  requireText(unifiedMenu, href, "Visible buyer menu must match canonical routes");
+}
 
 const bridge = read("scripts/restore-forge-assets.mjs");
 for (const token of [
-  'href: "/platform"', 'href: "/inventory"', 'href: "/live-auctions"',
-  'href: "/transport"', 'href: "/vehicle-history"', 'href: "/presentation"',
+  'href: "/vehicles"', 'href: "/auctions"', 'href: "/start"',
+  'href: "/transport"', 'href: "/vehicle-history"', 'href: "/payments"',
   'href: "/support"', '"_top"', "window.top.location.assign(href)",
   "ensurePlatformNavigation()",
 ]) requireText(bridge, token, "Cinematic button-to-platform bridge");

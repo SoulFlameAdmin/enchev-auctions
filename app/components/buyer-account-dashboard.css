@@ -40,7 +40,7 @@
 .eaBuyerAccountRow{border-top:1px solid #3a3a40;padding:19px 0;display:flex;gap:20px;align-items:center;justify-content:space-between}
 .eaBuyerAccountRow strong{display:block;font-size:15px}
 .eaBuyerAccountRow small{display:block;color:#a1a3ab;margin-top:7px;font-size:11px}
-.eaBuyerAccountRow button{border:1px solid #5e5f64;background:transparent;color:#fff;padding:9px 12px;cursor:pointer}
+.eaBuyerAccountRow button{border:1px solid #5e5f64;background:transparent;color:#fff;padding:9px 12px;min-height:44px;cursor:pointer}
 .eaBuyerEmptyCopy{font-size:13px;color:#b5b8bf;line-height:1.65}
 .eaBuyerBoxLink{margin-top:18px}
 .eaBuyerOrders{margin-top:55px}

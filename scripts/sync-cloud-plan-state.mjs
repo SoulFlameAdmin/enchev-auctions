@@ -1,6 +1,6 @@
 import fs from "node:fs";
 
-const endpoint = "https://frhletkiuupgksmgxoxc.supabase.co/functions/v1/enchev-plan-state";
+const endpoint = "https://ejfrnjhlggebzmpmxajl.supabase.co/functions/v1/enchev-plan-state";
 const audience = "enchev-plan-state";
 const MAX_BATCH_BODY_CHARS = 60000;
 const verifiedSource = fs.readFileSync("app/components/VerifiedPlanEvidenceSync.tsx", "utf8");
@@ -25,6 +25,21 @@ function extractVerifiedRows(source) {
     rows.push({ taskId, status: "green", evidence, blocker: null });
   }
   if (!rows.length) throw new Error("No verified plan rows extracted");
+  return rows;
+}
+
+function extractVerifiedYellowRows(source) {
+  const markerIndex = source.indexOf("const VERIFIED_YELLOW:");
+  const open = source.indexOf("{", markerIndex);
+  const close = source.indexOf("\n};", open);
+  if (markerIndex < 0 || open < 0 || close < 0) throw new Error("VERIFIED_YELLOW missing");
+  const block = source.slice(open + 1, close);
+  const rows = [];
+  for (const match of block.matchAll(/^\s*"([^"]+)":\s*"((?:[^"\\]|\\.)*)",?\s*$/gm)) {
+    const blocker = JSON.parse('"' + match[2] + '"');
+    if (!blocker.trim() || blocker.length > 2000) throw new Error("YELLOW blocker missing or too large");
+    rows.push({ taskId:match[1], status:"yellow", evidence:null, blocker });
+  }
   return rows;
 }
 
@@ -80,7 +95,14 @@ async function writeBatch(token, batch, index, total) {
   }
 }
 
-const rows = extractVerifiedRows(verifiedSource);
+if (process.env.GITHUB_REF !== "refs/heads/main" || process.env.GITHUB_EVENT_NAME !== "push") {
+  throw new Error("Cloud sync requires verified main-branch push workflow");
+}
+
+const rows = [...extractVerifiedRows(verifiedSource), ...extractVerifiedYellowRows(verifiedSource)];
+if (new Set(rows.map(row => row.taskId)).size !== rows.length) {
+  throw new Error("Duplicate GREEN/YELLOW task ID in governance sync");
+}
 const batches = buildBatches(rows);
 const token = await getOidcToken();
 
@@ -96,7 +118,7 @@ const expectedCommit = process.env.GITHUB_SHA;
 for (const row of rows) {
   const cloud = cloudRows.get(row.taskId);
   if (!cloud) throw new Error(`Cloud read-back missing ${row.taskId}`);
-  if (cloud.status !== row.status || cloud.evidence !== row.evidence) throw new Error(`Cloud read-back mismatch for ${row.taskId}`);
+  if (cloud.status !== row.status || cloud.evidence !== row.evidence || cloud.blocker !== row.blocker) throw new Error(`Cloud read-back mismatch for ${row.taskId}`);
   if (expectedCommit && cloud.source_commit !== expectedCommit) throw new Error(`Cloud source commit mismatch for ${row.taskId}`);
 }
 

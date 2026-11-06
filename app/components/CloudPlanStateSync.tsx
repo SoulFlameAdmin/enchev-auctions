@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 type Status = "green" | "yellow" | "red";
 type Note = { evidence?: string; blocker?: string; updatedAt?: string };
@@ -19,7 +20,7 @@ const STATUS_KEY = "enchev-system-status-v5";
 const NOTES_KEY = "enchev-system-notes-v5";
 const GAP_KEY = "enchev-system-gaps-v5";
 const CHANNEL_KEY = "enchev-system-realtime-v5";
-const ENDPOINT = "https://frhletkiuupgksmgxoxc.supabase.co/functions/v1/enchev-plan-state";
+const ENDPOINT = "https://ejfrnjhlggebzmpmxajl.supabase.co/functions/v1/enchev-plan-state";
 const VALID_ID = /^([0-9]{2}\.[0-9]{2}|GAP-[0-9]{3,})$/;
 
 function readJson<T>(key: string, fallback: T): T {
@@ -91,31 +92,26 @@ async function pullCloudState(signal?: AbortSignal) {
 }
 
 export default function CloudPlanStateSync() {
+  const pathname = usePathname();
   useEffect(() => {
+    // Governance data is private admin content. Do not open a full-snapshot
+    // SSE stream or fetch all plan rows for every public vehicle-site visitor.
+    if (pathname !== "/admin/console") return;
     const controller = new AbortController();
     void pullCloudState(controller.signal).catch(() => {});
 
-    const source = new EventSource(`${ENDPOINT}?stream=1`);
-    const onState = (event: MessageEvent<string>) => {
-      try {
-        const body = JSON.parse(event.data) as { rows?: CloudRow[] };
-        if (Array.isArray(body.rows)) applyCloudRows(body.rows);
-      } catch {}
-    };
-    source.addEventListener("state", onState as EventListener);
-    source.onerror = () => { void pullCloudState(controller.signal).catch(() => {}); };
-
+    // Governance updates are rare. Five-minute polling inside the authorized
+    // admin console avoids reconnect storms and full-snapshot SSE egress.
     const fallback = window.setInterval(() => {
+      if (document.visibilityState !== "visible") return;
       void pullCloudState(controller.signal).catch(() => {});
-    }, 30000);
+    }, 300000);
 
     return () => {
       controller.abort();
       window.clearInterval(fallback);
-      source.removeEventListener("state", onState as EventListener);
-      source.close();
     };
-  }, []);
+  }, [pathname]);
 
   return null;
 }

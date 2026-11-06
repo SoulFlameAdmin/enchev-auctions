@@ -45,24 +45,24 @@ try {
         })).filter(x => x.href && !x.href.startsWith("/forge/")));
         assert.ok(destinations.length >= 3,"Intro must expose platform links");
         assert.ok(destinations.every(x=>x.target==="_top"),"Intro link must open a full platform page");
-        const inventoryLink = page.frameLocator('iframe[src="/forge/index.html"]').locator('a[href="/inventory"]').first();
-        // Hydration may mount the inventory CTA after the initial support/home anchors.
+        const inventoryLink = page.frameLocator('iframe[src="/forge/index.html"]').locator('a[href="/start"]').first();
+        // Hydration may mount the canonical buyer-journey CTA after the initial support/home anchors.
         // Wait for the real navigation target rather than asserting against a transient empty DOM.
         await inventoryLink.waitFor({state:"attached",timeout:15000});
         await inventoryLink.evaluate(el => el.click());
-        await page.waitForURL(url=>url.pathname==="/inventory",{timeout:15000});
+        await page.waitForURL(url=>url.pathname==="/start",{timeout:15000});
         assert.ok(!page.url().includes("/forge/"),"Destination must not remain inside Forge iframe");
       });
       await caseRun(`Every cinematic gateway opens a real top-level page ${size.width}`, async () => {
         await page.goto(base+"/",{waitUntil:"domcontentloaded"});
         const frame=page.frameLocator('iframe[src="/forge/index.html"]');
         const endpoints=[
-          {href:"/platform",name:"PLATFORM"},
-          {href:"/inventory",name:"BUY"},
-          {href:"/live-auctions",name:"LIVE AUCTIONS"},
-          {href:"/vehicle-history",name:"CHECK VEHICLE"},
-          {href:"/transport",name:"TRANSPORT"},
-          {href:"/presentation",name:"ABOUT"},
+          {href:"/",name:"HOME"},
+          {href:"/start",name:"BUY"},
+          {href:"/auctions",name:"LIVE AUCTIONS"},
+          {href:"/register",name:"REGISTER"},
+          {href:"/login",name:"LOGIN"},
+          {href:"/payments",name:"PAYMENTS"},
           {href:"/support",name:"SUPPORT"}
         ];
         for(const endpoint of endpoints){
@@ -71,7 +71,7 @@ try {
           assert.equal(await anchor.getAttribute("target"),"_top",endpoint.name+" must leave intro frame");
           await anchor.evaluate(element=>element.click());
           await page.waitForURL(url=>url.pathname===endpoint.href,{timeout:15000});
-          assert.ok(await page.locator("main#main-content").count()>0,endpoint.name+" must open real Next.js page");
+          await page.locator("main#main-content").first().waitFor({state:"attached",timeout:15000});
           await page.goto(base+"/",{waitUntil:"domcontentloaded"});
         }
         const ctas=frame.locator('[data-enchev-cta-label]');
@@ -105,13 +105,10 @@ try {
         const status = page.locator('select[aria-label="Филтър по статус на търга"]');
         await status.selectOption("LIVE");
         await page.waitForFunction(()=>new URL(location.href).searchParams.get("status")==="LIVE");
-        if (size.width < 768) {
-          await page.locator(".eaAppMenuButton").click();
-          await page.locator('#ea-mobile-navigation a[href="/platform"]').click();
-        } else {
-          await page.locator('.eaAppDesktopNav a[href="/platform"]').click();
-        }
-        await page.waitForURL(url=>url.pathname==="/platform");
+        // The globally shared, accessible drawer replaces the old platform-only desktop/mobile nav.
+        await page.getByRole("button",{name:"Отвори главното меню"}).click();
+        await page.locator('#ea-unified-drawer a[href="/vehicles"]').click();
+        await page.waitForURL(url=>url.pathname==="/vehicles");
       });
       await caseRun(`Working preview price filters and saved vehicles ${size.width}`, async () => {
         await page.goto(base+"/inventory?priceMin=12000&priceMax=13000",{waitUntil:"domcontentloaded"});
@@ -121,12 +118,20 @@ try {
         const heart=page.getByRole("button",{name:/Save 2018 BMW M4 F82 to preview watchlist/});
         await heart.click();
         assert.equal(await car.locator(".inventoryHeart").getAttribute("aria-pressed"),"true","Saved heart must update state");
-        await page.goto(base+"/profile",{waitUntil:"domcontentloaded"});
-        await page.locator('.profileWatchlistCard[data-lot-id="EA-10482"]').waitFor();
+        // Preview favourites persist only inside the legacy demo, never masquerade as a
+        // real authenticated buyer account's server-backed watchlist.
         await page.reload({waitUntil:"domcontentloaded"});
-        await page.locator('.profileWatchlistCard[data-lot-id="EA-10482"]').waitFor();
-        await page.locator('.profileWatchlistCard[data-lot-id="EA-10482"] .profileWatchlistRemove').click();
-        await page.locator('.profileWatchlistCard[data-lot-id="EA-10482"]').waitFor({state:"detached"});
+        const saved=page.getByRole("button",{name:"Remove 2018 BMW M4 F82 from preview watchlist"});
+        await saved.waitFor({timeout:15000});
+        assert.equal(await saved.getAttribute("aria-pressed"),"true","Demo favourite survives reload");
+        await page.goto(base+"/profile",{waitUntil:"domcontentloaded"});
+        assert.equal(await page.locator('.profileWatchlistCard[data-lot-id="EA-10482"]').count(),0,
+          "Guest preview favourites must not appear as real buyer-account records");
+        await page.goto(base+"/inventory?priceMin=12000&priceMax=13000",{waitUntil:"domcontentloaded"});
+        const remove=page.getByRole("button",{name:"Remove 2018 BMW M4 F82 from preview watchlist"});
+        await remove.waitFor({timeout:15000});
+        await remove.click();
+        await page.getByRole("button",{name:"Save 2018 BMW M4 F82 to preview watchlist"}).waitFor();
       });
       if(size.width===1440) {
         await caseRun("Every sample car opens its own correct lot page", async () => {

@@ -1,80 +1,33 @@
 # Enchev Auctions — 01.05 Supabase project
 
-Status: GREEN — exact shared Supabase development/governance binding is provider-verified, CI-guarded and live-endpoint verified
-MASTER SYSTEM PLAN v1.0 FROZEN task: `01.05`
-Execution wave: `WAVE 1 — Engineering foundation & cross-cutting design`
-Depends on: completed Wave 0 governance baseline
+## Canonical Enchev-owned project — 2026-11-07
 
-## Bound project
-- Supabase project ref: `frhletkiuupgksmgxoxc`
-- Project name: `soulflame-twins`
-- Region: `eu-west-1`
-- Provider status at verification: `ACTIVE_HEALTHY`
-- PostgreSQL engine: `17`
-- Canonical API base: `https://frhletkiuupgksmgxoxc.supabase.co`
+- **Supabase ref:** `ejfrnjhlggebzmpmxajl`
+- **Project:** `enchev-auctions`
+- **Organization:** `EnchevAuctions`
+- **Region:** `eu-central-1`
+- **Observed provider status:** `ACTIVE_HEALTHY`
+- **API base:** `https://ejfrnjhlggebzmpmxajl.supabase.co`
+- **Dedicated governance table:** `public.enchev_plan_state`, RLS enabled, no direct `anon` or `authenticated` grants.
+- **Dedicated Edge Function:** `enchev-plan-state`, ACTIVE (v2) in the same project.
+- **Live verification:** [Verify Enchev Web run 42304527377](https://github.com/SoulFlameAdmin/enchev-auctions/actions/runs/42304527377) established HTTP 200 with a `rows` array and HTTP 401 for a POST without OIDC.
+- **Canonical repository binding:** `config/enchev-supabase-project.json` records `shared_project:false` and `scope:enchev-only-development-governance`.
 
-The project is shared with other SoulFlame/DAVID/Zorbas workloads. For Enchev, this binding is deliberately limited to development/governance resources and **must not be interpreted as production auction authority**.
+The plan-state database is a **governance projection only**, not the authoritative database for production bids, auction winners, payments or vehicle release. Existing Enchev auction/buyer tables retain their own RLS and responsibility.
 
-## Enchev resource allowlist observed
-Tables:
-- `public.enchev_development_events`
-- `public.enchev_plan_state`
+## Security
+- Edge writes require signed GitHub OIDC JWT with exact repository ID, main-branch push, approved workflow, short-lived audience and issuer claims.
+- Edge reads are polled at bounded frequency only from the admin console; there is no public homepage SSE snapshot flood.
+- `public.enchev_plan_state` cannot be accessed through browser anonymous Data API privileges.
+- Source-backed GREEN proof and explicitly blocked YELLOW entries are eligible for the main-only GitHub sync; cloud GREEN still requires actual write/read-back after required CI succeeds.
 
-Edge Functions:
-- `enchev-development-status`
-- `enchev-plan-state`
+## Historical 2026-09-19 configuration — superseded
+Earlier task 01.05 evidence verified a **shared development-governance** setup at `frhletkiuupgksmgxoxc` (`soulflame-twins`, `eu-west-1`). That historical project included `enchev_plan_state`, `enchev_development_events`, `enchev-plan-state`, and `enchev-development-status` resources. It was not Enchev auction authority.
 
-Both observed Enchev tables have RLS enabled and zero `anon` / zero `authenticated` table grants. Cloud plan writes remain behind the existing GitHub OIDC Edge Function path.
+Historical verification included GitHub run `35249157579` SUCCESS and binding commit `37ca377d6c4a553313d7b2a11cf4e40d44506197`. Those historical claims must not be confused with the new canonical project.
 
-## Repository contract
-`config/enchev-supabase-project.json` is the non-secret canonical binding. It contains only public project identity/scope metadata and an Enchev resource allowlist. It explicitly records:
-- `shared_project: true`;
-- `scope: development-governance`;
-- `auction_authority: false`.
+**Data preservation:** The Twins project cannot currently be read by the connected Supabase account and previously returned `exceed_egress_quota` HTTP 402. No complete export of its history, cloud-only rows or development events has been established. They remain untouched and are not claimed migrated. See `docs/ENCHEV_GOVERNANCE_ISOLATION_2026_11_07.md`.
 
-`scripts/verify-supabase-project-binding.mjs` rejects:
-- project-ref or URL drift;
-- region/name drift;
-- falsely marking the shared project as auction authority;
-- expansion outside the Enchev resource allowlist;
-- secret-like fields in the binding file;
-- disagreement between the canonical project URL and the existing cloud-state client/sync code.
+## Acceptance boundary
 
-CI also performs a public live GET against `enchev-plan-state`; no Supabase secret is required.
-
-## Security boundary
-The shared Supabase project has unrelated security-advisor findings in other schemas/tables/functions. They are not modified under task 01.05 because doing so could affect unrelated systems. The latest provider advisor includes `public.spatial_ref_sys` with RLS disabled, PostGIS installed in `public`, unrelated SECURITY DEFINER grants, and leaked-password protection disabled. Those findings belong to their owning workstreams or to a future explicit Enchev dependency when applicable.
-
-Task 01.05 does **not** claim:
-- production auction PostgreSQL authority;
-- production bid/result tables;
-- isolated production Supabase tenancy;
-- Redis, KYC, storage, or provider readiness.
-
-## GREEN evidence
-Provider evidence:
-- Supabase project `frhletkiuupgksmgxoxc` reported `ACTIVE_HEALTHY` in `eu-west-1`;
-- project URL verified as `https://frhletkiuupgksmgxoxc.supabase.co`;
-- Enchev tables `enchev_development_events` and `enchev_plan_state` verified with RLS enabled and zero `anon` / zero `authenticated` table grants;
-- Enchev Edge Functions `enchev-development-status` and `enchev-plan-state` verified ACTIVE.
-
-Repository / CI evidence:
-- canonical binding config commit: `37ca377d6c4a553313d7b2a11cf4e40d44506197`;
-- binding verifier commit: `8795af9214b6dcbc9e380b97950d18919cec01b2`;
-- governance document implementation commit: `5d62ecef07a3717a773b603ff38483e6c7406259`;
-- GitHub Actions run `35249157579`: SUCCESS on exact implementation commit;
-- `Supabase project binding invariant`: PASS;
-- `Supabase project binding self-tests`: PASS (`7` negative cases rejected);
-- `Supabase project live endpoint`: PASS;
-- all prior governance guards in the same run: PASS;
-- TypeScript check in the same run: PASS;
-- production build in the same run: PASS;
-- `sync-plan-cloud` job in the same run: PASS.
-
-Production regression evidence:
-- canonical production URL returned HTTP `200` after the run;
-- Vercel production error/fatal log query for the verification hour returned no matching runtime logs.
-
-No new runtime application behavior is introduced by 01.05; the task binds and verifies existing infrastructure. Under the frozen 00.09 GREEN contract, a new exact Vercel deployment is therefore not required for this governance/foundation-only change when CI production build and live production health are proven.
-
-No pricing/payment/finance scope is added.
+This revision makes the project's own governance storage available and independently testable. The source, new client binding, OIDC sync and exact 309th GREEN evidence remain subject to PR review, required checks, merge and cloud read-back. It is not permission to bypass security checks, change billing, claim legal residency approval or enable real-money auctions.

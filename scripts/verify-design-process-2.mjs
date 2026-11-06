@@ -95,7 +95,7 @@ function validateFoundation(css, layout, capture, workflow) {
   assert(workflow.includes('widths!=="360,390,430,1366,1440,1920"'), "DP2-03 CI must enforce the full responsive width set");
 }
 
-function validateAppShell(component, css, layout, capture) {
+function validateAppShell(component, css, layout, capture, unifiedMenu) {
   for (const needle of [
     "data-design-task=\"DP2-04\"",
     "eaAppDesktopNav",
@@ -118,13 +118,23 @@ function validateAppShell(component, css, layout, capture) {
   ]) assert(css.includes(needle), `DP2-04 shell CSS missing ${needle}`);
 
   assert(layout.includes('import "./dp2-app-shell.css";'), "Root layout must import DP2 app shell CSS");
-  assert(layout.includes("<EnchevAppShell />"), "Root layout must mount unified app shell");
+  if (layout.includes("<EaUnifiedMenu />")) {
+    assert(unifiedMenu && unifiedMenu.includes('role="dialog"') &&
+      unifiedMenu.includes('aria-modal="true"') &&
+      unifiedMenu.includes('event.key==="Escape"') &&
+      unifiedMenu.includes('onClick={dismiss}') &&
+      unifiedMenu.includes('href:"/vehicles"') &&
+      unifiedMenu.includes('href:"/auctions"'),
+      "Current unified menu must preserve keyboard escape, modal focus and buyer navigation");
+  } else {
+    assert(layout.includes("<EnchevAppShell />"), "Root layout must mount a verified app menu");
+  }
   assert(capture.includes("verifyDP204AppShell"), "DP2-04 visual capture runtime verification missing");
   assert(capture.includes("drawer close control did not receive focus"), "DP2-04 mobile focus runtime assertion missing");
   assert(capture.includes("Escape did not close drawer"), "DP2-04 Escape-close runtime assertion missing");
 }
 
-function validateHomeHero(component,spotlight,messages,css,layout,page,translationKeys,capture) {
+function validateHomeHero(component,spotlight,messages,css,layout,page,translationKeys,capture,introPage) {
   for (const needle of [
     'data-design-task="DP2-05"',
     "eaHeroV2Title",
@@ -163,7 +173,11 @@ function validateHomeHero(component,spotlight,messages,css,layout,page,translati
   ]) assert(keys.includes(key), `DP2-05 translation registry missing ${key}`);
 
   assert(layout.includes('import "./dp2-home-hero.css";'), "Root layout must import DP2-05 hero CSS");
-  assert(page.includes('src="/forge/index.html"') && page.includes("<MasterSystemPlanV1 />"), "Homepage must render the official Forge cinematic surface with MasterSystemPlanV1");
+  assert(page.includes("<HomeHeroV2 />"), "Classic marketplace must retain original hero");
+  if (introPage !== undefined) {
+    assert(introPage.includes('src="/forge/index.html"'), "Public homepage must retain cinematic Forge intro");
+    assert(!introPage.includes("<MasterSystemPlanV1"), "Public cinematic homepage must not expose MASTER plan");
+  }
   assert(!page.includes('<section className="eaHero" id="top">'), "Legacy campaign hero must be removed from homepage DOM");
   assert(!page.includes("10K+"), "DP2-05 must not present unverified inventory-volume claims");
   assert(!page.includes("Европа · САЩ · Канада"), "DP2-05 must not hardcode market availability in the hero");
@@ -212,22 +226,23 @@ function validateRepository() {
 
   const appShell = read("app/components/EnchevAppShell.tsx");
   const appShellCss = read("app/dp2-app-shell.css");
-  validateAppShell(appShell, appShellCss, rootLayout, capture);
+  validateAppShell(appShell, appShellCss, rootLayout, capture, read("app/components/EaUnifiedMenu.tsx"));
 
   const homeHero = read("app/components/HomeHeroV2.tsx");
   const homeHeroMessages = read("app/home-hero-messages.ts");
   const homeHeroSpotlight = read("app/components/HomeLiveSpotlight.tsx");
   const homeHeroCss = read("app/dp2-home-hero.css");
-  const homePage = read("app/page.tsx");
+  const homePage = read("app/platform/page.tsx");
+  const introPage = read("app/page.tsx");
   const translationKeys = read("locales/translation-keys.json");
-  validateHomeHero(homeHero,homeHeroSpotlight,homeHeroMessages,homeHeroCss,rootLayout,homePage,translationKeys,capture);
+  validateHomeHero(homeHero,homeHeroSpotlight,homeHeroMessages,homeHeroCss,rootLayout,homePage,translationKeys,capture,introPage);
 
   const plan = read("docs/DESIGN_PROCESS_2.md");
   assert(plan.includes("DP2-01") && plan.includes("DP2-30"), "DP2 plan must define DP2-01 and DP2-30");
   assert(plan.includes("Do not invent DP2-31") || plan.includes("Do not invent DP2-31 automatically"), "DP2 plan must forbid automatic DP2-31 scope growth");
 
   const menu = read("app/components/MasterSystemPlanV1.tsx");
-  assert(menu.includes("Design Process 2"), "Enchev command-center menu must expose Design Process 2");
+  assert(menu.includes("Дизайн процес 2"), "Enchev command-center menu must expose localized Design Process 2");
   assert(menu.includes("<DesignProcess2"), "Enchev command center must render the DesignProcess2 panel");
 
   const panel = read("app/components/DesignProcess2.tsx");
@@ -339,7 +354,7 @@ function selfTest() {
   const heroMessagesFixture='"bg-BG" "en-US" home.hero.title.primary home.hero.availability.note home.hero.spotlight.status home.hero.spotlight.cta активирания market profile activated market profile';
   const heroCssFixture='@media(max-width:430px) @media(max-width:360px) @media(min-width:1920px) .eaHeroV2Proof .eaHeroDiscovery';
   const heroLayoutFixture='import "./dp2-home-hero.css";';
-  const heroPageFixture='src="/forge/index.html" <MasterSystemPlanV1 />';
+  const heroPageFixture='<HomeHeroV2 /> <MasterSystemPlanV1 />';
   const heroKeysFixture=JSON.stringify({keys:["home.hero.actions.browse","home.hero.actions.live","home.hero.availability.note","home.hero.eyebrow","home.hero.lead","home.hero.proof.identity","home.hero.proof.status","home.hero.proof.transport","home.hero.title.accent","home.hero.title.primary","home.hero.title.secondary"]});
   const heroCaptureFixture='verifyDP205HomeHero spotlight must stack below hero content desktop hero columns overlap';
   const heroSpotlightFixture="HOME_HERO_KEYS.spotlightStatus HOME_HERO_KEYS.spotlightCta";

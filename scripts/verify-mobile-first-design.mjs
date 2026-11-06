@@ -14,6 +14,8 @@ const FILES = {
   liveD24Css: "app/live-auctions/live-d24.css",
   profilePage: "app/profile/page.tsx",
   profileCss: "app/profile/profile-shell.css",
+  buyerProfile: "app/components/BuyerAccountDashboard.tsx",
+  buyerProfileCss: "app/components/buyer-account-dashboard.css",
 };
 
 function fail(message) {
@@ -56,7 +58,16 @@ export function validateMobileContract(sources) {
   need(sources.liveCss, /\.liveQueueGrid,\.liveSoldGrid\{grid-template-columns:1fr\}/, "live queue and sold grid must collapse to one column");
   need(sources.liveD24Css, /@media\(max-width:560px\)/, "D24 next-lot preview mobile breakpoint missing");
 
-  need(sources.profilePage, /data-design-task="D31"/, "profile D31 shell marker missing");
+  if (sources.profilePage.includes("<BuyerAccountDashboard />")) {
+    need(sources.profilePage, /import BuyerAccountDashboard from/, "real profile dashboard import required");
+    need(sources.buyerProfile, /fetch\("\/api\/buyer\/workspace"/, "real buyer workspace fetch required");
+    need(sources.buyerProfile, /aria-live="polite"/, "real buyer session status must be accessible");
+    need(sources.buyerProfileCss, /@media\(max-width:760px\)/, "buyer mobile breakpoint missing");
+    need(sources.buyerProfileCss, /\.eaBuyerAccountColumns\{grid-template-columns:1fr\}/, "buyer profile must be single-column on mobile");
+    need(sources.buyerProfileCss, /\.eaBuyerAccountRow button\{[^}]*min-height:44px/, "buyer account action touch target too small");
+  } else {
+    need(sources.profilePage, /data-design-task="D31"/, "profile D31 shell marker missing");
+  }
   need(sources.profileCss, /@media\(max-width:640px\)/, "profile mobile breakpoint missing");
   need(sources.profileCss, /\.profileAccountNav a\{[\s\S]*?min-height:44px/, "profile account navigation must be touch-sized");
 

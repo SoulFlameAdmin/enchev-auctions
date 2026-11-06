@@ -40,7 +40,7 @@ const config=readJson(CONFIG_PATH);
 if(frozenTask()!=="Multi-auction realtime consistency test||test") fail("frozen task identity/kind drift");
 if(JSON.stringify(config.tasks?.map(x=>[x.id,x.name,x.kind]))!==JSON.stringify([["33.16","Multi-auction realtime consistency test","test"]])) fail("task contract drift");
 const binding=readJson(BINDING_PATH);
-if(binding.scope!=="development-governance"||binding.auction_authority!==false) fail("Supabase authority boundary drift");
+if(binding.scope!=="enchev-only-development-governance"||binding.shared_project!==false||binding.project_ref!=="ejfrnjhlggebzmpmxajl"||binding.auction_authority!==false) fail("Supabase authority boundary drift");
 if(config.authority?.auctionState!=="postgresql"||config.authority?.realtimeProjectionAuthoritative!==false||config.authority?.governanceSupabaseAuthoritative!==false) fail("authority drift");
 for(const key of ["authenticatedUserScoped","perAuctionSequenceMonotonic","interleavedAuctionsIndependent","duplicateEventsIdempotent","sequenceGapMarksOnlyAffectedAuctionStale","bidRegressionRejected","closedAndCancelledBecomeEnded"]) if(config.semantics?.[key]!==true) fail("semantic guardrail disabled: "+key);
 if(!fs.readFileSync(INDEX_PATH,"utf8").includes('export * from "./multi-auction-realtime-consistency";')) fail("domain export missing");

@@ -10,6 +10,7 @@ const FILES = {
   lot: "app/lot/[id]/page.tsx",
   live: "app/live-auctions/page.tsx",
   profile: "app/profile/page.tsx",
+  buyerProfile: "app/components/BuyerAccountDashboard.tsx",
 };
 
 function fail(message) {
@@ -46,7 +47,12 @@ export function validateAccessibilityContract(sources) {
   need(sources.inventory, /aria-pressed=\{viewMode===/, "inventory view switch pressed-state semantics missing");
   need(sources.lot, /role="dialog"/, "lot image viewer dialog semantics missing");
   need(sources.live, /aria-label="Demo bidding and next lot"/, "live bid-panel accessible label missing");
-  need(sources.profile, /aria-label="Навигация на профила"/, "profile account navigation label missing");
+  if (sources.profile.includes("<BuyerAccountDashboard />")) {
+    need(sources.buyerProfile, /<nav className="eaBuyerStages" aria-label="Навигация на профила">/, "real profile navigation landmark missing");
+    need(sources.buyerProfile, /aria-live="polite"/, "buyer access-state announcements missing");
+  } else {
+    need(sources.profile, /aria-label="Навигация на профила"/, "profile account navigation label missing");
+  }
 
   return true;
 }
@@ -80,7 +86,7 @@ if (process.argv.includes("--self-test")) {
     copy.accessibility = copy.accessibility.replace("outline:3px solid #8bffc0!important;", "outline:none!important;");
   });
   expectRejected("remove route target", sources, (copy) => {
-    copy.profile = copy.profile.replace('id="main-content" ', "");
+    copy.profile = copy.profile.replace('id="main-content"', 'id="missing-main-target"');
   });
   console.log("ACCESSIBILITY_VISUAL_PASS_SELF_TEST PASS negative_cases=3");
 } else {

@@ -1,0 +1,36 @@
+name: MASTER 309 Evidence
+
+on:
+  pull_request:
+    paths:
+      - "app/components/VerifiedPlanEvidenceSync.tsx"
+      - "scripts/verify-master-green-309.mjs"
+      - ".github/workflows/master-309-evidence.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  verified-evidence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: "24"
+      - name: Check numbered proof and source contract
+        run: node scripts/verify-master-green-309.mjs
+      - name: Reject forged and duplicate GREEN evidence
+        run: node scripts/verify-master-green-309.mjs --self-test
+      - name: Verify cloud projection source contract (no write)
+        run: node scripts/verify-cloud-plan-state.mjs
+      - name: Verify GREEN evidence invariant
+        run: node scripts/verify-green-requires-evidence.mjs
+      - name: Verify rate-limit contract positive and negative cases
+        run: |
+          node --experimental-strip-types scripts/verify-rate-limit-response-contract.mjs
+          node --experimental-strip-types scripts/verify-rate-limit-response-contract.mjs --self-test
