@@ -21,8 +21,10 @@ try{
         const result=await page.evaluate(()=>{
           const root=document.querySelector("main#main-content")||document.querySelector("main[data-rtl-capability-page]")||document.querySelector("main");
           const shell=document.querySelector(".eaAppShell");
+          const menu=document.querySelector(".eaUnifiedTrigger");
           const mainRect=root?.getBoundingClientRect();
           const shellRect=shell?.getBoundingClientRect();
+          const menuRect=menu?.getBoundingClientRect();
           const bidder=document.querySelector(".proLiveBidDock");
           const next=document.querySelector(".proLiveNowNext");
           return {
@@ -31,6 +33,8 @@ try{
             bodyWidth:document.body.scrollWidth,
             mainWidth:mainRect?.width??0,
             shellWidth:shellRect?.width??0,
+            menuVisible:!!menuRect&&menuRect.width>0,
+            menuRight:menuRect?.right??0,
             dockPosition:bidder?getComputedStyle(bidder).position:null,
             dockWidth:bidder?.getBoundingClientRect().width??0,
             nextWidth:next?.getBoundingClientRect().width??0,
@@ -44,7 +48,10 @@ try{
         assert.ok(result.documentWidth<=viewport.width+2,route+" page overflows viewport: "+JSON.stringify(result));
         assert.ok(result.bodyWidth<=viewport.width+2,route+" body overflows viewport: "+JSON.stringify(result));
         assert.ok(result.mainWidth>=viewport.width*.87,route+" main clipped to partial width: "+JSON.stringify(result));
-        if(route!=="/presentation" && route!=="/" && route!=="/workspace")assert.ok(result.shellWidth>=viewport.width*.98,route+" header clipped to partial width: "+JSON.stringify(result));
+        // The current design uses a floating accessible global menu instead of
+        // the legacy full-width .eaAppShell header.
+        assert.ok(result.menuVisible && result.menuRight<=viewport.width+2,
+          route+" global menu must be visible and fully inside the phone viewport: "+JSON.stringify(result));
         if(route==="/live-auctions"){
           assert.equal(result.dockPosition,"static","Live bid dock overlays cards on mobile");
           assert.ok(result.dockWidth>=viewport.width*.75,"Live bidder too narrow");
@@ -55,9 +62,9 @@ try{
           assert.ok(quickRect.y+quickRect.height<=viewport.height+2,"Mobile price/action bar must fit phone");
           assert.match(await quickBar.innerText(),/CURRENT DEMO BID/,"Demo-only price label must be visible");
           assert.ok(await quickBar.locator('button').isVisible(),"Bid options shortcut must remain visible");
-          const mainHeader=page.locator(".eaAppHeader");
+          const mainHeader=page.getByRole("button",{name:"Отвори главното меню"});
           const headerRect=await mainHeader.boundingBox();
-          assert.ok(headerRect && headerRect.height<=64,"Mobile header must be compact");
+          assert.ok(headerRect && headerRect.height<=64,"Mobile menu trigger must be compact");
           // Hero rotates among multiple demo lots, so verify the actual GTI model inside its catalog instead of assuming the active lot.
 
           const visual=page.locator(".liveVisual");
@@ -92,11 +99,11 @@ try{
         if(route==="/inventory"){
           // The current page is paginated: image equality is guarded in source and lot detail too.
           assert.ok(await page.locator(".inventoryGrid").count()>0,"Inventory must keep phone card layout");
-          await page.locator(".eaAppMenuButton").click();
-          const drawer=page.locator("#ea-mobile-navigation");
+          await page.getByRole("button",{name:"Отвори главното меню"}).click();
+          const drawer=page.locator("#ea-unified-drawer");
           await drawer.waitFor({state:"visible",timeout:5000});
-          assert.ok(await drawer.locator('a[href="/live-auctions"]').count()>0,"Missing mobile live link");
-          await page.locator(".eaAppMobileClose").click();
+          assert.ok(await drawer.locator('a[href="/auctions"]').count()>0,"Missing canonical mobile live link");
+          await page.getByRole("button",{name:"Затвори менюто"}).click();
         }
         console.log("PHONE_PASS",viewport.width,route);
       }catch(error){
