@@ -18,13 +18,14 @@ import "./mobile-premium.css";
 import "./mobile-all-routes.css";
 import "./mobile-live-compact.css";
 import "./home-shared-buyer-theme.css";
+import "./ea-unified-menu.css";
 import VerifiedPlanEvidenceSync from "./components/VerifiedPlanEvidenceSync";
 import TestPassGreenGuard from "./components/TestPassGreenGuard";
 import GapAppendOnlyGuard from "./components/GapAppendOnlyGuard";
 import PlanStatusAuditTrail from "./components/PlanStatusAuditTrail";
 import CloudPlanStateSync from "./components/CloudPlanStateSync";
 import LotNavigationBridge from "./components/LotNavigationBridge";
-import EnchevAppShell from "./components/EnchevAppShell";
+import EaUnifiedMenu from "./components/EaUnifiedMenu";
 import BuyerJourneyRail from "./components/BuyerJourneyRail";
 import EnglishUiEnforcer from "./components/EnglishUiEnforcer";
 
@@ -48,7 +49,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <CloudPlanStateSync />
         <LotNavigationBridge />
         <EnglishUiEnforcer />
-        <EnchevAppShell />
+        <EaUnifiedMenu />
         {children}
         <BuyerJourneyRail />
       </body>
