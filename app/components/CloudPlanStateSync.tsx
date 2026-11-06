@@ -20,7 +20,7 @@ const STATUS_KEY = "enchev-system-status-v5";
 const NOTES_KEY = "enchev-system-notes-v5";
 const GAP_KEY = "enchev-system-gaps-v5";
 const CHANNEL_KEY = "enchev-system-realtime-v5";
-const ENDPOINT = "https://frhletkiuupgksmgxoxc.supabase.co/functions/v1/enchev-plan-state";
+const ENDPOINT = "https://ejfrnjhlggebzmpmxajl.supabase.co/functions/v1/enchev-plan-state";
 const VALID_ID = /^([0-9]{2}\.[0-9]{2}|GAP-[0-9]{3,})$/;
 
 function readJson<T>(key: string, fallback: T): T {
@@ -100,28 +100,16 @@ export default function CloudPlanStateSync() {
     const controller = new AbortController();
     void pullCloudState(controller.signal).catch(() => {});
 
-    const source = new EventSource(`${ENDPOINT}?stream=1`);
-    const onState = (event: MessageEvent<string>) => {
-      try {
-        const body = JSON.parse(event.data) as { rows?: CloudRow[] };
-        if (Array.isArray(body.rows)) applyCloudRows(body.rows);
-      } catch {}
-    };
-    source.addEventListener("state", onState as EventListener);
-    // EventSource reconnects on its own. Do not hammer the egress-limited
-    // project with another full snapshot after each connection error.
-    source.onerror = () => {};
-
+    // Governance updates are rare. Five-minute polling inside the authorized
+    // admin console avoids reconnect storms and full-snapshot SSE egress.
     const fallback = window.setInterval(() => {
-      if (document.visibilityState !== "visible" || source.readyState === EventSource.OPEN) return;
+      if (document.visibilityState !== "visible") return;
       void pullCloudState(controller.signal).catch(() => {});
     }, 300000);
 
     return () => {
       controller.abort();
       window.clearInterval(fallback);
-      source.removeEventListener("state", onState as EventListener);
-      source.close();
     };
   }, [pathname]);
 
