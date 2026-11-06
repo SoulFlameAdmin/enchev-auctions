@@ -177,10 +177,7 @@ export default function VehiclesPage(){
     </div>
     </div>
 
-    <figure className="eaMarketShowcase" aria-label="Илюстративен автомобил">
-     <img src="/forge/media/9b20239c5e1099a605ec.jpg" alt="Автомобил Defender — илюстративна снимка за каталога" loading="eager"/>
-     <figcaption>Илюстративна снимка · Не е реална обява</figcaption>
-    </figure>
+
    </section>
 
    <aside className="eaMarketPromo" aria-label="Регистрация и отстъпка">
@@ -197,7 +194,7 @@ export default function VehiclesPage(){
       <div className="eaMarketCardContent"><span className="eaMarketCardLot">ЛОТ {l.lot_number} · {l.country_code||"ЕВРОПА"}</span><h3><a href={nextFor(l)}>{l.title}</a></h3><div className="eaMarketCardSpecs">{l.model_year&&<span>{l.model_year} г.</span>}{l.mileage_km!==null&&<span>{l.mileage_km.toLocaleString("bg-BG")} км</span>}{l.fuel_type&&<span>{l.fuel_type}</span>}{l.transmission&&<span>{l.transmission}</span>}</div><div className="eaMarketCardBottom"><div><small>Начална цена</small><strong>{price(l.starting_price,l.price_currency)}</strong></div><button type="button" onClick={()=>void save(l)} disabled={busy===l.id} aria-label={"Запази "+l.title}><Bookmark/></button></div><a className="eaMarketCardDetails" href={nextFor(l)}>Виж детайли <span>↗</span></a></div>
      </article>)}</div>:
      <>{(mode==="inactive"||mode==="ready")&&!query&&!make&&!year&&tab==="all"&&<div className="eaMarketAwaiting" role="status">
-      <div className="eaMarketPreviewNotice"><span className="eaMarketEyebrow">ПРЕГЛЕД НА БЪДЕЩИЯ КАТАЛОГ</span><strong>Тук ще се появяват реалните автомобили.</strong><p>След проверка на продавача и публикуване на лота снимката, характеристиките, началната цена и графикът ще се зареждат автоматично. Следващите карти са само визуален пример и не са обяви.</p></div>
+
       {!query&&!make&&!year&&tab==="all"&&<div className="eaMarketPreviewGrid" aria-label="Визуални примерни карти, не реални обяви">
         {[
           {title:"BMW · Седан",image:"/forge/media/9b20239c5e1099a605ec.jpg"},
