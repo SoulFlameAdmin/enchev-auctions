@@ -134,7 +134,7 @@ export default function VehiclesPage(){
      <a href="/transport">Транспорт</a>
     </div>
     <div className="eaMarketTopActions">
-     {stepsUnlocked&&<a className="eaMarketStepsLink" href="/start" title={age!==null&&age>=30?"Насоки след първия месец":"Насоки след първата седмица"}>Моите стъпки <span>{age!==null&&age>=30?"30+":"7+"}</span></a>}
+     {stepsUnlocked&&<a className="eaMarketStepsLink" href="/start" title={typeof age==="number"&&age>=30?"Насоки след първия месец":"Насоки след първата седмица"}>Моите стъпки <span>{age!==null&&age>=30?"30+":"7+"}</span></a>}
      {registered&&<a className="eaMarketTopSquare" href="/profile" aria-label="Известия в профила"><Bell/></a>}
      <a className="eaMarketProfile" href={registered?"/profile":"/login"} aria-label={registered?"Моят профил":"Вход в профила"}><Profile/><span>{registered?"Моят профил":"Вход"}</span></a>
     </div>
