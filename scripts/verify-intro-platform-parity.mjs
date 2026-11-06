@@ -71,7 +71,7 @@ for(const href of ['href:"/vehicles"','href:"/auctions"','href:"/start"']) {
 const bridge = read("scripts/restore-forge-assets.mjs");
 for (const token of [
   'href: "/vehicles"', 'href: "/auctions"', 'href: "/start"',
-  'href: "/transport"', 'href: "/vehicle-history"', 'href: "/presentation"',
+  'href: "/transport"', 'href: "/vehicle-history"', 'href: "/payments"',
   'href: "/support"', '"_top"', "window.top.location.assign(href)",
   "ensurePlatformNavigation()",
 ]) requireText(bridge, token, "Cinematic button-to-platform bridge");
