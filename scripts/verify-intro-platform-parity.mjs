@@ -58,8 +58,15 @@ for (const token of [
 requireText(read("app/components/LotNavigationBridge.tsx"), "/lot/", "Inventory card-to-lot navigation bridge");
 
 const nav = read("app/site-navigation.ts");
-requireText(nav, 'href: "/platform"', "Marketplace navigation");
-requireText(nav, 'href: "/platform#how"', "How to Buy must reach classic page");
+for (const [href, label] of [
+  ['href: "/vehicles"', "Vehicle catalog navigation"],
+  ['href: "/auctions"', "Live auction navigation"],
+  ['href: "/start"', "How to Buy journey navigation"],
+]) requireText(nav, href, label);
+const unifiedMenu=read("app/components/EaUnifiedMenu.tsx");
+for(const href of ['href:"/vehicles"','href:"/auctions"','href:"/start"']) {
+  requireText(unifiedMenu, href, "Visible buyer menu must match canonical routes");
+}
 
 const bridge = read("scripts/restore-forge-assets.mjs");
 for (const token of [
