@@ -71,7 +71,7 @@ try {
           assert.equal(await anchor.getAttribute("target"),"_top",endpoint.name+" must leave intro frame");
           await anchor.evaluate(element=>element.click());
           await page.waitForURL(url=>url.pathname===endpoint.href,{timeout:15000});
-          assert.ok(await page.locator("main#main-content").count()>0,endpoint.name+" must open real Next.js page");
+          await page.locator("main#main-content").first().waitFor({state:"attached",timeout:15000});
           await page.goto(base+"/",{waitUntil:"domcontentloaded"});
         }
         const ctas=frame.locator('[data-enchev-cta-label]');
