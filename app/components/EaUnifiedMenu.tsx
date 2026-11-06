@@ -3,6 +3,7 @@
 import {useEffect,useRef,useState,type FormEvent} from "react";
 import {usePathname} from "next/navigation";
 import EaOfficialLogo from "./EaOfficialLogo";
+import Image from "next/image";
 
 type IconName="home"|"car"|"live"|"steps"|"history"|"truck"|"support"|"login"|"register"|"admin"|"user";
 const icons:Record<IconName,string>={
@@ -21,14 +22,14 @@ const icons:Record<IconName,string>={
 function MenuIcon({name}:{name:IconName}){
  return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={icons[name]}/></svg>;
 }
-const sections:{label:string;description:string;href:string;icon:IconName}[]=[
- {label:"Начало",description:"Обратно към началната страница",href:"/",icon:"home"},
- {label:"Автомобили",description:"Каталог, търсене и лотове",href:"/vehicles",icon:"car"},
- {label:"Търгове на живо",description:"Активни и предстоящи търгове",href:"/auctions",icon:"live"},
- {label:"Как се купува",description:"Стъпките от избор до получаване",href:"/start",icon:"steps"},
- {label:"История на автомобил",description:"Проверки и данни за автомобила",href:"/vehicle-history",icon:"history"},
- {label:"Транспорт",description:"Доставка и получаване",href:"/transport",icon:"truck"},
- {label:"Поддръжка",description:"Въпроси и съдействие",href:"/support",icon:"support"}
+const sections:{label:string;description:string;href:string;icon:IconName;photo:string}[]=[
+ {label:"Начало",description:"Обратно към началната страница",href:"/",icon:"home",photo:"/forge/media/88dd191a396c4e87c387.jpg"},
+ {label:"Автомобили",description:"Каталог, търсене и лотове",href:"/vehicles",icon:"car",photo:"/forge/media/9b20239c5e1099a605ec.jpg"},
+ {label:"Търгове на живо",description:"Активни и предстоящи търгове",href:"/auctions",icon:"live",photo:"/forge/media/20ac6eaa8d0b086cee3c.jpg"},
+ {label:"Как се купува",description:"Стъпките от избор до получаване",href:"/start",icon:"steps",photo:"/forge/media/81f625f9053d53ae5f72.jpg"},
+ {label:"История на автомобил",description:"Проверки и данни за автомобила",href:"/vehicle-history",icon:"history",photo:"/forge/media/ca18bb752d0b714ef48e.jpg"},
+ {label:"Транспорт",description:"Доставка и получаване",href:"/transport",icon:"truck",photo:"/forge/media/9e4253c49399505b018a.jpg"},
+ {label:"Поддръжка",description:"Въпроси и съдействие",href:"/support",icon:"support",photo:"/forge/media/833f233b33cbcd789d20.jpg"}
 ];
 function isActiveSection(pathname:string,href:string):boolean{
  if(href==="/")return pathname==="/";
@@ -112,7 +113,7 @@ export default function EaUnifiedMenu(){
      <header className="eaUnifiedHeader">
        <div className="eaUnifiedBrandGroup">
          <a href="/" className="eaUnifiedBrand" aria-label="E&A — Начало"><EaOfficialLogo /></a>
-         <span className="eaUnifiedBrandCaption">АВТОМОБИЛНИ ТЪРГОВЕ · ЕВРОПА</span>
+         
        </div>
        <div className="eaUnifiedHeaderActions">
          <a href="/profile" aria-label="Моят профил" title="Моят профил"><MenuIcon name="user"/></a>
@@ -138,7 +139,7 @@ export default function EaUnifiedMenu(){
        </div>
        <nav className="eaUnifiedLinks" aria-label="Главна навигация">
        {sections.map((item,index)=><a key={item.href} href={item.href} onClick={()=>setOpen(false)} className={[item.icon==="live"?"is-live":"",isActiveSection(pathname,item.href)?"is-active":""].filter(Boolean).join(" ")} aria-current={isActiveSection(pathname,item.href)?"page":undefined}>
-         <span className="eaUnifiedNavIcon"><MenuIcon name={item.icon}/></span>
+         <span className="eaUnifiedNavMedia"><Image className="eaUnifiedNavPhoto" src={item.photo} alt="" width={96} height={96} quality={62} sizes="48px"/><span className="eaUnifiedNavPhotoBadge"><MenuIcon name={item.icon}/></span></span>
          <span className="eaUnifiedNavText"><strong>{item.label}</strong><small>{item.description}</small></span>
          <span className="eaUnifiedNavArrow" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
        </a>)}
