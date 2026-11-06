@@ -250,3 +250,168 @@
 @media(prefers-reduced-motion:reduce){
  .eaMarketCard,.eaMarketPage a,.eaMarketPage button{transition:none}
 }
+
+
+/* V2: faithful E&A desktop/mobile screenshot layout.
+   Visual examples remain clearly identified; the verified DB is the sole source for real lots. */
+.eaMarketTop{
+  padding-left:clamp(135px,10vw,180px);
+  min-height:69px;
+  border-color:#26272c;
+}
+.eaMarketBrand{min-width:225px}
+.eaMarketBrand .eaOfficialLogo{width:clamp(235px,22vw,300px)}
+.eaMarketTopLinks a{font-weight:760}
+.eaMarketProfile{background:transparent;border:0;border-radius:999px}
+.eaMarketTopSquare{background:transparent;border:0}
+.eaMarketQuick{padding:0 0 8px;border-color:#292a31}
+.eaMarketHero{grid-template-columns:minmax(0,.76fr) minmax(0,1.55fr);gap:0;padding:15px 0 11px;min-height:366px}
+.eaMarketHeroIntro{
+ min-height:330px;
+ justify-content:center;
+ border:0;border-radius:0;
+ padding:clamp(10px,2.3vw,32px) clamp(14px,3vw,48px) clamp(10px,2vw,28px) clamp(3px,1vw,14px);
+ background-position:center right;
+}
+.eaMarketHeroIntro:before{background:linear-gradient(90deg,rgba(6,7,11,.96),rgba(6,7,11,.76) 65%,rgba(6,7,11,.17))}
+.eaMarketHeroIntro h1{font-size:clamp(27px,2.95vw,55px);line-height:1.03;letter-spacing:-.058em;margin:13px 0 17px;font-style:italic}
+.eaMarketHeroIntro h1 em{font-weight:950}
+.eaMarketHeroIntro p{font-size:clamp(11px,1vw,14px);max-width:430px;line-height:1.49;margin-bottom:20px}
+.eaMarketTrust{font-size:10px;gap:10px}
+.eaMarketLive{grid-template-columns:minmax(0,1.17fr) minmax(0,.83fr);min-height:340px;border-radius:18px}
+.eaMarketLivePhoto{min-height:340px}
+.eaMarketLiveTag{background:#c91d30;border:1px solid #e93645;box-shadow:0 5px 24px #0008}
+.eaMarketLiveBody{padding:clamp(14px,1.6vw,27px)}
+.eaMarketLiveEmpty h2{font-size:clamp(23px,2.2vw,35px)}
+.eaMarketPromo{
+ grid-template-columns:clamp(43px,4.2vw,60px) minmax(0,1fr) max-content;
+ min-height:76px;margin:1px 0 19px;
+ border:1px solid #6c2731;border-radius:10px;
+ background:linear-gradient(107deg,#260b12 0%,#270c12 42%,#190b0e 72%,#320a12 100%);
+ box-shadow:inset 0 1px 1px #ffffff19,0 5px 16px #0005;
+}
+.eaMarketPromo:after{content:"";height:2px;position:absolute;bottom:0;left:0;right:0;pointer-events:none;background:linear-gradient(90deg,transparent,#f32e45 22%,transparent 50%,#ea2a3f 73%,transparent)}
+.eaMarketPromoText strong{font-weight:850;font-style:italic}
+.eaMarketPromoButton{border-radius:999px;background:linear-gradient(120deg,#8e1022,#fa1934);border:1px solid #ef7781}
+.eaMarketSearchTop{margin:0 0 8px}
+.eaMarketSearchTop .eaMarketEyebrow{display:none}
+.eaMarketSearchTop h2{font-size:clamp(20px,1.7vw,27px);margin:0}
+.eaMarketSearchRow{
+ grid-template-columns:minmax(150px,2.4fr) minmax(90px,.75fr) minmax(90px,.75fr) max-content;
+ gap:9px;
+}
+.eaMarketCatalogBar{border-top:1px solid #22252c;border-bottom:0;margin:13px 0 7px;padding:11px 0}
+.eaMarketLotGrid,.eaMarketPreviewGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.eaMarketPreviewNotice{display:flex;flex-wrap:wrap;align-items:center;gap:8px 15px;border:1px solid #70353e;border-radius:10px;background:linear-gradient(95deg,#221015,#111219);padding:11px 15px;margin-bottom:12px}
+.eaMarketPreviewNotice .eaMarketEyebrow{font-size:9px}
+.eaMarketPreviewNotice strong{font-size:13px}
+.eaMarketPreviewNotice p{color:#aeb0b8;font-size:11px;line-height:1.45;margin:0;flex-basis:100%}
+.eaMarketPreviewCard{background:linear-gradient(#1b1c22,#121318);border:1px solid #383942;border-radius:12px;overflow:hidden;min-width:0}
+.eaMarketPreviewPhoto{position:relative;aspect-ratio:1.75;background:#202228;overflow:hidden}
+.eaMarketPreviewPhoto img{width:100%;height:100%;display:block;object-fit:cover;object-position:center}
+.eaMarketPreviewPhoto span{position:absolute;top:8px;left:8px;background:#601b26;color:#fff;padding:4px 8px;border:1px solid #d84350;border-radius:5px;font-size:9px;letter-spacing:.045em;font-weight:850}
+.eaMarketPreviewCardBody{padding:12px}
+.eaMarketPreviewCardBody h3{font-size:clamp(13px,1.15vw,18px);line-height:1.24;letter-spacing:-.026em;margin:0 0 6px}
+.eaMarketPreviewCardBody p{color:#b2b4bd;font-size:10px;margin:0 0 9px}
+.eaMarketPreviewPrice{display:flex;align-items:center;justify-content:space-between;border-top:1px solid #30313a;padding-top:9px;margin-bottom:9px;gap:7px}
+.eaMarketPreviewPrice small{font-size:9px;color:#b4b6bf}
+.eaMarketPreviewPrice strong{font-size:14px;color:#f85968}
+.eaMarketPreviewCardBody>a{display:flex;align-items:center;justify-content:center;background:#262830;border:1px solid #41434e;border-radius:7px;padding:7px 5px;font-weight:750;font-size:10px}
+.eaMarketPreviewCardBody>a:hover{background:#4b2330}
+.eaMarketAwaiting+.eaMarketEmpty{display:none}
+@media(max-width:1220px) and (min-width:721px){
+ .eaMarketHero{grid-template-columns:minmax(0,.85fr) minmax(0,1.2fr)}
+ .eaMarketLive{grid-template-columns:1fr}
+ .eaMarketLivePhoto{min-height:240px;height:260px}
+ .eaMarketLiveBody{min-height:145px}
+ .eaMarketHeroIntro{min-height:390px}
+ .eaMarketPromoText strong{font-size:17px}
+ .eaMarketPreviewGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:720px){
+ .eaMarketPage{font-size:13px}
+ .eaMarketShell{display:flex;flex-direction:column;padding:0 11px 26px}
+ .eaMarketTop{order:1;padding:8px 0 7px 55px;min-height:72px}
+ .eaMarketBrand{max-width:230px;min-width:0}
+ .eaMarketBrand .eaOfficialLogo{width:min(100%,228px)}
+ .eaMarketTopActions{margin-left:auto}
+ .eaMarketProfile{padding:4px}
+ .eaMarketQuick{order:2;grid-template-columns:1.35fr .72fr 1fr 1.15fr;padding:4px 0}
+ .eaMarketQuick a{font-size:10.5px;min-height:45px}
+ .eaMarketHero{display:contents}
+ .eaMarketHeroIntro{
+   order:3;min-height:196px;padding:17px 10px 18px;
+   border-radius:0;box-shadow:none;
+   background-position:75% center;
+ }
+ .eaMarketHeroIntro:before{background:linear-gradient(90deg,rgba(6,7,11,.94),rgba(6,7,11,.75) 58%,rgba(6,7,11,.1))}
+ .eaMarketHeroIntro h1{
+  font-size:clamp(25px,7.25vw,39px);line-height:.98;margin:11px 0 11px;
+  font-weight:950;
+ }
+ .eaMarketHeroIntro h1 em{display:inline}
+ .eaMarketHeroIntro p{font-size:10px;max-width:270px;line-height:1.38;margin-bottom:0}
+ .eaMarketTrust{display:none}
+ .eaMarketPromo{
+  order:4;grid-template-columns:34px minmax(0,1fr) max-content;
+  gap:7px;padding:9px;min-height:66px;margin:0 0 13px;
+  border-radius:10px;
+ }
+ .eaMarketPromoMark{width:32px;height:32px;font-size:22px}
+ .eaMarketPromoText strong{font-size:clamp(11px,3.15vw,15px);font-weight:900;line-height:1.15}
+ .eaMarketPromoText strong em{white-space:nowrap}
+ .eaMarketPromoText small{font-size:8px;line-height:1.15;margin-top:3px;max-width:280px}
+ .eaMarketPromoButton{grid-column:auto;min-height:34px;width:auto;padding:7px 9px;font-size:0}
+ .eaMarketPromoButton:before{content:"Регистрация";font-size:10px;font-weight:800}
+ .eaMarketPromoButton span{font-size:12px}
+ .eaMarketLive{
+  order:5;grid-template-columns:1fr;border-radius:13px;
+  box-shadow:0 0 0 1px rgba(242,49,66,.06),0 8px 22px rgba(0,0,0,.4);
+  margin-bottom:14px;
+ }
+ .eaMarketLivePhoto{height:52vw;min-height:190px;max-height:300px}
+ .eaMarketLiveBody{padding:13px}
+ .eaMarketLiveBody h2{font-size:clamp(20px,5.1vw,26px);margin:2px 0 10px}
+ .eaMarketLiveBody .eaMarketLiveEmpty p{font-size:11px}
+ .eaMarketLiveEmpty>span{font-size:9px}
+ .eaMarketLiveEmpty h2{font-size:23px}
+ .eaMarketLiveEmpty .eaMarketActionHot{width:100%;min-height:43px}
+ .eaMarketCatalog{order:6}
+ .eaMarketSearchTop{margin:0 0 9px}
+ .eaMarketSearchTop h2{font-size:19px}
+ .eaMarketSearchTop>a{font-size:9px;margin-top:4px}
+ .eaMarketSearchRow{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+ .eaMarketSearch{grid-column:1/-1;border-radius:9px;min-height:44px}
+ .eaMarketSearch input{font-size:12px;height:43px}
+ .eaMarketSearchRow>select{min-width:0;min-height:40px;padding:0 5px;font-size:10px}
+ .eaMarketFilterBtn{min-height:40px;font-size:10px}
+ .eaMarketMoreFilters{flex-wrap:wrap}
+ .eaMarketCatalogBar{margin:8px 0 5px;align-items:center}
+ .eaMarketCatalogTabs button{font-size:9.5px}
+ .eaMarketPreviewGrid{grid-template-columns:1fr;gap:10px}
+ .eaMarketPreviewCard{display:grid;grid-template-columns:42% 58%;min-height:145px}
+ .eaMarketPreviewPhoto{height:100%;min-height:145px;aspect-ratio:auto}
+ .eaMarketPreviewCardBody{display:flex;flex-direction:column;min-width:0;padding:10px}
+ .eaMarketPreviewCardBody h3{font-size:15px}
+ .eaMarketPreviewCardBody p{font-size:10px}
+ .eaMarketPreviewPrice{margin-top:auto}
+ .eaMarketPreviewPrice strong{font-size:13px}
+ .eaMarketPreviewCardBody>a{font-size:10px}
+ .eaMarketPreviewPhoto span{font-size:8px;top:6px;left:6px}
+ .eaMarketPreviewNotice{padding:10px}
+ .eaMarketPreviewNotice p{font-size:10px}
+ .eaMarketFooterProof{order:7}
+}
+@media(max-width:370px){
+ .eaMarketShell{padding-left:8px;padding-right:8px}
+ .eaMarketTop{padding-left:54px}
+ .eaMarketBrand .eaOfficialLogo{width:min(100%,174px)}
+ .eaMarketHeroIntro h1{font-size:25px}
+ .eaMarketPromo{grid-template-columns:29px minmax(0,1fr) max-content;gap:5px;padding:7px}
+ .eaMarketPromoMark{width:29px;height:29px;font-size:18px}
+ .eaMarketPromoText strong{font-size:10.5px}
+ .eaMarketPromoButton{padding:5px 7px}
+ .eaMarketPromoButton:before{font-size:9px}
+ .eaMarketQuick a{font-size:9.5px}
+ .eaMarketPreviewCard{grid-template-columns:40% 60%}
+}
