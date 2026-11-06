@@ -172,11 +172,29 @@ export default function VehiclesPage(){
    </nav>
 
    <section className="eaMarketHero" aria-labelledby="ea-market-headline">
-    <div className="eaMarketHeroIntro">
-     <span className="eaMarketEyebrow">E&A · ОНЛАЙН АВТОМОБИЛНИ ТЪРГОВЕ</span>
-     <h1 id="ea-market-headline">ПРОФЕСИОНАЛНИ<br/>АУКЦИОНИ НА<br/><em>АВТОМОБИЛИ</em></h1>
-     <p>E&A East and West Auctioneers Group — платформа за покупка и продажба на автомобили чрез онлайн търгове в България и Европа.</p>
-     <div className="eaMarketTrust"><span>✓ Проверени автомобили</span><span>✓ Прозрачни търгове</span><span>✓ Доверен партньор</span></div>
+    <div className="eaMarketHeroIntro eaMarketSearchHero" id="ea-market-search-panel">
+    <div className="eaMarketSearchTop"><div><span className="eaMarketEyebrow">E&A · ПРОВЕРЕНИ АВТОМОБИЛИ</span><h1 id="ea-market-headline">Автомобили на търг</h1></div><a href="/vehicle-history">История на автомобил ↗</a></div>
+    <div className="eaMarketSearchRow">
+     <label className="eaMarketSearch" htmlFor="ea-market-search"><EuroIcon/><input id="ea-market-search" type="search" value={query} maxLength={140} placeholder="Марка, модел, номер на лот..." onChange={e=>setQuery(e.target.value)}/></label>
+     <select value={make} onChange={e=>setMake(e.target.value)} aria-label="Марка"><option value="">Всички марки</option>{makes.map(m=><option value={m} key={m}>{m}</option>)}</select>
+     <select value={year} onChange={e=>setYear(e.target.value)} aria-label="Година"><option value="">Всяка година</option>{years.map(y=><option key={y} value={y}>{y}</option>)}</select>
+     <button className="eaMarketFilterBtn" type="button" aria-expanded={filtersOpen} aria-controls="ea-market-morefilters" onClick={()=>setFiltersOpen(x=>!x)}>☷ Филтри</button>
+    </div>
+    {filtersOpen&&<div className="eaMarketMoreFilters" id="ea-market-morefilters">
+      <label>Подреди по <select value={sort} onChange={e=>setSort(e.target.value)}><option value="newest">Най-нови търгове</option><option value="year">Най-нова година</option><option value="price">Най-ниска начална цена</option></select></label>
+      <button type="button" onClick={()=>{setQuery("");setMake("");setYear("");setTab("all");setSort("newest")}}>Изчисти филтрите</button>
+     </div>}
+    <div className="eaMarketCatalogBar">
+     <div className="eaMarketCatalogTabs" role="group" aria-label="Състояние на лотовете">{tabs.map(t=><button key={t.id} type="button" className={tab===t.id?"selected":""} aria-pressed={tab===t.id} onClick={()=>setTab(t.id)}>{t.label}{mode==="ready"&&<small>{t.id==="all"?lots.length:lots.filter(l=>l.status===t.id).length}</small>}</button>)}</div>
+     <div className="eaMarketCatalogControls">
+       <span className="eaMarketCatalogCount">{mode==="ready"?filtered.length+" одобрени обяви":"Проверка на каталога"}</span>
+       <div className="eaMarketViewSwitch" role="group" aria-label="Изглед на автомобилите">
+        <button type="button" className={viewMode==="grid"?"is-selected":""} aria-pressed={viewMode==="grid"} onClick={()=>changeView("grid")} title="Изглед като карти" aria-label="Изглед като карти"><ViewGridIcon/></button>
+        <button type="button" className={viewMode==="list"?"is-selected":""} aria-pressed={viewMode==="list"} onClick={()=>changeView("list")} title="Изглед като списък" aria-label="Изглед като списък"><ViewListIcon/></button>
+       </div>
+       <button type="button" className="eaMarketAppearanceToggle" aria-label={appearance==="dark"?"Включи светла визия":"Включи тъмна визия"} title={appearance==="dark"?"Светла визия":"Тъмна визия"} onClick={changeAppearance}><VisualModeIcon light={appearance==="light"}/><span>{appearance==="dark"?"Светла":"Тъмна"}</span></button>
+     </div>
+    </div>
     </div>
 
     <div className="eaMarketLive" aria-label="Акцент на търговете">
@@ -199,29 +217,8 @@ export default function VehiclesPage(){
     <a href="/register?campaign=welcome10" className="eaMarketPromoButton">Регистрирай се сега <span aria-hidden="true">→</span></a>
    </aside>
 
-   <section id="ea-market-catalog" className="eaMarketCatalog">
-    <div className="eaMarketSearchTop"><div><span className="eaMarketEyebrow">E&A · VERIFIED VEHICLE MARKETPLACE</span><h2>Автомобили на търг</h2></div><a href="/vehicle-history">Проверка на историята ↗</a></div>
-    <div className="eaMarketSearchRow">
-     <label className="eaMarketSearch" htmlFor="ea-market-search"><EuroIcon/><input id="ea-market-search" type="search" value={query} maxLength={140} placeholder="Марка, модел, номер на лот..." onChange={e=>setQuery(e.target.value)}/></label>
-     <select value={make} onChange={e=>setMake(e.target.value)} aria-label="Марка"><option value="">Всички марки</option>{makes.map(m=><option value={m} key={m}>{m}</option>)}</select>
-     <select value={year} onChange={e=>setYear(e.target.value)} aria-label="Година"><option value="">Всяка година</option>{years.map(y=><option key={y} value={y}>{y}</option>)}</select>
-     <button className="eaMarketFilterBtn" type="button" aria-expanded={filtersOpen} aria-controls="ea-market-morefilters" onClick={()=>setFiltersOpen(x=>!x)}>☷ Филтри</button>
-    </div>
-    {filtersOpen&&<div className="eaMarketMoreFilters" id="ea-market-morefilters">
-      <label>Подреди по <select value={sort} onChange={e=>setSort(e.target.value)}><option value="newest">Най-нови търгове</option><option value="year">Най-нова година</option><option value="price">Най-ниска начална цена</option></select></label>
-      <button type="button" onClick={()=>{setQuery("");setMake("");setYear("");setTab("all");setSort("newest")}}>Изчисти филтрите</button>
-     </div>}
-    <div className="eaMarketCatalogBar">
-     <div className="eaMarketCatalogTabs" role="group" aria-label="Състояние на лотовете">{tabs.map(t=><button key={t.id} type="button" className={tab===t.id?"selected":""} aria-pressed={tab===t.id} onClick={()=>setTab(t.id)}>{t.label}{mode==="ready"&&<small>{t.id==="all"?lots.length:lots.filter(l=>l.status===t.id).length}</small>}</button>)}</div>
-     <div className="eaMarketCatalogControls">
-       <span className="eaMarketCatalogCount">{mode==="ready"?filtered.length+" одобрени обяви":"Проверка на каталога"}</span>
-       <div className="eaMarketViewSwitch" role="group" aria-label="Изглед на автомобилите">
-        <button type="button" className={viewMode==="grid"?"is-selected":""} aria-pressed={viewMode==="grid"} onClick={()=>changeView("grid")} title="Изглед като карти" aria-label="Изглед като карти"><ViewGridIcon/></button>
-        <button type="button" className={viewMode==="list"?"is-selected":""} aria-pressed={viewMode==="list"} onClick={()=>changeView("list")} title="Изглед като списък" aria-label="Изглед като списък"><ViewListIcon/></button>
-       </div>
-       <button type="button" className="eaMarketAppearanceToggle" aria-label={appearance==="dark"?"Включи светла визия":"Включи тъмна визия"} title={appearance==="dark"?"Светла визия":"Тъмна визия"} onClick={changeAppearance}><VisualModeIcon light={appearance==="light"}/><span>{appearance==="dark"?"Светла":"Тъмна"}</span></button>
-     </div>
-    </div>
+   <section id="ea-market-catalog" className="eaMarketCatalog" aria-label="Автомобилни обяви и резултати">
+
 
     {mode==="ready"&&filtered.length>0?<div className="eaMarketLotGrid">{filtered.map(l=><article className="eaMarketCard" key={l.id}>
       <a className="eaMarketCardImage" href={nextFor(l)}><LotPhoto lot={l}/><span className={activeLive(l,clock)?"eaMarketCardStatus live":"eaMarketCardStatus"}>{statusLabel(l,clock)}</span></a>
