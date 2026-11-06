@@ -36,6 +36,10 @@ function extractVerifiedRows(source) {
 
 assert(cloudClient.includes("frhletkiuupgksmgxoxc.supabase.co/functions/v1/enchev-plan-state"), "client must use the dedicated Enchev Edge Function");
 assert(cloudClient.includes("new EventSource(`${ENDPOINT}?stream=1`)"), "client must use SSE cloud realtime stream");
+assert(cloudClient.includes('pathname !== "/admin/console"'), "public pages must never open full-snapshot governance streams");
+assert(cloudClient.includes('source.readyState === EventSource.OPEN'), "healthy SSE must avoid redundant full-snapshot polling");
+assert(cloudClient.includes('document.visibilityState !== "visible"'), "hidden tabs must not poll the full governance snapshot");
+assert(cloudClient.includes("300000"), "disconnected full-snapshot polling must be rate-limited");
 assert(cloudClient.includes("BroadcastChannel(CHANNEL_KEY)"), "cloud updates must fan out through existing realtime channel");
 assert(cloudClient.includes("localIsNewer"), "newer local manual state must not be silently overwritten");
 assert(!cloudClient.includes("SUPABASE_SERVICE_ROLE_KEY"), "service-role credentials must never exist in browser code");
