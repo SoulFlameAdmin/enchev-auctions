@@ -14,11 +14,16 @@ type MarketLot={
 type Session={available:boolean;authenticated:boolean;user?:{id:string;email:string;accountAgeDays?:number|null}};
 type Mode="loading"|"ready"|"inactive"|"error";
 type Filter="all"|"live"|"scheduled"|"ended";
+type ViewMode="grid"|"list";
+type Appearance="dark"|"light";
 const marketPhotos=["/forge/media/9b20239c5e1099a605ec.jpg","/forge/media/20ac6eaa8d0b086cee3c.jpg","/forge/media/81f625f9053d53ae5f72.jpg"];
 function EuroIcon(){return <svg viewBox="0 0 24 24" width="21" height="21" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="10.7" cy="10.7" r="6.5"/><path d="m15.8 15.8 4.5 4.5"/></svg>}
 function CarIcon(){return <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M4 16.5h16l-1.8-6A2 2 0 0 0 16.3 9H7.7a2 2 0 0 0-1.9 1.5zM5 16.5V20m14-3.5V20M7.5 9 9 5h6l1.5 4"/><circle cx="7.5" cy="16.5" r="1"/><circle cx="16.5" cy="16.5" r="1"/></svg>}
 function Bookmark(){return <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" aria-hidden="true"><path d="M6 3.5h12v17l-6-4-6 4z"/></svg>}
 function Profile(){return <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2.5a8 8 0 0 1 16 0V21"/></svg>}
+function ViewGridIcon(){return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>}
+function ViewListIcon(){return <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M9 6h12M9 12h12M9 18h12"/><rect x="3" y="4" width="3" height="3" rx=".5"/><rect x="3" y="10" width="3" height="3" rx=".5"/><rect x="3" y="16" width="3" height="3" rx=".5"/></svg>}
+function VisualModeIcon({light}:{light:boolean}){return light?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>:<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M20.5 14a8.5 8.5 0 0 1-10.5-10.5A8.5 8.5 0 1 0 20.5 14Z"/></svg>}
 function Bell(){return <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 10h18c0-2-3-3-3-10ZM10 21h4"/></svg>}
 function price(value:number|null,currency:string){
  if(value===null||!Number.isFinite(value))return "При запитване";
@@ -59,12 +64,31 @@ export default function VehiclesPage(){
  const [year,setYear]=useState("");
  const [tab,setTab]=useState<Filter>("all");
  const [sort,setSort]=useState("newest");
+ const [viewMode,setViewMode]=useState<ViewMode>("grid");
+ const [appearance,setAppearance]=useState<Appearance>("dark");
  const [filtersOpen,setFiltersOpen]=useState(false);
  const [now,setNow]=useState(0);
  const [notice,setNotice]=useState("");
  const [busy,setBusy]=useState<string|null>(null);
  const [gated,setGated]=useState<MarketLot|null>(null);
 
+ useEffect(()=>{
+  try{
+   const mode=window.localStorage.getItem("ea-vehicles-view-v1");
+   const visual=window.localStorage.getItem("ea-vehicles-appearance-v1");
+   if(mode==="list"||mode==="grid")setViewMode(mode);
+   if(visual==="light"||visual==="dark")setAppearance(visual);
+  }catch{}
+ },[]);
+ function changeView(next:ViewMode){
+  setViewMode(next);
+  try{window.localStorage.setItem("ea-vehicles-view-v1",next)}catch{}
+ }
+ function changeAppearance(){
+  const next:Appearance=appearance==="dark"?"light":"dark";
+  setAppearance(next);
+  try{window.localStorage.setItem("ea-vehicles-appearance-v1",next)}catch{}
+ }
  useEffect(()=>{
   const fromUrl=new URLSearchParams(window.location.search).get("q");
   if(fromUrl)setQuery(fromUrl.slice(0,140));
@@ -124,7 +148,7 @@ export default function VehiclesPage(){
   }catch{setNotice("Възникна временен проблем със запазването.");}
   finally{setBusy(null)}
  }
- return <main id="main-content" className="eaMarketPage">
+ return <main id="main-content" className="eaMarketPage" data-appearance={appearance} data-view={viewMode}>
   <div className="eaMarketShell">
    <header className="eaMarketTop">
     <a className="eaMarketBrand" href="/" aria-label="E&A Начало"><EaOfficialLogo/></a>
@@ -189,7 +213,14 @@ export default function VehiclesPage(){
      </div>}
     <div className="eaMarketCatalogBar">
      <div className="eaMarketCatalogTabs" role="group" aria-label="Състояние на лотовете">{tabs.map(t=><button key={t.id} type="button" className={tab===t.id?"selected":""} aria-pressed={tab===t.id} onClick={()=>setTab(t.id)}>{t.label}{mode==="ready"&&<small>{t.id==="all"?lots.length:lots.filter(l=>l.status===t.id).length}</small>}</button>)}</div>
-     <span className="eaMarketCatalogCount">{mode==="ready"?filtered.length+" одобрени обяви":"Проверка на каталога"}</span>
+     <div className="eaMarketCatalogControls">
+       <span className="eaMarketCatalogCount">{mode==="ready"?filtered.length+" одобрени обяви":"Проверка на каталога"}</span>
+       <div className="eaMarketViewSwitch" role="group" aria-label="Изглед на автомобилите">
+        <button type="button" className={viewMode==="grid"?"is-selected":""} aria-pressed={viewMode==="grid"} onClick={()=>changeView("grid")} title="Изглед като карти" aria-label="Изглед като карти"><ViewGridIcon/></button>
+        <button type="button" className={viewMode==="list"?"is-selected":""} aria-pressed={viewMode==="list"} onClick={()=>changeView("list")} title="Изглед като списък" aria-label="Изглед като списък"><ViewListIcon/></button>
+       </div>
+       <button type="button" className="eaMarketAppearanceToggle" aria-label={appearance==="dark"?"Включи светла визия":"Включи тъмна визия"} title={appearance==="dark"?"Светла визия":"Тъмна визия"} onClick={changeAppearance}><VisualModeIcon light={appearance==="light"}/><span>{appearance==="dark"?"Светла":"Тъмна"}</span></button>
+     </div>
     </div>
 
     {mode==="ready"&&filtered.length>0?<div className="eaMarketLotGrid">{filtered.map(l=><article className="eaMarketCard" key={l.id}>
