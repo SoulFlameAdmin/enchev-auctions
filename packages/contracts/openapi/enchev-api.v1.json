@@ -945,6 +945,180 @@
           }
         }
       }
+    },
+    "/api/buyer/saved": {
+      "post": {
+        "operationId": "saveBuyerVehicle",
+        "summary": "Authenticated buyer saves a verified lot; unauthorized clients fail closed",
+        "responses": {
+          "200": {
+            "description": "Saved lot accepted"
+          },
+          "400": {
+            "description": "Invalid lot request"
+          },
+          "401": {
+            "description": "Buyer authentication required"
+          },
+          "403": {
+            "description": "Cross-origin request denied"
+          },
+          "503": {
+            "description": "Buyer persistence unavailable"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "removeBuyerSavedVehicle",
+        "summary": "Authenticated buyer removes one saved lot from their own workspace",
+        "responses": {
+          "200": {
+            "description": "Saved lot removed"
+          },
+          "400": {
+            "description": "Invalid lot identifier"
+          },
+          "401": {
+            "description": "Buyer authentication required"
+          },
+          "403": {
+            "description": "Cross-origin request denied"
+          },
+          "503": {
+            "description": "Buyer persistence unavailable"
+          }
+        }
+      }
+    },
+    "/api/menu-access": {
+      "get": {
+        "operationId": "getAdminMenuAccess",
+        "summary": "Read signed administrator menu-access session without exposing password",
+        "responses": {
+          "200": {
+            "description": "Admin access status"
+          },
+          "503": {
+            "description": "Server admin credential unavailable"
+          }
+        }
+      },
+      "post": {
+        "operationId": "authorizeAdminMenuAccess",
+        "summary": "Rate-limited administrator menu password verification",
+        "responses": {
+          "200": {
+            "description": "Access cookie granted"
+          },
+          "400": {
+            "description": "Invalid access request"
+          },
+          "403": {
+            "description": "Cross-origin request denied"
+          },
+          "429": {
+            "description": "Too many failed attempts"
+          },
+          "503": {
+            "description": "Administrator password not configured"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "revokeAdminMenuAccess",
+        "summary": "Remove signed administrator access cookie",
+        "responses": {
+          "200": {
+            "description": "Menu access revoked"
+          },
+          "403": {
+            "description": "Cross-origin request denied"
+          }
+        }
+      }
+    },
+    "/api/buyer/catalog": {
+      "get": {
+        "operationId": "listVerifiedBuyerCatalog",
+        "summary": "Read only published and verified real seller vehicle lots",
+        "responses": {
+          "200": {
+            "description": "Published vehicle catalog"
+          },
+          "503": {
+            "description": "Real catalog provider not configured or unavailable"
+          }
+        }
+      }
+    },
+    "/api/buyer/catalog/[id]": {
+      "get": {
+        "operationId": "getVerifiedBuyerVehicle",
+        "summary": "Retrieve a published real vehicle by canonical UUID",
+        "responses": {
+          "200": {
+            "description": "Published vehicle details"
+          },
+          "400": {
+            "description": "Invalid vehicle ID"
+          },
+          "404": {
+            "description": "Verified vehicle not found"
+          },
+          "503": {
+            "description": "Real catalog unavailable"
+          }
+        }
+      }
+    },
+    "/api/buyer/workspace": {
+      "get": {
+        "operationId": "getAuthenticatedBuyerWorkspace",
+        "summary": "Read account-owned saved vehicles, verification and order state",
+        "responses": {
+          "200": {
+            "description": "Own buyer workspace"
+          },
+          "401": {
+            "description": "Buyer authentication required"
+          },
+          "503": {
+            "description": "Buyer workspace provider unavailable"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "patchAuthenticatedBuyerWorkspace",
+        "summary": "Update only permitted account-owned buyer profile fields",
+        "responses": {
+          "200": {
+            "description": "Account workspace updated"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Buyer authentication required"
+          },
+          "403": {
+            "description": "Cross-origin or access denied"
+          },
+          "503": {
+            "description": "Buyer workspace provider unavailable"
+          }
+        }
+      }
+    },
+    "/api/payments/readiness": {
+      "get": {
+        "operationId": "getPaymentActivationReadiness",
+        "summary": "Report explicitly disabled live Stripe/Revolut capture and unmet activation gates",
+        "responses": {
+          "200": {
+            "description": "Payment readiness flags; real collections disabled"
+          }
+        }
+      }
     }
   },
   "components": {
