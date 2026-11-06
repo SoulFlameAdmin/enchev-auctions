@@ -108,10 +108,10 @@ export default function BuyerAccountDashboard(){
 
       <section className="eaBuyerJourneyGrid" aria-labelledby="ea-journey-title">
         <div className="eaBuyerSectionHead"><span>ПРОЦЕС НА ПОКУПКА</span><h2 id="ea-journey-title">7 свързани етапа</h2></div>
-        <div className="eaBuyerStages">{journey.map((step,i)=><a href={step.link} key={step.n}>
+        <nav className="eaBuyerStages" aria-label="Навигация на профила">{journey.map((step,i)=><a href={step.link} key={step.n}>
           <small>{step.n} / 07</small><strong>{step.name}</strong><span>{step.short}</span>
           <em>{i===0?"Акаунт":i===1&&data.verification?.kyc_status==="approved"?"Проверен":i===2?data.savedLots.length+" любими":i===4?data.orders.length+" поръчки":i===5?data.payments.length+" плащания":"Към страницата"} ↗</em>
-        </a>)}</div>
+        </a>)}</nav>
       </section>
 
       <div className="eaBuyerAccountColumns">
