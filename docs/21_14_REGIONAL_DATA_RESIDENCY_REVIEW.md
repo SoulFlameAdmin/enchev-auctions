@@ -17,7 +17,7 @@ It does **not** mean:
 - a jurisdiction has approved Enchev for launch;
 - legal/compliance sign-off exists;
 - all production data is resident in one region;
-- the current shared Supabase project is production auction authority;
+- the Enchev-owned governance database is production auction authority;
 - Redis, object storage, logging retention, or Vercel compute region are production-ready.
 
 The review therefore keeps:
@@ -27,20 +27,23 @@ The review therefore keeps:
 - `market_activation_approval=false`;
 - `residency_claim=false` on every data plane.
 
-## Verified provider facts — 2026-09-19
+## Verified provider facts — updated 2026-11-07
 
 ### Supabase development/governance
 
-Read-only provider inspection reported the bound Supabase project:
+The original 2026-09-19 review documented the shared Twins development plane. That is now historical information, **not the active Enchev binding**.
 
-- project ref: `frhletkiuupgksmgxoxc`;
-- project name: `soulflame-twins`;
-- provider status: `ACTIVE_HEALTHY`;
-- provider region: `eu-west-1`.
+Connected Supabase inspection and the new isolated migration verify:
 
-The repository binding independently records the same region and explicitly limits Enchev usage to `development-governance` with `auction_authority=false`.
+- project ref: `ejfrnjhlggebzmpmxajl`;
+- project name: `enchev-auctions`;
+- current project status: `ACTIVE_HEALTHY`;
+- provider region: `eu-central-1`;
+- governance table: `public.enchev_plan_state`, RLS enabled, no direct public row privileges;
+- signed GitHub OIDC-only governance write through the Enchev-owned Edge Function;
+- independent, verified endpoint: HTTP 200 read and HTTP 401 on unsigned write.
 
-Therefore the review marks only this existing development/governance plane as `verified-region`. This is **not** a production auction database residency approval.
+The review only verifies the location of this **development-governance** plane. It does not certify the full production authoritative auction database or legal residency compliance.
 
 ### Vercel runtime compute
 
