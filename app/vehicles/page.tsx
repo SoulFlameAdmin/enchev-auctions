@@ -150,15 +150,15 @@ export default function VehiclesPage(){
    <section className="eaMarketHero" aria-labelledby="ea-market-headline">
     <div className="eaMarketHeroIntro">
      <span className="eaMarketEyebrow">E&A · ОНЛАЙН АВТОМОБИЛНИ ТЪРГОВЕ</span>
-     <h1 id="ea-market-headline">АВТОМОБИЛИ.<br/><em>БЕЗ ГРАНИЦИ.</em></h1>
-     <p>Проверени обяви, прозрачен процес и реални търгове — от първото разглеждане до доставката.</p>
-     <div className="eaMarketTrust"><span>✓ Проверени продавачи</span><span>✓ Прозрачни условия</span><span>✓ Проследим процес</span></div>
+     <h1 id="ea-market-headline">ПРОФЕСИОНАЛНИ<br/>АУКЦИОНИ НА<br/><em>АВТОМОБИЛИ</em></h1>
+     <p>E&A East and West Auctioneers Group — платформа за покупка и продажба на автомобили чрез онлайн търгове в България и Европа.</p>
+     <div className="eaMarketTrust"><span>✓ Проверени автомобили</span><span>✓ Прозрачни търгове</span><span>✓ Доверен партньор</span></div>
     </div>
 
     <div className="eaMarketLive" aria-label="Акцент на търговете">
      <div className="eaMarketLivePhoto">
       {live?<LotPhoto lot={live} hero/>:<img src="/forge/media/9b20239c5e1099a605ec.jpg" alt="Илюстративен автомобил за представяне на платформата" loading="eager"/>}
-      <span className={live?"eaMarketLiveTag live":"eaMarketLiveTag"}><span className="eaMarketPulse"/> {live?"LIVE АУКЦИОН":"LIVE ЗОНА"}</span>
+      <span className={live?"eaMarketLiveTag live":"eaMarketLiveTag"}><span className="eaMarketPulse"/> {live?"LIVE АУКЦИОН":"ПРЕДСТОЯЩ LIVE"}</span>
       {!live&&<span className="eaMarketIllustration">ИЛЮСТРАТИВНО ИЗОБРАЖЕНИЕ</span>}
       {live&&<span className="eaMarketLotId">Лот {live.lot_number}</span>}
      </div>
@@ -171,12 +171,12 @@ export default function VehiclesPage(){
 
    <aside className="eaMarketPromo" aria-label="Регистрация и отстъпка">
     <span className="eaMarketPromoMark" aria-hidden="true">%</span>
-    <div className="eaMarketPromoText"><strong>Регистрирай се и получи код за <em>10% отстъпка</em></strong><small>Промоционалните условия и издаването на кодове предстои да бъдат активирани. Отстъпката не е от цената на автомобила.</small></div>
-    <a href="/register?campaign=welcome10" className="eaMarketPromoButton">Регистрация <span aria-hidden="true">↗</span></a>
+    <div className="eaMarketPromoText"><strong>Регистрирай се и получи код за <em>10% отстъпка</em></strong><small>Промокампанията предстои да се активира. Отстъпката ще важи само за определени такси, съгласно условията.</small></div>
+    <a href="/register?campaign=welcome10" className="eaMarketPromoButton">Регистрирай се сега <span aria-hidden="true">→</span></a>
    </aside>
 
    <section id="ea-market-catalog" className="eaMarketCatalog">
-    <div className="eaMarketSearchTop"><div><span className="eaMarketEyebrow">КАТАЛОГ НА АВТОМОБИЛИ</span><h2>Намери своя автомобил.</h2></div><a href="/vehicle-history">Проверка на историята ↗</a></div>
+    <div className="eaMarketSearchTop"><div><span className="eaMarketEyebrow">E&A · VERIFIED VEHICLE MARKETPLACE</span><h2>Автомобили на търг</h2></div><a href="/vehicle-history">Проверка на историята ↗</a></div>
     <div className="eaMarketSearchRow">
      <label className="eaMarketSearch" htmlFor="ea-market-search"><EuroIcon/><input id="ea-market-search" type="search" value={query} maxLength={140} placeholder="Марка, модел, номер на лот..." onChange={e=>setQuery(e.target.value)}/></label>
      <select value={make} onChange={e=>setMake(e.target.value)} aria-label="Марка"><option value="">Всички марки</option>{makes.map(m=><option value={m} key={m}>{m}</option>)}</select>
@@ -196,6 +196,20 @@ export default function VehiclesPage(){
       <a className="eaMarketCardImage" href={nextFor(l)}><LotPhoto lot={l}/><span className={activeLive(l,clock)?"eaMarketCardStatus live":"eaMarketCardStatus"}>{statusLabel(l,clock)}</span></a>
       <div className="eaMarketCardContent"><span className="eaMarketCardLot">ЛОТ {l.lot_number} · {l.country_code||"ЕВРОПА"}</span><h3><a href={nextFor(l)}>{l.title}</a></h3><div className="eaMarketCardSpecs">{l.model_year&&<span>{l.model_year} г.</span>}{l.mileage_km!==null&&<span>{l.mileage_km.toLocaleString("bg-BG")} км</span>}{l.fuel_type&&<span>{l.fuel_type}</span>}{l.transmission&&<span>{l.transmission}</span>}</div><div className="eaMarketCardBottom"><div><small>Начална цена</small><strong>{price(l.starting_price,l.price_currency)}</strong></div><button type="button" onClick={()=>void save(l)} disabled={busy===l.id} aria-label={"Запази "+l.title}><Bookmark/></button></div><a className="eaMarketCardDetails" href={nextFor(l)}>Виж детайли <span>↗</span></a></div>
      </article>)}</div>:
+     <div className="eaMarketAwaiting" role="status">
+      <div className="eaMarketPreviewNotice"><span className="eaMarketEyebrow">ПРЕГЛЕД НА БЪДЕЩИЯ КАТАЛОГ</span><strong>Тук ще се появяват реалните автомобили.</strong><p>След проверка на продавача и публикуване на лота снимката, характеристиките, началната цена и графикът ще се зареждат автоматично. Следващите карти са само визуален пример и не са обяви.</p></div>
+      {!query&&!make&&!year&&tab==="all"&&<div className="eaMarketPreviewGrid" aria-label="Визуални примерни карти, не реални обяви">
+        {[
+          {title:"BMW · Седан",image:"/forge/media/9b20239c5e1099a605ec.jpg"},
+          {title:"Mercedes-Benz · SUV",image:"/forge/media/20ac6eaa8d0b086cee3c.jpg"},
+          {title:"Audi · SUV",image:"/forge/media/81f625f9053d53ae5f72.jpg"},
+          {title:"Премиум автомобили",image:"/images/enchev-lamborghini-hero.jpg"},
+        ].map((item,i)=><article className="eaMarketPreviewCard" key={item.title}>
+         <div className="eaMarketPreviewPhoto"><img src={item.image} alt={"Илюстративна снимка "+(i+1)} loading="lazy"/><span>ВИЗУАЛЕН ПРИМЕР</span></div>
+         <div className="eaMarketPreviewCardBody"><h3>{item.title}</h3><p>Снимки · Технически данни · VIN история</p><div className="eaMarketPreviewPrice"><small>Цена при одобрена обява</small><strong>Очаква се</strong></div><a href="/start#early-access">Известете ме при старта ↗</a></div>
+        </article>)}
+      </div>}
+     </div>
      <div className="eaMarketEmpty" role="status">
       <div className="eaMarketEmptyImage" aria-hidden="true"><img src={marketPhotos[1]} alt=""/></div>
       <div className="eaMarketEmptyContent"><span className="eaMarketEyebrow">{mode==="inactive"?"ПРЕДСТОЯЩО АКТИВИРАНЕ":mode==="error"?"ВРЕМЕНЕН ПРОБЛЕМ":mode==="loading"?"ЗАРЕЖДАНЕ":query||make||year||tab!=="all"?"ТЪРСЕНЕ":"ПРОВЕРЕН КАТАЛОГ"}</span>
