@@ -203,7 +203,7 @@ export default function VehiclesPage(){
           {title:"BMW · Седан",image:"/forge/media/9b20239c5e1099a605ec.jpg"},
           {title:"Mercedes-Benz · SUV",image:"/forge/media/20ac6eaa8d0b086cee3c.jpg"},
           {title:"Audi · SUV",image:"/forge/media/81f625f9053d53ae5f72.jpg"},
-          {title:"Премиум автомобили",image:"/images/enchev-lamborghini-hero.jpg"},
+          {title:"Премиум автомобили",image:"/forge/media/545cfac9384183b2bcb0.jpg"},
         ].map((item,i)=><article className="eaMarketPreviewCard" key={item.title}>
          <div className="eaMarketPreviewPhoto"><img src={item.image} alt={"Илюстративна снимка "+(i+1)} loading="lazy"/><span>ВИЗУАЛЕН ПРИМЕР</span></div>
          <div className="eaMarketPreviewCardBody"><h3>{item.title}</h3><p>Снимки · Технически данни · VIN история</p><div className="eaMarketPreviewPrice"><small>Цена при одобрена обява</small><strong>Очаква се</strong></div><a href="/start#early-access">Известете ме при старта ↗</a></div>
