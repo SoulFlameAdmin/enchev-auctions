@@ -70,7 +70,7 @@ function safeImage(s:string|null){
 function GalleryPhoto({src,alt}:{src:string|null;alt:string}){
  const [error,setError]=useState(false);
  useEffect(()=>setError(false),[src]);
- return src&&!error?<img src={src} alt={alt} loading="eager" onError={()=>setError(true)}/>:
+ return src&&!error?<picture className="eaLivePicture">{src===IMG+"main.webp"&&<source media="(max-width:820px)" srcSet={IMG+"main-mobile.webp"}/>}<img src={src} alt={alt} loading="eager" onError={()=>setError(true)}/></picture>:
  <div className="eaLiveMissing"><Icon name="car" size={38}/><span>Снимка предстои</span></div>;
 }
 function pos(index:number,total:number){return total<=1?"center":("center "+(index*100/(total-1))+"%");}
