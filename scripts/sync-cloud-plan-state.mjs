@@ -28,6 +28,21 @@ function extractVerifiedRows(source) {
   return rows;
 }
 
+function extractVerifiedYellowRows(source) {
+  const markerIndex = source.indexOf("const VERIFIED_YELLOW:");
+  const open = source.indexOf("{", markerIndex);
+  const close = source.indexOf("\n};", open);
+  if (markerIndex < 0 || open < 0 || close < 0) throw new Error("VERIFIED_YELLOW missing");
+  const block = source.slice(open + 1, close);
+  const rows = [];
+  for (const match of block.matchAll(/^\s*"([^"]+)":\s*"((?:[^"\\]|\\.)*)",?\s*$/gm)) {
+    const blocker = JSON.parse('"' + match[2] + '"');
+    if (!blocker.trim() || blocker.length > 2000) throw new Error("YELLOW blocker missing or too large");
+    rows.push({ taskId:match[1], status:"yellow", evidence:null, blocker });
+  }
+  return rows;
+}
+
 function buildBatches(rows, maxBodyChars = MAX_BATCH_BODY_CHARS) {
   const batches = [];
   let current = [];
@@ -84,7 +99,10 @@ if (process.env.GITHUB_REF !== "refs/heads/main" || process.env.GITHUB_EVENT_NAM
   throw new Error("Cloud sync requires verified main-branch push workflow");
 }
 
-const rows = extractVerifiedRows(verifiedSource);
+const rows = [...extractVerifiedRows(verifiedSource), ...extractVerifiedYellowRows(verifiedSource)];
+if (new Set(rows.map(row => row.taskId)).size !== rows.length) {
+  throw new Error("Duplicate GREEN/YELLOW task ID in governance sync");
+}
 const batches = buildBatches(rows);
 const token = await getOidcToken();
 
@@ -100,7 +118,7 @@ const expectedCommit = process.env.GITHUB_SHA;
 for (const row of rows) {
   const cloud = cloudRows.get(row.taskId);
   if (!cloud) throw new Error(`Cloud read-back missing ${row.taskId}`);
-  if (cloud.status !== row.status || cloud.evidence !== row.evidence) throw new Error(`Cloud read-back mismatch for ${row.taskId}`);
+  if (cloud.status !== row.status || cloud.evidence !== row.evidence || cloud.blocker !== row.blocker) throw new Error(`Cloud read-back mismatch for ${row.taskId}`);
   if (expectedCommit && cloud.source_commit !== expectedCommit) throw new Error(`Cloud source commit mismatch for ${row.taskId}`);
 }
 
