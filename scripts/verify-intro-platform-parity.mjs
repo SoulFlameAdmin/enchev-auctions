@@ -25,7 +25,14 @@ for (const file of requiredRoutes) {
 
 const intro = read("app/page.tsx");
 requireText(intro, 'src="/forge/index.html"', "Cinematic intro preserved");
-requireText(intro, "<MasterSystemPlanV1 />", "System status menu preserved");
+// The MASTER system is intentionally restricted to the authenticated admin console.
+const layout = read("app/layout.tsx");
+const adminConsole = read("app/admin/console/page.tsx");
+requireText(layout, "<EaUnifiedMenu />", "Global navigation preserved");
+requireText(adminConsole, "<MasterSystemPlanV1 initialMenuOpen authorizedByServer />", "Protected MASTER stages preserved");
+requireText(adminConsole, "hasEnchevMenuAccess", "Admin session authorization preserved");
+requireText(adminConsole, 'redirect("/admin/login")', "Unauthenticated admin redirect preserved");
+assert.ok(!intro.includes("<MasterSystemPlanV1"), "Protected MASTER must not be mounted on public cinematic homepage");
 
 const classic = read("app/platform/page.tsx");
 for (const token of [
