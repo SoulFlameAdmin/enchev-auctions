@@ -1,6 +1,7 @@
 import { spawnSync } from "node:child_process";
 
 const gates = [
+  ["scripts/verify-infrastructure-as-code-baseline.mjs", "--self-test"],
   ["scripts/verify-staging-deployment-pipeline.mjs", "--self-test"],
   ["scripts/verify-deployment-concurrency-control.mjs", "--self-test"],
   ["scripts/verify-production-smoke-suite.mjs", "--self-test"],
