@@ -77,18 +77,22 @@ function validateRows(body,claims){
   if(!Array.isArray(body.rows)||body.rows.length===0||body.rows.length>120)throw Error("invalid batch size");
   const seen=new Set();
   return body.rows.map(row=>{
-    if(!row||typeof row!=="object"||!ID.test(row.taskId||"")||
-       row.status!=="green"||typeof row.evidence!=="string"||
-       row.evidence.trim().length===0||row.evidence.length>4000||
-       (row.blocker!==null&&row.blocker!==undefined)||
-       seen.has(row.taskId))throw Error("invalid verified evidence row");
+    if(!row||typeof row!=="object"||!ID.test(row.taskId||"")||seen.has(row.taskId))
+      throw Error("invalid evidence row");
+    const green=row.status==="green";
+    const yellow=row.status==="yellow";
+    if(!green&&!yellow)throw Error("only verified GREEN and explicitly blocked YELLOW may be synchronized");
+    if(green&&(typeof row.evidence!=="string"||row.evidence.trim().length===0||
+       row.evidence.length>4000||row.blocker!==null&&row.blocker!==undefined))
+      throw Error("GREEN requires evidence without a blocker");
+    if(yellow&&(typeof row.blocker!=="string"||row.blocker.trim().length===0||
+       row.blocker.length>2000||row.evidence!==null&&row.evidence!==undefined))
+      throw Error("YELLOW requires a blocker without GREEN evidence");
     seen.add(row.taskId);
     return {
-      task_id:row.taskId,status:"green",evidence:row.evidence,blocker:null,
-      updated_at:new Date().toISOString(),
-      source_commit:claims.sha,
-      source_run_id:String(claims.run_id),
-      source_workflow:WORKFLOW
+      task_id:row.taskId,status:row.status,evidence:green?row.evidence:null,
+      blocker:yellow?row.blocker:null,updated_at:new Date().toISOString(),
+      source_commit:claims.sha,source_run_id:String(claims.run_id),source_workflow:WORKFLOW
     };
   });
 }
