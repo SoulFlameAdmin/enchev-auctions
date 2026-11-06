@@ -1,30 +1,252 @@
-
-.eaRealVehicles{font-family:Arial,Helvetica,sans-serif;min-height:100vh;background:#090a0c;color:#f7f7fa}
-.eaRealVehicles *{box-sizing:border-box}
-.eaRealVehiclesWrap{max-width:1430px;margin:auto;padding:clamp(34px,5vw,85px) clamp(17px,5vw,70px) 90px}
-.eaVehicleEyebrow{font-size:11px;letter-spacing:.18em;color:#e84855;font-weight:800}
-.eaRealVehicles h1{font-size:clamp(55px,9vw,126px);line-height:.92;letter-spacing:-.075em;margin:28px 0}
-.eaRealVehicles h1 em{font-style:normal;color:#e33140}
-.eaRealVehiclesWrap>p{max-width:750px;line-height:1.7;color:#b4b5bd;font-size:16px}
-.eaVehicleActions{display:flex;flex-wrap:wrap;gap:10px;margin:30px 0 45px}
-.eaVehicleActions a,.eaVehicleNotice a,.eaVehicleCard a{display:inline-block;padding:14px 18px;text-decoration:none;border:1px solid #66676c;color:#fff;font-size:12px;font-weight:800}
-.eaVehicleActions a:first-child{background:#cc2835;border-color:#cc2835}
-.eaVehicleSearch{margin:30px 0;display:grid;gap:13px}
-.eaVehicleSearch label{font-size:12px;font-weight:800;color:#dbdce0}
-.eaVehicleSearch input{width:100%;height:52px;border:1px solid #66676c;background:#15161a;color:#fff;font-size:16px;padding:12px 18px}
-.eaVehicleNotice{padding:clamp(28px,5vw,65px);background:linear-gradient(125deg,#22171b,#16171a);border:1px solid #59343a;min-height:220px}
-.eaVehicleNotice h2{font-size:clamp(27px,3.5vw,44px);letter-spacing:-.05em;margin:0 0 15px}
-.eaVehicleNotice p{font-size:15px;color:#c1bfc2;line-height:1.65;max-width:700px}
-.eaVehicleNotice a{margin-top:15px}
-.eaVehicleGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px}
-.eaVehicleCard{background:#17181b;border:1px solid #393a40;padding:27px;display:flex;flex-direction:column}
-.eaVehicleCard>span{color:#ee6c75;font-size:10px;font-weight:800;letter-spacing:.14em}
-.eaVehicleCard h2{font-size:clamp(23px,2vw,34px);letter-spacing:-.04em}
-.eaVehicleCard p{color:#bbbcc5;line-height:1.6;font-size:13px}
-.eaVehicleCard>strong{font-size:18px;margin:auto 0 20px}
-.eaVehicleCard>div{display:flex;flex-wrap:wrap;gap:8px}
-.eaVehicleCard button{padding:13px 16px;border:1px solid #7d6166;background:#302125;color:#fff;cursor:pointer}
-.eaVehicleFeedback{border:1px solid #a13841;padding:15px}
-.eaRealVehicles a:focus-visible,.eaRealVehicles button:focus-visible,.eaRealVehicles input:focus-visible{outline:2px solid #fff;outline-offset:3px}
-@media(max-width:960px){.eaVehicleGrid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:590px){.eaRealVehiclesWrap{padding:32px 16px 60px}.eaRealVehicles h1{font-size:clamp(49px,11vw,73px)}.eaVehicleGrid{grid-template-columns:1fr}}
+/* E&A / verified marketplace — production responsive design, BG mobile + desktop */
+.eaMarketPage{
+ --ea-red:#e32938;--ea-red-dark:#a9182a;--ea-line:#363840;
+ --ea-muted:#afb1bd;--ea-card:#131418;
+ display:block;min-height:100svh;overflow-x:clip;
+ background:#08090d;color:#f5f6f8;
+ font-family:Inter,Montserrat,Arial,Helvetica,sans-serif;
+ font-size:15px;line-height:1.5;
+}
+.eaMarketPage *{box-sizing:border-box}
+.eaMarketPage a{color:inherit;text-decoration:none}
+.eaMarketPage button,.eaMarketPage select,.eaMarketPage input{font:inherit}
+.eaMarketPage :is(a,button,input,select):focus-visible{outline:2px solid #f04454;outline-offset:3px}
+.eaMarketShell{max-width:1600px;margin:0 auto;padding:0 clamp(15px,3vw,46px) 60px}
+.eaMarketTop{
+ min-height:86px;display:flex;align-items:center;justify-content:space-between;
+ gap:18px;padding:12px 0 12px 148px;border-bottom:1px solid #24252b;
+}
+.eaMarketBrand{display:flex;align-items:center;min-width:190px}
+.eaMarketBrand .eaOfficialLogo{width:clamp(190px,20vw,264px)}
+.eaMarketTopLinks{display:flex;align-items:center;gap:clamp(10px,2.3vw,32px)}
+.eaMarketTopLinks a{font-size:13px;color:#cbd0d6;font-weight:700;white-space:nowrap;transition:color .18s}
+.eaMarketTopLinks a:hover,.eaMarketTopLinks a[aria-current=page]{color:#fff}
+.eaMarketTopActions{display:flex;align-items:center;gap:8px;white-space:nowrap}
+.eaMarketTopSquare{width:39px;height:39px;display:grid;place-items:center;border:1px solid #45454c;border-radius:11px}
+.eaMarketTopSquare:hover{border-color:#e32c40}
+.eaMarketProfile{min-height:40px;display:inline-flex;align-items:center;gap:7px;border:1px solid #45464d;background:#191a20;padding:8px 12px;border-radius:11px;font-weight:750;font-size:12px}
+.eaMarketProfile:hover{background:#25262e}
+.eaMarketStepsLink{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:750;color:#f1e8e9;border:1px solid #5b3339;padding:8px 9px;border-radius:11px}
+.eaMarketStepsLink span{border-radius:4px;padding:2px 5px;background:#9d1d2a;color:#fff;font-size:10px}
+.eaMarketQuick{display:flex;align-items:center;justify-content:flex-start;gap:4px;padding:9px 0 13px;border-bottom:1px solid #24252b}
+.eaMarketQuick a{min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:9px;padding:10px clamp(10px,1.7vw,23px);font-size:13px;font-weight:800;color:#d4d5db;white-space:nowrap}
+.eaMarketQuick a:hover{background:#202127;color:#fff}
+.eaMarketQuick a.active{box-shadow:inset 0 -3px 0 #e32938;color:#fff}
+.eaMarketQuick a:nth-child(2){background:linear-gradient(125deg,#a8192a,#ee2633);color:#fff;margin-left:5px}
+.eaMarketPulse{display:inline-block;flex:none;width:9px;height:9px;border-radius:50%;background:#ed3544;box-shadow:0 0 0 3px rgba(228,41,56,.16)}
+.eaMarketQuick a:nth-child(2) .eaMarketPulse{background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.18)}
+.eaMarketEyebrow{display:block;font-weight:820;font-size:10px;letter-spacing:.18em;color:#e7505b}
+.eaMarketHero{display:grid;grid-template-columns:minmax(0,.78fr) minmax(0,1.22fr);align-items:stretch;gap:19px;padding:24px 0 15px}
+.eaMarketHeroIntro{
+ position:relative;isolation:isolate;min-height:385px;display:flex;flex-direction:column;justify-content:center;
+ overflow:hidden;padding:clamp(24px,3.2vw,45px);
+ border:1px solid #25262b;border-radius:19px;
+ background:#111219 url('/forge/media/545cfac9384183b2bcb0.jpg') center/cover no-repeat;
+}
+.eaMarketHeroIntro:before{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(105deg,rgba(5,7,11,.97) 0%,rgba(5,7,11,.9) 38%,rgba(5,7,11,.5) 82%,rgba(5,7,11,.15))}
+.eaMarketHeroIntro:after{content:"";position:absolute;left:-28%;bottom:-62%;width:85%;aspect-ratio:1;border-radius:50%;z-index:-1;background:radial-gradient(circle,rgba(179,24,41,.14),transparent 60%)}
+.eaMarketHeroIntro h1{font-weight:900;letter-spacing:-.065em;font-size:clamp(34px,3.6vw,70px);line-height:.99;margin:18px 0 22px;overflow-wrap:normal}
+.eaMarketHeroIntro h1 em{display:inline-block;font-style:normal;color:#ef3648}
+.eaMarketHeroIntro p{font-size:clamp(13px,1.2vw,16px);color:#d4d5dc;max-width:520px;line-height:1.6;margin:0 0 26px}
+.eaMarketTrust{display:flex;flex-wrap:wrap;gap:8px 15px;font-size:11px;color:#e8e8ea;font-weight:750}
+.eaMarketTrust span{white-space:nowrap}
+.eaMarketLive{display:grid;grid-template-columns:minmax(0,1.06fr) minmax(0,.94fr);min-height:385px;border:1px solid #404048;overflow:hidden;border-radius:19px;background:#17181d;box-shadow:0 14px 42px rgba(0,0,0,.25)}
+.eaMarketLivePhoto{position:relative;min-height:350px;background:#131418;overflow:hidden}
+.eaMarketLivePhoto>img,.eaMarketLivePhoto>.eaMarketLotPhoto{position:absolute;inset:0;width:100%;height:100%}
+.eaMarketLivePhoto>img,.eaMarketLivePhoto .eaMarketLotPhoto>img{display:block;width:100%;height:100%;object-fit:cover}
+.eaMarketLivePhoto:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(0deg,rgba(0,0,0,.43),transparent 45%)}
+.eaMarketLiveTag{position:absolute;top:16px;left:16px;z-index:2;display:inline-flex;align-items:center;gap:9px;padding:8px 11px;border:1px solid #5f3940;background:#15151dcf;color:#fff;font-size:11px;font-weight:850;border-radius:9px;letter-spacing:.06em}
+.eaMarketLiveTag.live{background:#d62034;border-color:#f04454}
+.eaMarketLiveTag .eaMarketPulse{background:#f9f9fb}
+.eaMarketIllustration{position:absolute;bottom:14px;left:15px;z-index:2;color:#eeeeef;font-size:8px;font-weight:750;letter-spacing:.13em;padding:5px 8px;background:#111b;border-radius:5px}
+.eaMarketLotId{position:absolute;right:12px;top:17px;z-index:2;background:#0b0c11db;padding:6px 8px;border-radius:6px;font-size:11px}
+.eaMarketLiveBody{display:flex;flex-direction:column;justify-content:center;min-width:0;padding:clamp(18px,2.3vw,32px);background:radial-gradient(circle at 100% 0%,rgba(123,15,30,.14),transparent 48%),#14151a}
+.eaMarketLiveBody h2{font-size:clamp(22px,2.05vw,33px);letter-spacing:-.044em;line-height:1.15;margin:7px 0 13px}
+.eaMarketChips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:15px}
+.eaMarketChips span{padding:5px 8px;border:1px solid #3d3f45;border-radius:5px;background:#23252b;font-size:10px}
+.eaMarketLiveStats{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0 18px}
+.eaMarketLiveStats div{border:1px solid #5b3439;background:#32161bcc;padding:12px 9px;border-radius:10px}
+.eaMarketLiveStats small,.eaMarketCardBottom small{display:block;font-size:10px;color:#c5c6cc;margin-bottom:3px}
+.eaMarketLiveStats strong{font-size:clamp(18px,2vw,28px);white-space:nowrap;letter-spacing:-.03em}
+.eaMarketTimer{font-variant-numeric:tabular-nums;color:#ff6670}
+.eaMarketActionHot{display:inline-flex;align-items:center;justify-content:center;text-align:center;gap:8px;min-height:45px;padding:10px 16px;background:linear-gradient(125deg,#ef283c,#ba1829);border:1px solid #f03f50;border-radius:9px;font-weight:850;font-size:13px;color:#fff}
+.eaMarketActionHot:hover{filter:brightness(1.12)}
+.eaMarketLiveDisclaimer{font-size:11px;line-height:1.5;color:#a5a8b1;margin:11px 0 0}
+.eaMarketLiveEmpty{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:0}
+.eaMarketLiveEmpty>span{color:#f2616b;font-size:10px;font-weight:850;letter-spacing:.16em}
+.eaMarketLiveEmpty h2{font-size:clamp(23px,2.2vw,38px);margin:13px 0}
+.eaMarketLiveEmpty p{line-height:1.55;color:#c0c2cd;font-size:13px;margin:0 0 19px}
+.eaMarketPromo{display:grid;grid-template-columns:54px minmax(0,1fr) max-content;align-items:center;gap:16px;margin:0 0 30px;padding:16px 24px;border:1px solid #6c2933;border-radius:15px;background:linear-gradient(100deg,#300d16,#230e14 40%,#350c17 85%,#1d0e14);position:relative;overflow:hidden;box-shadow:inset 0 1px 0 #ffffff18}
+.eaMarketPromo:before{content:"";position:absolute;inset:0;background:linear-gradient(130deg,transparent 23%,rgba(255,50,66,.075) 24%,transparent 31%);pointer-events:none}
+.eaMarketPromoMark{width:48px;height:48px;display:grid;place-items:center;border:1px solid #ec5a65;background:#d82437;color:#fff;border-radius:12px;font-size:30px;font-weight:950}
+.eaMarketPromoText{min-width:0}
+.eaMarketPromoText strong{display:block;font-size:clamp(16px,1.7vw,23px);line-height:1.25;letter-spacing:-.015em}
+.eaMarketPromoText strong em{color:#ff5f6c;font-style:normal;white-space:nowrap}
+.eaMarketPromoText small{display:block;max-width:870px;color:#d4b8bc;font-size:10px;margin-top:6px;line-height:1.35}
+.eaMarketPromoButton{min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:12px;background:#e52b3c;color:#fff;padding:11px 20px;font-size:13px;font-weight:850;border-radius:9px;white-space:nowrap}
+.eaMarketPromoButton:hover{background:#f03a4d}
+.eaMarketCatalog{scroll-margin-top:15px}
+.eaMarketSearchTop{display:flex;align-items:end;justify-content:space-between;gap:12px;margin:0 0 16px}
+.eaMarketSearchTop h2{font-size:clamp(24px,2.5vw,38px);letter-spacing:-.045em;margin:8px 0 0;line-height:1.15}
+.eaMarketSearchTop>a{color:#d6d6db;font-size:12px;font-weight:700;white-space:nowrap}
+.eaMarketSearchTop>a:hover{color:#fff}
+.eaMarketSearchRow{display:grid;grid-template-columns:minmax(180px,2.8fr) minmax(125px,1fr) minmax(118px,.9fr) max-content;gap:10px}
+.eaMarketSearch{min-height:51px;min-width:0;display:flex;align-items:center;gap:10px;padding:0 15px;border:1px solid #46474f;border-radius:10px;background:#1d1e24;color:#bfc0c9}
+.eaMarketSearch:focus-within{border-color:#dc4050}
+.eaMarketSearch input{width:100%;min-width:0;height:48px;background:none;border:0;outline:0;color:#fff;font-size:14px}
+.eaMarketSearch input::placeholder{color:#b7b7be}
+.eaMarketSearchRow>select,.eaMarketMoreFilters select{min-height:51px;width:100%;border:1px solid #41434a;border-radius:10px;background:#1e1f25;color:#f4f4f6;padding:0 15px;cursor:pointer;font-size:12px}
+.eaMarketFilterBtn{min-height:51px;min-width:123px;border:1px solid #e63b4c;border-radius:10px;background:#cf2638;color:#fff;padding:10px 17px;font-weight:800;cursor:pointer}
+.eaMarketFilterBtn:hover{background:#e73849}
+.eaMarketMoreFilters{display:flex;align-items:end;justify-content:flex-start;gap:14px;background:#15161a;border:1px solid #353740;padding:15px;border-radius:10px;margin:12px 0}
+.eaMarketMoreFilters label{display:grid;gap:6px;color:#b9bac4;font-size:12px}
+.eaMarketMoreFilters select{min-width:210px}
+.eaMarketMoreFilters button{background:transparent;border:1px solid #545660;color:#fff;border-radius:8px;min-height:44px;padding:10px 17px;cursor:pointer}
+.eaMarketCatalogBar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:16px 0 13px;border-bottom:1px solid #303138;margin-bottom:13px}
+.eaMarketCatalogTabs{display:flex;flex-wrap:wrap;gap:7px}
+.eaMarketCatalogTabs button{min-height:38px;display:inline-flex;align-items:center;gap:9px;padding:7px 15px;border-radius:99px;background:#17181c;border:1px solid #393a42;color:#e9e9ec;cursor:pointer;font-size:12px;font-weight:700}
+.eaMarketCatalogTabs button.selected{border-color:#e93647;color:#fff;background:#34131d}
+.eaMarketCatalogTabs button:hover{border-color:#ba3a49}
+.eaMarketCatalogTabs small{display:inline-grid;place-items:center;min-width:21px;padding:2px 5px;border-radius:99px;background:#292b33;color:#c7c7cd;font-size:10px}
+.eaMarketCatalogCount{white-space:nowrap;color:#aeb1ba;font-size:11px}
+.eaMarketLotGrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.eaMarketCard{min-width:0;background:#17181d;border:1px solid #363842;border-radius:13px;overflow:hidden;transition:border-color .2s,transform .2s}
+.eaMarketCard:hover{border-color:#9b3542;transform:translateY(-2px)}
+.eaMarketCardImage{position:relative;display:block;height:clamp(155px,15vw,235px);overflow:hidden}
+.eaMarketLotPhoto{width:100%;height:100%;background:#20222b}
+.eaMarketLotPhoto img{width:100%;height:100%;object-fit:cover}
+.eaMarketNoPhoto{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:radial-gradient(circle at 50% 10%,#424047,#1a1b20 70%);color:#b8b9c0;font-size:11px}
+.eaMarketNoPhoto svg{height:39px;width:39px;color:#e34a55}
+.eaMarketCardStatus{position:absolute;z-index:1;top:10px;left:10px;padding:5px 8px;border:1px solid #555761;background:#15161ecf;border-radius:5px;color:#fff;font-size:10px;font-weight:800}
+.eaMarketCardStatus.live{background:#cb2235;border-color:#f03d4d}
+.eaMarketCardContent{padding:15px}
+.eaMarketCardLot{font-size:10px;color:#aeb0b9;letter-spacing:.07em;font-weight:800}
+.eaMarketCard h3{font-size:clamp(16px,1.3vw,21px);line-height:1.25;letter-spacing:-.025em;margin:8px 0 10px;min-height:2.4em}
+.eaMarketCardSpecs{display:flex;flex-wrap:wrap;gap:5px 10px;margin-bottom:14px;color:#bebfc8;font-size:11px}
+.eaMarketCardBottom{display:flex;align-items:center;justify-content:space-between;gap:9px;padding-top:11px;border-top:1px solid #34353d}
+.eaMarketCardBottom strong{font-size:clamp(16px,1.6vw,22px);letter-spacing:-.035em;color:#ff4a59}
+.eaMarketCardBottom button{display:grid;place-items:center;width:39px;height:39px;flex:none;border:1px solid #595a63;background:#25262c;border-radius:9px;color:#fff;cursor:pointer}
+.eaMarketCardBottom button:hover{border-color:#e23d4e}
+.eaMarketCardDetails{display:flex;justify-content:space-between;align-items:center;margin-top:13px;padding:10px 12px;background:#292a31;border-radius:7px;color:#fff;font-size:12px;font-weight:800}
+.eaMarketCardDetails:hover{background:#393a43}
+.eaMarketEmpty{min-height:248px;display:grid;grid-template-columns:minmax(190px,.7fr) minmax(0,1.3fr);overflow:hidden;background:#17171d;border:1px solid #3f3339;border-radius:15px}
+.eaMarketEmptyImage{position:relative;overflow:hidden;background:#111318}
+.eaMarketEmptyImage img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;filter:saturate(.6) brightness(.7)}
+.eaMarketEmptyImage:after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent 20%,#17171d 97%)}
+.eaMarketEmptyContent{align-self:center;padding:clamp(18px,3vw,34px)}
+.eaMarketEmptyContent h3{font-size:clamp(22px,2.9vw,39px);line-height:1.2;letter-spacing:-.05em;margin:10px 0}
+.eaMarketEmptyContent p{font-size:13px;line-height:1.6;color:#bdbec8;max-width:600px}
+.eaMarketEmptyActions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}
+.eaMarketEmptyActions a{font-size:12px;font-weight:800;padding:12px 14px;border:1px solid #68636b;border-radius:8px}
+.eaMarketEmptyActions a:first-child{background:#d02737;border-color:#e5394b}
+.eaMarketNotice{border:1px solid #95545d;background:#341821;padding:14px;margin:16px 0;border-radius:8px;font-size:13px}
+.eaMarketFooterProof{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:20px;padding:32px 0;color:#aeb0b8;font-size:12px}
+.eaMarketFooterProof a{color:#fff}
+.eaMarketModalShade{position:fixed;inset:0;z-index:2500;background:#000c;display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(8px)}
+.eaMarketModal{position:relative;width:min(480px,100%);padding:clamp(22px,5vw,35px);border:1px solid #634048;border-radius:17px;background:#17181d;box-shadow:0 30px 80px #000b}
+.eaMarketModal h2{font-size:clamp(23px,5vw,34px);line-height:1.15;margin:12px 0}
+.eaMarketModal p{font-size:14px;color:#bcbfc9;line-height:1.6}
+.eaMarketModalClose{position:absolute;top:12px;right:12px;width:36px;height:36px;border:1px solid #50525c;border-radius:9px;background:#2a2b33;color:#fff;font-size:25px;cursor:pointer}
+.eaMarketModalLinks{display:flex;flex-wrap:wrap;gap:10px;margin-top:21px}
+.eaMarketModalLinks a{padding:12px 15px;border:1px solid #65666b;border-radius:8px;font-size:13px;font-weight:800}
+.eaMarketModalLinks a:first-child{background:#d42336;border-color:#dd3c4b}
+@media(max-width:1340px){
+ .eaMarketTop{padding-left:140px}
+ .eaMarketTopLinks{gap:14px}
+ .eaMarketLotGrid{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .eaMarketHero{grid-template-columns:.85fr 1.15fr}
+ .eaMarketHeroIntro{padding:26px}
+ .eaMarketLiveBody{padding:22px}
+}
+@media(max-width:1080px){
+ .eaMarketTopLinks{display:none}
+ .eaMarketHero{grid-template-columns:1fr}
+ .eaMarketHeroIntro{min-height:235px}
+ .eaMarketHeroIntro h1{font-size:clamp(36px,5.2vw,70px)}
+ .eaMarketLive{min-height:310px}
+ .eaMarketLivePhoto{min-height:310px}
+ .eaMarketLotGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:720px){
+ .eaMarketShell{padding:0 13px 42px}
+ .eaMarketTop{min-height:73px;padding:10px 0 10px 65px;gap:5px}
+ .eaMarketBrand{min-width:0;flex:1;max-width:210px}
+ .eaMarketBrand .eaOfficialLogo{width:min(100%,205px)}
+ .eaMarketTopActions{gap:5px}
+ .eaMarketTopSquare{width:35px;height:35px}
+ .eaMarketProfile{width:37px;height:37px;min-height:37px;justify-content:center;padding:6px;border-radius:10px}
+ .eaMarketProfile span{display:none}
+ .eaMarketStepsLink{font-size:0;padding:5px;min-height:35px}
+ .eaMarketStepsLink:before{content:"✓";font-size:14px}
+ .eaMarketStepsLink span{font-size:10px}
+ .eaMarketQuick{display:grid;grid-template-columns:1.23fr .78fr 1fr 1fr;gap:4px;padding:6px 0}
+ .eaMarketQuick a{min-width:0;min-height:45px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:8px 4px;gap:4px;font-size:11px}
+ .eaMarketQuick a svg{width:15px;height:15px}
+ .eaMarketQuick a:nth-child(2){margin-left:0}
+ .eaMarketHero{gap:12px;padding:13px 0}
+ .eaMarketHeroIntro{min-height:232px;padding:23px 18px}
+ .eaMarketHeroIntro h1{font-size:clamp(32px,8.6vw,55px);margin:13px 0}
+ .eaMarketHeroIntro p{font-size:12px;line-height:1.5;margin-bottom:13px;max-width:420px}
+ .eaMarketEyebrow{font-size:9px}
+ .eaMarketTrust{gap:5px 10px;font-size:9px}
+ .eaMarketLive{grid-template-columns:1fr;min-height:0}
+ .eaMarketLivePhoto{min-height:230px;height:52vw;max-height:360px}
+ .eaMarketLiveBody{padding:18px}
+ .eaMarketLiveBody h2{font-size:24px}
+ .eaMarketLiveEmpty h2{font-size:24px}
+ .eaMarketLiveEmpty p{margin-bottom:13px;font-size:12px}
+ .eaMarketPromo{grid-template-columns:37px minmax(0,1fr);gap:10px;padding:13px 12px;margin-bottom:22px}
+ .eaMarketPromoMark{width:37px;height:37px;border-radius:9px;font-size:25px}
+ .eaMarketPromoText strong{font-size:clamp(14px,3.8vw,18px)}
+ .eaMarketPromoText small{font-size:9px}
+ .eaMarketPromoButton{grid-column:1/-1;min-height:41px;width:100%;padding:8px 15px;font-size:12px}
+ .eaMarketSearchTop{align-items:flex-start;gap:8px;margin-bottom:12px}
+ .eaMarketSearchTop h2{font-size:25px}
+ .eaMarketSearchTop>a{font-size:10px;margin-top:17px}
+ .eaMarketSearchRow{grid-template-columns:1fr 1fr 1fr;gap:7px}
+ .eaMarketSearch{grid-column:1/-1;min-height:47px}
+ .eaMarketSearch input{height:45px;font-size:14px}
+ .eaMarketSearchRow>select{min-height:45px;padding:0 8px;font-size:11px}
+ .eaMarketFilterBtn{min-width:0;min-height:45px;padding:7px 5px;font-size:11px}
+ .eaMarketCatalogBar{align-items:flex-start;flex-direction:column;margin-top:2px;padding:14px 0 12px}
+ .eaMarketCatalogTabs{gap:5px;width:100%;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))}
+ .eaMarketCatalogTabs button{min-width:0;min-height:37px;padding:5px 5px;gap:4px;justify-content:center;font-size:10px}
+ .eaMarketCatalogTabs small{min-width:14px;font-size:9px;padding:1px 3px}
+ .eaMarketCatalogCount{font-size:10px}
+ .eaMarketEmpty{grid-template-columns:1fr}
+ .eaMarketEmptyImage{height:120px}
+ .eaMarketEmptyImage:after{background:linear-gradient(0deg,#17171d,transparent 82%)}
+ .eaMarketEmptyContent{padding:19px}
+ .eaMarketEmptyContent h3{font-size:25px}
+ .eaMarketEmptyContent p{font-size:12px}
+ .eaMarketLotGrid{grid-template-columns:1fr}
+ .eaMarketCard{display:grid;grid-template-columns:minmax(0,42%) minmax(0,58%);min-height:205px}
+ .eaMarketCardImage{height:100%;min-height:205px}
+ .eaMarketCardContent{display:flex;flex-direction:column;padding:11px}
+ .eaMarketCard h3{min-height:0;font-size:16px;margin:7px 0}
+ .eaMarketCardSpecs{font-size:10px;margin-bottom:9px}
+ .eaMarketCardBottom{margin-top:auto;padding-top:9px}
+ .eaMarketCardBottom strong{font-size:17px}
+ .eaMarketCardDetails{margin-top:8px;padding:7px 8px;font-size:11px}
+ .eaMarketFooterProof{gap:9px 15px;font-size:10px;padding-top:23px}
+}
+@media(max-width:385px){
+ .eaMarketShell{padding-left:10px;padding-right:10px}
+ .eaMarketTop{padding-left:60px}
+ .eaMarketBrand .eaOfficialLogo{width:min(100%,175px)}
+ .eaMarketQuick a{font-size:10px}
+ .eaMarketHeroIntro h1{font-size:32px}
+ .eaMarketTrust{font-size:8px}
+ .eaMarketCardImage{min-height:197px}
+ .eaMarketCard{min-height:197px}
+ .eaMarketSearchTop>a{display:none}
+ .eaMarketCatalogTabs button{font-size:9px}
+}
+@media(min-width:721px) and (max-width:950px){
+ .eaMarketPromo{grid-template-columns:48px minmax(0,1fr) max-content;padding:13px}
+ .eaMarketPromoText strong{font-size:18px}
+ .eaMarketSearchRow{grid-template-columns:minmax(0,2fr) 1fr 1fr auto}
+}
+@media(prefers-reduced-motion:reduce){
+ .eaMarketCard,.eaMarketPage a,.eaMarketPage button{transition:none}
+}
