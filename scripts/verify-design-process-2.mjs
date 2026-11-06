@@ -242,7 +242,7 @@ function validateRepository() {
   assert(plan.includes("Do not invent DP2-31") || plan.includes("Do not invent DP2-31 automatically"), "DP2 plan must forbid automatic DP2-31 scope growth");
 
   const menu = read("app/components/MasterSystemPlanV1.tsx");
-  assert(menu.includes("Design Process 2"), "Enchev command-center menu must expose Design Process 2");
+  assert(menu.includes("Дизайн процес 2"), "Enchev command-center menu must expose localized Design Process 2");
   assert(menu.includes("<DesignProcess2"), "Enchev command center must render the DesignProcess2 panel");
 
   const panel = read("app/components/DesignProcess2.tsx");
