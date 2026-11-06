@@ -86,7 +86,7 @@ if (process.argv.includes("--self-test")) {
     copy.accessibility = copy.accessibility.replace("outline:3px solid #8bffc0!important;", "outline:none!important;");
   });
   expectRejected("remove route target", sources, (copy) => {
-    copy.profile = copy.profile.replace('id="main-content" ', "");
+    copy.profile = copy.profile.replace('id="main-content"', 'id="missing-main-target"');
   });
   console.log("ACCESSIBILITY_VISUAL_PASS_SELF_TEST PASS negative_cases=3");
 } else {
