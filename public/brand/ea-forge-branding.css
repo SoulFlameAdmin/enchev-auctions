@@ -165,3 +165,13 @@ html[lang="bg"] [data-ea-bg-large-nav]{
     min-width:0!important;
   }
 }
+
+/* The platform now uses one left-side navigation in the parent Next.js app.
+   Suppress the old Forge iframe navigation trigger to prevent two menus. */
+button.sc-cf9722b1-3,
+button[aria-label="НАВИГАЦИЯ"].sc-cf9722b1-3,
+button[aria-label="Navigate"].sc-cf9722b1-3 {
+  display:none!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+}
