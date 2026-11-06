@@ -12,7 +12,7 @@ const demoLots:readonly DemoLot[]=[
  {lot:"EA-10511",title:"Mercedes-Benz GLC (демо)",year:"2021",fuel:"Бензин",mileage:"64 900 км",transmission:"Автоматик",location:"Мюнхен, Германия",startingPrice:18400,image:"https://images.unsplash.com/photo-1612280782903-d34dcdc10107?auto=format&fit=crop&w=1200&q=82"},
  {lot:"EA-10539",title:"Audi RS3 Sportback (демо)",year:"2022",fuel:"Бензин",mileage:"41 280 км",transmission:"Автоматик",location:"Великобритания",startingPrice:21900,image:"https://images.unsplash.com/photo-1655283733642-f1d813b40616?auto=format&fit=crop&w=1200&q=82"},
  {lot:"EA-10603",title:"Volkswagen Golf GTI (демо)",year:"2026",fuel:"Бензин",mileage:"9 870 км",transmission:"Автоматик",location:"Лондон, Великобритания",startingPrice:16250,image:"https://images.unsplash.com/photo-1655285886265-835ce7541e10?auto=format&fit=crop&w=1200&q=82"},
- {lot:"EA-10627",title:"BMW X5 xDrive40i (демо)",year:"2020",fuel:"Бензин",mileage:"96 210 км",transmission:"Автоматик",location:"САЩ",startingPrice:15100,image:"https://images.unsplash.com/photo-1555215695-3004980ad54e?auto=format&fit=crop&w=1500&q=84"},
+ {lot:"EA-10627",title:"BMW X5 xDrive40i (демо)",year:"2020",fuel:"Бензин",mileage:"96 210 км",transmission:"Автоматик",location:"САЩ",startingPrice:15100,image:"https://images.unsplash.com/photo-1714434087805-1147b7d37c0a?auto=format&fit=crop&w=1500&q=84"},
 ];
 function Icon({name,size=20}:{name:"home"|"car"|"broadcast"|"layers"|"bookmark"|"user"|"chevron-left"|"chevron-right"|"clock"|"gavel"|"calendar"|"history"|"shield"|"users"|"camera"|"arrow"|"info"|"heart";size?:number}){
  const paths:Record<string,string>={
