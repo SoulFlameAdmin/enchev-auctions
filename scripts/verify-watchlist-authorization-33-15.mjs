@@ -35,7 +35,7 @@ function verifyConfig(config){
   const expected=[["33.15","Watchlist authorization tests","security"]];
   if(JSON.stringify(config.tasks?.map(x=>[x.id,x.name,x.kind]))!==JSON.stringify(expected)) fail("task contract drift");
   const binding=readJson(BINDING_PATH);
-  if(binding.scope!=="development-governance"||binding.auction_authority!==false) fail("Supabase authority boundary drift");
+  if(binding.scope!=="enchev-only-development-governance"||binding.shared_project!==false||binding.project_ref!=="ejfrnjhlggebzmpmxajl"||binding.auction_authority!==false) fail("Supabase authority boundary drift");
   if(config.authority?.watchlist!=="postgresql"||config.authority?.governanceSupabaseAuthoritative!==false||config.authority?.clientProvidedOwnershipTrusted!==false) fail("watchlist authority drift");
   for(const key of ["rlsRequired","ownerSelectOnly","ownerInsertOnly","ownerDeleteOnly","crossUserReadForbidden","crossUserInsertForbidden","crossUserDeleteForbidden","sameVehicleDifferentUsersIndependent","watchingProjectionUserScoped"]) if(config.security?.[key]!==true) fail(`security guardrail disabled: ${key}`);
   if(config.persistence?.liveGovernanceProjectApply!==false) fail("governance project must not receive auction business schema");
