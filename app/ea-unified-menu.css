@@ -33,7 +33,7 @@
 .eaUnifiedDrawer:before{content:"";position:fixed;z-index:-1;pointer-events:none;top:0;left:0;width:min(466px,94vw);height:44vh;background:radial-gradient(ellipse at 0 0,rgba(125,16,23,.2),transparent 65%)}
 .eaUnifiedDrawer *{box-sizing:border-box}
 .eaUnifiedDrawer a{-webkit-tap-highlight-color:transparent}
-.eaUnifiedHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:0 0 auto;min-height:83px;padding:0 0 18px;border-bottom:1px solid rgba(255,255,255,.12)}
+.eaUnifiedHeader{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:0 0 auto;min-height:75px;padding:0 0 15px;border-bottom:1px solid rgba(255,255,255,.12)}
 .eaUnifiedBrandGroup{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-width:0}
 .eaUnifiedBrand{display:flex;align-items:center;min-width:0;max-width:255px;text-decoration:none;color:#fff}
 .eaUnifiedBrand .eaOfficialLogo{display:inline-grid;width:min(247px,58vw);height:56px;overflow:hidden}
@@ -43,14 +43,14 @@
 .eaUnifiedHeaderActions a,.eaUnifiedHeaderActions button{width:43px;height:43px;flex:none;display:grid;place-items:center;border:1px solid rgba(255,255,255,.13);border-radius:12px;background:#1a1b20;color:#e7e7e9;text-decoration:none;cursor:pointer}
 .eaUnifiedHeaderActions a:hover,.eaUnifiedHeaderActions button:hover{color:#fff;background:#272830;border-color:#656571}
 .eaUnifiedHeaderActions svg{width:20px;height:20px}
-.eaUnifiedMenuIntro{padding:22px 2px 18px;display:flex;align-items:end;justify-content:space-between;gap:12px}
+.eaUnifiedMenuIntro{padding:16px 2px 13px;display:flex;align-items:end;justify-content:space-between;gap:12px}
 .eaUnifiedEyebrow,.eaUnifiedFooterEyebrow{display:block;color:#9fa1aa;font-size:10px;letter-spacing:.18em;font-weight:800}
 .eaUnifiedMenuIntro h2{font-weight:780;letter-spacing:-.045em;font-size:clamp(21px,3vw,29px);line-height:1.11;margin:8px 0 0;color:#fff}
 .eaUnifiedMenuIntro h2 span{color:#e1353d}
 .eaUnifiedMenuCount{align-self:center;white-space:nowrap;color:#84858d;font:700 10px/1.2 Inter,Arial,sans-serif;letter-spacing:.08em}
 .eaUnifiedLinks{display:flex;flex-direction:column;gap:4px}
 .eaUnifiedLinks a{
- position:relative;min-height:65px;padding:9px 11px;
+ position:relative;min-height:59px;padding:7px 11px;
  display:grid;grid-template-columns:43px minmax(0,1fr) 27px;align-items:center;gap:11px;
  border:1px solid transparent;border-radius:12px;
  color:#d7d8dd;text-decoration:none;transition:background .17s ease,border .17s ease,color .17s ease;
@@ -68,17 +68,17 @@
 .eaUnifiedLinks a.is-active .eaUnifiedNavIcon{background:rgba(196,41,49,.18);border-color:rgba(238,81,83,.2);color:#ffaaa9}
 .eaUnifiedLinks a.is-active .eaUnifiedNavArrow{color:#e6545a}
 .eaUnifiedLinks a.is-live .eaUnifiedNavIcon{color:#ff626a}
-.eaUnifiedFooter{margin-top:auto;padding:22px 1px 0}
-.eaUnifiedFooterEyebrow{border-top:1px solid rgba(255,255,255,.12);padding:16px 0 12px}
+.eaUnifiedFooter{margin-top:auto;padding:15px 1px 0}
+.eaUnifiedFooterEyebrow{border-top:1px solid rgba(255,255,255,.12);padding:13px 0 9px}
 .eaUnifiedAccounts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.eaUnifiedAccounts a{min-height:57px;display:flex;align-items:center;justify-content:center;gap:9px;padding:10px 8px;border-radius:11px;text-decoration:none;font-size:14px;font-weight:800;line-height:1.22}
+.eaUnifiedAccounts a{min-height:53px;display:flex;align-items:center;justify-content:center;gap:9px;padding:10px 8px;border-radius:11px;text-decoration:none;font-size:14px;font-weight:800;line-height:1.22}
 .eaUnifiedAccounts svg{width:19px;height:19px;flex:none}
 .eaUnifiedLogin{background:#202127;border:1px solid rgba(255,255,255,.13);color:#f2f2f4}
 .eaUnifiedLogin:hover{background:#2e2f36}
 .eaUnifiedRegister{background:linear-gradient(135deg,#e1363c,#b71d28);border:1px solid #ed555c;color:#fff;box-shadow:0 7px 21px rgba(192,32,41,.18)}
 .eaUnifiedRegister:hover{background:linear-gradient(135deg,#f1434b,#cd2530)}
 .eaUnifiedAdminButton{
- width:100%;min-height:58px;display:grid;grid-template-columns:38px minmax(0,1fr) 18px;align-items:center;gap:11px;
+ width:100%;min-height:53px;display:grid;grid-template-columns:38px minmax(0,1fr) 18px;align-items:center;gap:11px;
  margin-top:12px;padding:8px 11px;
  border:1px solid rgba(255,255,255,.12);border-radius:11px;background:#111216;color:#e1e3e8;text-align:left;cursor:pointer;transition:background .2s,border-color .2s;
 }
