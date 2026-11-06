@@ -803,3 +803,31 @@
  .eaMarketPromo{order:4;}
  .eaMarketCatalog{order:6;}
 }
+
+
+/* V6 — remove the Defender illustration/intro notice and collapse empty space. */
+@media(min-width:721px){
+ .eaMarketHero{display:block;min-height:0;padding:12px 0 15px}
+ .eaMarketPage .eaMarketSearchHero{
+  width:100%;min-height:0;height:auto;max-width:none;
+  padding:clamp(17px,1.8vw,27px);
+ }
+ .eaMarketSearchHero .eaMarketSearchRow{
+  grid-template-columns:minmax(0,2fr) minmax(140px,1fr) minmax(140px,1fr) minmax(130px,.75fr);
+ }
+ .eaMarketSearchHero .eaMarketSearch{grid-column:auto}
+ .eaMarketSearchHero .eaMarketCatalogBar{gap:13px}
+ .eaMarketSearchHero .eaMarketCatalogControls{margin-top:0}
+}
+@media(min-width:721px) and (max-width:1000px){
+ .eaMarketSearchHero .eaMarketSearchRow{grid-template-columns:repeat(3,minmax(0,1fr))}
+ .eaMarketSearchHero .eaMarketSearch{grid-column:1/-1}
+}
+@media(max-width:720px){
+ .eaMarketHero{display:contents}
+ .eaMarketPage .eaMarketSearchHero{min-height:0}
+ .eaMarketPromo{order:4;margin-top:0}
+ .eaMarketCatalog{order:6}
+}
+.eaMarketAwaiting{margin-top:0}
+.eaMarketPreviewGrid{margin-top:0}
