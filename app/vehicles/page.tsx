@@ -34,20 +34,35 @@ export default function VehiclesPage(){
   }
   return <main id="main-content" className="eaRealVehicles">
     <section className="eaRealVehiclesWrap">
-      <div className="eaVehicleEyebrow">E&A · VERIFIED VEHICLE MARKETPLACE</div>
-      <h1>ИЗБЕРИ <em>АВТОМОБИЛ.</em></h1>
-      <p>На тази страница се виждат единствено автомобили, проверени от екипа и одобрени за публикуване. Демо лотовете са отделно.</p>
-      <div className="eaVehicleActions"><a href="/profile">Моят профил ↗</a><a href="/auctions">LIVE търгове ↗</a><a href="/start">7 стъпки ↗</a></div>
-      <div className="eaVehicleSearch"><label htmlFor="ea-vehicle-search">Търси по марка, модел или номер на лот</label><input id="ea-vehicle-search" type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="BMW, Mercedes, EA-12345…"/></div>
-      {mode==="loading"?<div className="eaVehicleNotice" role="status">Проверяваме одобрените обяви…</div>:
-       mode==="inactive"?<div className="eaVehicleNotice" role="status"><h2>Каталогът очаква активиране</h2><p>Сигурната връзка с купуваческата база все още не е активирана. Няма да показваме измислени автомобили като реални обяви.</p><a href="/start#early-access">Заяви ранен достъп ↗</a></div>:
-       mode==="error"?<div className="eaVehicleNotice" role="alert"><h2>Каталогът е временно недостъпен</h2><p>Не можем да потвърдим данните за автомобилите.</p></div>:
-       filtered.length===0?<div className="eaVehicleNotice" role="status"><h2>{query?"Няма резултати по търсенето":"Няма публикувани реални автомобили"}</h2><p>Появяват се само автомобили с проверен продавач и одобрена обява. Демо лотовете не се показват тук.</p><a href="/auctions">Към търговете ↗</a></div>:
-       <div className="eaVehicleGrid">{filtered.map(l=><article key={l.id} className="eaVehicleCard">
-         <span>LOT {l.lot_number} · {l.status.toUpperCase()}</span><h2>{l.title}</h2><p>{[l.model_year,l.country_code,l.condition_summary].filter(Boolean).join(" · ")}</p>
+      <header className="eaVehicleHero">
+        <div className="eaVehicleEyebrow"><span aria-hidden="true" className="eaVehicleEyebrowMark"/> E&A · ПРОВЕРЕНИ АВТОМОБИЛИ</div>
+        <h1><span>ИЗБЕРИ</span><em>АВТОМОБИЛ.</em></h1>
+        <p className="eaVehicleLead">Автомобили с проверени обяви, одобрени за публикуване. Реалният каталог и демонстрационните търгове са разделени.</p>
+        <nav className="eaVehicleActions" aria-label="Бързи действия">
+          <a className="eaVehicleActionPrimary" href="/auctions">Търгове на живо <span aria-hidden="true">↗</span></a>
+          <a className="eaVehicleActionSecondary" href="/start">Как се купува <span aria-hidden="true">↗</span></a>
+          <a className="eaVehicleActionProfile" href="/profile">Моят профил <span aria-hidden="true">↗</span></a>
+        </nav>
+      </header>
+      <div className="eaVehicleSearch">
+        <div className="eaVehicleSearchHeading">
+          <label htmlFor="ea-vehicle-search">Намери автомобил</label>
+          <span>МАРКА · МОДЕЛ · НОМЕР НА ЛОТ</span>
+        </div>
+        <div className="eaVehicleInputWrap">
+          <svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round"><circle cx="10.8" cy="10.8" r="6.3"/><path d="m16 16 5 5"/></svg>
+          <input id="ea-vehicle-search" type="search" value={query} onChange={e=>setQuery(e.target.value)} placeholder="Например: BMW, Mercedes, EA-12345" autoComplete="off"/>
+        </div>
+      </div>
+      {mode==="loading"?<div className="eaVehicleNotice eaVehicleNoticeLoading" role="status"><span className="eaVehicleNoticeIcon" aria-hidden="true">◌</span><div><h2>Проверяваме каталога</h2><p>Зареждаме само одобрените обяви.</p></div></div>:
+       mode==="inactive"?<div className="eaVehicleNotice" role="status"><span className="eaVehicleNoticeKicker">СЪСТОЯНИЕ НА КАТАЛОГА</span><h2>Подготвяме реалните обяви.</h2><p>Каталогът още не е активиран. Тук ще се появяват само проверени и одобрени автомобили — без демонстрационни лотове, представяни за реални.</p><a href="/start#early-access">Заяви ранен достъп <span aria-hidden="true">↗</span></a></div>:
+       mode==="error"?<div className="eaVehicleNotice" role="alert"><span className="eaVehicleNoticeKicker">ВРЪЗКА С КАТАЛОГА</span><h2>Каталогът е временно недостъпен.</h2><p>Не можем да потвърдим данните за автомобилите. Опитай отново по-късно.</p></div>:
+       filtered.length===0?<div className="eaVehicleNotice" role="status"><span className="eaVehicleNoticeKicker">ПРОВЕРЕНИ ОБЯВИ</span><h2>{query?"Няма резултати за това търсене.":"Все още няма публикувани автомобили."}</h2><p>Показваме само одобрени обяви от проверени продавачи. Демо лотовете са отделно.</p><a href="/auctions">Разгледай търговете <span aria-hidden="true">↗</span></a></div>:
+       <><div className="eaVehicleResultsCount" role="status">{filtered.length} {filtered.length===1?"автомобил":"автомобила"} в каталога</div><div className="eaVehicleGrid">{filtered.map(l=><article key={l.id} className="eaVehicleCard">
+         <span>ЛОТ {l.lot_number} · {l.status.toUpperCase()}</span><h2>{l.title}</h2><p>{[l.model_year,l.country_code,l.condition_summary].filter(Boolean).join(" · ")}</p>
          <strong>{l.starting_price===null?"Начална цена: очаква се":new Intl.NumberFormat("bg-BG",{style:"currency",currency:l.price_currency}).format(l.starting_price)}</strong>
          <div><a href={"/vehicles/"+l.id}>Детайли ↗</a><button type="button" disabled={saving===l.id} onClick={()=>void save(l.id)}>{saving===l.id?"Записване…":"☆ Запази"}</button></div>
-       </article>)}</div>}
+       </article>)}</div></>}
       {feedback&&<p role="status" className="eaVehicleFeedback">{feedback}</p>}
     </section>
   </main>;
