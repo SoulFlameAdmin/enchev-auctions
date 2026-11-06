@@ -90,7 +90,7 @@ export async function PATCH(request:NextRequest){
   }
   if("locale" in fields){
     if(!["bg","en"].includes(fields.locale as string))return json({ok:false,error:"Unsupported language."},400);
-    update.locale=fields.locale;
+    update.locale=fields.locale as string;
   }
   if(Object.keys(update).length===0)return json({ok:false,error:"Nothing to update."},400);
   const path="/enchev_buyer_profiles?id=eq."+auth.buyer.user.id+"&select=display_name,phone_e164,locale";
