@@ -250,21 +250,21 @@ const ctaMapScript = String.raw`(() => {
   // Map them to the same seven buyer stages used by /start; don't divert all
   // original "Start your project" controls to one generic destination.
   const rules = [
-    { heading: "Identity", label: "РЕГИСТРАЦИЯ", href: "/register" },
-    { heading: "Insight", label: "ПОТВЪРЖДЕНИЕ И ДЕПОЗИТ", href: "/verification" },
-    { heading: "Cohesion", label: "ИЗБЕРИ АВТОМОБИЛ", href: "/vehicles" },
-    { heading: "Discovery", label: "ИЗБЕРИ АВТОМОБИЛ", href: "/auctions" },
-    { heading: "Inspection", label: "ПРОВЕРИ АВТОМОБИЛ", href: "/vehicle-history" },
-    { heading: "Auctions", label: "ТЪРГОВЕ НА ЖИВО", href: "/auctions" },
+    { heading: "Your Route To Your Next Vehicle", label: "РАЗГЛЕДАЙ АВТОМОБИЛИТЕ", href: "/vehicles" },
+    { heading: "Identity", label: "СЪЗДАЙ ПРОФИЛ", href: "/register" },
+    { heading: "Insight", label: "ПОТВЪРДИ ПРОФИЛА", href: "/verification" },
+    { heading: "Cohesion", label: "ЗАПОЧНИ ПОКУПКА", href: "/start" },
+    { heading: "How It Works", label: "КАК СЕ КУПУВА?", href: "/start" },
+    { heading: "Discovery", label: "НАМЕРИ АВТОМОБИЛ", href: "/vehicles" },
+    { heading: "Inspection", label: "ПРОВЕРИ ИСТОРИЯТА", href: "/vehicle-history" },
+    { heading: "Auctions", label: "ВИЖ ТЪРГОВЕТЕ", href: "/auctions" },
     { heading: "History", label: "МОИТЕ ТЪРГОВЕ", href: "/my-auctions" },
-    { heading: "Transport", label: "TRANSPORT", href: "/transport" },
-    { heading: "Support", label: "ПОДДРЪЖКА", href: "/support" },
-    { heading: "Vehicle Inventory", label: "НАМЕРИ АВТОМОБИЛИ", href: "/vehicles" },
-    { heading: "Live Auctions", label: "ТЪРГОВЕ НА ЖИВО", href: "/auctions" },
-    { heading: "Refuse Ordinary", label: "7 СТЪПКИ ДО ПОКУПКА", href: "/start" },
-    { heading: "Your Route To Your Next Vehicle", label: "ЗАПОЧНИ ОТТУК", href: "/start" }
+    { heading: "Transport", label: "ЗАЯВИ ТРАНСПОРТ", href: "/transport" },
+    { heading: "Support", label: "СВЪРЖИ СЕ С НАС", href: "/support" },
+    { heading: "Vehicle Inventory", label: "ВИЖ ВСИЧКИ КОЛИ", href: "/vehicles" },
+    { heading: "Live Auctions", label: "НАДДАВАЙ НА ЖИВО", href: "/auctions" },
+    { heading: "Refuse Ordinary", label: "РЕГИСТРИРАЙ СЕ", href: "/register" }
   ];
-
   const defaultDestination = { label: "7 СТЪПКИ ДО ПОКУПКА", href: "/start" };
   const bgHeadingAliases = new Map([
     ["Identity","ИДЕНТИЧНОСТ"], ["Insight","ИНФОРМАЦИЯ"],
@@ -277,34 +277,30 @@ const ctaMapScript = String.raw`(() => {
     ["Your Route To Your Next Vehicle","ПЪТЯТ КЪМ СЛЕДВАЩИЯ ТИ АВТОМОБИЛ"]
   ]);
 
-  function nearestRule(element) {
-    let section=element.closest("section");
-    while (section && section !== document.body) {
-      const headingNodes=Array.from(section.querySelectorAll("h1,h2,h3,h4,h5"));
-      for (const heading of headingNodes) {
-        const value=normalize(heading.textContent);
-        const rule=rules.find(item=>value===normalize(item.heading) || value===normalize(bgHeadingAliases.get(item.heading)));
+  function nearestRule(element,index) {
+    // Find the single nearest local heading. Three cards share one section;
+    // querying all headings from that section misroutes every CTA.
+    let node=element.parentElement;
+    while(node && node!==document.body){
+      const headings=Array.from(node.querySelectorAll("h1,h2,h3,h4,h5"));
+      if(headings.length===1){
+        const heading=normalize(headings[0].textContent);
+        const rule=rules.find(item=>heading===normalize(item.heading) ||
+          heading===normalize(bgHeadingAliases.get(item.heading)));
         if(rule)return rule;
       }
-      const routeTo=section.dataset.enchevBuyerDestination;
-      if(routeTo) return rules.find(item=>item.href===routeTo)||defaultDestination;
-      section=section.parentElement && section.parentElement.closest("section");
+      node=node.parentElement;
     }
-    return defaultDestination;
+    // Stable source-order fallback for the image-led section without a H-tag.
+    return rules[index]||defaultDestination;
   }
 
   function applyCtas() {
-    const candidates=Array.from(document.querySelectorAll("a.sc-6f2721c4-0,button.sc-6f2721c4-0"))
-      .filter(element=>{
-        const value=normalize(element.textContent);
-        return value==="start your project" ||
-          element.getAttribute("aria-label")==="Explore Inventory" ||
-          element.getAttribute("aria-label")==="Browse Auctions" ||
-          element.hasAttribute("data-enchev-cta-label");
-      });
-
-    for (const element of candidates) {
-      const destination=nearestRule(element);
+    const candidates=Array.from(document.querySelectorAll("a.sc-6f2721c4-0,button.sc-6f2721c4-0"));
+    // All 14 source buttons are CTA controls, including those previously
+    // overwritten to /support with text "ПОДДРЪЖКА".
+    for (const [index,element] of candidates.entries()) {
+      const destination=nearestRule(element,index);
       if(element.dataset.enchevCtaHref===destination.href &&
          element.dataset.enchevCtaLabel===destination.label)continue;
 
@@ -345,6 +341,8 @@ const ctaMapScript = String.raw`(() => {
   ];
 
   function setAnchor(anchor, item) {
+    if(anchor.matches("a.sc-6f2721c4-0,button.sc-6f2721c4-0") ||
+       anchor.hasAttribute("data-enchev-cta-label"))return;
     anchor.setAttribute("href", item.href);
     anchor.setAttribute("target", "_top");
     anchor.setAttribute("aria-label", item.label);
@@ -371,7 +369,8 @@ const ctaMapScript = String.raw`(() => {
   }
 
   function applyNavigation() {
-    const legacyAnchors = Array.from(document.querySelectorAll('a[href="/builds/"],a[href="/stock/"],a[href="/contact/"]'));
+    const legacyAnchors = Array.from(document.querySelectorAll('a[href="/builds/"],a[href="/stock/"],a[href="/contact/"]'))
+      .filter(anchor=>!anchor.matches("a.sc-6f2721c4-0"));
     const containers = new Set();
 
     for (const anchor of legacyAnchors) {
@@ -413,7 +412,7 @@ const ctaMapScript = String.raw`(() => {
     ]);
     for (const [href, item] of directMap) {
       for (const anchor of document.querySelectorAll('a[href="' + href + '"]')) {
-        if (anchor.closest(".site-nav")) continue;
+        if (anchor.closest(".site-nav") || anchor.matches("a.sc-6f2721c4-0")) continue;
         setAnchor(anchor, item);
       }
     }
@@ -447,21 +446,21 @@ const ctaMapScript = String.raw`(() => {
     scheduled = true;
     requestAnimationFrame(() => {
       scheduled = false;
-      applyCtas();
       applyNavigation();
+      applyCtas();
       ensurePlatformNavigation();
     });
   }
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", () => {
-      applyCtas();
       applyNavigation();
+      applyCtas();
       ensurePlatformNavigation();
     }, { once: true });
   } else {
-    applyCtas();
     applyNavigation();
+    applyCtas();
     ensurePlatformNavigation();
   }
 
