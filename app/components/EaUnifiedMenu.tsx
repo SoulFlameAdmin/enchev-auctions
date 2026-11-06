@@ -3,7 +3,6 @@
 import {useEffect,useRef,useState,type FormEvent} from "react";
 import {usePathname} from "next/navigation";
 import EaOfficialLogo from "./EaOfficialLogo";
-import Image from "next/image";
 
 type IconName="home"|"car"|"live"|"steps"|"history"|"truck"|"support"|"login"|"register"|"admin"|"user";
 const icons:Record<IconName,string>={
@@ -22,14 +21,14 @@ const icons:Record<IconName,string>={
 function MenuIcon({name}:{name:IconName}){
  return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={icons[name]}/></svg>;
 }
-const sections:{label:string;description:string;href:string;icon:IconName;photo:string;emoji:string}[]=[
- {label:"Начало",description:"Обратно към началната страница",href:"/",icon:"home",photo:"/forge/media/88dd191a396c4e87c387.jpg",emoji:"🏠"},
- {label:"Автомобили",description:"Каталог, търсене и лотове",href:"/vehicles",icon:"car",photo:"/forge/media/9b20239c5e1099a605ec.jpg",emoji:"🚘"},
- {label:"Търгове на живо",description:"Активни и предстоящи търгове",href:"/auctions",icon:"live",photo:"/forge/media/20ac6eaa8d0b086cee3c.jpg",emoji:"🔴"},
- {label:"Как се купува",description:"Стъпките от избор до получаване",href:"/start",icon:"steps",photo:"/forge/media/81f625f9053d53ae5f72.jpg",emoji:"🛒"},
- {label:"История на автомобил",description:"Проверки и данни за автомобила",href:"/vehicle-history",icon:"history",photo:"/forge/media/ca18bb752d0b714ef48e.jpg",emoji:"🔎"},
- {label:"Транспорт",description:"Доставка и получаване",href:"/transport",icon:"truck",photo:"/forge/media/9e4253c49399505b018a.jpg",emoji:"🚚"},
- {label:"Поддръжка",description:"Въпроси и съдействие",href:"/support",icon:"support",photo:"/forge/media/833f233b33cbcd789d20.jpg",emoji:"🎧"}
+const sections:{label:string;description:string;href:string;icon:IconName;emoji:string}[]=[
+ {label:"Начало",description:"Обратно към началната страница",href:"/",icon:"home",emoji:"🏠"},
+ {label:"Автомобили",description:"Каталог, търсене и лотове",href:"/vehicles",icon:"car",emoji:"🚘"},
+ {label:"Търгове на живо",description:"Активни и предстоящи търгове",href:"/auctions",icon:"live",emoji:"🔴"},
+ {label:"Как се купува",description:"Стъпките от избор до получаване",href:"/start",icon:"steps",emoji:"🛒"},
+ {label:"История на автомобил",description:"Проверки и данни за автомобила",href:"/vehicle-history",icon:"history",emoji:"🔎"},
+ {label:"Транспорт",description:"Доставка и получаване",href:"/transport",icon:"truck",emoji:"🚚"},
+ {label:"Поддръжка",description:"Въпроси и съдействие",href:"/support",icon:"support",emoji:"🎧"}
 ];
 function isActiveSection(pathname:string,href:string):boolean{
  if(href==="/")return pathname==="/";
@@ -139,7 +138,7 @@ export default function EaUnifiedMenu(){
        </div>
        <nav className="eaUnifiedLinks" aria-label="Главна навигация">
        {sections.map((item,index)=><a key={item.href} href={item.href} onClick={()=>setOpen(false)} className={[item.icon==="live"?"is-live":"",isActiveSection(pathname,item.href)?"is-active":""].filter(Boolean).join(" ")} aria-current={isActiveSection(pathname,item.href)?"page":undefined}>
-         <span className="eaUnifiedNavMedia"><Image className="eaUnifiedNavPhoto" src={item.photo} alt="" width={96} height={96} quality={62} sizes="48px"/><span className="eaUnifiedNavPhotoBadge" aria-hidden="true">{item.emoji}</span></span>
+         <span className="eaUnifiedNavMedia eaUnifiedNavEmoji" aria-hidden="true">{item.emoji}</span>
          <span className="eaUnifiedNavText"><strong>{item.label}</strong><small>{item.description}</small></span>
          <span className="eaUnifiedNavArrow" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
        </a>)}
