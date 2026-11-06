@@ -146,3 +146,134 @@
  .eaUnifiedTrigger,.eaUnifiedNavArrow,.eaUnifiedLinks a,.eaUnifiedAdminButton{transition:none}
  .eaUnifiedBackdrop{-webkit-backdrop-filter:none;backdrop-filter:none}
 }
+
+/* V3 — true viewport-fit drawer. Seven sections and three account actions
+   share the available height; only the secured password form may scroll
+   when an on-screen keyboard makes the usable viewport temporarily tiny. */
+.eaUnifiedDrawer{
+  height:100dvh;
+  max-height:100dvh;
+  overflow:hidden;
+  padding-top:clamp(9px,1.6dvh,22px);
+  padding-bottom:max(9px,env(safe-area-inset-bottom));
+}
+.eaUnifiedDrawer:has(.eaUnifiedAdmin){
+  overflow-y:auto;
+  overscroll-behavior:contain;
+}
+.eaUnifiedHeader{
+  flex:0 0 auto;
+  min-height:clamp(53px,8dvh,76px);
+  padding-bottom:clamp(7px,1.3dvh,15px);
+}
+.eaUnifiedMenuIntro{
+  flex:0 0 auto;
+  padding:clamp(7px,1.6dvh,16px) 2px clamp(6px,1.3dvh,13px);
+}
+.eaUnifiedMenuIntro h2{
+  font-size:clamp(19px,2.6dvh,28px);
+  margin-top:clamp(3px,.5dvh,8px);
+}
+.eaUnifiedLinks{
+  flex:1 1 0;
+  min-height:0;
+  max-height:575px;
+  display:grid;
+  grid-template-rows:repeat(7,minmax(0,1fr));
+  gap:clamp(1px,.38dvh,4px);
+  align-content:stretch;
+}
+.eaUnifiedLinks a{
+  min-height:0;
+  height:100%;
+  padding:clamp(2px,.75dvh,8px) clamp(6px,1dvw,11px);
+  gap:clamp(7px,1.2dvw,11px);
+  grid-template-columns:clamp(31px,4.6dvh,43px) minmax(0,1fr) 21px;
+}
+.eaUnifiedNavIcon{
+  width:clamp(29px,4.6dvh,40px);
+  height:clamp(29px,4.6dvh,40px);
+  border-radius:9px;
+}
+.eaUnifiedNavIcon svg{width:clamp(17px,2.5dvh,21px);height:clamp(17px,2.5dvh,21px)}
+.eaUnifiedNavText{gap:clamp(1px,.37dvh,4px)}
+.eaUnifiedNavText strong{font-size:clamp(13px,1.82dvh,15.5px);line-height:1.13}
+.eaUnifiedNavText small{font-size:clamp(9px,1.3dvh,11px);line-height:1.15}
+.eaUnifiedNavArrow{width:21px;height:21px}
+.eaUnifiedFooter{
+  flex:0 0 auto;
+  min-height:0;
+  margin-top:auto;
+  padding:clamp(4px,.8dvh,11px) 1px 0;
+}
+.eaUnifiedFooterEyebrow{
+  padding:clamp(5px,.8dvh,10px) 0 clamp(4px,.6dvh,8px);
+}
+.eaUnifiedAccounts a{
+  min-height:clamp(39px,6.5dvh,53px);
+  padding:clamp(5px,.8dvh,10px) 6px;
+}
+.eaUnifiedAdminButton{
+  min-height:clamp(40px,6.5dvh,53px);
+  padding:clamp(4px,.6dvh,8px) 9px;
+  margin-top:clamp(5px,.8dvh,10px);
+}
+.eaUnifiedAdminIcon{width:clamp(28px,4.4dvh,35px);height:clamp(28px,4.4dvh,35px)}
+.eaUnifiedFooter>p{margin:clamp(5px,.7dvh,11px) 0 0;font-size:clamp(8px,1.03dvh,9px);line-height:1.18}
+@media(max-width:720px){
+  .eaUnifiedDrawer{
+    width:min(430px,100vw);
+    padding-left:clamp(12px,4.1vw,22px);
+    padding-right:clamp(12px,4.1vw,22px);
+  }
+  .eaUnifiedMenuIntro h2{font-size:clamp(18px,2.6dvh,24px)}
+  .eaUnifiedHeader{min-height:clamp(50px,7.8dvh,70px)}
+  .eaUnifiedLinks a{min-height:0}
+}
+@media(max-height:740px){
+  .eaUnifiedBrandCaption{display:none}
+  .eaUnifiedHeader{min-height:clamp(47px,7.5dvh,62px)}
+  .eaUnifiedBrand .eaOfficialLogo{height:clamp(37px,6.4dvh,50px)}
+  .eaUnifiedMenuIntro{padding-top:clamp(5px,1dvh,10px);padding-bottom:clamp(4px,1dvh,9px)}
+  .eaUnifiedMenuIntro h2{font-size:clamp(17px,2.7dvh,21px)}
+  .eaUnifiedNavText small{display:none}
+  .eaUnifiedNavText strong{font-size:clamp(12px,2.4dvh,15px)}
+  .eaUnifiedFooterEyebrow{padding:5px 0 5px}
+  .eaUnifiedAdminText small{display:none}
+  .eaUnifiedFooter>p{display:none}
+}
+@media(max-height:570px){
+  .eaUnifiedDrawer{padding-top:6px;padding-bottom:6px}
+  .eaUnifiedHeader{min-height:40px;padding-bottom:4px}
+  .eaUnifiedBrand .eaOfficialLogo{height:35px}
+  .eaUnifiedHeaderActions a,.eaUnifiedHeaderActions button{height:34px;width:34px}
+  .eaUnifiedMenuIntro{padding:5px 1px 4px}
+  .eaUnifiedEyebrow,.eaUnifiedMenuCount{display:none}
+  .eaUnifiedMenuIntro h2{font-size:17px;margin:0}
+  .eaUnifiedLinks{gap:1px}
+  .eaUnifiedLinks a{grid-template-columns:27px minmax(0,1fr) 17px;padding:1px 5px}
+  .eaUnifiedNavIcon{height:26px;width:26px}
+  .eaUnifiedNavIcon svg{height:16px;width:16px}
+  .eaUnifiedNavText strong{font-size:13px}
+  .eaUnifiedNavArrow{width:17px;height:17px}
+  .eaUnifiedNavArrow svg{width:15px;height:15px}
+  .eaUnifiedFooter{padding-top:3px}
+  .eaUnifiedFooterEyebrow{display:none}
+  .eaUnifiedAccounts a{min-height:36px;padding:4px 3px;font-size:12px}
+  .eaUnifiedAccounts svg{width:16px;height:16px}
+  .eaUnifiedAdminButton{min-height:36px;margin-top:3px;grid-template-columns:26px minmax(0,1fr) 14px;gap:7px;padding:3px 7px}
+  .eaUnifiedAdminIcon{width:24px;height:24px}
+  .eaUnifiedAdminIcon svg{width:15px;height:15px}
+  .eaUnifiedAdminText strong{font-size:12px}
+}
+@media(max-height:470px){
+  .eaUnifiedHeader{min-height:33px;padding-bottom:2px}
+  .eaUnifiedBrand .eaOfficialLogo{height:28px}
+  .eaUnifiedMenuIntro{padding:2px 1px}
+  .eaUnifiedMenuIntro h2{font-size:15px}
+  .eaUnifiedLinks a{grid-template-columns:24px minmax(0,1fr) 15px;gap:5px}
+  .eaUnifiedNavIcon{width:22px;height:22px}
+  .eaUnifiedNavText strong{font-size:11.5px}
+  .eaUnifiedAccounts a{min-height:31px}
+  .eaUnifiedAdminButton{min-height:31px}
+}
