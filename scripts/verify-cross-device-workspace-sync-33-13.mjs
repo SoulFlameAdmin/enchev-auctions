@@ -31,7 +31,7 @@ function verifyConfig(config){
   if(JSON.stringify(config.tasks?.map(x=>[x.id,x.name]))!==JSON.stringify(expected)) fail("task contract drift");
   if(frozenTaskMap().get("33.13")!=="Cross-device workspace synchronization") fail("frozen task identity drift: 33.13");
   const binding=readJson(BINDING_PATH);
-  if(binding.scope!=="development-governance"||binding.auction_authority!==false) fail("Supabase authority boundary drift");
+  if(binding.scope!=="enchev-only-development-governance"||binding.shared_project!==false||binding.project_ref!=="ejfrnjhlggebzmpmxajl"||binding.auction_authority!==false) fail("Supabase authority boundary drift");
   if(config.persistence?.newGovernanceBusinessTableRequired!==false) fail("33.13 must not invent governance business persistence");
   if(config.authority?.workspaceState!=="postgresql"||config.authority?.deviceStateAuthoritative!==false||config.authority?.realtimeTransportAuthoritative!==false) fail("workspace authority drift");
   for(const key of ["syncMayChangeAuctionState","syncMayAcceptBid","syncMayChooseWinner"]) if(config.authority?.[key]!==false) fail(`authority guardrail drift: ${key}`);
