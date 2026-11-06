@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 
 type Status = "green" | "yellow" | "red";
 type Note = { evidence?: string; blocker?: string; updatedAt?: string };
@@ -91,7 +92,11 @@ async function pullCloudState(signal?: AbortSignal) {
 }
 
 export default function CloudPlanStateSync() {
+  const pathname = usePathname();
   useEffect(() => {
+    // Governance data is private admin content. Do not open a full-snapshot
+    // SSE stream or fetch all plan rows for every public vehicle-site visitor.
+    if (pathname !== "/admin/console") return;
     const controller = new AbortController();
     void pullCloudState(controller.signal).catch(() => {});
 
@@ -103,11 +108,14 @@ export default function CloudPlanStateSync() {
       } catch {}
     };
     source.addEventListener("state", onState as EventListener);
-    source.onerror = () => { void pullCloudState(controller.signal).catch(() => {}); };
+    // EventSource reconnects on its own. Do not hammer the egress-limited
+    // project with another full snapshot after each connection error.
+    source.onerror = () => {};
 
     const fallback = window.setInterval(() => {
+      if (document.visibilityState !== "visible" || source.readyState === EventSource.OPEN) return;
       void pullCloudState(controller.signal).catch(() => {});
-    }, 30000);
+    }, 300000);
 
     return () => {
       controller.abort();
@@ -115,7 +123,7 @@ export default function CloudPlanStateSync() {
       source.removeEventListener("state", onState as EventListener);
       source.close();
     };
-  }, []);
+  }, [pathname]);
 
   return null;
 }
