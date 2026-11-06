@@ -151,10 +151,10 @@ export default function AuctionsPage(){
      <div className="eaLiveCarSummary">
       <h2>{primaryTitle}</h2>
       <div className="eaLiveSpecs">
-       <span><Icon name="calendar" size={16}/>{real?.model_year??preview.year} г.</span>
-       <span><Icon name="car" size={16}/>{real?.fuel_type??preview.fuel}</span>
-       <span><Icon name="clock" size={16}/>{real?.mileage_km!==null&&real?.mileage_km!==undefined?real.mileage_km.toLocaleString("bg-BG")+" км":preview.mileage}</span>
-       <span><Icon name="layers" size={16}/>{real?.transmission??preview.transmission}</span>
+       <span><Icon name="calendar" size={16}/>{real?(real.model_year??"—"):preview.year} г.</span>
+       <span><Icon name="car" size={16}/>{real?(real.fuel_type??"Не е посочено"):preview.fuel}</span>
+       <span><Icon name="clock" size={16}/>{real?(typeof real.mileage_km==="number"?real.mileage_km.toLocaleString("bg-BG")+" км":"Не е посочен"):preview.mileage}</span>
+       <span><Icon name="layers" size={16}/>{real?(real.transmission??"Не е посочено"):preview.transmission}</span>
       </div>
      </div>
     </section>
