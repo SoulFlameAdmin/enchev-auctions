@@ -10,12 +10,21 @@ export const dynamic = "force-dynamic";
 type Params = { params:Promise<{action:string}> };
 const deny = () => json({ok:false,error:"Request not allowed."},400);
 
+function accountAgeDays(raw:unknown):number|null{
+  if(!raw||typeof raw!=="object")return null;
+  const created=(raw as Record<string,unknown>).created_at;
+  if(typeof created!=="string")return null;
+  const ms=Date.parse(created);
+  if(!Number.isFinite(ms)||ms>Date.now())return null;
+  return Math.floor((Date.now()-ms)/(24*60*60*1000));
+}
 async function currentUser(request:NextRequest,config:NonNullable<ReturnType<typeof authConfig>>) {
   const access=authCookie(request,"access");
   if (!access) return null;
   const result=await providerRequest(config,"/auth/v1/user","GET",access);
   if (!result || result.status!==200) return null;
-  return safeUser(result.data);
+  const user=safeUser(result.data);
+  return user?{...user,accountAgeDays:accountAgeDays(result.data)}:null;
 }
 
 export async function GET(request:NextRequest,context:Params){
@@ -36,7 +45,7 @@ export async function GET(request:NextRequest,context:Params){
       const verified=await providerRequest(config,"/auth/v1/user","GET",session.access_token);
       const refreshedUser=verified?.status===200?safeUser(verified.data):null;
       if (refreshedUser){
-        const response=json({ok:true,available:true,authenticated:true,user:refreshedUser});
+        const response=json({ok:true,available:true,authenticated:true,user:{...refreshedUser,accountAgeDays:accountAgeDays(verified?.data)}});
         setAuthCookies(response,session);
         return response;
       }
