@@ -628,3 +628,122 @@
   scroll-behavior:auto;transition-duration:.01ms;animation:none;
  }
 }
+
+
+/* V4 — move the real catalogue controls into the former cinematic slogan,
+ * aligned with the supplied "Автомобили на търг" reference in both visual themes. */
+.eaMarketHero{grid-template-columns:minmax(0,.87fr) minmax(0,1.18fr);gap:13px;align-items:stretch}
+.eaMarketPage .eaMarketSearchHero{
+ position:relative;display:flex;flex-direction:column;justify-content:flex-start;
+ min-width:0;min-height:374px;height:auto;gap:0;
+ padding:clamp(14px,1.9vw,25px);
+ border:1px solid #343740;border-radius:15px;
+ background:#15171d;color:#f5f7fa;
+ overflow:visible;isolation:isolate;
+ box-shadow:0 10px 27px rgba(0,0,0,.18);
+}
+.eaMarketPage .eaMarketSearchHero:before,
+.eaMarketPage .eaMarketSearchHero:after{display:none;content:none}
+.eaMarketSearchHero .eaMarketSearchTop{
+ display:flex;align-items:center;justify-content:space-between;gap:7px;
+ margin:0 0 13px;
+}
+.eaMarketSearchHero .eaMarketSearchTop h1{
+ font-size:clamp(23px,2.05vw,36px);
+ font-weight:850;letter-spacing:-.045em;line-height:1.12;
+ color:inherit;margin:4px 0 0;
+}
+.eaMarketSearchHero .eaMarketSearchTop .eaMarketEyebrow{display:block;font-size:9px;letter-spacing:.1em}
+.eaMarketSearchHero .eaMarketSearchTop>a{font-size:10px;color:#bcc3cf}
+.eaMarketSearchHero .eaMarketSearchRow{
+ display:grid;grid-template-columns:repeat(3,minmax(0,1fr));
+ gap:8px;align-items:stretch;
+}
+.eaMarketSearchHero .eaMarketSearch{
+ grid-column:1/-1;min-height:51px;width:100%;border-radius:11px;
+}
+.eaMarketSearchHero .eaMarketSearch input{font-size:13px}
+.eaMarketSearchHero .eaMarketSearchRow>select{
+ min-width:0;min-height:43px;padding:0 10px;font-size:11px;border-radius:10px;
+}
+.eaMarketSearchHero .eaMarketFilterBtn{
+ min-width:0;min-height:43px;padding:8px 5px;font-size:12px;border-radius:10px;
+ white-space:nowrap;
+}
+.eaMarketSearchHero .eaMarketCatalogBar{
+ display:flex;flex-direction:column;align-items:stretch;
+ gap:14px;margin:15px 0 0;padding:15px 0 0;
+ border-top:1px solid #333640;border-bottom:0;
+}
+.eaMarketSearchHero .eaMarketCatalogTabs{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;
+ width:100%;
+}
+.eaMarketSearchHero .eaMarketCatalogTabs button{
+ display:inline-flex;justify-content:center;align-items:center;min-width:0;min-height:38px;
+ font-size:clamp(9px,.78vw,12px);padding:6px 3px;gap:3px;
+ white-space:nowrap;
+}
+.eaMarketSearchHero .eaMarketCatalogTabs button small{min-width:15px;padding:1px 3px;font-size:9px}
+.eaMarketSearchHero .eaMarketCatalogControls{
+ display:flex;width:100%;align-items:center;justify-content:flex-end;
+ gap:8px;margin-top:auto;
+}
+.eaMarketSearchHero .eaMarketCatalogCount{
+ margin-right:auto;color:#b6bbc7;font-size:11px;
+}
+.eaMarketSearchHero .eaMarketViewSwitch{flex-shrink:0}
+.eaMarketSearchHero .eaMarketAppearanceToggle{flex-shrink:0}
+.eaMarketSearchHero .eaMarketMoreFilters{margin:9px 0 0;min-width:0;align-items:stretch;flex-wrap:wrap}
+.eaMarketSearchHero .eaMarketMoreFilters label{flex:1;min-width:130px}
+.eaMarketSearchHero .eaMarketMoreFilters select{min-width:0}
+.eaMarketCatalog{padding-top:4px}
+.eaMarketPage[data-appearance="light"] .eaMarketSearchHero{
+ background:#f2f4f8;color:#171d29;border-color:#d7dde6;
+ box-shadow:0 8px 22px rgba(20,36,62,.045);
+}
+.eaMarketPage[data-appearance="light"] .eaMarketSearchHero h1{color:#171d29}
+.eaMarketPage[data-appearance="light"] .eaMarketSearchHero .eaMarketEyebrow{color:#a92c42}
+.eaMarketPage[data-appearance="light"] .eaMarketSearchHero .eaMarketSearchTop>a{color:#5d687a}
+.eaMarketPage[data-appearance="light"] .eaMarketSearchHero .eaMarketCatalogBar{border-color:#d9dfe8}
+.eaMarketPage[data-appearance="light"] .eaMarketSearchHero .eaMarketCatalogCount{color:#697382}
+@media(max-width:1220px) and (min-width:721px){
+ .eaMarketHero{grid-template-columns:minmax(0,.95fr) minmax(0,1.05fr)}
+ .eaMarketSearchHero .eaMarketSearchTop h1{font-size:clamp(23px,2.4vw,33px)}
+ .eaMarketSearchHero .eaMarketSearchTop>a{display:none}
+ .eaMarketSearchHero .eaMarketCatalogTabs{gap:3px}
+ .eaMarketSearchHero .eaMarketCatalogTabs button{font-size:9.5px;padding:5px 2px}
+ .eaMarketSearchHero .eaMarketCatalogControls{flex-wrap:wrap}
+ .eaMarketSearchHero .eaMarketCatalogCount{flex-basis:100%}
+ .eaMarketPage .eaMarketSearchHero{min-height:390px}
+}
+@media(max-width:720px){
+ .eaMarketPage .eaMarketSearchHero{
+  order:3;min-height:0;height:auto;padding:15px 12px 14px;
+  margin:9px 0 12px;border-radius:13px;
+ }
+ .eaMarketSearchHero .eaMarketSearchTop{margin-bottom:11px}
+ .eaMarketSearchHero .eaMarketSearchTop h1{font-size:clamp(24px,6vw,32px);margin:3px 0 0}
+ .eaMarketSearchHero .eaMarketSearchTop>a{display:none}
+ .eaMarketSearchHero .eaMarketSearchRow{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+ .eaMarketSearchHero .eaMarketSearch{min-height:46px}
+ .eaMarketSearchHero .eaMarketSearch input{height:44px;font-size:13px}
+ .eaMarketSearchHero .eaMarketSearchRow>select,
+ .eaMarketSearchHero .eaMarketFilterBtn{min-height:43px;font-size:11px;padding:0 5px}
+ .eaMarketSearchHero .eaMarketCatalogBar{gap:12px;margin:12px 0 0;padding:13px 0 0}
+ .eaMarketSearchHero .eaMarketCatalogTabs{grid-template-columns:repeat(4,minmax(0,1fr));gap:4px}
+ .eaMarketSearchHero .eaMarketCatalogTabs button{font-size:clamp(9px,2.5vw,11px);min-height:38px;padding:5px 3px}
+ .eaMarketSearchHero .eaMarketCatalogControls{display:flex;flex-wrap:nowrap;align-items:center;gap:6px}
+ .eaMarketSearchHero .eaMarketCatalogCount{font-size:10px;flex:1;min-width:0;white-space:normal}
+ .eaMarketSearchHero .eaMarketAppearanceToggle{min-height:40px}
+ .eaMarketSearchHero .eaMarketViewSwitch button{min-height:38px}
+ .eaMarketPromo{margin-top:0}
+ .eaMarketCatalog{padding-top:0}
+}
+@media(max-width:360px){
+ .eaMarketPage .eaMarketSearchHero{padding:13px 9px}
+ .eaMarketSearchHero .eaMarketSearchTop h1{font-size:24px}
+ .eaMarketSearchHero .eaMarketCatalogTabs button{font-size:9px;letter-spacing:-.02em}
+ .eaMarketSearchHero .eaMarketCatalogCount{font-size:9px}
+ .eaMarketSearchHero .eaMarketAppearanceToggle{min-width:39px}
+}
