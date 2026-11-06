@@ -506,3 +506,123 @@
 .eaUnifiedLinks a.is-active .eaUnifiedNav3D{transform:scale(1.06);filter:brightness(1.16) drop-shadow(0 3px 6px rgba(0,0,0,.65))}
 @media(max-height:570px){.eaUnifiedNav3D{width:clamp(22px,5.8dvh,29px);height:clamp(22px,5.8dvh,29px)}}
 @media(prefers-reduced-motion:reduce){.eaUnifiedNav3D{transition:none}}
+
+/* V8 — white premium navigation. Isolated to the drawer; cinematic homepage stays unchanged. */
+.eaUnifiedDrawer{
+ background:#ffffff;
+ color:#151820;
+ border-right:1px solid #dfe2e8;
+ box-shadow:22px 0 90px rgba(11,19,32,.22);
+ color-scheme:light;
+}
+.eaUnifiedDrawer:before{
+ background:radial-gradient(ellipse at 0 0,rgba(225,39,50,.085),transparent 65%);
+}
+.eaUnifiedDrawer .eaUnifiedHeader{
+ border-bottom-color:#e4e7ec;
+}
+.eaUnifiedDrawer .eaOfficialLogoOnDark{visibility:hidden}
+.eaUnifiedDrawer .eaOfficialLogoOnLight{visibility:visible}
+.eaUnifiedDrawer .eaUnifiedHeaderActions a,
+.eaUnifiedDrawer .eaUnifiedHeaderActions button{
+ color:#232936;
+ background:#f4f5f7;
+ border-color:#dfe3e9;
+}
+.eaUnifiedDrawer .eaUnifiedHeaderActions a:hover,
+.eaUnifiedDrawer .eaUnifiedHeaderActions button:hover{
+ color:#c32531;
+ background:#fff0f1;
+ border-color:#edc3c7;
+}
+.eaUnifiedDrawer .eaUnifiedEyebrow,
+.eaUnifiedDrawer .eaUnifiedFooterEyebrow{
+ color:#6b7280;
+}
+.eaUnifiedDrawer .eaUnifiedMenuIntro h2{color:#101827}
+.eaUnifiedDrawer .eaUnifiedMenuIntro h2 span{color:#c92535}
+.eaUnifiedDrawer .eaUnifiedMenuCount{color:#747b88}
+.eaUnifiedDrawer .eaUnifiedLinks a{
+ color:#202630;
+ border-color:transparent;
+}
+.eaUnifiedDrawer .eaUnifiedLinks a:hover,
+.eaUnifiedDrawer .eaUnifiedLinks a:focus-visible{
+ background:#f3f5f8;
+ border-color:#e4e7ec;
+ color:#111827;
+}
+.eaUnifiedDrawer .eaUnifiedLinks a.is-active{
+ color:#121820;
+ background:linear-gradient(95deg,#fff0f1,#fff8f8 68%,#fff);
+ border-color:#edc3c7;
+}
+.eaUnifiedDrawer .eaUnifiedLinks a.is-active:before{background:#d42432}
+.eaUnifiedDrawer .eaUnifiedNavText strong{color:inherit}
+.eaUnifiedDrawer .eaUnifiedNavText small{color:#606875}
+.eaUnifiedDrawer .eaUnifiedNavArrow{color:#7d8592}
+.eaUnifiedDrawer .eaUnifiedLinks a:hover .eaUnifiedNavArrow{color:#202630}
+.eaUnifiedDrawer .eaUnifiedLinks a.is-active .eaUnifiedNavArrow{color:#c42232}
+.eaUnifiedDrawer .eaUnifiedNav3D{
+ filter:brightness(1.01) drop-shadow(0 2px 3px rgba(20,27,41,.11));
+}
+.eaUnifiedDrawer .eaUnifiedLinks a:hover .eaUnifiedNav3D,
+.eaUnifiedDrawer .eaUnifiedLinks a.is-active .eaUnifiedNav3D{
+ filter:brightness(1.05) drop-shadow(0 3px 4px rgba(20,27,41,.18));
+}
+.eaUnifiedDrawer .eaUnifiedFooterEyebrow{border-top-color:#e3e7eb}
+.eaUnifiedDrawer .eaUnifiedLogin{
+ color:#171d28;
+ background:#f2f4f7;
+ border-color:#dfe3e9;
+}
+.eaUnifiedDrawer .eaUnifiedLogin:hover{background:#e9edf2}
+.eaUnifiedDrawer .eaUnifiedRegister{
+ color:#fff;
+ background:linear-gradient(135deg,#e13743,#b8182a);
+ border-color:#d82d3c;
+ box-shadow:0 7px 18px rgba(201,32,47,.12);
+}
+.eaUnifiedDrawer .eaUnifiedRegister:hover{background:linear-gradient(135deg,#ee3a47,#c81f2c)}
+.eaUnifiedDrawer .eaUnifiedAdminButton{
+ color:#272d36;
+ background:#f8f9fb;
+ border-color:#dfe3e9;
+}
+.eaUnifiedDrawer .eaUnifiedAdminButton:hover{
+ background:#fff2f3;
+ border-color:#e6adb4;
+}
+.eaUnifiedDrawer .eaUnifiedAdminIcon{
+ background:#fff0f2;
+ color:#b91c2b;
+ border-color:#efd1d6;
+}
+.eaUnifiedDrawer .eaUnifiedAdminText strong{color:#202630}
+.eaUnifiedDrawer .eaUnifiedAdminText small{color:#687180}
+.eaUnifiedDrawer .eaUnifiedAdminArrow{color:#9b2833}
+.eaUnifiedDrawer .eaUnifiedFooter>p{color:#707782}
+.eaUnifiedDrawer .eaUnifiedFooter>p span{color:#c22939}
+.eaUnifiedDrawer .eaUnifiedBack,
+.eaUnifiedDrawer .eaUnifiedGoogle{color:#4c5563}
+.eaUnifiedDrawer .eaUnifiedBack:hover,
+.eaUnifiedDrawer .eaUnifiedGoogle:hover{color:#b62031}
+.eaUnifiedDrawer .eaUnifiedAdmin>svg{color:#c72937}
+.eaUnifiedDrawer .eaUnifiedAdmin h2{color:#19202c}
+.eaUnifiedDrawer .eaUnifiedAdmin p{color:#606b78}
+.eaUnifiedDrawer .eaUnifiedAdmin label{color:#2e3540}
+.eaUnifiedDrawer .eaUnifiedAdmin input{
+ background:#fff;
+ color:#19202c;
+ border-color:#b9c1cd;
+}
+.eaUnifiedDrawer .eaUnifiedAdmin input::placeholder{color:#7f8793}
+.eaUnifiedDrawer .eaUnifiedAdmin form>button{
+ background:linear-gradient(135deg,#d93240,#b91c2b);
+ color:#fff;
+}
+.eaUnifiedDrawer .eaUnifiedAdmin .eaUnifiedError{color:#ae1e2f}
+.eaUnifiedDrawer :is(a,button,input):focus-visible{
+ outline:2px solid #c92b39;
+ outline-offset:3px;
+}
