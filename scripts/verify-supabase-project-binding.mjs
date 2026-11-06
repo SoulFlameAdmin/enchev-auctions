@@ -37,7 +37,8 @@ export function validateBinding(config,sources){
     !sources.edge.includes('claims.workflow_ref!==WORKFLOW')||
     !sources.edge.includes('claims.repository!==REPO')||
     !sources.edge.includes('crypto.subtle.verify('))fail("strict signed GitHub OIDC write gate missing");
-  if(!sources.edge.includes('status:"green"')||!sources.edge.includes("validateRows(JSON.parse(raw),claims)"))fail("signed batch validation missing");
+  if(!sources.edge.includes('row.status==="green"')||!sources.edge.includes('row.status==="yellow"')||
+    !sources.edge.includes("validateRows(JSON.parse(raw),claims)"))fail("signed GREEN/YELLOW validation missing");
   if(!sources.workflow.includes("Supabase project binding invariant")||
     !sources.workflow.includes("Supabase project binding self-tests")||
     !sources.workflow.includes("Supabase project live endpoint"))fail("required CI checks missing");
