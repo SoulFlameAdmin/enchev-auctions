@@ -143,11 +143,11 @@ export function validateReview(review, sources) {
   ) {
     fail("Supabase review plane must match canonical project binding region");
   }
-  if (sources.supabase.scope !== "development-governance") {
-    fail("Supabase binding scope must remain development-governance");
+  if (sources.supabase.scope !== "enchev-only-development-governance" || sources.supabase.shared_project !== false) {
+    fail("Supabase governance must be isolated inside Enchev");
   }
   if (sources.supabase.auction_authority !== false) {
-    fail("shared Supabase project must not become auction authority");
+    fail("Enchev governance plane must not become auction authority");
   }
 
   const redisPlane = planeById(review, "redis-support");
