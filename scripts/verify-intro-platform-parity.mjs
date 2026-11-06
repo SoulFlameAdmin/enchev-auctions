@@ -70,7 +70,7 @@ for(const href of ['href:"/vehicles"','href:"/auctions"','href:"/start"']) {
 
 const bridge = read("scripts/restore-forge-assets.mjs");
 for (const token of [
-  'href: "/platform"', 'href: "/inventory"', 'href: "/live-auctions"',
+  'href: "/vehicles"', 'href: "/auctions"', 'href: "/start"',
   'href: "/transport"', 'href: "/vehicle-history"', 'href: "/presentation"',
   'href: "/support"', '"_top"', "window.top.location.assign(href)",
   "ensurePlatformNavigation()",
