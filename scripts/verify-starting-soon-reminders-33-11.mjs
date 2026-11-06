@@ -33,7 +33,7 @@ function verifyConfig(config){
   if(frozen.get("33.11")!=="Starting-soon reminders") fail("frozen task identity drift: 33.11");
 
   const binding=readJson(BINDING_PATH);
-  if(binding.scope!=="development-governance"||binding.auction_authority!==false) fail("Supabase authority boundary drift");
+  if(binding.scope!=="enchev-only-development-governance"||binding.shared_project!==false||binding.project_ref!=="ejfrnjhlggebzmpmxajl"||binding.auction_authority!==false) fail("Enchev-only Supabase authority boundary drift");
   if(config.persistence?.newBusinessTableRequired!==false) fail("33.11 must not invent persistence");
   if(config.authority?.auctionSchedule!=="postgresql") fail("auction schedule authority drift");
   if(config.authority?.reminderProjectionAuthoritative!==false||config.authority?.reminderMayChangeAuctionState!==false||config.authority?.reminderMayAcceptBid!==false||config.authority?.reminderMayChooseWinner!==false) fail("reminder authority boundary drift");
