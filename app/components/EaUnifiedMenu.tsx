@@ -21,15 +21,21 @@ const icons:Record<IconName,string>={
 function MenuIcon({name}:{name:IconName}){
  return <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={icons[name]}/></svg>;
 }
-const sections:{label:string;href:string;icon:IconName}[]=[
- {label:"Начало",href:"/",icon:"home"},
- {label:"Автомобили",href:"/vehicles",icon:"car"},
- {label:"Търгове на живо",href:"/auctions",icon:"live"},
- {label:"Как се купува",href:"/start",icon:"steps"},
- {label:"История на автомобил",href:"/vehicle-history",icon:"history"},
- {label:"Транспорт",href:"/transport",icon:"truck"},
- {label:"Поддръжка",href:"/support",icon:"support"}
+const sections:{label:string;description:string;href:string;icon:IconName}[]=[
+ {label:"Начало",description:"Обратно към началната страница",href:"/",icon:"home"},
+ {label:"Автомобили",description:"Каталог, търсене и лотове",href:"/vehicles",icon:"car"},
+ {label:"Търгове на живо",description:"Активни и предстоящи търгове",href:"/auctions",icon:"live"},
+ {label:"Как се купува",description:"Стъпките от избор до получаване",href:"/start",icon:"steps"},
+ {label:"История на автомобил",description:"Проверки и данни за автомобила",href:"/vehicle-history",icon:"history"},
+ {label:"Транспорт",description:"Доставка и получаване",href:"/transport",icon:"truck"},
+ {label:"Поддръжка",description:"Въпроси и съдействие",href:"/support",icon:"support"}
 ];
+function isActiveSection(pathname:string,href:string):boolean{
+ if(href==="/")return pathname==="/";
+ if(href==="/auctions")return pathname.startsWith("/auctions")||pathname.startsWith("/live-auctions")||pathname.startsWith("/my-auctions");
+ if(href==="/vehicles")return pathname.startsWith("/vehicles")||pathname.startsWith("/inventory")||pathname.startsWith("/lot");
+ return pathname===href||pathname.startsWith(href+"/");
+}
 export default function EaUnifiedMenu(){
  const pathname=usePathname();
  const [open,setOpen]=useState(false);
@@ -38,17 +44,19 @@ export default function EaUnifiedMenu(){
  const [busy,setBusy]=useState(false);
  const [error,setError]=useState("");
  const closeRef=useRef<HTMLButtonElement>(null);
+ const triggerRef=useRef<HTMLButtonElement>(null);
  const passwordRef=useRef<HTMLInputElement>(null);
  const hidden=pathname.startsWith("/admin/");
 
  useEffect(()=>{setOpen(false);setAdminForm(false);setPassword("");setError("");},[pathname]);
+ const dismiss=()=>{setOpen(false);setAdminForm(false);setPassword("");setError("");requestAnimationFrame(()=>triggerRef.current?.focus());};
  useEffect(()=>{
   if(!open)return;
   const original=document.body.style.overflow;
   document.body.style.overflow="hidden";
   const timer=requestAnimationFrame(()=>closeRef.current?.focus());
   const handle=(event:KeyboardEvent)=>{
-   if(event.key==="Escape"){event.preventDefault();if(adminForm){setAdminForm(false);setPassword("");setError("");}else setOpen(false);}
+   if(event.key==="Escape"){event.preventDefault();if(adminForm){setAdminForm(false);setPassword("");setError("");}else dismiss();}
    if(event.key==="Tab"){
     const dialog=document.getElementById("ea-unified-drawer");
     if(!dialog)return;
@@ -94,17 +102,21 @@ export default function EaUnifiedMenu(){
  }
  if(hidden)return null;
  return <>
-   <button className="eaUnifiedTrigger" type="button" aria-label="Отвори главното меню" aria-expanded={open} aria-controls="ea-unified-drawer" onClick={()=>setOpen(true)}>
-    <span/><span/><span/>
+   <button ref={triggerRef} className="eaUnifiedTrigger" type="button" aria-label="Отвори главното меню" aria-expanded={open} aria-controls="ea-unified-drawer" onClick={()=>setOpen(true)}>
+    <span className="eaUnifiedTriggerLines" aria-hidden="true"><i/><i/><i/></span>
+    <span className="eaUnifiedTriggerText">МЕНЮ</span>
    </button>
    {open&&<>
-    <button className="eaUnifiedBackdrop" aria-label="Затвори главното меню" type="button" onClick={()=>setOpen(false)}/>
+    <button className="eaUnifiedBackdrop" aria-label="Затвори главното меню" type="button" onClick={dismiss}/>
     <aside id="ea-unified-drawer" className="eaUnifiedDrawer" role="dialog" aria-modal="true" aria-label="Главно меню на ENCHEV AUCTIONS">
      <header className="eaUnifiedHeader">
-       <a href="/" className="eaUnifiedBrand" aria-label="E&A — Начало"><EaOfficialLogo /></a>
+       <div className="eaUnifiedBrandGroup">
+         <a href="/" className="eaUnifiedBrand" aria-label="E&A — Начало"><EaOfficialLogo /></a>
+         <span className="eaUnifiedBrandCaption">АВТОМОБИЛНИ ТЪРГОВЕ · ЕВРОПА</span>
+       </div>
        <div className="eaUnifiedHeaderActions">
-         <a href="/profile" aria-label="Моят профил"><MenuIcon name="user"/></a>
-         <button ref={closeRef} type="button" aria-label="Затвори менюто" onClick={()=>setOpen(false)}>×</button>
+         <a href="/profile" aria-label="Моят профил" title="Моят профил"><MenuIcon name="user"/></a>
+         <button ref={closeRef} type="button" aria-label="Затвори менюто" onClick={dismiss}><svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" fill="none" aria-hidden="true"><path d="m5 5 14 14M19 5 5 19"/></svg></button>
        </div>
      </header>
      {adminForm?<div className="eaUnifiedAdmin">
@@ -120,19 +132,25 @@ export default function EaUnifiedMenu(){
        </form>
        <a className="eaUnifiedGoogle" href="/api/admin/google">Защитен Google вход за администратори</a>
       </div>:<>
-       <div className="eaUnifiedLabel">ГЛАВНО МЕНЮ</div>
+       <div className="eaUnifiedMenuIntro">
+         <div><span className="eaUnifiedEyebrow">НАВИГАЦИЯ</span><h2>Разгледай платформата<span>.</span></h2></div>
+         <span className="eaUnifiedMenuCount">01 — 07</span>
+       </div>
        <nav className="eaUnifiedLinks" aria-label="Главна навигация">
-       {sections.map(item=><a key={item.href} href={item.href} className={item.icon==="live"?"is-live":""} aria-current={pathname===item.href?"page":undefined}>
-         <MenuIcon name={item.icon}/><span>{item.label}</span><b aria-hidden="true">›</b>
+       {sections.map((item,index)=><a key={item.href} href={item.href} onClick={()=>setOpen(false)} className={[item.icon==="live"?"is-live":"",isActiveSection(pathname,item.href)?"is-active":""].filter(Boolean).join(" ")} aria-current={isActiveSection(pathname,item.href)?"page":undefined}>
+         <span className="eaUnifiedNavIcon"><MenuIcon name={item.icon}/></span>
+         <span className="eaUnifiedNavText"><strong>{item.label}</strong><small>{item.description}</small></span>
+         <span className="eaUnifiedNavArrow" aria-hidden="true"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></span>
        </a>)}
        </nav>
        <div className="eaUnifiedFooter">
+        <div className="eaUnifiedFooterEyebrow">МОЯТ АКАУНТ</div>
         <div className="eaUnifiedAccounts">
-         <a href="/login"><MenuIcon name="login"/>Вход</a>
-         <a href="/register"><MenuIcon name="register"/>Регистрация</a>
+         <a className="eaUnifiedLogin" href="/login"><MenuIcon name="login"/><span>Вход</span></a>
+         <a className="eaUnifiedRegister" href="/register"><MenuIcon name="register"/><span>Регистрация</span></a>
         </div>
-        <button className="eaUnifiedAdminButton" type="button" onClick={()=>{void chooseAdmin();}}><MenuIcon name="admin"/> <span>АДМИН</span><b aria-hidden="true">›</b></button>
-        <p>© E&A EAST AND WEST AUCTIONEERS GROUP · SOULFLAME</p>
+        <button className="eaUnifiedAdminButton" type="button" onClick={()=>{void chooseAdmin();}}><span className="eaUnifiedAdminIcon"><MenuIcon name="admin"/></span><span className="eaUnifiedAdminText"><strong>Административен панел</strong><small>Защитен достъп с парола</small></span><span className="eaUnifiedAdminArrow" aria-hidden="true">↗</span></button>
+        <p>© 2026 E&A EAST AND WEST AUCTIONEERS GROUP <span>·</span> SOULFLAME</p>
        </div>
       </>}
     </aside>
