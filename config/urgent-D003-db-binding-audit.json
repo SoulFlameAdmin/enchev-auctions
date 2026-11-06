@@ -75,7 +75,23 @@
       "gitBranch": "non-main",
       "projectDbRef": null,
       "dbBindingVerified": false,
-      "dbRoleVerified": false
+      "dbRoleVerified": false,
+      "ownerProvidedEtap1Evidence": {
+        "scope": "Vercel Preview",
+        "source": "Owner-provided Vercel settings screenshots and non-secret variable values, 2026-11-03",
+        "keyNames": [
+          "ENCHEV_ETAP1_PROJECT_REF",
+          "ENCHEV_ETAP1_SUPABASE_URL",
+          "ENCHEV_ETAP1_SERVICE_ROLE_KEY"
+        ],
+        "observedProjectRef": "ejfrnjhlggebzmpmxajl",
+        "observedSupabaseUrl": "https://ejfrnjhlggebzmpmxajl.supabase.co",
+        "serverSecretValueRead": false,
+        "matchingMainProject": true,
+        "matchingIsolatedStaging": false,
+        "authorizedSafeStagingRuntime": false,
+        "note": "Observed configuration of Enchev Etap1 Preview; NOT proof of currently active deployment runtime or its Production bindings. The secret key's scope is not verified. Do not change only URL/ref or issue production-data test writes."
+      }
     },
     "stagingDatabase": {
       "projectId": "jranctnafndbqzrwcwos",
@@ -107,6 +123,12 @@
     "secretValuesInRepository": false
   },
   "liveReadOnlyFindings": [
+    {
+      "code": "PREVIEW_ETAP1_MAIN_DB_CONFIGURATION",
+      "severity": "P0",
+      "finding": "Owner-provided Vercel Preview settings confirm ENCHEV_ETAP1_PROJECT_REF and ENCHEV_ETAP1_SUPABASE_URL both refer to main Enchev Supabase ejfrnjhlggebzmpmxajl, rather than isolated staging jranctnafndbqzrwcwos. This confirms a configured database-target overlap, not active deployment traffic or the scope of SERVICE_ROLE_KEY.",
+      "resolution": "Keep existing demo intact. Create dedicated Preview Git-branch-scoped URL/ref, disable actual writes until separately scoped staging server credentials and runtime allowlist are confirmed. Never copy or print privileged keys, never change only a URL/ref while leaving a production service role key. No real-money/unsafe synthetic writes."
+    },
     {
       "code": "STAGING_BRANCH_CREATED_WITH_SCHEMA_REPAIR",
       "severity": "P1",
@@ -193,6 +215,7 @@
     "d003CanBeMarkedDone": false,
     "nextDayD004CanWriteRealStagingFixtures": false,
     "allowedNextActions": [
+      "Owner observed Preview Etap1 URL/ref both point to main DB; isolate a dedicated preview branch with staging-only server credentials and audit exact runtime before D004",
       "Inspect production and preview Vercel environment-variable metadata without decryption, 403 currently",
       "Verify live governance project's restricted development-only role (access denied)",
       "Enable Preview server API with staging-specific URLs and separate least-privilege role/keys after authorized configuration review",

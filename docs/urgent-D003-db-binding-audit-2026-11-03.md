@@ -6,6 +6,18 @@
 
 Original acceptance criterion (119-day plan D003): **"Потвърден authoritative DB target, миграции и отделни staging/production роли"**. D002 is DONE; D003 is not accepted.
 
+## New Vercel Preview configuration evidence — 2026-11-03
+
+The project owner opened Vercel's **Project Environment Variables** page and supplied the following **non-secret** values:
+
+- `ENCHEV_ETAP1_PROJECT_REF=ejfrnjhlggebzmpmxajl`
+- `ENCHEV_ETAP1_SUPABASE_URL=https://ejfrnjhlggebzmpmxajl.supabase.co`
+- `ENCHEV_ETAP1_SERVICE_ROLE_KEY` is present for Preview, but its **value and scope were not inspected**.
+
+Both visible Preview values currently reference the **main** Enchev Supabase project, **not** the independent staging project (`jranctnafndbqzrwcwos`). This is an important **P0 environment-configuration overlap**. These observations establish what is configured in the Vercel UI; they do **not** certify which credentials a particular deployed worker actually loaded or prove that Production also points to the main project. The connected Vercel env-list API still responds HTTP 403.
+
+**Safe correction:** do **not** globally overwrite shared Preview variables and do **not** change the URL/ref alone. Preserve the current demonstration. Establish branch-specific Preview configuration for a dedicated staging Git branch using the staging URL/ref and **separate matching server-side credentials**; remove or override any inherited main DB service-role secret for that branch; fail closed before test writes. The server-only credentials must be provisioned securely through Vercel without printing or committing their values. Independently verify a deployed branch returns its expected non-secret project reference and rejects cross-environment access before marking D003 G1/G4 verified. Real-money auctions and D004 fixture writes remain NO-GO.
+
 ## Current Supabase layout — independently inspected
 
 | System | Project identity | Findings | Decision |
