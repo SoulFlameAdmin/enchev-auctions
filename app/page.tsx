@@ -1,5 +1,4 @@
 import EaOfficialLogo from "./components/EaOfficialLogo";
-import MasterSystemPlanV1 from "./components/MasterSystemPlanV1";
 import EnchevCinematicLoginGate from "./components/EnchevCinematicLoginGate";
 import EaHeroPhotoOcclusion from "./components/EaHeroPhotoOcclusion";
 
@@ -29,7 +28,6 @@ export default function Home(){
       
       <div className="eaHeroBrand"><EaOfficialLogo /></div>
       <EaHeroPhotoOcclusion />
-      <MasterSystemPlanV1 />
       <EnchevCinematicLoginGate />
     </main>
   );
