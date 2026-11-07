@@ -945,6 +945,197 @@
           }
         }
       }
+    },
+    "/api/health/enchev-boundary": {
+      "get": {
+        "operationId": "getEnchevEnvironmentIsolationPreflight",
+        "summary": "Secret-free D003 production-vs-preview configuration validation; never authorizes money or staging writes",
+        "responses": {
+          "200": {
+            "description": "Configuration contract matches environment, subject to external role and provider proof"
+          },
+          "503": {
+            "description": "Missing, mismatched or unknown deployment boundary"
+          }
+        }
+      }
+    },
+    "/api/buyer/catalog": {
+      "get": {
+        "operationId": "getVerifiedPublicVehicleCatalogue",
+        "summary": "Read only approved publicly visible Enchev vehicle listings from validated environment",
+        "responses": {
+          "200": {
+            "description": "Public verified lot list"
+          },
+          "503": {
+            "description": "Enchev buyer/catalog provider binding not activated"
+          }
+        }
+      }
+    },
+    "/api/buyer/catalog/[id]": {
+      "get": {
+        "operationId": "getVerifiedVehicleLot",
+        "summary": "Read one approved public vehicle lot by UUID; non-authoritative for auctions",
+        "responses": {
+          "200": {
+            "description": "Lot details"
+          },
+          "400": {
+            "description": "Invalid lot UUID"
+          },
+          "404": {
+            "description": "Lot absent or not approved"
+          },
+          "503": {
+            "description": "Identity/certificate binding not available"
+          }
+        }
+      }
+    },
+    "/api/buyer/workspace": {
+      "get": {
+        "operationId": "getAuthenticatedBuyerWorkspace",
+        "summary": "Get only signed-in buyer-owned profile, orders, documents and payments, subject to RLS",
+        "responses": {
+          "200": {
+            "description": "Authenticated buyer data"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "503": {
+            "description": "Isolated Enchev identity/records unavailable"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "patchAuthenticatedBuyerProfile",
+        "summary": "Modify only allowed buyer profile fields, never roles or eligibility",
+        "responses": {
+          "200": {
+            "description": "Updated profile"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Request origin denied"
+          },
+          "503": {
+            "description": "Update could not be applied"
+          }
+        }
+      }
+    },
+    "/api/buyer/saved": {
+      "post": {
+        "operationId": "saveAuthenticatedBuyerLot",
+        "summary": "Save published approved lot under current buyer identity",
+        "responses": {
+          "200": {
+            "description": "Lot saved"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Request origin denied"
+          },
+          "422": {
+            "description": "Lot is not verified/eligible"
+          },
+          "503": {
+            "description": "Identity provider disabled"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "removeAuthenticatedBuyerSavedLot",
+        "summary": "Remove a saved lot owned by the current authenticated buyer",
+        "responses": {
+          "200": {
+            "description": "Lot removed"
+          },
+          "400": {
+            "description": "Invalid lot"
+          },
+          "401": {
+            "description": "Sign in required"
+          },
+          "403": {
+            "description": "Request origin denied"
+          },
+          "503": {
+            "description": "Storage unavailable"
+          }
+        }
+      }
+    },
+    "/api/payments/readiness": {
+      "get": {
+        "operationId": "getBuyerPaymentReadiness",
+        "summary": "Informational readiness only: live card payments, deposits and requests are OFF",
+        "responses": {
+          "200": {
+            "description": "Machine-readable payment capabilities, no transaction created"
+          }
+        }
+      }
+    },
+    "/api/menu-access": {
+      "get": {
+        "operationId": "getProtectedMenuAccess",
+        "summary": "Check signed HTTP-only admin-menu access cookie",
+        "responses": {
+          "200": {
+            "description": "Authorization state, no credentials returned"
+          }
+        }
+      },
+      "post": {
+        "operationId": "authenticateProtectedMenu",
+        "summary": "Rate-limited password-based authorization for restricted menu display",
+        "responses": {
+          "200": {
+            "description": "Authorized menu access cookie issued"
+          },
+          "400": {
+            "description": "Invalid input"
+          },
+          "401": {
+            "description": "Incorrect password"
+          },
+          "403": {
+            "description": "Origin denied"
+          },
+          "429": {
+            "description": "Too many attempts"
+          },
+          "503": {
+            "description": "Menu authorization not configured"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "revokeProtectedMenuAccess",
+        "summary": "Clear protected-menu access cookie",
+        "responses": {
+          "200": {
+            "description": "Access cookie removed"
+          },
+          "403": {
+            "description": "Origin denied"
+          }
+        }
+      }
     }
   },
   "components": {
