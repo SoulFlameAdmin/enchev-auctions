@@ -210,7 +210,7 @@ export default function BuyerAuthForm({mode}:{mode:Mode}){
            <p><a href="/legal/cookies" target="_blank" rel="noopener noreferrer">Политика за бисквитките</a> · Отметките не са предварително избрани.</p>
           </div>
 </>}
-        {isRegister&&step===3&&!legalReady&&<p className="buyerAuthPolicyNotice" role="note">Правните документи са в проект и очакват одобрение. Реална регистрация няма да бъде активирана преди това.</p>}
+        {isRegister&&step===3&&!legalReady&&<p className="buyerAuthPolicyNotice" role="note">Условията очакват юридическо одобрение. Реалната регистрация още не е активна.</p>}
         {error&&<p className="buyerAuthError" role="alert">{error}</p>}
         {message&&<p className="buyerAuthSuccess" role="status">{message}</p>}
         <div className="buyerAuthActions">
