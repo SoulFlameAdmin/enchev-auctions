@@ -2,6 +2,7 @@
 
 import {FormEvent,useEffect,useState} from "react";
 import EaOfficialLogo from "../components/EaOfficialLogo";
+import {PUBLIC_EARLY_ACCESS_ENABLED} from "../config/early-access";
 import "./start.css";
 
 type Locale="bg"|"en";
@@ -78,7 +79,7 @@ export default function BuyerStartPage(){
   try{localStorage.setItem("ea-vehicles-appearance-v1",next)}catch{}
  }
  async function signup(event:FormEvent<HTMLFormElement>){
-  event.preventDefault();if(sending||!consent||!email.trim())return;
+  event.preventDefault();if(!PUBLIC_EARLY_ACCESS_ENABLED||sending||!consent||!email.trim())return;
   setSending(true);setFeedback("");setSuccess(false);
   try{
    const res=await fetch("/api/ea-early-access",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:email.trim(),consent:true,website:""})});
@@ -135,9 +136,9 @@ export default function BuyerStartPage(){
     <div className="eaBuyFaq"><h2>{c.faq}</h2><div className="eaBuyFaqList">{faq.map((item,i)=><button type="button" key={i} onClick={()=>setQuestion(i)}><span>{item.q[locale]}</span><I name="chevron" size={17}/></button>)}</div><button className="eaBuyFaqMobile" type="button" onClick={()=>setQuestion(0)}>{c.faq}<I name="chevron" size={18}/></button></div>
     <div className="eaBuyContact"><div className="eaBuyContactIcon"><I name="headset" size={29}/></div><div><h2>{c.help}</h2><p>{c.helpText}</p></div><a href="/support"><I name="headset" size={18}/>{c.contact}</a></div>
    </section>
-   <footer className="eaBuyFoot"><span>{c.disclaimer}</span><button type="button" onClick={()=>setEarly(true)}>{c.early} <I name="arrow" size={15}/></button></footer>
+   <footer className="eaBuyFoot"><span>{c.disclaimer}</span>{PUBLIC_EARLY_ACCESS_ENABLED&&<button type="button" onClick={()=>setEarly(true)}>{c.early} <I name="arrow" size={15}/></button>}</footer>
   </div>
-  {(guide!==null||question!==null||early)&&<div className="eaBuyModalBackdrop" onClick={()=>{setGuide(null);setQuestion(null);setEarly(false)}} role="presentation">
+  {(guide!==null||question!==null||(PUBLIC_EARLY_ACCESS_ENABLED&&early))&&<div className="eaBuyModalBackdrop" onClick={()=>{setGuide(null);setQuestion(null);setEarly(false)}} role="presentation">
    <div className="eaBuyModal" role="dialog" aria-modal="true" aria-label={guide!==null?steps[guide].title[locale]:question!==null?faq[question].q[locale]:c.early} onClick={event=>event.stopPropagation()}>
     <button type="button" className="eaBuyModalClose" onClick={()=>{setGuide(null);setQuestion(null);setEarly(false)}} aria-label="Затвори"><I name="close" size={21}/></button>
     {guide!==null&&<div className="eaBuyModalStep">
@@ -148,7 +149,7 @@ export default function BuyerStartPage(){
       <div className="eaBuyModalStepper"><button type="button" disabled={guide===0} onClick={()=>setGuide(n=>n===null?0:Math.max(0,n-1))}>{c.prev}</button><span>{guide+1} / 7</span><button type="button" onClick={()=>guide===steps.length-1?setGuide(null):setGuide(n=>n===null?0:Math.min(steps.length-1,n+1))}>{guide===steps.length-1?c.done:c.next} →</button></div>
      </div>}
     {question!==null&&<div className="eaBuyModalFaq"><span className="eaBuyModalKicker">E&A / FAQ</span><h2>{faq[question].q[locale]}</h2><p>{faq[question].a[locale]}</p><a className="eaBuyModalAction" href="/support">{c.contact} <I name="arrow" size={18}/></a><div className="eaBuyModalStepper"><button type="button" onClick={()=>setQuestion((question+faq.length-1)%faq.length)}>{c.prev}</button><span>{question+1} / {faq.length}</span><button type="button" onClick={()=>setQuestion((question+1)%faq.length)}>{c.next} →</button></div></div>}
-    {early&&<form className="eaBuyModalEarly" onSubmit={signup}><span className="eaBuyModalKicker">E&A · PRIVATE BUYER ACCESS</span><h2>{c.early}</h2><p>{locale==="bg"?"Предварително записване за информация. Не дава право за наддаване.":"Request updates about early access. This does not grant bidding rights."}</p><label htmlFor="ea-buy-email">{c.email}</label><input id="ea-buy-email" type="email" autoComplete="email" placeholder="you@example.com" required maxLength={254} value={email} onChange={e=>setEmail(e.target.value)}/><label className="eaBuyConsent"><input type="checkbox" required checked={consent} onChange={e=>setConsent(e.target.checked)}/>{c.consent}</label><button className="eaBuyModalAction" type="submit" disabled={!consent||sending}>{sending?c.sending:c.submit} →</button>{feedback&&<p role="status" className={success?"eaBuySuccess":"eaBuyError"}>{feedback}</p>}</form>}
+    {PUBLIC_EARLY_ACCESS_ENABLED&&early&&<form className="eaBuyModalEarly" onSubmit={signup}><span className="eaBuyModalKicker">E&A · PRIVATE BUYER ACCESS</span><h2>{c.early}</h2><p>{locale==="bg"?"Предварително записване за информация. Не дава право за наддаване.":"Request updates about early access. This does not grant bidding rights."}</p><label htmlFor="ea-buy-email">{c.email}</label><input id="ea-buy-email" type="email" autoComplete="email" placeholder="you@example.com" required maxLength={254} value={email} onChange={e=>setEmail(e.target.value)}/><label className="eaBuyConsent"><input type="checkbox" required checked={consent} onChange={e=>setConsent(e.target.checked)}/>{c.consent}</label><button className="eaBuyModalAction" type="submit" disabled={!consent||sending}>{sending?c.sending:c.submit} →</button>{feedback&&<p role="status" className={success?"eaBuySuccess":"eaBuyError"}>{feedback}</p>}</form>}
    </div>
   </div>}
  </main>;
