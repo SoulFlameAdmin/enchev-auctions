@@ -49,3 +49,73 @@
 @media(max-width:850px){.buyerAuthPage{padding:30px 18px 50px}.buyerAuthShell{grid-template-columns:minmax(0,1fr);gap:25px;max-width:530px}.buyerAuthBrand{margin-bottom:24px}.buyerAuthIntro h1{font-size:clamp(36px,8vw,52px);margin:15px 0}.buyerAuthIntro>p{font-size:13px}.buyerAuthVisual{display:none}.buyerAuthProof{margin-top:15px}.buyerAuthCard{padding:clamp(21px,5vw,34px)}}
 @media(max-width:380px){.buyerAuthPage{padding:18px 12px 35px}.buyerAuthIntro h1{font-size:34px}.buyerAuthCard{padding:20px 16px}.buyerAuthCardBottom{font-size:9px}.buyerAuthProof span{font-size:9px;padding:7px 9px}}
 @media(prefers-reduced-motion:reduce){.buyerAuthSubmit{transition:none}}
+
+
+/* E&A Auth v2: centered login and four compact registration steps. */
+.buyerAuthCard form{gap:12px}
+.buyerAuthProgress{display:flex;align-items:center;gap:5px;padding-bottom:3px}
+.buyerAuthProgress>span{height:4px;flex:1;min-width:0;border-radius:8px;background:#51434b}
+.buyerAuthProgress>span.on{background:#e93a53}
+.buyerAuthProgress small{color:#a79da4;font-size:10px;white-space:nowrap;margin-left:5px}
+.buyerAuthFieldsTwo{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px}
+.buyerAuthCard select{height:51px;width:100%;min-width:0;color:#f6f0f3;background:#202126;border:1px solid #44414a;border-radius:10px;font:inherit;font-size:13px;padding:0 9px}
+.buyerAuthCard select option{background:#202126;color:#fff}
+.buyerAuthConsents{display:grid;gap:11px;margin:4px 0}
+.buyerAuthCard .buyerAuthConsents label{display:flex;flex-direction:row;align-items:flex-start;gap:10px;color:#d9d3d8;font-size:11px;line-height:1.5;font-weight:550;cursor:pointer}
+.buyerAuthCard .buyerAuthConsents input[type="checkbox"]{width:17px;height:17px;min-width:17px;margin:0;accent-color:#e73a51;flex:none;cursor:pointer}
+.buyerAuthConsents a,.buyerAuthHint a{color:#f78fa1;text-underline-offset:2px;font-weight:750}
+.buyerAuthConsents p{margin:0;color:#afa6ad;font-size:10px;line-height:1.55}
+.buyerAuthPolicyNotice{padding:9px 11px;margin:0;background:rgba(187,127,43,.10);border:1px solid #98774470;border-radius:8px;font-size:11px;line-height:1.45;color:#e7cda0}
+.buyerAuthActions{display:flex;gap:9px}
+.buyerAuthActions .buyerAuthSubmit{flex:1;min-width:0}
+.buyerAuthBack{border:1px solid #4c4249;border-radius:10px;padding:0 14px;min-height:48px;background:#242329;color:#eee;font-size:11px;font-weight:800;white-space:nowrap;cursor:pointer}
+.buyerAuthCard .buyerAuthTypes button{min-height:50px;justify-content:center;text-align:center;padding:11px;font-size:12px;font-weight:800}
+.buyerAuthNoticeCompact{padding:8px 11px;border:1px solid #8061386d;border-radius:9px;background:#8861281a}
+.buyerAuthNoticeCompact strong{font-size:14px}
+.buyerAuthNoticeCompact p{font-size:11px;margin:6px 0}
+.buyerAuthNoticeCompact a{font-size:11px}
+@media(max-width:850px){
+ .buyerAuthPage{height:100dvh;min-height:100dvh;overflow-x:hidden;overflow-y:auto;padding:clamp(10px,2vh,18px) 12px;display:flex;align-items:center;justify-content:center}
+ .buyerAuthShell{display:flex;flex-direction:column;align-items:stretch;gap:9px;width:min(100%,460px);max-height:100%;margin:auto}
+ .buyerAuthIntro{display:flex;justify-content:center;align-items:center;min-height:44px}
+ .buyerAuthBrand{margin:0;gap:8px}
+ .buyerAuthMonogram{font-size:30px}
+ .buyerAuthBrandName{font-size:8px}
+ .buyerAuthIntro h1,.buyerAuthIntro>p,.buyerAuthEyebrow,.buyerAuthVisual,.buyerAuthProof{display:none}
+ .buyerAuthCard{border-radius:14px;padding:clamp(16px,3vw,23px);max-height:calc(100dvh - 75px);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+ .buyerAuthCardTop{margin-bottom:10px}
+ .buyerAuthTabs{margin-bottom:14px}
+ .buyerAuthTabs a{padding:10px;font-size:12px}
+ .buyerAuthCard form{gap:10px}
+ .buyerAuthCardKicker{font-size:9px}
+ .buyerAuthCardTitle{font-size:24px;line-height:1.14}
+ .buyerAuthCard label{gap:5px;font-size:11px}
+ .buyerAuthCard input,.buyerAuthCard select{height:44px;font-size:14px}
+ .buyerAuthPassword button{top:5px;bottom:5px}
+ .buyerAuthHint{font-size:10px}
+ .buyerAuthCard .buyerAuthTypes button{min-height:45px;padding:9px 5px;font-size:11px}
+ .buyerAuthConsents{gap:10px}
+ .buyerAuthBack,.buyerAuthSubmit{min-height:45px!important}
+ .buyerAuthSwap{font-size:11px}
+}
+@media(max-width:380px){
+ .buyerAuthPage{padding-inline:8px}
+ .buyerAuthCard{padding:14px 12px}
+ .buyerAuthCardTitle{font-size:21px}
+ .buyerAuthCard form{gap:9px}
+ .buyerAuthTabs{margin-bottom:11px}
+ .buyerAuthFieldsTwo{gap:7px}
+ .buyerAuthCard .buyerAuthConsents label{font-size:10px}
+}
+@media(max-height:680px) and (max-width:850px){
+ .buyerAuthPage{padding-top:5px;padding-bottom:5px}
+ .buyerAuthIntro{min-height:31px}
+ .buyerAuthBrand .buyerAuthMonogram{font-size:24px}
+ .buyerAuthCard{max-height:calc(100dvh - 49px)}
+ .buyerAuthCardTop{margin-bottom:5px}
+ .buyerAuthTabs{margin-bottom:8px}
+ .buyerAuthCard form{gap:7px}
+ .buyerAuthCardTitle{font-size:20px}
+ .buyerAuthCard input,.buyerAuthCard select{height:41px}
+ .buyerAuthConsents{gap:6px}
+}
