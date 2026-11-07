@@ -47,9 +47,14 @@ export function validateBinding(config, sources) {
     fail('binding config must not contain credentials or secret material');
   }
 
-  const endpoint = `${config.project_url}/functions/v1/enchev-plan-state`;
-  if (!sources.client.includes(endpoint)) fail('CloudPlanStateSync endpoint does not match canonical Supabase project');
-  if (!sources.sync.includes(endpoint)) fail('cloud sync endpoint does not match canonical Supabase project');
+  // Preserve the old governance config as a historical, non-authoritative
+  // audit boundary, but route ALL active Enchev plan evidence to its own DB.
+  const endpoint = 'https://ejfrnjhlggebzmpmxajl.supabase.co/functions/v1/enchev-plan-state';
+  const sharedEndpoint = `${config.project_url}/functions/v1/enchev-plan-state`;
+  if (!sources.client.includes(endpoint)) fail('browser must read Enchev-owned plan state');
+  if (!sources.sync.includes(endpoint)) fail('CI must write Enchev-owned plan state');
+  if (sources.client.includes(sharedEndpoint) || sources.sync.includes(sharedEndpoint))
+    fail('active Enchev evidence must not use SoulFlame governance DB');
   if (!sources.workflow.includes('Supabase project binding invariant')) fail('CI invariant step missing');
   if (!sources.workflow.includes('Supabase project binding self-tests')) fail('CI self-test step missing');
   if (!sources.workflow.includes('Supabase project live endpoint')) fail('CI live endpoint step missing');
@@ -58,7 +63,7 @@ export function validateBinding(config, sources) {
 }
 
 async function validateLive(config) {
-  const url = `${config.project_url}/functions/v1/enchev-plan-state`;
+  const url = 'https://ejfrnjhlggebzmpmxajl.supabase.co/functions/v1/enchev-plan-state';
   const response = await fetch(url, { headers: { 'Cache-Control': 'no-cache' } });
   if (!response.ok) fail(`live endpoint HTTP ${response.status}`);
   const body = await response.json();
