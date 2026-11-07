@@ -5,7 +5,6 @@ import {
   type BuyerAuthConfig
 } from "./enchev-auth-server";
 
-const DEDICATED_REF="ejfrnjhlggebzmpmxajl";
 export const UUID=/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export type BuyerIdentity = {
@@ -17,7 +16,7 @@ export type BuyerIdentity = {
 export async function requireBuyer(request:NextRequest):
   Promise<{state:"disabled"|"unauthorized"}|{state:"ready";buyer:BuyerIdentity}> {
   const config=authConfig();
-  if(!config || new URL(config.url).hostname!==DEDICATED_REF+".supabase.co")return {state:"disabled"};
+  if(!config)return {state:"disabled"}; // authConfig enforces production/staging boundaries.
   const token=authCookie(request,"access");
   if(!token)return {state:"unauthorized"};
   const auth=await providerRequest(config,"/auth/v1/user","GET",token);
