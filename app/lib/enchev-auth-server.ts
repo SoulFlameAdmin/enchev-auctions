@@ -40,7 +40,7 @@ export function json(body: Record<string, unknown>, status = 200) {
   } });
 }
 
-export async function bodyFields(request: NextRequest): Promise<{email:string;password:string}|null> {
+export async function bodyFields(request: NextRequest): Promise<{email:string;password:string;registration?:unknown}|null> {
   if (!request.headers.get("content-type")?.toLowerCase().startsWith("application/json")) return null;
   if (Number(request.headers.get("content-length") || 0) > 4096) return null;
   try {
@@ -53,7 +53,7 @@ export async function bodyFields(request: NextRequest): Promise<{email:string;pa
     const email = record.email.trim().toLowerCase();
     if (!email || email.length > 254 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return null;
     if (record.password.length < 12 || record.password.length > 128) return null;
-    return { email, password: record.password };
+    return { email, password: record.password, registration:record.registration };
   } catch { return null; }
 }
 
