@@ -342,3 +342,19 @@
 @media(prefers-reduced-motion:reduce){
  .buyerAuthPage *, .buyerAuthPage *:before,.buyerAuthPage *:after{transition:none!important;animation:none!important}
 }
+
+/* Compact 320x568 devices: legal acknowledgements stay fully visible. */
+@media(max-width:350px) and (max-height:650px){
+ .buyerAuthPage .buyerAuthCard{padding:11px 12px}
+ .buyerAuthPage .buyerAuthCardTop{margin-bottom:3px}
+ .buyerAuthPage .buyerAuthTabs{margin-bottom:5px}
+ .buyerAuthPage .buyerAuthTabs a{padding:8px 5px}
+ .buyerAuthPage .buyerAuthCard form{gap:5px}
+ .buyerAuthPage .buyerAuthStepSubtitle{display:none}
+ .buyerAuthPage .buyerAuthConsents{gap:5px;padding:7px 8px}
+ .buyerAuthPage .buyerAuthConsents label{line-height:1.25}
+ .buyerAuthPage .buyerAuthConsents p{line-height:1.3}
+ .buyerAuthPage .buyerAuthPolicyNotice{padding:6px 8px;font-size:10px;line-height:1.35}
+ .buyerAuthPage .buyerAuthBack,.buyerAuthPage .buyerAuthSubmit{min-height:42px!important}
+ .buyerAuthPage .buyerAuthCardKicker{line-height:1.15}
+}
