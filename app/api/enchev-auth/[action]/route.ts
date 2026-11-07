@@ -33,7 +33,7 @@ function readRegistration(raw:unknown){
  if(firstName.length<1||firstName.length>60||lastName.length<1||lastName.length>60)return null;
  if(buyerType!=="individual"&&buyerType!=="business")return null;
  if(typeof country!=="string"||!allowed.includes(country))return null;
- if(country==="OTHER"&&(!countryName||countryName.length>80))return null;
+ if(country===allowed[allowed.length-1]&&(!countryName||countryName.length>80))return null;
  if(!/^\+[1-9]\d{6,14}$/.test(phone))return null;
  if(buyerType==="business"&&(!businessName||businessName.length>160||!businessNumber||businessNumber.length>40))return null;
  if(v.ageConfirmed!==true||v.termsAccepted!==true||v.privacyAcknowledged!==true)return null;
