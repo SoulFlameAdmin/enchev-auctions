@@ -28,15 +28,17 @@ function readRegistration(raw:unknown){
  const country=v.country;
  const phone=typeof v.phone==="string"?v.phone.replace(/[\s().-]/g,""):"";
  const businessName=name("businessName",160),businessNumber=name("businessNumber",40);
+ const countryName=name("countryName",80);
  const allowed=["BG","ES","DE","FR","IT","RO","GR","NL","BE","AT","PL","PT","TR","GB","OTHER"];
  if(firstName.length<1||firstName.length>60||lastName.length<1||lastName.length>60)return null;
  if(buyerType!=="individual"&&buyerType!=="business")return null;
  if(typeof country!=="string"||!allowed.includes(country))return null;
+ if(country==="OTHER"&&(!countryName||countryName.length>80))return null;
  if(!/^\+[1-9]\d{6,14}$/.test(phone))return null;
  if(buyerType==="business"&&(!businessName||businessName.length>160||!businessNumber||businessNumber.length>40))return null;
  if(v.ageConfirmed!==true||v.termsAccepted!==true||v.privacyAcknowledged!==true)return null;
  if(typeof v.marketingConsent!=="boolean")return null;
- return {firstName,lastName,buyerType,country,phone,businessName,businessNumber,marketingConsent:v.marketingConsent};
+ return {firstName,lastName,buyerType,country,countryName,phone,businessName,businessNumber,marketingConsent:v.marketingConsent};
 }
 
 async function currentUser(request:NextRequest,config:NonNullable<ReturnType<typeof authConfig>>) {
@@ -112,6 +114,7 @@ export async function POST(request:NextRequest,context:Params){
         enchev_first_name:registration.firstName,
         enchev_last_name:registration.lastName,
         enchev_country:registration.country,
+        enchev_country_name:registration.countryName,
         enchev_phone:registration.phone,
         enchev_buyer_type:registration.buyerType,
         enchev_business_name:registration.businessName,
