@@ -74,6 +74,11 @@ function GalleryPhoto({src,alt}:{src:string|null;alt:string}){
  <div className="eaLiveMissing"><Icon name="car" size={38}/><span>Снимка предстои</span></div>;
 }
 function pos(index:number,total:number){return total<=1?"center":("center "+(index*100/(total-1))+"%");}
+function AppearanceIcon({light}:{light:boolean}){
+ return light
+ ?<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"/></svg>
+ :<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true"><path d="M20.4 15.4A8.6 8.6 0 0 1 8.6 3.6 8.7 8.7 0 1 0 20.4 15.4Z"/></svg>;
+}
 export default function AuctionsPage(){
  const [verified,setVerified]=useState<VerifiedLot[]>([]);
  const [catalogState,setCatalogState]=useState<"checking"|"ready"|"unavailable">("checking");
@@ -86,6 +91,18 @@ export default function AuctionsPage(){
  const [demoSaved,setDemoSaved]=useState(false);
  const [notice,setNotice]=useState("");
  const [demoOrigin,setDemoOrigin]=useState(0);
+ const [appearance,setAppearance]=useState<"dark"|"light">("dark");
+ const [auctionSearch,setAuctionSearch]=useState("");
+ const [auctionMake,setAuctionMake]=useState("");
+ const [auctionYear,setAuctionYear]=useState("");
+ useEffect(()=>{
+  try{const saved=localStorage.getItem("ea-vehicles-appearance-v1");if(saved==="dark"||saved==="light")setAppearance(saved);}catch{}
+ },[]);
+ function changeAppearance(){
+  const next=appearance==="dark"?"light":"dark";
+  setAppearance(next);
+  try{localStorage.setItem("ea-vehicles-appearance-v1",next)}catch{}
+ }
  useEffect(()=>{
   setDemoOrigin(Date.now());
   try{setDemoSaved(window.localStorage.getItem("ea-demo-bmw-watched-v1")==="yes")}catch{}
@@ -140,7 +157,16 @@ export default function AuctionsPage(){
   if(!isMainDemo||selectedShot===0)return undefined;
   return {backgroundImage:'url("'+IMG+'gallery.webp")',backgroundSize:"100% 500%",backgroundPosition:pos(selectedShot,5)};
  },[isMainDemo,selectedShot]);
- const nextEntries=upcoming.length?upcoming.slice(0,4):null;
+ const auctionMakes=useMemo(()=>Array.from(new Set([...upcoming.map(v=>v.make),...nextDemo.map(v=>v.title.startsWith("Range Rover")?"Range Rover":v.title.split(" ")[0]),"BMW"].filter(Boolean))).sort((a,b)=>a.localeCompare(b,"bg")),[upcoming]);
+ const auctionYears=useMemo(()=>Array.from(new Set([...upcoming.map(v=>v.model_year),bmw.year,...nextDemo.map(v=>v.year)].filter((y):y is number=>typeof y==="number"))).sort((a,b)=>b-a),[upcoming]);
+ const matchesAuction=(title:string,lot:string,year:number|null)=>{
+  const q=auctionSearch.trim().toLocaleLowerCase("bg");
+  return (!q||(title+" "+lot).toLocaleLowerCase("bg").includes(q))
+    &&(!auctionMake||title.toLocaleLowerCase("bg").includes(auctionMake.toLocaleLowerCase("bg")))
+    &&(!auctionYear||year===Number(auctionYear));
+ };
+ const matchingUpcoming=upcoming.filter(v=>matchesAuction(v.title,v.lot_number,v.model_year));
+ const matchingDemo=[bmw,...nextDemo].filter(v=>matchesAuction(v.title,v.lot,v.year));
  function changeShot(delta:number){setSelectedShot(v=>(v+delta+galleryLength)%galleryLength)}
  function selectNext(i:number){setPreviewId(i);setSelectedShot(0);document.querySelector(".eaLiveCarStage")?.scrollIntoView({behavior:"smooth",block:"start"});}
  function showBmw(){setPreviewId(null);setSelectedShot(0);document.querySelector(".eaLiveCarStage")?.scrollIntoView({behavior:"smooth",block:"start"});}
@@ -174,7 +200,7 @@ export default function AuctionsPage(){
    <div className="eaLivePrice"><span>{real?"Начална цена":"Текуща оферта · ДЕМО"}</span><strong>{amount}</strong></div>
    <div className="eaLiveTimerCard"><span><Icon name="clock" size={17}/>{real?"Край по график":"Остава · ДЕМО"}</span><strong className="eaLiveCountdown" aria-live="off">{timeText}</strong></div>
   </div>;
- return <main id="main-content" className="eaLiveMarket eaLiveV2" data-ea-bid-mode={demoActive?"demo":"verified-no-bidding"}>
+ return <main id="main-content" className="eaLiveMarket eaLiveV2" data-appearance={appearance} data-ea-bid-mode={demoActive?"demo":"verified-no-bidding"}>
   <div className="eaLiveWrap">
    <header className="eaLiveHeader">
     <a href="/" className="eaLiveBrand" aria-label="E&A Начало"><EaOfficialLogo/></a>
@@ -192,15 +218,23 @@ export default function AuctionsPage(){
    </header>
    <nav className="eaLiveQuickNav" aria-label="Мобилни раздели">
     <a href="/vehicles"><Icon name="car" size={16}/> Автомобили</a>
-    <a href="/auctions" className="is-current" aria-current="page"><Icon name="broadcast" size={16}/> Търгове на живо</a>
+    <a href="/auctions" className="is-current" aria-current="page"><Icon name="broadcast" size={16}/> LIVE</a>
     <a href="/vehicles#ea-market-catalog"><Icon name="layers" size={16}/> Каталог</a>
+    <a href={authenticated?"/profile":"/login"}><Icon name="bookmark" size={16}/> Запазени</a>
    </nav>
    <section className="eaLiveTitleRow">
-    <div className="eaLiveHeading"><h1><Icon name="broadcast" size={36}/><span>ТЪРГОВЕ НА ЖИВО</span></h1>
-     <p>Наддавай в реално време за проверени автомобили</p>
-     <span className="eaLiveLiveCaveat">{demoActive?"ДЕМОНСТРАЦИОНЕН РЕЖИМ · Примерните данни не са реални оферти":"ОДОБРЕН ЛОТ · Реалното наддаване още не е активирано"}</span>
+    <div className="eaLiveHeading">
+     <span className="eaLiveHeroEyebrow">ОНЛАЙН АВТОМОБИЛНИ ТЪРГОВЕ</span>
+     <h1><span>ПРОФЕСИОНАЛНИ<br/>АУКЦИОНИ НА<br/><em>АВТОМОБИЛИ</em></span></h1>
+     <p>Проверени автомобили и предстоящи търгове.</p>
+     <span className="eaLiveLiveCaveat">{demoActive?"ДЕМО · Примерните данни не са реални оферти":"ОДОБРЕН ЛОТ · Наддаването още не е активирано"}</span>
     </div>
+    <button type="button" className="eaLiveAppearanceToggle" aria-label={appearance==="dark"?"Включи светъл режим":"Включи тъмен режим"} aria-pressed={appearance==="light"} onClick={changeAppearance}><AppearanceIcon light={appearance==="light"}/><span>{appearance==="dark"?"Светъл режим":"Тъмен режим"}</span></button>
    </section>
+   {!authenticated&&<aside className="eaLiveRegisterBanner" aria-label="Регистрация">
+    <div className="eaLiveRegisterPitch"><Icon name="user" size={22}/><strong>Регистрирай се, за да следиш търговете и да запазваш автомобили.</strong></div>
+    <a href="/register?next=%2Fauctions">Регистрация <Icon name="arrow" size={17}/></a>
+   </aside>}
    <div className="eaLiveMain">
     <section className="eaLiveCarStage" aria-label="Автомобил на фокус">
      <div className="eaLiveImageFrame">
@@ -247,15 +281,28 @@ export default function AuctionsPage(){
        <div className="eaLiveHistoryEmpty"><Icon name="shield" size={25}/><strong>Няма реални оферти</strong><p>Наддаването ще се активира след проверка на профилите и сървърната система.</p></div>}
      {demoActive&&<p className="eaLiveHistoryFootnote">Илюстративни стойности, не действителни купувачи и оферти.</p>}
     </section>
-    <section className="eaLiveUpcoming" aria-label="Следващи търгове">
-     <header><h2><Icon name="calendar" size={19}/> Следващи търгове на живо</h2><a href="/vehicles">Виж всички <Icon name="arrow" size={16}/></a></header>
-     {upcoming.length>0?<div className="eaLiveQueue">{upcoming.slice(0,4).map((lot)=><a key={lot.id} className="eaLiveQueueCard" href={"/vehicles/"+lot.id}>
+    <section className="eaLiveUpcoming" aria-label="Автомобили и следващи търгове">
+     <div className="eaLiveQueueFilters">
+      <label className="eaLiveSearch"><Icon name="car" size={18}/><input type="search" maxLength={120} value={auctionSearch} onChange={e=>setAuctionSearch(e.target.value)} placeholder="Търси марка, модел, лот №..." aria-label="Търси търг"/></label>
+      <div className="eaLiveFilterRow">
+       <select aria-label="Марка" value={auctionMake} onChange={e=>setAuctionMake(e.target.value)}><option value="">Всички марки</option>{auctionMakes.map(m=><option key={m} value={m}>{m}</option>)}</select>
+       <select aria-label="Година" value={auctionYear} onChange={e=>setAuctionYear(e.target.value)}><option value="">Година</option>{auctionYears.map(y=><option key={y} value={y}>{y}</option>)}</select>
+       <a href="/vehicles#ea-market-catalog"><Icon name="layers" size={16}/> Всички филтри</a>
+      </div>
+     </div>
+     <header><h2><Icon name="calendar" size={19}/> Автомобили на търг</h2><a href="/vehicles">Виж всички <Icon name="arrow" size={16}/></a></header>
+     {upcoming.length>0?<div className="eaLiveQueue">{matchingUpcoming.map(lot=><a key={lot.id} className="eaLiveQueueCard" href={"/vehicles/"+lot.id}>
       <div className="eaLiveQueueMedia"><GalleryPhoto src={safeImage(lot.image_url)} alt={lot.title}/><span>ОДОБРЕН</span></div>
-      <div className="eaLiveQueueText"><strong>{lot.title}</strong><small>Започва: {dateBG(lot.auction_starts_at)}</small></div>
-     </a>)}</div>:<>
-     <div className="eaLiveQueue"><button type="button" className="eaLiveQueueCard eaLiveQueueBmw" onClick={showBmw} aria-label="Покажи BMW демо"><div className="eaLiveQueueMedia"><GalleryPhoto src={IMG+"main.webp"} alt="BMW 530d · демо"/></div><div className="eaLiveQueueText"><strong>BMW 530d · демо</strong><small>Върни основния пример</small></div></button>
-      {nextDemo.map((v,i)=><button type="button" className="eaLiveQueueCard" key={v.lot} onClick={()=>selectNext(i)}><div className="eaLiveQueueMedia"><div className="eaLiveQueueSprite" role="img" aria-label={v.title} style={{backgroundImage:'url("'+IMG+'upcoming.webp")',backgroundSize:"100% 400%",backgroundPosition:pos(i,4)}}/><span>ДЕМО</span></div><div className="eaLiveQueueText"><strong>{v.title}</strong><small>Демо начало: <b>{demoOrigin?remaining(Math.max(0,demoQueueSeconds[i]*1000-(now-demoOrigin))):"--:--"}</b></small></div></button>)}
-     </div><p className="eaLiveQueueDisclaimer"><Icon name="info" size={15}/>{catalogState==="checking"?"Проверяваме одобрените лотове.":catalogState==="unavailable"?"Каталогът още не е активен.":"Няма потвърдени предстоящи търгове."} Визуалните примери не са реални обяви.</p></>}
+      <div className="eaLiveQueueText"><strong>{lot.title}</strong><small>Лот № {lot.lot_number} · {lot.model_year??"—"} г.</small><small>Начало: {dateBG(lot.auction_starts_at)}</small><span className="eaLiveQueuePrice">Начална цена: <b>{euro(lot.starting_price,lot.price_currency)}</b></span></div>
+     </a>)}</div>:<div className="eaLiveQueue">{matchingDemo.map(v=>{
+      const index=nextDemo.findIndex(x=>x.lot===v.lot);
+      return <button type="button" className="eaLiveQueueCard" key={v.lot} onClick={index<0?showBmw:()=>selectNext(index)}>
+       <div className="eaLiveQueueMedia">{index<0?<GalleryPhoto src={IMG+"main.webp"} alt={v.title}/>:<div className="eaLiveQueueSprite" role="img" aria-label={v.title} style={{backgroundImage:'url("'+IMG+'upcoming.webp")',backgroundSize:"100% 400%",backgroundPosition:pos(index,4)}}/>}<span>ДЕМО</span></div>
+       <div className="eaLiveQueueText"><strong>{v.title}</strong><small>Лот № {v.lot} · {v.year} г. · {v.fuel}</small><small>{index<0?"Примерен активен търг":"Демо начало: "+(demoOrigin?remaining(Math.max(0,demoQueueSeconds[index]*1000-(now-demoOrigin))):"--:--")}</small><span className="eaLiveQueuePrice">Примерна цена: <b>{euro(v.startingPrice)}</b></span></div>
+      </button>;
+     })}</div>}
+     {(upcoming.length>0?matchingUpcoming.length===0:matchingDemo.length===0)&&<p className="eaLiveNoResults" role="status">Няма автомобили по избраните критерии.</p>}
+     {upcoming.length===0&&<p className="eaLiveQueueDisclaimer"><Icon name="info" size={15}/>{catalogState==="checking"?"Проверяваме одобрените лотове.":catalogState==="unavailable"?"Каталогът още не е активен.":"Няма потвърдени предстоящи търгове."} Визуалните примери не са реални обяви.</p>}
     </section>
    </div>
   </div>
