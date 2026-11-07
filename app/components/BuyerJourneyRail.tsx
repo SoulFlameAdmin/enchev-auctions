@@ -28,7 +28,7 @@ function selectedStep(path:string){
 export default function BuyerJourneyRail(){
   const pathname=usePathname();
   // Marketplace has its own complete navigation; do not append a second giant journey rail.
-  if(pathname==="/start" || pathname==="/vehicle-history" || pathname==="/transport" || pathname==="/support" || pathname==="/vehicles" || pathname?.startsWith("/vehicles/") || pathname==="/auctions")return null;
+  if(pathname==="/login" || pathname==="/register" || pathname==="/start" || pathname==="/vehicle-history" || pathname==="/transport" || pathname==="/support" || pathname==="/vehicles" || pathname?.startsWith("/vehicles/") || pathname==="/auctions")return null;
   if(!pathname || ![
     "/start","/register","/login","/verification","/vehicles","/auctions","/inventory","/profile","/my-auctions","/payments",
     "/documents","/transport","/vehicle-history","/support",
