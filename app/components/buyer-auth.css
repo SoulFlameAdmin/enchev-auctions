@@ -119,3 +119,226 @@
  .buyerAuthCard input,.buyerAuthCard select{height:41px}
  .buyerAuthConsents{gap:6px}
 }
+
+
+/* E&A AUTH — 2026 premium art direction; intentionally layered on the stable
+   4-step layout. Source layout and validation remain unchanged. */
+.buyerAuthPage{
+  --ea-red:#e7344e;--ea-red-hi:#ff526a;--ea-ink:#07090d;--ea-copy:#f5f2f3;
+  background:radial-gradient(circle at 15% 45%,#6719272e,transparent 35%),#08090d;
+  font-feature-settings:"kern" 1;
+}
+.buyerAuthPage .buyerAuthAtmosphere{
+  background:
+    radial-gradient(ellipse at 8% 100%,#db274324,transparent 46%),
+    radial-gradient(ellipse at 95% 3%,#66364224,transparent 55%);
+}
+.buyerAuthPage .buyerAuthGrid{
+  background-size:70px 70px;
+  opacity:.6;
+  background-image:linear-gradient(#ffffff05 1px,transparent 1px),linear-gradient(90deg,#ffffff05 1px,transparent 1px);
+}
+.buyerAuthPage .buyerAuthIntro{padding:10px 0;isolation:isolate}
+.buyerAuthPage .buyerAuthIntro:after{
+  content:"";position:absolute;pointer-events:none;z-index:-1;
+  left:-6%;right:-4%;top:31%;height:55%;max-height:390px;
+  background:
+    linear-gradient(0deg,#08090d 1%,#08090d20 55%,#08090d 100%),
+    linear-gradient(100deg,#08090de0,#08090d30),
+    url("/images/ea-auctions/main.webp") center/cover no-repeat;
+  opacity:.42;filter:saturate(.5);border-radius:16px;
+  -webkit-mask-image:linear-gradient(to bottom,transparent,#000 24%,#000 73%,transparent);
+  mask-image:linear-gradient(to bottom,transparent,#000 24%,#000 73%,transparent);
+}
+.buyerAuthPage .buyerAuthBrand{margin-bottom:clamp(30px,5vw,66px)}
+.buyerAuthPage .buyerAuthIntro h1{
+  font-size:clamp(38px,4.5vw,69px);
+  line-height:1.085;letter-spacing:-.049em;
+  text-wrap:balance;max-width:610px;
+}
+.buyerAuthPage .buyerAuthIntro h1 em{
+  background:linear-gradient(125deg,#ff8391 0%,#e43e55 48%,#a72a40 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.buyerAuthPage .buyerAuthIntro>p{color:#c1b6bc;font-size:14px;max-width:440px}
+.buyerAuthPage .buyerAuthProof{gap:8px}
+.buyerAuthPage .buyerAuthProof span{
+  display:inline-flex;align-items:center;gap:7px;border:1px solid #dd50612c;
+  background:#190e15aa;color:#d5c7cd;
+}
+.buyerAuthPage .buyerAuthProof span b{color:#fa7486;font-size:10px}
+.buyerAuthPage .buyerAuthVisual{border-color:#e3485930}
+.buyerAuthPage .buyerAuthCard{
+  background:linear-gradient(155deg,#232127 0%,#15161c 42%,#0e1014 100%);
+  border:1px solid #55434d;
+  border-radius:24px;
+  box-shadow:0 35px 95px #000a,inset 0 1px #ffffff14,0 0 80px #d9233710;
+  position:relative;overflow:hidden;
+}
+.buyerAuthPage .buyerAuthCard:before{
+  content:"";position:absolute;pointer-events:none;top:0;left:35px;right:35px;height:2px;
+  background:linear-gradient(90deg,transparent,#fa5c70 35%,#b7354a 65%,transparent);
+}
+.buyerAuthPage .buyerAuthCardTop{margin-bottom:21px}
+.buyerAuthPage .buyerAuthSectionID{display:inline-flex;align-items:center;gap:9px;white-space:nowrap}
+.buyerAuthPage .buyerAuthSectionID i{height:7px;width:7px;border-radius:50%;background:#e44257;box-shadow:0 0 10px #e4425780}
+.buyerAuthPage .buyerAuthTopActions{display:flex;align-items:center;gap:12px}
+.buyerAuthPage .buyerAuthThemeToggle{
+  width:34px;height:34px;display:grid;place-items:center;
+  border-radius:10px;border:1px solid #5a4c55;
+  background:#26242b;color:#eee4e7;font-size:17px;cursor:pointer;
+}
+.buyerAuthPage .buyerAuthThemeToggle:hover{border-color:#ec5870}
+.buyerAuthPage .buyerAuthTabs{background:#0d0f13;border:1px solid #3f3841;padding:4px;margin-bottom:22px}
+.buyerAuthPage .buyerAuthTabs a{
+  transition:background-color .18s ease,color .18s ease;
+  font-size:12px;letter-spacing:.055em;border-radius:8px;
+}
+.buyerAuthPage .buyerAuthTabs a.active{
+  background:linear-gradient(150deg,#5a2936,#3e232b);
+  color:#fff;box-shadow:inset 0 0 0 1px #ef53635a,0 3px 10px #0004;
+}
+.buyerAuthPage .buyerAuthCardKicker{font-size:9px;letter-spacing:.19em}
+.buyerAuthPage .buyerAuthCardTitle{font-size:clamp(25px,2.6vw,33px);line-height:1.13;color:#fff}
+.buyerAuthPage .buyerAuthStepSubtitle{font-size:11px;line-height:1.5;color:#ada3ab;margin:-5px 0 1px}
+.buyerAuthPage .buyerAuthProgress{gap:5px}
+.buyerAuthPage .buyerAuthProgress>span{height:4px;background:#38343d}
+.buyerAuthPage .buyerAuthProgress>span.on{background:linear-gradient(90deg,#ad293d,#f34e65)}
+.buyerAuthPage .buyerAuthProgress small{font-size:10px;color:#c3b4bc;font-variant-numeric:tabular-nums}
+.buyerAuthPage .buyerAuthCard label{color:#e3dce0;font-weight:690}
+.buyerAuthPage .buyerAuthCard input:not([type="checkbox"]),
+.buyerAuthPage .buyerAuthCard select{
+  color:#f7f5f6;background:#1a1c22;border:1px solid #474149;
+  border-radius:10px;transition:border-color .18s ease,box-shadow .18s ease;
+}
+.buyerAuthPage .buyerAuthCard input:not([type="checkbox"]):focus,
+.buyerAuthPage .buyerAuthCard select:focus{
+  border-color:#eb6177;box-shadow:0 0 0 3px #e93e571c;outline:none;
+}
+.buyerAuthPage .buyerAuthCard input::placeholder{color:#8f8a91}
+.buyerAuthPage .buyerAuthCard select option{background:#23232a;color:#fff}
+.buyerAuthPage .buyerAuthTypes button{
+  border-color:#50454e;background:#1e2025;color:#d9d3d7;border-radius:10px;
+  transition:border-color .2s,background-color .2s,transform .2s;
+}
+.buyerAuthPage .buyerAuthTypes button.selected{
+  background:linear-gradient(130deg,#632c3b,#39242c);
+  border-color:#ff6579;color:white;box-shadow:inset 0 0 0 1px #ef526440;
+}
+.buyerAuthPage .buyerAuthTypes button:hover{border-color:#e66377}
+.buyerAuthPage .buyerAuthSubmit{
+  background:linear-gradient(100deg,#c4213b,#eb3d55);
+  border:1px solid #ff697b48;box-shadow:0 8px 28px #e5213626;
+  justify-content:center;text-align:center;letter-spacing:.04em;border-radius:11px;
+}
+.buyerAuthPage .buyerAuthSubmit:hover:not(:disabled){
+  background:linear-gradient(100deg,#dc2b46,#ff5169);
+  box-shadow:0 11px 32px #e5213640;transform:translateY(-1px);
+}
+.buyerAuthPage .buyerAuthSubmit:disabled{filter:grayscale(.25);box-shadow:none}
+.buyerAuthPage .buyerAuthBack{border-color:#554b54;background:#29252b;color:#f3ebf0}
+.buyerAuthPage .buyerAuthConsents{
+  border:1px solid #4d414a;background:#1b1b21;padding:11px;border-radius:10px;
+}
+.buyerAuthPage .buyerAuthConsents label{color:#ece4e8}
+.buyerAuthPage .buyerAuthCard input[type="checkbox"]{accent-color:#e43e58}
+.buyerAuthPage .buyerAuthSwap{color:#aaa3ac}
+.buyerAuthPage :is(button,a,input,select):focus-visible{outline:2px solid #ff7989;outline-offset:2px}
+
+/* Accessible daylight alternative, persisted between login/register. */
+.buyerAuthPage[data-theme="light"]{
+  background:linear-gradient(150deg,#faf9fb,#e9e9ed);color:#22232a;
+}
+.buyerAuthPage[data-theme="light"] .buyerAuthAtmosphere{
+  background:radial-gradient(ellipse at 10% 100%,#e6adbb66,transparent 60%);
+}
+.buyerAuthPage[data-theme="light"] .buyerAuthGrid{
+  background-image:linear-gradient(#8e7e8711 1px,transparent 1px),linear-gradient(90deg,#8e7e8711 1px,transparent 1px);
+}
+.buyerAuthPage[data-theme="light"] .buyerAuthIntro:after{
+  opacity:.11;filter:grayscale(.6);
+}
+.buyerAuthPage[data-theme="light"] .buyerAuthBrand,
+.buyerAuthPage[data-theme="light"] .buyerAuthIntro h1{color:#17181e}
+.buyerAuthPage[data-theme="light"] .buyerAuthIntro h1 em{
+  background:linear-gradient(135deg,#b92743,#dc4158);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.buyerAuthPage[data-theme="light"] .buyerAuthEyebrow{color:#83334a}
+.buyerAuthPage[data-theme="light"] .buyerAuthIntro>p{color:#54515a}
+.buyerAuthPage[data-theme="light"] .buyerAuthProof span{
+  color:#483b43;background:#ffffffa8;border-color:#d7c2cb;
+}
+.buyerAuthPage[data-theme="light"] .buyerAuthProof span b{color:#a52a40}
+.buyerAuthPage[data-theme="light"] .buyerAuthCard{
+  color:#24232a;background:linear-gradient(160deg,#fff,#f7f6f8);
+  border:1px solid #d9d1d7;box-shadow:0 32px 80px #24222b23,inset 0 1px #fff;
+}
+.buyerAuthPage[data-theme="light"] .buyerAuthSectionID,
+.buyerAuthPage[data-theme="light"] .buyerAuthCardTop a{color:#514550}
+.buyerAuthPage[data-theme="light"] .buyerAuthThemeToggle{
+  color:#423d44;background:#f2edf1;border-color:#d6c7d0;
+}
+.buyerAuthPage[data-theme="light"] .buyerAuthTabs{background:#efedf0;border-color:#ded8df}
+.buyerAuthPage[data-theme="light"] .buyerAuthTabs a{color:#56525b}
+.buyerAuthPage[data-theme="light"] .buyerAuthTabs a.active{
+  color:#a12a40;background:#fff;border:1px solid #efd0d8;
+}
+.buyerAuthPage[data-theme="light"] .buyerAuthCardKicker{color:#ae2942}
+.buyerAuthPage[data-theme="light"] .buyerAuthCardTitle{color:#20212a}
+.buyerAuthPage[data-theme="light"] .buyerAuthStepSubtitle,
+.buyerAuthPage[data-theme="light"] .buyerAuthHint,
+.buyerAuthPage[data-theme="light"] .buyerAuthSwap{color:#615761}
+.buyerAuthPage[data-theme="light"] .buyerAuthProgress>span{background:#e2dbe1}
+.buyerAuthPage[data-theme="light"] .buyerAuthProgress>span.on{background:#d72e47}
+.buyerAuthPage[data-theme="light"] .buyerAuthProgress small{color:#65545f}
+.buyerAuthPage[data-theme="light"] .buyerAuthCard label{color:#38303b}
+.buyerAuthPage[data-theme="light"] .buyerAuthCard input:not([type="checkbox"]),
+.buyerAuthPage[data-theme="light"] .buyerAuthCard select{
+  background:#fff;color:#25232b;border-color:#cfc7cf;
+}
+.buyerAuthPage[data-theme="light"] .buyerAuthCard input::placeholder{color:#76717b}
+.buyerAuthPage[data-theme="light"] .buyerAuthCard select option{background:white;color:#27232a}
+.buyerAuthPage[data-theme="light"] .buyerAuthPassword button{background:#efeaf0;color:#4d3945}
+.buyerAuthPage[data-theme="light"] .buyerAuthTypes button{color:#4a4149;background:#faf8fa;border-color:#d9cbd3}
+.buyerAuthPage[data-theme="light"] .buyerAuthTypes button.selected{
+  color:#9d213a;background:#fff1f4;border-color:#b9354d;
+}
+.buyerAuthPage[data-theme="light"] .buyerAuthConsents{background:#faf8fa;border-color:#ded2da}
+.buyerAuthPage[data-theme="light"] .buyerAuthConsents label{color:#33303a}
+.buyerAuthPage[data-theme="light"] .buyerAuthConsents p{color:#766973}
+.buyerAuthPage[data-theme="light"] .buyerAuthConsents a,
+.buyerAuthPage[data-theme="light"] .buyerAuthHint a{color:#a52039}
+.buyerAuthPage[data-theme="light"] .buyerAuthBack{background:#fff;color:#473d46;border-color:#ded2da}
+.buyerAuthPage[data-theme="light"] .buyerAuthPolicyNotice{background:#fff8e6;color:#78552d;border-color:#efd4ac}
+.buyerAuthPage[data-theme="light"] .buyerAuthNotice{background:#fff7e9;color:#624b2f}
+.buyerAuthPage[data-theme="light"] .buyerAuthNotice strong{color:#4d3528}
+.buyerAuthPage[data-theme="light"] .buyerAuthNotice p{color:#705d4b}
+.buyerAuthPage[data-theme="light"] .buyerAuthError{background:#fff2f4;color:#a52039}
+.buyerAuthPage[data-theme="light"] .buyerAuthSuccess{background:#f0fff4;color:#1b693b}
+
+/* Mobile-first: no layout scroll at common 320–430px device widths. */
+@media(max-width:850px){
+ .buyerAuthPage .buyerAuthIntro{padding:0}
+ .buyerAuthPage .buyerAuthIntro:after{display:none}
+ .buyerAuthPage .buyerAuthBrand{margin-bottom:0}
+ .buyerAuthPage .buyerAuthCard{border-radius:15px;padding:clamp(15px,3.2vw,22px)}
+ .buyerAuthPage .buyerAuthCardTop{margin-bottom:10px}
+ .buyerAuthPage .buyerAuthTabs{margin-bottom:12px}
+ .buyerAuthPage .buyerAuthCardTitle{font-size:clamp(20px,5.9vw,26px)}
+ .buyerAuthPage .buyerAuthStepSubtitle{font-size:10px;line-height:1.4}
+ .buyerAuthPage .buyerAuthConsents{padding:8px 9px;gap:8px}
+ .buyerAuthPage .buyerAuthConsents label{line-height:1.35}
+ .buyerAuthPage .buyerAuthThemeToggle{width:29px;height:29px}
+ .buyerAuthPage .buyerAuthTopActions{gap:8px}
+}
+@media(max-width:370px){
+ .buyerAuthPage .buyerAuthCard{padding:13px 12px}
+ .buyerAuthPage .buyerAuthCard form{gap:7px}
+ .buyerAuthPage .buyerAuthCardTitle{font-size:20px}
+ .buyerAuthPage .buyerAuthCardTop{margin-bottom:5px}
+ .buyerAuthPage .buyerAuthTabs{margin-bottom:8px}
+}
+@media(prefers-reduced-motion:reduce){
+ .buyerAuthPage *, .buyerAuthPage *:before,.buyerAuthPage *:after{transition:none!important;animation:none!important}
+}
