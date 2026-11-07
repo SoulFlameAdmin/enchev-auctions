@@ -2,6 +2,7 @@
 
 import {FormEvent,useEffect,useState} from "react";
 import "./buyer-auth.css";
+import {PUBLIC_EARLY_ACCESS_ENABLED} from "../config/early-access";
 
 type Mode="sign-in"|"sign-up";
 type AccountType="individual"|"business";
@@ -149,7 +150,7 @@ export default function BuyerAuthForm({mode}:{mode:Mode}){
       {available===false&&!isRegister&&<div className="buyerAuthNotice buyerAuthNoticeCompact" role="status">
         <strong>Профилите все още не са активирани</strong>
         <p>Защитената система за вход не е включена. Можете да разгледате процеса, но не приемаме регистрации.</p>
-        <a href="/start#early-access">Заявете ранен достъп ↗</a>
+        {PUBLIC_EARLY_ACCESS_ENABLED&&<a href="/start#early-access">Заявете ранен достъп ↗</a>}
       </div>}
     <form onSubmit={submit} noValidate={false}>
         {isRegister?<div className="buyerAuthProgress" aria-label={"Регистрация: стъпка "+(step+1)+" от 4"}>
