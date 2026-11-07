@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import {PUBLIC_EARLY_ACCESS_ENABLED} from "../../../config/early-access";
+import {PUBLIC_EARLY_ACCESS_ENABLED} from "../../config/early-access";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
