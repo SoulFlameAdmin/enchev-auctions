@@ -214,7 +214,7 @@ html:has(.eaInfoViewport),body:has(.eaInfoViewport){height:100%;overflow:hidden!
 .eaInfoSupportTopics{display:flex;flex-direction:column;gap:8px}
 .eaInfoTopicGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-template-rows:repeat(3,minmax(0,1fr));gap:8px;flex:1;min-height:0}
 .eaInfoTopicGrid .eaInfoTile{height:100%}
-.eaInfoTopicGrid .eaInfoTile:last-child{grid-column:1/-1}
+.eaInfoTopicGrid .eaInfoTile:last-child{grid-column:auto}
 .eaInfoSupportHelp{display:flex;flex-direction:column;justify-content:space-between;gap:12px}
 .eaInfoFaqButtons{display:grid;gap:7px;min-height:0}
 .eaInfoFaqButtons button{display:flex;align-items:center;justify-content:space-between;gap:9px;min-height:40px;padding:7px 12px;border:1px solid #434550;border-radius:9px;background:#1a1c22;color:#f7f8fb;text-align:left;font-size:12px}
