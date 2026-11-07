@@ -34,8 +34,10 @@ function extractVerifiedRows(source) {
   return rows;
 }
 
-assert(cloudClient.includes("frhletkiuupgksmgxoxc.supabase.co/functions/v1/enchev-plan-state"), "client must use the dedicated Enchev Edge Function");
-assert(cloudClient.includes("new EventSource(`${ENDPOINT}?stream=1`)"), "client must use SSE cloud realtime stream");
+assert(cloudClient.includes("ejfrnjhlggebzmpmxajl.supabase.co/functions/v1/enchev-plan-state"), "client must use the dedicated Enchev-owned Edge Function");
+assert(!cloudClient.includes("frhletkiuupgksmgxoxc.supabase.co/functions/v1/enchev-plan-state"), "browser must not request shared SoulFlame governance endpoint");
+assert(!cloudClient.includes("new EventSource("), "Enchev Edge GET disables SSE; client must not trigger retry storms");
+assert(cloudClient.includes("5 * 60 * 1000"), "bounded 5-minute plan-state polling required");
 assert(cloudClient.includes("BroadcastChannel(CHANNEL_KEY)"), "cloud updates must fan out through existing realtime channel");
 assert(cloudClient.includes("localIsNewer"), "newer local manual state must not be silently overwritten");
 assert(!cloudClient.includes("SUPABASE_SERVICE_ROLE_KEY"), "service-role credentials must never exist in browser code");
