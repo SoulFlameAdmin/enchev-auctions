@@ -8,7 +8,7 @@ export async function GET(_request:Request,context:Context){
  const {id}=await context.params;
  if(!UUID.test(id))return json({ok:false,error:"Invalid lot."},400);
  const config=authConfig();
- if(!config||new URL(config.url).hostname!=="ejfrnjhlggebzmpmxajl.supabase.co")
+ if(!config||false /* authConfig enforces strict Enchev environment isolation */)
     return json({ok:false,available:false,error:"Real catalogue is awaiting production activation."},503);
  const params=new URLSearchParams({
   select:"id,lot_number,title,make,model,model_year,vin,country_code,condition_summary,mileage_km,fuel_type,transmission,power_kw,body_type,image_path,starting_price,price_currency,status,auction_starts_at,auction_ends_at",published:"is.true",seller_verified_at:"not.is.null",approved_at:"not.is.null",
