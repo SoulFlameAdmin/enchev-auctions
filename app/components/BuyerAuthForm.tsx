@@ -32,6 +32,7 @@ export default function BuyerAuthForm({mode}:{mode:Mode}){
  const [email,setEmail]=useState("");
  const [password,setPassword]=useState("");
  const [showPassword,setShowPassword]=useState(false);
+ const [theme,setTheme]=useState<"dark"|"light">("dark");
  const [repeatPassword,setRepeatPassword]=useState("");
  const [step,setStep]=useState(0);
  const [buyerType,setBuyerType]=useState<AccountType>("individual");
@@ -69,6 +70,12 @@ export default function BuyerAuthForm({mode}:{mode:Mode}){
      }).catch(()=>{if(!controller.signal.aborted)setAvailable(false)});
    return()=>controller.abort();
  },[]);
+ useEffect(()=>{try{if(localStorage.getItem("ea-auth-theme")==="light")setTheme("light")}catch{}},[]);
+ function toggleTheme(){setTheme(prev=>{
+  const next=prev==="dark"?"light":"dark";
+  try{localStorage.setItem("ea-auth-theme",next)}catch{}
+  return next;
+ })}
  const linkParam=returnTo?"?next="+encodeURIComponent(returnTo):"";
  const stateIsAvailable=available===true;
  function advance(){
@@ -127,7 +134,7 @@ export default function BuyerAuthForm({mode}:{mode:Mode}){
    }catch{setError("Проблем с връзката. Опитайте отново.");}
    finally{setPending(false);}
  }
- return <main id="main-content" className="buyerAuthPage">
+ return <main id="main-content" className="buyerAuthPage" data-theme={theme}>
    <div className="buyerAuthAtmosphere" aria-hidden="true"><span className="buyerAuthGrid"/></div>
    <section className="buyerAuthShell" aria-labelledby="buyer-auth-title">
     <div className="buyerAuthIntro">
@@ -139,10 +146,10 @@ export default function BuyerAuthForm({mode}:{mode:Mode}){
       <h1 id="buyer-auth-title">{isRegister?<>Създайте профил.<br/><em>Започнете с E&A.</em></>:<>Вашият профил.<br/><em>Вашите възможности.</em></>}</h1>
       <p>Един профил за автомобили, търгове, история и доставка.</p>
       <div className="buyerAuthVisual" aria-hidden="true"><div className="buyerAuthOrb"><span className="buyerAuthOrbInner"/><span className="buyerAuthOrbLine"/></div></div>
-      <div className="buyerAuthProof"><span>Защитен достъп</span><span>Потвърждение по имейл</span><span>Проверка преди наддаване</span></div>
+      <div className="buyerAuthProof"><span><b>01</b> Защитен достъп</span><span><b>02</b> Потвърждение по имейл</span><span><b>03</b> Проверка преди наддаване</span></div>
     </div>
     <div className="buyerAuthCard">
-      <div className="buyerAuthCardTop"><span>E&A · КУПУВАЧ</span><a href="/">КЪМ НАЧАЛОТО ↗</a></div>
+      <div className="buyerAuthCardTop"><span className="buyerAuthSectionID"><i aria-hidden="true"/> E&A · ЛИЧЕН ПРОФИЛ</span><div className="buyerAuthTopActions"><button type="button" className="buyerAuthThemeToggle" onClick={toggleTheme} aria-label={theme==="dark"?"Включи светъл режим":"Включи тъмен режим"} title={theme==="dark"?"Светъл режим":"Тъмен режим"}>{theme==="dark"?"☀":"☾"}</button><a href="/">НАЧАЛО ↗</a></div></div>
       <nav className="buyerAuthTabs" aria-label="Вход и регистрация">
        <a href={"/login"+linkParam} className={!isRegister?"active":""} aria-current={!isRegister?"page":undefined}>ВХОД</a>
        <a href={"/register"+linkParam} className={isRegister?"active":""} aria-current={isRegister?"page":undefined}>РЕГИСТРАЦИЯ</a>
@@ -153,12 +160,13 @@ export default function BuyerAuthForm({mode}:{mode:Mode}){
         {PUBLIC_EARLY_ACCESS_ENABLED&&<a href="/start#early-access">Заявете ранен достъп ↗</a>}
       </div>}
     <form onSubmit={submit} noValidate={false}>
-        {isRegister?<div className="buyerAuthProgress" aria-label={"Регистрация: стъпка "+(step+1)+" от 4"}>
+        {isRegister?<div className="buyerAuthProgress" role="progressbar" aria-valuemin={1} aria-valuemax={4} aria-valuenow={step+1} aria-label="Напредък на регистрацията">
           {[0,1,2,3].map(n=><span key={n} className={n<=step?"on":""}/>)}
           <small>{step+1} / 4</small>
         </div>:null}
         <span className="buyerAuthCardKicker">{isRegister?["01 / ТИП И ИМЕНА","02 / КОНТАКТ","03 / ПАРОЛА","04 / УСЛОВИЯ"][step]:"СИГУРЕН ДОСТЪП"}</span>
         <h2 className="buyerAuthCardTitle">{isRegister?["Кой ще използва профила?","Данни за връзка","Защитете профила","Условия и съгласия"][step]:"Добре дошли отново"}</h2>
+        {isRegister&&<p className="buyerAuthStepSubtitle">{["Изберете вида акаунт и въведете имената си.","Изберете държава и добавете начин за връзка.","Създайте сигурна парола за своя акаунт.","Прегледайте документите и изберете своите предпочитания."][step]}</p>}
         {isRegister&&step===0&&<>
           <div className="buyerAuthTypes" role="group" aria-label="Тип купувач">
            <button type="button" className={buyerType==="individual"?"selected":""} aria-pressed={buyerType==="individual"} onClick={()=>setBuyerType("individual")}>Физическо лице</button>
