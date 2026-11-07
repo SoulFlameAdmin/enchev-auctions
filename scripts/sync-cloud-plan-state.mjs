@@ -1,6 +1,6 @@
 import fs from "node:fs";
 
-const endpoint = "https://frhletkiuupgksmgxoxc.supabase.co/functions/v1/enchev-plan-state";
+const endpoint = "https://ejfrnjhlggebzmpmxajl.supabase.co/functions/v1/enchev-plan-state";
 const audience = "enchev-plan-state";
 const MAX_BATCH_BODY_CHARS = 60000;
 const verifiedSource = fs.readFileSync("app/components/VerifiedPlanEvidenceSync.tsx", "utf8");
