@@ -5,7 +5,7 @@ export const dynamic="force-dynamic";
 export const revalidate=0;
 export async function GET(){
   const config=authConfig();
-  if(!config||false /* authConfig enforces strict Enchev environment isolation */)
+  if(!config) // authConfig rejects wrong Supabase project for this deployment
     return json({ok:false,available:false,lots:[],error:"Real vehicle catalogue is awaiting production identity configuration."},503);
   const params=new URLSearchParams({
     select:"id,lot_number,title,make,model,model_year,country_code,condition_summary,mileage_km,fuel_type,transmission,power_kw,body_type,image_path,starting_price,price_currency,status,auction_starts_at,auction_ends_at",
