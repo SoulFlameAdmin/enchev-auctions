@@ -1,4 +1,5 @@
 import { NextRequest } from "next/server";
+import {enchevLegalStatus} from "../../../lib/enchev-legal";
 import {
   authConfig,authUnavailable,json,bodyFields,sameOriginPost,
   authCookie,providerRequest,parseProviderSession,setAuthCookies,
@@ -18,6 +19,26 @@ function accountAgeDays(raw:unknown):number|null{
   if(!Number.isFinite(ms)||ms>Date.now())return null;
   return Math.floor((Date.now()-ms)/(24*60*60*1000));
 }
+function readRegistration(raw:unknown){
+ if(!raw || typeof raw!=="object" || Array.isArray(raw))return null;
+ const v=raw as Record<string,unknown>;
+ const name=(field:string,max=60)=>typeof v[field]==="string"?v[field].trim().replace(/\s+/g," ").slice(0,max+1):"";
+ const firstName=name("firstName"),lastName=name("lastName");
+ const buyerType=v.buyerType;
+ const country=v.country;
+ const phone=typeof v.phone==="string"?v.phone.replace(/[\s().-]/g,""):"";
+ const businessName=name("businessName",160),businessNumber=name("businessNumber",40);
+ const allowed=["BG","ES","DE","FR","IT","RO","GR","NL","BE","AT","PL","PT","TR","GB","OTHER"];
+ if(firstName.length<1||firstName.length>60||lastName.length<1||lastName.length>60)return null;
+ if(buyerType!=="individual"&&buyerType!=="business")return null;
+ if(typeof country!=="string"||!allowed.includes(country))return null;
+ if(!/^\+[1-9]\d{6,14}$/.test(phone))return null;
+ if(buyerType==="business"&&(!businessName||businessName.length>160||!businessNumber||businessNumber.length>40))return null;
+ if(v.ageConfirmed!==true||v.termsAccepted!==true||v.privacyAcknowledged!==true)return null;
+ if(typeof v.marketingConsent!=="boolean")return null;
+ return {firstName,lastName,buyerType,country,phone,businessName,businessNumber,marketingConsent:v.marketingConsent};
+}
+
 async function currentUser(request:NextRequest,config:NonNullable<ReturnType<typeof authConfig>>) {
   const access=authCookie(request,"access");
   if (!access) return null;
@@ -31,9 +52,10 @@ export async function GET(request:NextRequest,context:Params){
   const {action}=await context.params;
   if (action!=="session") return deny();
   const config=authConfig();
-  if (!config) return json({ok:true,available:false,authenticated:false});
+  const legalReady=enchevLegalStatus().approved;
+  if (!config) return json({ok:true,available:false,authenticated:false,legalReady:false});
   const user=await currentUser(request,config);
-  if (user) return json({ok:true,available:true,authenticated:true,user});
+  if (user) return json({ok:true,available:true,authenticated:true,legalReady,user});
 
   // Access tokens are short lived; refresh only with the server-held HTTP-only
   // refresh token. Never hand tokens to the client or trust cookie claims.
@@ -45,13 +67,13 @@ export async function GET(request:NextRequest,context:Params){
       const verified=await providerRequest(config,"/auth/v1/user","GET",session.access_token);
       const refreshedUser=verified?.status===200?safeUser(verified.data):null;
       if (refreshedUser){
-        const response=json({ok:true,available:true,authenticated:true,user:{...refreshedUser,accountAgeDays:accountAgeDays(verified?.data)}});
+        const response=json({ok:true,available:true,authenticated:true,legalReady,user:{...refreshedUser,accountAgeDays:accountAgeDays(verified?.data)}});
         setAuthCookies(response,session);
         return response;
       }
     }
   }
-  const response=json({ok:true,available:true,authenticated:false});
+  const response=json({ok:true,available:true,authenticated:false,legalReady});
   clearAuthCookies(response);
   return response;
 }
@@ -77,12 +99,28 @@ export async function POST(request:NextRequest,context:Params){
   const {email,password}=credentials;
 
   if (action==="sign-up"){
+    const legal=enchevLegalStatus();
+    if(!legal.approved)return json({ok:false,available:false,error:"Legal documents and operator details require approval before registration."},503);
+    const registration=readRegistration(credentials.registration);
+    if(!registration)return json({ok:false,error:"Invalid contact details or required acknowledgements."},400);
     const siteOrigin=process.env.ENCHEV_AUTH_SITE_ORIGIN?.trim();
     // Only a fixed configured HTTPS origin may receive verification links.
     if (!siteOrigin || !/^https:\/\/[^/]+$/.test(siteOrigin) || new URL(siteOrigin).username) return authUnavailable();
     const provider=await providerRequest(config,
       "/auth/v1/signup?redirect_to="+encodeURIComponent(siteOrigin+"/login?verified=1"),
-      "POST",undefined,{email,password});
+      "POST",undefined,{email,password,data:{
+        enchev_first_name:registration.firstName,
+        enchev_last_name:registration.lastName,
+        enchev_country:registration.country,
+        enchev_phone:registration.phone,
+        enchev_buyer_type:registration.buyerType,
+        enchev_business_name:registration.businessName,
+        enchev_business_number:registration.businessNumber,
+        enchev_legal_version:legal.version,
+        enchev_terms_accepted_at:new Date().toISOString(),
+        enchev_privacy_notice_read:true,
+        enchev_marketing_opt_in:registration.marketingConsent,
+      }});
     if (!provider) return json({ok:false,error:"Identity service temporarily unavailable."},503);
     if (provider.status===429) return json({ok:false,error:"Too many attempts. Try again later."},429);
     // User enumeration cannot be inferred from our response.
