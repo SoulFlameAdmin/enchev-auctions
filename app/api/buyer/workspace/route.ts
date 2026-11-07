@@ -89,7 +89,7 @@ export async function PATCH(request:NextRequest){
     update.phone_e164=fields.phone_e164 as string|null;
   }
   if("locale" in fields){
-    if(fields.locale!=="bg" && fields.locale!=="en")return json({ok:false,error:"Unsupported language."},400);
+    if(typeof fields.locale!=="string" || !["bg","en"].includes(fields.locale))return json({ok:false,error:"Unsupported language."},400);
     update.locale=fields.locale;
   }
   if(Object.keys(update).length===0)return json({ok:false,error:"Nothing to update."},400);
