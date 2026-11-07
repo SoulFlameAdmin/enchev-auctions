@@ -1,5 +1,6 @@
 import "server-only";
 import { NextRequest, NextResponse } from "next/server";
+import {expectedEnchevRef,projectBindingIsValid} from "./enchev-runtime-isolation";
 
 /** ENCHEV identity is intentionally isolated from the shared SoulFlame/Twins
  * governance project. Auth stays OFF until dedicated-project settings exist.
@@ -16,16 +17,11 @@ export function authConfig(): BuyerAuthConfig | null {
   const url = process.env.ENCHEV_AUTH_URL?.trim();
   const anonKey = process.env.ENCHEV_AUTH_ANON_KEY?.trim();
   const expectedRef = process.env.ENCHEV_AUTH_PROJECT_REF?.trim();
-  if (!url || !anonKey || !expectedRef || expectedRef === SHARED_GOVERNANCE_REF) return null;
-  try {
-    const parsed = new URL(url);
-    if (parsed.protocol !== "https:" || parsed.username || parsed.password
-      || parsed.pathname !== "/" || parsed.search || parsed.hash
-      || parsed.hostname !== `${expectedRef}.supabase.co`) return null;
-    return { url: parsed.origin, anonKey };
-  } catch {
-    return null;
-  }
+  // Vercel Preview/local must never authenticate against production data,
+  // even when all env variables point consistently to the wrong project.
+  if (!anonKey || expectedRef === SHARED_GOVERNANCE_REF
+    || !projectBindingIsValid(url,expectedRef,expectedEnchevRef())) return null;
+  return {url:new URL(url!).origin,anonKey};
 }
 
 export function authUnavailable() {
