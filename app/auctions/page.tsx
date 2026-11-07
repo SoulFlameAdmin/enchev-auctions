@@ -225,16 +225,13 @@ export default function AuctionsPage(){
    <section className="eaLiveTitleRow">
     <div className="eaLiveHeading">
      <span className="eaLiveHeroEyebrow">ОНЛАЙН АВТОМОБИЛНИ ТЪРГОВЕ</span>
-     <h1><span>ПРОФЕСИОНАЛНИ<br/>АУКЦИОНИ НА<br/><em>АВТОМОБИЛИ</em></span></h1>
-     <p>Проверени автомобили и предстоящи търгове.</p>
+     <h1><Icon name="broadcast" size={36}/><span>ТЪРГОВЕ НА ЖИВО</span></h1>
+     <p>Следи проверени автомобили и пробвай наддаване в демо режим.</p>
      <span className="eaLiveLiveCaveat">{demoActive?"ДЕМО · Примерните данни не са реални оферти":"ОДОБРЕН ЛОТ · Наддаването още не е активирано"}</span>
     </div>
     <button type="button" className="eaLiveAppearanceToggle" aria-label={appearance==="dark"?"Включи светъл режим":"Включи тъмен режим"} aria-pressed={appearance==="light"} onClick={changeAppearance}><AppearanceIcon light={appearance==="light"}/><span>{appearance==="dark"?"Светъл режим":"Тъмен режим"}</span></button>
    </section>
-   {!authenticated&&<aside className="eaLiveRegisterBanner" aria-label="Регистрация">
-    <div className="eaLiveRegisterPitch"><Icon name="user" size={22}/><strong>Регистрирай се, за да следиш търговете и да запазваш автомобили.</strong></div>
-    <a href="/register?next=%2Fauctions">Регистрация <Icon name="arrow" size={17}/></a>
-   </aside>}
+
    <div className="eaLiveMain">
     <section className="eaLiveCarStage" aria-label="Автомобил на фокус">
      <div className="eaLiveImageFrame">
