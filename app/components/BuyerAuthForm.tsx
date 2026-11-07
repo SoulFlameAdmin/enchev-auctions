@@ -31,6 +31,7 @@ export default function BuyerAuthForm({mode}:{mode:Mode}){
  const [email,setEmail]=useState("");
  const [password,setPassword]=useState("");
  const [showPassword,setShowPassword]=useState(false);
+ const [repeatPassword,setRepeatPassword]=useState("");
  const [step,setStep]=useState(0);
  const [buyerType,setBuyerType]=useState<AccountType>("individual");
  const [firstName,setFirstName]=useState("");
@@ -80,12 +81,13 @@ export default function BuyerAuthForm({mode}:{mode:Mode}){
      if(!phonePattern.test(phone.replace(/[\s().-]/g,""))){setError("Телефонът трябва да е международен формат, напр. +359888123456.");return;}
      if(!country){setError("Изберете държава.");return;}
    }
-   setStep(v=>Math.min(2,v+1));
+   if(step===2){if(password.length<12||password.length>128){setError("Паролата трябва да има поне 12 символа.");return;}if(password!==repeatPassword){setError("Паролите не съвпадат.");return;}}
+   setStep(v=>Math.min(3,v+1));
  }
  async function submit(event:FormEvent<HTMLFormElement>){
    event.preventDefault();setError("");setMessage("");
    if(pending||available!==true)return;
-   if(isRegister&&step!==2){advance();return;}
+   if(isRegister&&step!==3){advance();return;}
    if(isRegister){
      if(password.length<12||password.length>128){setError("Паролата трябва да е между 12 и 128 символа.");return;}
      if(!ageConfirmed||!termsAccepted||!privacyAcknowledged){setError("Необходимо е да потвърдите възрастта, условията и прочитането на политиката.");return;}
@@ -143,17 +145,18 @@ export default function BuyerAuthForm({mode}:{mode:Mode}){
        <a href={"/login"+linkParam} className={!isRegister?"active":""} aria-current={!isRegister?"page":undefined}>ВХОД</a>
        <a href={"/register"+linkParam} className={isRegister?"active":""} aria-current={isRegister?"page":undefined}>РЕГИСТРАЦИЯ</a>
       </nav>
-      {available===false?<div className="buyerAuthNotice" role="status">
+      {available===false&&<div className="buyerAuthNotice buyerAuthNoticeCompact" role="status">
         <strong>Профилите все още не са активирани</strong>
         <p>Защитената система за вход не е включена. Можете да разгледате процеса, но не приемаме регистрации.</p>
         <a href="/start#early-access">Заявете ранен достъп ↗</a>
-      </div>:<form onSubmit={submit} noValidate={false}>
-        {isRegister?<div className="buyerAuthProgress" aria-label={"Регистрация: стъпка "+(step+1)+" от 3"}>
-          {[0,1,2].map(n=><span key={n} className={n<=step?"on":""}/>)}
+      </div>}
+    <form onSubmit={submit} noValidate={false}>
+        {isRegister?<div className="buyerAuthProgress" aria-label={"Регистрация: стъпка "+(step+1)+" от 4"}>
+          {[0,1,2,3].map(n=><span key={n} className={n<=step?"on":""}/>)}
           <small>{step+1} / 3</small>
         </div>:null}
-        <span className="buyerAuthCardKicker">{isRegister?["01 / ТИП И ИМЕНА","02 / КОНТАКТ","03 / ЗАЩИТА И УСЛОВИЯ"][step]:"СИГУРЕН ДОСТЪП"}</span>
-        <h2 className="buyerAuthCardTitle">{isRegister?["Кой ще използва профила?","Данни за връзка","Защита и съгласия"][step]:"Добре дошли отново"}</h2>
+        <span className="buyerAuthCardKicker">{isRegister?["01 / ТИП И ИМЕНА","02 / КОНТАКТ","03 / ПАРОЛА","04 / УСЛОВИЯ"][step]:"СИГУРЕН ДОСТЪП"}</span>
+        <h2 className="buyerAuthCardTitle">{isRegister?["Кой ще използва профила?","Данни за връзка","Защитете профила","Условия и съгласия"][step]:"Добре дошли отново"}</h2>
         {isRegister&&step===0&&<>
           <div className="buyerAuthTypes" role="group" aria-label="Тип купувач">
            <button type="button" className={buyerType==="individual"?"selected":""} aria-pressed={buyerType==="individual"} onClick={()=>setBuyerType("individual")}>Физическо лице</button>
@@ -185,26 +188,28 @@ export default function BuyerAuthForm({mode}:{mode:Mode}){
            <input type={showPassword?"text":"password"} autoComplete={isRegister?"new-password":"current-password"} minLength={12} maxLength={128} required value={password} onChange={e=>setPassword(e.target.value)} placeholder="Поне 12 символа" disabled={pending||!stateIsAvailable}/>
            <button type="button" onClick={()=>setShowPassword(v=>!v)} aria-label={showPassword?"Скрий паролата":"Покажи паролата"}>{showPassword?"СКРИЙ":"ПОКАЖИ"}</button>
           </div></label>
-          {isRegister&&<div className="buyerAuthConsents">
+          {isRegister&&<label>Повторете паролата<input type="password" autoComplete="new-password" minLength={12} maxLength={128} required value={repeatPassword} onChange={e=>setRepeatPassword(e.target.value)} placeholder="Повторете паролата"/></label>}
+          {!isRegister&&<p className="buyerAuthHint">Само за регистрирани потребители. Забравена парола? <a href="/support">Свържете се с поддръжката</a>.</p>}
+        </>}
+        {isRegister&&step===3&&<>          <div className="buyerAuthConsents">
            <label><input type="checkbox" checked={ageConfirmed} onChange={e=>setAgeConfirmed(e.target.checked)} required/> Потвърждавам, че съм навършил/а 18 години.</label>
            <label><input type="checkbox" checked={termsAccepted} onChange={e=>setTermsAccepted(e.target.checked)} required/> Приемам <a href="/legal/terms" target="_blank" rel="noopener noreferrer">Общите условия</a>.</label>
            <label><input type="checkbox" checked={privacyAcknowledged} onChange={e=>setPrivacyAcknowledged(e.target.checked)} required/> Запознах се с <a href="/legal/privacy" target="_blank" rel="noopener noreferrer">Политиката за лични данни</a>.</label>
            <label><input type="checkbox" checked={marketingConsent} onChange={e=>setMarketingConsent(e.target.checked)}/> Искам незадължителни рекламни известия.</label>
            <p><a href="/legal/cookies" target="_blank" rel="noopener noreferrer">Политика за бисквитките</a> · Отметките не са предварително избрани.</p>
-          </div>}
-          {!isRegister&&<p className="buyerAuthHint">Само за регистрирани потребители. Забравена парола? <a href="/support">Свържете се с поддръжката</a>.</p>}
-        </>}
+          </div>
+</>}
         {isRegister&&!legalReady&&<p className="buyerAuthPolicyNotice" role="note">Правните документи са в проект и очакват одобрение. Реална регистрация няма да бъде активирана преди това.</p>}
         {error&&<p className="buyerAuthError" role="alert">{error}</p>}
         {message&&<p className="buyerAuthSuccess" role="status">{message}</p>}
         <div className="buyerAuthActions">
           {isRegister&&step>0&&<button type="button" className="buyerAuthBack" onClick={()=>{setError("");setMessage("");setStep(n=>n-1)}}>← НАЗАД</button>}
-          <button className="buyerAuthSubmit" type={isRegister&&step<2?"button":"submit"} onClick={isRegister&&step<2?advance:undefined} disabled={pending||!stateIsAvailable||(isRegister&&step===2&&!legalReady)}>
-           {pending?"ПРОВЕРКА…":!stateIsAvailable?"ПРОВЕРКА НА ДОСТЪПА…":isRegister?(step<2?"ПРОДЪЛЖИ →":"СЪЗДАЙ ПРОФИЛ →"):"ВЛЕЗ В ПРОФИЛА →"}
+          <button className="buyerAuthSubmit" type={isRegister&&step<3?"button":"submit"} onClick={isRegister&&step<3?advance:undefined} disabled={pending||(!isRegister&&!stateIsAvailable)||(isRegister&&step===3&&(!stateIsAvailable||!legalReady))}>
+           {pending?"ПРОВЕРКА…":!stateIsAvailable?"ПРОВЕРКА НА ДОСТЪПА…":isRegister?(step<3?"ПРОДЪЛЖИ →":"СЪЗДАЙ ПРОФИЛ →"):"ВЛЕЗ В ПРОФИЛА →"}
           </button>
         </div>
         <p className="buyerAuthSwap">{isRegister?"Вече имате профил?":"Нямате профил?"} <a href={(isRegister?"/login":"/register")+linkParam}>{isRegister?"Вход":"Регистрация"}</a></p>
-      </form>}
+      </form>
     </div>
    </section>
  </main>;
